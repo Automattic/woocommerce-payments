@@ -414,9 +414,21 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$renewal_order->update_status( 'failed' );
 
 			if ( ! empty( $payment_information ) ) {
-				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
-				if ( $e instanceof API_Merchant_Exception ) {
-					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				if ( $this->is_unusable_saved_payment_method_error( $e ) ) {
+					// The saved payment method can no longer be charged off-session: it was removed/detached from
+					// its customer, its customer was deleted (leaving a dangling reference), or it no longer exists
+					// on the account. Stripe reports these states with several different technical messages ("You
+					// must save this PaymentMethod to a customer before you can update it", "...was detached from a
+					// Customer. It may not be used again", "No such PaymentMethod"), and they can surface at either
+					// the pre-confirm payment method update or the charge confirmation. Normalise them to one clear,
+					// actionable note so the renewal fails cleanly into dunning; WooCommerce Subscriptions then
+					// notifies the customer, who can add a new payment method to recover. See TRAPLAT-3995.
+					$error_details = esc_html__( 'The saved payment method is no longer available, so the renewal could not be charged. The customer needs to add a new payment method to continue the subscription', 'woocommerce-payments' );
+				} else {
+					$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+					if ( $e instanceof API_Merchant_Exception ) {
+						$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+					}
 				}
 
 				$note = sprintf(
@@ -440,6 +452,40 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				$renewal_order->add_order_note( $note );
 			}
 		}
+	}
+
+	/**
+	 * Determines whether an exception thrown while charging a renewal indicates that the saved
+	 * payment method can no longer be used: it was removed/detached from its customer, its
+	 * customer was deleted (leaving a dangling reference on the payment method), or it no longer
+	 * exists on the account. Stripe reports these states with different error codes and messages
+	 * and at different stages of intention creation, so this checks the known codes first and
+	 * falls back to the known messages — which also keeps detection working when the platform
+	 * has not yet shipped the clearer error code.
+	 *
+	 * @param API_Exception $e The exception thrown while processing the renewal payment.
+	 * @return bool True when the saved payment method is no longer usable for the renewal.
+	 */
+	private function is_unusable_saved_payment_method_error( API_Exception $e ): bool {
+		if ( in_array( $e->get_error_code(), [ 'payment_method_no_longer_available', 'resource_missing' ], true ) ) {
+			return true;
+		}
+
+		$message = $e->getMessage();
+		foreach (
+			[
+				'must save this PaymentMethod to a customer',
+				'No such PaymentMethod',
+				'detached from a Customer',
+				'may not be used again',
+			] as $known_message
+		) {
+			if ( false !== stripos( $message, $known_message ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
