@@ -12,6 +12,7 @@ const mockCreateNotice = jest.fn();
 const mockGetQuery = jest.fn();
 const mockRequestReportExport = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
+const mockGetReportsFeesSummary = jest.fn();
 const mockGetFeesCSVRequestURL = jest.fn();
 
 jest.mock( 'tracks', () => ( {
@@ -20,6 +21,10 @@ jest.mock( 'tracks', () => ( {
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: () => ( { createNotice: mockCreateNotice } ),
+	select: () => ( {
+		getReportsFeesSummary: ( query: unknown ) =>
+			mockGetReportsFeesSummary( query ),
+	} ),
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -84,6 +89,7 @@ describe( 'FeesExportButton', () => {
 			feesSummary: { count: 42 },
 			isLoading: false,
 		} );
+		mockGetReportsFeesSummary.mockReset().mockReturnValue( undefined );
 		mockGetFeesCSVRequestURL
 			.mockReset()
 			.mockReturnValue( '/wc/v3/payments/reports/fees/download?test=1' );
@@ -128,6 +134,84 @@ describe( 'FeesExportButton', () => {
 			expect.anything()
 		);
 		expect( mockRequestReportExport ).not.toHaveBeenCalled();
+	} );
+
+	it( 'uses date presets for the summary query and CSV export request', async () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-05-18T12:00:00.000Z' ) );
+		const confirm = jest
+			.spyOn( window, 'confirm' )
+			.mockReturnValue( false );
+		mockGetQuery.mockReturnValue( {
+			date_preset: 'month_to_date',
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 25000 },
+			isLoading: false,
+		} );
+
+		try {
+			render( <FeesExportButton /> );
+
+			await userEvent.click(
+				screen.getByRole( 'button', { name: 'Export' } )
+			);
+
+			expect( mockUseReportsFeesSummary ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					date_between: [ '2026-05-01', '2026-05-18' ],
+				} )
+			);
+			expect( confirm ).not.toHaveBeenCalled();
+			expect( mockGetFeesCSVRequestURL ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					dateBetween: [ '2026-05-01', '2026-05-18' ],
+				} )
+			);
+			expect( mockRequestReportExport ).toHaveBeenCalledTimes( 1 );
+		} finally {
+			jest.useRealTimers();
+		}
+	} );
+
+	it( 'uses the click-time query for both the export request and exported row count', async () => {
+		mockGetQuery
+			.mockReturnValueOnce( {
+				date_preset: 'last_month',
+			} )
+			.mockReturnValueOnce( {
+				date_preset: 'month_to_date',
+			} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 8 },
+			isLoading: false,
+		} );
+		mockGetReportsFeesSummary.mockReturnValue( {
+			count: 12,
+		} );
+
+		render( <FeesExportButton /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export' } )
+		);
+
+		expect( mockGetReportsFeesSummary ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				dateBetween: expect.any( Array ),
+			} )
+		);
+		expect( mockGetFeesCSVRequestURL ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				dateBetween: expect.any( Array ),
+			} )
+		);
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_csv_export_click',
+			expect.objectContaining( {
+				exported_row_count: 12,
+			} )
+		);
 	} );
 
 	it( 'emits a Fees export success event when the export hook succeeds', async () => {
