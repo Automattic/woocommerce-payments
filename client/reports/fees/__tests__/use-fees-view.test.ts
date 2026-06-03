@@ -425,25 +425,64 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
-	it( 'records search length without the raw search term', () => {
-		const searchTerm = 'txn_secret_123';
+	it( 'debounces search tracking and records only the final search length', () => {
+		jest.useFakeTimers();
+		const firstSearchTerm = 'txn_secret';
+		const finalSearchTerm = 'txn_secret_123';
 		const { result } = renderHook( () => useFeesView() );
 
 		act( () => {
 			result.current[ 1 ]( {
 				...result.current[ 0 ],
-				search: searchTerm,
+				search: firstSearchTerm,
 			} );
+		} );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_search',
+			expect.anything()
+		);
+
+		act( () => {
+			jest.advanceTimersByTime( 250 );
+		} );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				search: finalSearchTerm,
+			} );
+		} );
+
+		act( () => {
+			jest.advanceTimersByTime( 499 );
+		} );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_search',
+			expect.anything()
+		);
+
+		act( () => {
+			jest.advanceTimersByTime( 1 );
 		} );
 
 		expect( mockRecordEvent ).toHaveBeenCalledWith(
 			'wcpay_reports_fees_search',
 			{
-				search_length: searchTerm.length,
+				search_length: finalSearchTerm.length,
 			}
 		);
+		expect(
+			mockRecordEvent.mock.calls.filter(
+				( [ eventName ] ) => eventName === 'wcpay_reports_fees_search'
+			)
+		).toHaveLength( 1 );
 		expect( JSON.stringify( mockRecordEvent.mock.calls ) ).not.toContain(
-			searchTerm
+			firstSearchTerm
+		);
+		expect( JSON.stringify( mockRecordEvent.mock.calls ) ).not.toContain(
+			finalSearchTerm
 		);
 	} );
 

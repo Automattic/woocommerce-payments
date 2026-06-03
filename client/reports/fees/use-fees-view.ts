@@ -13,6 +13,8 @@ import { recordEvent } from 'tracks';
 import { useFeesUrlSync } from './use-fees-url-sync';
 import { useFeesUserPrefs } from './use-fees-user-prefs';
 
+const searchTrackingDebounceMs = 500;
+
 const getTrackedFilterField = ( field: string ): string =>
 	field === 'payment_method' ? 'payment_method_type' : field;
 
@@ -62,13 +64,26 @@ const getTrackableFilterField = ( filter: Filter ): string | undefined => {
 	return undefined;
 };
 
-const trackViewChange = ( previous: View, next: View ): void => {
+interface SearchTrackingControls {
+	clearPendingSearchTracking: () => void;
+	scheduleSearchTracking: ( search: string ) => void;
+}
+
+const trackViewChange = (
+	previous: View,
+	next: View,
+	{
+		clearPendingSearchTracking,
+		scheduleSearchTracking,
+	}: SearchTrackingControls
+): void => {
 	const previousSearch = previous.search ?? '';
 	const nextSearch = next.search ?? '';
-	if ( nextSearch && nextSearch !== previousSearch ) {
-		recordEvent( 'wcpay_reports_fees_search', {
-			search_length: nextSearch.length,
-		} );
+	if ( nextSearch !== previousSearch ) {
+		clearPendingSearchTracking();
+		if ( nextSearch ) {
+			scheduleSearchTracking( nextSearch );
+		}
 	}
 
 	( next.filters ?? [] ).forEach( ( filter ) => {
@@ -102,6 +117,28 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 		useFeesUserPrefs();
 	const { derivedView, syncViewToUrl, urlVersion } =
 		useFeesUrlSync( persisted );
+	const searchTrackingTimerRef = useRef< ReturnType<
+		typeof setTimeout
+	> | null >( null );
+	const clearPendingSearchTracking = useCallback( () => {
+		if ( searchTrackingTimerRef.current ) {
+			clearTimeout( searchTrackingTimerRef.current );
+			searchTrackingTimerRef.current = null;
+		}
+	}, [] );
+	const scheduleSearchTracking = useCallback( ( search: string ) => {
+		searchTrackingTimerRef.current = setTimeout( () => {
+			recordEvent( 'wcpay_reports_fees_search', {
+				search_length: search.length,
+			} );
+			searchTrackingTimerRef.current = null;
+		}, searchTrackingDebounceMs );
+	}, [] );
+
+	useEffect(
+		() => () => clearPendingSearchTracking(),
+		[ clearPendingSearchTracking ]
+	);
 
 	// Hold the view in local React state so DataViews can stage in-progress
 	// filters (a method/type filter is added before its value is picked — the
@@ -130,12 +167,21 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 
 	const setView = useCallback(
 		( next: View ) => {
-			trackViewChange( localView, next );
+			trackViewChange( localView, next, {
+				clearPendingSearchTracking,
+				scheduleSearchTracking,
+			} );
 			setLocalView( next );
 			syncViewToUrl( localView, next );
 			persistViewShape( next );
 		},
-		[ localView, persistViewShape, syncViewToUrl ]
+		[
+			clearPendingSearchTracking,
+			localView,
+			persistViewShape,
+			scheduleSearchTracking,
+			syncViewToUrl,
+		]
 	);
 
 	return [ localView, setView ];

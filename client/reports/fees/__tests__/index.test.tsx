@@ -125,6 +125,7 @@ beforeEach( () => {
 describe( 'FeesReport (DataViews)', () => {
 	it( 'records load success when fees data finishes loading', () => {
 		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01', '2026-03-31' ],
 			payment_method_type: 'card',
 		} );
 		mockUseReportsFees.mockReturnValue( {
@@ -160,12 +161,14 @@ describe( 'FeesReport (DataViews)', () => {
 				has_filters: true,
 				is_initial_empty: false,
 				is_filtered_empty: true,
+				range_days: 30,
 			}
 		);
 	} );
 
 	it( 'records load error when fees data resolves with an error', () => {
 		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01', '2026-03-31' ],
 			payment_method_type: 'card',
 		} );
 		mockUseReportsFees.mockReturnValue( {
@@ -189,12 +192,16 @@ describe( 'FeesReport (DataViews)', () => {
 			'wcpay_reports_fees_load_error',
 			{
 				has_filters: true,
+				range_days: 30,
 			}
 		);
 	} );
 
 	it( 'records reload clicks from the Fees error state', async () => {
 		const onReload = jest.fn();
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01', '2026-03-31' ],
+		} );
 		mockUseReportsFees.mockReturnValue( {
 			feesRows: [],
 			feesError: { code: 'server_error' },
@@ -209,7 +216,9 @@ describe( 'FeesReport (DataViews)', () => {
 
 		expect( mockRecordEvent ).toHaveBeenCalledWith(
 			'wcpay_reports_fees_reload_click',
-			{}
+			{
+				range_days: 30,
+			}
 		);
 		expect( onReload ).toHaveBeenCalled();
 	} );
