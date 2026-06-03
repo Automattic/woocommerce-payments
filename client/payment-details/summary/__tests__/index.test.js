@@ -14,6 +14,8 @@ import moment from 'moment';
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
+import { recordEvent } from 'wcpay/tracks';
+import { _resetOutcomeViewTrackingForTests } from '../../dispute-outcome/tracks';
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {
@@ -34,6 +36,10 @@ jest.mock( 'wcpay/data', () => ( {
 		doAccept: mockDisputeDoAccept,
 		isLoading: false,
 	} ) ),
+} ) );
+
+jest.mock( 'wcpay/tracks', () => ( {
+	recordEvent: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -1241,6 +1247,81 @@ describe( 'PaymentDetailsSummary', () => {
 					name: /what's working well/i,
 				} )
 			).not.toBeInTheDocument();
+		} );
+
+		// Lifecycle-level coverage for the Tracks dedup. The function-level
+		// guard inside `recordOutcomeViewOnce` is covered by its own unit
+		// test; the regression this defends in production is
+		// `PaymentDetailsSummaryWrapper` remounting several times per view
+		// and re-running its `useEffect`. A misconfigured dep-array, an
+		// accidental double-mount, or a future refactor to
+		// `shouldRecordOutcomeView` could silently re-introduce the
+		// remount-fires-twice bug without anything catching it. These tests
+		// exercise the full component path and assert the event fires
+		// exactly once per dispute id across the wrapper's lifecycle.
+		describe( 'Tracks dedup across the wrapper lifecycle', () => {
+			beforeEach( () => {
+				recordEvent.mockClear();
+				_resetOutcomeViewTrackingForTests();
+				global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+			} );
+
+			test( 'rerendering with a fresh charge object but the same dispute id fires the event once', () => {
+				const first = getResolvedCharge( 'won' );
+				const { rerender } = render(
+					<PaymentDetailsSummary charge={ first } />
+				);
+
+				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+
+				// Fresh object reference, same dispute id -- the useEffect
+				// dep array would treat this as a change and re-fire if the
+				// module-scoped Set didn't catch it.
+				const second = getResolvedCharge( 'won' );
+				rerender( <PaymentDetailsSummary charge={ second } /> );
+
+				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+			} );
+
+			test( 'unmounting and remounting the wrapper with the same dispute id fires the event once', () => {
+				const charge = getResolvedCharge( 'won' );
+				const { unmount } = render(
+					<PaymentDetailsSummary charge={ charge } />
+				);
+
+				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+
+				// This is the production regression: PaymentDetailsSummary
+				// remounts as the loading state resolves, and a per-instance
+				// ref would reset and re-fire. The module-scoped Set must
+				// survive the unmount.
+				unmount();
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+			} );
+
+			test( 'a different dispute id after the first fires its own event', () => {
+				const first = getResolvedCharge( 'won' );
+				const { unmount } = render(
+					<PaymentDetailsSummary charge={ first } />
+				);
+				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+
+				// Regression guard: dedup must be keyed by dispute id, not
+				// global "have we ever fired" state. A separate dispute
+				// reaching the wrapper later should still record.
+				unmount();
+				const second = getResolvedCharge( 'lost' );
+				second.dispute.id = 'dp_2';
+				render( <PaymentDetailsSummary charge={ second } /> );
+
+				expect( recordEvent ).toHaveBeenCalledTimes( 2 );
+				expect( recordEvent ).toHaveBeenLastCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { dispute_id: 'dp_2' } )
+				);
+			} );
 		} );
 	} );
 } );
