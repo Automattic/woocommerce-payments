@@ -123,6 +123,21 @@ beforeEach( () => {
 } );
 
 describe( 'FeesReport (DataViews)', () => {
+	const mockEmptyFeesResponse = (
+		isLoading = false,
+		feesError: Record< string, unknown > = {}
+	) => {
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError,
+			isLoading,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [] },
+			isLoading,
+		} );
+	};
+
 	it( 'records load success when fees data finishes loading', () => {
 		mockGetQuery.mockReturnValue( {
 			date_between: [ '2026-03-01', '2026-03-31' ],
@@ -218,6 +233,61 @@ describe( 'FeesReport (DataViews)', () => {
 			'wcpay_reports_fees_reload_click',
 			{
 				range_days: 30,
+			}
+		);
+		expect( onReload ).toHaveBeenCalled();
+	} );
+
+	it( 'records all-time load success telemetry with a null range', () => {
+		mockEmptyFeesResponse( true );
+
+		const { rerender } = render( <FeesReport /> );
+
+		mockEmptyFeesResponse();
+
+		rerender( <FeesReport /> );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_load_success',
+			expect.objectContaining( {
+				has_filters: false,
+				is_initial_empty: true,
+				range_days: null,
+			} )
+		);
+	} );
+
+	it( 'records all-time load error telemetry with a null range', () => {
+		mockEmptyFeesResponse();
+		const { rerender } = render( <FeesReport /> );
+
+		mockEmptyFeesResponse( false, { code: 'server_error' } );
+
+		rerender( <FeesReport /> );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_load_error',
+			expect.objectContaining( {
+				has_filters: false,
+				range_days: null,
+			} )
+		);
+	} );
+
+	it( 'records all-time reload clicks with a null range', async () => {
+		const onReload = jest.fn();
+		mockEmptyFeesResponse( false, { code: 'server_error' } );
+
+		render( <FeesReport onReload={ onReload } /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_reload_click',
+			{
+				range_days: null,
 			}
 		);
 		expect( onReload ).toHaveBeenCalled();
