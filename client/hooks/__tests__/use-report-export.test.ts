@@ -189,4 +189,156 @@ describe( 'useReportExport', () => {
 
 		expect( clearTimeoutSpy ).toHaveBeenCalled();
 	} );
+
+	it( 'invokes onSuccess when polling returns a download URL', async () => {
+		mockApiFetch
+			.mockResolvedValueOnce( { export_id: 'abc' } )
+			.mockResolvedValueOnce( {
+				status: 'success',
+				download_url: 'https://example.test/file.csv',
+			} );
+		const onSuccess = jest.fn();
+
+		const { result, unmount } = renderHook( () => useReportExport() );
+
+		await act( async () => {
+			await result.current.requestReportExport( {
+				...testProps,
+				onSuccess,
+			} );
+			jest.advanceTimersByTime( 1000 );
+			await Promise.resolve();
+		} );
+
+		unmount();
+
+		expect( onSuccess ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'invokes onError with reason "request" when the POST throws', async () => {
+		mockApiFetch.mockRejectedValueOnce( new Error( 'Failed to export' ) );
+		const onError = jest.fn();
+
+		const { result } = renderHook( () => useReportExport() );
+
+		await act( async () => {
+			await result.current.requestReportExport( {
+				...testProps,
+				onError,
+			} );
+		} );
+
+		expect( onError ).toHaveBeenCalledWith( { reason: 'request' } );
+	} );
+
+	it( 'invokes onError with reason "timeout" when polling exhausts retries', async () => {
+		mockApiFetch
+			.mockResolvedValueOnce( { export_id: 'abc' } )
+			.mockResolvedValue( { status: 'pending' } );
+		const onError = jest.fn();
+
+		const { result, unmount } = renderHook( () => useReportExport() );
+
+		await act( async () => {
+			await result.current.requestReportExport( {
+				...testProps,
+				onError,
+			} );
+		} );
+
+		await act( async () => {
+			for ( let i = 0; i < maxRetries; i++ ) {
+				jest.advanceTimersByTime( 1000 );
+				await Promise.resolve();
+			}
+		} );
+
+		unmount();
+
+		expect( onError ).toHaveBeenCalledWith( { reason: 'timeout' } );
+	} );
+
+	it( 'does not reuse retry count across export requests from the same hook instance', async () => {
+		mockApiFetch
+			.mockResolvedValueOnce( { export_id: 'first-export' } )
+			.mockResolvedValue( { status: 'pending' } );
+		const firstOnError = jest.fn();
+		const secondOnError = jest.fn();
+
+		const { result, unmount } = renderHook( () => useReportExport() );
+
+		try {
+			await act( async () => {
+				await result.current.requestReportExport( {
+					...testProps,
+					onError: firstOnError,
+				} );
+			} );
+
+			await act( async () => {
+				for ( let i = 0; i < maxRetries; i++ ) {
+					jest.advanceTimersByTime( 1000 );
+					await Promise.resolve();
+				}
+			} );
+
+			expect( firstOnError ).toHaveBeenCalledWith( {
+				reason: 'timeout',
+			} );
+
+			mockApiFetch.mockReset();
+			mockApiFetch
+				.mockResolvedValueOnce( { export_id: 'second-export' } )
+				.mockResolvedValue( { status: 'pending' } );
+
+			await act( async () => {
+				await result.current.requestReportExport( {
+					...testProps,
+					onError: secondOnError,
+				} );
+			} );
+
+			await act( async () => {
+				jest.advanceTimersByTime( 1000 );
+				await Promise.resolve();
+			} );
+
+			expect( secondOnError ).not.toHaveBeenCalled();
+
+			await act( async () => {
+				for ( let i = 0; i < maxRetries - 1; i++ ) {
+					jest.advanceTimersByTime( 1000 );
+					await Promise.resolve();
+				}
+			} );
+
+			expect( secondOnError ).toHaveBeenCalledTimes( 1 );
+			expect( secondOnError ).toHaveBeenCalledWith( {
+				reason: 'timeout',
+			} );
+		} finally {
+			unmount();
+		}
+	} );
+
+	it( 'preserves existing behavior when no callbacks are passed', async () => {
+		mockApiFetch
+			.mockResolvedValueOnce( { export_id: 'abc' } )
+			.mockResolvedValueOnce( {
+				status: 'success',
+				download_url: 'https://example.test/file.csv',
+			} );
+
+		const { result, unmount } = renderHook( () => useReportExport() );
+
+		await act( async () => {
+			await result.current.requestReportExport( testProps );
+			jest.advanceTimersByTime( 1000 );
+			await Promise.resolve();
+		} );
+
+		unmount();
+
+		expect( result.current.isExportInProgress ).toBe( false );
+	} );
 } );
