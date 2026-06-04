@@ -134,11 +134,17 @@ class WSN_Profile_Emitter {
 	const MAX_LAST_ERROR_MESSAGE_LEN = 200;
 
 	/**
-	 * Client for making requests to the WooCommerce Payments API.
+	 * Direct Jetpack-signed POST/DELETE transport to the WooPay host.
 	 *
-	 * @var WC_Payments_API_Client
+	 * Replaces the prior `WC_Payments_API_Client` dependency. The api-client
+	 * routes to the WCPay backend (`public-api.wordpress.com/wpcom/v2/sites/{blog_id}/wcpay/...`),
+	 * which is the wrong destination for the WSN Profile push — no handler
+	 * exists at that path. The transport targets WooPay directly via
+	 * `Client::remote_request()`, mirroring the production `/init` pattern.
+	 *
+	 * @var WSN_Profile_Transport
 	 */
-	private $api_client;
+	private $transport;
 
 	/**
 	 * Centralized Action Scheduler service — used for schedule_job's
@@ -152,15 +158,15 @@ class WSN_Profile_Emitter {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_API_Client               $api_client API client.
-	 * @param WC_Payments_Action_Scheduler_Service $scheduler  Action Scheduler facade.
+	 * @param WSN_Profile_Transport                $transport Direct-to-WooPay Jetpack-signed transport.
+	 * @param WC_Payments_Action_Scheduler_Service $scheduler Action Scheduler facade.
 	 */
 	public function __construct(
-		WC_Payments_API_Client $api_client,
+		WSN_Profile_Transport $transport,
 		WC_Payments_Action_Scheduler_Service $scheduler
 	) {
-		$this->api_client = $api_client;
-		$this->scheduler  = $scheduler;
+		$this->transport = $transport;
+		$this->scheduler = $scheduler;
 	}
 
 	/**
@@ -214,7 +220,7 @@ class WSN_Profile_Emitter {
 				return;
 			}
 
-			$this->api_client->send_wsn_profile_payload( $payload );
+			$this->transport->send( $payload );
 
 			update_option( self::OPTION_LAST_SYNCED, time(), false );
 			update_option( self::OPTION_LAST_SYNCED_VERSION, (string) ( $payload['payload_version'] ?? '' ), false );

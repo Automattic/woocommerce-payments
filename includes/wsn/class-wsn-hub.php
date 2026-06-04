@@ -66,7 +66,7 @@ class WSN_Hub {
 		// Compatibility_Service.
 		if ( WC_Payments_Features::is_wsn_profile_emitter_enabled() ) {
 			$emitter = new WSN_Profile_Emitter(
-				WC_Payments::get_payments_api_client(),
+				new WSN_Profile_Transport(),
 				WC_Payments::get_action_scheduler_service()
 			);
 			$emitter->init_hooks();

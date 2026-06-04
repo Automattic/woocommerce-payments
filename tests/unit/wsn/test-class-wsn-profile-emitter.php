@@ -14,14 +14,14 @@
  *     the last-synced version, NO send fires. This is what makes the
  *     6h backstop cheap: ticks that find no change are free.
  *
- *  2. **Send → state update ordering** — on success, the API client is
+ *  2. **Send → state update ordering** — on success, the transport is
  *     called AND last_synced + last_synced_version are updated AND the
- *     last_error transient is cleared. On failure, the API client is
+ *     last_error transient is cleared. On failure, the transport is
  *     called AND state is NOT advanced AND last_error IS set. Ordering
  *     matters because the next push's skip-emit guard reads what this
  *     push wrote.
  *
- *  3. **Failure containment** — when the API client throws, execute_push
+ *  3. **Failure containment** — when the transport throws, execute_push
  *     never throws upward. AS handlers that throw cause AS to mark the
  *     action failed and retry on its own schedule, which would collide
  *     with our debounce+backstop retry model.
@@ -33,9 +33,9 @@
 class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * @var WC_Payments_API_Client|PHPUnit\Framework\MockObject\MockObject
+	 * @var WSN_Profile_Transport|PHPUnit\Framework\MockObject\MockObject
 	 */
-	private $api_client;
+	private $transport;
 
 	/**
 	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit\Framework\MockObject\MockObject
@@ -50,10 +50,10 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->scheduler  = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+		$this->transport = $this->createMock( WSN_Profile_Transport::class );
+		$this->scheduler = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 
-		$this->emitter = new WSN_Profile_Emitter( $this->api_client, $this->scheduler );
+		$this->emitter = new WSN_Profile_Emitter( $this->transport, $this->scheduler );
 
 		// Clean state between tests so prior runs don't poison the
 		// skip-emit guard.
@@ -90,9 +90,9 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_execute_push_sends_payload_on_first_run_when_no_last_synced_version() {
-		$this->api_client
+		$this->transport
 			->expects( $this->once() )
-			->method( 'send_wsn_profile_payload' )
+			->method( 'send' )
 			->with(
 				$this->callback(
 					function ( $payload ) {
@@ -128,9 +128,9 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Now the emitter should skip — same data = same version.
-		$this->api_client
+		$this->transport
 			->expects( $this->never() )
-			->method( 'send_wsn_profile_payload' );
+			->method( 'send' );
 
 		$this->emitter->execute_push();
 	}
@@ -142,16 +142,16 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 			'stale-' . str_repeat( 'f', 58 )
 		);
 
-		$this->api_client
+		$this->transport
 			->expects( $this->once() )
-			->method( 'send_wsn_profile_payload' );
+			->method( 'send' );
 
 		$this->emitter->execute_push();
 	}
 
-	public function test_execute_push_records_error_transient_when_api_client_throws() {
-		$this->api_client
-			->method( 'send_wsn_profile_payload' )
+	public function test_execute_push_records_error_transient_when_transport_throws() {
+		$this->transport
+			->method( 'send' )
 			->willThrowException( new \Exception( 'Test failure: server returned 500.' ) );
 
 		$this->emitter->execute_push();
@@ -171,8 +171,8 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		update_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED_VERSION, $known_prior_version );
 		update_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED, 1000 );
 
-		$this->api_client
-			->method( 'send_wsn_profile_payload' )
+		$this->transport
+			->method( 'send' )
 			->willThrowException( new \Exception( 'Boom.' ) );
 
 		$this->emitter->execute_push();
@@ -181,9 +181,9 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1000, WSN_Profile_Emitter::get_last_synced_time() );
 	}
 
-	public function test_execute_push_never_throws_when_api_client_throws() {
-		$this->api_client
-			->method( 'send_wsn_profile_payload' )
+	public function test_execute_push_never_throws_when_transport_throws() {
+		$this->transport
+			->method( 'send' )
 			->willThrowException( new \Exception( 'Catastrophe.' ) );
 
 		// If execute_push re-throws, this line is never reached and the
@@ -204,8 +204,8 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 			HOUR_IN_SECONDS
 		);
 
-		$this->api_client
-			->method( 'send_wsn_profile_payload' )
+		$this->transport
+			->method( 'send' )
 			->willReturn( [] );
 
 		$this->emitter->execute_push();
