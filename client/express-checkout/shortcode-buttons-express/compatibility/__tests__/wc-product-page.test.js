@@ -14,6 +14,15 @@ import '../wc-product-page';
 describe( 'ECE product page compatibility', () => {
 	afterEach( () => {
 		document.body.innerHTML = '';
+		// Clean up sessionStorage after each test
+		const keysToRemove = [];
+		for ( let i = 0; i < sessionStorage.length; i++ ) {
+			const key = sessionStorage.key( i );
+			if ( key && key.startsWith( 'wcpay_iapi_variation_' ) ) {
+				keysToRemove.push( key );
+			}
+		}
+		keysToRemove.forEach( ( key ) => sessionStorage.removeItem( key ) );
 	} );
 
 	describe( 'Classic shortcode form', () => {
@@ -302,6 +311,63 @@ describe( 'ECE product page compatibility', () => {
 			// attribute-parsing path.
 			expect( productData ).toStrictEqual( {
 				id: 105,
+				variation: [],
+			} );
+		} );
+
+		it( 'falls back to sessionStorage variation_id when DOM does not have it', () => {
+			// Simulate: user selected variation, was redirected to cart, came back,
+			// and the IAPI block lost the variation_id from DOM but we stored it.
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				'  <input type="hidden" name="add-to-cart" value="257" />',
+				'  <input type="hidden" name="product_id" value="257" />',
+				'  <input type="hidden" name="variation_id" value="" />',
+				'</form>',
+			].join( '' );
+
+			// Store the variation_id in sessionStorage (as would happen on variation select)
+			sessionStorage.setItem( 'wcpay_iapi_variation_257', '263' );
+
+			const productData = applyFilters(
+				'wcpay.express-checkout.cart-add-item',
+				{
+					variation: [],
+				}
+			);
+
+			// Should fall back to sessionStorage value
+			expect( productData ).toStrictEqual( {
+				id: 263,
+				variation: [],
+			} );
+
+			// Clean up
+			sessionStorage.removeItem( 'wcpay_iapi_variation_257' );
+		} );
+
+		it( 'falls back to parent product ID when no variation_id in DOM or sessionStorage', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				'  <input type="hidden" name="add-to-cart" value="257" />',
+				'  <input type="hidden" name="product_id" value="257" />',
+				'  <input type="hidden" name="variation_id" value="" />',
+				'</form>',
+			].join( '' );
+
+			// No stored variation_id
+			sessionStorage.removeItem( 'wcpay_iapi_variation_257' );
+
+			const productData = applyFilters(
+				'wcpay.express-checkout.cart-add-item',
+				{
+					variation: [],
+				}
+			);
+
+			// Falls back to parent product ID
+			expect( productData ).toStrictEqual( {
+				id: 257,
 				variation: [],
 			} );
 		} );

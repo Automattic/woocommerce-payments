@@ -13,7 +13,14 @@ import { getExpressCheckoutData } from 'wcpay/express-checkout/utils';
 import {
 	isIAPIBlock,
 	getIAPIVariationId,
+	getProductId,
 } from 'wcpay/utils/wc-product-page-selectors';
+
+// Helper to get sessionStorage key for this product
+const getVariationStorageKey = () => {
+	const productId = getProductId();
+	return productId ? `wcpay_iapi_variation_${ productId }` : null;
+};
 
 jQuery( ( $ ) => {
 	// Classic shortcode: listen for jQuery variation-change event.
@@ -27,8 +34,19 @@ jQuery( ( $ ) => {
 		'.wp-block-add-to-cart-with-options'
 	);
 	if ( blockRoot ) {
+		// Clear stored variation_id if it exists but no variation is now selected
+		const storageKey = getVariationStorageKey();
+		if ( storageKey && ! getIAPIVariationId() ) {
+			sessionStorage.removeItem( storageKey );
+		}
+
 		const updateButtonData = debounce( 250, () => {
-			console.log( ' >>> updateButtonData ' );
+			const variationId = getIAPIVariationId();
+			if ( variationId && storageKey ) {
+				sessionStorage.setItem( storageKey, variationId );
+			} else if ( storageKey ) {
+				sessionStorage.removeItem( storageKey );
+			}
 			doAction( 'wcpay.express-checkout.update-button-data' );
 		} );
 
@@ -78,12 +96,27 @@ addFilter(
 			// require). This is the same approach WooCommerce core uses when
 			// submitting the IAPI form.
 			const variationId = getIAPIVariationId();
+			const storageKey = getVariationStorageKey();
+			const storedVariationId = storageKey
+				? sessionStorage.getItem( storageKey )
+				: null;
+
 			if ( variationId ) {
 				return {
 					...productData,
 					id: variationId,
 					// Clear the variation array — not needed when sending
 					// the resolved variation ID directly.
+					variation: [],
+				};
+			}
+
+			// Fallback to sessionStorage if variation_id was persisted but DOM doesn't have it
+			// (e.g., after redirect back to product page with "Redirect to cart" enabled).
+			if ( storedVariationId ) {
+				return {
+					...productData,
+					id: parseInt( storedVariationId, 10 ),
 					variation: [],
 				};
 			}
