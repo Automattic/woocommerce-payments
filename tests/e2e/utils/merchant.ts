@@ -74,12 +74,19 @@ const expectSnackbarWithText = async (
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await ensureSupportPhoneIsFilled( page );
-	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	// The Save button is disabled until settings finish loading and a change is
+	// pending; clicking it while disabled blocks until the test timeout, so wait
+	// for it to be enabled first.
+	const saveButton = page.getByRole( 'button', { name: 'Save changes' } );
+	await expect( saveButton ).toBeEnabled();
+	await saveButton.click();
 	await expectSnackbarWithText( page, 'Settings saved.' );
 };
 
 export const saveMultiCurrencySettings = async ( page: Page ) => {
-	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	const saveButton = page.getByRole( 'button', { name: 'Save changes' } );
+	await expect( saveButton ).toBeEnabled();
+	await saveButton.click();
 	await expectSnackbarWithText( page, 'Currency settings updated.' );
 };
 
@@ -105,8 +112,15 @@ export const activateMulticurrency = async ( page: Page ) => {
 
 export const deactivateMulticurrency = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
-	await page.getByTestId( 'multi-currency-toggle' ).uncheck();
-	await saveWooPaymentsSettings( page );
+
+	// Only toggle + save when it is actually enabled; unchecking an already-off
+	// toggle is a no-op that leaves nothing to save (the Save button stays
+	// disabled). Mirrors the activate* guards.
+	const multiCurrencyToggle = page.getByTestId( 'multi-currency-toggle' );
+	if ( await multiCurrencyToggle.isChecked() ) {
+		await multiCurrencyToggle.uncheck();
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const addMulticurrencyWidget = async (
@@ -421,8 +435,12 @@ export const activateWooPay = async ( page: Page ) => {
 
 export const deactivateWooPay = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
-	await page.getByTestId( 'woopay-toggle' ).uncheck();
-	await saveWooPaymentsSettings( page );
+
+	const woopayToggle = page.getByTestId( 'woopay-toggle' );
+	if ( await woopayToggle.isChecked() ) {
+		await woopayToggle.uncheck();
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const ensureBlockSettingsPanelIsOpen = async ( page: Page ) => {
@@ -465,6 +483,10 @@ export const activateCaptureLater = async ( page: Page ) => {
 
 export const deactivateCaptureLater = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
-	await page.getByTestId( 'capture-later-checkbox' ).uncheck();
-	await saveWooPaymentsSettings( page );
+
+	const captureLaterCheckbox = page.getByTestId( 'capture-later-checkbox' );
+	if ( await captureLaterCheckbox.isChecked() ) {
+		await captureLaterCheckbox.uncheck();
+		await saveWooPaymentsSettings( page );
+	}
 };
