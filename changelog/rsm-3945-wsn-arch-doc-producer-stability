@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Architecture doc: lock producer-stability principle (WCPay emits canonical Profile payload shape; WooPay-side handler does the storefront-shape projection at merge time). Reverses earlier 'pre-align in composer' guidance.

@@ -1,6 +1,6 @@
 # WSN Profile Sync Architecture
 
-**Last updated:** 2026-06-04 — all architectural decisions resolved; RSM-3945 is unblocked.
+**Last updated:** 2026-06-04 — producer-stability principle locked: WCPay emits canonical; WooPay-side handler does storefront-shape projection at merge.
 How WSN Profile data flows from each WCPay merchant site to a new WooPay-server table keyed by `blog_id`, optimized for read-heavy shopper-facing access. Owned by RSM-3945 (Profile emitter) and the WooPay-side companion work (table + controller + storefront read-path merge).
 
 This doc supersedes the contradicted parts of WooPay's `docs/wsn/merchant-appearance-sync.md` (which has both a `wp_options`-per-blog and a `host`-keyed-custom-table version) and resolves the open questions flagged in `.claude/tmp/artifacts/RSM-3930/plan.md`.
@@ -142,30 +142,31 @@ Composed payload is ~5–20 KB serialized.
        host: parse_url(home_url(), PHP_URL_HOST),
        settings: WSN_Settings::get_all(),
        derivations: {
-         // Key names pre-aligned to the storefront contract — see
-         // "Storefront contract reconciliation" below for the why.
+         // Canonical WCPay-side names — see "Storefront contract
+         // reconciliation" below. WooPay's `/wsn/v1/stores/{host}`
+         // handler does the rename at merge time so WCPay stays
+         // decoupled from WooPay UI iteration.
          shop_name: ...,
-         description: ...,           // RENAMED from `tagline` (footer reads store.description)
-         logo_url: ...,              // passthrough to store.logo_url (closes WOOPAY-458)
-         logo_width: ...,            // for wordmark-swap aspect-ratio/resolution gate
-         logo_height: ...,
-         logo_source: ...,
+         tagline: ...,               // → store.description (rename on WooPay side)
+         logo_url: ...,              // → store.logo_url (passthrough; closes WOOPAY-458)
+         logo_attachment_id: ...,    // for downstream metadata lookups
+         default_logo_url, default_logo_source, logo_source,
          hero_image_url: ...,
-         contact_email: ...,
-         shipping_promise: ...,      // FLATTENED from free_shipping.human_summary (string)
-         return_policy: {            // grouped: URL + label; footer already linkifies
-           url: ...,
-           label: ...,
+         default_contact_email: ...,
+         shipping_regions: ...,      // []
+         free_shipping: {            // full object; WooPay flattens human_summary → store.shipping_promise at merge
+           human_summary, has_free_shipping, zones[]
          },
-         theme_type: ...,
-         shipping_regions: ...,
-         free_shipping: ...,         // full object retained for non-footer consumers
+         refund_page_url: ...,       // separate fields; WooPay bundles → store.return_policy{url,label} at merge
+         refund_page_label: ...,
+         theme_type: 'block' | 'classic',
        },
-       appearance: WC_Payments_Styles_Cache::get_woopay_appearance(),
-       font_rules: ...,
-       extracted_brand: ...,
-       logo_thumb_b64: <≤8KB base64 thumbnail, or null>,
-       location: {country, region, city}, // NO street, NO postcode
+       appearance: <stripe Elements appearance> | null,
+       font_rules: [...] | null,
+       logo_dimensions: { width, height } | null,  // for the wordmark-swap aspect-ratio gate
+       logo_thumb_b64: <≤8KB base64 thumbnail> | null,
+       location: { country, region, city },        // NO street, NO postcode
+       payload_version: sha256(serialized payload before this field),
      }
 
 4. SKIP-EMIT GUARD
@@ -216,7 +217,11 @@ End-to-end budget: trigger → DB write ≈ 60s (debounce) + ~500ms (POST round-
 
 ## Storefront contract reconciliation
 
-The WSN storefront on the WooPay side **already has consumer code wired** — the hero reads a merchant logo and a 4-column policies footer (About / Shipping / Returns / Contact) reads merchant policy fields. They render null today because the values aren't populated anywhere — the ES projection (`src/Shop/Marketplace/EsSource.php`) intentionally returns null for these fields, and per Option B (LOCKED 2026-05-31) it stays that way. The Profile push lights them up via the storefront `/wsn/v1/stores/{host}` handler, which reads the Profile table AFTER ES and merges the fields onto the store object. The composer payload is ~90% aligned with the storefront's `store.*` contract; the deltas below close the gap.
+The WSN storefront on the WooPay side **already has consumer code wired** — the hero reads a merchant logo and a 4-column policies footer (About / Shipping / Returns / Contact) reads merchant policy fields. They render null today because the values aren't populated anywhere — the ES projection (`src/Shop/Marketplace/EsSource.php`) intentionally returns null for these fields, and per Option B (LOCKED 2026-05-31) it stays that way. The Profile push lights them up via the storefront `/wsn/v1/stores/{host}` handler, which reads the Profile table AFTER ES and merges the fields onto the store object.
+
+**Layer ownership — producer-stability principle (LOCKED 2026-06-04):** WCPay emits the **canonical** WCPay-side shape (`derivations.tagline`, `derivations.free_shipping.human_summary`, separate `refund_page_url` + `refund_page_label`, etc.). The four field renames into the storefront contract (`store.description`, `store.shipping_promise`, `store.return_policy: {url, label}`) live on the **WooPay-side handler** — applied at merge time inside `/wsn/v1/stores/{host}`, alongside the Profile-table read. WCPay never knows or asserts the storefront field names; WooPay can rename freely without coordinated WCPay releases. The table below documents the mapping the WooPay handler applies — it is no longer "what the composer does," it is "what the WooPay handler does."
+
+> **Why the flip:** an earlier draft of this doc (and the handoff doc that informed it) recommended pre-aligning in the composer "because it's cheapest." That guidance optimized for one consumer at write time but coupled WCPay's release cadence to WooPay's UI naming. For a payments plugin handling money, producer stability outweighs the small WooPay-side cost of a 20-line projection. Canonical-emit was locked 2026-06-04; this section's "Change" column flipped from "in composer" to "in handler" accordingly.
 
 > **Source:** the field-by-field mapping was authored by the WooPay-side Claude Code session and lives at `.claude/tmp/artifacts/wsn-profile-storefront-handoff.md` (gitignored — local-only; reference but don't link from public docs). The on-wire references it points at: `client/shop/utils/marketplace-adapters.js::marketplaceStoreByUrlToStorefront`, `client/shop/components/shop-policies/index.js`, `client/shop/pages/storefront/index.js`, and `src/Shop/Marketplace/EsSource.php` — all in the woopay repo.
 
@@ -233,20 +238,20 @@ The WSN storefront on the WooPay side **already has consumer code wired** — th
 
 The `ShopPolicies` footer returns `null` when all four policy fields are empty — which is why most storefronts show no footer at all today.
 
-### The 4 reconciliations (composer payload → storefront contract)
+### The 4 reconciliations — applied by the WooPay-side `/wsn/v1/stores/{host}` handler
 
-| # | Composer field today | Storefront expects | Change | Linear |
+| # | Composer wire field | Storefront expects | Handler-side transform | Linear |
 |---|---|---|---|---|
-| 1 | `derivations.logo_url` computed but null on the index | `store.logo_url` (string) | **Passthrough** as `store.logo_url`. Also carry `logo_width` + `logo_height` — storefront wants to gate a wordmark-swap on aspect ratio + min resolution. | WOOPAY-458 |
-| 2 | `derivations.tagline` | `store.description` | **Rename to `description`** in composer output (footer reads `store.description`, not `store.tagline`). | — |
-| 3 | `derivations.free_shipping.human_summary` (nested) | `store.shipping_promise` (flat string) | **Flatten to `shipping_promise`** at the top level of `derivations`. Keep the full `free_shipping` object for non-footer consumers; the storefront just wants the summarizer string at the surface. | — |
-| 4 | `derivations.refund_page_url` + `derivations.refund_page_label` | `store.return_policy` | **Carry BOTH** as `return_policy: { url, label }`. Footer renders `<a href={url}>{label || url}</a>` — rendering already exists, just needs data. | RSM-3945 |
+| 1 | `derivations.logo_url` + `payload.logo_dimensions: {width, height}` | `store.logo_url` + dimensions metadata | **Passthrough** the URL; surface the dimensions for the wordmark-swap aspect-ratio gate. | WOOPAY-458 |
+| 2 | `derivations.tagline` | `store.description` | **Rename** (assign `store.description = derivations.tagline`). | — |
+| 3 | `derivations.free_shipping.human_summary` (nested) | `store.shipping_promise` (flat string) | **Flatten**: `store.shipping_promise = derivations.free_shipping?.human_summary ?? null`. The full `free_shipping` object remains in the payload for any non-footer consumer. | — |
+| 4 | `derivations.refund_page_url` + `derivations.refund_page_label` (two separate fields) | `store.return_policy` | **Bundle**: `store.return_policy = { url: derivations.refund_page_url, label: derivations.refund_page_label }`. Footer renders `<a href={url}>{label || url}</a>` — rendering already exists, just needs data. | RSM-3945 |
 
-### Decision: `return_policy` carries URL + label
+### Decision: composer emits the URL and label as separate fields; handler bundles
 
-**The user must be able to read the URL.** Plain-text rendering of a long refund-policy URL is unreadable and untrustworthy. The footer linkification path already exists on the WooPay side; it just needs data flowing into it. The composer's job is to supply that data.
+**The user must be able to read the URL.** Plain-text rendering of a long refund-policy URL is unreadable and untrustworthy. The footer linkification path already exists on the WooPay side; it just needs data flowing into it.
 
-**Resolution:** composer carries **both** the URL and the label as a `{ url, label }` object. The WooPay-side footer renders this as `<a href={url}>{label || url}</a>`. No WooPay-side change required — the rendering already supports this shape; today it renders nothing because the value is null.
+**Resolution:** the composer emits `derivations.refund_page_url` and `derivations.refund_page_label` as canonical separate fields (matching what the WCPay Profile UI already uses). The WooPay-side handler bundles them into `store.return_policy: { url, label }` at merge time, and the footer renders `<a href={url}>{label || url}</a>` against the bundled shape. The bundling lives on the WooPay side because (a) it is a display concern, not a data concern, and (b) keeping canonical fields separate means a future surface that wants just the URL or just the label doesn't have to re-split.
 
 ### Anti-patterns (from the handoff — enforce in this path)
 
