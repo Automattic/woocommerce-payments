@@ -1,6 +1,6 @@
 # WSN Profile Sync Architecture
 
-**Last updated:** 2026-05-30
+**Last updated:** 2026-06-04 — all architectural decisions resolved; RSM-3945 is unblocked.
 How WSN Profile data flows from each WCPay merchant site to a new WooPay-server table keyed by `blog_id`, optimized for read-heavy shopper-facing access. Owned by RSM-3945 (Profile emitter) and the WooPay-side companion work (table + controller + storefront read-path merge).
 
 This doc supersedes the contradicted parts of WooPay's `docs/wsn/merchant-appearance-sync.md` (which has both a `wp_options`-per-blog and a `host`-keyed-custom-table version) and resolves the open questions flagged in `.claude/tmp/artifacts/RSM-3930/plan.md`.
@@ -153,7 +153,7 @@ Composed payload is ~5–20 KB serialized.
          hero_image_url: ...,
          contact_email: ...,
          shipping_promise: ...,      // FLATTENED from free_shipping.human_summary (string)
-         return_policy: {            // grouped: URL + label; footer needs linkification (RSM-3945)
+         return_policy: {            // grouped: URL + label; footer already linkifies
            url: ...,
            label: ...,
          },
@@ -240,25 +240,18 @@ The `ShopPolicies` footer returns `null` when all four policy fields are empty �
 | 1 | `derivations.logo_url` computed but null on the index | `store.logo_url` (string) | **Passthrough** as `store.logo_url`. Also carry `logo_width` + `logo_height` — storefront wants to gate a wordmark-swap on aspect ratio + min resolution. | WOOPAY-458 |
 | 2 | `derivations.tagline` | `store.description` | **Rename to `description`** in composer output (footer reads `store.description`, not `store.tagline`). | — |
 | 3 | `derivations.free_shipping.human_summary` (nested) | `store.shipping_promise` (flat string) | **Flatten to `shipping_promise`** at the top level of `derivations`. Keep the full `free_shipping` object for non-footer consumers; the storefront just wants the summarizer string at the surface. | — |
-| 4 | `derivations.refund_page_url` + `derivations.refund_page_label` | `store.return_policy` | **Carry BOTH** as `return_policy: { url, label }`. See decision callout below. | RSM-3945 |
+| 4 | `derivations.refund_page_url` + `derivations.refund_page_label` | `store.return_policy` | **Carry BOTH** as `return_policy: { url, label }`. Footer renders `<a href={url}>{label || url}</a>` — rendering already exists, just needs data. | RSM-3945 |
 
-### Decision: `return_policy` carries URL + label (linkification required)
+### Decision: `return_policy` carries URL + label
 
-**The user must be able to read the URL.** Plain-text rendering of a long refund-policy URL is unreadable and untrustworthy. The footer renders `return_policy` as plain text today (`<p>{text}</p>`), so emitting either field alone is wrong:
+**The user must be able to read the URL.** Plain-text rendering of a long refund-policy URL is unreadable and untrustworthy. The footer linkification path already exists on the WooPay side; it just needs data flowing into it. The composer's job is to supply that data.
 
-- **Label only** → user can't navigate or verify destination.
-- **URL only as text** → unreadable; user can't tell if it's the merchant's site.
-
-**Resolution:** composer carries **both** the URL and the label. The WooPay-side footer needs a linkification update so `return_policy` renders as a clickable `<a href={url}>{label || url}</a>`, not raw text. **This is RSM-3945 work that requires coordinated WooPay-side change** — the merchant-side composer payload alone doesn't fix the UI. See "Cross-repo decisions" below.
+**Resolution:** composer carries **both** the URL and the label as a `{ url, label }` object. The WooPay-side footer renders this as `<a href={url}>{label || url}</a>`. No WooPay-side change required — the rendering already supports this shape; today it renders nothing because the value is null.
 
 ### Anti-patterns (from the handoff — enforce in this path)
 
 - **No name-search / fuzzy resolution fallback** anywhere in this Profile path. Resolving merchant/store data by approximate name match on a payments surface risks binding the wrong store's data — documented WSN no-go. Use `blog_id` exclusively. See WOOPAY-454.
 - **No address PII** — never emit `woocommerce_store_address*` or `woocommerce_store_postcode`. Country / region / city only. Already documented under "Privacy invariants" and enforced 3× (composer allowlist, controller schema, unit tests).
-
-### Cross-repo decisions (open)
-
-- **`return_policy` footer linkification** — the composer change in this repo (carry `url` + `label`) is necessary but not sufficient. The WooPay-side `client/shop/components/shop-policies/index.js` needs to render an `<a>` for `return_policy` instead of `<p>{text}</p>`. Flag on RSM-3945; coordinate with WooPay engineering before flipping the storefront read flag in Phase 3 of the rollout. Without the WooPay-side change, shipping the new composer payload renders a raw URL string in the footer — worse than today's null-collapse-to-no-footer behavior.
 
 ## Table schema
 
@@ -586,7 +579,7 @@ The WooPay-side `docs/wsn/merchant-appearance-sync.md` has an internal contradic
 - Auth: Jetpack signature
 - Endpoint path: `/wsn/v1/merchants/{blog_id}/profile`
 
-That woopay-repo doc should be edited or marked superseded by whoever owns it. The api-contract.md author needs to sign off on the Jetpack-over-Bearer auth change.
+That woopay-repo doc should be edited or marked superseded by whoever owns it. `api-contract.md` §1 currently specifies Bearer auth — superseded by the Jetpack-signature decision (locked 2026-06-04; rationale below in "Resolved decisions"). The doc needs a follow-up edit but the choice is not blocked on it.
 
 ## References
 
@@ -615,5 +608,5 @@ That woopay-repo doc should be edited or marked superseded by whoever owns it. T
   - `src/Shop/Marketplace/EsSource.php::project_store_full` — ES projection (UNCHANGED under Option B; Profile data is merged at the storefront handler, NOT here)
 - **External:**
   - `docs/wsn/merchant-appearance-sync.md` (woopay repo) — partially superseded by this doc
-  - `docs/wsn/api-contract.md` (woopay repo) — §1 (auth) needs revision
+  - `docs/wsn/api-contract.md` (woopay repo) — §1 (auth) specifies Bearer, superseded by Jetpack signature decision (locked 2026-06-04). Needs a follow-up edit but the choice is not blocked on it.
   - `docs/wsn/endpoints.md` (woopay repo) — current storefront read shape
