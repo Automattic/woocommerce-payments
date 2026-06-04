@@ -622,6 +622,7 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-derivations.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-payload-composer.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-emitter.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-hub.php';
 			( new WSN_Hub() )->init_hooks();
 		}
