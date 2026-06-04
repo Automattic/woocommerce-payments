@@ -115,6 +115,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-derivations.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-payload-composer.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-transport.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-emitter.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-hub.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
