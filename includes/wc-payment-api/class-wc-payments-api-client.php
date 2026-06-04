@@ -82,7 +82,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
-	const WSN_PROFILE_API              = 'wsn/profile';
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 	const ADDRESS_AUTOCOMPLETE_TOKEN   = 'address-autocomplete-token';
 	const STORE_SETUP_API              = 'accounts/store_setup';
@@ -2209,54 +2208,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 
 		return $response;
-	}
-
-	/**
-	 * Send a WSN Profile payload to the WooPay server.
-	 *
-	 * Routes through the Jetpack-signed POST path
-	 * (`/wpcom/v2/sites/{blog_id}/wcpay/wsn/profile`) — `is_site_specific=true`
-	 * is the default, which causes the blog_id to be derived from the Jetpack
-	 * connection and the request to be signed with the blog token. The WooPay
-	 * receiver validates the signature via its standard
-	 * `is_valid_request_signature_within_acceptance_window` permission_callback
-	 * and recovers blog_id from the envelope.
-	 *
-	 * Owned by the Profile sync emitter (RSM-3945).
-	 *
-	 * @param array $payload Canonical Profile payload built by `WSN_Profile_Payload_Composer::compose()`.
-	 *                        Wire shape is the stable WCPay→WooPay contract documented in
-	 *                        `.claude/docs/wsn-profile-sync-architecture.md`.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception When not connected or the request fails.
-	 */
-	public function send_wsn_profile_payload( $payload ) {
-		return $this->request( $payload, self::WSN_PROFILE_API, self::POST );
-	}
-
-	/**
-	 * Delete the merchant's WSN Profile row on the WooPay server.
-	 *
-	 * Called from `uninstall.php` as a fire-and-forget cleanup when the
-	 * merchant uninstalls (not just deactivates) the plugin. Reaches the
-	 * same Jetpack-signed endpoint as `send_wsn_profile_payload`; the
-	 * receiver inspects the HTTP method and routes to its delete path.
-	 *
-	 * Best-effort. The architecture doc's "Failure modes" section
-	 * explicitly notes uninstall context is unreliable for network calls
-	 * (no admin runtime, may be missing connectivity, target may be down)
-	 * — the load-bearing cleanup path is the WooPay-side reconciliation
-	 * cron, which deletes rows whose `last_seen_at` falls behind the
-	 * 7-day threshold.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception When not connected or the request fails.
-	 */
-	public function delete_wsn_profile_payload() {
-		return $this->request( [], self::WSN_PROFILE_API, self::DELETE );
 	}
 
 	/**
