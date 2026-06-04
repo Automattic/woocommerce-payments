@@ -139,7 +139,7 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 
 		$dispute_id = $input['dispute_id'];
 		$evidence   = ( isset( $input['evidence'] ) && is_array( $input['evidence'] ) ) ? $input['evidence'] : [];
-		$submit     = ! empty( $input['submit'] );
+		$submit     = true === ( $input['submit'] ?? false );
 		$metadata   = ( isset( $input['metadata'] ) && is_array( $input['metadata'] ) ) ? $input['metadata'] : [];
 
 		return self::get_dispute_service()->submit_evidence( $dispute_id, $evidence, $submit, $metadata );
