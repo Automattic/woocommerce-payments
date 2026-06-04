@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+WSN Profile sync: bound logo thumbnail memory by skipping source images >5MB (GD/Imagick decode the full source into memory before resizing; could OOM Action Scheduler workers on print-quality logos). Storefront falls back to Photon-served full-size URL when the inline thumb is null.

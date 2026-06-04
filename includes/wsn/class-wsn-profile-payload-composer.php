@@ -78,6 +78,22 @@ class WSN_Profile_Payload_Composer {
 	const LOGO_THUMB_EDGE_PX = 40;
 
 	/**
+	 * Maximum source-image file size we'll attempt to thumbnail.
+	 *
+	 * GD and Imagick both decode the entire source image into memory
+	 * before resizing. A 10MB PNG can expand to 40-80MB of uncompressed
+	 * pixel data inside an Action Scheduler worker that shares PHP
+	 * memory with the rest of the request. Above this ceiling, skip
+	 * the thumbnail entirely — storefront falls back to the
+	 * Photon-served full-size URL, which is correct but slower at
+	 * first paint. Better to lose the optimization than to OOM the
+	 * AS worker.
+	 *
+	 * @var int
+	 */
+	const MAX_LOGO_SOURCE_BYTES = 5 * MB_IN_BYTES;
+
+	/**
 	 * Compose the wire payload.
 	 *
 	 * @return array Canonical Profile payload — see class docblock for
@@ -284,6 +300,14 @@ class WSN_Profile_Payload_Composer {
 
 		$path = get_attached_file( $attachment_id );
 		if ( ! is_string( $path ) || ! file_exists( $path ) ) {
+			return null;
+		}
+
+		// Memory guard — wp_get_image_editor() decodes the full source
+		// into memory before resizing. Refuse oversized sources rather
+		// than risk OOMing the AS worker on print-quality logos.
+		$file_size = @filesize( $path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		if ( false === $file_size || $file_size > self::MAX_LOGO_SOURCE_BYTES ) {
 			return null;
 		}
 
