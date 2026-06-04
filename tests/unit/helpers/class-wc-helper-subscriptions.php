@@ -265,8 +265,8 @@ class WC_Subscriptions {
 		self::$wcs_cart_contains_resubscribe = $callback;
 	}
 
-	public static function wcs_cart_contains_switches( $function ) {
-		self::$wcs_cart_contains_switches = $function;
+	public static function wcs_cart_contains_switches( $callback ) {
+		self::$wcs_cart_contains_switches = $callback;
 	}
 
 	public static function wcs_create_renewal_order( $callback ) {
