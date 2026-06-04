@@ -223,15 +223,9 @@ jQuery( ( $ ) => {
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 			const hasSubscription =
 				getExpressCheckoutData( 'has_subscription' ) ?? false;
-			let setupFutureUsage = hasSubscription ? 'off_session' : null;
-			if (
-				Object.prototype.hasOwnProperty.call(
-					creationOptions,
-					'setupFutureUsage'
-				)
-			) {
-				setupFutureUsage = creationOptions.setupFutureUsage;
-			}
+			const {
+				setupFutureUsage = hasSubscription ? 'off_session' : null,
+			} = creationOptions;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -512,6 +506,11 @@ jQuery( ( $ ) => {
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
 					currency: getExpressCheckoutData( 'product' )?.currency,
+					setupFutureUsage: getExpressCheckoutData(
+						'has_subscription'
+					)
+						? 'off_session'
+						: null,
 				} );
 			} else {
 				expressCheckoutButtonUi.hideContainer();
