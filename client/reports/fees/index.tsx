@@ -50,6 +50,10 @@ export const FeesReport = ( {
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	const [ view, setView ] = useFeesView();
+	// Stable reference date so date-filter telemetry presets are matched
+	// against a single `now` for the lifetime of the report, even across a
+	// day boundary.
+	const stableDateFilterNow = useRef( new Date() ).current;
 	const [ dataViewsContainer, setDataViewsContainer ] =
 		useState< HTMLDivElement | null >( null );
 	const initialEmptyHeadingId = useId();
@@ -79,6 +83,7 @@ export const FeesReport = ( {
 		view,
 		setView,
 		popoverId: customDatePopoverId,
+		now: stableDateFilterNow,
 	} );
 
 	const fields = useMemo(

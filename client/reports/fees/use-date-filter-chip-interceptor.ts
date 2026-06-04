@@ -88,6 +88,10 @@ export interface UseDateFilterChipInterceptorOptions {
 	view: View;
 	setView: ( next: View ) => void;
 	popoverId: string;
+	// Stable reference date for preset matching in telemetry. Threading a
+	// single `now` keeps preset labels consistent with the rest of the report
+	// across day boundaries. Defaults to the current time when omitted.
+	now?: Date;
 }
 
 export interface DateFilterChipInterceptor {
@@ -115,6 +119,7 @@ export const useDateFilterChipInterceptor = ( {
 	view,
 	setView,
 	popoverId,
+	now,
 }: UseDateFilterChipInterceptorOptions ): DateFilterChipInterceptor => {
 	const [ anchor, setAnchor ] = useState< HTMLElement | null >( null );
 	const [ isPopoverOpen, setIsPopoverOpen ] = useState( false );
@@ -323,7 +328,7 @@ export const useDateFilterChipInterceptor = ( {
 				findDateFilter( view.filters )?.value !== undefined;
 
 			recordEvent( 'wcpay_reports_fees_date_filter_change', {
-				preset: matchPreset( nextDateFilter ),
+				preset: matchPreset( nextDateFilter, now ),
 				range_days: getDateRangeDays( nextDateFilter ),
 				is_initial_apply: ! hadPreviousDate,
 			} );
@@ -338,7 +343,7 @@ export const useDateFilterChipInterceptor = ( {
 				} ),
 			} );
 		},
-		[ setView, view ]
+		[ setView, view, now ]
 	);
 
 	return {
