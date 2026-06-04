@@ -29,6 +29,7 @@ import { Button, Notice } from '@wordpress/components';
 
 import BrandingCard from './branding-card';
 import ContactPoliciesCard from './contact-policies-card';
+import ProfileSyncStatus from './profile-sync-status';
 import { colors, spacing } from '../tokens';
 import { formatApiError } from '../utils/format-api-error';
 
@@ -88,6 +89,7 @@ const profilesEqual = ( a, b ) => {
 const ProfileTab = ( {
 	settings,
 	derivations = {},
+	sync = null,
 	isLoading = false,
 	loadError = null,
 	onRetry,
@@ -276,6 +278,8 @@ const ProfileTab = ( {
 					</Notice>
 				</div>
 			) }
+
+			<ProfileSyncStatus sync={ sync } onRefresh={ refreshSettings } />
 
 			<BrandingCard
 				settings={ localSettings }

@@ -68,6 +68,7 @@ const WsnHubApp = () => {
 	// derivations (logo URL, hero URL, refund page label, etc.).
 	const [ settings, setSettings ] = useState( null );
 	const [ derivations, setDerivations ] = useState( {} );
+	const [ sync, setSync ] = useState( null );
 	const [ isLoadingSettings, setIsLoadingSettings ] = useState( true );
 	const [ settingsError, setSettingsError ] = useState( null );
 
@@ -80,6 +81,7 @@ const WsnHubApp = () => {
 			} );
 			setSettings( payload?.settings ?? {} );
 			setDerivations( payload?.derivations ?? {} );
+			setSync( payload?.sync ?? null );
 			setIsLoadingSettings( false );
 		} catch ( e ) {
 			setSettingsError( formatApiError( e ) );
@@ -87,6 +89,7 @@ const WsnHubApp = () => {
 			// releases and the error Notice can render with a Retry button.
 			setSettings( {} );
 			setDerivations( {} );
+			setSync( null );
 			setIsLoadingSettings( false );
 		}
 	}, [] );
@@ -178,6 +181,7 @@ const WsnHubApp = () => {
 								<ProfileTab
 									settings={ settings }
 									derivations={ derivations }
+									sync={ sync }
 									isLoading={ isLoadingSettings }
 									loadError={ settingsError }
 									onRetry={ loadSettings }
