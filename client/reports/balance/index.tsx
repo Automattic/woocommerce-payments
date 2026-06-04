@@ -33,6 +33,7 @@ import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
 import { BalanceDateFilterNowContext } from './context';
 import {
+	getRangeDays,
 	getRowLabel,
 	hasBalanceActivity,
 	hasKeys,
@@ -55,16 +56,6 @@ const woopaymentsBusinessDetails = [
 	'60 29th Street #343',
 	'San Francisco, CA, 94110, US',
 ];
-
-const getRangeDays = ( start?: string, end?: string ): number | null => {
-	if ( ! start || ! end ) {
-		return null;
-	}
-
-	return Math.round(
-		( new Date( end ).getTime() - new Date( start ).getTime() ) / 86400000
-	);
-};
 
 const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	const depth = getRowDepth( row );
@@ -251,6 +242,42 @@ export const BalanceReport = ( {
 	);
 
 	useEffect( () => {
+		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			recordEvent( 'wcpay_reports_balance_load_success', {
+				currency,
+				has_activity: hasActivity,
+				visible_row_count: visibleRows.length,
+				range_days: getRangeDays(
+					displayPeriod.start,
+					displayPeriod.end
+				),
+			} );
+		}
+
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
+		if ( reachedErrorTerminal ) {
+			recordEvent( 'wcpay_reports_balance_load_error', {
+				error_type: hasStoreError ? 'store' : 'malformed',
+				range_days: getRangeDays( period.start, period.end ),
+			} );
+		}
+	}, [
+		currency,
+		displayPeriod.end,
+		displayPeriod.start,
+		hasActivity,
+		hasError,
+		hasStoreError,
+		isLoading,
+		period.end,
+		period.start,
+		visibleRows.length,
+	] );
+
+	useEffect( () => {
 		if (
 			hasError &&
 			! previousErrorRef.current &&
@@ -268,8 +295,8 @@ export const BalanceReport = ( {
 		// `isLoading=true` after invalidateResolution, but the loading
 		// skeleton still renders because `isLoading` wins in the content
 		// branch — so gate on `isLoading` alone here. The ref is consumed
-		// only at the terminal state (success below or the error branch
-		// above) so we can also restore focus to the toolbar on
+		// only at the terminal state (success or error below) so we can also
+		// restore focus to the toolbar on
 		// Reload → success.
 		if ( reloadRequestedRef.current && isLoading ) {
 			loadingHeadingRef.current?.focus();
@@ -284,16 +311,6 @@ export const BalanceReport = ( {
 		}
 
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
-			recordEvent( 'wcpay_reports_balance_load_success', {
-				currency,
-				has_activity: hasActivity,
-				visible_row_count: visibleRows.length,
-				range_days: getRangeDays(
-					displayPeriod.start,
-					displayPeriod.end
-				),
-			} );
-
 			if ( reloadRequestedRef.current ) {
 				toolbarRef.current
 					?.querySelector< HTMLButtonElement >(
@@ -327,27 +344,12 @@ export const BalanceReport = ( {
 		// Consume the ref on the error terminal too, so a subsequent
 		// non-Reload error doesn't inherit the previous click's intent.
 		if ( reachedErrorTerminal ) {
-			recordEvent( 'wcpay_reports_balance_load_error', {
-				error_type: hasStoreError ? 'store' : 'malformed',
-				range_days: getRangeDays( period.start, period.end ),
-			} );
 			reloadRequestedRef.current = false;
 		}
 
 		previousLoadingRef.current = isLoading;
 		previousErrorRef.current = hasError;
-	}, [
-		currency,
-		displayPeriod.end,
-		displayPeriod.start,
-		hasActivity,
-		hasError,
-		hasStoreError,
-		isLoading,
-		period.end,
-		period.start,
-		visibleRows.length,
-	] );
+	}, [ hasError, isLoading ] );
 
 	useEffect( () => {
 		if ( ! printScopeActive ) {

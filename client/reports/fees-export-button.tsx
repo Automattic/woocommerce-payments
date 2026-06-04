@@ -151,7 +151,7 @@ export const FeesExportButton: React.FC = () => {
 		}
 
 		recordEvent( 'wcpay_csv_export_click', {
-			row_type: 'fees_report',
+			row_type: 'fees',
 			source: 'payments_reports',
 			exported_row_count: exportTotalRows,
 		} );

@@ -6,8 +6,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { recordEvent } from 'tracks';
 
-const mockRecordEvent = jest.fn();
 const mockCreateNotice = jest.fn();
 const mockGetQuery = jest.fn();
 const mockRequestReportExport = jest.fn();
@@ -16,8 +16,12 @@ const mockGetReportsFeesSummary = jest.fn();
 const mockGetFeesCSVRequestURL = jest.fn();
 
 jest.mock( 'tracks', () => ( {
-	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
+	recordEvent: jest.fn(),
 } ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: () => ( { createNotice: mockCreateNotice } ),
@@ -109,7 +113,7 @@ describe( 'FeesExportButton', () => {
 		expect( mockRecordEvent ).toHaveBeenCalledWith(
 			'wcpay_csv_export_click',
 			{
-				row_type: 'fees_report',
+				row_type: 'fees',
 				source: 'payments_reports',
 				exported_row_count: 42,
 			}

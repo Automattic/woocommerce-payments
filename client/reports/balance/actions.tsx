@@ -18,6 +18,7 @@ import { getVisibleBalanceRows } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
 import { getBalanceCSV, getBalanceExportFileName } from './format';
 import {
+	getRangeDays,
 	hasBalanceActivity,
 	hasKeys,
 	isBalanceSummaryMalformed,
@@ -30,11 +31,7 @@ const getActionEventPayload = (
 ) => ( {
 	currency,
 	visible_row_count: visibleRowCount,
-	range_days: Math.round(
-		( new Date( period.end ).getTime() -
-			new Date( period.start ).getTime() ) /
-			86400000
-	),
+	range_days: getRangeDays( period.start, period.end ),
 } );
 
 const getExportErrorMessage = ( exportError: unknown ): string => {
@@ -120,7 +117,7 @@ export const BalanceActions = (): JSX.Element => {
 	};
 	const disabledHelpText = getDisabledHelpText();
 
-	const onExport = async () => {
+	const onExport = () => {
 		if ( actionsDisabled ) {
 			return;
 		}
@@ -134,7 +131,7 @@ export const BalanceActions = (): JSX.Element => {
 		recordEvent( 'wcpay_reports_balance_export_click', payload );
 
 		try {
-			await downloadCSVFile(
+			downloadCSVFile(
 				getBalanceExportFileName( displayPeriod ),
 				getBalanceCSV( {
 					visibleRows,

@@ -73,7 +73,7 @@ export const useReportExport = () => {
 		 */
 		onSuccess?: () => void;
 		/**
-		 * Callback invoked when the export request fails or polling times out.
+		 * Callback invoked when polling times out after the maximum number of retries.
 		 */
 		onError?: ( details: { reason: 'request' | 'timeout' } ) => void;
 	}

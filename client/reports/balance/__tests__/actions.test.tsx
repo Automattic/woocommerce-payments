@@ -68,6 +68,7 @@ jest.mock( 'wcpay/utils/date-time', () => ( {
 import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
 import { BalanceActions } from '../actions';
 import { getVisibleBalanceRows } from '../rows';
+import { getRangeDays } from '../utils';
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
@@ -82,11 +83,6 @@ const dateFilterValue = {
 	operator: 'between',
 	value: [ '2026-04-01', '2026-04-30' ],
 };
-
-const getRangeDays = ( start: string, end: string ): number =>
-	Math.round(
-		( new Date( end ).getTime() - new Date( start ).getTime() ) / 86400000
-	);
 
 const expectedPayload = {
 	currency: balanceSummaryFixture.currency,
