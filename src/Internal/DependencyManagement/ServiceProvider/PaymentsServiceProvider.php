@@ -17,6 +17,7 @@ use WCPay\Internal\Service\DisputeService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
+use WCPay\Internal\Service\FileService;
 use WCPay\Internal\Service\RefundService;
 use WCPay\Internal\Service\SessionService;
 
@@ -35,6 +36,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		DuplicatePaymentPreventionService::class,
 		DisputeService::class,
 		RefundService::class,
+		FileService::class,
 	];
 
 	/**
@@ -57,6 +59,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		$container->addShared( RefundService::class );
 
 		$container->addShared( DisputeService::class )
+			->addArgument( WC_Payments_API_Client::class );
+
+		$container->addShared( FileService::class )
 			->addArgument( WC_Payments_API_Client::class );
 	}
 }
