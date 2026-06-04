@@ -35,7 +35,7 @@ use Automattic\Jetpack\Connection\Rest_Authentication;
  * authenticates the request; WP cookie auth is not part of this path.
  *
  * Response shape: identical to `WSN_Profile_Payload_Composer::compose()`.
- * This endpoint and the POST emitter (`WC_Payments_API_Client::send_wsn_profile_payload`)
+ * This endpoint and the POST emitter (`WSN_Profile_Transport::send`)
  * deliver the same canonical payload — only the trigger direction
  * differs (push vs. pull).
  *
