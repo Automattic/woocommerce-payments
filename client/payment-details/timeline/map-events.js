@@ -464,7 +464,6 @@ const refundReasonLabels = {
 	),
 };
 
-// Conditionally adds the refund reason to the timeline when one was captured.
 const getRefundReason = ( event ) => {
 	if ( ! event.reason ) {
 		return '';
