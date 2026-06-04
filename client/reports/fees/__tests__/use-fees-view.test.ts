@@ -365,6 +365,12 @@ describe( 'useFeesView', () => {
 			'wcpay_reports_fees_filter_change',
 			expect.anything()
 		);
+		// Date telemetry is owned by useDateFilterChipInterceptor; useFeesView
+		// must not emit it directly, or the event would be double-tracked.
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_date_filter_change',
+			expect.anything()
+		);
 	} );
 
 	it( 'records a date filter reset when an applied date filter is removed', () => {
