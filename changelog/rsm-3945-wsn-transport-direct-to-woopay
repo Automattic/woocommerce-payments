@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+WSN Profile sync: route Profile push directly to the WooPay host (pay.woo.com/wp-json/wsn/v1/merchants/{blog_id}/profile) via Jetpack-signed Client::remote_request, instead of the WCPay backend path that had no receiver. Feature is behind two off-by-default flags.
