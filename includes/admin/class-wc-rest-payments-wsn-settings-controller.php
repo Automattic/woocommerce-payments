@@ -108,149 +108,17 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	}
 
 	/**
-	 * Compute the values the Profile tab needs that aren't stored as WSN
-	 * options — they're derived from WC core options, the WP site identity,
-	 * the active theme, the shipping zone configuration, or the resolved
-	 * attachment URLs.
+	 * Compute the Profile-tab derivations.
 	 *
-	 * Returns null for any field that doesn't resolve so the React UI can
-	 * render a placeholder. Never throws — degrades silently when WC isn't
-	 * fully loaded.
+	 * Thin delegator to `WSN_Derivations::compute()`. Lives separately so
+	 * the upcoming Profile sync emitter (RSM-3945) can call the same
+	 * derivation logic without instantiating this controller in a
+	 * background-job context.
 	 *
 	 * @return array
 	 */
 	private function compute_derivations(): array {
-		// Image URLs resolve through wp_get_attachment_url which returns false
-		// when the attachment is missing — coerce to null for a cleaner JSON
-		// contract on the client.
-		$resolve_attachment_url = static function ( ?int $attachment_id ): ?string {
-			if ( null === $attachment_id || $attachment_id <= 0 ) {
-				return null;
-			}
-			$url = wp_get_attachment_url( $attachment_id );
-			return is_string( $url ) ? $url : null;
-		};
-
-		$logo_override_id = WSN_Settings::get_logo_override_id();
-
-		// Build the fallback chain that determines what shows when the
-		// merchant hasn't set a WSN override:
-		//
-		// 1. Site logo — `theme_mod custom_logo` (classic themes) OR
-		// `option site_logo` (block / FSE themes set via the Site
-		// Editor). Block themes never populate `custom_logo`, so
-		// checking only one path silently misses half of installs.
-		// Prefer custom_logo when both are set.
-		// 2. Site icon (favicon) — many small-store merchants have only
-		// a favicon and no proper site logo; using it as a brand
-		// mark in WSN is better than rendering "No logo".
-		//
-		// `default_logo_*` exposes both the URL and the source-of-truth
-		// so the editor UI can tell the merchant which fallback is in
-		// use ('Using your site logo' vs. 'Using your site icon — set a
-		// proper site logo in the Site Editor').
-		$site_logo_id = (int) get_theme_mod( 'custom_logo' );
-		if ( $site_logo_id <= 0 ) {
-			$site_logo_id = (int) get_option( 'site_logo', 0 );
-		}
-
-		$default_logo_url    = null;
-		$default_logo_source = 'none';
-		if ( $site_logo_id > 0 ) {
-			$default_logo_url    = $resolve_attachment_url( $site_logo_id );
-			$default_logo_source = null === $default_logo_url ? 'none' : 'site_logo';
-		}
-		if ( null === $default_logo_url ) {
-			$site_icon_id = (int) get_option( 'site_icon', 0 );
-			if ( $site_icon_id > 0 ) {
-				$default_logo_url    = $resolve_attachment_url( $site_icon_id );
-				$default_logo_source = null === $default_logo_url ? 'none' : 'site_icon';
-			}
-		}
-
-		$override_logo_url = $resolve_attachment_url( $logo_override_id );
-		$logo_url          = $override_logo_url ?? $default_logo_url;
-
-		$refund_page_id    = WSN_Settings::get_refund_page_id();
-		$refund_page_label = null;
-		$refund_page_url   = null;
-		if ( null !== $refund_page_id && $refund_page_id > 0 ) {
-			$post = get_post( $refund_page_id );
-			if ( $post instanceof WP_Post && 'publish' === $post->post_status ) {
-				$refund_page_label = get_the_title( $post );
-				$refund_page_url   = (string) get_permalink( $post );
-			}
-		}
-
-		// Synced-from-source fields render readonly in the Profile UI — the
-		// merchant edits them at their source (WP Settings > General for the
-		// site title + tagline via blogname/blogdescription, WC > Shipping for
-		// zones). Sending them in this payload prevents the Profile tab from
-		// needing additional REST calls.
-		$shop_name = (string) get_bloginfo( 'name' );
-		$tagline   = (string) get_bloginfo( 'description' );
-
-		$shipping_regions = $this->collect_shipping_region_names();
-
-		return [
-			'logo_url'              => $logo_url,
-			// `default_logo_url` is what shows when the merchant clears
-			// the override — could be the site logo OR the site icon.
-			// `default_logo_source` tells the editor which one so the
-			// "Synced from …" copy can be accurate ('site_logo' vs
-			// 'site_icon' vs 'none').
-			'default_logo_url'      => $default_logo_url,
-			'default_logo_source'   => $default_logo_source,
-			'logo_source'           => null !== $logo_override_id && null !== $override_logo_url
-				? 'override'
-				: $default_logo_source,
-			'hero_image_url'        => $resolve_attachment_url( WSN_Settings::get_hero_image_id() ),
-			'shop_name'             => $shop_name,
-			'tagline'               => $tagline,
-			'default_contact_email' => WSN_Settings::resolve_default_contact_email(),
-			'shipping_regions'      => $shipping_regions,
-			'free_shipping'         => $this->compute_free_shipping(),
-			'refund_page_label'     => $refund_page_label,
-			'refund_page_url'       => $refund_page_url,
-			'theme_type'            => function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ? 'block' : 'classic',
-		];
-	}
-
-	/**
-	 * Collect human-readable zone names — what the Profile tab shows in the
-	 * readonly "Shipping regions" field.
-	 *
-	 * @return string[]
-	 */
-	private function collect_shipping_region_names(): array {
-		// Use the data-store class directly: `WC()->shipping()` returns
-		// WC_Shipping (the singleton), which does NOT have a get_shipping_zones
-		// method — that lives on WC_Shipping_Zones (the data class).
-		if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
-			return [];
-		}
-
-		$names = [];
-		foreach ( WC_Shipping_Zones::get_zones() as $zone_data ) {
-			if ( isset( $zone_data['zone_name'] ) && '' !== $zone_data['zone_name'] ) {
-				$names[] = (string) $zone_data['zone_name'];
-			}
-		}
-		return $names;
-	}
-
-	/**
-	 * Compute the free-shipping summary structure. Returns null when the
-	 * summarizer class isn't loaded — defensive against future autoload
-	 * changes.
-	 *
-	 * @return array|null
-	 */
-	private function compute_free_shipping(): ?array {
-		if ( ! class_exists( 'WSN_Free_Shipping_Summarizer' ) ) {
-			return null;
-		}
-		return WSN_Free_Shipping_Summarizer::summarize();
+		return WSN_Derivations::compute();
 	}
 
 	/**

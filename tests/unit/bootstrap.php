@@ -113,6 +113,7 @@ function _manually_load_plugin() {
 	// instantiate the classes directly without first enabling the flag.
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-settings.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-derivations.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-hub.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';

@@ -613,11 +613,14 @@ class WC_Payments {
 		// WC_Payments_Admin::add_payments_menu() and the React app is registered by
 		// client/index.js via the woocommerce_admin_pages_list filter.
 		if ( WC_Payments_Features::is_wsn_hub_enabled() ) {
-			// Load WSN_Settings here (not lazily in WSN_Hub) so every WSN callback
-			// can safely call its statics regardless of which hook fires first for
-			// a given request type (admin_enqueue_scripts vs. rest_api_init vs.
-			// in_admin_header all touch the class). require_once is idempotent.
+			// Load WSN_Settings + WSN_Derivations here (not lazily in WSN_Hub) so
+			// every WSN callback can safely call their statics regardless of which
+			// hook fires first for a given request type (admin_enqueue_scripts vs.
+			// rest_api_init vs. in_admin_header all touch them). require_once is
+			// idempotent.
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-derivations.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-hub.php';
 			( new WSN_Hub() )->init_hooks();
 		}
