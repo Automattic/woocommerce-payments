@@ -189,6 +189,12 @@ export const useReportExport = () => {
 					onSuccess,
 					onError,
 				} );
+			} else {
+				// A 2xx response without an export_id means the request did not
+				// produce an export. Recover the UI and surface the failure so
+				// the button doesn't stay stuck and the outcome is tracked.
+				setIsExportInProgress( false );
+				onError?.( { reason: 'request' } );
 			}
 		} catch ( error ) {
 			setIsExportInProgress( false );

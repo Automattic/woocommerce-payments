@@ -231,6 +231,30 @@ describe( 'useReportExport', () => {
 		expect( onError ).toHaveBeenCalledWith( { reason: 'request' } );
 	} );
 
+	it( 'recovers and invokes onError when the POST resolves without an export_id', async () => {
+		// A 2xx response that omits export_id must not leave the request
+		// hanging — the UI should recover and the failure should be tracked.
+		mockApiFetch.mockResolvedValueOnce( {} );
+		const onError = jest.fn();
+		const onSuccess = jest.fn();
+
+		const { result } = renderHook( () => useReportExport() );
+
+		await act( async () => {
+			await result.current.requestReportExport( {
+				...testProps,
+				onError,
+				onSuccess,
+			} );
+		} );
+
+		// Only the POST is attempted; polling never starts.
+		expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+		expect( onError ).toHaveBeenCalledWith( { reason: 'request' } );
+		expect( onSuccess ).not.toHaveBeenCalled();
+		expect( result.current.isExportInProgress ).toBe( false );
+	} );
+
 	it( 'invokes onError with reason "timeout" when polling exhausts retries', async () => {
 		mockApiFetch
 			.mockResolvedValueOnce( { export_id: 'abc' } )
