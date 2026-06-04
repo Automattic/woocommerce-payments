@@ -22,6 +22,17 @@ const getVariationStorageKey = () => {
 	return productId ? `wcpay_iapi_variation_${ productId }` : null;
 };
 
+/**
+ * Clears the persisted variation_id from sessionStorage for the current product.
+ * Call this after successful checkout to prevent stale data.
+ */
+export const clearVariationStorage = () => {
+	const storageKey = getVariationStorageKey();
+	if ( storageKey ) {
+		sessionStorage.removeItem( storageKey );
+	}
+};
+
 jQuery( ( $ ) => {
 	// Classic shortcode: listen for jQuery variation-change event.
 	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {

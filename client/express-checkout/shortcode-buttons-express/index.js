@@ -12,7 +12,7 @@ import WCPayAPI from '../../checkout/api';
 import './express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import '../compatibility/wc-order-attribution';
-import './compatibility/wc-product-page';
+import { clearVariationStorage } from './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';
 import '../compatibility/wc-subscriptions';
 import {
@@ -176,6 +176,7 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( message ) => {
 			onAbortPaymentHandler();
+			clearVariationStorage();
 
 			$( '.woocommerce-error' ).remove();
 
@@ -204,6 +205,7 @@ jQuery( ( $ ) => {
 		 */
 		completePayment: ( url ) => {
 			onCompletePaymentHandler();
+			clearVariationStorage();
 			window.location = url;
 		},
 
@@ -428,7 +430,10 @@ jQuery( ( $ ) => {
 						// clearing the cart to avoid issues with products with low or limited availability
 						// being held hostage by customers cancelling the ECE.
 						getCartApiHandler().emptyCart();
+						clearVariationStorage();
 					} );
+				} else {
+					clearVariationStorage();
 				}
 
 				onCancelHandler();
