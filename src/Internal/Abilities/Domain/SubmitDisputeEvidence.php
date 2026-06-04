@@ -30,33 +30,6 @@ defined( 'ABSPATH' ) || exit;
 class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefinition {
 
 	/**
-	 * Canonical Stripe dispute-evidence fields (all string-valued; document
-	 * fields carry an uploaded file ID).
-	 *
-	 * @var string[]
-	 */
-	private const EVIDENCE_FIELDS = [
-		'product_description',
-		'customer_communication',
-		'customer_signature',
-		'customer_purchase_ip',
-		'receipt',
-		'refund_policy',
-		'duplicate_charge_documentation',
-		'shipping_documentation',
-		'service_documentation',
-		'cancellation_policy',
-		'cancellation_rebuttal',
-		'access_activity_log',
-		'uncategorized_file',
-		'uncategorized_text',
-		'shipping_carrier',
-		'shipping_date',
-		'shipping_tracking_number',
-		'shipping_address',
-	];
-
-	/**
 	 * Return the ability name.
 	 *
 	 * @return string
@@ -71,9 +44,49 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 	 * @return array
 	 */
 	public static function get_registration_args(): array {
+		// Free-text evidence fields: an agent can fill these directly.
+		$evidence_text_fields = [
+			'product_description'      => __( 'Description of the product or service and how it was presented to the customer.', 'woocommerce-payments' ),
+			'customer_purchase_ip'     => __( 'IP address the customer used for the purchase.', 'woocommerce-payments' ),
+			'cancellation_rebuttal'    => __( 'Explanation of why the customer was not entitled to cancel.', 'woocommerce-payments' ),
+			'access_activity_log'      => __( 'Activity log showing the customer accessed or downloaded a digital product.', 'woocommerce-payments' ),
+			'uncategorized_text'       => __( 'Any additional explanation that does not fit another field.', 'woocommerce-payments' ),
+			'shipping_carrier'         => __( 'Delivery service that shipped the product (e.g. USPS, FedEx, UPS, DHL).', 'woocommerce-payments' ),
+			'shipping_date'            => __( 'Date the product was shipped.', 'woocommerce-payments' ),
+			'shipping_tracking_number' => __( 'Tracking number for a shipped physical product.', 'woocommerce-payments' ),
+			'shipping_address'         => __( 'Address the product was shipped to.', 'woocommerce-payments' ),
+		];
+
+		// Document evidence fields: each takes the ID of a file already uploaded
+		// (e.g. via woocommerce-payments/upload-dispute-evidence-file), not raw bytes.
+		$evidence_document_fields = [
+			'customer_communication'         => __( 'Correspondence with the customer relevant to the dispute (e.g. emails).', 'woocommerce-payments' ),
+			'customer_signature'             => __( 'Proof the customer signed for the product or agreed to terms.', 'woocommerce-payments' ),
+			'receipt'                        => __( 'Receipt or message sent to the customer for the charge.', 'woocommerce-payments' ),
+			'refund_policy'                  => __( 'Your refund policy as shown to the customer.', 'woocommerce-payments' ),
+			'duplicate_charge_documentation' => __( 'Documentation for the prior charge a duplicate dispute refers to.', 'woocommerce-payments' ),
+			'shipping_documentation'         => __( 'Proof the product was delivered (e.g. signed delivery confirmation).', 'woocommerce-payments' ),
+			'service_documentation'          => __( 'Proof the service was provided to the customer.', 'woocommerce-payments' ),
+			'cancellation_policy'            => __( 'Your cancellation policy as shown to the customer.', 'woocommerce-payments' ),
+			'uncategorized_file'             => __( 'Any additional supporting document.', 'woocommerce-payments' ),
+		];
+
 		$evidence_properties = [];
-		foreach ( self::EVIDENCE_FIELDS as $field ) {
-			$evidence_properties[ $field ] = [ 'type' => 'string' ];
+		foreach ( $evidence_text_fields as $field => $field_description ) {
+			$evidence_properties[ $field ] = [
+				'type'        => 'string',
+				'description' => $field_description,
+			];
+		}
+		foreach ( $evidence_document_fields as $field => $field_description ) {
+			$evidence_properties[ $field ] = [
+				'type'        => 'string',
+				'description' => sprintf(
+					/* translators: %s: description of what the document should show. */
+					__( '%s Provide the ID of a file uploaded via woocommerce-payments/upload-dispute-evidence-file, not raw file contents.', 'woocommerce-payments' ),
+					$field_description
+				),
+			];
 		}
 
 		return [
@@ -90,7 +103,7 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 					],
 					'evidence'   => [
 						'type'                 => 'object',
-						'description'          => __( 'Evidence fields. Document fields take an uploaded file ID.', 'woocommerce-payments' ),
+						'description'          => __( 'Evidence fields. Text fields take free text; document fields take the ID of a file uploaded via woocommerce-payments/upload-dispute-evidence-file (not raw file contents).', 'woocommerce-payments' ),
 						'properties'           => $evidence_properties,
 						'additionalProperties' => false,
 					],
