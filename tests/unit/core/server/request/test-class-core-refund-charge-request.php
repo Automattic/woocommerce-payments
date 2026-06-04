@@ -77,4 +77,24 @@ class Refund_Charge_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $amount, $params['amount'] );
 		$this->assertSame( $charge, $params['charge'] );
 	}
+
+	public function test_merchant_reason_is_stored_as_metadata() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_merchant_reason( 'Customer changed their mind' );
+
+		$params = $request->get_params();
+		$this->assertSame( 'Customer changed their mind', $params['metadata']['merchant_refund_reason'] );
+	}
+
+	public function test_merchant_reason_preserves_existing_metadata() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_source( 'edit_order' );
+		$request->set_merchant_reason( 'Customer changed their mind' );
+
+		$params = $request->get_params();
+		$this->assertSame( 'edit_order', $params['metadata']['refund_source'] );
+		$this->assertSame( 'Customer changed their mind', $params['metadata']['merchant_refund_reason'] );
+	}
 }

@@ -401,6 +401,14 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			->method( 'set_charge' )
 			->with( $charge_id );
 
+		// Free-text reasons aren't valid Stripe enum values, so they travel as metadata.
+		$request->expects( $this->never() )
+			->method( 'set_reason' );
+
+		$request->expects( $this->once() )
+			->method( 'set_merchant_reason' )
+			->with( $reason );
+
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );

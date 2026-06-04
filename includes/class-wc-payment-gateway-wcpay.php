@@ -2686,6 +2686,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( in_array( $reason, [ 'duplicate', 'fraudulent', 'requested_by_customer' ], true ) ) {
 					$refund_request->set_reason( $reason );
 				}
+				// Stripe's `reason` only accepts the enum above, so the merchant's free-text reason rides along as
+				// metadata. That way it survives to the payment timeline instead of living only in the order note.
+				if ( ! empty( $reason ) ) {
+					$refund_request->set_merchant_reason( $reason );
+				}
 				$refund = $refund_request->send();
 			}
 			$currency = strtoupper( $refund['currency'] );

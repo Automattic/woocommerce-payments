@@ -87,6 +87,26 @@ class Refund_Charge extends Request {
 	}
 
 	/**
+	 * Stores the merchant-provided refund reason as metadata.
+	 *
+	 * Stripe's `reason` field only accepts a fixed enum, so any free-text reason
+	 * the merchant typed has to travel as metadata to survive the round trip and
+	 * show up in the payment timeline.
+	 *
+	 * @param string $reason The free-text reason the merchant entered.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_merchant_reason( string $reason ) {
+		$this->set_param(
+			'metadata',
+			array_merge(
+				$this->get_params()['metadata'] ?? [],
+				[ 'merchant_refund_reason' => $reason ]
+			)
+		);
+	}
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
