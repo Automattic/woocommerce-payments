@@ -89,9 +89,13 @@ class WSN_Profile_Payload_Composer {
 	 * first paint. Better to lose the optimization than to OOM the
 	 * AS worker.
 	 *
+	 * 5 MB literal (5 * 1024 * 1024). The WordPress `MB_IN_BYTES`
+	 * constant is not in the project's PHPStan stubs, so we inline
+	 * the bytes count to keep static analysis happy.
+	 *
 	 * @var int
 	 */
-	const MAX_LOGO_SOURCE_BYTES = 5 * MB_IN_BYTES;
+	const MAX_LOGO_SOURCE_BYTES = 5 * 1024 * 1024;
 
 	/**
 	 * Compose the wire payload.
