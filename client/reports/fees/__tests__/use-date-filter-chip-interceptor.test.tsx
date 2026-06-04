@@ -6,12 +6,15 @@
 import React from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { View } from '@wordpress/dataviews/wp';
-
-const mockRecordEvent = jest.fn();
+import { recordEvent } from 'tracks';
 
 jest.mock( 'tracks', () => ( {
-	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
+	recordEvent: jest.fn(),
 } ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 /**
  * Internal dependencies

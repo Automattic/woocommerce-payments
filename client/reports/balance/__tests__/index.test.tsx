@@ -4,13 +4,13 @@ import React from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { downloadCSVFile } from '@woocommerce/csv-export';
+import { recordEvent } from 'tracks';
 
 const mockCreateNotice = jest.fn();
 const mockSpeak = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
 const mockSetBalanceDateFilterValue = jest.fn();
-const mockRecordEvent = jest.fn();
 const mockDateFilterProps = jest.fn();
 const mockAppliedDateFilterValue = {
 	operator: 'between',
@@ -43,8 +43,12 @@ jest.mock( 'wcpay/data', () => ( {
 } ) );
 
 jest.mock( 'tracks', () => ( {
-	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
+	recordEvent: jest.fn(),
 } ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 jest.mock( '../use-balance-date-filter', () => {
 	const actual = jest.requireActual( '../use-balance-date-filter' );

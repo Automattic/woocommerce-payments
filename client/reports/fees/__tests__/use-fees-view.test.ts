@@ -1,11 +1,11 @@
 /** @format */
 
 import { renderHook, act } from '@testing-library/react-hooks';
+import { recordEvent } from 'tracks';
 
 const mockUpdateQueryString = jest.fn();
 const mockGetQuery = jest.fn( () => ( {} ) );
 const mockUpdateUserPreferences = jest.fn();
-const mockRecordEvent = jest.fn();
 let mockUserPrefs: Record< string, unknown > = {};
 
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -22,8 +22,12 @@ jest.mock( '@woocommerce/data', () => ( {
 } ) );
 
 jest.mock( 'tracks', () => ( {
-	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
+	recordEvent: jest.fn(),
 } ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';

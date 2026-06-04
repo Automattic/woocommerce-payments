@@ -4,11 +4,11 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { downloadCSVFile } from '@woocommerce/csv-export';
+import { recordEvent } from 'tracks';
 
 const mockCreateNotice = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
-const mockRecordEvent = jest.fn();
 let consoleErrorSpy: jest.SpyInstance | undefined;
 
 jest.mock( '@wordpress/data', () => ( {
@@ -31,8 +31,12 @@ jest.mock( 'wcpay/data', () => ( {
 } ) );
 
 jest.mock( 'tracks', () => ( {
-	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
+	recordEvent: jest.fn(),
 } ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 jest.mock( '../use-balance-date-filter', () => {
 	const actual = jest.requireActual( '../use-balance-date-filter' );

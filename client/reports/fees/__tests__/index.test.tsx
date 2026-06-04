@@ -6,6 +6,7 @@
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { recordEvent } from 'tracks';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -13,7 +14,6 @@ const mockGetQuery = jest.fn( () => ( {} as Record< string, unknown > ) );
 const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
 const mockSpeak = jest.fn();
-const mockRecordEvent = jest.fn();
 
 jest.mock( 'wcpay/data', () => ( {
 	useReportsFees: ( q: unknown ) => mockUseReportsFees( q ),
@@ -37,8 +37,12 @@ jest.mock( '@wordpress/a11y', () => ( {
 } ) );
 
 jest.mock( 'tracks', () => ( {
-	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
+	recordEvent: jest.fn(),
 } ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 jest.mock( 'multi-currency/interface/functions', () => ( {
 	formatExplicitCurrency: ( amount: number, currency: string ) =>
