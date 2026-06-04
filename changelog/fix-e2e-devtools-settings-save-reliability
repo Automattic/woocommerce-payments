@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Make the E2E dev-tools settings save resilient to truncated page renders, and capture WordPress debug logs plus flaky-test traces to aid diagnosis
+Comment: E2E test tooling and CI diagnostics only, not end client facing.
