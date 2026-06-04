@@ -4,7 +4,7 @@
 import { CheckOperators, Checks, Outcomes, Rules } from '../constants';
 import {
 	readRuleset,
-	hasAvsSupportedSellingLocation,
+	isSellingToAvsSupportedLocations,
 	writeRuleset,
 } from '../utils';
 
@@ -742,7 +742,7 @@ describe( 'Ruleset adapter utilities test', () => {
 	);
 } );
 
-describe( 'hasAvsSupportedSellingLocation', () => {
+describe( 'isSellingToAvsSupportedLocations', () => {
 	const setAllowedCountries = ( type, countries = [] ) => {
 		global.wcSettings = {
 			admin: {
@@ -761,26 +761,26 @@ describe( 'hasAvsSupportedSellingLocation', () => {
 
 	test( 'returns true when selling to all countries', () => {
 		setAllowedCountries( 'all' );
-		expect( hasAvsSupportedSellingLocation() ).toBe( true );
+		expect( isSellingToAvsSupportedLocations() ).toBe( true );
 	} );
 
 	test( 'returns true when a specific allowed country supports AVS', () => {
 		setAllowedCountries( 'specific', [ 'DE', 'GB' ] );
-		expect( hasAvsSupportedSellingLocation() ).toBe( true );
+		expect( isSellingToAvsSupportedLocations() ).toBe( true );
 	} );
 
 	test( 'returns false when no specific allowed country supports AVS', () => {
 		setAllowedCountries( 'specific', [ 'DE', 'FR' ] );
-		expect( hasAvsSupportedSellingLocation() ).toBe( false );
+		expect( isSellingToAvsSupportedLocations() ).toBe( false );
 	} );
 
 	test( 'returns false when every AVS-supported country is excluded', () => {
 		setAllowedCountries( 'all_except', [ 'US', 'CA', 'GB' ] );
-		expect( hasAvsSupportedSellingLocation() ).toBe( false );
+		expect( isSellingToAvsSupportedLocations() ).toBe( false );
 	} );
 
 	test( 'returns true when only some AVS-supported countries are excluded', () => {
 		setAllowedCountries( 'all_except', [ 'US', 'GB' ] );
-		expect( hasAvsSupportedSellingLocation() ).toBe( true );
+		expect( isSellingToAvsSupportedLocations() ).toBe( true );
 	} );
 } );

@@ -13,17 +13,17 @@ import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import { getAdminUrl } from 'wcpay/utils';
-import { hasAvsSupportedSellingLocation } from '../utils';
+import { isSellingToAvsSupportedLocations } from '../utils';
 
 const AVSMismatchRuleCard: React.FC = () => {
-	const hasAvsSupportedLocation = hasAvsSupportedSellingLocation();
+	const isSellingToSupportedLocations = isSellingToAvsSupportedLocations();
 
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'AVS Mismatch', 'woocommerce-payments' ) }
 			id="avs-mismatch-card"
 		>
-			{ ! hasAvsSupportedLocation && (
+			{ ! isSellingToSupportedLocations && (
 				<FraudProtectionRuleCardNotice type="warning">
 					{ interpolateComponents( {
 						mixedString: __(

@@ -43,7 +43,7 @@ export const getSettingCountries = (): string[] => {
 // code checks are commonly supported. The AVS Mismatch filter relies on the
 // card issuer returning a post code result, so when none of the store's
 // selling locations support AVS the filter effectively does nothing.
-export const hasAvsSupportedSellingLocation = (): boolean => {
+export const isSellingToAvsSupportedLocations = (): boolean => {
 	const supportedCountriesType = getSupportedCountriesType();
 	const settingCountries = getSettingCountries();
 
