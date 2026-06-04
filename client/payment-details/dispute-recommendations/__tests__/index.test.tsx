@@ -464,6 +464,78 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 	} );
 
+	describe( 'no-evidence catch-all emphasis', () => {
+		// Lucy's design (Figma 3879:36436): when no evidence was submitted, the
+		// catch-all critical is bumped to the top of the coaching section and
+		// carries a "Critical" badge, while the surviving tips stay below it.
+		// Fixture mirrors the reviewed screenshot (lost + fraudulent + physical,
+		// no evidence): c15 fires plus the c8b shipping-date tip.
+		const noEvidenceFraudPhysical = () =>
+			buildDispute( {
+				status: 'lost',
+				reason: 'fraudulent',
+				metadata: { __product_type: 'physical_product' },
+				evidence: {},
+			} );
+
+		it( 'bumps the catch-all critical above the surviving tips', async () => {
+			render(
+				<DisputeRecommendationsCard
+					dispute={ noEvidenceFraudPhysical() }
+				/>
+			);
+
+			await expandSection( /what could help next time/i );
+
+			// DOM order across inline + show-more articles reflects the sort.
+			const headings = screen
+				.getAllByRole( 'article' )
+				.map(
+					( item ) =>
+						within( item ).getByRole( 'heading' ).textContent ?? ''
+				);
+			const catchAllIndex = headings.findIndex( ( h ) =>
+				/submit evidence with your dispute response/i.test( h )
+			);
+			const shippingTipIndex = headings.findIndex( ( h ) =>
+				/document the shipping date/i.test( h )
+			);
+
+			// c15 has no lift and is the last catalog cluster, so it sorts to
+			// the bottom without the bump; the tip is what it must clear.
+			expect( catchAllIndex ).toBe( 0 );
+			expect( shippingTipIndex ).toBeGreaterThan( catchAllIndex );
+		} );
+
+		it( 'badges the catch-all critical and leaves tips unbadged', async () => {
+			render(
+				<DisputeRecommendationsCard
+					dispute={ noEvidenceFraudPhysical() }
+				/>
+			);
+
+			await expandSection( /what could help next time/i );
+
+			const catchAll = screen
+				.getByRole( 'heading', {
+					name: /submit evidence with your dispute response/i,
+				} )
+				.closest( 'article' ) as HTMLElement;
+			const badge = within( catchAll ).getByText( 'Critical' );
+			expect( badge ).toBeInTheDocument();
+			expect( badge ).toHaveClass( 'chip', 'chip-warning' );
+
+			const tip = screen
+				.getByRole( 'heading', {
+					name: /document the shipping date/i,
+				} )
+				.closest( 'article' ) as HTMLElement;
+			expect(
+				within( tip ).queryByText( 'Critical' )
+			).not.toBeInTheDocument();
+		} );
+	} );
+
 	describe( 'link rendering', () => {
 		// Per RiskOps review: per-rec action links were removed in favor of a
 		// single "Learn more" link next to the "What could help next time"

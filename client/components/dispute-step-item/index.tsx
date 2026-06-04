@@ -33,6 +33,8 @@ interface Props {
 	titleAs?: 'div' | 'h3' | 'h4' | 'h5' | 'h6';
 	/** SR-only severity prefix; the icon is aria-hidden. */
 	titleSrPrefix?: string;
+	/** Inline node rendered after the title within the heading (e.g. a badge). */
+	titleBadge?: React.ReactNode;
 }
 
 /**
@@ -49,6 +51,7 @@ const DisputeStepItem: React.FC< Props > = ( {
 	as: Tag = 'div',
 	titleAs: TitleTag = 'div',
 	titleSrPrefix,
+	titleBadge,
 } ) => {
 	return (
 		<Tag className={ clsx( 'dispute-step-item', className ) }>
@@ -61,6 +64,7 @@ const DisputeStepItem: React.FC< Props > = ( {
 						<VisuallyHidden>{ titleSrPrefix + ' ' }</VisuallyHidden>
 					) }
 					{ title }
+					{ titleBadge }
 				</TitleTag>
 				<div className="dispute-step-item__description">
 					{ description }

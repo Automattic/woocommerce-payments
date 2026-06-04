@@ -71,6 +71,17 @@
 		border: none;
 	}
 
+	// The no-evidence catch-all renders a "Critical" badge after its title.
+	// Lay the heading out inline so the badge sits beside the text and wraps
+	// gracefully on narrow widths. Scoped here so the shared "Steps you can
+	// take" rows keep their plain block heading.
+	.dispute-step-item__name {
+		display: inline-flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: $grid-unit-10;
+	}
+
 	&--positive .dispute-step-item__icon svg {
 		color: $alert-green;
 	}

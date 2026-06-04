@@ -12,6 +12,7 @@ import { Icon, caution, published } from '@wordpress/icons';
  * Internal dependencies
  */
 import { Accordion, AccordionBody } from 'wcpay/components/accordion';
+import Chip from 'wcpay/components/chip';
 import DisputeStepItem from 'wcpay/components/dispute-step-item';
 import type { ChargeDispute } from 'wcpay/types/charges';
 import type {
@@ -60,6 +61,19 @@ const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
 	return b.lift - a.lift;
 };
 
+// The no-evidence catch-all (the `suppressOtherCriticals` entry) is the
+// dominant message, so pin it above lift-ranked entries; it carries no lift
+// of its own and would otherwise sink to the bottom (Lucy design 2026-06-03).
+const sortRecommendations = (
+	a: Recommendation,
+	b: Recommendation
+): number => {
+	const pinned =
+		Number( !! b.suppressOtherCriticals ) -
+		Number( !! a.suppressOtherCriticals );
+	return pinned !== 0 ? pinned : sortByLift( a, b );
+};
+
 // SR-only severity qualifier; the icon is aria-hidden, so sighted-only cues
 // need a textual equivalent.
 const urgencyLabel = ( urgency: RecommendationUrgency ): string => {
@@ -77,27 +91,42 @@ const urgencyLabel = ( urgency: RecommendationUrgency ): string => {
 	}
 };
 
-const renderItem = ( rec: Recommendation ): JSX.Element => (
-	// Reuses the shared row from "Steps you can take". Urgency BEM hooks on
-	// the root drive the icon tint via style.scss; the shared component
-	// stays urgency-agnostic.
-	<DisputeStepItem
-		key={ rec.id }
-		as="article"
-		// h3 keeps the outline monotonic under the card's h2 title.
-		titleAs="h3"
-		className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
-		icon={
-			<Icon
-				icon={ rec.urgency === 'positive' ? published : caution }
-				size={ 24 }
-			/>
-		}
-		titleSrPrefix={ urgencyLabel( rec.urgency ) }
-		title={ rec.title }
-		description={ rec.body }
-	/>
-);
+const renderItem = ( rec: Recommendation ): JSX.Element => {
+	// The no-evidence catch-all gets a visible "Critical" badge that doubles as
+	// its severity cue, so drop the SR-only prefix to avoid announcing it twice.
+	const isCatchAll = !! rec.suppressOtherCriticals;
+	return (
+		// Reuses the shared row from "Steps you can take". Urgency BEM hooks on
+		// the root drive the icon tint via style.scss; the shared component
+		// stays urgency-agnostic.
+		<DisputeStepItem
+			key={ rec.id }
+			as="article"
+			// h3 keeps the outline monotonic under the card's h2 title.
+			titleAs="h3"
+			className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
+			icon={
+				<Icon
+					icon={ rec.urgency === 'positive' ? published : caution }
+					size={ 24 }
+				/>
+			}
+			titleSrPrefix={
+				isCatchAll ? undefined : urgencyLabel( rec.urgency )
+			}
+			title={ rec.title }
+			titleBadge={
+				isCatchAll ? (
+					<Chip
+						message={ __( 'Critical', 'woocommerce-payments' ) }
+						type="warning"
+					/>
+				) : undefined
+			}
+			description={ rec.body }
+		/>
+	);
+};
 
 // Both cards route their description through `subtitleNode` so the closed
 // state stays consistent: using `subtitle` for one and `subtitleNode` for
@@ -112,7 +141,7 @@ const renderCard = (
 		return null;
 	}
 
-	const sorted = [ ...items ].sort( sortByLift );
+	const sorted = [ ...items ].sort( sortRecommendations );
 	const visible = sorted.slice( 0, VISIBLE_PER_SECTION );
 	const hidden = sorted.slice( VISIBLE_PER_SECTION );
 
