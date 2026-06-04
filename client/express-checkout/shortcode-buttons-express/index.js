@@ -21,6 +21,7 @@ import {
 	getExpressCheckoutData,
 	displayLoginConfirmation,
 } from '../utils';
+import { getSetupFutureUsageForCart } from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -222,6 +223,9 @@ jQuery( ( $ ) => {
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 			const hasSubscription =
 				getExpressCheckoutData( 'has_subscription' ) ?? false;
+			const {
+				setupFutureUsage = hasSubscription ? 'off_session' : null,
+			} = creationOptions;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -243,8 +247,8 @@ jQuery( ( $ ) => {
 				...( useConfirmationToken && isManualCaptureEnabled
 					? { captureMethod: 'manual' }
 					: {} ),
-				...( useConfirmationToken && hasSubscription
-					? { setupFutureUsage: 'off_session' }
+				...( useConfirmationToken && setupFutureUsage
+					? { setupFutureUsage }
 					: {} ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
@@ -492,6 +496,8 @@ jQuery( ( $ ) => {
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
 					currency: cachedCartData.totals.currency_code.toLowerCase(),
+					setupFutureUsage:
+						getSetupFutureUsageForCart( cachedCartData ),
 				} );
 			} else if (
 				getExpressCheckoutData( 'button_context' ) === 'product' &&
@@ -500,6 +506,11 @@ jQuery( ( $ ) => {
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
 					currency: getExpressCheckoutData( 'product' )?.currency,
+					setupFutureUsage: getExpressCheckoutData(
+						'has_subscription'
+					)
+						? 'off_session'
+						: null,
 				} );
 			} else {
 				expressCheckoutButtonUi.hideContainer();
@@ -546,10 +557,28 @@ jQuery( ( $ ) => {
 						// since the "total" is part of the initialization of the Stripe elements (and not part of the ECE button),
 						// if the totals change, we might need to update it on the element itself.
 						const newTotal = getTotalAmount();
+						const useConfirmationToken =
+							getExpressCheckoutData( 'flags' )
+								?.isEceUsingConfirmationTokens ?? true;
+						const elementsUpdateOptions = {
+							...( useConfirmationToken
+								? {
+										setupFutureUsage:
+											getSetupFutureUsageForCart(
+												cachedCartData
+											),
+								  }
+								: {} ),
+							...( newTotal !== prevTotal && newTotal > 0
+								? { amount: newTotal }
+								: {} ),
+						};
 						if ( ! elements ) {
 							wcpayECE.init();
-						} else if ( newTotal !== prevTotal && newTotal > 0 ) {
-							await elements.update( { amount: newTotal } );
+						} else if (
+							Object.keys( elementsUpdateOptions ).length
+						) {
+							await elements.update( elementsUpdateOptions );
 						}
 
 						// Check if cart is eligible (filter allows extensions to override)

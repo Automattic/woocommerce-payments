@@ -174,12 +174,12 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		// Check for the two steps: Accept and Challenge
 		expect(
 			screen.getByText( /Accepting the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( /Challenge the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 
