@@ -614,6 +614,8 @@ That woopay-repo doc should be edited or marked superseded by whoever owns it. `
   - [RSM-2481](https://linear.app/a8c/issue/RSM-2481) — Profile tab UI (already shipped in the umbrella PR)
   - [WOOPAY-458](https://linear.app/a8c/issue/WOOPAY-458) — Storefront logo path: Hub's resolved `logo_url` → `store.logo_url` (closed by composer passthrough)
   - [WOOPAY-454](https://linear.app/a8c/issue/WOOPAY-454) — No name-search / fuzzy resolution on payments surfaces (enforce blog_id-only lookups in this Profile path)
+- **Operational guides:**
+  - [wsn-integration-testing.md](./wsn-integration-testing.md) — runbook for end-to-end integration testing between WCPay and a WooPay sandbox (setup, triggers, verification, troubleshooting).
 - **WCPay code:**
   - [class-wsn-settings.php](../../includes/wsn/class-wsn-settings.php) — option storage
   - [class-wc-rest-payments-wsn-settings-controller.php](../../includes/admin/class-wc-rest-payments-wsn-settings-controller.php) — `compute_derivations()` is the canonical payload shape
