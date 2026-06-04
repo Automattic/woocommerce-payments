@@ -11,7 +11,7 @@ import AVSMismatchRuleCard from '../avs-mismatch';
 
 const renderCard = () => {
 	const settings = {
-		avs_mismatch: {
+		avs_verification: {
 			enabled: false,
 			block: false,
 		},
