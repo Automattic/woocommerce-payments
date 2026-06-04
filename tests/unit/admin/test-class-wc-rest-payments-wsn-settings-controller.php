@@ -491,14 +491,13 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	const RESYNC_ROUTE = '/wc/v3/payments/wsn/profile-resync';
 
 	public function test_resync_endpoint_rejects_without_manage_woocommerce() {
-		// Anonymous (no current user) lacks the capability.
+		// Anonymous (no current user) lacks the capability. WP returns 401
+		// for the no-current-user case — matches the GET equivalent
+		// (test_get_rejects_without_manage_woocommerce) which also pins 401.
 		$request  = new WP_REST_Request( 'POST', self::RESYNC_ROUTE );
 		$response = rest_get_server()->dispatch( $request );
 
-		// 401 (unauthenticated) or 403 (authenticated but unauthorized) — WP returns 401
-		// for the no-current-user case.
-		$this->assertGreaterThanOrEqual( 400, $response->get_status() );
-		$this->assertLessThan( 500, $response->get_status() );
+		$this->assertSame( 401, $response->get_status() );
 	}
 
 	public function test_resync_endpoint_returns_503_when_sub_flag_off() {

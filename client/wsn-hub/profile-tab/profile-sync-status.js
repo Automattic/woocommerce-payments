@@ -20,7 +20,7 @@
  * @format
  */
 
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button } from '@wordpress/components';
@@ -80,6 +80,21 @@ const ProfileSyncStatus = ( { sync, onRefresh } ) => {
 	const [ isRetrying, setIsRetrying ] = useState( false );
 	const [ retryError, setRetryError ] = useState( null );
 
+	// Track the post-Retry refresh timer so we can cancel it on unmount.
+	// Without this, navigating away during the 62s wait fires setIsRetrying
+	// on an unmounted component — React logs a dev-mode warning. Harmless
+	// in production but the warning pollutes the dev console.
+	const refreshTimerRef = useRef( null );
+
+	useEffect( () => {
+		return () => {
+			if ( refreshTimerRef.current ) {
+				window.clearTimeout( refreshTimerRef.current );
+				refreshTimerRef.current = null;
+			}
+		};
+	}, [] );
+
 	const lastSynced = sync?.last_synced ?? null;
 	const lastError = sync?.last_error ?? null;
 	const debounceSeconds = sync?.debounce_seconds ?? 60;
@@ -116,8 +131,10 @@ const ProfileSyncStatus = ( { sync, onRefresh } ) => {
 			// wait the full debounce window + 2s buffer before pulling new
 			// state. A more sophisticated polling approach is out of scope
 			// for v1 — the merchant can manually reload if the wait feels
-			// long.
-			window.setTimeout( () => {
+			// long. Timer id captured in ref so the unmount effect can
+			// cancel it.
+			refreshTimerRef.current = window.setTimeout( () => {
+				refreshTimerRef.current = null;
 				onRefresh?.();
 				setIsRetrying( false );
 			}, debounceSeconds * 1000 + 2000 );

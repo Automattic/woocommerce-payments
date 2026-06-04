@@ -44,6 +44,18 @@ beforeEach( () => {
 			return Promise.resolve( {
 				settings: {},
 				feature_enabled: true,
+				sync: {
+					// Seed a recent successful sync so the Profile-tab
+					// sync-state badge has data to render. The shell's
+					// job is to extract this block and forward it to
+					// ProfileTab; if it doesn't, the badge falls back
+					// to the "never synced" state and the assertion
+					// below fails.
+					last_synced: Math.floor( Date.now() / 1000 ) - 5 * 60,
+					last_synced_version: 'a'.repeat( 64 ),
+					last_error: null,
+					debounce_seconds: 60,
+				},
 				derivations: {
 					logo_url: null,
 					logo_source: 'site_logo',
@@ -251,6 +263,32 @@ describe( 'WsnHubApp', () => {
 				( call ) => call[ 0 ].path === '/wc/v3/payments/wsn/settings'
 			);
 			expect( settingsCalls ).toHaveLength( 1 );
+		} );
+
+		it( 'extracts the `sync` block from /wsn/settings and forwards it to ProfileTab', async () => {
+			await renderEnabled();
+
+			// Wait for the shell-owned settings fetch to land + Profile tab to mount.
+			userEvent.click( screen.getByRole( 'tab', { name: 'Profile' } ) );
+			await waitFor( () =>
+				expect(
+					screen.getByRole( 'heading', {
+						name: /Storefront Profile/i,
+					} )
+				).toBeInTheDocument()
+			);
+
+			// Sync-state badge data-state=success indicates the shell extracted
+			// the `sync` block, forwarded it down to ProfileTab, and ProfileTab
+			// forwarded it to ProfileSyncStatus. If any link in that chain
+			// drops the prop, the badge falls back to "never synced" (data-state=never).
+			const badge = await screen.findByRole( 'status', {
+				name: ( accessibleName, element ) =>
+					element?.classList?.contains(
+						'wcpay-wsn-profile-sync-status'
+					),
+			} );
+			expect( badge ).toHaveAttribute( 'data-state', 'success' );
 		} );
 	} );
 } );

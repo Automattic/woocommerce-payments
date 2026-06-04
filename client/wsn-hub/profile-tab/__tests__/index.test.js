@@ -246,4 +246,26 @@ describe( 'ProfileTab', () => {
 			expect( refreshSettings ).toHaveBeenCalledTimes( 1 )
 		);
 	} );
+
+	it( 'renders ProfileSyncStatus when a sync prop is supplied', async () => {
+		// Guards the one-line forwarding in profile-tab/index.js:
+		// `<ProfileSyncStatus sync={ sync } onRefresh={ refreshSettings } />`.
+		// If the prop name drifts or the component import disappears, this
+		// test catches it — `last_synced` set + no error should render the
+		// success state.
+		renderProfile( {
+			sync: {
+				last_synced: Math.floor( Date.now() / 1000 ) - 5 * 60,
+				last_synced_version: 'a'.repeat( 64 ),
+				last_error: null,
+				debounce_seconds: 60,
+			},
+		} );
+
+		await waitFor( () =>
+			expect(
+				document.querySelector( '.wcpay-wsn-profile-sync-status' )
+			).toHaveAttribute( 'data-state', 'success' )
+		);
+	} );
 } );

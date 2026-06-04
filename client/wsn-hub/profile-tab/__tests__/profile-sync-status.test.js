@@ -75,6 +75,34 @@ describe( 'ProfileSyncStatus', () => {
 			).not.toBeInTheDocument();
 		} );
 
+		// formatRelativeTime has four buckets keyed off `<60`, `<3600`,
+		// `<86400`, and `>=86400`. An off-by-one in any boundary would
+		// silently flip the displayed unit (e.g. 60s could render as
+		// "just now" or "1 min ago"). Pin each bucket with a value that's
+		// far enough from a boundary to be unambiguous.
+		it.each( [
+			[ 10, /just now/i ],
+			[ 90, /1 min ago/i ],
+			[ 7200, /2 hr ago/i ],
+			[ 172800, /2 days ago/i ],
+		] )(
+			'formatRelativeTime renders the right bucket for %i seconds ago',
+			( secondsAgo, expected ) => {
+				const ts = Math.floor( Date.now() / 1000 ) - secondsAgo;
+				render(
+					<ProfileSyncStatus
+						sync={ {
+							last_synced: ts,
+							last_error: null,
+							debounce_seconds: 60,
+						} }
+						onRefresh={ jest.fn() }
+					/>
+				);
+				expect( screen.getByText( expected ) ).toBeInTheDocument();
+			}
+		);
+
 		it( 'renders the "failed" state with the error message and a Retry button', () => {
 			render(
 				<ProfileSyncStatus
