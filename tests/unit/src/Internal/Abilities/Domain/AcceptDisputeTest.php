@@ -26,7 +26,6 @@ class AcceptDisputeTest extends WCPAY_UnitTestCase {
 		$this->assertFalse( $args['meta']['annotations']['readonly'] );
 		$this->assertTrue( $args['meta']['annotations']['destructive'] );
 		$this->assertFalse( $args['meta']['annotations']['idempotent'] );
-		$this->assertSame( 0.0, $args['meta']['annotations']['reversibility'] );
 		$this->assertFalse( $args['meta']['mcp']['public'] );
 		$this->assertContains( 'dispute_id', $args['input_schema']['required'] );
 	}

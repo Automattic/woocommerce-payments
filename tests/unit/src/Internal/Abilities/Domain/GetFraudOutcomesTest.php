@@ -24,7 +24,6 @@ class GetFraudOutcomesTest extends WCPAY_UnitTestCase {
 		$args = GetFraudOutcomes::get_registration_args();
 
 		$this->assertTrue( $args['meta']['annotations']['readonly'] );
-		$this->assertSame( 1.0, $args['meta']['annotations']['reversibility'] );
 		$this->assertTrue( $args['meta']['mcp']['public'] );
 		$this->assertContains( 'status', $args['input_schema']['required'] );
 		$this->assertArrayHasKey( 'page', $args['input_schema']['properties'] );

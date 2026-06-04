@@ -80,10 +80,9 @@ class GetFraudOutcomes extends AbstractWCPayAbility implements AbilityDefinition
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
 			'meta'                => [
 				'annotations'  => [
-					'readonly'      => true,
-					'destructive'   => false,
-					'idempotent'    => true,
-					'reversibility' => 1.0,
+					'readonly'    => true,
+					'destructive' => false,
+					'idempotent'  => true,
 				],
 				'show_in_rest' => true,
 				'mcp'          => [

@@ -24,7 +24,6 @@ class GetFeesSummaryTest extends WCPAY_UnitTestCase {
 		$args = GetFeesSummary::get_registration_args();
 
 		$this->assertTrue( $args['meta']['annotations']['readonly'] );
-		$this->assertSame( 1.0, $args['meta']['annotations']['reversibility'] );
 		$this->assertTrue( $args['meta']['mcp']['public'] );
 		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 	}

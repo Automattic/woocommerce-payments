@@ -26,7 +26,6 @@ class GetBalanceTest extends WCPAY_UnitTestCase {
 		$this->assertTrue( $args['meta']['annotations']['readonly'] );
 		$this->assertFalse( $args['meta']['annotations']['destructive'] );
 		$this->assertTrue( $args['meta']['annotations']['idempotent'] );
-		$this->assertSame( 1.0, $args['meta']['annotations']['reversibility'] );
 		$this->assertTrue( $args['meta']['mcp']['public'] );
 		$this->assertSame( [ 'date_start', 'date_end', 'currency' ], $args['input_schema']['required'] );
 	}

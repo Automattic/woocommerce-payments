@@ -110,10 +110,9 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
 			'meta'                => [
 				'annotations'  => [
-					'readonly'      => false,
-					'destructive'   => true,
-					'idempotent'    => false,
-					'reversibility' => 0.2,
+					'readonly'    => false,
+					'destructive' => true,
+					'idempotent'  => false,
 				],
 				'show_in_rest' => true,
 				'mcp'          => [

@@ -17,9 +17,9 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/accept-dispute` ability.
  *
  * Accepting a dispute concedes it: the funds are refunded to the cardholder
- * and forfeited permanently. Irreversible (reversibility 0.0) and
- * destructive. mcp.public is false — never auto-invocable; the caller's policy
- * layer must gate this behind explicit operator approval.
+ * and forfeited permanently. Irreversible and destructive. mcp.public is
+ * false — never auto-invocable; the caller's policy layer must gate this
+ * behind explicit operator approval.
  *
  * @internal Only loaded when WooCommerce 10.9+ is active.
  *
@@ -61,10 +61,9 @@ class AcceptDispute extends AbstractWCPayAbility implements AbilityDefinition {
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
 			'meta'                => [
 				'annotations'  => [
-					'readonly'      => false,
-					'destructive'   => true,
-					'idempotent'    => false,
-					'reversibility' => 0.0,
+					'readonly'    => false,
+					'destructive' => true,
+					'idempotent'  => false,
 				],
 				'show_in_rest' => true,
 				'mcp'          => [

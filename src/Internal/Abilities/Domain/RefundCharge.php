@@ -77,10 +77,9 @@ class RefundCharge extends AbstractWCPayAbility implements AbilityDefinition {
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
 			'meta'                => [
 				'annotations'  => [
-					'readonly'      => false,
-					'destructive'   => true,
-					'idempotent'    => true,
-					'reversibility' => 0.2,
+					'readonly'    => false,
+					'destructive' => true,
+					'idempotent'  => true,
 				],
 				'show_in_rest' => true,
 				'mcp'          => [

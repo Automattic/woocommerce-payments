@@ -28,7 +28,6 @@ class RefundChargeTest extends WCPAY_UnitTestCase {
 		$this->assertFalse( $args['meta']['annotations']['readonly'] );
 		$this->assertTrue( $args['meta']['annotations']['destructive'] );
 		$this->assertTrue( $args['meta']['annotations']['idempotent'] );
-		$this->assertSame( 0.2, $args['meta']['annotations']['reversibility'] );
 		$this->assertFalse( $args['meta']['mcp']['public'] );
 		$this->assertContains( 'charge_id', $args['input_schema']['required'] );
 		$this->assertContains( 'idempotency_key', $args['input_schema']['required'] );
