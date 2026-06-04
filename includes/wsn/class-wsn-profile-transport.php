@@ -88,6 +88,23 @@ class WSN_Profile_Transport {
 	}
 
 	/**
+	 * Seam for the Jetpack-signed HTTP call. Production calls the static
+	 * `Client::remote_request()` directly. Tests subclass and override to
+	 * capture args + return a stub response without invoking the Jetpack
+	 * signer (which would fail in test environments without an active
+	 * Jetpack connection — `pre_http_request` doesn't help here because
+	 * the signer chokes BEFORE `wp_remote_request()` is called).
+	 *
+	 * @param array  $args Request args ready for the Jetpack Client.
+	 * @param string $body Pre-encoded body (passed for signing parity).
+	 *
+	 * @return array|\WP_Error Raw response from the Jetpack Client.
+	 */
+	protected function remote_request( array $args, string $body ) {
+		return \Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
+	}
+
+	/**
 	 * Build the WooPay-host URL for a given blog_id.
 	 *
 	 * Builds off `WooPay_Utilities::get_woopay_url()` directly — the sibling
@@ -103,7 +120,7 @@ class WSN_Profile_Transport {
 	}
 
 	/**
-	 * Send the Jetpack-signed request and validate the response.
+	 * Build the request args and validate the response.
 	 *
 	 * @param string $method  HTTP method ('POST' or 'DELETE').
 	 * @param int    $blog_id Merchant blog_id, used to build the URL.
@@ -120,7 +137,7 @@ class WSN_Profile_Transport {
 			'headers' => [ 'Content-Type' => 'application/json' ],
 		];
 
-		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
+		$response = $this->remote_request( $args, $body );
 
 		if ( is_wp_error( $response ) ) {
 			throw new \Exception( esc_html( $response->get_error_message() ) );

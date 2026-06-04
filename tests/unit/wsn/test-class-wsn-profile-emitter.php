@@ -204,9 +204,11 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 			HOUR_IN_SECONDS
 		);
 
+		// `send` returns void — no willReturn needed. Default behavior is
+		// to succeed silently, which is exactly the "successful push" case.
 		$this->transport
-			->method( 'send' )
-			->willReturn( [] );
+			->expects( $this->once() )
+			->method( 'send' );
 
 		$this->emitter->execute_push();
 
