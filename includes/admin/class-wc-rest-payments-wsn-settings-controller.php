@@ -62,6 +62,28 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	];
 
 	/**
+	 * Throttle window for the Retry-button-backed force-resync endpoint.
+	 *
+	 * Action Scheduler already dedupes the resulting `wcpay_wsn_profile_push`
+	 * action (rapid clicks collapse to one push), but the AS dedup happens
+	 * at row-write time — each call still costs an unschedule + schedule
+	 * round-trip. This site-wide throttle spares the DB that churn under
+	 * button-mashing and matches the emitter's natural debounce window.
+	 *
+	 * @var int
+	 */
+	const RESYNC_THROTTLE_SECONDS = MINUTE_IN_SECONDS;
+
+	/**
+	 * Transient key for the Retry-button throttle. Site-scoped — multisite
+	 * networks rate-limit per-site, not globally, which is correct for the
+	 * abuse model (one merchant per site).
+	 *
+	 * @var string
+	 */
+	const RESYNC_THROTTLE_TRANSIENT = 'wsn_profile_resync_throttle';
+
+	/**
 	 * Registers REST routes.
 	 */
 	public function register_routes() {
@@ -81,6 +103,22 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 					'args'                => $this->get_update_args(),
 				],
 				'schema' => [ $this, 'get_public_item_schema' ],
+			]
+		);
+
+		// Sibling route — manual "Retry sync" trigger backing the Profile-tab
+		// sync-state badge. Fires `wcpay_wsn_profile_force_resync` which the
+		// emitter listens for. Separate route (not a query param on the PUT)
+		// because its semantics are "fire a push with no data write" — the
+		// settings PUT only fires a push as a side-effect of changed Profile
+		// fields. Conflating would require a synthetic-edit code path.
+		register_rest_route(
+			$this->namespace,
+			'/payments/wsn/profile-resync',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'force_resync' ],
+				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 	}
@@ -103,6 +141,7 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 				'settings'        => WSN_Settings::get_all(),
 				'feature_enabled' => WC_Payments_Features::is_wsn_hub_enabled(),
 				'derivations'     => $this->compute_derivations(),
+				'sync'            => $this->compute_sync_state(),
 			]
 		);
 	}
@@ -119,6 +158,31 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	 */
 	private function compute_derivations(): array {
 		return WSN_Derivations::compute();
+	}
+
+	/**
+	 * Compute the Profile-sync state block surfaced to the Hub UI.
+	 *
+	 * Thin read of the emitter's static accessors. Bundled into the same
+	 * GET response as `settings` + `derivations` so the Profile tab can
+	 * render the sync-state badge on initial paint without a second
+	 * round-trip. All three accessors are safe to call regardless of the
+	 * emitter sub-flag — they return null / empty-string defaults when
+	 * the emitter has never run.
+	 *
+	 * `debounce_seconds` is included so the front-end Retry handler can
+	 * time its optimistic refresh against the actual AS debounce window
+	 * (currently 60s but the constant is the source of truth).
+	 *
+	 * @return array{last_synced: int|null, last_synced_version: string, last_error: array|null, debounce_seconds: int}
+	 */
+	private function compute_sync_state(): array {
+		return [
+			'last_synced'         => WSN_Profile_Emitter::get_last_synced_time(),
+			'last_synced_version' => WSN_Profile_Emitter::get_last_synced_version(),
+			'last_error'          => WSN_Profile_Emitter::get_last_error(),
+			'debounce_seconds'    => WSN_Profile_Emitter::DEBOUNCE_SECONDS,
+		];
 	}
 
 	/**
@@ -228,6 +292,87 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 		}
 
 		return rest_ensure_response( $response_body );
+	}
+
+	/**
+	 * POST handler — fire an immediate Profile push, bypassing the 60s debounce.
+	 *
+	 * Backs the Profile-tab "Retry sync" button (RSM-3945, sync-state UI wireup).
+	 * Returns 202 Accepted because the push itself runs asynchronously through
+	 * Action Scheduler — by the time the response goes out, the AS row is
+	 * scheduled but not yet executed. Clients refresh GET settings after the
+	 * emitter's debounce window to see the new sync state.
+	 *
+	 * Failure modes:
+	 *  - **503** when `_wcpay_feature_wsn_profile_emitter` is off. No emitter
+	 *    listener exists to handle the action; firing it would be a silent no-op
+	 *    and the merchant would see no state change. Better to surface the gate.
+	 *  - **429** when called within RESYNC_THROTTLE_SECONDS of the previous call.
+	 *    Includes a `Retry-After` header with the remaining seconds. The throttle
+	 *    is site-wide (one transient key per WP_options table) — matches the
+	 *    abuse model (one merchant per site).
+	 *
+	 * @param WP_REST_Request $request The REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function force_resync( WP_REST_Request $request ) {
+		unset( $request );
+
+		if ( ! WC_Payments_Features::is_wsn_profile_emitter_enabled() ) {
+			return new WP_Error(
+				'wsn_profile_emitter_disabled',
+				__( 'Profile sync is disabled by feature flag.', 'woocommerce-payments' ),
+				[ 'status' => 503 ]
+			);
+		}
+
+		$throttle_expires = (int) get_transient( self::RESYNC_THROTTLE_TRANSIENT );
+		if ( $throttle_expires > time() ) {
+			$remaining = max( 1, $throttle_expires - time() );
+			// `WP_REST_Response` (not `WP_Error`) so the `Retry-After` header
+			// propagates. WP's `WP_REST_Server::error_to_response` does not
+			// forward custom headers from a WP_Error's additional_data. The
+			// body mirrors WP's error envelope shape so apiFetch consumers can
+			// treat it identically to a WP_Error.
+			$response = new WP_REST_Response(
+				[
+					'code'    => 'wsn_profile_resync_throttled',
+					'message' => __( 'Resync requested too recently. Try again in a moment.', 'woocommerce-payments' ),
+					'data'    => [ 'status' => 429 ],
+				],
+				429
+			);
+			$response->header( 'Retry-After', (string) $remaining );
+			return $response;
+		}
+
+		// Throttle: store the wall-clock instant the throttle EXPIRES (not just
+		// a sentinel "1"), so the 429 branch can compute Retry-After remaining
+		// without a second `get_option` call.
+		set_transient(
+			self::RESYNC_THROTTLE_TRANSIENT,
+			time() + self::RESYNC_THROTTLE_SECONDS,
+			self::RESYNC_THROTTLE_SECONDS
+		);
+
+		/**
+		 * Fires when the Profile-tab Retry button (or any other manual trigger)
+		 * requests an immediate Profile-sync push. The emitter is the canonical
+		 * listener; it calls `force_immediate_push()` which schedules the AS
+		 * action at time() (vs the default 60s debounce).
+		 *
+		 * @since 10.8.0
+		 */
+		do_action( 'wcpay_wsn_profile_force_resync' );
+
+		$response = rest_ensure_response(
+			[
+				'status'         => 'scheduled',
+				'rescheduled_at' => time(),
+			]
+		);
+		$response->set_status( 202 );
+		return $response;
 	}
 
 	/**

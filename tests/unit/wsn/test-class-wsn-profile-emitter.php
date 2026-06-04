@@ -276,6 +276,10 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse(
 			has_action( WSN_Profile_Emitter::ACTION_BACKSTOP, [ $this->emitter, 'schedule_debounced_push' ] )
 		);
+		$this->assertNotFalse(
+			has_action( 'wcpay_wsn_profile_force_resync', [ $this->emitter, 'force_immediate_push' ] ),
+			'init_hooks must register a force_immediate_push listener for the Retry-button-driven action — otherwise POST /profile-resync fires the action but nothing happens.'
+		);
 
 		// Cleanup so other tests aren't affected by these listener
 		// registrations.
@@ -283,5 +287,6 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		remove_action( 'wcpay_woopay_appearance_changed', [ $this->emitter, 'schedule_debounced_push' ] );
 		remove_action( WSN_Profile_Emitter::ACTION_PUSH, [ $this->emitter, 'execute_push' ] );
 		remove_action( WSN_Profile_Emitter::ACTION_BACKSTOP, [ $this->emitter, 'schedule_debounced_push' ] );
+		remove_action( 'wcpay_wsn_profile_force_resync', [ $this->emitter, 'force_immediate_push' ] );
 	}
 }

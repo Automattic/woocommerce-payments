@@ -182,6 +182,15 @@ class WSN_Profile_Emitter {
 		add_action( self::ACTION_PUSH, [ $this, 'execute_push' ] );
 		add_action( self::ACTION_BACKSTOP, [ $this, 'schedule_debounced_push' ] );
 
+		// Manual "Retry sync" trigger from the Hub UI Profile-tab badge.
+		// Calls `force_immediate_push()` which schedules ACTION_PUSH at
+		// time() instead of the default 60s debounce, but still goes
+		// through `execute_push` so the skip-emit guard and error handling
+		// apply identically. REST throttle at the controller layer (60s
+		// site-wide transient) keeps the AS schedule/unschedule churn off
+		// the DB even under button-mashing.
+		add_action( 'wcpay_wsn_profile_force_resync', [ $this, 'force_immediate_push' ], 10, 0 );
+
 		$this->ensure_backstop_scheduled();
 	}
 

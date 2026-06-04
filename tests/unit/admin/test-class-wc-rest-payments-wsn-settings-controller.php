@@ -68,6 +68,13 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		delete_option( 'site_logo' );
 		delete_option( 'site_icon' );
 
+		// Sync-state + force-resync test cleanup.
+		delete_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED );
+		delete_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED_VERSION );
+		delete_transient( WSN_Profile_Emitter::TRANSIENT_LAST_ERROR );
+		delete_transient( WC_REST_Payments_WSN_Settings_Controller::RESYNC_THROTTLE_TRANSIENT );
+		delete_option( WC_Payments_Features::WSN_PROFILE_EMITTER_FLAG_NAME );
+
 		wp_set_current_user( 0 );
 		parent::tear_down();
 	}
@@ -427,5 +434,143 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'site_logo', $body['derivations']['default_logo_source'] );
 
 		delete_option( 'site_logo' );
+	}
+
+	// ---- sync-state block in GET response ----
+
+	public function test_get_returns_sync_block_with_null_when_emitter_never_ran() {
+		$this->authenticate_as_shop_manager();
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$body = $response->get_data();
+
+		$this->assertArrayHasKey( 'sync', $body );
+		$this->assertNull( $body['sync']['last_synced'] );
+		$this->assertSame( '', $body['sync']['last_synced_version'] );
+		$this->assertNull( $body['sync']['last_error'] );
+		$this->assertSame( WSN_Profile_Emitter::DEBOUNCE_SECONDS, $body['sync']['debounce_seconds'] );
+	}
+
+	public function test_get_returns_sync_block_with_last_synced_when_emitter_ran() {
+		$this->authenticate_as_shop_manager();
+		update_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED, 1717500000, false );
+		update_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED_VERSION, 'abc123', false );
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$body = $response->get_data();
+		$this->assertSame( 1717500000, $body['sync']['last_synced'] );
+		$this->assertSame( 'abc123', $body['sync']['last_synced_version'] );
+	}
+
+	public function test_get_returns_sync_block_with_last_error_when_present() {
+		$this->authenticate_as_shop_manager();
+		set_transient(
+			WSN_Profile_Emitter::TRANSIENT_LAST_ERROR,
+			[
+				'message'   => 'Test failure: HTTP 500.',
+				'timestamp' => 1717500000,
+			],
+			HOUR_IN_SECONDS
+		);
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$body = $response->get_data();
+		$this->assertIsArray( $body['sync']['last_error'] );
+		$this->assertSame( 'Test failure: HTTP 500.', $body['sync']['last_error']['message'] );
+	}
+
+	// ---- POST /payments/wsn/profile-resync ----
+
+	const RESYNC_ROUTE = '/wc/v3/payments/wsn/profile-resync';
+
+	public function test_resync_endpoint_rejects_without_manage_woocommerce() {
+		// Anonymous (no current user) lacks the capability.
+		$request  = new WP_REST_Request( 'POST', self::RESYNC_ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		// 401 (unauthenticated) or 403 (authenticated but unauthorized) — WP returns 401
+		// for the no-current-user case.
+		$this->assertGreaterThanOrEqual( 400, $response->get_status() );
+		$this->assertLessThan( 500, $response->get_status() );
+	}
+
+	public function test_resync_endpoint_returns_503_when_sub_flag_off() {
+		$this->authenticate_as_shop_manager();
+		// Sub-flag absent by default; explicitly assert the gate fires.
+
+		$request  = new WP_REST_Request( 'POST', self::RESYNC_ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 503, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame( 'wsn_profile_emitter_disabled', $data['code'] );
+	}
+
+	public function test_resync_endpoint_returns_202_and_fires_action_when_sub_flag_on() {
+		$this->authenticate_as_shop_manager();
+		update_option( WC_Payments_Features::WSN_PROFILE_EMITTER_FLAG_NAME, '1' );
+
+		$fire_count = 0;
+		add_action(
+			'wcpay_wsn_profile_force_resync',
+			function () use ( &$fire_count ) {
+				++$fire_count;
+			}
+		);
+
+		$request  = new WP_REST_Request( 'POST', self::RESYNC_ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 202, $response->get_status() );
+		$this->assertSame( 1, $fire_count, 'Resync POST must fire wcpay_wsn_profile_force_resync exactly once.' );
+		$data = $response->get_data();
+		$this->assertSame( 'scheduled', $data['status'] );
+		$this->assertIsInt( $data['rescheduled_at'] );
+
+		remove_all_actions( 'wcpay_wsn_profile_force_resync' );
+	}
+
+	public function test_resync_endpoint_throttles_within_throttle_window() {
+		$this->authenticate_as_shop_manager();
+		update_option( WC_Payments_Features::WSN_PROFILE_EMITTER_FLAG_NAME, '1' );
+
+		// First call sets the throttle.
+		$first = rest_get_server()->dispatch( new WP_REST_Request( 'POST', self::RESYNC_ROUTE ) );
+		$this->assertSame( 202, $first->get_status() );
+
+		// Second call inside the window should be rejected with 429 + Retry-After.
+		$second = rest_get_server()->dispatch( new WP_REST_Request( 'POST', self::RESYNC_ROUTE ) );
+		$this->assertSame( 429, $second->get_status() );
+
+		$headers = $second->get_headers();
+		$this->assertArrayHasKey( 'Retry-After', $headers, 'Throttled response must carry a Retry-After header so the JS client can back off.' );
+		$retry_after = (int) $headers['Retry-After'];
+		$this->assertGreaterThan( 0, $retry_after );
+		$this->assertLessThanOrEqual( WC_REST_Payments_WSN_Settings_Controller::RESYNC_THROTTLE_SECONDS, $retry_after );
+
+		$data = $second->get_data();
+		$this->assertSame( 'wsn_profile_resync_throttled', $data['code'] );
+	}
+
+	public function test_resync_endpoint_throttle_clears_after_window() {
+		$this->authenticate_as_shop_manager();
+		update_option( WC_Payments_Features::WSN_PROFILE_EMITTER_FLAG_NAME, '1' );
+
+		// First call sets the throttle; manually clear it to simulate window expiry
+		// without racing real time (transient TTL = 60s).
+		$first = rest_get_server()->dispatch( new WP_REST_Request( 'POST', self::RESYNC_ROUTE ) );
+		$this->assertSame( 202, $first->get_status() );
+
+		delete_transient( WC_REST_Payments_WSN_Settings_Controller::RESYNC_THROTTLE_TRANSIENT );
+
+		$second = rest_get_server()->dispatch( new WP_REST_Request( 'POST', self::RESYNC_ROUTE ) );
+		$this->assertSame( 202, $second->get_status(), 'After the throttle window expires, the endpoint must accept again.' );
 	}
 }
