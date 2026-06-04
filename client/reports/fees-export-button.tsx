@@ -19,7 +19,10 @@ import {
 	feesDownloadEndpoint,
 	getFeesCSVRequestURL,
 } from 'wcpay/data/reports/resolvers';
-import { buildFeesDateQueryFromUrlQuery } from './fees/date-filter-values';
+import {
+	buildFeesDateQueryFromUrlQuery,
+	type FeesDateQueryParams,
+} from './fees/date-filter-values';
 import { STORE_NAME } from 'wcpay/data/constants';
 
 /**
@@ -32,10 +35,7 @@ const confirmThreshold = 10000;
 const hasValue = ( value: unknown ): boolean =>
 	Array.isArray( value ) ? value.length > 0 : !! value;
 
-interface FeesExportQuery {
-	date_between?: string[];
-	date_before?: string;
-	date_after?: string;
+interface FeesExportQuery extends FeesDateQueryParams {
 	payment_method_type?: unknown;
 	type?: unknown;
 	order_id?: unknown;
