@@ -60,22 +60,35 @@ class WSN_Derivations {
 			$site_logo_id = (int) get_option( 'site_logo', 0 );
 		}
 
-		$default_logo_url    = null;
-		$default_logo_source = 'none';
+		$default_logo_url       = null;
+		$default_logo_source    = 'none';
+		$default_logo_attach_id = null;
 		if ( $site_logo_id > 0 ) {
 			$default_logo_url    = self::resolve_attachment_url( $site_logo_id );
 			$default_logo_source = null === $default_logo_url ? 'none' : 'site_logo';
+			if ( null !== $default_logo_url ) {
+				$default_logo_attach_id = $site_logo_id;
+			}
 		}
 		if ( null === $default_logo_url ) {
 			$site_icon_id = (int) get_option( 'site_icon', 0 );
 			if ( $site_icon_id > 0 ) {
 				$default_logo_url    = self::resolve_attachment_url( $site_icon_id );
 				$default_logo_source = null === $default_logo_url ? 'none' : 'site_icon';
+				if ( null !== $default_logo_url ) {
+					$default_logo_attach_id = $site_icon_id;
+				}
 			}
 		}
 
 		$override_logo_url = self::resolve_attachment_url( $logo_override_id );
 		$logo_url          = $override_logo_url ?? $default_logo_url;
+		// Track which attachment ID actually resolved into logo_url so
+		// consumers (e.g. the Profile sync composer) can look up image
+		// metadata (width/height) without re-running the fallback chain.
+		$logo_attachment_id = null !== $override_logo_url
+			? $logo_override_id
+			: $default_logo_attach_id;
 
 		$refund_page_id    = WSN_Settings::get_refund_page_id();
 		$refund_page_label = null;
@@ -98,6 +111,7 @@ class WSN_Derivations {
 
 		return [
 			'logo_url'              => $logo_url,
+			'logo_attachment_id'    => $logo_attachment_id,
 			// `default_logo_url` is what shows when the merchant clears
 			// the override — could be the site logo OR the site icon.
 			// `default_logo_source` tells the editor which one so the
