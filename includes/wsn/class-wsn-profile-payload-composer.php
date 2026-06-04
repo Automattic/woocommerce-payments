@@ -105,33 +105,40 @@ class WSN_Profile_Payload_Composer {
 		// the storefront read path both handle null gracefully.
 		$appearance_blob = self::collect_appearance_blob();
 
-		// Pre-payload-version assembly. payload_version is sha256 of
-		// the serialized canonical payload BEFORE adding the version
-		// field itself — so the version is determined entirely by the
-		// payload's content. This makes the skip-emit guard correct:
-		// if compose() returns the same bytes as last time, the version
-		// matches and the emitter no-ops.
+		// Build the canonical payload WITHOUT volatile fields. payload_version
+		// is sha256 of these bytes — it MUST be a pure function of content,
+		// because the emitter's skip-emit guard compares this hash against
+		// the last-synced version to decide whether anything actually
+		// changed. Volatile fields (client_updated_at, payload_version
+		// itself) get stamped AFTER the hash is computed.
+		//
+		// CRITICAL: putting client_updated_at (a per-second wall-clock
+		// timestamp) into the hash input defeats the guard entirely — every
+		// compose() would produce a unique hash and the 6h backstop would
+		// fire real POSTs at every tick instead of no-opping when nothing
+		// changed. The test asserts identical hashes across consecutive
+		// composes; without that test this regression can return silently.
 		$payload = [
-			'schema_version'    => self::SCHEMA_VERSION,
-			'client_updated_at' => gmdate( 'Y-m-d H:i:s' ),
-			'blog_id'           => self::resolve_blog_id(),
-			'host'              => self::resolve_host(),
-			'settings'          => WSN_Settings::get_all(),
-			'derivations'       => $derivations,
-			'appearance'        => $appearance_blob['appearance'],
-			'font_rules'        => $appearance_blob['font_rules'],
-			'logo_dimensions'   => $logo_dimensions,
-			'logo_thumb_b64'    => self::generate_logo_thumb(
+			'schema_version'  => self::SCHEMA_VERSION,
+			'blog_id'         => self::resolve_blog_id(),
+			'host'            => self::resolve_host(),
+			'settings'        => WSN_Settings::get_all(),
+			'derivations'     => $derivations,
+			'appearance'      => $appearance_blob['appearance'],
+			'font_rules'      => $appearance_blob['font_rules'],
+			'logo_dimensions' => $logo_dimensions,
+			'logo_thumb_b64'  => self::generate_logo_thumb(
 				$derivations['logo_attachment_id'] ?? null
 			),
-			'location'          => self::collect_location_allowlist(),
+			'location'        => self::collect_location_allowlist(),
 		];
 
-		// payload_version added last; not part of the hash input.
-		$serialized                 = wp_json_encode( $payload );
-		$payload['payload_version'] = false === $serialized
+		// Hash the content-only payload, then stamp volatile fields.
+		$serialized                   = wp_json_encode( $payload );
+		$payload['payload_version']   = false === $serialized
 			? '' // wp_json_encode failure is exceptional — empty version forces a re-emit attempt next cycle.
 			: hash( 'sha256', $serialized );
+		$payload['client_updated_at'] = gmdate( 'Y-m-d H:i:s' );
 
 		return $payload;
 	}

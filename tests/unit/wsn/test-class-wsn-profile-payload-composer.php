@@ -157,21 +157,46 @@ class WSN_Profile_Payload_Composer_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'blog_id', $payload );
 	}
 
-	public function test_payload_version_is_deterministic_for_same_input() {
+	public function test_payload_version_is_identical_across_consecutive_composes_with_same_inputs() {
 		$v1 = WSN_Profile_Payload_Composer::compose()['payload_version'];
 		$v2 = WSN_Profile_Payload_Composer::compose()['payload_version'];
 
-		// client_updated_at varies between calls, so the *whole* payload
-		// won't be identical. payload_version is sha256 of the payload
-		// minus the version field itself. client_updated_at IS included
-		// in that hash, so two calls within the same wall-clock second
-		// produce identical hashes; calls in different seconds don't.
-		//
-		// To assert determinism cleanly, we can't compare consecutive
-		// composes (different second → different hash). Instead assert
-		// that the hash format is stable + non-empty.
-		$this->assertSame( 64, strlen( $v1 ) );
-		$this->assertSame( 64, strlen( $v2 ) );
+		// Critical regression guard for the emitter's skip-emit guard.
+		// payload_version MUST be a pure function of content — same data
+		// in, same hash out, regardless of wall-clock time at compose
+		// time. If volatile fields (client_updated_at, payload_version
+		// itself, anything else that varies independent of merchant
+		// state) leak into the hash input, the guard never matches and
+		// the 6h backstop fires a real POST every tick instead of
+		// no-opping when nothing changed.
+		$this->assertSame(
+			$v1,
+			$v2,
+			'payload_version must be deterministic for identical inputs. ' .
+				'If this assertion fails, a volatile field (likely a timestamp ' .
+				'or random value) has leaked into the hashed payload and the ' .
+				'emitter\'s skip-emit guard is silently bypassed.'
+		);
+		$this->assertSame( 64, strlen( $v1 ), 'Sanity: payload_version is a sha256 hex string.' );
+	}
+
+	public function test_client_updated_at_does_not_affect_payload_version() {
+		// Even though client_updated_at appears in the emitted payload,
+		// it MUST NOT be part of the hash input. This is the most likely
+		// regression vector for the determinism property above —
+		// "wouldn't it be cleaner to include the timestamp in the hash
+		// for verification?" is the wrong instinct. The hash is for
+		// skip-emit, not auditing; the timestamp is for auditing, not
+		// skip-emit. Don't mix the roles.
+		$first  = WSN_Profile_Payload_Composer::compose();
+		$second = WSN_Profile_Payload_Composer::compose();
+
+		// They differ at the timestamp field (or could, across seconds).
+		$this->assertNotEmpty( $first['client_updated_at'] );
+		$this->assertNotEmpty( $second['client_updated_at'] );
+
+		// …but the payload_version hash must be identical.
+		$this->assertSame( $first['payload_version'], $second['payload_version'] );
 	}
 
 	public function test_payload_version_changes_when_shop_name_changes() {
