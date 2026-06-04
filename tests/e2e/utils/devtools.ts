@@ -12,8 +12,16 @@ import { Page, expect } from '@playwright/test';
 const devToolsRenderTimeoutMs = 15 * 1000;
 const devToolsMaxLoadAttempts = 3;
 
-const goToDevToolsSettings = async ( page: Page ) => {
-	for ( let attempt = 1; attempt <= devToolsMaxLoadAttempts; attempt++ ) {
+// Exported (with injectable bounds) so the resilience can be unit-tested against a
+// mocked truncated render; callers use the defaults.
+export const goToDevToolsSettings = async (
+	page: Page,
+	{
+		renderTimeoutMs = devToolsRenderTimeoutMs,
+		maxLoadAttempts = devToolsMaxLoadAttempts,
+	}: { renderTimeoutMs?: number; maxLoadAttempts?: number } = {}
+) => {
+	for ( let attempt = 1; attempt <= maxLoadAttempts; attempt++ ) {
 		await page.goto( '/wp-admin/admin.php?page=wcpaydev', {
 			waitUntil: 'load',
 		} );
@@ -22,7 +30,7 @@ const goToDevToolsSettings = async ( page: Page ) => {
 		// is proof the page was not truncated before it.
 		const renderedFully = await page
 			.getByRole( 'button', { name: 'Save Changes' } )
-			.waitFor( { state: 'visible', timeout: devToolsRenderTimeoutMs } )
+			.waitFor( { state: 'visible', timeout: renderTimeoutMs } )
 			.then( () => true )
 			.catch( () => false );
 
@@ -32,7 +40,7 @@ const goToDevToolsSettings = async ( page: Page ) => {
 	}
 
 	throw new Error(
-		`WCPay Dev Tools settings page did not render its "Save Changes" button after ${ devToolsMaxLoadAttempts } attempts; ` +
+		`WCPay Dev Tools settings page did not render its "Save Changes" button after ${ maxLoadAttempts } attempts; ` +
 			'it was likely truncated by a PHP fatal during render. Check the WordPress debug log artifact.'
 	);
 };
