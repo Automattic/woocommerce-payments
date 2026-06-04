@@ -1775,4 +1775,50 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertIsString( $captured_headers['Idempotency-Key'] );
 		$this->assertNotEmpty( $captured_headers['Idempotency-Key'] );
 	}
+
+	public function test_upload_evidence_file_contents_posts_base64_payload_to_files_api(): void {
+		$captured_url  = '';
+		$captured_body = null;
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( &$captured_url ): bool {
+						$captured_url = $data['url'];
+						return true;
+					}
+				),
+				$this->callback(
+					function ( $body ) use ( &$captured_body ): bool {
+						$captured_body = $body;
+						return true;
+					}
+				)
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'id' => 'file_1' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->upload_evidence_file_contents(
+			'YmFzZTY0ZGF0YQ==',
+			'receipt.pdf',
+			'application/pdf',
+			'dispute_evidence',
+			false
+		);
+
+		$this->assertSame( [ 'id' => 'file_1' ], $result );
+		$this->assertStringContainsString( '/wcpay/files', $captured_url );
+		$this->assertStringContainsString( 'YmFzZTY0ZGF0YQ==', (string) $captured_body );
+		$this->assertStringContainsString( 'receipt.pdf', (string) $captured_body );
+		$this->assertStringContainsString( 'dispute_evidence', (string) $captured_body );
+	}
 }
