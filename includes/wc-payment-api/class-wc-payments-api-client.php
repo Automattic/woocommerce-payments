@@ -2237,6 +2237,29 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
+	 * Delete the merchant's WSN Profile row on the WooPay server.
+	 *
+	 * Called from `uninstall.php` as a fire-and-forget cleanup when the
+	 * merchant uninstalls (not just deactivates) the plugin. Reaches the
+	 * same Jetpack-signed endpoint as `send_wsn_profile_payload`; the
+	 * receiver inspects the HTTP method and routes to its delete path.
+	 *
+	 * Best-effort. The architecture doc's "Failure modes" section
+	 * explicitly notes uninstall context is unreliable for network calls
+	 * (no admin runtime, may be missing connectivity, target may be down)
+	 * — the load-bearing cleanup path is the WooPay-side reconciliation
+	 * cron, which deletes rows whose `last_seen_at` falls behind the
+	 * 7-day threshold.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception When not connected or the request fails.
+	 */
+	public function delete_wsn_profile_payload() {
+		return $this->request( [], self::WSN_PROFILE_API, 'DELETE' );
+	}
+
+	/**
 	 * Get tracking info for the site.
 	 *
 	 * @return  array  Tracking info.

@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add graceful uninstall cleanup for WSN Profile sync (uninstall.php fires a best-effort DELETE to the WooPay server to remove the merchant's Profile row immediately, instead of waiting for the 7-day reconciliation cron window).
