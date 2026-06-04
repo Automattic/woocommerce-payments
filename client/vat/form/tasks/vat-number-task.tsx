@@ -99,12 +99,7 @@ const getVatTaxIDRequirementHint = () => {
 				),
 				{
 					learnMoreLink: (
-						<ExternalLink href="https://woocommerce.com/document/woopayments/taxes/documents/">
-							{ __(
-								'Learn more about tax documents',
-								'woocommerce-payments'
-							) }
-						</ExternalLink>
+						<ExternalLink href="https://woocommerce.com/document/woopayments/taxes/documents/" />
 					),
 				}
 			);
