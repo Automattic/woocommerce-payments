@@ -35,6 +35,7 @@ class WC_Payments_Features {
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
 	const WSN_HUB_FLAG_NAME                                   = '_wcpay_feature_wsn_hub';
+	const WSN_PROFILE_EMITTER_FLAG_NAME                       = '_wcpay_feature_wsn_profile_emitter';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -377,6 +378,23 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the WSN Profile sync emitter is enabled (RSM-3945).
+	 *
+	 * Sub-flag of the Hub: when off, the Hub UI works exactly as before
+	 * but no outbound Profile push happens — settings stay merchant-side
+	 * only. Useful for a gated cohort rollout (turn on for a small set of
+	 * test merchants before fleet-wide).
+	 *
+	 * The Hub flag is the master gate. If the Hub is OFF, this returning
+	 * true does nothing — the emitter isn't even loaded.
+	 *
+	 * @return bool
+	 */
+	public static function is_wsn_profile_emitter_enabled(): bool {
+		return '1' === get_option( self::WSN_PROFILE_EMITTER_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
 	 *
 	 * @return bool
@@ -457,6 +475,7 @@ class WC_Payments_Features {
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 				'reportsArea'                              => self::is_reports_area_enabled(),
 				'wsnHub'                                   => self::is_wsn_hub_enabled(),
+				'wsnProfileEmitter'                        => self::is_wsn_profile_emitter_enabled(),
 			]
 		);
 	}

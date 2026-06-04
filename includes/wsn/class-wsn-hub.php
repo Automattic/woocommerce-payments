@@ -57,6 +57,20 @@ class WSN_Hub {
 		// `in_admin_header` fires immediately before `admin_notices` + `all_admin_notices`,
 		// which is the last safe moment to strip third-party callbacks before they render.
 		add_action( 'in_admin_header', [ $this, 'suppress_third_party_admin_notices' ], 0 );
+
+		// Boot the Profile sync emitter when the sub-flag is on. Listeners
+		// must be registered now (not deferred to rest_api_init), because
+		// wcpay_woopay_appearance_changed fires from non-REST contexts
+		// (theme switches, customizer saves, classic-theme checkout DOM
+		// extraction). Mirrors the eager-hook pattern WCPay uses for the
+		// Compatibility_Service.
+		if ( WC_Payments_Features::is_wsn_profile_emitter_enabled() ) {
+			$emitter = new WSN_Profile_Emitter(
+				WC_Payments::get_payments_api_client(),
+				WC_Payments::get_action_scheduler_service()
+			);
+			$emitter->init_hooks();
+		}
 	}
 
 	/**
@@ -417,5 +431,19 @@ class WSN_Hub {
 
 		$pages_controller = new WC_REST_Payments_WSN_Pages_Controller( $api_client );
 		$pages_controller->register_routes();
+
+		// Profile-export endpoint — Jetpack-signed read path for WooPay's
+		// reconciliation cron + lazy-fetch fallback. Sibling to the
+		// outbound emitter (gated on the same sub-flag), so the read
+		// endpoint is available exactly when the write endpoint is
+		// emitting. The export controller's permission_callback is its
+		// own Jetpack-signature check, so the manage_woocommerce gate
+		// is intentionally bypassed (the caller is a WooPay cron, not
+		// an admin browser).
+		if ( WC_Payments_Features::is_wsn_profile_emitter_enabled() ) {
+			require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-profile-export-controller.php';
+			$export_controller = new WC_REST_Payments_WSN_Profile_Export_Controller( $api_client );
+			$export_controller->register_routes();
+		}
 	}
 }
