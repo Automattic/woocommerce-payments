@@ -124,6 +124,16 @@ class WSN_Profile_Emitter {
 	const TRANSIENT_BACKSTOP_SCHEDULED = 'wsn_profile_backstop_scheduled';
 
 	/**
+	 * Max characters of an exception message we'll store in the
+	 * last-error transient. Caps the cardinality of well-known
+	 * transient keys against verbose network-layer messages that
+	 * can leak endpoint URLs or stack frame text.
+	 *
+	 * @var int
+	 */
+	const MAX_LAST_ERROR_MESSAGE_LEN = 200;
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -210,10 +220,16 @@ class WSN_Profile_Emitter {
 			update_option( self::OPTION_LAST_SYNCED_VERSION, (string) ( $payload['payload_version'] ?? '' ), false );
 			delete_transient( self::TRANSIENT_LAST_ERROR );
 		} catch ( \Throwable $e ) {
+			// Cap message length — network-layer exceptions can include
+			// endpoint URLs, stack frame fragments, or PHP internals
+			// that aren't useful to the merchant and add cardinality to
+			// any error-monitoring that hashes by message. The Hub UI
+			// only needs enough text to distinguish failure modes
+			// ("network", "401", "422 + field name").
 			set_transient(
 				self::TRANSIENT_LAST_ERROR,
 				[
-					'message'   => $e->getMessage(),
+					'message'   => substr( (string) $e->getMessage(), 0, self::MAX_LAST_ERROR_MESSAGE_LEN ),
 					'timestamp' => time(),
 				],
 				self::TRANSIENT_LAST_ERROR_TTL

@@ -2256,7 +2256,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @throws API_Exception When not connected or the request fails.
 	 */
 	public function delete_wsn_profile_payload() {
-		return $this->request( [], self::WSN_PROFILE_API, 'DELETE' );
+		return $this->request( [], self::WSN_PROFILE_API, self::DELETE );
 	}
 
 	/**
