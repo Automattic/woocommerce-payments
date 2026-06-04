@@ -117,15 +117,35 @@ class WC_Payments_Styles_Cache {
 	 * @param array $font_rules Font CDN stylesheet URLs, each as [ 'cssSrc' => string ].
 	 */
 	public static function set_woopay_appearance( array $appearance, array $font_rules = [] ): void {
+		$version = self::get_styles_cache_version();
+
 		update_option(
 			'wcpay_woopay_checkout_appearance',
 			[
 				'appearance' => $appearance,
 				'font_rules' => $font_rules,
-				'version'    => self::get_styles_cache_version(),
+				'version'    => $version,
 			],
 			false
 		);
+
+		/**
+		 * Fires after the WooPay checkout appearance + font rules have been
+		 * persisted. Consumers that mirror the appearance to external
+		 * services (e.g. the RSM-3945 Profile sync emitter) listen here
+		 * instead of hooking each of the upstream invalidation hooks
+		 * (`after_switch_theme`, `save_post_wp_global_styles`,
+		 * `save_post_wp_template_part`, `save_post_wp_template`,
+		 * `customize_save_after`) — fewer triggers, single chokepoint,
+		 * version is already known.
+		 *
+		 * @since 10.9.0
+		 *
+		 * @param array  $appearance The Stripe Elements appearance object.
+		 * @param array  $font_rules Font CDN stylesheet URLs.
+		 * @param string $version    Hashed cache version that produced this appearance.
+		 */
+		do_action( 'wcpay_woopay_appearance_changed', $appearance, $font_rules, $version );
 	}
 
 	/**

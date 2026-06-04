@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add wcpay_woopay_appearance_changed action hook, fired after WC_Payments_Styles_Cache::set_woopay_appearance() persists the appearance + font rules. Downstream consumers (RSM-3945 Profile sync emitter) listen here as a single chokepoint instead of hooking each upstream invalidation trigger.
