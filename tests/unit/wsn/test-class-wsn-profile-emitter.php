@@ -60,12 +60,14 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		delete_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED );
 		delete_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED_VERSION );
 		delete_transient( WSN_Profile_Emitter::TRANSIENT_LAST_ERROR );
+		delete_transient( WSN_Profile_Emitter::TRANSIENT_BACKSTOP_SCHEDULED );
 	}
 
 	public function tear_down() {
 		delete_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED );
 		delete_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED_VERSION );
 		delete_transient( WSN_Profile_Emitter::TRANSIENT_LAST_ERROR );
+		delete_transient( WSN_Profile_Emitter::TRANSIENT_BACKSTOP_SCHEDULED );
 
 		parent::tear_down();
 	}
@@ -235,6 +237,26 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( WSN_Profile_Emitter::get_last_synced_time() );
 		$this->assertSame( '', WSN_Profile_Emitter::get_last_synced_version() );
 		$this->assertNull( WSN_Profile_Emitter::get_last_error() );
+	}
+
+	public function test_ensure_backstop_scheduled_short_circuits_when_transient_is_set() {
+		// Cache flag is the "we know it's scheduled" hint that lets us
+		// skip the AS DB query. With the transient set, the method must
+		// return false (already scheduled, nothing to do) without
+		// touching as_has_scheduled_action.
+		set_transient(
+			WSN_Profile_Emitter::TRANSIENT_BACKSTOP_SCHEDULED,
+			1,
+			WSN_Profile_Emitter::BACKSTOP_INTERVAL_SECONDS
+		);
+
+		$result = $this->emitter->ensure_backstop_scheduled();
+
+		$this->assertFalse(
+			$result,
+			'With the cached-scheduled transient set, ensure_backstop_scheduled must short-circuit. ' .
+				'A regression here means an AS DB query fires on every WP request when the sub-flag is ON.'
+		);
 	}
 
 	public function test_init_hooks_registers_listeners() {

@@ -110,6 +110,20 @@ class WSN_Profile_Emitter {
 	const TRANSIENT_LAST_ERROR_TTL = WEEK_IN_SECONDS;
 
 	/**
+	 * Transient key — cached "backstop is scheduled" flag.
+	 *
+	 * `as_has_scheduled_action()` is a DB query against the
+	 * actionscheduler_actions table. Once we've verified the backstop
+	 * is scheduled, caching that fact for one backstop interval saves
+	 * an AS DB query on every WP request when the sub-flag is ON.
+	 * At 100K merchants × ~100 requests/day = millions of unnecessary
+	 * SELECTs/day without this cache.
+	 *
+	 * @var string
+	 */
+	const TRANSIENT_BACKSTOP_SCHEDULED = 'wsn_profile_backstop_scheduled';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -220,18 +234,30 @@ class WSN_Profile_Emitter {
 	 *              false if one was already pending or AS is unavailable.
 	 */
 	public function ensure_backstop_scheduled(): bool {
+		// Short-circuit on the cached "already scheduled" flag — avoids
+		// an AS DB query on every WP request once the backstop is in
+		// place. Transient TTL matches the backstop interval so the
+		// re-check cadence matches the natural firing cadence.
+		if ( get_transient( self::TRANSIENT_BACKSTOP_SCHEDULED ) ) {
+			return false;
+		}
+
 		if ( ! function_exists( 'as_has_scheduled_action' )
 			|| ! function_exists( 'as_schedule_recurring_action' ) ) {
 			return false;
 		}
+
 		if ( as_has_scheduled_action( self::ACTION_BACKSTOP ) ) {
+			set_transient( self::TRANSIENT_BACKSTOP_SCHEDULED, 1, self::BACKSTOP_INTERVAL_SECONDS );
 			return false;
 		}
+
 		as_schedule_recurring_action(
 			time() + wp_rand( 10, 60 ),
 			self::BACKSTOP_INTERVAL_SECONDS,
 			self::ACTION_BACKSTOP
 		);
+		set_transient( self::TRANSIENT_BACKSTOP_SCHEDULED, 1, self::BACKSTOP_INTERVAL_SECONDS );
 		return true;
 	}
 

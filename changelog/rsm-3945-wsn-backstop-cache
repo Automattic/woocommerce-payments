@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+WSN Profile sync: cache the 'backstop is scheduled' flag in a transient to eliminate an Action Scheduler DB query on every WP request (was hitting actionscheduler_actions on every page load / REST / AJAX when the emitter sub-flag was ON; at scale that's millions of unnecessary SELECTs/day).
