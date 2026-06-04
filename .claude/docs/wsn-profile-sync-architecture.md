@@ -1,6 +1,6 @@
 # WSN Profile Sync Architecture
 
-**Last updated:** 2026-06-04 — producer-stability principle locked: WCPay emits canonical; WooPay-side handler does storefront-shape projection at merge.
+**Last updated:** 2026-06-04 — transport destination corrected to direct WooPay host (Option C); the prior wpcom/v2/sites/{blog_id}/wcpay/wsn/profile path had no receiver and was never reaching WooPay.
 How WSN Profile data flows from each WCPay merchant site to a new WooPay-server table keyed by `blog_id`, optimized for read-heavy shopper-facing access. Owned by RSM-3945 (Profile emitter) and the WooPay-side companion work (table + controller + storefront read-path merge).
 
 This doc supersedes the contradicted parts of WooPay's `docs/wsn/merchant-appearance-sync.md` (which has both a `wp_options`-per-blog and a `host`-keyed-custom-table version) and resolves the open questions flagged in `.claude/tmp/artifacts/RSM-3930/plan.md`.
@@ -71,20 +71,24 @@ Composed payload is ~5–20 KB serialized.
 │       │  Strips street_address/postcode (privacy)           │
 │       │  Hashes payload → version                           │
 │       ▼                                                      │
-│  WSN_Profile_Emitter::send()                                 │
+│  WSN_Profile_Emitter::execute_push()                         │
 │       │  Skip-emit if version === last_synced_version       │
-│       │  WC_Payments_API_Client::request(non_blocking=true) │
-│       ▼  Jetpack-signed POST                                │
+│       │  WSN_Profile_Transport::send($payload)              │
+│       │  → \Automattic\Jetpack\Connection\Client            │
+│       │       ::remote_request($args, $body)                │
+│       ▼  Jetpack-signed POST (X_JETPACK blog token)         │
 └───────┼──────────────────────────────────────────────────────┘
         │
-        │  https://public-api.wordpress.com/wpcom/v2/sites/{blog_id}
-        │         /wcpay/wsn/profile
+        │  https://pay.woo.com/wp-json/wsn/v1/merchants/{blog_id}/profile
+        │  (host honors PLATFORM_CHECKOUT_HOST in non-prod environments)
         ▼
 ┌──────────────────── pay.woo.com (WPCOM Simple) ─────────────┐
 │                                                              │
 │  WsnMerchantProfileController                                │
-│       │  permission_callback = RESTUtils::is_valid_...      │
-│       │  Asserts path blog_id == signature blog_id          │
+│       │  permission_callback validates the X_JETPACK         │
+│       │  blog-token signature via                            │
+│       │  Jetpack_Server_Version::get_token_from_authorization_header │
+│       │  Asserts path blog_id == signed blog_id (WOOPAY-454) │
 │       │  Schema-validates (rejects address PII)             │
 │       │  Conflict-resolve: version OR client_updated_at     │
 │       ▼                                                      │
@@ -173,16 +177,20 @@ Composed payload is ~5–20 KB serialized.
    if payload_version === get_option('wsn_profile_last_synced_version'):
        log("skipped: unchanged"); return
 
-5. EMIT (fire-and-forget, non-blocking)
+5. EMIT (direct Jetpack-signed POST to WooPay; throws on failure for emitter catch)
    try {
-     WC_Payments_API_Client::request(
-       'wsn/profile', $payload, 'POST',
-       /*idempotency_key*/ $payload_version,
-       /*non_blocking*/ true
-     )
-     // canonical Jetpack-signed path via class-wc-payments-http.php
-     // → Automattic\Jetpack\Connection\Client::remote_request()
-     // URL: https://public-api.wordpress.com/wpcom/v2/sites/{blog_id}/wcpay/wsn/profile
+     WSN_Profile_Transport::send($payload)
+     // → \Automattic\Jetpack\Connection\Client::remote_request($args, $body)
+     // URL: https://pay.woo.com/wp-json/wsn/v1/merchants/{blog_id}/profile
+     //      (host honors PLATFORM_CHECKOUT_HOST in non-prod)
+     // Method: POST | Body: wp_json_encode($payload)
+     // Signing: full X_JETPACK blog-token signature attached by Client
+     //
+     // This is NOT routed through WC_Payments_API_Client — that client
+     // always prefixes URLs with public-api.wordpress.com/wpcom/v2/sites/{blog_id}/wcpay/
+     // which targets the WCPay backend (Transact-API), not WooPay.
+     // Mirrors the production-proven /init pattern at
+     // includes/woopay/class-woopay-session.php::ajax_init_woopay.
    } catch ( Throwable $e ) {
      set_transient('wsn_profile_last_error',
        { message, http_status, ts }, 7 * DAY_IN_SECONDS);
@@ -483,7 +491,7 @@ The reconciliation cron also runs the same schema validator on every GET respons
 
 | # | Decision | Rationale |
 |---|---|---|
-| 1 | **Jetpack signature auth** | pay.woo.com is WPCOM Simple — native fit, no shared secret, blog_id auto-recovered from signed envelope. Reuses canonical [class-wc-payments-http.php](../../includes/wc-payment-api/class-wc-payments-http.php) → Jetpack Client pattern. |
+| 1 | **Jetpack signature auth** (direct POST to WooPay host, locked 2026-06-04) | pay.woo.com is WPCOM Simple — native fit, no shared secret, blog_id auto-recovered from signed envelope. Transport calls [`\Automattic\Jetpack\Connection\Client::remote_request()`](../../includes/wsn/class-wsn-profile-transport.php) directly against the WooPay host. Mirrors the production-proven `/init` push at [class-woopay-session.php::ajax_init_woopay](../../includes/woopay/class-woopay-session.php) — same signer, same WooPay-side validator, in production for years. NOT routed through the WCPay backend `wcpay/*` namespace (an earlier draft of this doc described that path; it was wrong — no handler existed on the WCPay backend). |
 | 2 | Endpoint path: **`/wsn/v1/merchants/{blog_id}/profile`** | blog_id is immutable; matches Jetpack-signature recovery; supports POST (push) + GET (lazy-fetch) + DELETE (uninstall). |
 | 3 | **Custom InnoDB table** `wp_wsn_merchant_profile` | Mirrors WooPay-side Favorites/Cart pattern; debuggable from CLI; queryable independently of WP options autoload behavior. |
 | 4 | **WPCOM ops access confirmed** | No infra blocker. |
@@ -494,14 +502,25 @@ The reconciliation cron also runs the same schema validator on every GET respons
 | 9 | **Promote `country` + `has_free_shipping` to flat indexed columns** | Likely marketplace filter columns; adding columns later is cheap, removing them isn't. Better to slightly over-promote than to chase ALTERs after launch. |
 | 10 | **Opt-in IS the backfill** | WSN Hub is feature-flagged off today; `wcpay_wsn_enabled` defaults to false; no merchant can currently be in the "enrolled but unsynced" state at launch. The first enable click IS the first push. WP-CLI batch backfill becomes a v2 disaster-recovery tool only. |
 
+### Correction: direct-to-WooPay transport (locked 2026-06-04)
+
+An earlier draft of this doc described the Profile push as routing through the WCPay backend at `https://public-api.wordpress.com/wpcom/v2/sites/{blog_id}/wcpay/wsn/profile` — i.e., via `WC_Payments_API_Client::request()`. **That path had no receiver.** The WooPay-side session verified this by greping all 663 endpoint files in `woocommerce-payments-server` for any `wsn` route and finding zero. Every push fired by the original code landed nowhere.
+
+The fix re-points the transport to POST **directly** to the WooPay host (`pay.woo.com/wp-json/wsn/v1/merchants/{blog_id}/profile`), using `\Automattic\Jetpack\Connection\Client::remote_request()` and the standard `X_JETPACK` blog-token signature attached by the Jetpack signer. WooPay validates the signature natively via `Jetpack_Server_Version::get_token_from_authorization_header()` plus a `signed_blog_id === path_blog_id` cross-check (the WOOPAY-454 defense-in-depth pattern). The existence proof: the `/init` express-checkout push at [`includes/woopay/class-woopay-session.php::ajax_init_woopay()`](../../includes/woopay/class-woopay-session.php) has been doing this exact `Client::remote_request()` → WooPay host → blog-token-signature-validated pattern in production for years.
+
+The wire shape (composer payload, `payload_version` hash, privacy allowlist, `schema_version`) is unchanged. Only the transport layer was wrong; the contract was right.
+
+Source of the correction: [`.claude/tmp/artifacts/RSM-3945/handoff-to-wcpay-option-c.md`](../tmp/artifacts/RSM-3945/handoff-to-wcpay-option-c.md) — WooPay-side audit + recommended fix (Option C).
+
 ## Implementation plan (RSM-3945 scope)
 
 **WCPay merchant-side (new files):**
 
 - `includes/wsn/class-wsn-profile-payload-composer.php` — `WSN_Profile_Payload_Composer::compose()` returning the wire payload (settings + derivations + appearance + location-allowlisted + logo_thumb_b64 + version)
-- `includes/wsn/class-wsn-profile-emitter.php` — `WSN_Profile_Emitter` listens on the 3 trigger hooks, debounces via Action Scheduler, fires the Jetpack-signed POST, manages `wsn_profile_last_synced` + `wsn_profile_last_error` state
+- `includes/wsn/class-wsn-profile-transport.php` — `WSN_Profile_Transport` direct Jetpack-signed POST/DELETE to the WooPay host; called by the emitter on push and by `uninstall.php` on goodbye-DELETE
+- `includes/wsn/class-wsn-profile-emitter.php` — `WSN_Profile_Emitter` listens on the 3 trigger hooks, debounces via Action Scheduler, fires the Jetpack-signed POST via the transport, manages `wsn_profile_last_synced` + `wsn_profile_last_error` state
 - `includes/admin/class-wc-rest-payments-wsn-profile-export-controller.php` — new sibling GET endpoint at `/wc/v3/payments/wsn/profile-export`, `permission_callback = is_valid_jetpack_signature`, returns the same payload shape the composer emits
-- `uninstall.php` addition — fire-and-forget DELETE call to `/wsn/v1/merchants/{blog_id}/profile`
+- `uninstall.php` addition — fire-and-forget DELETE call via the transport to `pay.woo.com/wp-json/wsn/v1/merchants/{blog_id}/profile`
 
 **WCPay merchant-side (modifications):**
 
@@ -599,7 +618,8 @@ That woopay-repo doc should be edited or marked superseded by whoever owns it. `
   - [class-wsn-settings.php](../../includes/wsn/class-wsn-settings.php) — option storage
   - [class-wc-rest-payments-wsn-settings-controller.php](../../includes/admin/class-wc-rest-payments-wsn-settings-controller.php) — `compute_derivations()` is the canonical payload shape
   - [class-wc-payments-styles-cache.php](../../includes/class-wc-payments-styles-cache.php) — appearance source
-  - [class-wc-payments-http.php](../../includes/wc-payment-api/class-wc-payments-http.php) — Jetpack-signed HTTP path
+  - [class-wsn-profile-transport.php](../../includes/wsn/class-wsn-profile-transport.php) — direct Jetpack-signed POST/DELETE to the WooPay host
+  - [class-woopay-session.php](../../includes/woopay/class-woopay-session.php) — `ajax_init_woopay()` is the production existence-proof for the direct-to-WooPay Jetpack-signed transport pattern
   - [class-compatibility-service.php](../../includes/compatibility/class-compatibility-service.php) — debounce pattern reference
 - **WooPay code** (in the woopay repo):
   - `src/Shop/Marketplace/MarketplaceController.php` — controller pattern
