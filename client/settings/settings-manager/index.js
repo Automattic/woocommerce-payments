@@ -23,6 +23,7 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
+import FormBusyState from 'wcpay/components/form-busy-state';
 import NotificationSettings, {
 	NotificationSettingsDescription,
 } from '../notification-settings';
@@ -152,7 +153,7 @@ const SettingsManager = () => {
 	const [ isNotificationEmailValid, setNotificationEmailValid ] =
 		useState( true );
 
-	const { isLoading, isDirty } = useSettings();
+	const { isLoading, isDirty, isSaving } = useSettings();
 
 	useEffect( () => {
 		if ( ! isDirty ) {
@@ -230,106 +231,112 @@ const SettingsManager = () => {
 
 	return (
 		<SettingsLayout>
-			<SettingsSection
-				description={ GeneralSettingsDescription }
-				id="general"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<GeneralSettings />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<DuplicatedPaymentMethodsContext.Provider
-				value={ {
-					duplicates: useGetDuplicatedPaymentMethodIds(),
-					dismissedDuplicateNotices: dismissedDuplicateNotices,
-					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
-				} }
-			>
-				<PaymentMethodsSection />
-				<BuyNowPayLaterSection />
+			<FormBusyState isBusy={ isSaving }>
 				<SettingsSection
-					id="express-checkouts"
-					description={ ExpressCheckoutDescription }
+					description={ GeneralSettingsDescription }
+					id="general"
 				>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
-							<ExpressCheckout />
+							<GeneralSettings />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
-			</DuplicatedPaymentMethodsContext.Provider>
-			<SettingsSection
-				description={ TransactionsDescription }
-				id="transactions"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<Transactions
-							setTransactionInputsValid={
-								setTransactionInputsValid
-							}
-						/>
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection description={ DepositsDescription } id="deposits">
-				<div id="payout-schedule">
+				<DuplicatedPaymentMethodsContext.Provider
+					value={ {
+						duplicates: useGetDuplicatedPaymentMethodIds(),
+						dismissedDuplicateNotices: dismissedDuplicateNotices,
+						setDismissedDuplicateNotices:
+							setDismissedDuplicateNotices,
+					} }
+				>
+					<PaymentMethodsSection />
+					<BuyNowPayLaterSection />
+					<SettingsSection
+						id="express-checkouts"
+						description={ ExpressCheckoutDescription }
+					>
+						<LoadableSettingsSection numLines={ 20 }>
+							<ErrorBoundary>
+								<ExpressCheckout />
+							</ErrorBoundary>
+						</LoadableSettingsSection>
+					</SettingsSection>
+				</DuplicatedPaymentMethodsContext.Provider>
+				<SettingsSection
+					description={ TransactionsDescription }
+					id="transactions"
+				>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
-							<Deposits />
+							<Transactions
+								setTransactionInputsValid={
+									setTransactionInputsValid
+								}
+							/>
 						</ErrorBoundary>
 					</LoadableSettingsSection>
-				</div>
-			</SettingsSection>
-			<SettingsSection
-				description={ NotificationSettingsDescription }
-				id="notification-settings"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<NotificationSettings
-							setNotificationEmailValid={
-								setNotificationEmailValid
-							}
-						/>
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection
-				description={ FraudProtectionDescription }
-				id="fp-settings"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<FraudProtection />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection
-				description={ AdvancedDescription }
-				id="advanced-settings"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<AdvancedSettings />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SaveSettingsSection
-				disabled={
-					! isTransactionInputsValid || ! isNotificationEmailValid
-				}
-			/>
-			<VatFormModal
-				isModalOpen={ isVatFormModalOpen }
-				setModalOpen={ handleVatFormModalClose }
-				onCompleted={ handleVatFormModalCompleted }
-			/>
-			<ErrorBoundary>
-				<SpotlightPromotion />
-			</ErrorBoundary>
+				</SettingsSection>
+				<SettingsSection
+					description={ DepositsDescription }
+					id="deposits"
+				>
+					<div id="payout-schedule">
+						<LoadableSettingsSection numLines={ 20 }>
+							<ErrorBoundary>
+								<Deposits />
+							</ErrorBoundary>
+						</LoadableSettingsSection>
+					</div>
+				</SettingsSection>
+				<SettingsSection
+					description={ NotificationSettingsDescription }
+					id="notification-settings"
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<NotificationSettings
+								setNotificationEmailValid={
+									setNotificationEmailValid
+								}
+							/>
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+				<SettingsSection
+					description={ FraudProtectionDescription }
+					id="fp-settings"
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<FraudProtection />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+				<SettingsSection
+					description={ AdvancedDescription }
+					id="advanced-settings"
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<AdvancedSettings />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+				<SaveSettingsSection
+					disabled={
+						! isTransactionInputsValid || ! isNotificationEmailValid
+					}
+				/>
+				<VatFormModal
+					isModalOpen={ isVatFormModalOpen }
+					setModalOpen={ handleVatFormModalClose }
+					onCompleted={ handleVatFormModalCompleted }
+				/>
+				<ErrorBoundary>
+					<SpotlightPromotion />
+				</ErrorBoundary>
+			</FormBusyState>
 		</SettingsLayout>
 	);
 };
