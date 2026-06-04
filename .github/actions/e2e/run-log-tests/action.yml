@@ -87,5 +87,7 @@ runs:
             tests/e2e/test-results
             ${{ env.E2E_RESULT_FILEPATH }}
             ${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}
+            tests/e2e/docker/wordpress/wp-content/debug.log
+            tests/e2e/docker/logs/apache2/
           if-no-files-found: ignore
           retention-days: 14
