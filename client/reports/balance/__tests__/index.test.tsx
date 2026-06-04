@@ -1083,6 +1083,15 @@ describe( 'BalanceReport Tracks', () => {
 		jest.useFakeTimers();
 		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
 		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+		// Explicit precondition: a date filter is already applied, so the next
+		// apply is a subsequent (non-initial) change. Mirrors the `initial`
+		// test, which overrides this to false.
+		mockUseBalanceDateFilter.mockReturnValue( {
+			value: undefined,
+			period,
+			hasDateFilterValue: true,
+			setValue: mockSetBalanceDateFilterValue,
+		} );
 
 		render(
 			<BalanceDateFilterNowContext.Provider value={ stableNow }>
