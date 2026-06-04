@@ -105,6 +105,23 @@ class WSN_Profile_Transport {
 	}
 
 	/**
+	 * Resolve the current site's Jetpack blog_id, or null when Jetpack
+	 * isn't loaded (e.g., during uninstall on a disconnected site).
+	 *
+	 * Protected so tests can override without faking `Jetpack_Options`
+	 * static state — see `WSN_Profile_Transport_Stub::resolve_current_blog_id`.
+	 *
+	 * @return int|null
+	 */
+	protected function resolve_current_blog_id(): ?int {
+		if ( ! class_exists( '\Jetpack_Options' ) ) {
+			return null;
+		}
+		$id = \Jetpack_Options::get_option( 'id' );
+		return null === $id ? null : (int) $id;
+	}
+
+	/**
 	 * Build the WooPay-host URL for a given blog_id.
 	 *
 	 * Builds off `WooPay_Utilities::get_woopay_url()` directly — the sibling
@@ -155,19 +172,5 @@ class WSN_Profile_Transport {
 				)
 			);
 		}
-	}
-
-	/**
-	 * Resolve the current site's Jetpack blog_id, or null when Jetpack
-	 * isn't loaded (e.g., during uninstall on a disconnected site).
-	 *
-	 * @return int|null
-	 */
-	private function resolve_current_blog_id(): ?int {
-		if ( ! class_exists( '\Jetpack_Options' ) ) {
-			return null;
-		}
-		$id = \Jetpack_Options::get_option( 'id' );
-		return null === $id ? null : (int) $id;
 	}
 }

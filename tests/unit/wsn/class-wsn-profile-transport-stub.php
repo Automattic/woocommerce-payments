@@ -39,6 +39,16 @@ class WSN_Profile_Transport_Stub extends WSN_Profile_Transport {
 	];
 
 	/**
+	 * Stub value returned from `resolve_current_blog_id()`. Null means
+	 * the resolver returns null (simulates a disconnected Jetpack), which
+	 * causes `delete(null)` to short-circuit. Set to an int to simulate a
+	 * connected site and exercise the fallback path.
+	 *
+	 * @var int|null
+	 */
+	public $stub_resolved_blog_id = null;
+
+	/**
 	 * Override the production seam — capture and return the stub.
 	 *
 	 * @param array  $args Request args.
@@ -51,5 +61,16 @@ class WSN_Profile_Transport_Stub extends WSN_Profile_Transport {
 			'body' => $body,
 		];
 		return $this->stub_response;
+	}
+
+	/**
+	 * Override the Jetpack-options-backed resolver so tests don't need to
+	 * stub `Jetpack_Options` static state. Returns whatever the test set
+	 * in `$stub_resolved_blog_id` (default null = simulates "not connected").
+	 *
+	 * @return int|null
+	 */
+	protected function resolve_current_blog_id(): ?int {
+		return $this->stub_resolved_blog_id;
 	}
 }

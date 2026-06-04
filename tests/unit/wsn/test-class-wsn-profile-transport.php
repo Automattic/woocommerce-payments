@@ -129,4 +129,35 @@ class WSN_Profile_Transport_Test extends WCPAY_UnitTestCase {
 
 		$this->assertNull( $transport->captured );
 	}
+
+	public function test_delete_null_short_circuits_when_resolver_returns_null() {
+		// Exercises the null-arg fallback through resolve_current_blog_id().
+		// Stub leaves $stub_resolved_blog_id at its default (null),
+		// simulating a disconnected Jetpack — the path uninstall.php would
+		// hit on a never-connected merchant.
+		$transport = new WSN_Profile_Transport_Stub();
+
+		$transport->delete();
+
+		$this->assertNull(
+			$transport->captured,
+			'delete(null) with no resolvable blog_id must short-circuit — firing an unsigned DELETE would 4xx on WooPay and pollute wsn_profile_last_error.'
+		);
+	}
+
+	public function test_delete_null_dispatches_with_resolved_blog_id() {
+		// Exercises the null-arg fallback through resolve_current_blog_id().
+		// Stub returns 99999, simulating a connected Jetpack — the path
+		// uninstall.php would hit on a connected merchant if it ever
+		// stopped passing the explicit blog_id (today it always does, but
+		// the public surface guarantees this path works).
+		$transport                        = new WSN_Profile_Transport_Stub();
+		$transport->stub_resolved_blog_id = 99999;
+
+		$transport->delete();
+
+		$this->assertNotNull( $transport->captured );
+		$this->assertSame( 'DELETE', $transport->captured['args']['method'] );
+		$this->assertStringContainsString( '/wp-json/wsn/v1/merchants/99999/profile', $transport->captured['args']['url'] );
+	}
 }
