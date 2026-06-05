@@ -113,7 +113,11 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 		$fresh = wc_get_order( $order->get_id() );
 		$this->assertSame( '1', (string) $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
 		$this->assertSame( WSN_Order_Attribution::CHANNEL_EXPRESS, $fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ) );
-		$this->assertEmpty(
+		// assertNull (not assertEmpty) — the class explicitly writes null
+		// when clearing the flag; assertEmpty would also pass for '' or 0
+		// which would mask a bug where the clear writes something other
+		// than null.
+		$this->assertNull(
 			WC()->session->get( WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL ),
 			'Single-use: the express session flag MUST be cleared after stamping so a follow-up non-WSN order in the same session is not misattributed.'
 		);
@@ -246,6 +250,201 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 			WSN_Order_Attribution::META_CHANNEL,
 			WC_REST_Payments_WSN_Orders_Controller::META_CHANNEL,
 			'Channel meta key drift between writer and reader. The Overview tab will never light up.'
+		);
+	}
+
+	// ---- Sub-flag wireup gate ----
+
+	public function test_sub_flag_helper_returns_true_when_option_is_one() {
+		// Direct contract test for is_wsn_order_attribution_enabled() —
+		// load-bearing because the wireup in WC_Payments::init() gates the
+		// class instantiation on this value. A typo / inverted check would
+		// silently turn the writer fully on or off across the fleet.
+		update_option( WC_Payments_Features::WSN_ORDER_ATTRIBUTION_FLAG_NAME, '1' );
+		$this->assertTrue( WC_Payments_Features::is_wsn_order_attribution_enabled() );
+		delete_option( WC_Payments_Features::WSN_ORDER_ATTRIBUTION_FLAG_NAME );
+	}
+
+	public function test_sub_flag_helper_returns_false_when_option_is_zero() {
+		update_option( WC_Payments_Features::WSN_ORDER_ATTRIBUTION_FLAG_NAME, '0' );
+		$this->assertFalse( WC_Payments_Features::is_wsn_order_attribution_enabled() );
+		delete_option( WC_Payments_Features::WSN_ORDER_ATTRIBUTION_FLAG_NAME );
+	}
+
+	public function test_sub_flag_helper_returns_false_by_default() {
+		// No option set — default-off invariant. Critical for dark-ship
+		// rollout: if this returned true by default, every WCPay install
+		// would silently begin stamping orders at the next deploy.
+		delete_option( WC_Payments_Features::WSN_ORDER_ATTRIBUTION_FLAG_NAME );
+		$this->assertFalse( WC_Payments_Features::is_wsn_order_attribution_enabled() );
+	}
+
+	public function test_sub_flag_constant_has_expected_value() {
+		// Pins the option-key string. If this constant gets renamed
+		// without updating the wireup in class-wc-payments.php (or vice
+		// versa), the option that's set via wp-cli won't match the option
+		// the code reads — the gate would default-off silently.
+		$this->assertSame(
+			'_wcpay_feature_wsn_order_attribution',
+			WC_Payments_Features::WSN_ORDER_ATTRIBUTION_FLAG_NAME
+		);
+	}
+
+	// ---- Behavioral priority test ----
+
+	public function test_handler_runs_after_priority_10_handler_in_action_chain() {
+		// Behavioral counterpart to test_init_hooks_registers_at_priority_20.
+		// That test asserts the literal priority value; a regression to e.g.
+		// HOOK_PRIORITY=5 (below WC core's OrderAttributionController at 10)
+		// would still pass if someone bumped the assertion too. This test
+		// proves the priority constraint behaviorally: register a priority-10
+		// handler that writes the UTM meta (simulating WC core's behavior),
+		// register our priority-20 handler, fire the action, and assert our
+		// handler saw the UTM. If our handler runs BEFORE priority 10, the
+		// UTM isn't there and the marketplace meta is never written.
+
+		$order = wc_create_order(); // No UTM meta yet — bare order.
+
+		// Simulate WC core's OrderAttributionController at default priority 10.
+		add_action(
+			'woocommerce_checkout_order_created',
+			function ( \WC_Order $stamped ) {
+				$stamped->update_meta_data(
+					'_wc_order_attribution_utm_source',
+					WSN_Order_Attribution::UTM_SOURCE_WSN
+				);
+				$stamped->update_meta_data(
+					'_wc_order_attribution_utm_content',
+					WSN_Order_Attribution::CHANNEL_PDP
+				);
+				$stamped->save_meta_data();
+			},
+			10, // Matches WC core's OrderAttributionController priority.
+			1
+		);
+
+		$this->attribution->init_hooks();
+
+		do_action( 'woocommerce_checkout_order_created', $order );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame(
+			WSN_Order_Attribution::CHANNEL_PDP,
+			$fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ),
+			'Our handler must run AFTER priority 10 — otherwise the UTM meta is not on the order when we read it, and the marketplace meta is never written. A regression to HOOK_PRIORITY <= 10 surfaces here.'
+		);
+
+		// Cleanup so the simulated WC-core handler + our handler don't
+		// leak into subsequent tests.
+		remove_all_actions( 'woocommerce_checkout_order_created' );
+		remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
+	}
+
+	// ---- sanitize_key boundary ----
+
+	public function test_stamp_classic_normalizes_uppercase_utm_content_via_sanitize_key() {
+		// sanitize_key() lowercases — a misbehaving UTM source that
+		// emitted `WSN-PDP` should still match the whitelist after
+		// normalization. Pins the implementation choice; a refactor that
+		// dropped sanitize_key() for trim() would silently change this.
+		$order = $this->create_order_with_wc_attribution(
+			WSN_Order_Attribution::UTM_SOURCE_WSN,
+			'WSN-PDP'
+		);
+
+		$this->attribution->stamp_classic_order_attribution( $order );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame(
+			WSN_Order_Attribution::CHANNEL_PDP,
+			$fresh->get_meta( WSN_Order_Attribution::META_CHANNEL )
+		);
+	}
+
+	public function test_stamp_classic_strips_disallowed_characters_via_sanitize_key() {
+		// sanitize_key() strips characters outside [a-z0-9_-]. A trailing
+		// slash gets removed, but the result `wsn-pdp` matches the
+		// whitelist exactly — by design (sanitize_key normalizes so
+		// minor adversarial variants land in the whitelist). Pins this
+		// established behavior.
+		$order = $this->create_order_with_wc_attribution(
+			WSN_Order_Attribution::UTM_SOURCE_WSN,
+			'wsn-pdp/'
+		);
+
+		$this->attribution->stamp_classic_order_attribution( $order );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame(
+			WSN_Order_Attribution::CHANNEL_PDP,
+			$fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ),
+			'sanitize_key strips the slash; the result wsn-pdp matches the whitelist.'
+		);
+	}
+
+	// ---- Wrong/non-string express session value ----
+
+	public function test_stamp_express_skips_when_session_carries_wrong_channel_slug() {
+		// Cross-channel pollution defense: even a valid WSN slug in the
+		// session, if it's not specifically `wsn-express`, must not
+		// stamp express. Strict-equals in the handler handles this; the
+		// test pins the contract.
+		WC()->session->set(
+			WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL,
+			WSN_Order_Attribution::CHANNEL_PDP
+		);
+		$order = wc_create_order();
+
+		$this->attribution->stamp_express_order_attribution( $order );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertEmpty(
+			$fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ),
+			'Session containing a non-express WSN slug must not stamp express attribution.'
+		);
+	}
+
+	public function test_stamp_express_skips_when_session_value_is_unexpected_type() {
+		// Some upstream caller (test or bridge bug) writes junk to the
+		// session key. Strict-equals handles arrays/objects/ints/null —
+		// they all !== the expected string. Pin the contract.
+		WC()->session->set( WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL, [ 'wsn-express' ] );
+		$order = wc_create_order();
+
+		$this->attribution->stamp_express_order_attribution( $order );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
+	}
+
+	// ---- Customer-spoofable UTM (documented design decision) ----
+
+	public function test_stamp_classic_writes_meta_when_shopper_supplies_wsn_utm_directly() {
+		// This test documents an ACCEPTED behavior, not a defended one.
+		// WC core's OrderAttributionController writes UTM meta from
+		// shopper-controlled form fields per the standard design — so a
+		// shopper can self-stamp a non-WSN order with WSN attribution by
+		// submitting the WSN UTM values directly on checkout. The bounded
+		// impact (merchant's own admin-only Hub stat noise; no PII /
+		// payment / billing / cross-tenant) is acceptable; the class
+		// docblock documents this trust-model decision.
+		//
+		// If a future requirement adds real provenance (e.g., a signed
+		// referrer cookie WCPay-side or a server-verified handoff token),
+		// THIS test should flip — at which point a regression in the
+		// provenance check would surface here as a failed assertion.
+		$order = $this->create_order_with_wc_attribution(
+			WSN_Order_Attribution::UTM_SOURCE_WSN,
+			WSN_Order_Attribution::CHANNEL_PDP
+		);
+
+		$this->attribution->stamp_classic_order_attribution( $order );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame(
+			WSN_Order_Attribution::CHANNEL_PDP,
+			$fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ),
+			'Documented: browser-channel stamping inherits WC core Order Attribution trust model — shopper-spoofable by design, bounded to dashboard noise on the merchant own admin-only view.'
 		);
 	}
 

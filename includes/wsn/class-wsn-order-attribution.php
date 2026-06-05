@@ -37,6 +37,18 @@ defined( 'ABSPATH' ) || exit;
  * class reads the flag on the Store-API order-processed hook and clears
  * it after stamping.
  *
+ * **Trust model for the browser channels:** the underlying
+ * `_wc_order_attribution_utm_*` meta is shopper-controlled (WC core
+ * writes it from the shopper's checkout form fields per the standard
+ * Order Attribution design). A shopper can therefore self-stamp a
+ * non-WSN order with WSN attribution by submitting the WSN UTM values
+ * directly. **Impact is bounded:** the only consumer is the
+ * merchant's own Hub Overview dashboard (gated by `manage_woocommerce`,
+ * not exposed cross-tenant); meta values are whitelisted to four
+ * known slugs; no PII, payment, billing, or payout logic touches this.
+ * Inherits the same trust model WC core applies to its own Order
+ * Attribution writes — accepted by design.
+ *
  * **Hook priority constraint:** WC core's `OrderAttributionController`
  * hooks `woocommerce_checkout_order_created` at default priority 10.
  * Our handler MUST run at priority 20+ so the
@@ -203,6 +215,17 @@ class WSN_Order_Attribution {
 	 * checkout paths are mutually exclusive in production, but defense
 	 * in depth keeps the channel value stable if the invariant breaks).
 	 *
+	 * Uses `$order->save_meta_data()` (not the full `$order->save()`)
+	 * to mirror what WC core's `OrderAttributionController` does for
+	 * its own attribution writes at the same point in the same hook
+	 * chain. The full `save()` would trigger a double-persist of the
+	 * just-created order — WC core called `$order->save()` already at
+	 * `class-wc-checkout.php:471` milliseconds earlier — firing
+	 * `woocommerce_update_order` to all subscribers (WCPay's own
+	 * `schedule_order_tracking`, HPOS sync, OrdersScheduler, etc.)
+	 * unnecessarily on every WSN order. `save_meta_data()` writes only
+	 * the meta rows.
+	 *
 	 * @param \WC_Order $order   The order to stamp.
 	 * @param string    $channel The channel slug to record (one of CHANNEL_*).
 	 */
@@ -213,6 +236,6 @@ class WSN_Order_Attribution {
 
 		$order->update_meta_data( self::META_IS_MARKETPLACE, true );
 		$order->update_meta_data( self::META_CHANNEL, $channel );
-		$order->save();
+		$order->save_meta_data();
 	}
 }
