@@ -4,17 +4,6 @@ const fs = require( 'fs' );
 const path = require( 'path' );
 
 describe( 'Reports styles', () => {
-	it( 'offsets Reports content below the fixed WC admin header', () => {
-		const styles = fs.readFileSync(
-			path.resolve( process.cwd(), 'client/reports/style.scss' ),
-			'utf8'
-		);
-
-		expect( styles ).toContain(
-			'margin: 60px 0 128px var( --large-gap );'
-		);
-	} );
-
 	it( 'ships Balance loading skeleton fallback styles with the Reports entry stylesheet', () => {
 		const styles = fs.readFileSync(
 			path.resolve( process.cwd(), 'client/reports/style.scss' ),
