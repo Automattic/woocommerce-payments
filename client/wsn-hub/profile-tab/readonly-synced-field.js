@@ -11,7 +11,7 @@
  */
 
 import { createInterpolateElement, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 import { colors, typography, spacing, radii } from '../tokens';
 
@@ -39,9 +39,11 @@ const ReadonlySyncedField = ( { label, value, syncedFrom, editUrl } ) => {
 	// text when no URL is given (e.g., theme branding which has no admin page).
 	const helperText = editUrl ? (
 		createInterpolateElement(
-			/* translators: %s preserved as the <a/> tag */
-			__( 'Synced from <a>%s</a>', 'woocommerce-payments' ).replace(
-				'%s',
+			sprintf(
+				// translators: %s is the source-attribution text
+				// (e.g. "WooCommerce › General › Store name"),
+				// wrapped in an <a/> tag at render time.
+				__( 'Synced from <a>%s</a>', 'woocommerce-payments' ),
 				syncedFrom
 			),
 			{
