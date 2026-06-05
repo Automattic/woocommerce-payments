@@ -16,17 +16,15 @@ import DisputeStepItem from 'wcpay/components/dispute-step-item';
 import type { ChargeDispute } from 'wcpay/types/charges';
 import type {
 	Recommendation,
-	RecommendationOutcome,
 	RecommendationUrgency,
 } from 'wcpay/disputes/new-evidence/types';
-import { getRecommendations } from 'wcpay/disputes/new-evidence/recommendations';
-import { RECOMMENDATIONS_CATALOG } from 'wcpay/disputes/new-evidence/recommendation-catalog';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import {
 	recordSectionViewedOnce,
 	recordOutcomeAction,
 } from '../dispute-outcome/tracks';
 import type { DisputeOutcomeSection } from '../dispute-outcome/tracks';
+import { getDisputeRecommendations, sortByLift } from './utils';
 import './style.scss';
 
 interface Props {
@@ -40,54 +38,6 @@ const VISIBLE_PER_SECTION = 3;
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level URL constant
 const LEARN_MORE_HREF =
 	'https://woocommerce.com/document/managing-payment-disputes/';
-
-// Map dispute status to the outcome framing used for catalog matching.
-// warning_* statuses have no entry: inquiries carry no merchant-submitted
-// evidence, so neither outcome's recommendations have a behavioral hook.
-const outcomeByStatus: Partial<
-	Record< ChargeDispute[ 'status' ], RecommendationOutcome >
-> = {
-	lost: 'could_help',
-	won: 'keep_doing',
-};
-
-/**
- * Recommendations for a resolved dispute, or `[]` for a status with no outcome
- * (e.g. warning_closed). Shared with the wrapper so its `has_recommendations`
- * flag can't disagree with what the card renders.
- */
-export const getDisputeRecommendations = (
-	dispute: ChargeDispute,
-	productType: string | undefined
-): Recommendation[] => {
-	const outcome = outcomeByStatus[ dispute.status ];
-	if ( ! outcome ) {
-		return [];
-	}
-	return getRecommendations(
-		{
-			reason: dispute.reason,
-			productType: productType ?? '',
-			outcome,
-			evidence: dispute.evidence,
-		},
-		RECOMMENDATIONS_CATALOG
-	);
-};
-
-// Higher lift first; unmeasured entries fall to the bottom in catalog order.
-export const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
-	if ( typeof a.lift !== 'number' && typeof b.lift !== 'number' ) {
-		return 0;
-	}
-	if ( typeof a.lift !== 'number' ) {
-		return 1;
-	}
-	if ( typeof b.lift !== 'number' ) {
-		return -1;
-	}
-	return b.lift - a.lift;
-};
 
 // Shared by render and the section-view event so they split sections alike.
 const isPositive = ( rec: Recommendation ): boolean =>
@@ -132,10 +82,20 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	/>
 );
 
-// Both cards route their description through `subtitleNode` so the closed
-// state stays consistent: using `subtitle` for one and `subtitleNode` for
-// the other diverges the layout.
-const renderCard = ( {
+interface RecommendationSectionProps {
+	dispute: ChargeDispute;
+	productType: string;
+	section: DisputeOutcomeSection;
+	heading: string;
+	description: string;
+	items: Recommendation[];
+	learnMoreHref?: string;
+}
+
+// One outcome section (renders nothing when it has no entries). The description
+// goes through `subtitleNode` so the collapsed state stays consistent whether
+// or not the section carries a "Learn more" link.
+const RecommendationSection: React.FC< RecommendationSectionProps > = ( {
 	dispute,
 	productType,
 	section,
@@ -143,15 +103,7 @@ const renderCard = ( {
 	description,
 	items,
 	learnMoreHref,
-}: {
-	dispute: ChargeDispute;
-	productType: string | undefined;
-	section: DisputeOutcomeSection;
-	heading: string;
-	description: string;
-	items: Recommendation[];
-	learnMoreHref?: string;
-} ): JSX.Element | null => {
+} ) => {
 	if ( items.length === 0 ) {
 		return null;
 	}
@@ -245,7 +197,7 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 
 	// Fire once per non-empty section. Re-derived inside the effect so deps stay
 	// [dispute, productType] (the module-scoped de-dup absorbs remounts); the
-	// sort matches renderCard so recommendation_ids match render order.
+	// sort matches RecommendationSection so recommendation_ids match render order.
 	useEffect( () => {
 		const recs = getDisputeRecommendations( dispute, productType );
 		const sections = [
@@ -284,32 +236,32 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 
 	return (
 		<>
-			{ renderCard( {
-				dispute,
-				productType,
-				section: 'whats_working_well',
-				heading: __( "What's working well", 'woocommerce-payments' ),
-				description: __(
+			<RecommendationSection
+				dispute={ dispute }
+				productType={ productType }
+				section="whats_working_well"
+				heading={ __( "What's working well", 'woocommerce-payments' ) }
+				description={ __(
 					'These are the evidence strengths that supported your dispute response.',
 					'woocommerce-payments'
-				),
-				items: positives,
-			} ) }
-			{ renderCard( {
-				dispute,
-				productType,
-				section: 'what_could_help',
-				heading: __(
+				) }
+				items={ positives }
+			/>
+			<RecommendationSection
+				dispute={ dispute }
+				productType={ productType }
+				section="what_could_help"
+				heading={ __(
 					'What could help next time',
 					'woocommerce-payments'
-				),
-				description: __(
+				) }
+				description={ __(
 					'Strengthen future dispute responses by adding these details to your evidence before submitting.',
 					'woocommerce-payments'
-				),
-				items: criticalsAndTips,
-				learnMoreHref: LEARN_MORE_HREF,
-			} ) }
+				) }
+				items={ criticalsAndTips }
+				learnMoreHref={ LEARN_MORE_HREF }
+			/>
 		</>
 	);
 };

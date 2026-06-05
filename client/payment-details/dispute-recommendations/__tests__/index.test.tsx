@@ -10,10 +10,8 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import DisputeRecommendationsCard, {
-	getDisputeRecommendations,
-	sortByLift,
-} from '../index';
+import DisputeRecommendationsCard from '../index';
+import { sortByLift } from '../utils';
 import { getRecommendations } from 'wcpay/disputes/new-evidence/recommendations';
 import { RECOMMENDATIONS_CATALOG } from 'wcpay/disputes/new-evidence/recommendation-catalog';
 import { recordEvent } from 'wcpay/tracks';
@@ -521,64 +519,6 @@ describe( 'DisputeRecommendationsCard', () => {
 				screen.queryByRole( 'link', { name: /learn more/i } )
 			).not.toBeInTheDocument();
 		} );
-	} );
-} );
-
-describe( 'getDisputeRecommendations', () => {
-	// Shared by the card (what renders) and the wrapper's `has_recommendations`
-	// flag, so the two can't disagree. Equivalence with a direct
-	// getRecommendations call locks the status -> outcome mapping in place.
-	it( 'maps a lost dispute to could_help and delegates to getRecommendations', () => {
-		const dispute = buildDispute( {
-			status: 'lost',
-			reason: 'product_not_received',
-			metadata: { __product_type: 'physical_product' },
-			evidence: { receipt: 'r' },
-		} );
-
-		expect(
-			getDisputeRecommendations( dispute, 'physical_product' )
-		).toEqual(
-			getRecommendations(
-				{
-					reason: 'product_not_received',
-					productType: 'physical_product',
-					outcome: 'could_help',
-					evidence: dispute.evidence,
-				},
-				RECOMMENDATIONS_CATALOG
-			)
-		);
-	} );
-
-	it( 'maps a won dispute to keep_doing', () => {
-		const dispute = wonPhysicalShippingProvided();
-
-		expect(
-			getDisputeRecommendations( dispute, 'physical_product' )
-		).toEqual(
-			getRecommendations(
-				{
-					reason: dispute.reason,
-					productType: 'physical_product',
-					outcome: 'keep_doing',
-					evidence: dispute.evidence,
-				},
-				RECOMMENDATIONS_CATALOG
-			)
-		);
-	} );
-
-	it( 'returns an empty array for a warning_closed dispute (no outcome)', () => {
-		const dispute = buildDispute( {
-			status: 'warning_closed',
-			reason: 'product_not_received',
-			metadata: { __product_type: 'physical_product' },
-		} );
-
-		expect(
-			getDisputeRecommendations( dispute, 'physical_product' )
-		).toEqual( [] );
 	} );
 } );
 
