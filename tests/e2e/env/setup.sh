@@ -712,6 +712,12 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 else
 	info "Connecting to live server..."
 	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_JP_BLOG_TOKEN" --user_token="$E2E_JP_USER_TOKEN"
+	# Populate the account cache now that the blog token is set, mirroring the
+	# local-server path above. Without this the cache stays cold after setup, so
+	# WCPay's gateway is_available() (which reads the cached account country)
+	# returns false on the first run and the WC Blocks checkout reports no
+	# payment methods until a later refresh warms it.
+	cli wp wcpay_dev refresh_account_data
 	success "Connected to live server"
 fi
 
