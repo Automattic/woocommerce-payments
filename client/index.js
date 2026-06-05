@@ -25,7 +25,13 @@ import { maybeAddReportsPage } from 'reports/page-config';
 const withSuspense = ( LazyComponent ) => ( props ) =>
 	(
 		<ErrorBoundary>
-			<Suspense fallback={ <Spinner /> }>
+			<Suspense
+				fallback={
+					<div className="wcpay-route-loading">
+						<Spinner />
+					</div>
+				}
+			>
 				<LazyComponent { ...props } />
 			</Suspense>
 		</ErrorBoundary>
