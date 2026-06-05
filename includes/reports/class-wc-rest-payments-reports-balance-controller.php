@@ -38,6 +38,7 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 					'permission_callback' => [ $this, 'check_permission' ],
 					'args'                => $this->get_collection_params(),
 				],
+				'schema' => [ $this, 'get_item_schema' ],
 			]
 		);
 	}
@@ -103,6 +104,70 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 						__( 'Currency must be an ISO 4217 three-letter code.', 'woocommerce-payments' )
 					);
 				},
+			],
+		];
+	}
+
+	/**
+	 * Returns the response schema for the Balance summary endpoint.
+	 *
+	 * Mirrors the Get_Reporting_Balance_Summary response shape so REST schema
+	 * discovery (and any future schema-driven UI) sees an accurate contract.
+	 * Each row matches the ReportsBalanceSummaryRow client type at
+	 * client/data/reports/hooks.ts:73-77.
+	 *
+	 * @return array
+	 */
+	public function get_item_schema() {
+		$row_schema = [
+			'type'       => 'object',
+			'properties' => [
+				'amount' => [
+					'type' => 'number',
+				],
+				'count'  => [
+					'type' => 'integer',
+				],
+			],
+		];
+
+		return [
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'payments_reports_balance_summary',
+			'type'       => 'object',
+			'properties' => [
+				'currency'                         => [ 'type' => 'string' ],
+				'period'                           => [
+					'type'       => 'object',
+					'properties' => [
+						'start' => [
+							'type'   => 'string',
+							'format' => 'date-time',
+						],
+						'end'   => [
+							'type'   => 'string',
+							'format' => 'date-time',
+						],
+					],
+				],
+				'starting_balance'                 => $row_schema,
+				'total_charges_captured'           => $row_schema,
+				'fees'                             => $row_schema,
+				'charge_fees'                      => $row_schema,
+				'payout_fees'                      => $row_schema,
+				'reader_fees'                      => $row_schema,
+				'dispute_fees'                     => $row_schema,
+				'fee_refunds'                      => $row_schema,
+				'refunds'                          => $row_schema,
+				'refund_failure'                   => $row_schema,
+				'disputes'                         => $row_schema,
+				'financing_payout'                 => $row_schema,
+				'financing_paydown'                => $row_schema,
+				'network_costs'                    => $row_schema,
+				'other_adjustments'                => $row_schema,
+				'net_balance_change_in_the_period' => $row_schema,
+				'payouts'                          => $row_schema,
+				'ending_balance'                   => $row_schema,
 			],
 		];
 	}

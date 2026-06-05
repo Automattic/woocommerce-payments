@@ -16,6 +16,7 @@ const requestReportExport = jest.fn();
 const createNotice = jest.fn();
 const mockGetQuery = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
+const mockGetReportsFeesSummary = jest.fn();
 
 jest.mock( 'wcpay/hooks/use-report-export', () => ( {
 	useReportExport: () => ( {
@@ -52,6 +53,10 @@ jest.mock( '../balance/use-balance-date-filter', () => ( {
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: () => ( { createNotice } ),
+	select: () => ( {
+		getReportsFeesSummary: ( query: unknown ) =>
+			mockGetReportsFeesSummary( query ),
+	} ),
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -77,6 +82,7 @@ describe( 'ReportsHeader', () => {
 		requestReportExport.mockClear();
 		createNotice.mockClear();
 		mockGetQuery.mockReturnValue( filteredQuery );
+		mockGetReportsFeesSummary.mockReset().mockReturnValue( undefined );
 		mockUseReportsFeesSummary.mockReturnValue( {
 			feesSummary: { count: 42 },
 			isLoading: false,

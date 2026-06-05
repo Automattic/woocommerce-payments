@@ -5,10 +5,15 @@
  */
 import { BALANCE_ROWS, getVisibleBalanceRows } from '../rows';
 
-describe( 'Balance report rows', () => {
-	it( 'defines the Balance rows in display order', () => {
-		// The UI row order mirrors the endpoint contract documented in
-		// includes/core/server/request/class-get-reporting-balance-summary.md.
+describe( 'Balance report row contract', () => {
+	it( 'pins BALANCE_ROWS order against the Get_Reporting_Balance_Summary contract', () => {
+		// CONTRACT TEST: BALANCE_ROWS is the source-of-truth ordering for the
+		// Balance summary table. Any diff against this list signals an
+		// intentional contract change — either the backend response shape
+		// shifted, or we deliberately reordered the UI. If you arrived here
+		// because this test failed, re-read
+		// includes/core/server/request/class-get-reporting-balance-summary.md
+		// before updating the expectation.
 		expect( BALANCE_ROWS.map( ( row ) => row.key ) ).toEqual( [
 			'starting_balance',
 			'total_charges_captured',

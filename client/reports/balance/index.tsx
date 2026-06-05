@@ -3,17 +3,19 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useContext, useEffect, useId, useRef } from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { calendar } from '@wordpress/icons';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
  */
 import { useReportsBalanceSummary } from 'wcpay/data';
-import DateFilter from 'wcpay/reports/date-filter';
+import DateFilter, { type DateFilterValue } from 'wcpay/reports/date-filter';
+import { matchPreset } from 'wcpay/reports/date-filter/presets';
 import { ReportState } from '../report-state';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import {
@@ -22,11 +24,16 @@ import {
 	getRowDepth,
 	getVisibleBalanceRows,
 } from './rows';
-import { useBalanceDateFilter } from './use-balance-date-filter';
+import {
+	getPeriodForDateFilter,
+	useBalanceDateFilter,
+} from './use-balance-date-filter';
 import { BalanceSummaryTable } from './summary-table';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
+import { BalanceDateFilterNowContext } from './context';
 import {
+	getRangeDays,
 	getRowLabel,
 	hasBalanceActivity,
 	hasKeys,
@@ -140,15 +147,20 @@ const BalancePrintReport = ( {
 export const BalanceReport = ( {
 	onReload = () => undefined,
 }: BalanceReportProps ): JSX.Element => {
+	const contextDateFilterNow = useContext( BalanceDateFilterNowContext );
+	const stableDateFilterNow = useRef(
+		contextDateFilterNow ?? new Date()
+	).current;
 	const { value, period, hasDateFilterValue, setValue } =
-		useBalanceDateFilter();
+		useBalanceDateFilter( stableDateFilterNow );
+	const requestCurrency = wcpaySettings.accountDefaultCurrency || '';
 	const {
 		summary,
 		error = {},
 		isLoading,
 	} = useReportsBalanceSummary(
 		hasDateFilterValue ? period : undefined,
-		wcpaySettings.accountDefaultCurrency || ''
+		requestCurrency
 	);
 	const hasStoreError = hasKeys( error );
 	const hasMalformedSummary = isBalanceSummaryMalformed( {
@@ -164,6 +176,18 @@ export const BalanceReport = ( {
 	const toolbarRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
+	const activeRequestKey = hasDateFilterValue
+		? `${ period.start }:${ period.end }:${ requestCurrency.toLowerCase() }`
+		: null;
+	const loadingRequestKeyRef = useRef< string | null >(
+		isLoading ? activeRequestKey : null
+	);
+	const completedActiveRequest =
+		previousLoadingRef.current &&
+		! isLoading &&
+		! hasError &&
+		activeRequestKey !== null &&
+		loadingRequestKeyRef.current === activeRequestKey;
 	// Marks that the user just pressed Reload, so the next error→loading
 	// transition should restore focus to the loading heading (the Reload
 	// button itself unmounts before the useEffect runs).
@@ -183,18 +207,45 @@ export const BalanceReport = ( {
 		end: summary.period?.end ?? period.end,
 	};
 	const currency = summary.currency ?? '';
+	const recordDateFilterChange = (
+		next: DateFilterValue,
+		isInitialApply: boolean
+	) => {
+		const nextPeriod = getPeriodForDateFilter( next, stableDateFilterNow );
+		recordEvent( 'wcpay_reports_balance_date_filter_change', {
+			preset: matchPreset( next, stableDateFilterNow ),
+			range_days: getRangeDays( nextPeriod.start, nextPeriod.end ),
+			is_initial_apply: isInitialApply,
+		} );
+	};
+	const onDateFilterChange = ( next: DateFilterValue | undefined ) => {
+		if ( next ) {
+			recordDateFilterChange( next, ! hasDateFilterValue );
+		}
+		setValue( next );
+	};
 	const resetDateFilter = () => {
 		toolbarRef.current
 			?.querySelector< HTMLButtonElement >(
 				'.wcpay-date-filter__chip-trigger'
 			)
 			?.focus();
+		recordEvent( 'wcpay_reports_balance_date_filter_change', {
+			preset: 'reset',
+			range_days: null,
+			is_initial_apply: false,
+		} );
 		setValue( undefined );
 	};
 
 	const toolbar = (
 		<div className="wcpay-reports-balance__toolbar" ref={ toolbarRef }>
-			<DateFilter value={ value } onChange={ setValue } />
+			<DateFilter
+				value={ value }
+				onChange={ onDateFilterChange }
+				onClear={ resetDateFilter }
+				now={ stableDateFilterNow }
+			/>
 			{ hasDateFilterValue && (
 				<Button variant="tertiary" onClick={ resetDateFilter }>
 					{ __( 'Reset', 'woocommerce-payments' ) }
@@ -202,6 +253,50 @@ export const BalanceReport = ( {
 			) }
 		</div>
 	);
+
+	useEffect( () => {
+		if ( isLoading && activeRequestKey ) {
+			loadingRequestKeyRef.current = activeRequestKey;
+		} else if ( ! activeRequestKey ) {
+			loadingRequestKeyRef.current = null;
+		}
+
+		if ( completedActiveRequest ) {
+			recordEvent( 'wcpay_reports_balance_load_success', {
+				currency,
+				has_activity: hasActivity,
+				visible_row_count: visibleRows.length,
+				range_days: getRangeDays(
+					displayPeriod.start,
+					displayPeriod.end
+				),
+			} );
+		}
+
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
+		if ( reachedErrorTerminal ) {
+			recordEvent( 'wcpay_reports_balance_load_error', {
+				error_type: hasStoreError ? 'store' : 'malformed',
+				range_days: getRangeDays( period.start, period.end ),
+			} );
+		}
+	}, [
+		activeRequestKey,
+		completedActiveRequest,
+		currency,
+		displayPeriod.end,
+		displayPeriod.start,
+		hasActivity,
+		hasError,
+		hasStoreError,
+		isLoading,
+		period.end,
+		period.start,
+		visibleRows.length,
+	] );
 
 	useEffect( () => {
 		if (
@@ -221,8 +316,8 @@ export const BalanceReport = ( {
 		// `isLoading=true` after invalidateResolution, but the loading
 		// skeleton still renders because `isLoading` wins in the content
 		// branch — so gate on `isLoading` alone here. The ref is consumed
-		// only at the terminal state (success below or the error branch
-		// above) so we can also restore focus to the toolbar on
+		// only at the terminal state (success or error below) so we can also
+		// restore focus to the toolbar on
 		// Reload → success.
 		if ( reloadRequestedRef.current && isLoading ) {
 			loadingHeadingRef.current?.focus();
@@ -236,7 +331,7 @@ export const BalanceReport = ( {
 			lastSpokenRef.current = null;
 		}
 
-		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+		if ( completedActiveRequest ) {
 			if ( reloadRequestedRef.current ) {
 				toolbarRef.current
 					?.querySelector< HTMLButtonElement >(
@@ -263,15 +358,23 @@ export const BalanceReport = ( {
 			}, 500 );
 		}
 
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
 		// Consume the ref on the error terminal too, so a subsequent
 		// non-Reload error doesn't inherit the previous click's intent.
-		if ( hasError && ! previousErrorRef.current ) {
+		if ( reachedErrorTerminal ) {
+			reloadRequestedRef.current = false;
+		}
+
+		if ( ! activeRequestKey && ! isLoading ) {
 			reloadRequestedRef.current = false;
 		}
 
 		previousLoadingRef.current = isLoading;
 		previousErrorRef.current = hasError;
-	}, [ hasError, isLoading ] );
+	}, [ activeRequestKey, completedActiveRequest, hasError, isLoading ] );
 
 	useEffect( () => {
 		if ( ! printScopeActive ) {
@@ -332,6 +435,12 @@ export const BalanceReport = ( {
 					<Button
 						variant="secondary"
 						onClick={ () => {
+							recordEvent( 'wcpay_reports_balance_reload_click', {
+								range_days: getRangeDays(
+									period.start,
+									period.end
+								),
+							} );
 							reloadRequestedRef.current = true;
 							onReload( period );
 						} }

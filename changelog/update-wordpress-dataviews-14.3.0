@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update @wordpress/dataviews to 14.3.0 (the latest React 18-compatible release) for the Fees report
