@@ -15,9 +15,6 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( WSN_Settings::OPTION_ENABLED );
-		delete_option( WSN_Settings::OPTION_VISIBILITY_MODE );
-		delete_option( WSN_Settings::OPTION_VISIBILITY_TERMS );
-		delete_option( WSN_Settings::OPTION_VISIBILITY_PRODUCT_IDS );
 		delete_option( WSN_Settings::OPTION_HERO_IMAGE_ID );
 		delete_option( WSN_Settings::OPTION_LOGO_OVERRIDE_ID );
 		delete_option( WSN_Settings::OPTION_CONTACT_EMAIL );
@@ -75,64 +72,6 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 			$alloptions,
 			'WSN options must be written with autoload=false (Hub is feature-flagged off by default, no reason to autoload on every WP request).'
 		);
-	}
-
-	public function test_get_visibility_mode_defaults_to_all_when_unset() {
-		$this->assertSame( WSN_Settings::VISIBILITY_MODE_ALL, WSN_Settings::get_visibility_mode() );
-	}
-
-	public function test_get_visibility_mode_falls_back_to_all_for_invalid_stored_value() {
-		// Simulate a corrupt option (e.g., manual DB edit).
-		update_option( WSN_Settings::OPTION_VISIBILITY_MODE, 'rubbish' );
-		$this->assertSame( WSN_Settings::VISIBILITY_MODE_ALL, WSN_Settings::get_visibility_mode() );
-	}
-
-	public function test_set_visibility_mode_rejects_invalid_input() {
-		$this->assertFalse( WSN_Settings::set_visibility_mode( 'invalid' ) );
-		$this->assertFalse( get_option( WSN_Settings::OPTION_VISIBILITY_MODE, false ) );
-	}
-
-	public function test_set_visibility_mode_accepts_each_valid_mode() {
-		foreach ( WSN_Settings::valid_visibility_modes() as $mode ) {
-			$this->assertTrue( WSN_Settings::set_visibility_mode( $mode ) );
-			$this->assertSame( $mode, WSN_Settings::get_visibility_mode() );
-		}
-	}
-
-	public function test_get_visibility_terms_normalizes_partial_storage() {
-		// Partial: legacy structure missing the 'brands' key.
-		update_option(
-			WSN_Settings::OPTION_VISIBILITY_TERMS,
-			[
-				'categories' => [ 14, 22 ],
-				'tags'       => [ 7 ],
-			]
-		);
-		$terms = WSN_Settings::get_visibility_terms();
-		$this->assertSame( [ 14, 22 ], $terms['categories'] );
-		$this->assertSame( [ 7 ], $terms['tags'] );
-		$this->assertSame( [], $terms['brands'] );
-	}
-
-	public function test_set_visibility_terms_sanitizes_non_numeric_and_negative_ids() {
-		WSN_Settings::set_visibility_terms(
-			[
-				'categories' => [ 14, '22', 'rubbish', -5, 0, 22 /* duplicate */ ],
-			]
-		);
-		$this->assertSame( [ 14, 22 ], WSN_Settings::get_visibility_terms()['categories'] );
-	}
-
-	public function test_set_visibility_product_ids_rejects_when_exceeds_mvp_cap() {
-		$too_many = range( 1, WSN_Settings::MAX_SPECIFIC_PRODUCT_IDS + 1 );
-		$this->assertFalse( WSN_Settings::set_visibility_product_ids( $too_many ) );
-		$this->assertSame( [], WSN_Settings::get_visibility_product_ids() );
-	}
-
-	public function test_set_visibility_product_ids_accepts_at_cap() {
-		$at_cap = range( 1, WSN_Settings::MAX_SPECIFIC_PRODUCT_IDS );
-		$this->assertTrue( WSN_Settings::set_visibility_product_ids( $at_cap ) );
-		$this->assertCount( WSN_Settings::MAX_SPECIFIC_PRODUCT_IDS, WSN_Settings::get_visibility_product_ids() );
 	}
 
 	public function test_set_contact_email_sanitizes_and_persists_valid() {
@@ -333,9 +272,6 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			[
 				'enabled',
-				'visibility_mode',
-				'visibility_terms',
-				'visibility_product_ids',
 				'hero_image_id',
 				'logo_override_id',
 				'contact_email',
@@ -344,16 +280,6 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 			array_keys( $all )
 		);
 		$this->assertFalse( $all['enabled'] );
-		$this->assertSame( WSN_Settings::VISIBILITY_MODE_ALL, $all['visibility_mode'] );
-		$this->assertSame(
-			[
-				'categories' => [],
-				'tags'       => [],
-				'brands'     => [],
-			],
-			$all['visibility_terms']
-		);
-		$this->assertSame( [], $all['visibility_product_ids'] );
 		$this->assertNull( $all['hero_image_id'] );
 		$this->assertNull( $all['logo_override_id'] );
 		$this->assertNull( $all['contact_email'] );

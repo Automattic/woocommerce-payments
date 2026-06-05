@@ -218,9 +218,10 @@ class WSN_Profile_Payload_Composer_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayHasKey( 'settings', $payload );
 		$this->assertIsArray( $payload['settings'] );
-		// WSN_Settings::get_all() returns the 8 wcpay_wsn_* options.
+		// WSN_Settings::get_all() returns the 5 wcpay_wsn_* options that survived
+		// the Visibility-tab removal (enabled + 4 Profile-tab keys).
 		$this->assertArrayHasKey( 'enabled', $payload['settings'] );
-		$this->assertArrayHasKey( 'visibility_mode', $payload['settings'] );
+		$this->assertArrayHasKey( 'hero_image_id', $payload['settings'] );
 	}
 
 	public function test_appearance_is_null_when_styles_cache_unset() {
