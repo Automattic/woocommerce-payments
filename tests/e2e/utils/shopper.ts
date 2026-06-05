@@ -242,6 +242,13 @@ export const fillCardDetails = async (
 	}
 };
 
+// The WCB Stripe Payment Element only renders when the blocks (Store API)
+// checkout actually offers WCPay as a payment method. On a fresh environment the
+// Store API checkout intermittently reports no available payment methods, so the
+// element never appears; without a bound, the wait below burns the full 120s
+// test timeout. Bound it and fail with a clear diagnostic instead.
+const wcbPaymentElementTimeoutMs = 30 * 1000;
+
 export const fillCardDetailsWCB = async (
 	page: Page,
 	card: typeof config.cards.basic
@@ -252,9 +259,32 @@ export const fillCardDetailsWCB = async (
 	if ( await newPaymentMethodRadioButton.isVisible() ) {
 		await newPaymentMethodRadioButton.click();
 	}
-	await page.waitForSelector( '.__PrivateStripeElement' );
+
+	const paymentElementRendered = await page
+		.locator( '.__PrivateStripeElement' )
+		.first()
+		.waitFor( { state: 'visible', timeout: wcbPaymentElementTimeoutMs } )
+		.then( () => true )
+		.catch( () => false );
+
+	if ( ! paymentElementRendered ) {
+		const noPaymentMethods = await page
+			.getByText( 'There are no payment methods available' )
+			.isVisible()
+			.catch( () => false );
+		throw new Error(
+			`WCB checkout did not render the Stripe Payment Element within ${
+				wcbPaymentElementTimeoutMs / 1000
+			}s. ` +
+				( noPaymentMethods
+					? 'The blocks checkout reported "There are no payment methods available" — WCPay was not offered (no payable cart or WCPay unavailable on the Store API checkout).'
+					: 'The payment section never appeared (likely no payable cart or WCPay unavailable on the blocks checkout).' )
+		);
+	}
+
 	const frameHandle = await page.waitForSelector(
-		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
+		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]',
+		{ timeout: wcbPaymentElementTimeoutMs }
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	if ( ! stripeFrame ) return;

@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: E2E test reliability only (WCB checkout helper bound), not end client facing.
+
+
