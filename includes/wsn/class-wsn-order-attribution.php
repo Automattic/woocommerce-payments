@@ -75,6 +75,24 @@ defined( 'ABSPATH' ) || exit;
  * Inherits the same trust model WC core applies to its own Order
  * Attribution writes — accepted by design.
  *
+ * **Trust model for the express channel:** SAME as the browser channels —
+ * the `extensions.woopay_wsn.channel` field on the Store-API checkout
+ * request is shopper-controlled. A shopper can `curl` the merchant's
+ * `/wc/store/v1/checkout` endpoint with `{"extensions": {"woopay_wsn":
+ * {"channel": "wsn-express"}}}` and self-stamp `wsn-express`. The
+ * Store-API enum validator constrains the value to `wsn-express`
+ * specifically, but that's exactly what a spoofer would send — the
+ * enum narrows what shape the spoof takes, it doesn't prevent the
+ * spoof. Same bounded impact as the browser channels (merchant-only
+ * Hub view; no PII / payment / payout). **Do NOT downstream-treat
+ * `wsn-express` as a higher-trust "deterministic / WSN-verified"
+ * signal** without first plumbing a server-side provenance check
+ * (e.g., a WooPay-bridge-issued single-use token or HMAC over
+ * `{order_key, channel, timestamp}` with the existing WCPay↔WooPay
+ * shared secret) — that work is a separate follow-up, not gating this
+ * class. Until then: the express extension is the shape of the signal,
+ * not proof of origin.
+ *
  * **Hook priority constraint:** WC core's `OrderAttributionController`
  * hooks `woocommerce_checkout_order_created` at default priority 10.
  * Our handler MUST run at priority 20+ so the
@@ -170,9 +188,11 @@ class WSN_Order_Attribution {
 	 * (rare) corner case of a Store-API order carrying BOTH a
 	 * `extensions.woopay_wsn` payload AND a WSN UTM, the express
 	 * handler stamps `wsn-express` first and the classic handler's
-	 * `stamp()` early-returns via the double-stamp guard. Express wins
-	 * because it's the deterministic source (server-side extension),
-	 * UTM is shopper-controlled.
+	 * `stamp()` early-returns via the double-stamp guard. Express
+	 * "wins" this tiebreaker as a registration-order convention — NOT
+	 * because it's a higher-trust source (see "Trust model for the
+	 * express channel" in the class header — both signals are
+	 * shopper-controlled post-extensions-pivot).
 	 *
 	 * The classic handler hooks BOTH `woocommerce_checkout_order_created`
 	 * (classic checkout) AND `woocommerce_store_api_checkout_update_order_from_request`

@@ -534,6 +534,50 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_stamp_express_accepts_unverified_request_by_design_per_trust_model_docblock() {
+		// SYMMETRIC sibling to test_stamp_classic_writes_meta_when_shopper_supplies_wsn_utm_directly.
+		//
+		// Post-extensions-pivot (commit e34795142), the express channel is
+		// request-controlled — a shopper can curl /wc/store/v1/checkout with
+		// extensions.woopay_wsn.channel = "wsn-express" and self-stamp. The
+		// WC Store-API enum validator confirms the value is "wsn-express"
+		// (the only allowed value), but that's exactly what a spoofer would
+		// send: the enum narrows the spoof, doesn't prevent it. There is no
+		// server-side provenance check today (no signed token, no HMAC, no
+		// nonce — see the "Trust model for the express channel" paragraph
+		// in the class header docblock).
+		//
+		// This test documents the spoof as ACCEPTED behavior:
+		// - Impact bounded: merchant's own Hub Overview dashboard only
+		// (manage_woocommerce-gated, not cross-tenant); no PII /
+		// payment / billing / payout logic touches this meta.
+		// - "wsn-express" is the SHAPE of the express signal post-pivot,
+		// NOT proof of provenance. Downstream consumers must not treat
+		// it as "verified WSN-originated" until provenance verification
+		// is added.
+		//
+		// If a future change adds provenance (a WooPay-bridge-issued single-
+		// use token in extensions.woopay_wsn.token, HMAC verification with
+		// the WCPay↔WooPay shared secret, etc.), THIS test should flip —
+		// at which point a regression in the provenance check surfaces
+		// here as a failed assertion.
+		$order   = wc_create_order();
+		$request = $this->build_store_api_request(
+			[
+				WSN_Order_Attribution::STORE_API_EXTENSION_NAMESPACE => [ 'channel' => WSN_Order_Attribution::CHANNEL_EXPRESS ],
+			]
+		);
+
+		$this->attribution->stamp_express_order_attribution( $order, $request );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame(
+			WSN_Order_Attribution::CHANNEL_EXPRESS,
+			$fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ),
+			'Documented: express stamping is shopper-spoofable post-extensions-pivot — same trust class as the browser-channel UTM path. If a future provenance check is added, this assertion should flip to assertEmpty().'
+		);
+	}
+
 	// ---- Store API schema registration ----
 
 	public function test_get_store_api_extension_schema_describes_the_channel_field() {
