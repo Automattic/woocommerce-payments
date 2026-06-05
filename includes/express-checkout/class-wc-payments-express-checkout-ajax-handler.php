@@ -269,6 +269,13 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 					$address['state'] = $postcode;
 				}
 			}
+
+			// Apple Pay sometimes delivers the bare island name "Hong Kong" as the region, but
+			// WooCommerce's region name is "Hong Kong Island". Map the alias to the ECE region
+			// name so the state normalization below resolves it to the WC `HONG KONG` state key.
+			if ( 'hong kong' === strtolower( $address['state'] ?? '' ) ) {
+				$address['state'] = 'Hong Kong Island';
+			}
 		}
 
 		// States from Apple Pay or Google Pay are in long format, we need their short format.

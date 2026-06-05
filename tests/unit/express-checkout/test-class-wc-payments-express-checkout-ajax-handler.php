@@ -368,6 +368,50 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertEquals( 'KOWLOON', $shipping_address['state'] );
 	}
 
+	/**
+	 * Apple Pay may deliver the bare island name "Hong Kong" as the region instead of the
+	 * WooCommerce region name "Hong Kong Island". It must still normalize to the WC `HONG KONG`
+	 * state key, on the shipping address.
+	 */
+	public function test_tokenized_cart_hk_shipping_state_hong_kong_alias() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => Country_Code::HONG_KONG,
+				'state'   => 'Hong Kong',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( 'HONG KONG', $shipping_address['state'] );
+	}
+
+	/**
+	 * The "Hong Kong" alias must also normalize on the billing address (the reported failure).
+	 */
+	public function test_tokenized_cart_hk_billing_state_hong_kong_alias() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country' => Country_Code::HONG_KONG,
+				'state'   => 'Hong Kong',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$billing_address = $request->get_param( 'billing_address' );
+		$this->assertEquals( 'HONG KONG', $billing_address['state'] );
+	}
+
 	public function test_tokenized_cart_italy_state_venezia_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
