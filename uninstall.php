@@ -52,15 +52,31 @@ try {
 	// when a class is missing — partial teardown, vendor not present,
 	// disconnected from Jetpack — and the WooPay-side reconciliation
 	// cron is the load-bearing cleanup path either way.
-	require_once __DIR__ . '/vendor/autoload_packages.php';
+	//
+	// `file_exists` precedes each `require_once` because a missing/
+	// corrupted file would raise an E_COMPILE_ERROR fatal that the
+	// surrounding try/catch CAN'T intercept (fatals aren't Throwables
+	// at the PHP language level). The reconciliation cron is the
+	// correctness layer; the goodbye DELETE is an optimization, so
+	// silently bailing on a missing file is the right behavior.
+	$autoloader = __DIR__ . '/vendor/autoload_packages.php';
+	if ( ! file_exists( $autoloader ) ) {
+		return;
+	}
+	require_once $autoloader;
 
 	if ( ! class_exists( 'Automattic\\Jetpack\\Connection\\Client' )
 		|| ! class_exists( '\\Jetpack_Options' ) ) {
 		return;
 	}
 
-	require_once __DIR__ . '/includes/woopay/class-woopay-utilities.php';
-	require_once __DIR__ . '/includes/wsn/class-wsn-profile-transport.php';
+	$woopay_utilities = __DIR__ . '/includes/woopay/class-woopay-utilities.php';
+	$wsn_transport    = __DIR__ . '/includes/wsn/class-wsn-profile-transport.php';
+	if ( ! file_exists( $woopay_utilities ) || ! file_exists( $wsn_transport ) ) {
+		return;
+	}
+	require_once $woopay_utilities;
+	require_once $wsn_transport;
 
 	$wcpay_blog_id = (int) \Jetpack_Options::get_option( 'id' );
 	if ( $wcpay_blog_id <= 0 ) {
