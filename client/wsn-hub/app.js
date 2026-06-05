@@ -155,6 +155,15 @@ const WsnHubApp = () => {
 		<div className="wcpay-wsn-hub">
 			<PageHeader />
 			<TabPanel
+				// `initialTabName` is read on mount only; updates to
+				// `currentTab` from hashchange (back/forward navigation)
+				// would not take effect without forcing a remount. The
+				// `key` pegs the component identity to `currentTab` so a
+				// hash-driven update mounts a fresh TabPanel that picks
+				// up the new initial tab. Mirrors the Reports page
+				// pattern in this repo (`client/.../reports` uses the
+				// same workaround).
+				key={ currentTab }
 				className="wcpay-wsn-hub__tabs"
 				tabs={ TABS }
 				initialTabName={ currentTab }
