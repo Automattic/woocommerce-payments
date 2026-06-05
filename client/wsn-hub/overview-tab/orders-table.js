@@ -14,7 +14,7 @@
  * @format
  */
 
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { colors, typography, radii } from '../tokens';
 
 const HEADER_CELL_STYLE = {
@@ -92,7 +92,14 @@ const formatItems = ( items ) => {
 	if ( items.length === 2 ) {
 		return items.join( ', ' );
 	}
-	return `${ items[ 0 ] }, ${ items[ 1 ] }, +${ items.length - 2 } more`;
+	return sprintf(
+		// translators: 1: first item name, 2: second item name,
+		// 3: count of additional items beyond the first two.
+		__( '%1$s, %2$s, +%3$d more', 'woocommerce-payments' ),
+		items[ 0 ],
+		items[ 1 ],
+		items.length - 2
+	);
 };
 
 const OrdersTable = ( { orders } ) => {
@@ -198,7 +205,10 @@ const OrdersTable = ( { orders } ) => {
 													( order.number ?? '—' ) }
 											</a>
 										) : (
-											<span style={ BODY_CELL_STYLE }>
+											// No style — the parent <td> already
+											// carries BODY_CELL_STYLE; applying it
+											// again here would double padding/border.
+											<span>
 												{ '#' +
 													( order.number ?? '—' ) }
 											</span>
