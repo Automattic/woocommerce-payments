@@ -18,7 +18,7 @@ interface apiResponse {
 
 interface woopayButtonProps {
 	isStatic?: boolean;
-	api: Parameters< typeof initWooPay >[ 0 ];
+	api: { request: Parameters< typeof initWooPay >[ 0 ] };
 }
 
 const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
@@ -42,10 +42,12 @@ const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
 
 	const onClick = () => {
 		setIsLoading( true );
-		( initWooPay( api ) as Promise< apiResponse > ).then( ( response ) => {
-			window.location = response.url;
-			setIsLoading( false );
-		} );
+		( initWooPay( api.request ) as Promise< apiResponse > ).then(
+			( response ) => {
+				window.location = response.url;
+				setIsLoading( false );
+			}
+		);
 	};
 
 	return (
@@ -77,9 +79,9 @@ interface expressPaymentMethod {
 	};
 }
 
-export const woopayPaymentMethod = (
-	api: Parameters< typeof initWooPay >[ 0 ]
-): expressPaymentMethod => ( {
+export const woopayPaymentMethod = ( api: {
+	request: Parameters< typeof initWooPay >[ 0 ];
+} ): expressPaymentMethod => ( {
 	name: 'woopay',
 	content: <WooPay api={ api } />,
 	edit: <WooPay isStatic={ true } api={ api } />,

@@ -1,7 +1,6 @@
 /**
  * Internal dependencies
  */
-import WCPayAPI from 'wcpay/checkout/api';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
@@ -56,28 +55,37 @@ const mockAppearance = {
 };
 
 describe( 'initWooPay', () => {
-	test( 'does not initialize woopay if already requesting', async () => {
+	beforeEach( () => {
+		request.mockClear();
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				order_id: 1,
-				key: 'testkey',
-				billing_email: 'test@example.com',
-			};
-			return mockProperties[ key ];
-		} );
+	} );
 
-		const api = new WCPayAPI( {}, request );
-		api.isWooPayRequesting = true;
-		await initWooPay( api, 'foo@bar.com', 'qwerty123' );
+	// The in-flight guard is module-level state, so we simulate a pending request rather
+	// than poking an attribute: the first call holds the flag, the second should bail out.
+	test( 'skips the request while one is already in flight', async () => {
+		getConfig.mockImplementation(
+			( key ) => ( { initWooPayNonce: 'foo' }[ key ] )
+		);
 
-		expect( request ).not.toHaveBeenCalled();
-		expect( api.isWooPayRequesting ).toBe( true );
+		let resolveInFlight;
+		request.mockReturnValueOnce(
+			new Promise( ( resolve ) => {
+				resolveInFlight = resolve;
+			} )
+		);
+
+		const inFlight = initWooPay( request, 'foo@bar.com', 'qwerty123' );
+		const second = initWooPay( request, 'foo@bar.com', 'qwerty123' );
+
+		expect( second ).toBeUndefined();
+		expect( request ).toHaveBeenCalledTimes( 1 );
+
+		// Let the in-flight request settle so the guard resets for the next test.
+		resolveInFlight( {} );
+		await inFlight;
 	} );
 
 	test( 'initializes woopay using config params', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
 		getConfig.mockImplementation( ( key ) => {
 			const mockProperties = {
 				initWooPayNonce: 'foo',
@@ -90,8 +98,7 @@ describe( 'initWooPay', () => {
 			return mockProperties[ key ];
 		} );
 
-		const api = new WCPayAPI( {}, request );
-		await initWooPay( api, 'foo@bar.com', 'qwerty123' );
+		await initWooPay( request, 'foo@bar.com', 'qwerty123' );
 
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',
@@ -102,11 +109,9 @@ describe( 'initWooPay', () => {
 			key: 'testkey',
 			billing_email: 'test@example.com',
 		} );
-		expect( api.isWooPayRequesting ).toBe( false );
 	} );
 
 	test( 'WooPay should not support global theme styles', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
 		getConfig.mockImplementation( ( key ) => {
 			const mockProperties = {
 				initWooPayNonce: 'foo',
@@ -115,8 +120,7 @@ describe( 'initWooPay', () => {
 			return mockProperties[ key ];
 		} );
 
-		const api = new WCPayAPI( {}, request );
-		await initWooPay( api, 'foo@bar.com', 'qwerty123' );
+		await initWooPay( request, 'foo@bar.com', 'qwerty123' );
 
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',

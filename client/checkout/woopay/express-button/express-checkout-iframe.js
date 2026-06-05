@@ -232,7 +232,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
 				initWooPay(
-					api,
+					api.request,
 					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {

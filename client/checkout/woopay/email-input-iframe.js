@@ -474,7 +474,7 @@ export const handleWooPayEmailInput = async (
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
 				const promise = initWooPay(
-					api,
+					api.request,
 					woopayEmailInput.value,
 					e.data.platformCheckoutUserSession
 				);

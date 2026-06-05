@@ -24,7 +24,6 @@ export default class WCPayAPI {
 		this.stripe = null;
 		this.stripePlatform = null;
 		this.request = request;
-		this.isWooPayRequesting = false;
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
