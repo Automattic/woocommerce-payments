@@ -15,17 +15,20 @@ defined( 'ABSPATH' ) || exit;
  *
  * Returns recent WSN-attributed orders and aggregate stat-card values for the
  * Overview dashboard. Orders are identified by the `_woopay_marketplace_*` meta
- * keys per [api-contract.md §7](../../../../../woopay/docs/wsn/api-contract.md#7-marketplace-origin-metadata-on-the-order):
+ * keys written by `WSN_Order_Attribution` at order creation:
  *
- *   - `_woopay_marketplace_order = true`               (always present on WSN orders)
- *   - `_woopay_marketplace_storefront_slug = <slug>`   (which merchant page they came from)
- *   - `_woopay_marketplace_cohort = a|b`               (handoff cohort)
+ *   - `_woopay_marketplace_order = true`        (always present on WSN orders)
+ *   - `_woopay_marketplace_channel = wsn-*`     (which channel originated the order:
+ *                                                wsn-pdp, wsn-storefront, wsn-cart, wsn-express)
  *
- * Both Cohorts (A: Store API extension, B: URL-param) stamp the same keys, so this
- * controller doesn't need to know which cohort produced the order.
+ * The four channels split into two groups: three browser channels (pdp / storefront / cart)
+ * that complete on the merchant's own /checkout, and one headless channel (express) that
+ * completes on WooPay. The dashboard's headline metric — completed-on-WSN vs.
+ * bounced-to-merchant — bins by `wsn-express` vs. the three browser slugs.
  *
- * **Empty-state semantics:** until the WooPay-side Cohort A/B work (RSM-2484/2485) ships,
- * no orders carry the marketplace meta. The endpoint returns `is_empty: true` with
+ * **Empty-state semantics:** until WSN_Order_Attribution is enabled (sub-flag
+ * `_wcpay_feature_wsn_order_attribution`), no orders carry the marketplace meta.
+ * The endpoint returns `is_empty: true` with
  * the stats object empty and the orders list empty — the Overview UI renders `—` for
  * every stat and a single "first WSN purchase will appear here" row for the table.
  * This is by design: ship the surface ahead of the data.
@@ -55,9 +58,8 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Marketplace-order meta keys (canonical, per api-contract.md §7).
 	 */
-	const META_IS_MARKETPLACE  = '_woopay_marketplace_order';
-	const META_STOREFRONT_SLUG = '_woopay_marketplace_storefront_slug';
-	const META_COHORT          = '_woopay_marketplace_cohort';
+	const META_IS_MARKETPLACE = '_woopay_marketplace_order';
+	const META_CHANNEL        = '_woopay_marketplace_channel';
 
 	/**
 	 * Period -> seconds-back lookup. Keep in sync with the `period` enum below.
@@ -290,12 +292,13 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 		foreach ( $recent_orders as $order ) {
 			$network_revenue += (float) $order->get_total();
 
-			// Source tagging (e.g., 'favorites', 'browse', 'recommendations') is a
-			// post-MVP signal that may be added to the marketplace meta later.
-			// Aggregate whatever the cohort hooks happen to record on the order.
-			$cohort = $order->get_meta( self::META_COHORT, true );
-			if ( ! empty( $cohort ) ) {
-				$source_buckets[ $cohort ] = ( $source_buckets[ $cohort ] ?? 0 ) + 1;
+			// Aggregate per-channel — buckets keyed by the channel slug the
+			// writer stamped (wsn-pdp / wsn-storefront / wsn-cart / wsn-express).
+			// Stays semantic-free on the controller side so future channel
+			// additions on the WSN client don't require a controller change.
+			$channel = $order->get_meta( self::META_CHANNEL, true );
+			if ( ! empty( $channel ) ) {
+				$source_buckets[ $channel ] = ( $source_buckets[ $channel ] ?? 0 ) + 1;
 			}
 		}
 
@@ -368,8 +371,7 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 					$order->get_items()
 				)
 			),
-			'source'          => $this->meta_string_or_null( $order, self::META_COHORT ),
-			'storefront_slug' => $this->meta_string_or_null( $order, self::META_STOREFRONT_SLUG ),
+			'source'          => $this->meta_string_or_null( $order, self::META_CHANNEL ),
 			'total_formatted' => wp_strip_all_tags( wc_price( $order->get_total() ) ),
 			'edit_url'        => function_exists( 'wc_get_order_admin_edit_url' )
 				? wc_get_order_admin_edit_url( $order->get_id() )

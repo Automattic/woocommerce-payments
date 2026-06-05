@@ -117,6 +117,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-payload-composer.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-transport.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-emitter.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-order-attribution.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-hub.php';
 
 	// Test stub for WSN_Profile_Transport — overrides the protected

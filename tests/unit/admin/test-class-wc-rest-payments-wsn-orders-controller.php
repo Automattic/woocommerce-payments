@@ -114,9 +114,9 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		// Create three WSN-tagged orders + one non-WSN order to confirm the meta
 		// filter excludes orders without the marketplace tag. Stagger the
 		// timestamps so the most-recent-first ordering is deterministic.
-		$this->create_marketplace_order( 50.00, 'a', 'midcentury-manila', '-1 hour' );
-		$this->create_marketplace_order( 75.00, 'a', 'midcentury-manila', '-2 hours' );
-		$this->create_marketplace_order( 25.00, 'b', 'tiny-pottery', '-3 hours' );
+		$this->create_marketplace_order( 50.00, 'wsn-pdp', '-1 hour' );
+		$this->create_marketplace_order( 75.00, 'wsn-pdp', '-2 hours' );
+		$this->create_marketplace_order( 25.00, 'wsn-cart', '-3 hours' );
 		$this->create_plain_order( 999.00 ); // Should NOT appear in network stats.
 
 		$request  = new WP_REST_Request( 'GET', '/wc/v3/payments/wsn/orders' );
@@ -144,10 +144,10 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			'network_aov_formatted must not contain HTML markup.'
 		);
 
-		// Top source bucket: 'a' has 2 of 3. Assert the source itself; for the
+		// Top source bucket: 'wsn-pdp' has 2 of 3. Assert the source itself; for the
 		// share string, use containsString to avoid a locale-sensitive exact match
 		// on the formatted percent.
-		$this->assertSame( 'a', $data['stats']['top_source'] );
+		$this->assertSame( 'wsn-pdp', $data['stats']['top_source'] );
 		$this->assertStringContainsString( '66.7', $data['stats']['top_source_share'] );
 
 		// 3 orders projected. Sorted DESC by date_created; the $50 order is most
@@ -155,8 +155,7 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		// inside format_order() doesn't pass undetected.
 		$this->assertCount( 3, $data['orders'] );
 		$first = $data['orders'][0];
-		$this->assertSame( 'midcentury-manila', $first['storefront_slug'] );
-		$this->assertSame( 'a', $first['source'] );
+		$this->assertSame( 'wsn-pdp', $first['source'] );
 		$this->assertSame( 'completed', $first['status'] );
 		$this->assertStringContainsString( '50.00', wp_strip_all_tags( $first['total_formatted'] ) );
 		// HTML-strip regression guard on the order-row total too.
@@ -170,21 +169,21 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_top_source_tie_breaks_alphabetically() {
 		wp_set_current_user( $this->admin_user_id );
 
-		// Two cohorts with identical counts — the ksort()+arsort() pair in
+		// Two channels with identical counts — the ksort()+arsort() pair in
 		// compute_stats() must return the alphabetically-first source so the
 		// "Top Source" stat doesn't flip between page loads. Without the
 		// secondary sort, PHP's arsort() iteration order on tied keys is
 		// implementation-defined and would produce a flaky metric.
-		$this->create_marketplace_order( 10.00, 'b', 'shop-one', '-1 hour' );
-		$this->create_marketplace_order( 10.00, 'b', 'shop-one', '-2 hours' );
-		$this->create_marketplace_order( 10.00, 'a', 'shop-two', '-3 hours' );
-		$this->create_marketplace_order( 10.00, 'a', 'shop-two', '-4 hours' );
+		$this->create_marketplace_order( 10.00, 'wsn-storefront', '-1 hour' );
+		$this->create_marketplace_order( 10.00, 'wsn-storefront', '-2 hours' );
+		$this->create_marketplace_order( 10.00, 'wsn-cart', '-3 hours' );
+		$this->create_marketplace_order( 10.00, 'wsn-cart', '-4 hours' );
 
 		$request  = new WP_REST_Request( 'GET', '/wc/v3/payments/wsn/orders' );
 		$response = rest_get_server()->dispatch( $request );
 
 		$data = $response->get_data();
-		$this->assertSame( 'a', $data['stats']['top_source'], 'Equal-count tie must resolve alphabetically.' );
+		$this->assertSame( 'wsn-cart', $data['stats']['top_source'], 'Equal-count tie must resolve alphabetically (wsn-cart < wsn-storefront).' );
 	}
 
 	public function test_network_orders_count_reflects_full_period_not_recent_cap() {
@@ -193,7 +192,7 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		// Create 25 marketplace orders — above the RECENT_ORDERS_LIMIT of 20.
 		// The stat card should show 25 (real count), not 20 (capped page).
 		for ( $i = 0; $i < 25; $i++ ) {
-			$this->create_marketplace_order( 10.00, 'a', 'big-shop', '-' . ( $i + 1 ) . ' minutes' );
+			$this->create_marketplace_order( 10.00, 'wsn-pdp', '-' . ( $i + 1 ) . ' minutes' );
 		}
 
 		$request  = new WP_REST_Request( 'GET', '/wc/v3/payments/wsn/orders' );
@@ -212,8 +211,8 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( $this->admin_user_id );
 
 		// One order inside the 7d window, one well outside it.
-		$this->create_marketplace_order( 10.00, 'a', 'recent-shop', '-1 day' );
-		$this->create_marketplace_order( 999.00, 'a', 'ancient-shop', '-60 days' );
+		$this->create_marketplace_order( 10.00, 'wsn-pdp', '-1 day' );
+		$this->create_marketplace_order( 999.00, 'wsn-pdp', '-60 days' );
 
 		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/wsn/orders' );
 		$request->set_param( 'period', '7d' );
@@ -222,7 +221,9 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$data = $response->get_data();
 		$this->assertSame( 1, $data['stats']['network_orders'] );
 		$this->assertCount( 1, $data['orders'] );
-		$this->assertSame( 'recent-shop', $data['orders'][0]['storefront_slug'] );
+		// Period filter correctness — the surviving order is the recent one
+		// (10.00 total, '-1 day'), not the ancient one (999.00, '-60 days').
+		$this->assertStringContainsString( '10.00', $data['orders'][0]['total_formatted'] );
 	}
 
 	public function test_period_filter_includes_boundary_order_at_exact_window() {
@@ -231,7 +232,7 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		// Order created just inside the 7d boundary. Catches off-by-one in
 		// the `>=` semantics of get_since_timestamp()'s `'>=' . $since`
 		// passed to wc_get_orders().
-		$this->create_marketplace_order( 10.00, 'a', 'boundary-shop', '-6 days -23 hours' );
+		$this->create_marketplace_order( 10.00, 'wsn-pdp', '-6 days -23 hours' );
 
 		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/wsn/orders' );
 		$request->set_param( 'period', '7d' );
@@ -245,18 +246,16 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	 * Create a WC order tagged with the marketplace meta keys per api-contract.md §7.
 	 *
 	 * @param float  $total           Order total.
-	 * @param string $cohort          'a' or 'b'.
-	 * @param string $storefront_slug The merchant slug the shopper came from.
+	 * @param string $channel         Channel slug (wsn-pdp / wsn-storefront / wsn-cart / wsn-express).
 	 * @param string $created_offset  strtotime() expression relative to now.
 	 * @return int Order ID.
 	 */
-	private function create_marketplace_order( float $total, string $cohort, string $storefront_slug, string $created_offset = '-1 hour' ): int {
+	private function create_marketplace_order( float $total, string $channel, string $created_offset = '-1 hour' ): int {
 		$order = wc_create_order();
 		$order->set_total( $total );
 		$order->set_status( 'completed' );
 		$order->update_meta_data( WC_REST_Payments_WSN_Orders_Controller::META_IS_MARKETPLACE, true );
-		$order->update_meta_data( WC_REST_Payments_WSN_Orders_Controller::META_STOREFRONT_SLUG, $storefront_slug );
-		$order->update_meta_data( WC_REST_Payments_WSN_Orders_Controller::META_COHORT, $cohort );
+		$order->update_meta_data( WC_REST_Payments_WSN_Orders_Controller::META_CHANNEL, $channel );
 		$order->set_date_created( new WC_DateTime( $created_offset ) );
 		$order->save();
 		return $order->get_id();
