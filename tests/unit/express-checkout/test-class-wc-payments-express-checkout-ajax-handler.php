@@ -412,6 +412,95 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertEquals( 'HONG KONG', $billing_address['state'] );
 	}
 
+	/**
+	 * Multi-word HK regions delivered in the postcode field (the JS shipping path) must normalize
+	 * to the WC state key. Regression coverage for the previous `.replace( ' ', '' )` space strip.
+	 */
+	public function test_tokenized_cart_hk_shipping_postcode_with_new_territories_region() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => 'invalid-state',
+				'postcode' => 'New Territories',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( 'NEW TERRITORIES', $shipping_address['state'] );
+	}
+
+	/**
+	 * The Chinese (中文) multi-word region `新界` (New Territories) in the postcode field must normalize.
+	 */
+	public function test_tokenized_cart_hk_shipping_postcode_with_新界_region() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => 'invalid-state',
+				'postcode' => '新界',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( 'NEW TERRITORIES', $shipping_address['state'] );
+	}
+
+	/**
+	 * The same multi-word region recovery must work on the billing address.
+	 */
+	public function test_tokenized_cart_hk_billing_postcode_with_new_territories_region() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => 'invalid-state',
+				'postcode' => 'New Territories',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$billing_address = $request->get_param( 'billing_address' );
+		$this->assertEquals( 'NEW TERRITORIES', $billing_address['state'] );
+	}
+
+	/**
+	 * Multi-word "Hong Kong Island" delivered in the postcode field must normalize to `HONG KONG`.
+	 */
+	public function test_tokenized_cart_hk_shipping_postcode_with_hong_kong_island_region() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => 'invalid-state',
+				'postcode' => 'Hong Kong Island',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( 'HONG KONG', $shipping_address['state'] );
+	}
+
 	public function test_tokenized_cart_italy_state_venezia_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
