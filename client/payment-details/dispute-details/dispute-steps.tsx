@@ -22,6 +22,7 @@ import {
 	AccordionBody,
 	AccordionRow,
 } from 'wcpay/components/accordion';
+import DisputeStepItem from 'wcpay/components/dispute-step-item';
 
 interface Props {
 	dispute: Pick<
@@ -108,27 +109,18 @@ export const DisputeSteps: React.FC< Props > = ( {
 					<AccordionRow>
 						<div className="dispute-steps__content">
 							<div className="dispute-steps__items">
-								{ /* Step 1: Contact your customer */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ envelope } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Contact your customer',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												'Identify the issue and work towards a resolution where possible.',
-												'woocommerce-payments'
-											) }
-										</div>
-									</div>
-									<div className="dispute-steps__item-action">
-										{ customer?.email ? (
+								<DisputeStepItem
+									icon={ <Icon icon={ envelope } /> }
+									title={ __(
+										'Contact your customer',
+										'woocommerce-payments'
+									) }
+									description={ __(
+										'Identify the issue and work towards a resolution where possible.',
+										'woocommerce-payments'
+									) }
+									action={
+										customer?.email ? (
 											<Button
 												variant="secondary"
 												href={ emailLink }
@@ -140,54 +132,34 @@ export const DisputeSteps: React.FC< Props > = ( {
 													'woocommerce-payments'
 												) }
 											</Button>
-										) : null }
-									</div>
-								</div>
-
-								{ /* Step 2: Ask for the dispute to be withdrawn */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ comment } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Ask for the dispute to be withdrawn',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												"If you've managed to resolve the issue with your customer, help them with the withdrawal of their dispute.",
-												'woocommerce-payments'
-											) }
-										</div>
-									</div>
-									<div className="dispute-steps__item-action">
+										) : null
+									}
+								/>
+								<DisputeStepItem
+									icon={ <Icon icon={ comment } /> }
+									title={ __(
+										'Ask for the dispute to be withdrawn',
+										'woocommerce-payments'
+									) }
+									description={ __(
+										"If you've managed to resolve the issue with your customer, help them with the withdrawal of their dispute.",
+										'woocommerce-payments'
+									) }
+									action={
 										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
-									</div>
-								</div>
-
-								{ /* Step 3: Challenge or accept the dispute */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ page } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Challenge or accept the dispute',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												"Disagree with the dispute? You can challenge it with the customer's bank. Otherwise, accept it to close the case — the order amount and dispute fee won't be refunded.",
-												'woocommerce-payments'
-											) }
-										</div>
-									</div>
-								</div>
+									}
+								/>
+								<DisputeStepItem
+									icon={ <Icon icon={ page } /> }
+									title={ __(
+										'Challenge or accept the dispute',
+										'woocommerce-payments'
+									) }
+									description={ __(
+										"Disagree with the dispute? You can challenge it with the customer's bank. Otherwise, accept it to close the case — the order amount and dispute fee won't be refunded.",
+										'woocommerce-payments'
+									) }
+								/>
 							</div>
 
 							{ /* Dispute notice */ }
@@ -240,52 +212,34 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 					<AccordionRow>
 						<div className="dispute-steps__content">
 							<div className="dispute-steps__items">
-								{ /* Step 1: Accept the dispute */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ page } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Accepting the dispute',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												'Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa network fee.',
-												'woocommerce-payments'
-											) }
-										</div>
-									</div>
-									<div className="dispute-steps__item-action">
+								<DisputeStepItem
+									icon={ <Icon icon={ page } /> }
+									title={ __(
+										'Accepting the dispute',
+										'woocommerce-payments'
+									) }
+									description={ __(
+										'Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa network fee.',
+										'woocommerce-payments'
+									) }
+									action={
 										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes" />
-									</div>
-								</div>
-								{ /* Step 2: Challenge or accept the dispute */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ envelope } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Challenge the dispute',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												'Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.',
-												'woocommerce-payments'
-											) }
-										</div>
-									</div>
-									<div className="dispute-steps__item-action">
+									}
+								/>
+								<DisputeStepItem
+									icon={ <Icon icon={ envelope } /> }
+									title={ __(
+										'Challenge the dispute',
+										'woocommerce-payments'
+									) }
+									description={ __(
+										'Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.',
+										'woocommerce-payments'
+									) }
+									action={
 										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes" />
-									</div>
-								</div>
+									}
+								/>
 							</div>
 
 							{ /* Dispute notice */ }
@@ -371,27 +325,18 @@ export const InquirySteps: React.FC< Props > = ( {
 					<AccordionRow>
 						<div className="dispute-steps__content">
 							<div className="dispute-steps__items">
-								{ /* Step 1: Contact your customer */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ envelope } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Contact your customer',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												'Identify the issue and work towards a resolution where possible.',
-												'woocommerce-payments'
-											) }
-										</div>
-									</div>
-									<div className="dispute-steps__item-action">
-										{ customer?.email ? (
+								<DisputeStepItem
+									icon={ <Icon icon={ envelope } /> }
+									title={ __(
+										'Contact your customer',
+										'woocommerce-payments'
+									) }
+									description={ __(
+										'Identify the issue and work towards a resolution where possible.',
+										'woocommerce-payments'
+									) }
+									action={
+										customer?.email ? (
 											<Button
 												variant="secondary"
 												href={ emailLink }
@@ -403,33 +348,23 @@ export const InquirySteps: React.FC< Props > = ( {
 													'woocommerce-payments'
 												) }
 											</Button>
-										) : null }
-									</div>
-								</div>
-
-								{ /* Step 2: Provide guidance for inquiry withdrawal */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ page } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Submit evidence or issue a refund',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												"Disagree with the claim? You can challenge it by submitting evidence to the customer's bank. Otherwise, you can settle the inquiry by issuing a refund.",
-												'woocommerce-payments'
-											) }
-										</div>
-									</div>
-									<div className="dispute-steps__item-action">
+										) : null
+									}
+								/>
+								<DisputeStepItem
+									icon={ <Icon icon={ page } /> }
+									title={ __(
+										'Submit evidence or issue a refund',
+										'woocommerce-payments'
+									) }
+									description={ __(
+										"Disagree with the claim? You can challenge it by submitting evidence to the customer's bank. Otherwise, you can settle the inquiry by issuing a refund.",
+										'woocommerce-payments'
+									) }
+									action={
 										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
-									</div>
-								</div>
+									}
+								/>
 							</div>
 
 							{ /* Inquiry notice */ }
@@ -525,32 +460,25 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 					<AccordionRow>
 						<div className="dispute-steps__content">
 							<div className="dispute-steps__items">
-								{ /* Step 1: Contact your customer */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ envelope } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Contact your customer',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ isReturn
-												? __(
-														"Reach out to the customer to check if they're returning the item(s).",
-														'woocommerce-payments'
-												  )
-												: __(
-														'Identify the issue and work towards a resolution where possible.',
-														'woocommerce-payments'
-												  ) }
-										</div>
-									</div>
-									<div className="dispute-steps__item-action">
-										{ customer?.email ? (
+								<DisputeStepItem
+									icon={ <Icon icon={ envelope } /> }
+									title={ __(
+										'Contact your customer',
+										'woocommerce-payments'
+									) }
+									description={
+										isReturn
+											? __(
+													"Reach out to the customer to check if they're returning the item(s).",
+													'woocommerce-payments'
+											  )
+											: __(
+													'Identify the issue and work towards a resolution where possible.',
+													'woocommerce-payments'
+											  )
+									}
+									action={
+										customer?.email ? (
 											<Button
 												variant="secondary"
 												href={ emailLink }
@@ -562,60 +490,42 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 													'woocommerce-payments'
 												) }
 											</Button>
-										) : null }
-									</div>
-								</div>
-
-								{ /* Step 2: Issue refund */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ page } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Issue a refund',
-												'woocommerce-payments'
-											) }
-										</div>
-										<div className="dispute-steps__item-description">
-											{ isReturn
-												? __(
-														"Once you've received the item(s), refund the customer before the deadline to prevent this escalating to a dispute.",
-														'woocommerce-payments'
-												  )
-												: __(
-														'If appropriate, issue a refund to resolve the inquiry before the deadline.',
-														'woocommerce-payments'
-												  ) }
-										</div>
-									</div>
-								</div>
-
-								{ /* Step 3: Respond when the inquiry becomes a dispute (return case only) */ }
+										) : null
+									}
+								/>
+								<DisputeStepItem
+									icon={ <Icon icon={ page } /> }
+									title={ __(
+										'Issue a refund',
+										'woocommerce-payments'
+									) }
+									description={
+										isReturn
+											? __(
+													"Once you've received the item(s), refund the customer before the deadline to prevent this escalating to a dispute.",
+													'woocommerce-payments'
+											  )
+											: __(
+													'If appropriate, issue a refund to resolve the inquiry before the deadline.',
+													'woocommerce-payments'
+											  )
+									}
+								/>
 								{ isReturn && (
-									<div className="dispute-steps__item">
-										<div className="dispute-steps__item-icon">
-											<Icon icon={ envelope } />
-										</div>
-										<div className="dispute-steps__item-content">
-											<div className="dispute-steps__item-name">
-												{ __(
-													'Respond when the inquiry becomes a dispute',
-													'woocommerce-payments'
-												) }
-											</div>
-											<div className="dispute-steps__item-description">
-												{ __(
-													"If the returned item(s) aren't received, the inquiry may escalate to a dispute after 21 days. You can then submit evidence and challenge it (a dispute fee applies), or accept the dispute and forfeit the funds.",
-													'woocommerce-payments'
-												) }
-											</div>
-										</div>
-										<div className="dispute-steps__item-action">
+									<DisputeStepItem
+										icon={ <Icon icon={ envelope } /> }
+										title={ __(
+											'Respond when the inquiry becomes a dispute',
+											'woocommerce-payments'
+										) }
+										description={ __(
+											"If the returned item(s) aren't received, the inquiry may escalate to a dispute after 21 days. You can then submit evidence and challenge it (a dispute fee applies), or accept the dispute and forfeit the funds.",
+											'woocommerce-payments'
+										) }
+										action={
 											<LearnMoreButton href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
-										</div>
-									</div>
+										}
+									/>
 								) }
 							</div>
 

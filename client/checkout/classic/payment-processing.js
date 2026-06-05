@@ -284,9 +284,11 @@ async function createStripePaymentElement(
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
-			link: isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
-				? 'auto'
-				: 'never',
+			link:
+				isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) ) &&
+				elementsLocation !== 'add_payment_method'
+					? 'auto'
+					: 'never',
 		},
 	} );
 

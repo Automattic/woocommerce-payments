@@ -36,6 +36,7 @@ const jQueryMock = ( selector ) => {
 	};
 };
 jQueryMock.blockUI = () => null;
+jQueryMock.unblockUI = () => null;
 
 window.wcpayExpressCheckoutParams = {};
 window.wcpayExpressCheckoutParams.checkout = {};
@@ -92,6 +93,10 @@ describe( 'useExpressCheckout', () => {
 		window.wcpayExpressCheckoutParams.checkout = {
 			stripe_minor_unit: 2,
 		};
+		window.wcpayExpressCheckoutParams.flags = {
+			isEceUsingConfirmationTokens: true,
+		};
+		window.wcpayExpressCheckoutParams.has_subscription = false;
 		mockCartData = buildCartData();
 	} );
 
