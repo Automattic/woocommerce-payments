@@ -200,29 +200,43 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 	public function test_init_hooks_registers_at_priority_20() {
 		$this->attribution->init_hooks();
 
-		$classic_priority = has_action(
+		$classic_on_classic_hook   = has_action(
 			'woocommerce_checkout_order_created',
 			[ $this->attribution, 'stamp_classic_order_attribution' ]
 		);
-		$express_priority = has_action(
+		$classic_on_store_api_hook = has_action(
+			'woocommerce_store_api_checkout_update_order_from_request',
+			[ $this->attribution, 'stamp_classic_order_attribution' ]
+		);
+		$express_on_store_api_hook = has_action(
 			'woocommerce_store_api_checkout_update_order_from_request',
 			[ $this->attribution, 'stamp_express_order_attribution' ]
 		);
 
 		$this->assertSame(
 			WSN_Order_Attribution::HOOK_PRIORITY,
-			$classic_priority,
-			'Classic hook MUST register at priority 20 — running before WC core OrderAttributionController (priority 10) means _wc_order_attribution_utm_* is not yet on the order when our handler reads it, and the referral / browser channels would silently never stamp.'
+			$classic_on_classic_hook,
+			'Classic handler MUST register at priority 20 on woocommerce_checkout_order_created — running before WC core OrderAttributionController (priority 10) means _wc_order_attribution_utm_* is not yet on the order when our handler reads it, and the browser channels would silently never stamp.'
 		);
 		$this->assertSame(
 			WSN_Order_Attribution::HOOK_PRIORITY,
-			$express_priority,
-			'Express hook MUST also register at priority 20 for consistency.'
+			$classic_on_store_api_hook,
+			'Classic handler MUST also register on woocommerce_store_api_checkout_update_order_from_request — block-checkout merchants would otherwise have WC core write the UTM meta but our copier never run.'
+		);
+		$this->assertSame(
+			WSN_Order_Attribution::HOOK_PRIORITY,
+			$express_on_store_api_hook,
+			'Express handler MUST register at priority 20 on woocommerce_store_api_checkout_update_order_from_request.'
 		);
 
-		// Cleanup so this registration doesn't leak into other tests.
+		// Cleanup so registrations don't leak into other tests.
 		remove_action(
 			'woocommerce_checkout_order_created',
+			[ $this->attribution, 'stamp_classic_order_attribution' ],
+			WSN_Order_Attribution::HOOK_PRIORITY
+		);
+		remove_action(
+			'woocommerce_store_api_checkout_update_order_from_request',
 			[ $this->attribution, 'stamp_classic_order_attribution' ],
 			WSN_Order_Attribution::HOOK_PRIORITY
 		);
@@ -231,6 +245,66 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 			[ $this->attribution, 'stamp_express_order_attribution' ],
 			WSN_Order_Attribution::HOOK_PRIORITY
 		);
+	}
+
+	public function test_classic_handler_runs_on_block_checkout_hook() {
+		// Block-themed merchant checkout — WC core OrderAttributionBlocksController
+		// fires this hook to write _wc_order_attribution_utm_* (not the classic
+		// hook). Our classic handler must run here too, otherwise block-themed
+		// merchants get no WSN attribution.
+		$order   = $this->create_order_with_wc_attribution(
+			WSN_Order_Attribution::UTM_SOURCE_WSN,
+			WSN_Order_Attribution::CHANNEL_STOREFRONT
+		);
+		$request = $this->build_store_api_request( null );
+
+		$this->attribution->init_hooks();
+		do_action( 'woocommerce_store_api_checkout_update_order_from_request', $order, $request );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame(
+			WSN_Order_Attribution::CHANNEL_STOREFRONT,
+			$fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ),
+			'Block-checkout merchant orders MUST get the WSN classic UTM copy. Without this, every merchant using the default WC 8.x+ block checkout silently loses browser-channel attribution.'
+		);
+
+		remove_all_actions( 'woocommerce_store_api_checkout_update_order_from_request' );
+		remove_all_actions( 'woocommerce_checkout_order_created' );
+	}
+
+	public function test_express_wins_when_order_carries_both_extensions_and_wsn_utm() {
+		// Corner case: an order is somehow placed via the Store API with
+		// BOTH a WSN UTM (would normally only appear on browser-channel
+		// orders) AND an extensions.woopay_wsn payload (only express).
+		// Express must win because its signal is the deterministic
+		// server-side source; UTM is shopper-controlled.
+		//
+		// The mechanism: registration order. We register express FIRST,
+		// so on simultaneous-signal events the express handler stamps
+		// wsn-express, then the classic handler's stamp() early-returns
+		// via the double-stamp guard.
+		$order   = $this->create_order_with_wc_attribution(
+			WSN_Order_Attribution::UTM_SOURCE_WSN,
+			WSN_Order_Attribution::CHANNEL_PDP
+		);
+		$request = $this->build_store_api_request(
+			[
+				WSN_Order_Attribution::STORE_API_EXTENSION_NAMESPACE => [ 'channel' => WSN_Order_Attribution::CHANNEL_EXPRESS ],
+			]
+		);
+
+		$this->attribution->init_hooks();
+		do_action( 'woocommerce_store_api_checkout_update_order_from_request', $order, $request );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame(
+			WSN_Order_Attribution::CHANNEL_EXPRESS,
+			$fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ),
+			'Express handler must run FIRST and stamp wsn-express; classic handler must see double-stamp guard and skip. Registration order is the precedence mechanism.'
+		);
+
+		remove_all_actions( 'woocommerce_store_api_checkout_update_order_from_request' );
+		remove_all_actions( 'woocommerce_checkout_order_created' );
 	}
 
 	// ---- Meta-key contract with the read side ----

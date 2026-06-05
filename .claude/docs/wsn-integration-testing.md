@@ -183,7 +183,11 @@ The four channels split into two groups: three browser channels (`wsn-pdp`, `wsn
 
 ### Browser channels (wsn-pdp / wsn-storefront / wsn-cart)
 
-WC core's `OrderAttributionController` captures the UTM the WSN client emits on every WSN→merchant link. Our `WSN_Order_Attribution` class copies the relevant ones (`utm_source=woo-shopping-network` + `utm_content=wsn-<slug>`) into the WSN namespace at order placement.
+WC core's Order Attribution captures the UTM the WSN client emits on every WSN→merchant link. Our `WSN_Order_Attribution` class copies the relevant ones (`utm_source=woo-shopping-network` + `utm_content=wsn-<slug>`) into the WSN namespace at order placement.
+
+Both WC checkout paths are covered:
+- **Classic checkout** (shortcode-based `/checkout/` page) — copier hooks `woocommerce_checkout_order_created` (the action WC core's `OrderAttributionController` also uses).
+- **Block checkout** (Gutenberg blocks `/checkout/` page, default in WC 8.x+) — copier ALSO hooks `woocommerce_store_api_checkout_update_order_from_request` (the action WC core's `OrderAttributionBlocksController` uses). Without this, block-themed merchants would silently lose WSN attribution.
 
 1. Visit the merchant store with the WSN UTM in the URL:
    ```

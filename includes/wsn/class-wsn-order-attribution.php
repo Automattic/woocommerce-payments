@@ -22,12 +22,27 @@ defined( 'ABSPATH' ) || exit;
  * **Capture mechanism:**
  *
  * The three browser channels are real navigations to the merchant's own
- * domain — WC core's `OrderAttributionController` captures the UTM the
- * WSN client emits (`utm_source=woo-shopping-network`,
+ * domain — WC core's Order Attribution captures the UTM the WSN client
+ * emits (`utm_source=woo-shopping-network`,
  * `utm_content=wsn-{pdp|storefront|cart}`) and writes the standard
  * `_wc_order_attribution_utm_*` order meta. This class then copies that
  * into the WSN-owned namespace so the Hub Overview tab reads one stable
  * key (and stays insensitive to non-WSN UTM noise).
+ *
+ * The browser-channel copier hooks BOTH checkout paths because WC has
+ * two of them and they're mutually exclusive for any given order:
+ *
+ *   - `woocommerce_checkout_order_created` — classic (shortcode-based)
+ *     checkout. The original WC checkout page; PHP form submission.
+ *     WC core's `OrderAttributionController` writes the UTM meta here
+ *     at priority 10.
+ *
+ *   - `woocommerce_store_api_checkout_update_order_from_request` —
+ *     block-based checkout (default in WC 8.x+). Submits via JavaScript
+ *     to the `/wc/store/v1/checkout` REST endpoint. WC core's
+ *     `OrderAttributionBlocksController` writes the UTM meta here.
+ *     Without hooking this path, a merchant on a block theme silently
+ *     never gets WSN attribution.
  *
  * The express channel is headless — UTM is structurally blind to it,
  * because the checkout completes off the merchant domain. The WooPay
@@ -144,31 +159,55 @@ class WSN_Order_Attribution {
 	const HOOK_PRIORITY = 20;
 
 	/**
-	 * Register the two checkout hooks + the Store API schema declaration.
+	 * Register the checkout hooks + the Store API schema declaration.
 	 * Idempotent — `add_action` dedupes the same (hook, callback, priority)
 	 * triple.
 	 *
-	 * Note: the express handler hooks `woocommerce_store_api_checkout_update_order_from_request`
-	 * (2 args: order + request), NOT `..._order_processed`. The
-	 * `..._update_order_from_request` hook is the canonical Store-API
-	 * extension surface — it carries the WP_REST_Request as a hook
-	 * argument so handlers can read posted extension data without
-	 * touching superglobals or WC session. WC core's own block-checkout
-	 * Order Attribution hooks the same action for the same reason.
+	 * Registration order matters: the express handler is registered
+	 * FIRST on `woocommerce_store_api_checkout_update_order_from_request`.
+	 * Both handlers run at the same priority (20), and WP fires
+	 * same-priority callbacks in FIFO registration order. So on the
+	 * (rare) corner case of a Store-API order carrying BOTH a
+	 * `extensions.woopay_wsn` payload AND a WSN UTM, the express
+	 * handler stamps `wsn-express` first and the classic handler's
+	 * `stamp()` early-returns via the double-stamp guard. Express wins
+	 * because it's the deterministic source (server-side extension),
+	 * UTM is shopper-controlled.
+	 *
+	 * The classic handler hooks BOTH `woocommerce_checkout_order_created`
+	 * (classic checkout) AND `woocommerce_store_api_checkout_update_order_from_request`
+	 * (block checkout) because WC has two mutually-exclusive checkout
+	 * paths and WC core's own Order Attribution has two handlers for
+	 * the same reason. Hooking only the classic path would silently
+	 * drop attribution on every block-themed merchant store.
 	 */
 	public function init_hooks(): void {
-		add_action(
-			'woocommerce_checkout_order_created',
-			[ $this, 'stamp_classic_order_attribution' ],
-			self::HOOK_PRIORITY,
-			1
-		);
+		// Express FIRST so it wins on simultaneous-signal corner cases
+		// (see class docblock + registration-order rationale above).
 		add_action(
 			'woocommerce_store_api_checkout_update_order_from_request',
 			[ $this, 'stamp_express_order_attribution' ],
 			self::HOOK_PRIORITY,
 			2
 		);
+
+		add_action(
+			'woocommerce_checkout_order_created',
+			[ $this, 'stamp_classic_order_attribution' ],
+			self::HOOK_PRIORITY,
+			1
+		);
+		// Same handler, second hook — block-checkout coverage. The
+		// handler reads UTM order meta WC core writes; the request arg
+		// is unused, so the same 1-arg signature is fine on both hooks
+		// (WP only passes the number of args declared via $accepted_args).
+		add_action(
+			'woocommerce_store_api_checkout_update_order_from_request',
+			[ $this, 'stamp_classic_order_attribution' ],
+			self::HOOK_PRIORITY,
+			1
+		);
+
 		add_action(
 			'woocommerce_blocks_loaded',
 			[ $this, 'register_store_api_extension' ]
