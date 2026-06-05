@@ -183,9 +183,9 @@ export interface Recommendation {
 	 */
 	lift?: number;
 	/**
-	 * Hide every other matched entry (criticals and tips) when this one fires,
-	 * so a no-evidence dispute shows one clear message instead of a stack.
-	 * Used by c15.
+	 * Hide every other matched entry, of any urgency, when this one fires, so a
+	 * no-evidence dispute shows one clear message instead of a stack. Used by
+	 * c15.
 	 */
 	suppressOthers?: boolean;
 	/**
