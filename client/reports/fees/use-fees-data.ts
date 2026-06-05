@@ -14,8 +14,8 @@ import type { ReportsFee } from 'wcpay/data/reports/hooks';
 import { formatStringValue } from 'wcpay/utils';
 import { displayMethod, displayType } from './strings';
 import {
+	buildFeesDateQueryFromFilterValue,
 	buildFeesDateFilterElements,
-	resolveFeesDateFilterValue,
 } from './date-filter-values';
 
 // Default fee-bearing transaction types, mirroring DEFAULT_FEE_BEARING_TYPES in
@@ -101,25 +101,12 @@ export const buildFeesQuery = ( view: View ): FeesQuery => {
 		order: ( view.sort?.direction as 'asc' | 'desc' ) || 'desc',
 	};
 
-	const dateFilter = resolveFeesDateFilterValue(
-		findFilter( view.filters, 'date' )?.value
+	Object.assign(
+		query,
+		buildFeesDateQueryFromFilterValue(
+			findFilter( view.filters, 'date' )?.value
+		)
 	);
-	if ( dateFilter ) {
-		switch ( dateFilter.operator ) {
-			case 'on':
-				query.date_between = [ dateFilter.value, dateFilter.value ];
-				break;
-			case 'between':
-				query.date_between = dateFilter.value;
-				break;
-			case 'before':
-				query.date_before = dateFilter.value;
-				break;
-			case 'after':
-				query.date_after = dateFilter.value;
-				break;
-		}
-	}
 
 	const methodFilter = findFilter( view.filters, 'payment_method' );
 	if ( methodFilter && methodFilter.value ) {
