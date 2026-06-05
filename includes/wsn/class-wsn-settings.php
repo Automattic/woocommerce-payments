@@ -22,20 +22,11 @@ defined( 'ABSPATH' ) || exit;
  */
 class WSN_Settings {
 
-	const OPTION_ENABLED                = 'wcpay_wsn_enabled';
-	const OPTION_VISIBILITY_MODE        = 'wcpay_wsn_visibility_mode';
-	const OPTION_VISIBILITY_TERMS       = 'wcpay_wsn_visibility_terms';
-	const OPTION_VISIBILITY_PRODUCT_IDS = 'wcpay_wsn_visibility_product_ids';
-	const OPTION_HERO_IMAGE_ID          = 'wcpay_wsn_hero_image_id';
-	const OPTION_LOGO_OVERRIDE_ID       = 'wcpay_wsn_logo_override_id';
-	const OPTION_CONTACT_EMAIL          = 'wcpay_wsn_contact_email';
-	const OPTION_REFUND_PAGE_ID         = 'wcpay_wsn_refund_page_id';
-
-	const VISIBILITY_MODE_ALL      = 'all';
-	const VISIBILITY_MODE_TAXONOMY = 'taxonomy';
-	const VISIBILITY_MODE_SPECIFIC = 'specific';
-
-	const MAX_SPECIFIC_PRODUCT_IDS = 1000;
+	const OPTION_ENABLED          = 'wcpay_wsn_enabled';
+	const OPTION_HERO_IMAGE_ID    = 'wcpay_wsn_hero_image_id';
+	const OPTION_LOGO_OVERRIDE_ID = 'wcpay_wsn_logo_override_id';
+	const OPTION_CONTACT_EMAIL    = 'wcpay_wsn_contact_email';
+	const OPTION_REFUND_PAGE_ID   = 'wcpay_wsn_refund_page_id';
 
 	/**
 	 * Whether the merchant has opted in to the Shopping Network.
@@ -60,89 +51,6 @@ class WSN_Settings {
 	 */
 	public static function set_enabled( bool $enabled ): void {
 		update_option( self::OPTION_ENABLED, $enabled ? '1' : '0', false );
-	}
-
-	/**
-	 * Returns the merchant's product-visibility mode.
-	 *
-	 * @return string One of VISIBILITY_MODE_ALL, VISIBILITY_MODE_TAXONOMY, VISIBILITY_MODE_SPECIFIC.
-	 */
-	public static function get_visibility_mode(): string {
-		$mode = get_option( self::OPTION_VISIBILITY_MODE, self::VISIBILITY_MODE_ALL );
-		if ( ! in_array( $mode, self::valid_visibility_modes(), true ) ) {
-			return self::VISIBILITY_MODE_ALL;
-		}
-		return $mode;
-	}
-
-	/**
-	 * Sets the product-visibility mode.
-	 *
-	 * @param string $mode One of VISIBILITY_MODE_ALL, VISIBILITY_MODE_TAXONOMY, VISIBILITY_MODE_SPECIFIC.
-	 * @return bool True if the value was accepted and persisted, false on validation failure.
-	 */
-	public static function set_visibility_mode( string $mode ): bool {
-		if ( ! in_array( $mode, self::valid_visibility_modes(), true ) ) {
-			return false;
-		}
-		update_option( self::OPTION_VISIBILITY_MODE, $mode, false );
-		return true;
-	}
-
-	/**
-	 * Returns the selected taxonomy term IDs for the 'taxonomy' visibility mode.
-	 *
-	 * @return array{categories: int[], tags: int[], brands: int[]} Term IDs grouped by taxonomy bucket.
-	 */
-	public static function get_visibility_terms(): array {
-		$stored = get_option( self::OPTION_VISIBILITY_TERMS, [] );
-		return [
-			'categories' => self::sanitize_id_array( $stored['categories'] ?? [] ),
-			'tags'       => self::sanitize_id_array( $stored['tags'] ?? [] ),
-			'brands'     => self::sanitize_id_array( $stored['brands'] ?? [] ),
-		];
-	}
-
-	/**
-	 * Sets the selected taxonomy term IDs.
-	 *
-	 * Accepts a partial structure — missing keys are stored as empty arrays.
-	 *
-	 * @param array $terms Map of taxonomy bucket → array of term IDs.
-	 */
-	public static function set_visibility_terms( array $terms ): void {
-		$normalized = [
-			'categories' => self::sanitize_id_array( $terms['categories'] ?? [] ),
-			'tags'       => self::sanitize_id_array( $terms['tags'] ?? [] ),
-			'brands'     => self::sanitize_id_array( $terms['brands'] ?? [] ),
-		];
-		update_option( self::OPTION_VISIBILITY_TERMS, $normalized, false );
-	}
-
-	/**
-	 * Returns the explicit product ID whitelist for the 'specific' visibility mode.
-	 *
-	 * @return int[]
-	 */
-	public static function get_visibility_product_ids(): array {
-		return self::sanitize_id_array( get_option( self::OPTION_VISIBILITY_PRODUCT_IDS, [] ) );
-	}
-
-	/**
-	 * Sets the explicit product ID whitelist.
-	 *
-	 * Caps at MAX_SPECIFIC_PRODUCT_IDS (1000) per the api-contract.md §3 MVP limit.
-	 *
-	 * @param int[] $product_ids Product IDs.
-	 * @return bool True if accepted, false if the count exceeded the MVP cap.
-	 */
-	public static function set_visibility_product_ids( array $product_ids ): bool {
-		$sanitized = self::sanitize_id_array( $product_ids );
-		if ( count( $sanitized ) > self::MAX_SPECIFIC_PRODUCT_IDS ) {
-			return false;
-		}
-		update_option( self::OPTION_VISIBILITY_PRODUCT_IDS, $sanitized, false );
-		return true;
 	}
 
 	/**
@@ -362,55 +270,11 @@ class WSN_Settings {
 	 */
 	public static function get_all(): array {
 		return [
-			'enabled'                => self::is_enabled(),
-			'visibility_mode'        => self::get_visibility_mode(),
-			'visibility_terms'       => self::get_visibility_terms(),
-			'visibility_product_ids' => self::get_visibility_product_ids(),
-			'hero_image_id'          => self::get_hero_image_id(),
-			'logo_override_id'       => self::get_logo_override_id(),
-			'contact_email'          => self::get_contact_email(),
-			'refund_page_id'         => self::get_refund_page_id(),
+			'enabled'          => self::is_enabled(),
+			'hero_image_id'    => self::get_hero_image_id(),
+			'logo_override_id' => self::get_logo_override_id(),
+			'contact_email'    => self::get_contact_email(),
+			'refund_page_id'   => self::get_refund_page_id(),
 		];
-	}
-
-	/**
-	 * The set of accepted visibility-mode string values.
-	 *
-	 * @return string[]
-	 */
-	public static function valid_visibility_modes(): array {
-		return [
-			self::VISIBILITY_MODE_ALL,
-			self::VISIBILITY_MODE_TAXONOMY,
-			self::VISIBILITY_MODE_SPECIFIC,
-		];
-	}
-
-	/**
-	 * Coerces a mixed input into an array of positive integers, deduplicated and reindexed.
-	 *
-	 * Drops negative values, zero, and non-numeric entries. Preserves insertion order for
-	 * the surviving IDs (important for the specific-products mode where the merchant's
-	 * pick order can matter for display).
-	 *
-	 * @param mixed $input Array (or anything iterable) of mixed values.
-	 * @return int[]
-	 */
-	private static function sanitize_id_array( $input ): array {
-		if ( ! is_array( $input ) ) {
-			return [];
-		}
-		$result = [];
-		foreach ( $input as $value ) {
-			if ( ! is_numeric( $value ) ) {
-				continue;
-			}
-			$id = (int) $value;
-			if ( $id <= 0 ) {
-				continue;
-			}
-			$result[] = $id;
-		}
-		return array_values( array_unique( $result ) );
 	}
 }
