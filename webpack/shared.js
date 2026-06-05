@@ -167,7 +167,10 @@ module.exports = {
 		new ProvidePlugin( {
 			process: 'process/browser.js',
 		} ),
-		new MiniCssExtractPlugin( { filename: '[name].css' } ),
+		new MiniCssExtractPlugin( {
+			filename: '[name].css',
+			ignoreOrder: true,
+		} ),
 		new WebpackRTLPlugin( {
 			filenameSuffix: '-rtl.css',
 		} ),
