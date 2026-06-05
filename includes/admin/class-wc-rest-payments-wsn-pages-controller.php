@@ -193,12 +193,17 @@ class WC_REST_Payments_WSN_Pages_Controller extends WC_Payments_REST_Controller 
 		$title = html_entity_decode( (string) get_the_title( $page_id ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		$lower = strtolower( $title );
 
-		// Word-bounded matches so e.g. "Returnees Profile" doesn't trigger.
-		$keywords = [ 'refund', 'return policy', 'returns', 'policy', 'terms', 'privacy' ];
-		foreach ( $keywords as $keyword ) {
-			if ( false !== strpos( $lower, $keyword ) ) {
-				return 'matched_by_title';
-			}
+		// Word-bounded matches so e.g. "Returnees Profile" doesn't trigger
+		// on `return`, "Diplomacy" doesn't trigger on `policy`, etc. Each
+		// keyword gets `\b<word>\b` regex anchors — the prior strpos()
+		// implementation was a substring match that didn't match the
+		// comment's stated intent (would have surfaced "Returnees",
+		// "Determinism" → "terms", etc.). Singular + plural forms are
+		// listed explicitly because `\b` won't bridge `refund` → "Refunds".
+		$keywords = [ 'refund', 'refunds', 'return', 'returns', 'return policy', 'policy', 'terms', 'privacy' ];
+		$pattern  = '/\b(?:' . implode( '|', array_map( 'preg_quote', $keywords ) ) . ')\b/u';
+		if ( 1 === preg_match( $pattern, $lower ) ) {
+			return 'matched_by_title';
 		}
 
 		return null;
