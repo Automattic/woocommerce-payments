@@ -13,7 +13,7 @@ import {
 	usePmPromotions,
 	usePmPromotionActions,
 } from 'wcpay/data/pm-promotions';
-import { PmPromotion } from 'data/pm-promotions/types';
+import { PmPromotion } from 'wcpay/data/pm-promotions/types';
 import { recordEvent } from 'tracks';
 
 /**

@@ -51,7 +51,7 @@ import DownloadButton from 'wcpay/components/download-button';
 import {
 	getTransactionsCSVRequestURL,
 	transactionsDownloadEndpoint,
-} from '../../data/transactions/resolvers';
+} from 'wcpay/data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

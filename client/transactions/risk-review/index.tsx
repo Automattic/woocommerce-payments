@@ -39,7 +39,7 @@ import './style.scss';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
-import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
+import { getFraudOutcomeTransactionsExport } from 'wcpay/data/transactions/resolvers';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 export const RiskReviewList = (): JSX.Element => {

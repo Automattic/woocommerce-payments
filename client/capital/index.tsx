@@ -18,7 +18,7 @@ import {
 	formatExplicitCurrency,
 	isZeroDecimalCurrency,
 } from 'multi-currency/interface/functions';
-import { CapitalLoan } from 'data/capital/types';
+import { CapitalLoan } from 'wcpay/data/capital/types';
 import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data/capital';

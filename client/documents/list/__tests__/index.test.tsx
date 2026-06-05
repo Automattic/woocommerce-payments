@@ -14,7 +14,7 @@ import { useUserPreferences } from '@woocommerce/data';
  */
 import { DocumentsList } from '../';
 import { useDocuments, useDocumentsSummary } from 'wcpay/data/documents';
-import type { Document } from 'data/documents/hooks';
+import type { Document } from 'wcpay/data/documents/hooks';
 import VatForm from 'wcpay/vat/form';
 
 jest.mock( 'wcpay/data/documents', () => ( {

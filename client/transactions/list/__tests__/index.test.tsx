@@ -20,7 +20,7 @@ import {
 	useTransactions,
 	useTransactionsSummary,
 } from 'wcpay/data/transactions';
-import type { Transaction } from 'data/transactions/hooks';
+import type { Transaction } from 'wcpay/data/transactions/hooks';
 
 jest.mock( '@woocommerce/data', () => {
 	const actualModule = jest.requireActual( '@woocommerce/data' );

@@ -82,7 +82,7 @@ describe( 'FraudProtectionTour', () => {
 	} );
 
 	it( 'should not render the tour component if settings are loading', () => {
-		jest.requireMock( 'wcpay/data' ).useSettings.mockReturnValue( {
+		jest.requireMock( 'wcpay/data/settings' ).useSettings.mockReturnValue( {
 			isLoading: true,
 		} );
 
