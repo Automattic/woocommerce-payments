@@ -91,13 +91,14 @@ export function formatApiError( error ) {
 		typeof error.data.params === 'object'
 	) {
 		const params = error.data.params;
-		const fieldParts = [];
-
-		for ( const fieldName in params ) {
-			if ( Reflect.has( params, fieldName ) ) {
-				fieldParts.push( `${ fieldName }: ${ params[ fieldName ] }` );
-			}
-		}
+		// Own-property iteration only — `Reflect.has` is true for inherited
+		// properties too, which would surface prototype-chain garbage in
+		// the merchant-facing message if `params` ever has a polluted
+		// prototype. `Object.entries` returns own enumerable string-keyed
+		// pairs only.
+		const fieldParts = Object.entries( params ).map(
+			( [ fieldName, value ] ) => `${ fieldName }: ${ value }`
+		);
 
 		const prefix = message ? `${ message } ` : '';
 		if ( fieldParts.length > 0 ) {
