@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Dispute Outcome View: when a dispute response had no evidence, show only the "Submit evidence with your dispute response" recommendation and suppress all others.
