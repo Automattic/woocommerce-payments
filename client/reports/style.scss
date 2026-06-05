@@ -7,7 +7,7 @@ body.woocommerce-admin-page__payments_reports {
 	// Balance / Fees tabs flush against the left edge of the content area
 	// while still leaving room at the bottom for the WC footer.
 	.woocommerce-layout__primary {
-		margin: 0 0 128px var( --large-gap );
+		margin: 10px 0 128px 24px;
 	}
 
 	// The right-rail activity panel competes with the wider report tables
@@ -172,14 +172,14 @@ body.woocommerce-admin-page__payments_reports {
 		max-width: none;
 		min-height: 48px;
 		align-items: center;
-		justify-content: flex-end;
+		justify-content: flex-end !important;
 		padding: 0;
 		background: transparent;
 		box-sizing: border-box;
 	}
 
 	.dataviews__search {
-		justify-content: flex-end;
+		justify-content: flex-end !important;
 	}
 
 	.dataviews-search.components-search-control:not( :focus-within ) {
