@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Added ShipStation provider for WooPay order tracking sync, covering merchants running ShipStation without WC Shipment Tracking installed.

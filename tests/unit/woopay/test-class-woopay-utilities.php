@@ -284,4 +284,37 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
+
+	public function test_get_or_create_webhook_secret_creates_and_persists_when_missing() {
+		delete_option( WooPay_Utilities::WOOPAY_WEBHOOK_SECRET_OPTION );
+
+		$secret = WooPay_Utilities::get_or_create_webhook_secret();
+
+		$this->assertIsString( $secret );
+		$this->assertSame( 50, strlen( $secret ), 'Generated secret length must match wp_generate_password( 50 ) contract.' );
+		$this->assertSame( $secret, get_option( WooPay_Utilities::WOOPAY_WEBHOOK_SECRET_OPTION ), 'Secret must be persisted to the option.' );
+
+		delete_option( WooPay_Utilities::WOOPAY_WEBHOOK_SECRET_OPTION );
+	}
+
+	public function test_get_or_create_webhook_secret_returns_cached_value_on_subsequent_calls() {
+		delete_option( WooPay_Utilities::WOOPAY_WEBHOOK_SECRET_OPTION );
+
+		$first  = WooPay_Utilities::get_or_create_webhook_secret();
+		$second = WooPay_Utilities::get_or_create_webhook_secret();
+
+		$this->assertSame( $first, $second, 'Repeated calls must return the same persisted secret.' );
+
+		delete_option( WooPay_Utilities::WOOPAY_WEBHOOK_SECRET_OPTION );
+	}
+
+	public function test_get_or_create_webhook_secret_returns_stored_option_when_present() {
+		update_option( WooPay_Utilities::WOOPAY_WEBHOOK_SECRET_OPTION, 'preexisting-secret-value', false );
+
+		$secret = WooPay_Utilities::get_or_create_webhook_secret();
+
+		$this->assertSame( 'preexisting-secret-value', $secret );
+
+		delete_option( WooPay_Utilities::WOOPAY_WEBHOOK_SECRET_OPTION );
+	}
 }

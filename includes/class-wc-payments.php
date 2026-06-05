@@ -18,6 +18,7 @@ use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
@@ -533,6 +534,11 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-store-api-token.php';
 		include_once __DIR__ . '/woopay/class-woopay-utilities.php';
 		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
+		include_once __DIR__ . '/woopay/tracking-providers/interface-woopay-tracking-provider.php';
+		include_once __DIR__ . '/woopay/tracking-providers/class-woopay-fulfillments-api-provider.php';
+		include_once __DIR__ . '/woopay/tracking-providers/class-woopay-shipment-tracking-provider.php';
+		include_once __DIR__ . '/woopay/tracking-providers/class-woopay-shipstation-provider.php';
+		include_once __DIR__ . '/woopay/class-woopay-order-tracking-sync.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/woopay/class-woopay-adapted-extensions.php';
@@ -676,7 +682,11 @@ class WC_Payments {
 		add_action(
 			'setup_theme',
 			function () {
-				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ] );
+				// `woocommerce_payments_account_refreshed` fires with `$account`, but
+				// neither callback uses it; declare `accepted_args=0` so PHP doesn't
+				// pass an unused argument (avoids strict-mode warnings on PHP 8+).
+				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ], 10, 0 );
+				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Tracking_Sync::class, 'remove_webhook' ], 10, 0 );
 
 				self::maybe_register_woopay_hooks();
 				self::maybe_init_woopay_direct_checkout();
@@ -1833,6 +1843,7 @@ class WC_Payments {
 			}
 
 			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
+			new WooPay_Order_Tracking_Sync( self::$api_client, self::$account );
 		}
 	}
 
