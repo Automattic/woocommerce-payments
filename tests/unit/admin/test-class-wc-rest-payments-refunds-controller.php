@@ -56,10 +56,7 @@ class WC_REST_Payments_Refunds_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'set_amount' )
 			->with( 5000 );
 		$refund_request->expects( $this->once() )
-			->method( 'set_reason' )
-			->with( 'duplicate' );
-		$refund_request->expects( $this->once() )
-			->method( 'set_merchant_reason' )
+			->method( 'set_full_reason' )
 			->with( 'duplicate' );
 		$refund_response = [
 			'id' => 're_test',
@@ -94,11 +91,10 @@ class WC_REST_Payments_Refunds_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'set_amount' )
 			->with( 5000 );
 
-		// With no reason there is nothing to send to Stripe or to store as metadata.
-		$refund_request->expects( $this->never() )
-			->method( 'set_reason' );
-		$refund_request->expects( $this->never() )
-			->method( 'set_merchant_reason' );
+		// The gating lives in Refund_Charge::set_full_reason(); the controller just delegates.
+		$refund_request->expects( $this->once() )
+			->method( 'set_full_reason' )
+			->with( null );
 
 		$refund_response = [
 			'id' => 're_test',

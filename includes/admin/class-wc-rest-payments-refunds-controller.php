@@ -108,14 +108,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 		$refund_request = Refund_Charge::create( $charge_id );
 		$refund_request->set_charge( $charge_id );
 		$refund_request->set_amount( $amount );
-		// These are reasons supported by Stripe https://stripe.com/docs/api/refunds/create#create_refund-reason.
-		if ( in_array( $reason, [ 'duplicate', 'fraudulent', 'requested_by_customer' ], true ) ) {
-			$refund_request->set_reason( $reason );
-		}
-		// Capture the reason as metadata too, so it surfaces in the payment timeline (matches process_refund()).
-		if ( ! empty( $reason ) ) {
-			$refund_request->set_merchant_reason( $reason );
-		}
+		$refund_request->set_full_reason( $reason );
 		$refund_request->set_source( 'transaction_details_no_order' );
 		return $refund_request->send();
 	}
