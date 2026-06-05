@@ -17,7 +17,6 @@ export type FeesFieldId =
 	| 'deposit_id';
 
 const defaultVisibleFields: FeesFieldId[] = [
-	'date',
 	'transaction_id',
 	'payment_method',
 	'type',
@@ -28,6 +27,12 @@ const defaultVisibleFields: FeesFieldId[] = [
 ];
 
 export const defaultPerPage = 25;
+export const feesPrimaryField: FeesFieldId = 'date';
+
+export const getFeesTableFields = (
+	fields: readonly string[] = defaultVisibleFields
+): FeesFieldId[] =>
+	fields.filter( ( field ) => field !== feesPrimaryField ) as FeesFieldId[];
 
 /**
  * Subset of the View object that we persist to user_meta. Sort/page/search/filters
@@ -41,6 +46,27 @@ export interface PersistedFeesView {
 	perPage?: number;
 }
 
+export const getFeesTableLayout = (
+	layout: ViewTable[ 'layout' ] = {}
+): ViewTable[ 'layout' ] => {
+	const styles = layout?.styles ?? {};
+
+	return {
+		...layout,
+		styles: {
+			...styles,
+			amount: {
+				...styles.amount,
+				align: 'start',
+			},
+			fees: {
+				...styles.fees,
+				align: 'start',
+			},
+		},
+	};
+};
+
 export const getDefaultFeesView = (): View => ( {
 	type: 'table',
 	search: '',
@@ -48,6 +74,7 @@ export const getDefaultFeesView = (): View => ( {
 	page: 1,
 	perPage: defaultPerPage,
 	sort: { field: 'date', direction: 'desc' },
-	fields: defaultVisibleFields,
-	layout: {},
+	titleField: feesPrimaryField,
+	fields: getFeesTableFields(),
+	layout: getFeesTableLayout(),
 } );

@@ -2,7 +2,7 @@
 
 import { renderHook, act } from '@testing-library/react-hooks';
 import { recordEvent } from 'tracks';
-import type { Filter, View } from '@wordpress/dataviews/wp';
+import type { Filter, View, ViewTable } from '@wordpress/dataviews/wp';
 
 const mockUpdateQueryString = jest.fn();
 const mockGetQuery = jest.fn( () => ( {} ) );
@@ -104,7 +104,20 @@ describe( 'useFeesView', () => {
 			direction: 'desc',
 		} );
 		expect( result.current[ 0 ].perPage ).toBe( defaultPerPage );
-		expect( result.current[ 0 ].fields ).toContain( 'date' );
+		expect( result.current[ 0 ].titleField ).toBe( 'date' );
+		expect( result.current[ 0 ].fields ).not.toContain( 'date' );
+	} );
+
+	it( 'keeps formatted currency columns start-aligned by default', () => {
+		const { result } = renderUseFeesView();
+		const view = result.current[ 0 ] as ViewTable;
+
+		expect( view.layout?.styles ).toEqual(
+			expect.objectContaining( {
+				amount: expect.objectContaining( { align: 'start' } ),
+				fees: expect.objectContaining( { align: 'start' } ),
+			} )
+		);
 	} );
 
 	it( 'reads sort and pagination from URL', () => {
@@ -192,7 +205,7 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
-	it( 'reads fields from user_meta', () => {
+	it( 'reads fields from user_meta without duplicating the primary date column', () => {
 		mockUserPrefs = {
 			wc_payments_reports_fees_view: {
 				fields: [ 'date', 'transaction_id', 'amount' ],
@@ -200,12 +213,39 @@ describe( 'useFeesView', () => {
 			},
 		};
 		const { result } = renderUseFeesView();
+		expect( result.current[ 0 ].titleField ).toBe( 'date' );
 		expect( result.current[ 0 ].fields ).toEqual( [
-			'date',
 			'transaction_id',
 			'amount',
 		] );
 		expect( result.current[ 0 ].perPage ).toBe( 100 );
+	} );
+
+	it( 'preserves persisted table layout while forcing formatted currency columns to start-align', () => {
+		mockUserPrefs = {
+			wc_payments_reports_fees_view: {
+				fields: [ 'date', 'transaction_id', 'amount', 'fees' ],
+				perPage: 25,
+				layout: {
+					density: 'balanced',
+					styles: {
+						amount: { align: 'end', width: '120px' },
+						fees: { align: 'end', minWidth: '12ch' },
+						type: { align: 'center' },
+					},
+				},
+			},
+		};
+		const { result } = renderUseFeesView();
+
+		expect( result.current[ 0 ].layout ).toEqual( {
+			density: 'balanced',
+			styles: {
+				amount: { align: 'start', width: '120px' },
+				fees: { align: 'start', minWidth: '12ch' },
+				type: { align: 'center' },
+			},
+		} );
 	} );
 
 	it( 'pushes sort changes to URL', () => {
@@ -553,7 +593,7 @@ describe( 'useFeesView', () => {
 
 		expect( mockUpdateUserPreferences ).toHaveBeenCalledWith( {
 			wc_payments_reports_fees_view: expect.objectContaining( {
-				fields: [ 'date', 'transaction_id' ],
+				fields: [ 'transaction_id' ],
 				perPage: 100,
 			} ),
 		} );
@@ -562,7 +602,7 @@ describe( 'useFeesView', () => {
 	it( 'skips updateUserPreferences when only URL-bound state changes', () => {
 		mockUserPrefs = {
 			wc_payments_reports_fees_view: {
-				fields: [ 'date', 'amount' ],
+				fields: [ 'amount' ],
 				perPage: 25,
 				layout: {},
 			},
@@ -570,7 +610,7 @@ describe( 'useFeesView', () => {
 		const { result } = renderUseFeesView();
 
 		updateFeesView( result, {
-			fields: [ 'date', 'amount' ],
+			fields: [ 'amount' ],
 			perPage: 25,
 			sort: { field: 'fees', direction: 'asc' },
 			page: 3,
