@@ -14,6 +14,7 @@ import {
 	deleteSkipWooPayCookie,
 } from './utils';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -472,7 +473,8 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				const promise = api.initWooPay(
+				const promise = initWooPay(
+					api,
 					woopayEmailInput.value,
 					e.data.platformCheckoutUserSession
 				);
