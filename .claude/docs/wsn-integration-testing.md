@@ -211,9 +211,9 @@ WC core's `OrderAttributionController` captures the UTM the WSN client emits on 
 
 ### Express channel (wsn-express)
 
-Requires Alefe's `woopay-wsn-bridge-endpoint` branch in the WooPay sandbox. Until that lands, can be simulated by setting the session flag directly via wp-cli before placing a Store-API order (less realistic, but exercises the same handler path).
+Requires Alefe's `woopay-wsn-bridge-endpoint` branch in the WooPay sandbox. The bridge sends `extensions.woopay_wsn.channel = "wsn-express"` in the single Store-API checkout POST body. WCPay registers the `woopay_wsn` extension namespace via `woocommerce_store_api_register_endpoint_data()` so the field survives schema validation, then reads it from `$request->get_param('extensions')` on the `woocommerce_store_api_checkout_update_order_from_request` hook.
 
-1. With Alefe's bridge active and `PLATFORM_CHECKOUT_HOST` pointed at the sandbox: trigger a WSN express checkout via the WooPay shopper UI. The bridge controller sets `WC()->session->set('woopay_wsn_channel', 'wsn-express')` during the Cart-Token handoff; the flag survives to order placement.
+1. With Alefe's bridge active and `PLATFORM_CHECKOUT_HOST` pointed at the sandbox: trigger a WSN express checkout via the WooPay shopper UI.
 
 2. Verify on the resulting order:
    ```bash
@@ -225,13 +225,13 @@ Requires Alefe's `woopay-wsn-bridge-endpoint` branch in the WooPay sandbox. Unti
 
    Expect: `_woopay_marketplace_channel = wsn-express`.
 
-3. The session flag is **single-use** — verify it's cleared after stamping (defense against a follow-up non-WSN order on the same session getting misattributed):
+3. Without Alefe's bridge: simulate via a direct Store-API POST including the extension. Easiest via REST client:
    ```bash
-   docker compose exec -u www-data wordpress wp eval '
-     echo "flag still set: " . var_export(WC()->session ? WC()->session->get("woopay_wsn_channel") : "no-session", true) . "\n";
-   '
+   curl -X POST http://localhost:8082/wp-json/wc/store/v1/checkout \
+     -H "Content-Type: application/json" \
+     -d '{"extensions": {"woopay_wsn": {"channel": "wsn-express"}}, ...rest of checkout payload...}'
    ```
-   Expect: `flag still set: NULL`.
+   Single-use is structural — extensions live on the request, no follow-up cleanup needed. A subsequent checkout without the extension just won't stamp.
 
 ### Verify the dashboard surfaces the attribution
 
@@ -248,7 +248,7 @@ curl http://localhost:8082/wp-json/wc/v3/payments/wsn/orders?period=7d | jq '.st
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Browser-channel order has the UTM meta (`_wc_order_attribution_utm_*`) but NO marketplace meta | Our handler ran BEFORE WC core's at priority 10 — UTM wasn't there yet when we read it | Verify `WSN_Order_Attribution::HOOK_PRIORITY` is 20. Run `wp eval 'print_r(\$wp_filter["woocommerce_checkout_order_created"]->callbacks);'` to inspect priority ordering. |
-| Express order shows no channel meta | Session flag wasn't set by the bridge OR was cleared by a prior order in the same session | Inspect: `wp eval 'echo WC()->session->get("woopay_wsn_channel");'` immediately before placing the order. If empty, the bridge didn't set it — debug on the WooPay side. |
+| Express order shows no channel meta | Bridge didn't send `extensions.woopay_wsn` in the checkout POST OR the schema validator stripped it | Inspect the Store-API request body in browser devtools / server logs to confirm the `extensions.woopay_wsn.channel` field is present. If it's there but the order still has no channel meta, verify `woocommerce_store_api_register_endpoint_data` is being called — `wp eval 'do_action("woocommerce_blocks_loaded"); $extend = Automattic\WooCommerce\StoreApi\StoreApi::container()->get(Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema::class); echo class_exists($extend) ? "loaded" : "missing";'`. |
 | Sub-flag is on but no stamping happens at all | `WC_Payments::init()` may not have run before the checkout hook fires | Verify with `wp eval 'echo class_exists("WSN_Order_Attribution") ? "loaded" : "missing";'`. Should print `loaded`. |
 | Dashboard still shows `is_empty: true` after a confirmed-stamped order | Read/write meta-key drift | Inspect: `wp eval 'echo WSN_Order_Attribution::META_CHANNEL . " vs " . WC_REST_Payments_WSN_Orders_Controller::META_CHANNEL;'` — must be equal. Covered by `test_meta_key_constants_match_orders_controller`. |
 

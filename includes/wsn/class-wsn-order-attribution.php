@@ -32,10 +32,21 @@ defined( 'ABSPATH' ) || exit;
  * The express channel is headless — UTM is structurally blind to it,
  * because the checkout completes off the merchant domain. The WooPay
  * `wsn-checkout` bridge controller (Alefe's `woopay-wsn-bridge-endpoint`
- * branch) sets a WC session flag `woopay_wsn_channel = 'wsn-express'`
- * during the Cart-Token handoff that survives to order placement. This
- * class reads the flag on the Store-API order-processed hook and clears
- * it after stamping.
+ * branch) sends `extensions.woopay_wsn.channel = "wsn-express"` in the
+ * single Store-API checkout POST body. This class reads the value from
+ * the request via `$request->get_param('extensions')` inside the
+ * `woocommerce_store_api_checkout_update_order_from_request` hook —
+ * matching the canonical Store-API extension pattern WC core uses for
+ * its own block-checkout Order Attribution (see
+ * `OrderAttributionBlocksController::extend_api()`). Single-use by
+ * construction: a fresh request → a fresh extensions payload, no
+ * cleanup needed.
+ *
+ * Schema registration: the `woopay_wsn` namespace is declared via
+ * `woocommerce_store_api_register_endpoint_data()` on
+ * `woocommerce_blocks_loaded`. Without registration WC's Store-API
+ * schema validator may strip unknown extension namespaces before our
+ * hook handler sees them.
  *
  * **Trust model for the browser channels:** the underlying
  * `_wc_order_attribution_utm_*` meta is shopper-controlled (WC core
@@ -111,14 +122,15 @@ class WSN_Order_Attribution {
 	const UTM_SOURCE_WSN = 'woo-shopping-network';
 
 	/**
-	 * WC session key set by the WooPay `wsn-checkout` bridge controller
-	 * to mark a Cart-Token handoff as a WSN-express origin. The flag
-	 * survives the handoff because the merchant WC session is shared
-	 * across the Store API order-placement path.
+	 * Store API extension namespace under which WooPay's bridge sends
+	 * the WSN origin signal — read as
+	 * `$request->get_param('extensions')['woopay_wsn']['channel']`. Used
+	 * both at schema-registration time and at request-read time so the
+	 * two halves can't drift.
 	 *
 	 * @var string
 	 */
-	const SESSION_KEY_EXPRESS_CHANNEL = 'woopay_wsn_channel';
+	const STORE_API_EXTENSION_NAMESPACE = 'woopay_wsn';
 
 	/**
 	 * Hook priority — MUST be greater than 10 so WC core's
@@ -132,8 +144,17 @@ class WSN_Order_Attribution {
 	const HOOK_PRIORITY = 20;
 
 	/**
-	 * Register the two checkout hooks. Idempotent — `add_action` dedupes
-	 * the same (hook, callback, priority) triple.
+	 * Register the two checkout hooks + the Store API schema declaration.
+	 * Idempotent — `add_action` dedupes the same (hook, callback, priority)
+	 * triple.
+	 *
+	 * Note: the express handler hooks `woocommerce_store_api_checkout_update_order_from_request`
+	 * (2 args: order + request), NOT `..._order_processed`. The
+	 * `..._update_order_from_request` hook is the canonical Store-API
+	 * extension surface — it carries the WP_REST_Request as a hook
+	 * argument so handlers can read posted extension data without
+	 * touching superglobals or WC session. WC core's own block-checkout
+	 * Order Attribution hooks the same action for the same reason.
 	 */
 	public function init_hooks(): void {
 		add_action(
@@ -143,11 +164,59 @@ class WSN_Order_Attribution {
 			1
 		);
 		add_action(
-			'woocommerce_store_api_checkout_order_processed',
+			'woocommerce_store_api_checkout_update_order_from_request',
 			[ $this, 'stamp_express_order_attribution' ],
 			self::HOOK_PRIORITY,
-			1
+			2
 		);
+		add_action(
+			'woocommerce_blocks_loaded',
+			[ $this, 'register_store_api_extension' ]
+		);
+	}
+
+	/**
+	 * Declare the `woopay_wsn` extension namespace on the Store API
+	 * checkout endpoint so requests carrying `extensions.woopay_wsn`
+	 * survive schema validation and surface on the hook's request arg.
+	 *
+	 * Without registration, WC's Store-API schema validator may strip
+	 * unknown extension namespaces before our hook handler sees them.
+	 * Mirrors the pattern at
+	 * `WooCommerce\Internal\Orders\OrderAttributionBlocksController::extend_api()`.
+	 */
+	public function register_store_api_extension(): void {
+		if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
+			return;
+		}
+		woocommerce_store_api_register_endpoint_data(
+			[
+				'endpoint'        => 'checkout',
+				'namespace'       => self::STORE_API_EXTENSION_NAMESPACE,
+				'schema_callback' => [ $this, 'get_store_api_extension_schema' ],
+			]
+		);
+	}
+
+	/**
+	 * Schema callback for the `woopay_wsn` extension. Tells WC's
+	 * Store-API validator that the payload is an object carrying a
+	 * single `channel` string field. The enum constrains the accepted
+	 * value to `wsn-express` — the only channel that needs the express
+	 * extension path (browser channels are captured via WC core's
+	 * native UTM attribution, not this extension).
+	 *
+	 * @return array
+	 */
+	public function get_store_api_extension_schema(): array {
+		return [
+			'channel' => [
+				'description' => __( 'WSN origin channel for headless WooPay-express checkouts.', 'woocommerce-payments' ),
+				'type'        => 'string',
+				'enum'        => [ self::CHANNEL_EXPRESS ],
+				'readonly'    => false,
+			],
+		];
 	}
 
 	/**
@@ -178,35 +247,41 @@ class WSN_Order_Attribution {
 	}
 
 	/**
-	 * Headless WooPay express checkout — read the WC session flag the
-	 * WooPay bridge controller set during the Cart-Token handoff. The
-	 * flag is single-use: clear it after a successful stamp so it
-	 * doesn't bleed into a subsequent order on the same session.
+	 * Headless WooPay express checkout — read the channel slug from the
+	 * Store API request's `extensions.woopay_wsn.channel` field, set by
+	 * the WooPay bridge controller on the single checkout POST.
+	 *
+	 * Single-use by construction: extensions live on the request, not
+	 * on shared session state, so a follow-up non-WSN checkout in the
+	 * same session can't inherit attribution.
 	 *
 	 * Skips silently when:
-	 *  - `WC()->session` isn't available (defensive — WC initializes
-	 *    session early in the Store-API request lifecycle, so this
-	 *    should always be non-null at hook fire time; null-check is
-	 *    belt-and-suspenders)
-	 *  - The session flag is missing or doesn't equal `wsn-express`
+	 *  - The extensions param is absent or non-array (no WSN signal)
+	 *  - The woopay_wsn namespace is absent (non-WSN Store-API checkout)
+	 *  - The channel value isn't `wsn-express` (only value this path
+	 *    accepts; the browser channels go through WC core's native
+	 *    UTM attribution on the classic hook)
 	 *
-	 * @param \WC_Order $order The order being placed.
+	 * @param \WC_Order        $order   The order being placed.
+	 * @param \WP_REST_Request $request The Store-API checkout request.
 	 */
-	public function stamp_express_order_attribution( \WC_Order $order ): void {
-		if ( ! WC()->session ) {
+	public function stamp_express_order_attribution( \WC_Order $order, \WP_REST_Request $request ): void {
+		$extensions = $request->get_param( 'extensions' );
+		if ( ! is_array( $extensions ) ) {
 			return;
 		}
 
-		$channel = WC()->session->get( self::SESSION_KEY_EXPRESS_CHANNEL );
+		$payload = $extensions[ self::STORE_API_EXTENSION_NAMESPACE ] ?? null;
+		if ( ! is_array( $payload ) ) {
+			return;
+		}
+
+		$channel = sanitize_key( (string) ( $payload['channel'] ?? '' ) );
 		if ( self::CHANNEL_EXPRESS !== $channel ) {
 			return;
 		}
 
 		$this->stamp( $order, self::CHANNEL_EXPRESS );
-
-		// Single-use — clear the flag so a follow-up non-WSN order
-		// placed in the same session isn't misattributed.
-		WC()->session->set( self::SESSION_KEY_EXPRESS_CHANNEL, null );
 	}
 
 	/**

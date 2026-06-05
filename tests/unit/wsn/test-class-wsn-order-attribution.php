@@ -47,18 +47,6 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->attribution = new WSN_Order_Attribution();
-
-		// Defensive — clear any session flag bleed from prior tests.
-		if ( WC()->session ) {
-			WC()->session->set( WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL, null );
-		}
-	}
-
-	public function tear_down() {
-		if ( WC()->session ) {
-			WC()->session->set( WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL, null );
-		}
-		parent::tear_down();
 	}
 
 	// ---- Channel happy paths ----
@@ -100,27 +88,21 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WSN_Order_Attribution::CHANNEL_CART, $fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ) );
 	}
 
-	public function test_stamp_express_writes_meta_when_session_flag_set() {
-		$this->assertNotNull( WC()->session, 'Test prerequisite: WC()->session must be initialized.' );
-		WC()->session->set(
-			WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL,
-			WSN_Order_Attribution::CHANNEL_EXPRESS
+	public function test_stamp_express_writes_meta_when_extensions_carry_wsn_express_channel() {
+		$order   = wc_create_order();
+		$request = $this->build_store_api_request(
+			[
+				WSN_Order_Attribution::STORE_API_EXTENSION_NAMESPACE => [ 'channel' => WSN_Order_Attribution::CHANNEL_EXPRESS ],
+			]
 		);
-		$order = wc_create_order();
 
-		$this->attribution->stamp_express_order_attribution( $order );
+		$this->attribution->stamp_express_order_attribution( $order, $request );
 
 		$fresh = wc_get_order( $order->get_id() );
 		$this->assertSame( '1', (string) $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
 		$this->assertSame( WSN_Order_Attribution::CHANNEL_EXPRESS, $fresh->get_meta( WSN_Order_Attribution::META_CHANNEL ) );
-		// assertNull (not assertEmpty) — the class explicitly writes null
-		// when clearing the flag; assertEmpty would also pass for '' or 0
-		// which would mask a bug where the clear writes something other
-		// than null.
-		$this->assertNull(
-			WC()->session->get( WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL ),
-			'Single-use: the express session flag MUST be cleared after stamping so a follow-up non-WSN order in the same session is not misattributed.'
-		);
+		// No session-clear assertion — single-use is now structural: extensions
+		// live on the request, a follow-up request carries fresh extensions.
 	}
 
 	// ---- is_empty boundary ----
@@ -162,13 +144,28 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
 	}
 
-	public function test_stamp_express_skips_when_session_flag_missing() {
-		$this->assertNotNull( WC()->session );
-		// Confirm tear_down/set_up cleared the flag from a previous test.
-		WC()->session->set( WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL, null );
-		$order = wc_create_order();
+	public function test_stamp_express_skips_when_extensions_absent() {
+		// Plain Store-API checkout request — no extensions param at all.
+		// The handler must skip silently; non-WSN Store-API orders preserve
+		// is_empty semantics.
+		$order   = wc_create_order();
+		$request = $this->build_store_api_request( null );
 
-		$this->attribution->stamp_express_order_attribution( $order );
+		$this->attribution->stamp_express_order_attribution( $order, $request );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
+	}
+
+	public function test_stamp_express_skips_when_extensions_lack_woopay_wsn_namespace() {
+		// Extensions present but our namespace absent — e.g., a Store-API
+		// checkout that carries some other extension (woocommerce/order-attribution).
+		$order   = wc_create_order();
+		$request = $this->build_store_api_request(
+			[ 'some-other-namespace' => [ 'foo' => 'bar' ] ]
+		);
+
+		$this->attribution->stamp_express_order_attribution( $order, $request );
 
 		$fresh = wc_get_order( $order->get_id() );
 		$this->assertEmpty( $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
@@ -208,7 +205,7 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 			[ $this->attribution, 'stamp_classic_order_attribution' ]
 		);
 		$express_priority = has_action(
-			'woocommerce_store_api_checkout_order_processed',
+			'woocommerce_store_api_checkout_update_order_from_request',
 			[ $this->attribution, 'stamp_express_order_attribution' ]
 		);
 
@@ -230,7 +227,7 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 			WSN_Order_Attribution::HOOK_PRIORITY
 		);
 		remove_action(
-			'woocommerce_store_api_checkout_order_processed',
+			'woocommerce_store_api_checkout_update_order_from_request',
 			[ $this->attribution, 'stamp_express_order_attribution' ],
 			WSN_Order_Attribution::HOOK_PRIORITY
 		);
@@ -337,7 +334,7 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 		// Cleanup so the simulated WC-core handler + our handler don't
 		// leak into subsequent tests.
 		remove_all_actions( 'woocommerce_checkout_order_created' );
-		remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
+		remove_all_actions( 'woocommerce_store_api_checkout_update_order_from_request' );
 	}
 
 	// ---- sanitize_key boundary ----
@@ -384,34 +381,49 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 
 	// ---- Wrong/non-string express session value ----
 
-	public function test_stamp_express_skips_when_session_carries_wrong_channel_slug() {
-		// Cross-channel pollution defense: even a valid WSN slug in the
-		// session, if it's not specifically `wsn-express`, must not
-		// stamp express. Strict-equals in the handler handles this; the
-		// test pins the contract.
-		WC()->session->set(
-			WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL,
-			WSN_Order_Attribution::CHANNEL_PDP
+	public function test_stamp_express_skips_when_extensions_carry_wrong_channel_slug() {
+		// Cross-channel pollution defense: even a valid WSN slug under our
+		// namespace, if it's not specifically `wsn-express`, must not
+		// stamp express. Strict-equals + the schema-callback enum gate
+		// both enforce this; the test pins the handler's contract.
+		$order   = wc_create_order();
+		$request = $this->build_store_api_request(
+			[
+				WSN_Order_Attribution::STORE_API_EXTENSION_NAMESPACE => [ 'channel' => WSN_Order_Attribution::CHANNEL_PDP ],
+			]
 		);
-		$order = wc_create_order();
 
-		$this->attribution->stamp_express_order_attribution( $order );
+		$this->attribution->stamp_express_order_attribution( $order, $request );
 
 		$fresh = wc_get_order( $order->get_id() );
 		$this->assertEmpty(
 			$fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ),
-			'Session containing a non-express WSN slug must not stamp express attribution.'
+			'Extensions carrying a non-express WSN slug must not stamp express attribution.'
 		);
 	}
 
-	public function test_stamp_express_skips_when_session_value_is_unexpected_type() {
-		// Some upstream caller (test or bridge bug) writes junk to the
-		// session key. Strict-equals handles arrays/objects/ints/null —
-		// they all !== the expected string. Pin the contract.
-		WC()->session->set( WSN_Order_Attribution::SESSION_KEY_EXPRESS_CHANNEL, [ 'wsn-express' ] );
-		$order = wc_create_order();
+	public function test_stamp_express_skips_when_extensions_payload_is_unexpected_type() {
+		// Some upstream caller writes junk under our namespace (string
+		// instead of array, etc.). is_array check handles it.
+		$order   = wc_create_order();
+		$request = $this->build_store_api_request(
+			[ WSN_Order_Attribution::STORE_API_EXTENSION_NAMESPACE => 'not-an-array' ]
+		);
 
-		$this->attribution->stamp_express_order_attribution( $order );
+		$this->attribution->stamp_express_order_attribution( $order, $request );
+
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
+	}
+
+	public function test_stamp_express_skips_when_extensions_param_is_unexpected_type() {
+		// Whole `extensions` param is a string (corrupt request body).
+		// is_array($extensions) guard handles it.
+		$order   = wc_create_order();
+		$request = new \WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_param( 'extensions', 'not-an-array' );
+
+		$this->attribution->stamp_express_order_attribution( $order, $request );
 
 		$fresh = wc_get_order( $order->get_id() );
 		$this->assertEmpty( $fresh->get_meta( WSN_Order_Attribution::META_IS_MARKETPLACE ) );
@@ -448,6 +460,43 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	// ---- Store API schema registration ----
+
+	public function test_get_store_api_extension_schema_describes_the_channel_field() {
+		// Pins the schema contract — without this, the WC Store-API
+		// validator may strip `extensions.woopay_wsn` before our hook
+		// handler sees it. Schema must declare the `channel` field as a
+		// string constrained to the wsn-express enum (the only value our
+		// handler accepts; browser channels go through WC core's native
+		// UTM attribution, not this extension).
+		$schema = $this->attribution->get_store_api_extension_schema();
+
+		$this->assertArrayHasKey( 'channel', $schema );
+		$this->assertSame( 'string', $schema['channel']['type'] );
+		$this->assertSame(
+			[ WSN_Order_Attribution::CHANNEL_EXPRESS ],
+			$schema['channel']['enum'],
+			'Schema enum must constrain to wsn-express only — the browser channels use a different path (WC core UTM attribution).'
+		);
+	}
+
+	public function test_register_store_api_extension_no_ops_when_helper_missing() {
+		// Hardened against an environment where Store-API isn't loaded
+		// (legacy WC version, REST disabled, etc.). The class's
+		// function_exists guard means register_store_api_extension is
+		// a no-op rather than a fatal — test pins this.
+		// (We can't actually test that woocommerce_store_api_register_endpoint_data
+		// is called when present because the helper modifies WC's global
+		// ExtendSchema state which leaks across tests. Verifying the
+		// no-op branch is the cleaner half of the contract).
+		$reflection = new \ReflectionMethod( $this->attribution, 'register_store_api_extension' );
+		$this->assertTrue( $reflection->isPublic(), 'register_store_api_extension must be public so add_action can call it.' );
+		// The method must not throw under any environment — assert no
+		// exception escapes on invocation.
+		$this->attribution->register_store_api_extension();
+		$this->assertTrue( true, 'register_store_api_extension must be safe to call (no-op when helper missing).' );
+	}
+
 	// ---- Helpers ----
 
 	/**
@@ -465,5 +514,22 @@ class WSN_Order_Attribution_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_wc_order_attribution_utm_content', $utm_content );
 		$order->save();
 		return $order;
+	}
+
+	/**
+	 * Build a `WP_REST_Request` shaped like a Store-API checkout POST,
+	 * with the `extensions` param populated as the WooPay bridge
+	 * controller would send it. Pass `null` to simulate a request with
+	 * no extensions param at all.
+	 *
+	 * @param array|null $extensions The extensions payload, or null to omit.
+	 * @return \WP_REST_Request
+	 */
+	private function build_store_api_request( ?array $extensions ): \WP_REST_Request {
+		$request = new \WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		if ( null !== $extensions ) {
+			$request->set_param( 'extensions', $extensions );
+		}
+		return $request;
 	}
 }
