@@ -67,12 +67,7 @@ const RefundPagePicker = ( { pageId, editUrl, onChange } ) => {
 	// of the JSX to avoid a nested ternary in the render tree.
 	let helperContent;
 	if ( loadError ) {
-		helperContent = (
-			<>
-				{ ! colors.errorText && '⚠ ' }
-				{ loadError }
-			</>
-		);
+		helperContent = <>⚠ { loadError }</>;
 	} else if ( pageId && editUrl ) {
 		helperContent = (
 			<>
@@ -173,9 +168,7 @@ const RefundPagePicker = ( { pageId, editUrl, onChange } ) => {
 			<span
 				style={ {
 					fontSize: '11px',
-					color: loadError
-						? colors.errorText || colors.textSecondary
-						: colors.textMuted,
+					color: loadError ? colors.dangerText : colors.textMuted,
 					marginTop: '3px',
 				} }
 			>
