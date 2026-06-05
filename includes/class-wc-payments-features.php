@@ -36,6 +36,7 @@ class WC_Payments_Features {
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
 	const WSN_HUB_FLAG_NAME                                   = '_wcpay_feature_wsn_hub';
 	const WSN_PROFILE_EMITTER_FLAG_NAME                       = '_wcpay_feature_wsn_profile_emitter';
+	const WSN_ORDER_ATTRIBUTION_FLAG_NAME                     = '_wcpay_feature_wsn_order_attribution';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -395,6 +396,26 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the WSN order-attribution write side is enabled
+	 * (sub-flag of the Hub).
+	 *
+	 * When on, `WSN_Order_Attribution` registers checkout hooks that
+	 * stamp `_woopay_marketplace_order` + `_woopay_marketplace_channel`
+	 * on orders originating through the Network — lighting up the
+	 * Hub Overview tab's read endpoint which has been returning
+	 * `is_empty: true` for non-WSN-tagged traffic.
+	 *
+	 * Independent of the Profile emitter sub-flag. Useful for a gated
+	 * cohort rollout (turn on for a small set of test merchants before
+	 * fleet-wide).
+	 *
+	 * @return bool
+	 */
+	public static function is_wsn_order_attribution_enabled(): bool {
+		return '1' === get_option( self::WSN_ORDER_ATTRIBUTION_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
 	 *
 	 * @return bool
@@ -476,6 +497,7 @@ class WC_Payments_Features {
 				'reportsArea'                              => self::is_reports_area_enabled(),
 				'wsnHub'                                   => self::is_wsn_hub_enabled(),
 				'wsnProfileEmitter'                        => self::is_wsn_profile_emitter_enabled(),
+				'wsnOrderAttribution'                      => self::is_wsn_order_attribution_enabled(),
 			]
 		);
 	}

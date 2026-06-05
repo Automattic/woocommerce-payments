@@ -624,7 +624,16 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-payload-composer.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-transport.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-emitter.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-order-attribution.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-hub.php';
+
+			// Order-attribution hooks live OUTSIDE WSN_Hub because they fire on
+			// shopper-side checkout requests — WSN_Hub::init_hooks() only runs
+			// on Hub admin requests, so wiring there would silently no-op for
+			// the path that matters. Sub-flag still respected so we ship dark.
+			if ( WC_Payments_Features::is_wsn_order_attribution_enabled() ) {
+				( new WSN_Order_Attribution() )->init_hooks();
+			}
 			( new WSN_Hub() )->init_hooks();
 		}
 
