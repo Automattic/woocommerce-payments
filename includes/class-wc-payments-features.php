@@ -365,7 +365,9 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether the Woo Shopping Network Hub is enabled. Disabled by default.
 	 *
-	 * The merchant-facing settings surface at wp-admin → WooPayments → Shopping Network.
+	 * The merchant-facing settings surface at wp-admin → WooCommerce → Shopping Network
+	 * (registered as a WooCommerce submenu via `WSN_Hub::register_admin_menu()` using
+	 * `add_submenu_page( 'woocommerce', ... )`, NOT under the WooPayments sub-menu).
 	 *
 	 * Default-value rule: option is intentionally left UNSET on plugin activation. Unset
 	 * means "merchant has never visited the Hub" (eligible for onboarding nudges); '0'

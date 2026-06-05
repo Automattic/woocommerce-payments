@@ -609,9 +609,14 @@ class WC_Payments {
 		self::$fee_remediation->init();
 
 		// Woo Shopping Network Hub — feature-flagged off by default. Registers REST
-		// controllers under wc/v3/payments/wsn/*. The admin menu entry lives in
-		// WC_Payments_Admin::add_payments_menu() and the React app is registered by
-		// client/index.js via the woocommerce_admin_pages_list filter.
+		// controllers under wc/v3/payments/wsn/* and the admin menu entry under
+		// wp-admin → WooCommerce → Shopping Network. The menu + React mount live in
+		// WSN_Hub::register_admin_menu() (via add_submenu_page( 'woocommerce', ... )
+		// + render_admin_page()), NOT in WC_Payments_Admin::add_payments_menu() or
+		// the woocommerce_admin_pages_list filter — this page is a vanilla WP admin
+		// page, not a WC Admin page, to avoid the WC Admin chrome colliding with the
+		// branded PageHeader. The React entry at client/wsn-hub/index.js mounts
+		// against the `#wcpay-wsn-hub-container` element rendered server-side.
 		if ( WC_Payments_Features::is_wsn_hub_enabled() ) {
 			// Load WSN_Settings + WSN_Derivations here (not lazily in WSN_Hub) so
 			// every WSN callback can safely call their statics regardless of which

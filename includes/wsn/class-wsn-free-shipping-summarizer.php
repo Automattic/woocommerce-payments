@@ -231,7 +231,12 @@ class WSN_Free_Shipping_Summarizer {
 	 * @return string
 	 */
 	private static function format_zone_for_display( array $zone_summary ): string {
-		$zone_name = (string) $zone_summary['zone_name'];
+		// Zone names are merchant-controlled (entered in WC → Settings → Shipping
+		// → Zones with no markup validation). Strip tags here so the JSON
+		// contract is text-only — defense in depth even though current
+		// consumers (React Overview dashboard auto-escapes via JSX) render it
+		// safely. Matches the wp_strip_all_tags treatment of wc_price() below.
+		$zone_name = wp_strip_all_tags( (string) $zone_summary['zone_name'] );
 
 		if ( $zone_summary['min_amount'] > 0 ) {
 			return sprintf(

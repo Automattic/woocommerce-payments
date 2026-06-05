@@ -104,10 +104,17 @@ class WSN_Hub {
 	 * admin-notice JS uses a stable <h1> inside .wrap to position notices on initial
 	 * page load before React mounts — keeping it as `screen-reader-text` prevents
 	 * duplication with the branded <PageHeader> the React app renders.
+	 *
+	 * The accessible heading includes the "(Beta)" status because the visible
+	 * `<PageHeader>` is `aria-hidden="true"` (single visual surface, no double
+	 * announcement); without including Beta here, screen-reader users would lose
+	 * the feature-stage context the visible header conveys via the Beta pill.
+	 * Remove the parenthetical when WSN reaches GA — coincides with removing the
+	 * Beta pill from `client/wsn-hub/page-header.js`.
 	 */
 	public function render_admin_page(): void {
 		echo '<div class="wrap">';
-		echo '<h1 class="screen-reader-text">' . esc_html__( 'Woo Shopping Network', 'woocommerce-payments' ) . '</h1>';
+		echo '<h1 class="screen-reader-text">' . esc_html__( 'Woo Shopping Network (Beta)', 'woocommerce-payments' ) . '</h1>';
 		echo '<div id="wcpay-wsn-hub-container"></div>';
 		echo '</div>';
 	}
