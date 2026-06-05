@@ -98,12 +98,10 @@ runs:
       shell: bash
       run: |
         LOG="tests/e2e/docker/wordpress/wp-content/debug.log"
-        [[ -f "$LOG" ]] || { echo "No debug.log present."; exit 0; }
+        if [[ ! -f "$LOG" ]]; then exit 0; fi
         FATALS=$(grep -nE 'PHP (Fatal|Parse) error|Uncaught|Maximum execution time|Allowed memory size' "$LOG" 2>/dev/null || true)
-        if [[ -z "$FATALS" ]]; then
-          echo "No PHP fatals logged during this run."
-          exit 0
-        fi
+        # Clean runs print nothing; only surface the group when there are fatals.
+        if [[ -z "$FATALS" ]]; then exit 0; fi
         echo "::group::PHP fatals during E2E (from debug.log)"
         echo "$FATALS" | tail -50
         echo "::endgroup::"
