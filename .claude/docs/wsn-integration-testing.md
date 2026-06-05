@@ -169,10 +169,94 @@ docker compose exec -u www-data wordpress wp eval 'echo WSN_Profile_Emitter::get
 # → Compare against WooPay's wp_woopay_wsn_merchant_profile.payload_version
 ```
 
+## Verifying order attribution
+
+A second WSN integration surface, independent of Profile sync. Tests that orders placed through Network surfaces get tagged with `_woopay_marketplace_*` meta so the Hub Overview tab can attribute them.
+
+### Setup (in addition to the Profile sync setup above)
+
+```bash
+docker compose exec -u www-data wordpress wp option update _wcpay_feature_wsn_order_attribution 1
+```
+
+The four channels split into two groups: three browser channels (`wsn-pdp`, `wsn-storefront`, `wsn-cart`) that complete on the merchant's own `/checkout`, and one headless channel (`wsn-express`) that completes on WooPay.
+
+### Browser channels (wsn-pdp / wsn-storefront / wsn-cart)
+
+WC core's `OrderAttributionController` captures the UTM the WSN client emits on every WSN→merchant link. Our `WSN_Order_Attribution` class copies the relevant ones (`utm_source=woo-shopping-network` + `utm_content=wsn-<slug>`) into the WSN namespace at order placement.
+
+1. Visit the merchant store with the WSN UTM in the URL:
+   ```
+   http://localhost:8082/?utm_source=woo-shopping-network&utm_medium=referral&utm_campaign=wsn&utm_content=wsn-pdp
+   ```
+   Substitute `wsn-storefront` or `wsn-cart` for the other browser channels.
+
+2. Add a product to cart, complete checkout via `/checkout` (classic page).
+
+3. Verify on the resulting order:
+   ```bash
+   docker compose exec -u www-data wordpress wp eval '
+     $order = wc_get_order(<ORDER_ID>);
+     echo "marketplace_order: " . $order->get_meta("_woopay_marketplace_order") . "\n";
+     echo "marketplace_channel: " . $order->get_meta("_woopay_marketplace_channel") . "\n";
+     echo "wc_utm_source: " . $order->get_meta("_wc_order_attribution_utm_source") . "\n";
+     echo "wc_utm_content: " . $order->get_meta("_wc_order_attribution_utm_content") . "\n";
+   '
+   ```
+
+   Expect:
+   - `_woopay_marketplace_order = 1`
+   - `_woopay_marketplace_channel = wsn-pdp` (or whichever slug was in the URL)
+   - WC core's `_wc_order_attribution_utm_*` meta is also visible — the source for our copy.
+
+### Express channel (wsn-express)
+
+Requires Alefe's `woopay-wsn-bridge-endpoint` branch in the WooPay sandbox. Until that lands, can be simulated by setting the session flag directly via wp-cli before placing a Store-API order (less realistic, but exercises the same handler path).
+
+1. With Alefe's bridge active and `PLATFORM_CHECKOUT_HOST` pointed at the sandbox: trigger a WSN express checkout via the WooPay shopper UI. The bridge controller sets `WC()->session->set('woopay_wsn_channel', 'wsn-express')` during the Cart-Token handoff; the flag survives to order placement.
+
+2. Verify on the resulting order:
+   ```bash
+   docker compose exec -u www-data wordpress wp eval '
+     $order = wc_get_order(<ORDER_ID>);
+     echo "marketplace_channel: " . $order->get_meta("_woopay_marketplace_channel") . "\n";
+   '
+   ```
+
+   Expect: `_woopay_marketplace_channel = wsn-express`.
+
+3. The session flag is **single-use** — verify it's cleared after stamping (defense against a follow-up non-WSN order on the same session getting misattributed):
+   ```bash
+   docker compose exec -u www-data wordpress wp eval '
+     echo "flag still set: " . var_export(WC()->session ? WC()->session->get("woopay_wsn_channel") : "no-session", true) . "\n";
+   '
+   ```
+   Expect: `flag still set: NULL`.
+
+### Verify the dashboard surfaces the attribution
+
+```bash
+curl http://localhost:8082/wp-json/wc/v3/payments/wsn/orders?period=7d | jq '.stats, .orders[].source'
+```
+
+- `stats.network_orders` should reflect the count of stamped orders in the period.
+- `stats.top_source` should match the dominant channel slug.
+- `orders[].source` should carry the channel slug (e.g. `wsn-pdp`) for each row.
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Browser-channel order has the UTM meta (`_wc_order_attribution_utm_*`) but NO marketplace meta | Our handler ran BEFORE WC core's at priority 10 — UTM wasn't there yet when we read it | Verify `WSN_Order_Attribution::HOOK_PRIORITY` is 20. Run `wp eval 'print_r(\$wp_filter["woocommerce_checkout_order_created"]->callbacks);'` to inspect priority ordering. |
+| Express order shows no channel meta | Session flag wasn't set by the bridge OR was cleared by a prior order in the same session | Inspect: `wp eval 'echo WC()->session->get("woopay_wsn_channel");'` immediately before placing the order. If empty, the bridge didn't set it — debug on the WooPay side. |
+| Sub-flag is on but no stamping happens at all | `WC_Payments::init()` may not have run before the checkout hook fires | Verify with `wp eval 'echo class_exists("WSN_Order_Attribution") ? "loaded" : "missing";'`. Should print `loaded`. |
+| Dashboard still shows `is_empty: true` after a confirmed-stamped order | Read/write meta-key drift | Inspect: `wp eval 'echo WSN_Order_Attribution::META_CHANNEL . " vs " . WC_REST_Payments_WSN_Orders_Controller::META_CHANNEL;'` — must be equal. Covered by `test_meta_key_constants_match_orders_controller`. |
+
 ## References
 
 - Architecture: [wsn-profile-sync-architecture.md](./wsn-profile-sync-architecture.md)
 - WCPay-side transport: [`includes/wsn/class-wsn-profile-transport.php`](../../includes/wsn/class-wsn-profile-transport.php)
 - WCPay-side emitter: [`includes/wsn/class-wsn-profile-emitter.php`](../../includes/wsn/class-wsn-profile-emitter.php)
+- WCPay-side order attribution: [`includes/wsn/class-wsn-order-attribution.php`](../../includes/wsn/class-wsn-order-attribution.php)
 - Production existence-proof for the transport pattern: [`includes/woopay/class-woopay-session.php`](../../includes/woopay/class-woopay-session.php) `ajax_init_woopay()`
 - Resync REST endpoint: `POST /wc/v3/payments/wsn/profile-resync` ([`includes/admin/class-wc-rest-payments-wsn-settings-controller.php`](../../includes/admin/class-wc-rest-payments-wsn-settings-controller.php))
