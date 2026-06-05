@@ -480,7 +480,7 @@ export const handleWooPayEmailInput = async (
 				);
 
 				// The <Login> component on WooPay re-renders sending the `redirect_to_platform_checkout` message twice.
-				// `api.initWooPay` skips the request the second time and returns undefined.
+				// `initWooPay` skips the request the second time and returns undefined.
 				if ( ! promise ) {
 					break;
 				}

@@ -231,11 +231,17 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				initWooPay(
+				const promise = initWooPay(
 					api.request,
 					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
+				);
+
+				if ( ! promise ) {
+					break;
+				}
+
+				promise.then( ( response ) => {
 					// Do nothing if the iframe has been closed.
 					if ( ! document.querySelector( '.woopay-otp-iframe' ) ) {
 						return;

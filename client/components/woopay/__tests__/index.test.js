@@ -21,7 +21,7 @@ jest.mock( 'wcpay/checkout/woopay/init-woopay', () => ( {
 describe( 'woopayPaymentMethod', () => {
 	let nativeWindowLocation;
 
-	const apiMock = {};
+	const apiMock = { request: jest.fn() };
 
 	beforeEach( () => {
 		nativeWindowLocation = Object.getOwnPropertyDescriptor(
