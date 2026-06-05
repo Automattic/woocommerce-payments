@@ -162,6 +162,11 @@ const period = {
 	end: '2026-05-14T23:59:59.999Z',
 };
 
+const previousPeriod = {
+	start: '2026-04-01T00:00:00.000Z',
+	end: '2026-04-30T23:59:59.999Z',
+};
+
 const zeroSummary = {
 	currency: 'usd',
 	period,
@@ -498,6 +503,42 @@ describe( 'BalanceReport', () => {
 			'Balance report loaded.',
 			undefined
 		);
+	} );
+
+	it( 'does not announce a stale Balance load when the Date filter is cleared while loading', () => {
+		jest.useFakeTimers();
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		mockUseBalanceDateFilter.mockReturnValue( {
+			value: undefined,
+			period,
+			hasDateFilterValue: false,
+			setValue: mockSetBalanceDateFilterValue,
+		} );
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		act( () => {
+			jest.advanceTimersByTime( 500 );
+		} );
+
+		expect( mockSpeak ).not.toHaveBeenCalled();
 	} );
 
 	it( 'does not duplicate the alert announcement when Balance data fails to load', () => {
@@ -885,6 +926,78 @@ describe( 'BalanceReport Tracks', () => {
 				range_days: 31,
 			} )
 		);
+	} );
+
+	it( 'does not record load success when the Date filter is cleared while Balance data is loading', () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockUseBalanceDateFilter.mockReturnValue( {
+			value: undefined,
+			period,
+			hasDateFilterValue: false,
+			setValue: mockSetBalanceDateFilterValue,
+		} );
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not record load success when a different Balance period is active after loading', () => {
+		mockUseBalanceDateFilter.mockReturnValue( {
+			value: undefined,
+			period: previousPeriod,
+			hasDateFilterValue: true,
+			setValue: mockSetBalanceDateFilterValue,
+		} );
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockUseBalanceDateFilter.mockReturnValue( {
+			value: undefined,
+			period,
+			hasDateFilterValue: true,
+			setValue: mockSetBalanceDateFilterValue,
+		} );
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: balanceSummaryFixture,
+			error: {},
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
 	} );
 
 	it( 'records load error when Balance summary data resolves with a store error', () => {

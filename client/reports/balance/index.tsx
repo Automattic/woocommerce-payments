@@ -153,13 +153,14 @@ export const BalanceReport = ( {
 	).current;
 	const { value, period, hasDateFilterValue, setValue } =
 		useBalanceDateFilter( stableDateFilterNow );
+	const requestCurrency = wcpaySettings.accountDefaultCurrency || '';
 	const {
 		summary,
 		error = {},
 		isLoading,
 	} = useReportsBalanceSummary(
 		hasDateFilterValue ? period : undefined,
-		wcpaySettings.accountDefaultCurrency || ''
+		requestCurrency
 	);
 	const hasStoreError = hasKeys( error );
 	const hasMalformedSummary = isBalanceSummaryMalformed( {
@@ -175,6 +176,18 @@ export const BalanceReport = ( {
 	const toolbarRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
+	const activeRequestKey = hasDateFilterValue
+		? `${ period.start }:${ period.end }:${ requestCurrency.toLowerCase() }`
+		: null;
+	const loadingRequestKeyRef = useRef< string | null >(
+		isLoading ? activeRequestKey : null
+	);
+	const completedActiveRequest =
+		previousLoadingRef.current &&
+		! isLoading &&
+		! hasError &&
+		activeRequestKey !== null &&
+		loadingRequestKeyRef.current === activeRequestKey;
 	// Marks that the user just pressed Reload, so the next error→loading
 	// transition should restore focus to the loading heading (the Reload
 	// button itself unmounts before the useEffect runs).
@@ -242,7 +255,13 @@ export const BalanceReport = ( {
 	);
 
 	useEffect( () => {
-		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+		if ( isLoading && activeRequestKey ) {
+			loadingRequestKeyRef.current = activeRequestKey;
+		} else if ( ! activeRequestKey ) {
+			loadingRequestKeyRef.current = null;
+		}
+
+		if ( completedActiveRequest ) {
 			recordEvent( 'wcpay_reports_balance_load_success', {
 				currency,
 				has_activity: hasActivity,
@@ -265,6 +284,8 @@ export const BalanceReport = ( {
 			} );
 		}
 	}, [
+		activeRequestKey,
+		completedActiveRequest,
 		currency,
 		displayPeriod.end,
 		displayPeriod.start,
@@ -310,7 +331,7 @@ export const BalanceReport = ( {
 			lastSpokenRef.current = null;
 		}
 
-		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+		if ( completedActiveRequest ) {
 			if ( reloadRequestedRef.current ) {
 				toolbarRef.current
 					?.querySelector< HTMLButtonElement >(
@@ -347,9 +368,13 @@ export const BalanceReport = ( {
 			reloadRequestedRef.current = false;
 		}
 
+		if ( ! activeRequestKey && ! isLoading ) {
+			reloadRequestedRef.current = false;
+		}
+
 		previousLoadingRef.current = isLoading;
 		previousErrorRef.current = hasError;
-	}, [ hasError, isLoading ] );
+	}, [ activeRequestKey, completedActiveRequest, hasError, isLoading ] );
 
 	useEffect( () => {
 		if ( ! printScopeActive ) {
