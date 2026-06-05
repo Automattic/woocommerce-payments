@@ -33,7 +33,7 @@ const goToDevToolsSettings = async ( page: Page ) => {
 
 	throw new Error(
 		`WCPay Dev Tools settings page did not render its "Save Changes" button after ${ devToolsMaxLoadAttempts } attempts; ` +
-			'it was likely truncated by a PHP fatal during render. Check the WordPress debug log artifact.'
+			'it was likely truncated by a PHP fatal during render. See the "PHP fatals" group in the E2E run log.'
 	);
 };
 
