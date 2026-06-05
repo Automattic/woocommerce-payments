@@ -40,6 +40,7 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 			opened,
 			title,
 			subtitle,
+			subtitleNode,
 			md = true,
 			lg = false,
 			scrollAfterOpen = true,
@@ -95,11 +96,21 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 					isOpened={ Boolean( isOpened ) }
 					onClick={ handleOnToggle }
 					title={ title }
-					subtitle={ subtitle }
+					// `subtitleNode` renders below as a sibling, so the
+					// in-button slot stays empty when both are passed.
+					subtitle={ subtitleNode ? undefined : subtitle }
 					md={ md }
 					lg={ lg }
 					{ ...( buttonProps && { ...buttonProps, ref: undefined } ) }
 				/>
+				{ subtitleNode && isOpened && (
+					// Sibling render, expanded-only: keeps the closed state
+					// clean and avoids two-state positioning against the
+					// body's border.
+					<div className="wcpay-accordion__subtitle wcpay-accordion__subtitle--external">
+						{ subtitleNode }
+					</div>
+				) }
 				{ typeof children === 'function'
 					? children( { opened: Boolean( isOpened ) } )
 					: isOpened && children }

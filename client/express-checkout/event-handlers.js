@@ -29,12 +29,29 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+import { getSetupFutureUsageForCart } from './utils/subscriptions';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
+
+const getElementsUpdateOptionsForCart = ( cartData ) => ( {
+	// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+	amount: applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice(
+			parseInt( cartData.totals.total_price, 10 ) -
+				parseInt( cartData.totals.total_refund || 0, 10 ),
+			cartData.totals
+		),
+		cartData
+	),
+	...( shouldUseConfirmationTokens()
+		? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+		: {} ),
+} );
 
 export const shippingAddressChangeHandler = async ( event, elements ) => {
 	lastSelectedAddress = event.address;
@@ -59,18 +76,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		await elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 
 		lastCartData = cartData;
 
@@ -109,18 +115,7 @@ export const shippingRateChangeHandler = async (
 
 		lastCartData = cartData;
 
-		await elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
