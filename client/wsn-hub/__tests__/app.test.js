@@ -138,9 +138,6 @@ describe( 'WsnHubApp', () => {
 			render( <WsnHubApp /> );
 
 			expect(
-				screen.queryByRole( 'tab', { name: 'Visibility' } )
-			).not.toBeInTheDocument();
-			expect(
 				screen.queryByRole( 'tab', { name: 'Profile' } )
 			).not.toBeInTheDocument();
 		} );
@@ -158,14 +155,11 @@ describe( 'WsnHubApp', () => {
 	} );
 
 	describe( 'post-enable state (wsn.enabled is true)', () => {
-		it( 'renders the three-tab framework with all tab titles', async () => {
+		it( 'renders the two-tab framework with all tab titles', async () => {
 			await renderEnabled();
 
 			expect(
 				screen.getByRole( 'tab', { name: 'Overview' } )
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole( 'tab', { name: 'Visibility' } )
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole( 'tab', { name: 'Profile' } )
@@ -173,12 +167,14 @@ describe( 'WsnHubApp', () => {
 		} );
 
 		it( 'seeds the initial tab from the URL hash when present', async () => {
-			window.location.hash = '#visibility';
+			window.location.hash = '#profile';
 			await renderEnabled();
 
 			await waitFor( () => {
 				expect(
-					screen.getByText( /Visibility content lands in RSM-2480/i )
+					screen.getByRole( 'heading', {
+						name: /Storefront Profile/i,
+					} )
 				).toBeInTheDocument();
 			} );
 		} );

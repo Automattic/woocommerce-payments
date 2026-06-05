@@ -1,9 +1,13 @@
 /**
  * WsnHubApp — the top-level component for the Woo Shopping Network Hub page.
  *
- * Hosts the 3-tab framework (Overview / Visibility / Profile) using @wordpress/components'
- * <TabPanel> with hash-based deep-linking so /shopping-network#visibility lands on the
- * Visibility tab directly.
+ * Hosts the 2-tab framework (Overview / Profile) using @wordpress/components'
+ * <TabPanel> with hash-based deep-linking so /shopping-network#profile lands on the
+ * Profile tab directly.
+ *
+ * Visibility was removed 2026-06-05 — product exposure to the ES index now
+ * relies on WC's native product-catalog-visibility settings instead of a
+ * WSN-specific opt-in surface. See the architecture doc for the rationale.
  *
  * Pre-enable state (RSM-2493): when `wcpaySettings.wsn?.enabled` is falsy, the tab nav
  * is hidden and only the Overview tab's PreEnableHero renders, taking over the full
@@ -27,7 +31,6 @@ import apiFetch from '@wordpress/api-fetch';
 
 import PageHeader from './page-header';
 import OverviewTab from './overview-tab';
-import VisibilityTab from './visibility-tab';
 import ProfileTab from './profile-tab';
 import { colors, spacing } from './tokens';
 import { TabErrorBoundary } from './utils/error-boundary';
@@ -35,7 +38,6 @@ import { formatApiError } from './utils/format-api-error';
 
 const TABS = [
 	{ name: 'overview', title: __( 'Overview', 'woocommerce-payments' ) },
-	{ name: 'visibility', title: __( 'Visibility', 'woocommerce-payments' ) },
 	{ name: 'profile', title: __( 'Profile', 'woocommerce-payments' ) },
 ];
 
@@ -185,7 +187,6 @@ const WsnHubApp = () => {
 									onEnabledChange={ handleEnabledChange }
 								/>
 							) }
-							{ tab.name === 'visibility' && <VisibilityTab /> }
 							{ tab.name === 'profile' && (
 								<ProfileTab
 									settings={ settings }
