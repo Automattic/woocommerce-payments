@@ -18,9 +18,10 @@ jest.mock( 'wcpay/data', () => ( {
 	usePaymentIntentWithChargeFallback: jest.fn(),
 } ) );
 
-const mockUsePaymentIntentWithChargeFallback = usePaymentIntentWithChargeFallback as jest.MockedFunction<
-	typeof usePaymentIntentWithChargeFallback
->;
+const mockUsePaymentIntentWithChargeFallback =
+	usePaymentIntentWithChargeFallback as jest.MockedFunction<
+		typeof usePaymentIntentWithChargeFallback
+	>;
 
 describe( 'RefundModal', () => {
 	test( 'it renders correctly', () => {

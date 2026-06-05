@@ -187,3 +187,39 @@ test.describe(
 		} );
 	}
 );
+
+test.describe(
+	'Shopper > Checkout > Retry after failure without page refresh',
+	{ tag: '@critical' },
+	() => {
+		let shopperPage: Page;
+		let browser: Browser;
+
+		test.beforeAll( async ( { browser: b } ) => {
+			browser = b;
+			shopperPage = ( await getShopper( browser ) ).shopperPage;
+			await shopper.emptyCart( shopperPage );
+			await shopper.addToCartFromShopPage( shopperPage );
+		} );
+
+		test( 'should successfully complete order after retrying with a valid card without refreshing the page', async () => {
+			await shopper.setupCheckout( shopperPage );
+			await shopper.selectPaymentMethod( shopperPage );
+
+			// First attempt: declined card.
+			await shopper.fillCardDetails( shopperPage, config.cards.declined );
+			await shopper.placeOrder( shopperPage );
+			await expect(
+				shopperPage.getByText( 'Error: Your card was declined.' )
+			).toBeVisible();
+
+			// Second attempt: valid card, same page, no refresh.
+			// Regression scenario from issue #160 / PR #133.
+			await shopper.fillCardDetails( shopperPage, config.cards.basic );
+			await shopper.placeOrder( shopperPage );
+			await expect(
+				shopperPage.getByText( 'Order received' ).first()
+			).toBeVisible();
+		} );
+	}
+);

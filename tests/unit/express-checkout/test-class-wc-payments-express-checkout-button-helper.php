@@ -101,6 +101,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 	public function tear_down() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_renewal( null );
+		WC_Subscriptions::wcs_cart_contains_resubscribe( null );
+		WC_Subscriptions::wcs_cart_contains_switches( null );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
 		WC()->cart->empty_cart();
@@ -211,6 +214,87 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 	}
 
+	public function test_has_subscription_product_on_cart_with_renewal() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertTrue( $helper->has_subscription_product() );
+
+		WC_Subscriptions::wcs_cart_contains_renewal( null );
+	}
+
+	public function test_has_subscription_product_on_checkout_with_resubscribe() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_resubscribe(
+			function () {
+				return true;
+			}
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+
+		$this->assertTrue( $helper->has_subscription_product() );
+
+		WC_Subscriptions::wcs_cart_contains_resubscribe( null );
+	}
+
+	public function test_has_subscription_product_on_checkout_with_switch() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_switches(
+			function () {
+				return true;
+			}
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+
+		$this->assertTrue( $helper->has_subscription_product() );
+
+		WC_Subscriptions::wcs_cart_contains_switches( null );
+	}
+
+	public function test_has_subscription_product_on_cart_with_no_subscription_variants() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->has_subscription_product() );
+	}
+
 	public function test_common_get_button_settings() {
 		$this->assertEquals(
 			[
@@ -287,7 +371,14 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		add_filter( 'woocommerce_is_checkout', '__return_true' );
 
-		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
 
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 	}
@@ -306,11 +397,41 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		update_option( 'woocommerce_tax_based_on', 'billing' );
 		update_option( 'woocommerce_prices_include_tax', 'yes' );
 
-		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
 
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
+	}
+
+	public function test_should_not_show_express_checkout_button_when_no_methods_enabled_at_location() {
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		WC_Payments::mode()->dev();
+
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		// Clear all express checkout methods from the checkout location.
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [] );
+
+		// Without mocking get_enabled_express_checkout_methods_for_context, it should
+		// return empty because no methods are enabled at the checkout location, causing
+		// should_show_express_checkout_button to return false.
+		$this->assertFalse( $this->system_under_test->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		// Restore for other tests.
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request', 'woopay' ] );
 	}
 
 	public function test_should_not_show_express_checkout_button_for_non_shipping_but_price_does_not_include_tax() {

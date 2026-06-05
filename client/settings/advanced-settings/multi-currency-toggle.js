@@ -11,10 +11,8 @@ import { useMultiCurrency } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const MultiCurrencyToggle = () => {
-	const [
-		isMultiCurrencyEnabled,
-		updateIsMultiCurrencyEnabled,
-	] = useMultiCurrency();
+	const [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ] =
+		useMultiCurrency();
 
 	const handleMultiCurrencyStatusChange = ( value ) => {
 		updateIsMultiCurrencyEnabled( value );

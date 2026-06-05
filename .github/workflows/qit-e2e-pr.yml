@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up repository
         uses: ./.github/actions/setup-repo
@@ -26,7 +26,7 @@ jobs:
         uses: ./.github/actions/build
 
       - name: Upload plugin artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: woocommerce-payments-${{ github.run_id }}
           path: woocommerce-payments.zip
@@ -39,7 +39,7 @@ jobs:
       matrix: ${{ steps.generate.outputs.matrix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Generate matrix
         id: generate
@@ -48,11 +48,12 @@ jobs:
           SCRIPT_RESULT=$(.github/scripts/generate-wc-matrix.sh)
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
 
-          echo "L-1 version: $L1_VERSION" >&2
+          LATEST_WC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.latest_wc_version')
+          echo "L-1 version: $L1_VERSION, Latest WC: $LATEST_WC_VERSION" >&2
 
-          # Build PR matrix: L-1 + latest, PHP 8.3 only, all projects
+          # Build PR matrix: L-1 + latest stable, PHP 8.3 only, all projects
           MATRIX_ENTRIES=()
-          for wc_version in "$L1_VERSION" "latest"; do
+          for wc_version in "$L1_VERSION" "$LATEST_WC_VERSION"; do
             for project in "shopper" "merchant" "subscriptions"; do
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"wordpress\":\"latest\",\"php\":\"8.3\",\"project\":\"$project\"}")
             done

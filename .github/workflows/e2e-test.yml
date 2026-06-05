@@ -35,7 +35,7 @@ jobs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Generate matrix"
         id: generate_matrix
@@ -150,18 +150,13 @@ jobs:
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
 
-      - name: Install Playwright
-        shell: bash
-        run: npx playwright install chromium
-
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
-
 
 
   # Run tests against WP Nightly & WC latest
@@ -190,14 +185,10 @@ jobs:
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
-
-      - name: Install Playwright
-        shell: bash
-        run: npx playwright install chromium
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests

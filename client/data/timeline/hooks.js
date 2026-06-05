@@ -8,9 +8,8 @@ import { STORE_NAME } from '../constants';
 export const useTimeline = ( paymentIntentId ) =>
 	useSelect(
 		( select ) => {
-			const { getTimeline, getTimelineError, isResolving } = select(
-				STORE_NAME
-			);
+			const { getTimeline, getTimelineError, isResolving } =
+				select( STORE_NAME );
 
 			return {
 				timeline: getTimeline( paymentIntentId ),

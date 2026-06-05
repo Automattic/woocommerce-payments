@@ -2,7 +2,11 @@
  * Internal dependencies
  */
 import { CheckOperators, Checks, Outcomes, Rules } from '../constants';
-import { readRuleset, writeRuleset } from '../utils';
+import {
+	readRuleset,
+	isSellingToAvsSupportedLocations,
+	writeRuleset,
+} from '../utils';
 
 const defaultUIConfig = {
 	avs_verification: {
@@ -736,4 +740,47 @@ describe( 'Ruleset adapter utilities test', () => {
 			expect( output ).toEqual( expected );
 		}
 	);
+} );
+
+describe( 'isSellingToAvsSupportedLocations', () => {
+	const setAllowedCountries = ( type, countries = [] ) => {
+		global.wcSettings = {
+			admin: {
+				preloadSettings: {
+					general: {
+						woocommerce_allowed_countries: type,
+						woocommerce_all_except_countries:
+							type === 'all_except' ? countries : [],
+						woocommerce_specific_allowed_countries:
+							type === 'specific' ? countries : [],
+					},
+				},
+			},
+		};
+	};
+
+	test( 'returns true when selling to all countries', () => {
+		setAllowedCountries( 'all' );
+		expect( isSellingToAvsSupportedLocations() ).toBe( true );
+	} );
+
+	test( 'returns true when a specific allowed country supports AVS', () => {
+		setAllowedCountries( 'specific', [ 'DE', 'GB' ] );
+		expect( isSellingToAvsSupportedLocations() ).toBe( true );
+	} );
+
+	test( 'returns false when no specific allowed country supports AVS', () => {
+		setAllowedCountries( 'specific', [ 'DE', 'FR' ] );
+		expect( isSellingToAvsSupportedLocations() ).toBe( false );
+	} );
+
+	test( 'returns false when every AVS-supported country is excluded', () => {
+		setAllowedCountries( 'all_except', [ 'US', 'CA', 'GB' ] );
+		expect( isSellingToAvsSupportedLocations() ).toBe( false );
+	} );
+
+	test( 'returns true when only some AVS-supported countries are excluded', () => {
+		setAllowedCountries( 'all_except', [ 'US', 'GB' ] );
+		expect( isSellingToAvsSupportedLocations() ).toBe( true );
+	} );
 } );

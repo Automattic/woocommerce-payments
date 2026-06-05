@@ -19,6 +19,7 @@ import {
 } from 'wcpay/data';
 import InlineNotice from 'wcpay/components/inline-notice';
 import ErrorBoundary from 'wcpay/components/error-boundary';
+import FormBusyState from 'wcpay/components/form-busy-state';
 import { getAdminUrl, isVersionGreaterOrEqual } from 'wcpay/utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
@@ -130,10 +131,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const cardObserver = useRef< IntersectionObserver >();
 
-	const [
-		currentProtectionLevel,
-		updateProtectionLevel,
-	] = useCurrentProtectionLevel();
+	const [ currentProtectionLevel, updateProtectionLevel ] =
+		useCurrentProtectionLevel();
 	const [
 		advancedFraudProtectionSettings,
 		updateAdvancedFraudProtectionSettings,
@@ -141,9 +140,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ validationError, setValidationError ] = useState< string | null >(
 		null
 	);
-	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState<
-		ProtectionSettingsUI
-	>( {} );
+	const [ protectionSettingsUI, setProtectionSettingsUI ] =
+		useState< ProtectionSettingsUI >( {} );
 
 	useEffect( () => {
 		setProtectionSettingsUI(
@@ -207,9 +205,10 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		if (
 			wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure
 		) {
-			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
-				( setting ) => setting.key === 'avs_verification'
-			);
+			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure =
+				settings.some(
+					( setting ) => setting.key === 'avs_verification'
+				);
 		}
 
 		updateAdvancedFraudProtectionSettings( settings );
@@ -228,7 +227,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		entries.forEach( ( entry: IntersectionObserverEntry ) => {
 			const { target, intersectionRatio } = entry;
 
-			if ( 0 < intersectionRatio ) {
+			if ( intersectionRatio > 0 ) {
 				// Element is at least partially visible.
 				const { id } = target;
 				const event = observerEventMapping[ id ] || null;
@@ -316,83 +315,109 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		>
 			<Breadcrumb />
 			<SettingsLayout>
-				<SettingsSection
-					description={ AdvancedFraudSettingsDescription }
-					id="advanced-fraud"
-				>
-					<ErrorBoundary>
-						{ validationError && (
-							<InlineNotice
-								className="fraud-protection-advanced-settings-error-notice"
-								status="error"
-								isDismissible
-								onRemove={ () => {
-									setValidationError( null );
-								} }
-							>
-								{ sprintf(
-									'%s %s',
-									__(
-										'Settings were not saved.',
+				<FormBusyState isBusy={ isSaving }>
+					<SettingsSection
+						description={ AdvancedFraudSettingsDescription }
+						id="advanced-fraud"
+					>
+						<ErrorBoundary>
+							{ validationError && (
+								<InlineNotice
+									className="fraud-protection-advanced-settings-error-notice"
+									status="error"
+									isDismissible
+									onRemove={ () => {
+										setValidationError( null );
+									} }
+								>
+									{ sprintf(
+										'%s %s',
+										__(
+											'Settings were not saved.',
+											'woocommerce-payments'
+										),
+										validationError
+									) }
+								</InlineNotice>
+							) }
+							{ advancedFraudProtectionSettings === 'error' && (
+								<InlineNotice
+									className="fraud-protection-advanced-settings-error-notice"
+									status="error"
+									isDismissible={ false }
+								>
+									{ __(
+										'There was an error retrieving your fraud protection settings.' +
+											' Please refresh the page to try again.',
 										'woocommerce-payments'
-									),
-									validationError
-								) }
-							</InlineNotice>
-						) }
-						{ 'error' === advancedFraudProtectionSettings && (
-							<InlineNotice
-								className="fraud-protection-advanced-settings-error-notice"
-								status="error"
-								isDismissible={ false }
+									) }
+								</InlineNotice>
+							) }
+							<LoadableBlock
+								isLoading={ isLoading }
+								numLines={ 20 }
 							>
-								{ __(
-									'There was an error retrieving your fraud protection settings.' +
-										' Please refresh the page to try again.',
-									'woocommerce-payments'
-								) }
-							</InlineNotice>
-						) }
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<AVSMismatchRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<InternationalIPAddressRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<IPAddressMismatchRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<AddressMismatchRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<PurchasePriceThresholdRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<OrderItemsThresholdRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<CVCVerificationRuleCard />
-						</LoadableBlock>
+								<AVSMismatchRuleCard />
+							</LoadableBlock>
+							<LoadableBlock
+								isLoading={ isLoading }
+								numLines={ 20 }
+							>
+								<InternationalIPAddressRuleCard />
+							</LoadableBlock>
+							<LoadableBlock
+								isLoading={ isLoading }
+								numLines={ 20 }
+							>
+								<IPAddressMismatchRuleCard />
+							</LoadableBlock>
+							<LoadableBlock
+								isLoading={ isLoading }
+								numLines={ 20 }
+							>
+								<AddressMismatchRuleCard />
+							</LoadableBlock>
+							<LoadableBlock
+								isLoading={ isLoading }
+								numLines={ 20 }
+							>
+								<PurchasePriceThresholdRuleCard />
+							</LoadableBlock>
+							<LoadableBlock
+								isLoading={ isLoading }
+								numLines={ 20 }
+							>
+								<OrderItemsThresholdRuleCard />
+							</LoadableBlock>
+							<LoadableBlock
+								isLoading={ isLoading }
+								numLines={ 20 }
+							>
+								<CVCVerificationRuleCard />
+							</LoadableBlock>
 
-						<footer className="fraud-protection-advanced-settings__footer">
-							<Button
-								variant="primary"
-								isBusy={ isSaving }
-								onClick={ handleSaveSettings }
-								disabled={
-									isSaving ||
-									isLoading ||
-									'error' ===
-										advancedFraudProtectionSettings ||
-									! isDirty
-								}
-							>
-								{ __( 'Save changes', 'woocommerce-payments' ) }
-							</Button>
-						</footer>
-					</ErrorBoundary>
-				</SettingsSection>
+							<footer className="fraud-protection-advanced-settings__footer">
+								<Button
+									variant="primary"
+									isBusy={ isSaving }
+									onClick={ handleSaveSettings }
+									disabled={
+										isSaving ||
+										isLoading ||
+										advancedFraudProtectionSettings ===
+											'error' ||
+										! isDirty
+									}
+								>
+									{ __(
+										'Save changes',
+										'woocommerce-payments'
+									) }
+								</Button>
+							</footer>
+						</ErrorBoundary>
+					</SettingsSection>
+				</FormBusyState>
 			</SettingsLayout>
 		</FraudPreventionSettingsContext.Provider>
 	);

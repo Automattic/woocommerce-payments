@@ -10,6 +10,24 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import PaymentDetailsPaymentMethodDetail from '../detail';
 
+const getCardNetworkDisplayName = ( network ) => {
+	const networkDisplayNames = {
+		cartes_bancaires: __( 'Cartes Bancaires', 'woocommerce-payments' ),
+		cb: __( 'Cartes Bancaires', 'woocommerce-payments' ),
+		eftpos: __( 'eftpos', 'woocommerce-payments' ),
+		eftpos_au: __( 'eftpos', 'woocommerce-payments' ),
+	};
+
+	if ( ! network ) {
+		return __( 'Unknown', 'woocommerce-payments' );
+	}
+
+	return (
+		networkDisplayNames[ network ] ??
+		network.charAt( 0 ).toUpperCase() + network.slice( 1 )
+	);
+};
+
 /**
  * Extracts and formats payment method details from a card-present charge.
  *
@@ -42,9 +60,9 @@ const formatPaymentMethodDetails = ( charge ) => {
 		unknown: __( 'unknown', 'woocommerce-payments' ),
 	};
 	const cardType = sprintf(
-		// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
+		// Translators: %1$s card network, %2$s card funding (prepaid, credit, etc.).
 		__( '%1$s %2$s card', 'woocommerce-payments' ),
-		network.charAt( 0 ).toUpperCase() + network.slice( 1 ), // Brand
+		getCardNetworkDisplayName( network ),
 		fundingTypes[ funding ]
 	);
 

@@ -70,6 +70,8 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
 - `test-patterns.md` — Testing conventions, base classes, mocking patterns
 - `mode-system.md` — Mode hierarchy (dev/test/live), frontend data flow
 - `pm-promotions.md` — PM Promotions data flow, components, REST API, analytics
+- `capital-flow.md` — Stripe Capital offer acceptance flow, `wcpay-loan-offer` redirect, account cache gating
+- `dispute-evidence-system.md` — Dispute challenge UI: evidence matrix, two-tier field resolution, cover letter ordering, field repurposing pattern
 
 **External:**
 - [WordPress Components Storybook](https://wordpress.github.io/gutenberg/?path=/docs/) — Check first for UI components
@@ -128,8 +130,9 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 ```bash
 npm install                         # Install dependencies
 npm start                           # Watch JS changes (alias: npm run watch)
+npm run watch                       # Rebuild assets while developing locally
 npm run hmr                         # Hot module replacement server
-npm run up                          # Start Docker environment
+npm run up                          # Start Docker environment at http://localhost:8082
 npm run dev                         # Start Docker + watch mode
 ```
 
@@ -256,8 +259,10 @@ git -C /path/to/main/repo merge worktree-feat/branch-name
 | MySQL | `localhost:5678` |
 
 - First-time: `npm run up:recreate`
-- Subsequent: `npm run up`
+- Subsequent: `npm run up` brings the local WordPress server up at `http://localhost:8082` by default.
+- When testing local frontend/admin UI changes, run `npm run watch` so built assets are regenerated.
 - Xdebug ready (requires IDE path mapping)
+- Local WP admin credentials are `admin` / `admin`. Do **not** change the local admin password with `wp user update admin --user_pass=...` unless explicitly requested. If browser/MCP login fails, ask before resetting credentials.
 
 ## Jurassic Tube (SSH Tunnels)
 
@@ -344,8 +349,8 @@ AI-generated docs live in `.claude/`. Permanent developer docs live in `docs/`.
 | Directory | Purpose | Naming | Git |
 |-----------|---------|--------|-----|
 | `.claude/docs/` | Living reference guides | No date prefix; `**Last updated:** YYYY-MM-DD` after title | Tracked |
-| `.claude/docs/analysis/` | Research, investigations | `YYYY-MM-DD-description.md` | Tracked |
-| `.claude/docs/plans/` | Implementation plans | `YYYY-MM-DD-description.md` | Tracked |
+| `.claude/docs/analysis/` | Research, investigations | `YYYY-MM-DD-description.md` | Gitignored |
+| `.claude/docs/plans/` | Implementation plans | `YYYY-MM-DD-description.md` | Gitignored |
 | `.claude/tmp/` | Transitory files | Any | Gitignored |
 | `.claude/tmp/reviews/` | Code review outputs | `YYYY-MM-DD-description.md` | Gitignored |
 | `.claude/tmp/screenshots/` | UI screenshots | `YYYY-MM-DD-description.png` | Gitignored |
@@ -369,10 +374,14 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 
 - Prefer editing existing files over creating new ones
 - Check both `src/` and `includes/` when searching for PHP code
+- New PHP code in `src/` must follow PSR-4 class/file naming and existing folder conventions. Prefer `WCPay\Internal\Service\PascalCaseService` in `src/Internal/Service/`, register services in the appropriate `src/Internal/DependencyManagement/ServiceProvider/*ServiceProvider.php`, resolve them through `wcpay_get_container()` from legacy `includes/` code, and place matching tests under `tests/unit/src/...` with namespaced PascalCase test classes.
 - React components follow WordPress patterns (@wordpress packages)
+- Prefer TypeScript for new client code where possible (`.ts`/`.tsx` over `.js`/`.jsx`), especially for new React components and shared data/types.
+- For client UI changes, reuse existing WooPayments/WooCommerce components, typography, spacing, colors, and interaction patterns where appropriate; check nearby screens/components before introducing custom styles so new UI remains visually consistent with the rest of the client.
 - PHP tests require Docker — ensure it's running before executing
 - Always push only current branch: `git push origin HEAD`
 - Always pull with rebase: `git pull origin $(git branch --show-current) --rebase`
 - **PHPCS class structure ordering:** `SlevomatCodingStandard.Classes.ClassStructure.IncorrectGroupOrder` requires methods in order: public → protected → private. When adding new private methods, place them after all public and protected methods. Run `vendor/bin/phpcbf --standard=phpcs.xml.dist <file>` to auto-fix ordering violations.
 - **Migration version_compare:** When adding a migration class in `includes/migrations/`, the `version_compare()` threshold must match the version in the `@since` tag (e.g., `version_compare('10.6.0', $previous_version, '>')` for `@since 10.6.0`). The version represents when the migration ships, not when the old behavior was introduced.
 - **Styles cache invalidation on plugin update:** `WC_Payments_Utils::compute_styles_cache_version()` uses `WCPAY_VERSION_NUMBER` in its hash, but the cached WP option persists across updates. Hook `invalidate_styles_cache_version` to `woocommerce_woocommerce_payments_updated` to clear stale caches.
+- **Abilities API registrations** (`src/Internal/Abilities/AbilitiesRegistrar.php` + `src/Internal/Abilities/Domain/*.php`): each ability lives in its own `Domain/<AbilityName>.php` class implementing `Automattic\WooCommerce\Abilities\AbilityDefinition`. When you change the code path behind a registered ability (REST controller callback, backing Request class, capability gate), audit the relevant Domain class for required updates (annotations, `input_schema`, `output_schema`, description). List abilities use the WC 10.9 paginated output envelope (`{ <collection>: [...], total_pages, page, per_page }`) via the `AbstractWCPayAbility` base. The feature gates on `class_exists('\Automattic\WooCommerce\Internal\Abilities\AbilitiesLoader')` and silently no-ops on WC < 10.9. Each Domain class points at the controller method that backs it with `@see`; the controller method points back at the Domain class with the same `@see` so the connection is visible from both sides — keep that pairing when adding a new ability. Run `vendor/bin/phpunit --filter 'Abilities'` after such changes — covers both the registrar coordinator and per-ability Domain tests.

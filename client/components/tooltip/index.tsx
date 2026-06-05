@@ -34,9 +34,9 @@ type TooltipProps = ComponentProps< typeof TooltipBase > & {
  * Tooltip that shows on both hover and click.
  * To be used when the tooltip content is not interactive.
  */
-export const HoverTooltip: React.FC< React.PropsWithChildren<
-	TooltipProps
-> > = ( {
+export const HoverTooltip: React.FC<
+	React.PropsWithChildren< TooltipProps >
+> = ( {
 	isVisible,
 	onHide = noop,
 	children,
@@ -102,9 +102,9 @@ export const HoverTooltip: React.FC< React.PropsWithChildren<
  * Tooltip that shows only on click events.
  * To be used when the tooltip content is interactive (e.g. links to documentation).
  */
-export const ClickTooltip: React.FC< React.PropsWithChildren<
-	TooltipProps
-> > = ( {
+export const ClickTooltip: React.FC<
+	React.PropsWithChildren< TooltipProps >
+> = ( {
 	isVisible,
 	onHide = noop,
 	buttonIcon,

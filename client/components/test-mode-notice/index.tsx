@@ -164,7 +164,7 @@ const getNoticeContent = (
 										'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 									'woocommerce-payments'
 								),
-								'deposits' === currentPage
+								currentPage === 'deposits'
 									? 'payouts'
 									: currentPage
 							),
@@ -191,7 +191,7 @@ const getNoticeContent = (
 								_n(
 									'%1$s was in test mode when this %2$s was %3$s. To view live %2$ss, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
 									'%1$s was in test mode when these %2$ss were %3$s. To view live %2$ss, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
-									'deposits' === currentPage ? 2 : 1,
+									currentPage === 'deposits' ? 2 : 1,
 									'woocommerce-payments'
 								),
 								'WooPayments',
@@ -218,7 +218,7 @@ const getNoticeContent = (
 								'Viewing test %1$s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
 								'woocommerce-payments'
 							),
-							'deposits' === currentPage
+							currentPage === 'deposits'
 								? 'payouts'
 								: currentPage,
 							'WooPayments'

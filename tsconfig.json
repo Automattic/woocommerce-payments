@@ -12,6 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
+    "isolatedModules": true,
     "paths": {
       "jest-utils/*": [ "../tests/js/utilities/*" ],
       "assets/*": [ "../assets/*" ],

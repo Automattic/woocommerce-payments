@@ -27,10 +27,12 @@ import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
+import ReportsPage from 'reports';
 import OnboardingPage from 'onboarding';
 import OnboardingKycPage from 'onboarding/kyc';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
+import { maybeAddReportsPage } from 'reports/page-config';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -200,6 +202,12 @@ addFilter(
 				parentPath: '/payments/disputes',
 			},
 			capability: 'manage_woocommerce',
+		} );
+		// Reports has additional feature-flag setup, so its route config lives with the Reports shell.
+		maybeAddReportsPage( pages, {
+			container: ReportsPage,
+			menuID,
+			rootLink,
 		} );
 
 		pages.push( {

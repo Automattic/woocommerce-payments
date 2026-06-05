@@ -9,12 +9,9 @@ import React from 'react';
  */
 import type { PaymentMethodItemSubgroupProps } from './types';
 
-const PaymentMethodItemSubgroup: React.FC< PaymentMethodItemSubgroupProps > = ( {
-	Icon,
-	label,
-	children,
-	className,
-} ) => (
+const PaymentMethodItemSubgroup: React.FC<
+	PaymentMethodItemSubgroupProps
+> = ( { Icon, label, children, className } ) => (
 	<div className={ clsx( 'payment-method-item__subgroup', className ) }>
 		{ Icon && (
 			<div className="payment-method-item__icon">

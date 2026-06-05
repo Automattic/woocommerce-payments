@@ -14,6 +14,7 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 jest.mock( 'lodash', () => ( {
+	...jest.requireActual( 'lodash' ),
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
 jest.mock( '@wordpress/api-fetch', () => ( {
@@ -236,5 +237,42 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).not.toBeVisible();
+	} );
+
+	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
+		global.wcpayExpressCheckoutParams.has_subscription = false;
+
+		const cartWithSubscription = {
+			...cartWithItemsMock,
+			extensions: {
+				subscriptions: [
+					{
+						billing_period: 'month',
+						billing_interval: 1,
+						totals: { total_price: '2399' },
+					},
+				],
+			},
+		};
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithSubscription ),
+				headers: new Map(),
+			} )
+		);
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				setupFutureUsage: 'off_session',
+			} )
+		);
 	} );
 } );

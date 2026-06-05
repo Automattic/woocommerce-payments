@@ -186,8 +186,8 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->related_orders;
 	}
 
-	public function set_related_orders( $array ) {
-		$this->related_orders = $array;
+	public function set_related_orders( $orders ) {
+		$this->related_orders = $orders;
 	}
 
 	public function get_last_order() {
@@ -260,8 +260,8 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->manual;
 	}
 
-	public function set_requires_manual_renewal( $bool ) {
-		$this->manual = $bool;
+	public function set_requires_manual_renewal( $is_manual ) {
+		$this->manual = $is_manual;
 	}
 
 	public function update_status( $status ) {

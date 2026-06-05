@@ -54,6 +54,12 @@ module.exports = {
 				'./client/wc-payments-settings-spotlight.js',
 			'wc-payments-review-prompt':
 				'./client/wc-payments-review-prompt.tsx',
+			'wc-payments-test-to-live-notice':
+				'./client/entrypoints/notices/test-to-live-notice/index.tsx',
+			'wc-payments-post-kyc-activation-notice':
+				'./client/entrypoints/notices/post-kyc-activation-notice/index.tsx',
+			'wc-payments-one-and-done-notice':
+				'./client/entrypoints/notices/one-and-done-notice/index.tsx',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -65,6 +71,15 @@ module.exports = {
 	},
 	module: {
 		rules: [
+			// `@woocommerce/onboarding` does not declare `sideEffects: false`
+			// in its package.json, which prevents webpack from tree-shaking
+			// its (large) per-icon SVG modules even when only a single named
+			// export (e.g. `Loader`) is imported. Marking it as side-effect
+			// free here lets webpack drop the unused branches.
+			{
+				test: /node_modules\/@woocommerce\/onboarding\//,
+				sideEffects: false,
+			},
 			{
 				test: /\.tsx?$/,
 				use: [ 'babel-loader' ],
@@ -159,12 +174,32 @@ module.exports = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					// Force-bundle DataViews from the package's plugin/theme
+					// entrypoint (`@wordpress/dataviews/wp`) instead of
+					// externalizing to wp.dataviews. The host WP version can
+					// differ from the API contract this report expects.
+					//
+					// NOTE: force-bundling also pulls in DataViews'
+					// transitive @wordpress/private-apis dependency plus a
+					// non-deduped @wordpress/data — the bundled copy runs
+					// as a separate Redux store registry from the host
+					// `wp.data`, so the two don't share state. Smoke-tested
+					// safe today; revisit when WooPayments can rely on the
+					// host DataViews version.
+					return null;
+				}
+
 				switch ( request ) {
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					return null;
+				}
+
 				switch ( request ) {
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
