@@ -142,21 +142,6 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
-// In production, the Print/Export actions live in the page header so they
-// stay visible across loading / error / empty states without re-rendering
-// the body. Tests render them as siblings to make the same buttons
-// queryable from a single test render — both components subscribe to the
-// same date-filter + summary mocks, so behaviour matches production.
-const renderBalanceReport = (
-	props: Parameters< typeof BalanceReport >[ 0 ] = {}
-) =>
-	render(
-		<>
-			<BalanceActions />
-			<BalanceReport { ...props } />
-		</>
-	);
-
 const period = {
 	start: '2026-05-01T00:00:00.000Z',
 	end: '2026-05-14T23:59:59.999Z',
@@ -166,6 +151,87 @@ const previousPeriod = {
 	start: '2026-04-01T00:00:00.000Z',
 	end: '2026-04-30T23:59:59.999Z',
 };
+
+type BalanceSummaryState = {
+	summary: unknown;
+	error: Record< string, unknown >;
+	isLoading: boolean;
+};
+
+type BalanceDateFilterState = {
+	value: unknown;
+	period: typeof period | typeof previousPeriod | undefined;
+	hasDateFilterValue: boolean;
+	setValue: jest.Mock;
+};
+
+const buildBalanceSummaryState = (
+	overrides: Partial< BalanceSummaryState > = {}
+): BalanceSummaryState => ( {
+	summary: balanceSummaryFixture,
+	error: {},
+	isLoading: false,
+	...overrides,
+} );
+
+const mockBalanceSummaryState = (
+	overrides: Partial< BalanceSummaryState > = {}
+) => {
+	mockUseReportsBalanceSummary.mockReturnValue(
+		buildBalanceSummaryState( overrides )
+	);
+};
+
+const buildBalanceDateFilterState = (
+	overrides: Partial< BalanceDateFilterState > = {}
+): BalanceDateFilterState => ( {
+	value: undefined,
+	period,
+	hasDateFilterValue: true,
+	setValue: mockSetBalanceDateFilterValue,
+	...overrides,
+} );
+
+const mockBalanceDateFilterState = (
+	overrides: Partial< BalanceDateFilterState > = {}
+) => {
+	mockUseBalanceDateFilter.mockReturnValue(
+		buildBalanceDateFilterState( overrides )
+	);
+};
+
+// In production, the Print/Export actions live in the page header so they
+// stay visible across loading / error / empty states without re-rendering
+// the body. Tests render them as siblings to make the same buttons
+// queryable from a single test render — both components subscribe to the
+// same date-filter + summary mocks, so behaviour matches production.
+const balanceReportTree = (
+	props: Parameters< typeof BalanceReport >[ 0 ] = {}
+) => (
+	<>
+		<BalanceActions />
+		<BalanceReport { ...props } />
+	</>
+);
+
+const renderBalanceReport = (
+	props: Parameters< typeof BalanceReport >[ 0 ] = {}
+) => render( balanceReportTree( props ) );
+
+const rerenderBalanceReport = (
+	rerender: ReturnType< typeof render >[ 'rerender' ],
+	props: Parameters< typeof BalanceReport >[ 0 ] = {}
+) => rerender( balanceReportTree( props ) );
+
+const renderBalanceReportWithDateFilterNow = (
+	now: Date,
+	props: Parameters< typeof BalanceReport >[ 0 ] = {}
+) =>
+	render(
+		<BalanceDateFilterNowContext.Provider value={ now }>
+			<BalanceReport { ...props } />
+		</BalanceDateFilterNowContext.Provider>
+	);
 
 const zeroSummary = {
 	currency: 'usd',
@@ -209,6 +275,28 @@ const expectActionButtonUnavailable = ( name: string ) => {
 	expect( button ).toHaveFocus();
 };
 
+const expectRecordedTracksEvent = (
+	eventName: string,
+	properties: Record< string, unknown >,
+	callNumber?: number
+) => {
+	const expectedProperties = expect.objectContaining( properties );
+
+	if ( callNumber === undefined ) {
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			eventName,
+			expectedProperties
+		);
+		return;
+	}
+
+	expect( mockRecordEvent ).toHaveBeenNthCalledWith(
+		callNumber,
+		eventName,
+		expectedProperties
+	);
+};
+
 beforeEach( () => {
 	mockCreateNotice.mockReset();
 	mockSpeak.mockReset();
@@ -218,17 +306,8 @@ beforeEach( () => {
 	mockRecordEvent.mockReset();
 	mockDateFilterProps.mockReset();
 	consoleErrorSpy = undefined;
-	mockUseBalanceDateFilter.mockReturnValue( {
-		value: undefined,
-		period,
-		hasDateFilterValue: true,
-		setValue: mockSetBalanceDateFilterValue,
-	} );
-	mockUseReportsBalanceSummary.mockReturnValue( {
-		summary: balanceSummaryFixture,
-		error: {},
-		isLoading: false,
-	} );
+	mockBalanceDateFilterState();
+	mockBalanceSummaryState();
 } );
 
 afterEach( () => {
@@ -274,27 +353,17 @@ describe( 'BalanceReport', () => {
 		// Use mockReturnValue (not Once) so both BalanceActions and
 		// BalanceReport — which each call the hook in production — see the
 		// same state on every render.
-		mockUseReportsBalanceSummary.mockReturnValue( {
-			summary: balanceSummaryFixture,
-			error: {},
-			isLoading: false,
-		} );
+		mockBalanceSummaryState();
 
 		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
 		screen.getByRole( 'button', { name: 'Date' } ).focus();
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect(
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
@@ -302,11 +371,7 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'does not move focus to the error heading when focus is outside the report', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
-			summary: balanceSummaryFixture,
-			error: {},
-			isLoading: false,
-		} );
+		mockBalanceSummaryState();
 
 		const { rerender } = render(
 			<>
@@ -316,10 +381,9 @@ describe( 'BalanceReport', () => {
 		);
 		screen.getByRole( 'button', { name: 'Outside report' } ).focus();
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
 		rerender(
@@ -335,9 +399,8 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'renders the loading state with disabled export and print actions', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
@@ -355,10 +418,9 @@ describe( 'BalanceReport', () => {
 
 	it( 'renders the error state with a reload action', async () => {
 		const onReload = jest.fn();
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
 		renderBalanceReport( { onReload } );
@@ -386,13 +448,11 @@ describe( 'BalanceReport', () => {
 
 	it( 'treats Balance summaries missing required metadata as unavailable', async () => {
 		const onReload = jest.fn();
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {
 				...balanceSummaryFixture,
 				currency: undefined,
 			},
-			error: {},
-			isLoading: false,
 		} );
 
 		renderBalanceReport( { onReload } );
@@ -414,10 +474,9 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'moves focus to the loading heading after Reload starts a refresh', async () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
 
@@ -425,17 +484,11 @@ describe( 'BalanceReport', () => {
 			screen.getByRole( 'button', { name: 'Reload report' } )
 		);
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect(
 			screen.getByRole( 'heading', { name: 'Loading balance report' } )
@@ -443,25 +496,18 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'moves focus to the error heading when loading fails', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
 		screen.getByRole( 'button', { name: 'Date' } ).focus();
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect(
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
@@ -470,9 +516,8 @@ describe( 'BalanceReport', () => {
 
 	it( 'announces when Balance data finishes loading', () => {
 		jest.useFakeTimers();
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
@@ -480,18 +525,9 @@ describe( 'BalanceReport', () => {
 
 		expect( mockSpeak ).not.toHaveBeenCalled();
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
-			summary: balanceSummaryFixture,
-			error: {},
-			isLoading: false,
-		} );
+		mockBalanceSummaryState();
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect( mockSpeak ).not.toHaveBeenCalled();
 
@@ -507,32 +543,21 @@ describe( 'BalanceReport', () => {
 
 	it( 'does not announce a stale Balance load when the Date filter is cleared while loading', () => {
 		jest.useFakeTimers();
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
 		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
 
-		mockUseBalanceDateFilter.mockReturnValue( {
-			value: undefined,
-			period,
+		mockBalanceDateFilterState( {
 			hasDateFilterValue: false,
-			setValue: mockSetBalanceDateFilterValue,
 		} );
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
-			isLoading: false,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		act( () => {
 			jest.advanceTimersByTime( 500 );
@@ -543,26 +568,19 @@ describe( 'BalanceReport', () => {
 
 	it( 'does not duplicate the alert announcement when Balance data fails to load', () => {
 		jest.useFakeTimers();
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
 		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect( mockSpeak ).not.toHaveBeenCalled();
 
@@ -594,9 +612,8 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'does not scope print styles while Balance actions are unavailable', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
@@ -611,10 +628,8 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'renders the empty state when every row is zero', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: zeroSummary,
-			error: {},
-			isLoading: false,
 		} );
 
 		renderBalanceReport( { onReload: jest.fn() } );
@@ -635,9 +650,7 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'renders the empty state without requesting data when the Date filter is inactive', () => {
-		mockUseBalanceDateFilter.mockReturnValue( {
-			value: undefined,
-			period,
+		mockBalanceDateFilterState( {
 			hasDateFilterValue: false,
 			setValue: jest.fn(),
 		} );
@@ -726,13 +739,11 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'downloads a machine-readable CSV for the selected UTC range', async () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {
 				...balanceSummaryFixture,
 				period,
 			},
-			error: {},
-			isLoading: false,
 		} );
 
 		renderBalanceReport( { onReload: jest.fn() } );
@@ -871,14 +882,12 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'hides optional rows when their amount and count are zero', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {
 				...balanceSummaryFixture,
 				network_costs: { amount: 0, count: 0 },
 				other_adjustments: { amount: 0, count: 0 },
 			},
-			error: {},
-			isLoading: false,
 		} );
 
 		renderBalanceReport( { onReload: jest.fn() } );
@@ -893,9 +902,8 @@ describe( 'BalanceReport', () => {
 
 describe( 'BalanceReport Tracks', () => {
 	it( 'records load success when Balance summary data finishes loading', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
@@ -903,35 +911,22 @@ describe( 'BalanceReport Tracks', () => {
 
 		expect( mockRecordEvent ).not.toHaveBeenCalled();
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
-			summary: balanceSummaryFixture,
-			error: {},
-			isLoading: false,
-		} );
+		mockBalanceSummaryState();
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_load_success',
-			expect.objectContaining( {
-				currency: 'usd',
-				has_activity: true,
-				visible_row_count: expect.any( Number ),
-				range_days: 31,
-			} )
-		);
+		expectRecordedTracksEvent( 'wcpay_reports_balance_load_success', {
+			currency: 'usd',
+			has_activity: true,
+			visible_row_count: expect.any( Number ),
+			range_days: 31,
+		} );
 	} );
 
 	it( 'does not record load success when the Date filter is cleared while Balance data is loading', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
@@ -939,38 +934,24 @@ describe( 'BalanceReport Tracks', () => {
 
 		expect( mockRecordEvent ).not.toHaveBeenCalled();
 
-		mockUseBalanceDateFilter.mockReturnValue( {
-			value: undefined,
-			period,
+		mockBalanceDateFilterState( {
 			hasDateFilterValue: false,
-			setValue: mockSetBalanceDateFilterValue,
 		} );
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
-			isLoading: false,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect( mockRecordEvent ).not.toHaveBeenCalled();
 	} );
 
 	it( 'does not record load success when a different Balance period is active after loading', () => {
-		mockUseBalanceDateFilter.mockReturnValue( {
-			value: undefined,
+		mockBalanceDateFilterState( {
 			period: previousPeriod,
-			hasDateFilterValue: true,
-			setValue: mockSetBalanceDateFilterValue,
 		} );
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
@@ -978,32 +959,17 @@ describe( 'BalanceReport Tracks', () => {
 
 		expect( mockRecordEvent ).not.toHaveBeenCalled();
 
-		mockUseBalanceDateFilter.mockReturnValue( {
-			value: undefined,
-			period,
-			hasDateFilterValue: true,
-			setValue: mockSetBalanceDateFilterValue,
-		} );
-		mockUseReportsBalanceSummary.mockReturnValue( {
-			summary: balanceSummaryFixture,
-			error: {},
-			isLoading: false,
-		} );
+		mockBalanceDateFilterState();
+		mockBalanceSummaryState();
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect( mockRecordEvent ).not.toHaveBeenCalled();
 	} );
 
 	it( 'records load error when Balance summary data resolves with a store error', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
-			error: {},
 			isLoading: true,
 		} );
 
@@ -1011,35 +977,25 @@ describe( 'BalanceReport Tracks', () => {
 
 		expect( mockRecordEvent ).not.toHaveBeenCalled();
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_load_error',
-			expect.objectContaining( {
-				error_type: 'store',
-				range_days: 14,
-			} )
-		);
+		expectRecordedTracksEvent( 'wcpay_reports_balance_load_error', {
+			error_type: 'store',
+			range_days: 14,
+		} );
 	} );
 
 	it( 'records reload clicks from the Balance summary error state', async () => {
 		const onReload = jest.fn();
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
 		renderBalanceReport( { onReload } );
@@ -1049,21 +1005,17 @@ describe( 'BalanceReport Tracks', () => {
 		);
 
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_reload_click',
-			expect.objectContaining( {
-				range_days: 14,
-			} )
-		);
+		expectRecordedTracksEvent( 'wcpay_reports_balance_reload_click', {
+			range_days: 14,
+		} );
 		expect( onReload ).toHaveBeenCalledWith( period );
 	} );
 
 	it( 'records load error when a reload finishes in the cached error state', async () => {
 		const onReload = jest.fn();
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
 		const { rerender } = renderBalanceReport( { onReload } );
@@ -1074,55 +1026,44 @@ describe( 'BalanceReport Tracks', () => {
 
 		expect( onReload ).toHaveBeenCalledWith( period );
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenNthCalledWith(
-			1,
+		expectRecordedTracksEvent(
 			'wcpay_reports_balance_reload_click',
-			expect.objectContaining( {
+			{
 				range_days: 14,
-			} )
+			},
+			1
 		);
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
 			isLoading: true,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ onReload } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload } );
 
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ onReload } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload } );
 
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 2 );
-		expect( mockRecordEvent ).toHaveBeenNthCalledWith(
-			2,
+		expectRecordedTracksEvent(
 			'wcpay_reports_balance_load_error',
-			expect.objectContaining( {
+			{
 				error_type: 'store',
 				range_days: 14,
-			} )
+			},
+			2
 		);
 	} );
 
 	it( 'does not record load error while cached errors are still loading', () => {
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
 			isLoading: true,
@@ -1132,158 +1073,114 @@ describe( 'BalanceReport Tracks', () => {
 
 		expect( mockRecordEvent ).not.toHaveBeenCalled();
 
-		mockUseReportsBalanceSummary.mockReturnValue( {
+		mockBalanceSummaryState( {
 			summary: {},
 			error: { code: 'server_error' },
-			isLoading: false,
 		} );
 
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
 
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_load_error',
-			expect.objectContaining( {
-				error_type: 'store',
-				range_days: 14,
-			} )
-		);
+		expectRecordedTracksEvent( 'wcpay_reports_balance_load_error', {
+			error_type: 'store',
+			range_days: 14,
+		} );
 	} );
 
-	it( 'records initial date filter applies with the stable Balance date-filter reference date', async () => {
-		jest.useFakeTimers();
-		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
-		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
-		mockUseBalanceDateFilter.mockReturnValue( {
-			value: undefined,
-			period,
+	it.each( [
+		{
+			name: 'initial date filter applies',
 			hasDateFilterValue: false,
-			setValue: mockSetBalanceDateFilterValue,
-		} );
-
-		render(
-			<BalanceDateFilterNowContext.Provider value={ stableNow }>
-				<BalanceReport onReload={ jest.fn() } />
-			</BalanceDateFilterNowContext.Provider>
-		);
-
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Apply custom date' } )
-		);
-
-		expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith( stableNow );
-		expect( mockDateFilterProps ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				now: stableNow,
-			} )
-		);
-		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_date_filter_change',
-			expect.objectContaining( {
-				preset: 'last_month',
-				range_days: 30,
-				is_initial_apply: true,
-			} )
-		);
-		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-			mockAppliedDateFilterValue
-		);
-	} );
-
-	it( 'records subsequent date filter applies as non-initial changes', async () => {
-		jest.useFakeTimers();
-		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
-		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
-		// Explicit precondition: a date filter is already applied, so the next
-		// apply is a subsequent (non-initial) change. Mirrors the `initial`
-		// test, which overrides this to false.
-		mockUseBalanceDateFilter.mockReturnValue( {
-			value: undefined,
-			period,
+			isInitialApply: true,
+		},
+		{
+			name: 'subsequent date filter applies',
 			hasDateFilterValue: true,
-			setValue: mockSetBalanceDateFilterValue,
-		} );
+			isInitialApply: false,
+		},
+	] )(
+		'records $name with the stable Balance date-filter reference date',
+		async ( { hasDateFilterValue, isInitialApply } ) => {
+			jest.useFakeTimers();
+			jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+			const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+			mockBalanceDateFilterState( {
+				hasDateFilterValue,
+			} );
 
-		render(
-			<BalanceDateFilterNowContext.Provider value={ stableNow }>
-				<BalanceReport onReload={ jest.fn() } />
-			</BalanceDateFilterNowContext.Provider>
-		);
+			renderBalanceReportWithDateFilterNow( stableNow, {
+				onReload: jest.fn(),
+			} );
 
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Apply custom date' } )
-		);
+			await userEvent.click(
+				screen.getByRole( 'button', { name: 'Apply custom date' } )
+			);
 
-		expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith( stableNow );
-		expect( mockDateFilterProps ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				now: stableNow,
-			} )
-		);
-		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_date_filter_change',
-			expect.objectContaining( {
-				preset: 'last_month',
-				range_days: 30,
-				is_initial_apply: false,
-			} )
-		);
-		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-			mockAppliedDateFilterValue
-		);
-	} );
+			expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith(
+				stableNow
+			);
+			expect( mockDateFilterProps ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					now: stableNow,
+				} )
+			);
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expectRecordedTracksEvent(
+				'wcpay_reports_balance_date_filter_change',
+				{
+					preset: 'last_month',
+					range_days: 30,
+					is_initial_apply: isInitialApply,
+				}
+			);
+			expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+				mockAppliedDateFilterValue
+			);
+		}
+	);
 
-	it( 'records reset date filter changes from the toolbar Reset button', async () => {
-		const { container } = renderBalanceReport( { onReload: jest.fn() } );
-		const toolbar = container.querySelector(
-			'.wcpay-reports-balance__toolbar'
-		) as HTMLElement;
+	it.each( [
+		{
+			source: 'toolbar Reset button',
+			clickReset: async () => {
+				const toolbar = document.querySelector(
+					'.wcpay-reports-balance__toolbar'
+				) as HTMLElement;
+				await userEvent.click(
+					within( toolbar ).getByRole( 'button', { name: 'Reset' } )
+				);
+			},
+		},
+		{
+			source: 'DateFilter chip clear button',
+			clickReset: async () => {
+				await userEvent.click(
+					screen.getByRole( 'button', {
+						name: 'Clear Date filter',
+					} )
+				);
+			},
+		},
+	] )(
+		'records reset date filter changes from the $source',
+		async ( { clickReset } ) => {
+			renderBalanceReport( { onReload: jest.fn() } );
 
-		await userEvent.click(
-			within( toolbar ).getByRole( 'button', { name: 'Reset' } )
-		);
-
-		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_date_filter_change',
-			expect.objectContaining( {
-				preset: 'reset',
-				range_days: null,
-				is_initial_apply: false,
-			} )
-		);
-		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-			undefined
-		);
-	} );
-
-	it( 'records reset date filter changes from the DateFilter chip clear button', async () => {
-		renderBalanceReport( { onReload: jest.fn() } );
-
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Clear Date filter' } )
-		);
-
-		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_balance_date_filter_change',
-			expect.objectContaining( {
-				preset: 'reset',
-				range_days: null,
-				is_initial_apply: false,
-			} )
-		);
-		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-			undefined
-		);
-	} );
+			await clickReset();
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expectRecordedTracksEvent(
+				'wcpay_reports_balance_date_filter_change',
+				{
+					preset: 'reset',
+					range_days: null,
+					is_initial_apply: false,
+				}
+			);
+			expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+				undefined
+			);
+		}
+	);
 
 	it( 'does not record reset telemetry when DateFilter clears an incompatible date shape', async () => {
 		renderBalanceReport( { onReload: jest.fn() } );
