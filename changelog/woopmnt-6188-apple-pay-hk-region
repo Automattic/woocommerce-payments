@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Apple Pay checkout failing with "Region is required" for Hong Kong addresses (multi-word regions such as New Territories, and the bare "Hong Kong" region value).
