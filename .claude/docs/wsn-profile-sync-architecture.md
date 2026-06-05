@@ -13,7 +13,7 @@ The WSN shopper-facing surface at `pay.woo.com/shop/<host>` needs per-merchant b
 
 Nothing exists on WooPay yet — storefront serves mock JSON from `src/Shop/data/shops.json`.
 
-**Storage on the merchant site** ([includes/wsn/class-wsn-settings.php](../../includes/wsn/class-wsn-settings.php)): 8 per-key `wp_options` under the `wcpay_wsn_*` prefix, all `autoload=false`, strict unset-as-default semantics:
+**Storage on the merchant site** ([includes/wsn/class-wsn-settings.php](../../includes/wsn/class-wsn-settings.php)): 5 per-key `wp_options` under the `wcpay_wsn_*` prefix, all `autoload=false`, strict unset-as-default semantics:
 
 | Key | Type | Meaning |
 |---|---|---|
@@ -22,11 +22,8 @@ Nothing exists on WooPay yet — storefront serves mock JSON from `src/Shop/data
 | `wcpay_wsn_logo_override_id` | int\|null | Logo override attachment ID (null = use site logo) |
 | `wcpay_wsn_contact_email` | string\|''\|null | Three-state: null = use WC default, '' = explicit empty, string = override |
 | `wcpay_wsn_refund_page_id` | int\|null | Selected refund-policy page ID |
-| `wcpay_wsn_visibility_mode` | string | `'all' \| 'taxonomy' \| 'specific'` (Visibility, NOT Profile path) |
-| `wcpay_wsn_visibility_terms` | object | Selected taxonomy term IDs |
-| `wcpay_wsn_visibility_product_ids` | int[] | Explicit product whitelist |
 
-**Profile vs Visibility split:** the same `WSN_Settings` class manages all 8 options, but at the transport layer they're split — **Profile pushes via outbound POST** (this doc), **Visibility flows via Jetpack Sync** (RSM-3946, via the `jetpack_sync_options_whitelist` at [woocommerce-payments.php:127](../../woocommerce-payments.php#L127)). The two systems do not share a write path.
+**Product visibility / catalog exposure is NOT a WSN concern** — it's handled by WC's native product-catalog-visibility settings. There used to be a dedicated Visibility tab in the Hub with three modes (all / taxonomy / specific) backed by `wcpay_wsn_visibility_*` options, but it was removed 2026-06-05 in favor of relying on WC's existing surface. The ES indexer can read WC core's `_visibility` meta / `product_visibility` taxonomy directly — no WSN-specific opt-in per product, and no Jetpack Sync option whitelist for visibility (RSM-3946 was never wired).
 
 **Server-side derivations** ([includes/admin/class-wc-rest-payments-wsn-settings-controller.php:119-214](../../includes/admin/class-wc-rest-payments-wsn-settings-controller.php#L119-L214)) are computed at GET time, not stored:
 
@@ -118,7 +115,7 @@ Composed payload is ~5–20 KB serialized.
 └──────────────────────────────────────────────────────────────┘
 ```
 
-> **Architecture note — Option B (LOCKED 2026-05-31):** The Profile pipeline does NOT go through the ES `woo-product-catalog` index. That index is **visibility-only** — it carries `wcpay_wsn_enabled` (RSM-3946) so the marketplace knows which merchants to include. Profile data flows via outbound POST → WooPay-server table → handler-side merge onto the ES store object. This is "Option B" in the handoff at `.claude/tmp/artifacts/wsn-profile-storefront-handoff.md`. The earlier draft of this doc described an EsSource-side merge — that path was rejected; the storefront `/wsn/v1/stores/{host}` handler does the merge instead. ES projection stays simple; the WSN Profile read path is bolted on at the handler layer.
+> **Architecture note — Option B (LOCKED 2026-05-31):** The Profile pipeline does NOT go through the ES `woo-product-catalog` index. ES handles product-catalog indexing using WC's native catalog-visibility signals (see "Product visibility" above — there is no WSN-specific opt-in per merchant). Profile data flows via outbound POST → WooPay-server table → handler-side merge onto the ES store object. This is "Option B" in the handoff at `.claude/tmp/artifacts/wsn-profile-storefront-handoff.md`. The earlier draft of this doc described an EsSource-side merge — that path was rejected; the storefront `/wsn/v1/stores/{host}` handler does the merge instead. ES projection stays simple; the WSN Profile read path is bolted on at the handler layer.
 
 ## Sync flow
 
@@ -399,8 +396,10 @@ GET /shop/northernpizzaequipment.com → /wsn/v1/stores/{host} handler
 2. Read ES store object via EsSource::project_store_full()
    (UNCHANGED — projection still returns null for logo_url / contact_email /
     return_policy / shipping_promise / etc. — see comments
-    "❌ not indexed — pending Merchant Hub sync". ES is visibility-only;
-    those fields are filled by step 4 below, not by editing this projection.)
+    "❌ not indexed — pending Merchant Hub sync". ES handles product-catalog
+    indexing via WC's native catalog-visibility signals, separate from the
+    Profile read path; the Profile fields below are filled by step 4, not
+    by editing this projection.)
 
 3. WsnMerchantProfileDataStore::get_by_blog_id($blog_id)
    ├── L1: wp_cache_get("wsn_merchant_profile:{$blog_id}", 'wsn')
@@ -610,7 +609,6 @@ That woopay-repo doc should be edited or marked superseded by whoever owns it. `
 - **Linear:**
   - [RSM-3930](https://linear.app/a8c/issue/RSM-3930) — WSN Hub epic
   - [RSM-3945](https://linear.app/a8c/issue/RSM-3945) — Profile emitter (this work)
-  - [RSM-3946](https://linear.app/a8c/issue/RSM-3946) — Jetpack Sync visibility whitelist (separate path)
   - [RSM-2481](https://linear.app/a8c/issue/RSM-2481) — Profile tab UI (already shipped in the umbrella PR)
   - [WOOPAY-458](https://linear.app/a8c/issue/WOOPAY-458) — Storefront logo path: Hub's resolved `logo_url` → `store.logo_url` (closed by composer passthrough)
   - [WOOPAY-454](https://linear.app/a8c/issue/WOOPAY-454) — No name-search / fuzzy resolution on payments surfaces (enforce blog_id-only lookups in this Profile path)
