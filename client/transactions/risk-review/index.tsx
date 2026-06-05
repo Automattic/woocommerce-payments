@@ -27,7 +27,7 @@ import {
 	FraudOutcomeTransaction,
 	useFraudOutcomeTransactions,
 	useFraudOutcomeTransactionsSummary,
-} from 'data/index';
+} from 'wcpay/data/transactions';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import {

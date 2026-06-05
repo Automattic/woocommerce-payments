@@ -13,7 +13,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { TransactionsFilters } from '../';
 import { getAdvancedFilters } from '../config';
-import { Transaction } from 'wcpay/data';
+import { Transaction } from 'wcpay/data/transactions';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
 } from 'wcpay/constants/payment-method';

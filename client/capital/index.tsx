@@ -21,7 +21,7 @@ import {
 import { CapitalLoan } from 'data/capital/types';
 import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
-import { useLoans } from 'wcpay/data';
+import { useLoans } from 'wcpay/data/capital';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

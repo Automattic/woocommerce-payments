@@ -22,7 +22,10 @@ import {
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'wcpay/data';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
 import { Transaction } from 'wcpay/data/transactions/hooks';
 import OrderLink from 'wcpay/components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';

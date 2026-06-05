@@ -14,7 +14,7 @@ import { Icon, page } from '@wordpress/icons';
  * Internal dependencies
  */
 import type { IssuerEvidence } from 'wcpay/types/disputes';
-import { useFiles } from 'wcpay/data';
+import { useFiles } from 'wcpay/data/files';
 import Loadable from 'wcpay/components/loadable';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { FileDownload } from 'wcpay/data/files/types';

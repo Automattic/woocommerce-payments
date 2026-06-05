@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { FraudMetaBoxType, FraudOutcomeStatus } from '../../../data';
+import { FraudMetaBoxType, FraudOutcomeStatus } from 'wcpay/data/transactions';
 import {
 	getRiskReviewListColumns,
 	getRiskReviewListColumnsStructure,

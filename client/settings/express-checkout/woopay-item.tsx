@@ -15,7 +15,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 import { WooIcon } from 'wcpay/payment-methods-icons';

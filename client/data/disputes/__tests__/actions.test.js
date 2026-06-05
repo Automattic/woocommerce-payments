@@ -10,7 +10,6 @@ import { controls } from '@wordpress/data';
  * Internal dependencies
  */
 import { acceptDispute, updateDispute } from '../actions';
-import { getPaymentIntent } from '../../payment-intents/resolvers';
 
 describe( 'acceptDispute action', () => {
 	const mockDispute = {
@@ -32,9 +31,12 @@ describe( 'acceptDispute action', () => {
 		const generator = acceptDispute( mockDispute );
 
 		expect( generator.next().value ).toEqual(
-			controls.dispatch( 'wc/payments', 'startResolution', 'getDispute', [
-				'dp_mock1',
-			] )
+			controls.dispatch(
+				'wc/payments/disputes',
+				'startResolution',
+				'getDispute',
+				[ 'dp_mock1' ]
+			)
 		);
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
@@ -46,11 +48,15 @@ describe( 'acceptDispute action', () => {
 			updateDispute( mockDispute )
 		);
 		expect( generator.next().value ).toEqual(
-			getPaymentIntent( mockDispute.payment_intent )
+			controls.dispatch(
+				'wc/payments/paymentIntents',
+				'invalidateResolutionForStoreSelector',
+				'getPaymentIntent'
+			)
 		);
 		expect( generator.next().value ).toEqual(
 			controls.dispatch(
-				'wc/payments',
+				'wc/payments/disputes',
 				'finishResolution',
 				'getDispute',
 				[ 'dp_mock1' ]

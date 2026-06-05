@@ -10,11 +10,16 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { useReportsBalanceSummary } from '../hooks';
-import { STORE_NAME } from '../../constants';
+import { STORE_NAME } from '../store';
 import balanceSummaryFixture from '../fixtures/balance-summary';
 
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
+	// The reports store self-registers on import; stub the registration APIs so
+	// loading it under this partial mock doesn't blow up.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 } ) );
 
 const mockUseSelect = useSelect as jest.Mock;

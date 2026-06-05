@@ -7,7 +7,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
+import {
+	useAccountBusinessSupportEmail,
+	useGetSavingError,
+} from 'wcpay/data/settings';
 import { isEmail } from 'wcpay/utils/email-validation';
 import { useEffect, useRef, useState } from 'react';
 

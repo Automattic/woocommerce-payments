@@ -3,15 +3,10 @@
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from './constants';
-import { initStore } from './store';
-
-initStore();
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const WCPAY_STORE_NAME = STORE_NAME;
-
-// We only ask for hooks when importing directly from 'wcpay/data'.
+// Each slice registers its own independent store on first use. Importing a hook
+// from here pulls in only that slice's store, so a chunk that uses one slice
+// does not bundle the other 14. (There is no longer a single combined store to
+// initialize — that is what let every chunk drag in all slices.)
 export * from './deposits/hooks';
 export * from './transactions/hooks';
 export * from './charges/hooks';
@@ -27,12 +22,3 @@ export * from './files/hooks';
 export * from './pm-promotions/hooks';
 export * from './dispute-readiness/hooks';
 export * from './reports/hooks';
-
-import { TimelineItem } from './timeline/types';
-import { ApiError } from '../types/errors';
-
-export declare function useTimeline( transactionId: string ): {
-	timeline: Array< TimelineItem >;
-	timelineError: ApiError | undefined;
-	isLoading: boolean;
-};

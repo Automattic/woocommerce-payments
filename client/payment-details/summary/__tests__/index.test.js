@@ -12,7 +12,7 @@ import moment from 'moment';
  * Internal dependencies
  */
 import PaymentDetailsSummary from '../';
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
 import { recordEvent } from 'wcpay/tracks';
 import { _resetOutcomeViewTrackingForTests } from '../../dispute-outcome/tracks';
@@ -28,10 +28,12 @@ jest.mock( '@wordpress/date', () => ( {
 
 const mockDisputeDoAccept = jest.fn();
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorization: jest.fn( () => ( {
 		authorization: null,
 	} ) ),
+} ) );
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeAccept: jest.fn( () => ( {
 		doAccept: mockDisputeDoAccept,
 		isLoading: false,
@@ -43,6 +45,10 @@ jest.mock( 'wcpay/tracks', () => ( {
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),

@@ -13,7 +13,7 @@ import { recordEvent } from 'tracks';
 /**
  * Internal dependencies
  */
-import { useReportsBalanceSummary } from 'wcpay/data';
+import { useReportsBalanceSummary } from 'wcpay/data/reports';
 import DateFilter, { type DateFilterValue } from 'wcpay/reports/date-filter';
 import { matchPreset } from 'wcpay/reports/date-filter/presets';
 import { ReportState } from '../report-state';
