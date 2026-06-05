@@ -153,7 +153,16 @@ jobs:
           # create-pre-release.yml names each pre-release branch testing/<version>-test-<n>
           # and tags the same commit <version>-test-<n>. We only delete the branch
           # once we've confirmed its tag exists, so the code stays reachable.
-          BRANCHES=$(git ls-remote --heads origin "refs/heads/testing/*" \
+          # Fail loudly if the remote can't be listed — a transient ls-remote
+          # error otherwise looks identical to "nothing to clean up", and these
+          # branches (scoped per release) would never get cleaned up later.
+          if ! HEADS=$(git ls-remote --heads origin "refs/heads/testing/*"); then
+            echo ":warning: \`git ls-remote\` failed; skipping cleanup this run." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          # grep legitimately exits 1 when there are simply no matching branches.
+          BRANCHES=$(printf '%s\n' "$HEADS" \
             | awk '{print $2}' | sed 's#refs/heads/##' \
             | grep -E "^testing/${RELEASE_VERSION_RE}-test-[0-9]+$" || true)
 
