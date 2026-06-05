@@ -203,6 +203,14 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 		( r ) => r.urgency !== 'positive'
 	);
 
+	// A few keep_doing tips fire on wins, so the coaching card can appear on a
+	// won dispute; "What could help next time" reads like criticism after a
+	// success, so reframe the heading there (design 2026-06-04). Tips stay.
+	const coachingHeading =
+		outcome === 'keep_doing'
+			? __( 'Tips for future disputes', 'woocommerce-payments' )
+			: __( 'What could help next time', 'woocommerce-payments' );
+
 	return (
 		<>
 			{ renderCard(
@@ -214,7 +222,7 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 				positives
 			) }
 			{ renderCard(
-				__( 'What could help next time', 'woocommerce-payments' ),
+				coachingHeading,
 				__(
 					'Strengthen future dispute responses by adding these details to your evidence before submitting.',
 					'woocommerce-payments'

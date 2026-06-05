@@ -188,6 +188,52 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 	} );
 
+	describe( 'coaching-card heading by outcome', () => {
+		// keep_doing tips fire on wins too, so the coaching card can show on a
+		// won dispute; "What could help next time" reads like criticism after a
+		// success, so it is reframed (design 2026-06-04).
+		it( 'reframes the heading to "Tips for future disputes" on a won dispute', () => {
+			render(
+				<DisputeRecommendationsCard
+					dispute={ wonPhysicalShippingProvided() }
+				/>
+			);
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /tips for future disputes/i,
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'keeps "What could help next time" on a lost dispute', () => {
+			const dispute = buildDispute( {
+				status: 'lost',
+				reason: 'product_not_received',
+				metadata: { __product_type: 'physical_product' },
+				evidence: { receipt: 'r' }, // dodge c15 so the card renders
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /tips for future disputes/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+	} );
+
 	describe( 'urgency styling', () => {
 		// Target a stable known item per urgency rather than counting matches:
 		// counts shift as the catalog grows; the modifier class is the
@@ -250,7 +296,7 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
-			await expandSection( /what could help next time/i );
+			await expandSection( /tips for future disputes/i );
 
 			expect(
 				screen
@@ -403,7 +449,7 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
-			await expandSection( /what could help next time/i );
+			await expandSection( /tips for future disputes/i );
 
 			expect(
 				screen.queryByRole( 'heading', {
