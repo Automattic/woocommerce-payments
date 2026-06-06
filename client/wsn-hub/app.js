@@ -74,6 +74,9 @@ const WsnHubApp = () => {
 	const [ isLoadingSettings, setIsLoadingSettings ] = useState( true );
 	const [ settingsError, setSettingsError ] = useState( null );
 
+	// Returns the freshly-loaded payload so callers (e.g. the post-save
+	// polling loop in ProfileTab) can read the new sync.last_synced without
+	// waiting for a React re-render cycle.
 	const loadSettings = useCallback( async () => {
 		setIsLoadingSettings( true );
 		setSettingsError( null );
@@ -85,6 +88,7 @@ const WsnHubApp = () => {
 			setDerivations( payload?.derivations ?? {} );
 			setSync( payload?.sync ?? null );
 			setIsLoadingSettings( false );
+			return payload;
 		} catch ( e ) {
 			setSettingsError( formatApiError( e ) );
 			// Populate with safe empty defaults so ProfileTab's loading guard
@@ -93,6 +97,7 @@ const WsnHubApp = () => {
 			setDerivations( {} );
 			setSync( null );
 			setIsLoadingSettings( false );
+			return null;
 		}
 	}, [] );
 

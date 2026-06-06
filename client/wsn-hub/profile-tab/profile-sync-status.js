@@ -75,8 +75,16 @@ const formatRelativeTime = ( unixSeconds ) => {
  * @param {Object|null} [props.sync.last_error]       { message, timestamp } or null.
  * @param {number}      [props.sync.debounce_seconds] Emitter debounce window (front-end uses for refresh timing).
  * @param {() => void}  props.onRefresh               Called after a successful Retry to re-fetch settings.
+ * @param {boolean}     [props.isSyncing]             External "currently syncing" flag (e.g. the Save handler is
+ *                                                    polling for last_synced to advance). Forces the badge into
+ *                                                    the syncing state so the merchant sees activity instead of
+ *                                                    a stale Last-synced timestamp.
  */
-const ProfileSyncStatus = ( { sync, onRefresh } ) => {
+const ProfileSyncStatus = ( {
+	sync,
+	onRefresh,
+	isSyncing: externalIsSyncing = false,
+} ) => {
 	const [ isRetrying, setIsRetrying ] = useState( false );
 	const [ retryError, setRetryError ] = useState( null );
 
@@ -101,9 +109,10 @@ const ProfileSyncStatus = ( { sync, onRefresh } ) => {
 
 	// Derived state. `syncing` takes precedence — even if the props still
 	// show a stale error, the user just clicked Retry and the optimistic UI
-	// should reflect "doing something now".
+	// should reflect "doing something now". `externalIsSyncing` is the
+	// shell-driven equivalent (post-save polling); honored the same way.
 	const computeState = () => {
-		if ( isRetrying ) {
+		if ( isRetrying || externalIsSyncing ) {
 			return 'syncing';
 		}
 		if ( lastError ) {

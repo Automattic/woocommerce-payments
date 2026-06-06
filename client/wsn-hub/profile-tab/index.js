@@ -127,6 +127,12 @@ const ProfileTab = ( {
 	const [ isSaving, setIsSaving ] = useState( false );
 	const [ saveNotice, setSaveNotice ] = useState( null );
 
+	// True while the post-save loop is polling /wsn/settings waiting for
+	// `sync.last_synced` to advance. Drives the ProfileSyncStatus badge
+	// into its "Syncing…" state so the merchant sees activity instead of
+	// a stale timestamp during the AS-tick window.
+	const [ isPostSaveSyncing, setIsPostSaveSyncing ] = useState( false );
+
 	// Transient URLs captured at MediaUpload-pick time so the preview
 	// updates IMMEDIATELY, before the save+GET cycle replaces them with the
 	// server-resolved derivations.logo_url / .hero_image_url. Without these
@@ -159,24 +165,68 @@ const ProfileTab = ( {
 		}
 	};
 
+	// Backoff schedule for the post-save sync poll, in milliseconds. Total
+	// upper bound: 2 + 4 + 8 + 16 = 30s. Chosen to cover the realistic AS
+	// tick window in dev (sub-second to a few seconds with WP cron enabled)
+	// AND the worst case (WP cron disabled, server cron running every 60s
+	// — though merchants in that posture will see the badge resolve on the
+	// next manual refresh / tab switch). Geometric backoff lands on the
+	// truth fast when AS is responsive and doesn't spam the endpoint when
+	// it isn't.
+	const POST_SAVE_POLL_DELAYS_MS = [ 2000, 4000, 8000, 16000 ];
+
 	const handleSave = async () => {
 		if ( ! localSettings || ! isDirty ) return;
 		setIsSaving( true );
 		setSaveNotice( null );
+
+		// Capture the pre-save sync timestamp so the poll below can detect
+		// when the emitter writes a NEW one. Null is a valid baseline (a
+		// store that has never synced — any non-null value below advances).
+		const previousLastSynced = sync?.last_synced ?? null;
+
 		try {
 			await apiFetch( {
 				path: '/wc/v3/payments/wsn/settings',
 				method: 'PUT',
 				data: localSettings,
 			} );
+
 			// Ask the shell to re-fetch /wsn/settings so derivations stay
-			// authoritative (logo URL / hero URL / refund page label may have
-			// changed even if the server rejected individual fields with a
-			// 422). The useEffect above will then sync localSettings from the
-			// fresh props.settings reference.
+			// authoritative (logo URL / hero URL / refund page label may
+			// change even if the server rejected individual fields with a
+			// 422). The useEffect above will then sync localSettings from
+			// the fresh props.settings reference.
+			//
+			// The emitter's force_immediate_push schedules the AS action
+			// at time(), but the action still runs on the next AS tick —
+			// usually within a couple of seconds, occasionally longer.
+			// Polling here keeps the Last Synced badge truthful without
+			// a "wait 60s" surprise.
+			let latest = null;
 			if ( typeof refreshSettings === 'function' ) {
-				await refreshSettings();
+				latest = await refreshSettings();
+				const advanced = ( payload ) => {
+					const next = payload?.sync?.last_synced ?? null;
+					return next !== null && next !== previousLastSynced;
+				};
+				if ( ! advanced( latest ) ) {
+					setIsPostSaveSyncing( true );
+					for ( const delayMs of POST_SAVE_POLL_DELAYS_MS ) {
+						// eslint-disable-next-line no-await-in-loop, no-loop-func -- intentional polling
+						await new Promise( ( resolve ) =>
+							window.setTimeout( resolve, delayMs )
+						);
+						// eslint-disable-next-line no-await-in-loop -- intentional polling
+						latest = await refreshSettings();
+						if ( advanced( latest ) ) {
+							break;
+						}
+					}
+					setIsPostSaveSyncing( false );
+				}
 			}
+
 			// Server-resolved derivation URLs now authoritative — drop the
 			// transient pick-time URLs so we read the canonical resolved
 			// values (handles WP regenerating thumbnails, CDN rewrites,
@@ -193,6 +243,7 @@ const ProfileTab = ( {
 			} );
 		} finally {
 			setIsSaving( false );
+			setIsPostSaveSyncing( false );
 		}
 	};
 
@@ -279,7 +330,11 @@ const ProfileTab = ( {
 				</div>
 			) }
 
-			<ProfileSyncStatus sync={ sync } onRefresh={ refreshSettings } />
+			<ProfileSyncStatus
+				sync={ sync }
+				onRefresh={ refreshSettings }
+				isSyncing={ isPostSaveSyncing }
+			/>
 
 			<BrandingCard
 				settings={ localSettings }
