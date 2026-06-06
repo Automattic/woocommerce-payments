@@ -301,6 +301,13 @@ class WC_Payments {
 	private static $express_checkout_helper;
 
 	/**
+	 * Instance of WC_Payments_Express_Checkout_Custom_Fields_Handler, created in init function.
+	 *
+	 * @var WC_Payments_Express_Checkout_Custom_Fields_Handler
+	 */
+	private static $express_checkout_custom_fields_handler;
+
+	/**
 	 * Instance of Compatibility_Service, created in init function
 	 *
 	 * @var Compatibility_Service
@@ -467,6 +474,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-custom-fields-handler.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -666,6 +674,9 @@ class WC_Payments {
 
 		$express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
 		self::set_express_checkout_helper( $express_checkout_helper );
+
+		self::$express_checkout_custom_fields_handler = new WC_Payments_Express_Checkout_Custom_Fields_Handler();
+		self::$express_checkout_custom_fields_handler->init();
 
 		self::$payment_method_service = new WC_Payments_Payment_Method_Service( self::$api_client, self::$order_service );
 		self::$payment_method_service->init_hooks();

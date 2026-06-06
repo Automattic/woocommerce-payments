@@ -26,6 +26,15 @@ export interface WCPayExpressCheckoutParams {
 	 * Indicates in which context the button is being displayed.
 	 */
 	button_context: 'checkout' | 'cart' | 'product' | 'pay_for_order';
+	custom_checkout_fields?: Record<
+		string,
+		{
+			type?: string;
+			label?: string;
+			required?: boolean;
+			location?: string;
+		}
+	>;
 	checkout: {
 		country_code: string;
 		currency_code: string;
