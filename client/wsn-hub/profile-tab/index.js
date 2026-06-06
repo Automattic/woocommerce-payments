@@ -200,11 +200,11 @@ const ProfileTab = ( {
 
 	const handleSave = async () => {
 		if ( ! localSettings || ! isDirty ) return;
-		// Concurrency guard: refuse to start a second save while one is in
-		// flight. The Save button is already disabled while isSaving=true
-		// (see render below), so this is belt-and-suspenders for keyboard
-		// activations, programmatic dispatches, or any race where a stale
-		// click handler fires after the button's disabled state lands.
+		// Concurrency guard: refuse to start a second save while the
+		// in-flight PUT itself is still going. We DO allow a new save
+		// while a prior save's WooPay polling is still running — the
+		// generation token below handles supersession of that polling
+		// without blocking new edits.
 		if ( isSaving ) return;
 
 		// Bump the generation token so the previous save's polling loop
@@ -222,99 +222,144 @@ const ProfileTab = ( {
 		// store that has never synced — any non-null value below advances).
 		const previousLastSynced = sync?.last_synced ?? null;
 
+		// PUT first. Save button UI tracks ONLY this round-trip — not the
+		// downstream WooPay-side sync. The two events are conceptually
+		// distinct:
+		//   - PUT success = "your changes are persisted on this store"
+		//   - sync.last_synced advance = "WooPay received the new state"
+		// Coupling them meant the Save button sat in 'Saving…' for the
+		// full 30s polling window even after the PUT had already
+		// returned 200. The Syncing… badge handles the WooPay-side
+		// communication on its own; we don't need to layer a duplicate
+		// indicator onto the Save button.
 		try {
 			await apiFetch( {
 				path: '/wc/v3/payments/wsn/settings',
 				method: 'PUT',
 				data: localSettings,
 			} );
-
-			// If a newer Save has started while our PUT was in flight,
-			// the newer flow now owns the post-save UI state — back out
-			// silently rather than racing the newer save's
-			// setIsSaving(false) / setSaveNotice writes.
-			if ( ! isStillCurrent() ) {
-				return;
-			}
-
-			// Ask the shell to re-fetch /wsn/settings so derivations stay
-			// authoritative (logo URL / hero URL / refund page label may
-			// change even if the server rejected individual fields with a
-			// 422). The useEffect above will then sync localSettings from
-			// the fresh props.settings reference.
-			//
-			// The emitter's force_immediate_push schedules the AS action
-			// at time(), but the action still runs on the next AS tick —
-			// usually within a couple of seconds, occasionally longer.
-			// Polling here keeps the Last Synced badge truthful without
-			// a "wait 60s" surprise.
-			let latest = null;
-			if ( typeof refreshSettings === 'function' ) {
-				// Silent refresh — see app.js loadSettings comment.
-				// Without { silent: true }, every polling iteration would
-				// unmount the Profile tab into the loading state for ~50ms,
-				// producing a visible flash every 2-16s through the 30s
-				// polling window.
-				latest = await refreshSettings( { silent: true } );
-				if ( ! isStillCurrent() ) {
-					return;
-				}
-				const advanced = ( payload ) => {
-					const next = payload?.sync?.last_synced ?? null;
-					return next !== null && next !== previousLastSynced;
-				};
-				if ( ! advanced( latest ) ) {
-					setIsPostSaveSyncing( true );
-					for ( const delayMs of POST_SAVE_POLL_DELAYS_MS ) {
-						// eslint-disable-next-line no-await-in-loop, no-loop-func -- intentional polling
-						await new Promise( ( resolve ) =>
-							window.setTimeout( resolve, delayMs )
-						);
-						if ( ! isStillCurrent() ) {
-							return;
-						}
-						// eslint-disable-next-line no-await-in-loop -- intentional polling
-						latest = await refreshSettings( { silent: true } );
-						if ( ! isStillCurrent() ) {
-							return;
-						}
-						if ( advanced( latest ) ) {
-							break;
-						}
-					}
-					setIsPostSaveSyncing( false );
-				}
-			}
-
-			// Server-resolved derivation URLs now authoritative — drop the
-			// transient pick-time URLs so we read the canonical resolved
-			// values (handles WP regenerating thumbnails, CDN rewrites,
-			// etc. that may differ from what MediaUpload reported).
-			setPendingMediaUrls( {} );
-			setSaveNotice( {
-				status: 'success',
-				message: __( 'Profile saved.', 'woocommerce-payments' ),
-			} );
 		} catch ( e ) {
-			// Only surface our error if a newer save hasn't already
-			// taken over the notice slot.
 			if ( isStillCurrent() ) {
 				setSaveNotice( {
 					status: 'error',
 					message: formatApiError( e ),
 				} );
+				setIsSaving( false );
+			}
+			return;
+		}
+
+		// If a newer Save has started while our PUT was in flight,
+		// the newer flow now owns the post-save UI state — back out
+		// silently rather than racing the newer save's setIsSaving /
+		// setSaveNotice writes.
+		if ( ! isStillCurrent() ) {
+			return;
+		}
+
+		// PUT succeeded — release the Save button. Anything after this
+		// point is the WooPay-sync follow-up, which is surfaced via the
+		// badge, not the button.
+		setIsSaving( false );
+		setSaveNotice( {
+			status: 'success',
+			message: __( 'Profile saved.', 'woocommerce-payments' ),
+		} );
+
+		// Fire-and-forget the WooPay-sync follow-up. The polling loop
+		// drives isPostSaveSyncing (badge state) and refreshes
+		// derivations so the form reflects server-resolved values
+		// (logo URL, hero URL, refund-page label, etc.). Errors here
+		// are swallowed — the Profile WAS saved; merchant doesn't need
+		// to see a "sync failed" toast on the Save button. The badge
+		// surfaces sync failures directly.
+		pollForWooPaySync( {
+			previousLastSynced,
+			isStillCurrent,
+		} ).catch( () => {} );
+	};
+
+	// Extracted polling helper so handleSave can fire-and-forget without
+	// awaiting it. The merchant's perception of "save" completes when
+	// the PUT lands; this loop's job is to keep the badge honest.
+	const pollForWooPaySync = async ( {
+		previousLastSynced,
+		isStillCurrent,
+	} ) => {
+		if ( typeof refreshSettings !== 'function' ) {
+			return;
+		}
+
+		const advanced = ( payload ) => {
+			const next = payload?.sync?.last_synced ?? null;
+			return next !== null && next !== previousLastSynced;
+		};
+
+		// First refresh runs without a delay — derivations have changed
+		// (logo URL, hero URL, refund-page label may have shifted) and
+		// the form should reflect the server's resolved values before
+		// we start polling for the badge.
+		let latest = await refreshSettings( { silent: true } );
+		if ( ! isStillCurrent() ) {
+			return;
+		}
+
+		// Pending media overlays only matter until the server hands us
+		// fresh derivations — by now it has, so drop them.
+		setPendingMediaUrls( {} );
+
+		if ( advanced( latest ) ) {
+			return;
+		}
+
+		// AS hasn't ticked yet — surface the in-flight sync via the badge
+		// and poll on a geometric backoff. Each iteration short-circuits
+		// when a newer save supersedes this one or when sync advances.
+		setIsPostSaveSyncing( true );
+		let resolvedDuringPolling = false;
+		try {
+			for ( const delayMs of POST_SAVE_POLL_DELAYS_MS ) {
+				// eslint-disable-next-line no-await-in-loop, no-loop-func -- intentional polling
+				await new Promise( ( resolve ) =>
+					window.setTimeout( resolve, delayMs )
+				);
+				if ( ! isStillCurrent() ) {
+					return;
+				}
+				// eslint-disable-next-line no-await-in-loop -- intentional polling
+				latest = await refreshSettings( { silent: true } );
+				if ( ! isStillCurrent() ) {
+					return;
+				}
+				if ( advanced( latest ) ) {
+					resolvedDuringPolling = true;
+					return;
+				}
 			}
 		} finally {
-			// Only the CURRENT save resets the in-flight flags. A stale
-			// save flipping these off mid-fresh-save would unstick the
-			// Save button and clear the "Syncing…" indicator on the
-			// in-flight save, producing the "hangs" symptom the merchant
-			// sees: button looks idle but nothing's actually done.
 			if ( isStillCurrent() ) {
-				setIsSaving( false );
 				setIsPostSaveSyncing( false );
 			}
 		}
+
+		// Tail refresh — polling exhausted without seeing the AS tick.
+		// WP cron may still tick AS in the next minute (especially in
+		// dev environments where cron fires sporadically); without
+		// this, sync.last_synced advances on the server but the Hub's
+		// `sync` prop stays stale until a page refresh, and the badge
+		// reads "Syncing…" indefinitely from the merchant's
+		// perspective. One more silent refresh 60s later picks up the
+		// late tick without an infinite poll. Skipped when polling
+		// resolved cleanly (no need) or the save was superseded.
+		if ( resolvedDuringPolling ) {
+			return;
+		}
+		window.setTimeout( () => {
+			if ( ! isStillCurrent() ) {
+				return;
+			}
+			refreshSettings( { silent: true } ).catch( () => {} );
+		}, 60_000 );
 	};
 
 	if ( isLoading || ! localSettings ) {

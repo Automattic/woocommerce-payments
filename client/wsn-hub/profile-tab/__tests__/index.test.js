@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // MediaUpload depends on wp.media which doesn't exist in jest. The components
@@ -271,7 +271,15 @@ describe( 'ProfileTab', () => {
 	} );
 
 	it( 'PUTs only the Profile-relevant fields when Save is clicked, then calls refreshSettings', async () => {
-		const refreshSettings = jest.fn().mockResolvedValue( undefined );
+		// refreshSettings returns a payload whose sync.last_synced
+		// differs from the baseline so the post-save polling exits
+		// immediately (advanced=true) without entering the geometric
+		// backoff loop. The point of this test is the PUT shape and
+		// the single refresh call — NOT the polling semantics, which
+		// are exercised at the polling level elsewhere.
+		const refreshSettings = jest.fn().mockResolvedValue( {
+			sync: { last_synced: 12345 },
+		} );
 		renderProfile( { refreshSettings } );
 
 		await waitFor( () =>
@@ -284,9 +292,17 @@ describe( 'ProfileTab', () => {
 		await userEvent.clear( emailInput );
 		await userEvent.type( emailInput, 'new@example.com' );
 
-		await userEvent.click(
-			screen.getByRole( 'button', { name: /Save changes/i } )
-		);
+		// Wrap click + post-PUT state updates in act so the fire-and-
+		// forget polling promise's setStates (setIsSaving(false),
+		// setSaveNotice, setPendingMediaUrls) all land inside the act
+		// boundary instead of landing later and tripping
+		// @wordpress/jest-console.
+		// eslint-disable-next-line testing-library/no-unnecessary-act
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /Save changes/i } )
+			);
+		} );
 
 		// Wait for the PUT call to fire — once it's in mockApiFetch.mock.calls,
 		// the dirty-aware save flow has completed. Then assert on the payload
@@ -316,10 +332,20 @@ describe( 'ProfileTab', () => {
 		] );
 		expect( payload.contact_email ).toBe( 'new@example.com' );
 
-		// After a successful PUT the tab delegates the refresh to the shell —
-		// no second GET issued from inside the tab.
+		// After a successful PUT the tab delegates the refresh to the
+		// shell — no second GET issued from inside the tab. handleSave
+		// fires this refresh fire-and-forget (the Save button is
+		// already off the moment the PUT resolves), so we waitFor the
+		// state updates to settle inside act before the test exits.
+		// The "Profile saved." notice is the observable signal that
+		// the post-PUT state updates have flushed inside act.
 		await waitFor( () =>
 			expect( refreshSettings ).toHaveBeenCalledTimes( 1 )
+		);
+		await waitFor( () =>
+			expect(
+				screen.getAllByText( /Profile saved/i ).length
+			).toBeGreaterThan( 0 )
 		);
 	} );
 
