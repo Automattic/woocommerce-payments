@@ -130,8 +130,14 @@ const HeroBannerPicker = ( { attachmentId, resolvedUrl, onChange } ) => {
 							onClick={ safeOpenMediaModal( open ) }
 							style={ {
 								width: '100%',
+								// Always preserve the 1440:420 ratio at
+								// the current column width — the preview
+								// reads as a scaled-down version of the
+								// hero on pay.woo.com. No maxHeight cap;
+								// merchants explicitly asked for the
+								// proportional preview so they can judge
+								// composition.
 								aspectRatio: '1440 / 420',
-								maxHeight: '200px',
 								border: hasImage
 									? `1px solid ${ colors.borderSubtle }`
 									: `2px dashed ${ colors.borderStrong }`,
