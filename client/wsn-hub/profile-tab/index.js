@@ -22,7 +22,7 @@
  * @format
  */
 
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, Notice } from '@wordpress/components';
@@ -145,6 +145,17 @@ const ProfileTab = ( {
 	// a stale timestamp during the AS-tick window.
 	const [ isPostSaveSyncing, setIsPostSaveSyncing ] = useState( false );
 
+	// Generation token bumped at the start of every handleSave invocation.
+	// The polling loop reads its captured value back through this ref after
+	// every await; if the current ref doesn't match, the loop is from a
+	// superseded save and bails without touching shared state. Without
+	// this, a second Save click during the first save's 30s polling window
+	// produces stale setIsSaving(false) / setSaveNotice writes from the
+	// first save that clobber the second save's UI state — the form
+	// appears to "hang" while the in-flight second save can't visibly
+	// progress.
+	const saveGenerationRef = useRef( 0 );
+
 	// Transient URLs captured at MediaUpload-pick time so the preview
 	// updates IMMEDIATELY, before the save+GET cycle replaces them with the
 	// server-resolved derivations.logo_url / .hero_image_url. Without these
@@ -189,6 +200,20 @@ const ProfileTab = ( {
 
 	const handleSave = async () => {
 		if ( ! localSettings || ! isDirty ) return;
+		// Concurrency guard: refuse to start a second save while one is in
+		// flight. The Save button is already disabled while isSaving=true
+		// (see render below), so this is belt-and-suspenders for keyboard
+		// activations, programmatic dispatches, or any race where a stale
+		// click handler fires after the button's disabled state lands.
+		if ( isSaving ) return;
+
+		// Bump the generation token so the previous save's polling loop
+		// (if still alive) can detect supersession on its next iteration
+		// and bail without touching shared state.
+		saveGenerationRef.current += 1;
+		const myGeneration = saveGenerationRef.current;
+		const isStillCurrent = () => saveGenerationRef.current === myGeneration;
+
 		setIsSaving( true );
 		setSaveNotice( null );
 
@@ -203,6 +228,14 @@ const ProfileTab = ( {
 				method: 'PUT',
 				data: localSettings,
 			} );
+
+			// If a newer Save has started while our PUT was in flight,
+			// the newer flow now owns the post-save UI state — back out
+			// silently rather than racing the newer save's
+			// setIsSaving(false) / setSaveNotice writes.
+			if ( ! isStillCurrent() ) {
+				return;
+			}
 
 			// Ask the shell to re-fetch /wsn/settings so derivations stay
 			// authoritative (logo URL / hero URL / refund page label may
@@ -223,6 +256,9 @@ const ProfileTab = ( {
 				// producing a visible flash every 2-16s through the 30s
 				// polling window.
 				latest = await refreshSettings( { silent: true } );
+				if ( ! isStillCurrent() ) {
+					return;
+				}
 				const advanced = ( payload ) => {
 					const next = payload?.sync?.last_synced ?? null;
 					return next !== null && next !== previousLastSynced;
@@ -234,8 +270,14 @@ const ProfileTab = ( {
 						await new Promise( ( resolve ) =>
 							window.setTimeout( resolve, delayMs )
 						);
+						if ( ! isStillCurrent() ) {
+							return;
+						}
 						// eslint-disable-next-line no-await-in-loop -- intentional polling
 						latest = await refreshSettings( { silent: true } );
+						if ( ! isStillCurrent() ) {
+							return;
+						}
 						if ( advanced( latest ) ) {
 							break;
 						}
@@ -254,13 +296,24 @@ const ProfileTab = ( {
 				message: __( 'Profile saved.', 'woocommerce-payments' ),
 			} );
 		} catch ( e ) {
-			setSaveNotice( {
-				status: 'error',
-				message: formatApiError( e ),
-			} );
+			// Only surface our error if a newer save hasn't already
+			// taken over the notice slot.
+			if ( isStillCurrent() ) {
+				setSaveNotice( {
+					status: 'error',
+					message: formatApiError( e ),
+				} );
+			}
 		} finally {
-			setIsSaving( false );
-			setIsPostSaveSyncing( false );
+			// Only the CURRENT save resets the in-flight flags. A stale
+			// save flipping these off mid-fresh-save would unstick the
+			// Save button and clear the "Syncing…" indicator on the
+			// in-flight save, producing the "hangs" symptom the merchant
+			// sees: button looks idle but nothing's actually done.
+			if ( isStillCurrent() ) {
+				setIsSaving( false );
+				setIsPostSaveSyncing( false );
+			}
 		}
 	};
 
