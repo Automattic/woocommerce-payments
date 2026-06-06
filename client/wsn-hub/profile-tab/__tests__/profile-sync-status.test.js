@@ -5,7 +5,11 @@
  */
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+// jest.useFakeTimers() is enabled below; the shim is the codebase
+// convention for keeping user-event compatible with fake timers and
+// centralizes the eventual `.setup({ advanceTimers })` migration.
+// See client/components/tooltip/__tests__/tooltip-base.test.tsx:8.
+import { userEvent } from 'jest-utils/user-event-timers';
 
 /**
  * Internal dependencies
@@ -148,7 +152,7 @@ describe( 'ProfileSyncStatus', () => {
 				/>
 			);
 
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', { name: /Retry sync/i } )
 			);
 
@@ -174,7 +178,7 @@ describe( 'ProfileSyncStatus', () => {
 				/>
 			);
 
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', { name: /Retry sync/i } )
 			);
 
@@ -203,7 +207,7 @@ describe( 'ProfileSyncStatus', () => {
 				/>
 			);
 
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', { name: /Retry sync/i } )
 			);
 
@@ -225,10 +229,18 @@ describe( 'ProfileSyncStatus', () => {
 		} );
 
 		it( 'surfaces apiFetch failure as an inline error', async () => {
-			apiFetch.mockRejectedValueOnce( {
-				message: 'Network unreachable.',
-				code: 'fetch_error',
-			} );
+			// Hand-controllable rejection so we can drain it inside act().
+			// A `mockRejectedValueOnce(...)` would resolve as a microtask
+			// scheduled by the click handler, AFTER `await userEvent.click`
+			// returns — leaving the catch-branch state updates outside
+			// any act() boundary. React 18 emits "not wrapped in act" and
+			// @wordpress/jest-console fails the test.
+			let rejectApiFetch;
+			apiFetch.mockReturnValueOnce(
+				new Promise( ( _resolve, reject ) => {
+					rejectApiFetch = reject;
+				} )
+			);
 
 			render(
 				<ProfileSyncStatus
@@ -241,14 +253,24 @@ describe( 'ProfileSyncStatus', () => {
 				/>
 			);
 
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', { name: /Retry sync/i } )
 			);
 
-			// After the rejection the isRetrying flag clears and the inline
-			// error appears. Retry button re-enables so the merchant can try
-			// again.
-			expect( await screen.findByRole( 'alert' ) ).toBeInTheDocument();
+			// Reject inside act and flush the catch microtask so the
+			// setIsRetrying(false) + setRetryError state updates land
+			// inside the act boundary.
+			await act( async () => {
+				rejectApiFetch( {
+					message: 'Network unreachable.',
+					code: 'fetch_error',
+				} );
+			} );
+
+			// After the rejection the isRetrying flag clears and the
+			// inline error appears. Retry button re-enables so the
+			// merchant can try again.
+			expect( screen.getByRole( 'alert' ) ).toBeInTheDocument();
 			expect(
 				screen.getByRole( 'button', { name: /Retry sync/i } )
 			).toBeEnabled();

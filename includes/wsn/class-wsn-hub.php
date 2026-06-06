@@ -226,9 +226,16 @@ class WSN_Hub {
 				'restNonceEndpoint' => esc_url_raw( admin_url( 'admin-ajax.php?action=rest-nonce' ) ),
 			],
 		];
+		// Merge with care: Object.assign at the top level is shallow, so
+		// a pre-existing window.wcpaySettings.featureFlags from another
+		// script would be wholesale replaced by ours, dropping any flags
+		// it owned. Do a per-nested-key merge for the two top-level
+		// objects we extend (featureFlags + wsn); any future top-level
+		// objects need the same treatment.
+		$bootstrap_json = wp_json_encode( $bootstrap );
 		wp_add_inline_script(
 			self::SCRIPT_HANDLE,
-			'window.wcpaySettings = Object.assign( window.wcpaySettings || {}, ' . wp_json_encode( $bootstrap ) . ' );',
+			'( function () { var s = window.wcpaySettings = window.wcpaySettings || {}; var b = ' . $bootstrap_json . '; s.featureFlags = Object.assign( {}, s.featureFlags || {}, b.featureFlags || {} ); s.wsn = Object.assign( {}, s.wsn || {}, b.wsn || {} ); } )();',
 			'before'
 		);
 	}
