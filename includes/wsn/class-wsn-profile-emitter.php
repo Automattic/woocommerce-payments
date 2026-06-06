@@ -26,7 +26,19 @@ defined( 'ABSPATH' ) || exit;
  *      (after_switch_theme, save_post_wp_global_styles,
  *      customize_save_after) and plugin updates — debouncing collapses
  *      bursts into one push.
- *   3. `wcpay_wsn_profile_backstop` — 6-hour recurring Action Scheduler
+ *   3. `updated_option` / `added_option` — fires for every wp_options
+ *      write. We filter against `DERIVATION_SOURCE_OPTIONS` (blogname,
+ *      blogdescription, site_logo, site_icon, woocommerce_default_country,
+ *      woocommerce_store_city) and route matches to
+ *      `schedule_debounced_push`. Picks up shop name / tagline / logo /
+ *      store-location edits that don't go through the WSN settings PUT.
+ *   4. Shipping zone hooks (`woocommerce_after_shipping_zone_object_save`,
+ *      `woocommerce_shipping_zone_method_added` / `_deleted` /
+ *      `_status_toggled`) — zones live in their own data store, NOT
+ *      wp_options, so `updated_option` misses them. These cover free-
+ *      shipping zone edits / method changes. All route through
+ *      `schedule_debounced_push`.
+ *   5. `wcpay_wsn_profile_backstop` — 6-hour recurring Action Scheduler
  *      job that catches missed hook fires (plugin deactivation during
  *      emit, fatal during compose, race during deploy). Also routes
  *      through `schedule_debounced_push` to coalesce with any
@@ -212,6 +224,25 @@ class WSN_Profile_Emitter {
 		// single push.
 		add_action( 'wcpay_woopay_appearance_changed', [ $this, 'schedule_debounced_push' ], 10, 0 );
 
+		// Derivations the composer reads come from WP/WC core (blogname,
+		// site logo, store country/city, shipping zones, refund page).
+		// None of those flow through `wcpay_wsn_profile_changed` (which
+		// is WSN-options-only) or `wcpay_woopay_appearance_changed`
+		// (theme-only), so we wire targeted listeners here. Each fires
+		// `schedule_debounced_push`; the skip-emit guard in execute_push
+		// makes false alarms cheap. See DERIVATION_SOURCE_OPTIONS for
+		// the allowlist of options-table keys we watch.
+		add_action( 'updated_option', [ $this, 'maybe_schedule_on_option_change' ], 10, 1 );
+		add_action( 'added_option', [ $this, 'maybe_schedule_on_option_change' ], 10, 1 );
+		// Shipping zones use a custom data store (not wp_options), so
+		// updated_option misses them. Subscribe to the per-zone and
+		// per-method save hooks WC fires. All four collapse into the
+		// single 10s debounce.
+		add_action( 'woocommerce_after_shipping_zone_object_save', [ $this, 'schedule_debounced_push' ], 10, 0 );
+		add_action( 'woocommerce_shipping_zone_method_added', [ $this, 'schedule_debounced_push' ], 10, 0 );
+		add_action( 'woocommerce_shipping_zone_method_deleted', [ $this, 'schedule_debounced_push' ], 10, 0 );
+		add_action( 'woocommerce_shipping_zone_method_status_toggled', [ $this, 'schedule_debounced_push' ], 10, 0 );
+
 		add_action( self::ACTION_PUSH, [ $this, 'execute_push' ] );
 		add_action( self::ACTION_BACKSTOP, [ $this, 'schedule_debounced_push' ] );
 
@@ -222,6 +253,55 @@ class WSN_Profile_Emitter {
 		add_action( 'wcpay_wsn_profile_force_resync', [ $this, 'force_immediate_push' ], 10, 0 );
 
 		$this->ensure_backstop_scheduled();
+	}
+
+	/**
+	 * Allowlist of wp_options keys whose values feed `WSN_Derivations`. When
+	 * any of these is written, the derivations payload may differ from the
+	 * last-synced version — schedule a debounced push so the skip-emit
+	 * guard can decide.
+	 *
+	 * Kept narrow on purpose: `updated_option` fires for EVERY option write
+	 * on every request, so we filter at the listener and avoid scheduling a
+	 * push on unrelated writes (transients, transient locks, theme_mods,
+	 * etc.).
+	 *
+	 * NOT in this list (intentional):
+	 *   - `woocommerce_store_address*`, `woocommerce_store_postcode` —
+	 *     omitted from the payload's location allowlist by the privacy
+	 *     invariant; changing them must not trigger a push because the
+	 *     payload hash won't change. Adding them here would burn AS rows
+	 *     with no payload-version delta.
+	 *   - WSN-owned options (`wcpay_wsn_*`) — `wcpay_wsn_profile_changed`
+	 *     is the dedicated entrypoint for those; including them here
+	 *     would double-fire.
+	 *
+	 * @var string[]
+	 */
+	const DERIVATION_SOURCE_OPTIONS = [
+		'blogname',
+		'blogdescription',
+		'site_logo',
+		'site_icon',
+		'woocommerce_default_country',
+		'woocommerce_store_city',
+	];
+
+	/**
+	 * `updated_option` / `added_option` listener — schedules a debounced
+	 * push when the changed option is in the derivations allowlist.
+	 *
+	 * @param string $option_name The option name being written.
+	 * @return void
+	 */
+	public function maybe_schedule_on_option_change( $option_name ): void {
+		if ( ! is_string( $option_name ) ) {
+			return;
+		}
+		if ( ! in_array( $option_name, self::DERIVATION_SOURCE_OPTIONS, true ) ) {
+			return;
+		}
+		$this->schedule_debounced_push();
 	}
 
 	/**

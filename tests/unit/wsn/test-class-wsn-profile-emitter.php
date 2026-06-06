@@ -291,6 +291,36 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 			'init_hooks must register a force_immediate_push listener for the Retry-button-driven action — otherwise POST /profile-resync fires the action but nothing happens.'
 		);
 
+		// Derivation-source listeners: blogname/blogdescription/site_logo/
+		// site_icon/country/city changes go through updated_option +
+		// added_option (filtered against DERIVATION_SOURCE_OPTIONS by
+		// maybe_schedule_on_option_change). Shipping zones use their own
+		// data store, so we subscribe to the four WC zone/method hooks
+		// directly. Regression guard: dropping any of these means a
+		// merchant edits a shop name or free-shipping zone, sees the new
+		// value in the Profile tab, but WooPay never gets a push until
+		// the 6h backstop fires.
+		$this->assertNotFalse(
+			has_action( 'updated_option', [ $this->emitter, 'maybe_schedule_on_option_change' ] ),
+			'updated_option listener missing — option-backed derivations (shop name, logo, country) will not sync.'
+		);
+		$this->assertNotFalse(
+			has_action( 'added_option', [ $this->emitter, 'maybe_schedule_on_option_change' ] )
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_after_shipping_zone_object_save', [ $this->emitter, 'schedule_debounced_push' ] ),
+			'Shipping-zone save hook missing — free-shipping edits will not sync.'
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_shipping_zone_method_added', [ $this->emitter, 'schedule_debounced_push' ] )
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_shipping_zone_method_deleted', [ $this->emitter, 'schedule_debounced_push' ] )
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_shipping_zone_method_status_toggled', [ $this->emitter, 'schedule_debounced_push' ] )
+		);
+
 		// Cleanup so other tests aren't affected by these listener
 		// registrations.
 		remove_action( 'wcpay_wsn_profile_changed', [ $this->emitter, 'force_immediate_push' ] );
@@ -298,5 +328,52 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		remove_action( WSN_Profile_Emitter::ACTION_PUSH, [ $this->emitter, 'execute_push' ] );
 		remove_action( WSN_Profile_Emitter::ACTION_BACKSTOP, [ $this->emitter, 'schedule_debounced_push' ] );
 		remove_action( 'wcpay_wsn_profile_force_resync', [ $this->emitter, 'force_immediate_push' ] );
+		remove_action( 'updated_option', [ $this->emitter, 'maybe_schedule_on_option_change' ] );
+		remove_action( 'added_option', [ $this->emitter, 'maybe_schedule_on_option_change' ] );
+		remove_action( 'woocommerce_after_shipping_zone_object_save', [ $this->emitter, 'schedule_debounced_push' ] );
+		remove_action( 'woocommerce_shipping_zone_method_added', [ $this->emitter, 'schedule_debounced_push' ] );
+		remove_action( 'woocommerce_shipping_zone_method_deleted', [ $this->emitter, 'schedule_debounced_push' ] );
+		remove_action( 'woocommerce_shipping_zone_method_status_toggled', [ $this->emitter, 'schedule_debounced_push' ] );
+	}
+
+	public function test_maybe_schedule_on_option_change_fires_for_allowlisted_options() {
+		$this->scheduler
+			->expects( $this->once() )
+			->method( 'schedule_job' )
+			->with(
+				$this->isType( 'int' ),
+				WSN_Profile_Emitter::ACTION_PUSH
+			);
+
+		$this->emitter->maybe_schedule_on_option_change( 'blogname' );
+	}
+
+	public function test_maybe_schedule_on_option_change_does_not_fire_for_unrelated_options() {
+		$this->scheduler
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		// Common WP/WC writes that are NOT derivation sources — must NOT
+		// schedule. updated_option fires for EVERY option write, so a
+		// bug here means we burn AS rows on transients, theme_mods, etc.
+		$this->emitter->maybe_schedule_on_option_change( 'some_unrelated_option' );
+		// WSN-owned — handled by wcpay_wsn_profile_changed instead.
+		$this->emitter->maybe_schedule_on_option_change( 'wcpay_wsn_enabled' );
+		// Privacy-excluded — not in the payload's location allowlist.
+		$this->emitter->maybe_schedule_on_option_change( 'woocommerce_store_address' );
+		$this->emitter->maybe_schedule_on_option_change( '' );
+	}
+
+	public function test_maybe_schedule_on_option_change_ignores_non_string_input() {
+		// Defensive: if some plugin fires updated_option with a non-string
+		// $option (rare but possible via misuse), we must not warn or
+		// schedule.
+		$this->scheduler
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->emitter->maybe_schedule_on_option_change( null );
+		$this->emitter->maybe_schedule_on_option_change( 42 );
+		$this->emitter->maybe_schedule_on_option_change( [ 'blogname' ] );
 	}
 }
