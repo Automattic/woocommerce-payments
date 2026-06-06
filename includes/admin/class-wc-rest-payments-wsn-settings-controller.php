@@ -173,7 +173,7 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	 *
 	 * `debounce_seconds` is included so the front-end Retry handler can
 	 * time its optimistic refresh against the actual AS debounce window
-	 * (currently 60s but the constant is the source of truth).
+	 * (currently 10s but the constant is the source of truth).
 	 *
 	 * @return array{last_synced: int|null, last_synced_version: string, last_error: array|null, debounce_seconds: int}
 	 */
@@ -270,7 +270,7 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	}
 
 	/**
-	 * POST handler — fire an immediate Profile push, bypassing the 60s debounce.
+	 * POST handler — fire an immediate Profile push, bypassing the 10s debounce.
 	 *
 	 * Backs the Profile-tab "Retry sync" button (RSM-3945, sync-state UI wireup).
 	 * Returns 202 Accepted because the push itself runs asynchronously through
@@ -334,7 +334,7 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 		 * Fires when the Profile-tab Retry button (or any other manual trigger)
 		 * requests an immediate Profile-sync push. The emitter is the canonical
 		 * listener; it calls `force_immediate_push()` which schedules the AS
-		 * action at time() (vs the default 60s debounce).
+		 * action at time() (vs the default 10s debounce).
 		 *
 		 * @since 10.8.0
 		 */

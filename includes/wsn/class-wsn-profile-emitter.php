@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  *   2. `wcpay_woopay_appearance_changed` — fires inside
  *      WC_Payments_Styles_Cache::set_woopay_appearance() after the
  *      appearance + font rules are persisted. Routes to
- *      `schedule_debounced_push` (60s window). These events can fire
+ *      `schedule_debounced_push` (10s window). These events can fire
  *      repeatedly within a single request via theme writes
  *      (after_switch_theme, save_post_wp_global_styles,
  *      customize_save_after) and plugin updates — debouncing collapses
@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * `force_immediate_push` schedules an AS action at `time()`; the next AS
  * tick fires it. `schedule_debounced_push` schedules at
- * `time() + DEBOUNCE_SECONDS` (60s) and benefits from AS's same-hook+args
+ * `time() + DEBOUNCE_SECONDS` (10s) and benefits from AS's same-hook+args
  * collapse so rapid re-schedules don't multiply rows.
  *
  * Skip-emit guard: each push hashes the canonical payload to a
@@ -72,9 +72,19 @@ class WSN_Profile_Emitter {
 	 * the single AS action fires. Bursts of changes within this window
 	 * collapse to one push.
 	 *
+	 * 10s rather than a minute: long enough to coalesce the realistic
+	 * burst the appearance-change path produces (a single Site Editor
+	 * save fires save_post_wp_global_styles + save_post_wp_template
+	 * + customize_save_after in tight succession), short enough that
+	 * a merchant who saves and immediately checks the badge sees it
+	 * advance without an awkward wait. The skip-emit guard at
+	 * execute_push() (payload_version hash dedup) makes any spurious
+	 * extra push a cheap no-op anyway, so we don't need a long
+	 * debounce as a hard safeguard.
+	 *
 	 * @var int
 	 */
-	const DEBOUNCE_SECONDS = MINUTE_IN_SECONDS;
+	const DEBOUNCE_SECONDS = 10;
 
 	/**
 	 * Recurring interval for the backstop AS job. Catches missed hook
