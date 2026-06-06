@@ -146,11 +146,12 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 		$since          = $this->get_since_timestamp( $period );
 		$recent_orders  = $this->fetch_marketplace_orders( $since, self::RECENT_ORDERS_LIMIT );
 		$network_orders = $this->count_marketplace_orders( $since );
+		$period_totals  = $this->fetch_period_totals( $since );
 
 		$payload = [
 			'period'   => $period,
 			'is_empty' => 0 === $network_orders,
-			'stats'    => $this->compute_stats( $recent_orders, $network_orders ),
+			'stats'    => $this->compute_stats( $recent_orders, $network_orders, $period_totals ),
 			'orders'   => array_map( [ $this, 'format_order' ], $recent_orders ),
 		];
 
@@ -218,6 +219,13 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 				'orderby'      => 'date',
 				'order'        => 'DESC',
 				'date_created' => '>=' . $since,
+				// Match the predicate used by fetch_period_totals() so
+				// numerator + denominator share the same universe and the
+				// rate metrics (network_order_rate, network_revenue_pct)
+				// are internally consistent. Matches AI Storefront's
+				// "completed + processing" convention — the "money in the
+				// merchant's pocket" set.
+				'status'       => [ 'completed', 'processing' ],
 			]
 		);
 
@@ -262,6 +270,86 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
+	 * Total orders and revenue in the period, across ALL sources (NOT filtered
+	 * to marketplace meta). Used as denominators for `network_order_rate` and
+	 * `network_revenue_pct`.
+	 *
+	 * Mirrors AI Storefront's `class-wc-ai-storefront-attribution.php` approach
+	 * (lines 985-1020): single direct `$wpdb` COUNT + SUM query, HPOS-aware
+	 * (`wc_orders` table) with a non-HPOS `wp_posts` fallback. Status filter:
+	 * `wc-completed` + `wc-processing` — the "money in the merchant's pocket"
+	 * set, which is the standard predicate for WC Admin analytics. The
+	 * marketplace numerator (`fetch_marketplace_orders`) applies the same
+	 * status predicate so numerator and denominator share the same universe
+	 * and the rates are internally consistent.
+	 *
+	 * @param int $since Unix timestamp lower bound for `date_created`.
+	 * @return array{count: int, revenue: float}
+	 */
+	private function fetch_period_totals( int $since ): array {
+		global $wpdb;
+
+		$since_gmt = gmdate( 'Y-m-d H:i:s', $since );
+
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
+			&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$orders_table = $wpdb->prefix . 'wc_orders';
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$row = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT COUNT(*) AS order_count, COALESCE( SUM( total_amount ), 0 ) AS revenue
+					 FROM {$orders_table}
+					 WHERE type = 'shop_order'
+					   AND status IN ( 'wc-completed', 'wc-processing' )
+					   AND date_created_gmt >= %s",
+					$since_gmt
+				)
+			);
+			// phpcs:enable
+			if ( $row ) {
+				return [
+					'count'   => (int) $row->order_count,
+					'revenue' => (float) $row->revenue,
+				];
+			}
+			return [
+				'count'   => 0,
+				'revenue' => 0.0,
+			];
+		}
+
+		// Non-HPOS fallback — wp_posts + wp_postmeta. Revenue lives in the
+		// `_order_total` meta on legacy CPT orders.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$count   = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->posts}
+				 WHERE post_type = 'shop_order'
+				   AND post_status IN ( 'wc-completed', 'wc-processing' )
+				   AND post_date_gmt >= %s",
+				$since_gmt
+			)
+		);
+		$revenue = (float) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COALESCE( SUM( CAST( pm.meta_value AS DECIMAL(20,8) ) ), 0 )
+				 FROM {$wpdb->posts} p
+				 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = '_order_total'
+				 WHERE p.post_type = 'shop_order'
+				   AND p.post_status IN ( 'wc-completed', 'wc-processing' )
+				   AND p.post_date_gmt >= %s",
+				$since_gmt
+			)
+		);
+		// phpcs:enable
+
+		return [
+			'count'   => $count,
+			'revenue' => $revenue,
+		];
+	}
+
+	/**
 	 * Aggregate stats from the fetched orders. Only computes the metrics derivable
 	 * from order data alone — telemetry-dependent fields (Products Viewed, Top
 	 * Discovery Source) remain null and the UI renders them as `—`.
@@ -278,11 +366,13 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 	 * (which doesn't decode entities inside text nodes) would render
 	 * `&#36;45.99` literally. Strip + decode is the correct pair.
 	 *
-	 * @param WC_Order[] $recent_orders   Most recent marketplace-tagged orders (capped at RECENT_ORDERS_LIMIT).
-	 * @param int        $network_orders  Total marketplace-tagged orders in the period (NOT capped).
+	 * @param WC_Order[]                        $recent_orders   Most recent marketplace-tagged orders (capped at RECENT_ORDERS_LIMIT).
+	 * @param int                               $network_orders  Total marketplace-tagged orders in the period (NOT capped).
+	 * @param array{count: int, revenue: float} $period_totals   Period totals across ALL sources — used as denominators
+	 *                                                            for network_order_rate and network_revenue_pct.
 	 * @return array
 	 */
-	private function compute_stats( array $recent_orders, int $network_orders ): array {
+	private function compute_stats( array $recent_orders, int $network_orders, array $period_totals ): array {
 		if ( 0 === $network_orders ) {
 			return [];
 		}
@@ -322,19 +412,32 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 			$top_share     = sprintf( '%.1f%%', $top_share_pct );
 		}
 
+		// Rate metrics — null when there are no period totals at all (StatCard
+		// renders `—`). Format to 1 decimal place to match top_source_share's
+		// convention.
+		$total_orders        = (int) $period_totals['count'];
+		$total_revenue       = (float) $period_totals['revenue'];
+		$network_order_rate  = null;
+		$network_revenue_pct = null;
+		if ( $total_orders > 0 ) {
+			$network_order_rate = sprintf( '%.1f%%', ( $network_orders / $total_orders ) * 100 );
+		}
+		if ( $total_revenue > 0 ) {
+			$network_revenue_pct = sprintf( '%.1f%%', ( $network_revenue / $total_revenue ) * 100 );
+		}
+
 		return [
 			'network_orders'            => $network_orders,
+			'network_order_rate'        => $network_order_rate,
 			'network_revenue_formatted' => self::format_price_plain( $network_revenue ),
+			'network_revenue_pct'       => $network_revenue_pct,
 			'network_aov_formatted'     => self::format_price_plain( $network_aov ),
 			'top_source'                => $top_source,
 			'top_source_share'          => $top_share,
 			// Intentionally omitted (rendered as `—` by StatCard):
-			// products_listed, products_viewed, products_viewed_pct,
-			// network_order_rate, network_revenue_pct,
-			// total_orders, total_revenue_formatted
-			// — these depend on either WooPay-side telemetry (views) or a
-			// separate per-period query against ALL orders (total_*). Deferred
-			// to follow-up issues.
+			// products_listed, products_viewed, products_viewed_pct
+			// — these depend on WooPay-side engagement telemetry. Scoped in
+			// the engagement-metrics plan (see plan-engagement-metrics.md).
 		];
 	}
 
