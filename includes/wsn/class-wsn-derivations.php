@@ -217,11 +217,18 @@ class WSN_Derivations {
 	 * (the data class). Using the wrong one fatals; this is a load-bearing
 	 * distinction the test suite locks in.
 	 *
-	 * Includes zone 0 ("Locations not covered by your other zones", aka
-	 * "Rest of the World"), which `WC_Shipping_Zones::get_zones()` excludes.
-	 * Stores with only the Rest-of-world zone would otherwise see an empty
-	 * "Shipping regions" field even though they ship internationally.
-	 * Mirrors the pattern used by WSN_Free_Shipping_Summarizer::collect_zones().
+	 * Includes zone 0 ("Locations not covered by your other zones"), which
+	 * `WC_Shipping_Zones::get_zones()` excludes — stores with only the
+	 * catch-all zone would otherwise see an empty Shipping regions field
+	 * even though they ship internationally.
+	 *
+	 * Filters every zone (including zone 0) to those with at least one
+	 * ENABLED shipping method. The signal merchants care about is "do you
+	 * actually ship to locations here", not "does WC have a row for this
+	 * zone." A zone with no enabled methods can't serve shoppers there,
+	 * so listing it as a destination misrepresents reach. The catch-all
+	 * is the worst offender — WC creates it by default and it's always
+	 * named, even on stores that don't ship outside named zones.
 	 *
 	 * @return string[]
 	 */
@@ -231,21 +238,49 @@ class WSN_Derivations {
 		}
 
 		$names = [];
+
+		// Named zones — get_zones() already returns shipping_methods
+		// batched per zone, so we don't trigger a second DB read per
+		// zone to check method enablement.
 		foreach ( WC_Shipping_Zones::get_zones() as $zone_data ) {
-			if ( isset( $zone_data['zone_name'] ) && '' !== $zone_data['zone_name'] ) {
-				$names[] = (string) $zone_data['zone_name'];
+			$zone_name = isset( $zone_data['zone_name'] ) ? (string) $zone_data['zone_name'] : '';
+			if ( '' === $zone_name ) {
+				continue;
+			}
+			$methods = isset( $zone_data['shipping_methods'] ) && is_array( $zone_data['shipping_methods'] )
+				? $zone_data['shipping_methods']
+				: [];
+			if ( self::has_enabled_method( $methods ) ) {
+				$names[] = $zone_name;
 			}
 		}
 
-		// Zone 0 lives outside get_zones() — fetch explicitly. Single zone,
-		// one extra DB read.
+		// Zone 0 — fetch explicitly. get_zones() excludes it. Single zone,
+		// one extra DB read for the methods.
 		$rest_of_world = new WC_Shipping_Zone( 0 );
 		$zone_name     = (string) $rest_of_world->get_zone_name();
-		if ( '' !== $zone_name ) {
+		if ( '' !== $zone_name && self::has_enabled_method( $rest_of_world->get_shipping_methods( false ) ) ) {
 			$names[] = $zone_name;
 		}
 
 		return $names;
+	}
+
+	/**
+	 * True when any method in the array is enabled. Defensive about array
+	 * shape so a caller that passes a non-array or non-object element
+	 * (rare in WC core but possible via extension filters) doesn't fatal.
+	 *
+	 * @param array $methods Shipping methods array from WC.
+	 * @return bool
+	 */
+	private static function has_enabled_method( array $methods ): bool {
+		foreach ( $methods as $method ) {
+			if ( is_object( $method ) && method_exists( $method, 'is_enabled' ) && $method->is_enabled() ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
