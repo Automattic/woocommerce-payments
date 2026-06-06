@@ -143,10 +143,16 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 			return rest_ensure_response( $cached );
 		}
 
-		$since          = $this->get_since_timestamp( $period );
-		$recent_orders  = $this->fetch_marketplace_orders( $since, self::RECENT_ORDERS_LIMIT );
-		$network_orders = $this->count_marketplace_orders( $since );
-		$period_totals  = $this->fetch_period_totals( $since );
+		$since = $this->get_since_timestamp( $period );
+
+		// Fetch the full candidate set once so that both the total count
+		// and the table-display slice share a single wc_get_orders call.
+		// Previously count_marketplace_orders() issued a second independent
+		// call (limit=-1), doubling the order-hydration cost per request.
+		$all_marketplace = $this->fetch_marketplace_orders( $since, -1 );
+		$network_orders  = count( $all_marketplace );
+		$recent_orders   = array_slice( $all_marketplace, 0, self::RECENT_ORDERS_LIMIT );
+		$period_totals   = $this->fetch_period_totals( $since );
 
 		$payload = [
 			'period'   => $period,

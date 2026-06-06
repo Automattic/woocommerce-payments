@@ -81,4 +81,33 @@ class WSN_Hub_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'rest_api_init' ) );
 		$this->assertNotFalse( has_action( 'in_admin_header' ) );
 	}
+
+	public function test_emitter_option_write_listener_registered_on_non_admin_request() {
+		// Regression guard: emitter listeners that respond to option writes and
+		// shipping-zone changes must be registered on EVERY request type (REST,
+		// frontend, AS workers) — not only when the Hub admin page is loaded.
+		//
+		// This test simulates what happens when `WC_Payments::init()` calls
+		// `WSN_Hub::init_hooks()` during a non-admin bootstrap by ensuring the
+		// `updated_option` and `woocommerce_after_shipping_zone_object_save`
+		// listeners land when the sub-flag is on, irrespective of `is_admin()`.
+		update_option( WC_Payments_Features::WSN_PROFILE_EMITTER_FLAG_NAME, '1' );
+
+		remove_all_actions( 'updated_option' );
+		remove_all_actions( 'woocommerce_after_shipping_zone_object_save' );
+
+		( new WSN_Hub() )->init_hooks();
+
+		$this->assertNotFalse(
+			has_action( 'updated_option' ),
+			'Emitter must listen on updated_option on every request type so option writes outside the Hub admin page still trigger a sync.'
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_after_shipping_zone_object_save' ),
+			'Emitter must listen on shipping-zone changes on every request type (AS workers handle zone-save hooks, not just admin pages).'
+		);
+
+		remove_all_actions( 'updated_option' );
+		remove_all_actions( 'woocommerce_after_shipping_zone_object_save' );
+	}
 }

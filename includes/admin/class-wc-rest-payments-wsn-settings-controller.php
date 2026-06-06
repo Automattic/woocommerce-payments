@@ -109,10 +109,8 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 
 		// Sibling route — manual "Retry sync" trigger backing the Profile-tab
 		// sync-state badge. Fires `wcpay_wsn_profile_force_resync` which the
-		// emitter listens for. Separate route (not a query param on the PUT)
-		// because its semantics are "fire a push with no data write" — the
-		// settings PUT only fires a push as a side-effect of changed Profile
-		// fields. Conflating would require a synthetic-edit code path.
+		// emitter listens for. The handler gates on the profile-emitter sub-flag
+		// and returns 503 when it is off — no need to gate registration itself.
 		register_rest_route(
 			$this->namespace,
 			'/payments/wsn/profile-resync',

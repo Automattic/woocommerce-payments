@@ -261,7 +261,11 @@ class WSN_Profile_Emitter {
 		add_action( 'woocommerce_shipping_zone_method_status_toggled', [ $this, 'schedule_debounced_push' ], 10, 0 );
 
 		add_action( self::ACTION_PUSH, [ $this, 'execute_push' ] );
-		add_action( self::ACTION_BACKSTOP, [ $this, 'schedule_debounced_push' ] );
+		// Route the backstop directly to execute_push — not through
+		// schedule_debounced_push — so it fires the push immediately
+		// rather than queueing yet another AS action 10s later. The
+		// skip-emit guard in execute_push makes no-change ticks cheap.
+		add_action( self::ACTION_BACKSTOP, [ $this, 'execute_push' ] );
 
 		// Manual "Retry sync" trigger from the Hub UI Profile-tab badge.
 		// REST throttle at the controller layer (60s site-wide transient)

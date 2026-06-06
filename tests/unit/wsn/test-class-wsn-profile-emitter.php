@@ -200,11 +200,11 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 			->method( 'send' )
 			->willThrowException( new \Exception( 'Catastrophe.' ) );
 
-		// If execute_push re-throws, this line is never reached and the
-		// test fails with the uncaught exception. The assertion is
-		// implicit: we made it past the call.
+		// execute_push must swallow the exception — an AS handler that
+		// re-throws causes AS to mark the action failed and retry on
+		// its own schedule, colliding with our debounce+backstop model.
+		$this->expectNotToPerformAssertions();
 		$this->emitter->execute_push();
-		$this->assertTrue( true );
 	}
 
 	public function test_execute_push_clears_last_error_on_subsequent_success() {
@@ -296,8 +296,11 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse(
 			has_action( WSN_Profile_Emitter::ACTION_PUSH, [ $this->emitter, 'execute_push' ] )
 		);
+		// Backstop routes directly to execute_push (not schedule_debounced_push)
+		// so it fires the push immediately rather than queuing another AS action
+		// 10s later. The skip-emit guard in execute_push makes no-change ticks cheap.
 		$this->assertNotFalse(
-			has_action( WSN_Profile_Emitter::ACTION_BACKSTOP, [ $this->emitter, 'schedule_debounced_push' ] )
+			has_action( WSN_Profile_Emitter::ACTION_BACKSTOP, [ $this->emitter, 'execute_push' ] )
 		);
 		$this->assertNotFalse(
 			has_action( 'wcpay_wsn_profile_force_resync', [ $this->emitter, 'force_immediate_push' ] ),

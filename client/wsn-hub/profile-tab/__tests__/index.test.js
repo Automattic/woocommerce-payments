@@ -384,4 +384,70 @@ describe( 'ProfileTab', () => {
 			).toHaveAttribute( 'data-state', 'success' )
 		);
 	} );
+
+	it( 'second save supersedes first save — Save button not stuck after concurrent saves', async () => {
+		// Regression guard for the saveGenerationRef token pattern.
+		//
+		// Without the generation token, when two saves overlap the first
+		// save's polling finally block calls setIsSaving(false) AFTER the
+		// second save has already flipped it back to true, leaving the button
+		// stuck in "Saving…" state.
+		//
+		// We simulate this by making the first PUT resolve slowly (via a
+		// deferred promise) and firing a second click before it resolves,
+		// then resolving the first — the button should NOT be stuck.
+		let resolveFirstPut;
+		const firstPutPromise = new Promise(
+			( resolve ) => ( resolveFirstPut = resolve )
+		);
+
+		// First PUT hangs until we resolve it manually.
+		mockApiFetch
+			.mockResolvedValueOnce( PAGES_PAYLOAD ) // /wsn/pages at mount
+			.mockImplementationOnce( () => firstPutPromise ) // first PUT — hangs
+			.mockResolvedValue( {} ); // second PUT + any follow-up fetches.
+
+		const refreshSettings = jest.fn().mockResolvedValue( undefined );
+		renderProfile( { refreshSettings } );
+
+		// Make the form dirty so Save is enabled.
+		const emailInput = await screen.findByRole( 'textbox', {
+			name: /contact email/i,
+		} );
+		await userEvent.clear( emailInput );
+		await userEvent.type( emailInput, 'first@example.com' );
+
+		const saveButton = screen.getByRole( 'button', { name: /save/i } );
+
+		// First save — hangs.
+		// eslint-disable-next-line testing-library/no-unnecessary-act
+		await act( async () => {
+			await userEvent.click( saveButton );
+		} );
+
+		// Edit again to enable a second save.
+		await userEvent.clear( emailInput );
+		await userEvent.type( emailInput, 'second@example.com' );
+
+		// Second save — resolves immediately.
+		// eslint-disable-next-line testing-library/no-unnecessary-act
+		await act( async () => {
+			await userEvent.click( saveButton );
+		} );
+
+		// Now resolve the first PUT — the first generation token is stale;
+		// its finally block must NOT flip isSaving back to false for the
+		// second save's perspective (the second save already cleared it).
+		await act( async () => {
+			resolveFirstPut( {} );
+			await Promise.resolve();
+		} );
+
+		// Save button should NOT be stuck in "Saving…" — it must read "Save"
+		// or be disabled (because the form is now clean after the second save).
+		await waitFor( () => {
+			const btn = screen.getByRole( 'button', { name: /save/i } );
+			expect( btn ).not.toHaveTextContent( /saving/i );
+		} );
+	} );
 } );
