@@ -150,7 +150,11 @@ const ProfileSyncStatus = ( {
 			// cancel it.
 			refreshTimerRef.current = window.setTimeout( () => {
 				refreshTimerRef.current = null;
-				onRefresh?.();
+				// Silent refresh so the Profile tab doesn't briefly
+				// unmount into the loading state — the merchant clicked
+				// Retry while looking at the static form and shouldn't
+				// see a wholesale tab re-render.
+				onRefresh?.( { silent: true } );
 				setIsRetrying( false );
 			}, debounceSeconds * 1000 + 2000 );
 		} catch ( err ) {

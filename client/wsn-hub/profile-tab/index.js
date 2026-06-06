@@ -115,13 +115,25 @@ const ProfileTab = ( {
 	);
 
 	// Sync localSettings whenever the shell hands us a new settings reference
-	// (post-save refresh, retry-after-error, etc.). This is the intentional
-	// "props-as-source-of-truth" pattern — the shell is canonical, the local
-	// buffer just shadows it while edits are in flight.
+	// (post-save refresh, retry-after-error, etc.). The shell is canonical;
+	// the local buffer just shadows it while edits are in flight.
+	//
+	// Guard against clobbering an in-flight dirty buffer: only update
+	// localSettings when the picked values from props actually differ from
+	// what we have locally. Without this, the post-save polling loop —
+	// which fires `refreshSettings()` up to 5 times per save — would reset
+	// the merchant's typing on each poll iteration when sync is stalled
+	// (WP cron not firing, AS slow). It also prevents an infinite
+	// effect→render→effect ladder when pickProfileFields produces a new
+	// object reference each call.
 	useEffect( () => {
-		if ( settings !== null && settings !== undefined ) {
-			setLocalSettings( pickProfileFields( settings ) );
+		if ( settings === null || settings === undefined ) {
+			return;
 		}
+		const next = pickProfileFields( settings );
+		setLocalSettings( ( prev ) =>
+			prev !== null && profilesEqual( prev, next ) ? prev : next
+		);
 	}, [ settings ] );
 
 	const [ isSaving, setIsSaving ] = useState( false );
@@ -205,7 +217,12 @@ const ProfileTab = ( {
 			// a "wait 60s" surprise.
 			let latest = null;
 			if ( typeof refreshSettings === 'function' ) {
-				latest = await refreshSettings();
+				// Silent refresh — see app.js loadSettings comment.
+				// Without { silent: true }, every polling iteration would
+				// unmount the Profile tab into the loading state for ~50ms,
+				// producing a visible flash every 2-16s through the 30s
+				// polling window.
+				latest = await refreshSettings( { silent: true } );
 				const advanced = ( payload ) => {
 					const next = payload?.sync?.last_synced ?? null;
 					return next !== null && next !== previousLastSynced;
@@ -218,7 +235,7 @@ const ProfileTab = ( {
 							window.setTimeout( resolve, delayMs )
 						);
 						// eslint-disable-next-line no-await-in-loop -- intentional polling
-						latest = await refreshSettings();
+						latest = await refreshSettings( { silent: true } );
 						if ( advanced( latest ) ) {
 							break;
 						}

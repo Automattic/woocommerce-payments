@@ -77,8 +77,17 @@ const WsnHubApp = () => {
 	// Returns the freshly-loaded payload so callers (e.g. the post-save
 	// polling loop in ProfileTab) can read the new sync.last_synced without
 	// waiting for a React re-render cycle.
-	const loadSettings = useCallback( async () => {
-		setIsLoadingSettings( true );
+	//
+	// `options.silent = true` skips the isLoadingSettings flip so refreshes
+	// fired AFTER a save (post-save polling, Retry button) don't unmount
+	// the Profile tab into the loading state on every poll iteration —
+	// each unmount-remount produced a visible flash every 2-16s during
+	// the 30s polling window, with no resolution if AS was slow.
+	const loadSettings = useCallback( async ( options = {} ) => {
+		const silent = options?.silent === true;
+		if ( ! silent ) {
+			setIsLoadingSettings( true );
+		}
 		setSettingsError( null );
 		try {
 			const payload = await apiFetch( {
@@ -87,7 +96,9 @@ const WsnHubApp = () => {
 			setSettings( payload?.settings ?? {} );
 			setDerivations( payload?.derivations ?? {} );
 			setSync( payload?.sync ?? null );
-			setIsLoadingSettings( false );
+			if ( ! silent ) {
+				setIsLoadingSettings( false );
+			}
 			return payload;
 		} catch ( e ) {
 			setSettingsError( formatApiError( e ) );
@@ -96,7 +107,9 @@ const WsnHubApp = () => {
 			setSettings( {} );
 			setDerivations( {} );
 			setSync( null );
-			setIsLoadingSettings( false );
+			if ( ! silent ) {
+				setIsLoadingSettings( false );
+			}
 			return null;
 		}
 	}, [] );
