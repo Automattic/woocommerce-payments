@@ -228,6 +228,15 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$this->assertSame( 'A required value', get_post_meta( $order->get_id(), 'My Field', true ) );
 	}
 
+	public function test_process_store_api_checkout_request_ignores_empty_custom_checkout_data() {
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request_with_raw_custom_checkout_data( '' );
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+
+		$this->assertSame( '', $order->get_meta( 'my_field_name' ) );
+	}
+
 	public function test_process_store_api_checkout_request_throws_when_required_custom_field_is_empty() {
 		add_filter(
 			'woocommerce_checkout_fields',
@@ -262,12 +271,22 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	 * @return WP_REST_Request
 	 */
 	private function create_request( array $custom_checkout_data ): WP_REST_Request {
+		return $this->create_request_with_raw_custom_checkout_data( wp_json_encode( $custom_checkout_data ) );
+	}
+
+	/**
+	 * Creates a Store API checkout request containing raw custom checkout data.
+	 *
+	 * @param mixed $custom_checkout_data Custom checkout data.
+	 * @return WP_REST_Request
+	 */
+	private function create_request_with_raw_custom_checkout_data( $custom_checkout_data ): WP_REST_Request {
 		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
 		$request->set_param(
 			'extensions',
 			[
 				'woocommerce-payments/express-checkout' => [
-					'custom_checkout_data' => wp_json_encode( $custom_checkout_data ),
+					'custom_checkout_data' => $custom_checkout_data,
 				],
 			]
 		);

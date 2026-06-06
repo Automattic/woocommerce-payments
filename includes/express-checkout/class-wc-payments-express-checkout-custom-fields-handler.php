@@ -248,6 +248,10 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 			return [];
 		}
 
+		if ( '' === trim( $custom_checkout_data ) ) {
+			return [];
+		}
+
 		$decoded_custom_checkout_data = json_decode( $custom_checkout_data, true );
 
 		if ( ! is_array( $decoded_custom_checkout_data ) ) {
