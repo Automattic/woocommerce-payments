@@ -336,7 +336,7 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 		 * listener; it calls `force_immediate_push()` which schedules the AS
 		 * action at time() (vs the default 10s debounce).
 		 *
-		 * @since 10.8.0
+		 * @since 10.9.0
 		 */
 		do_action( 'wcpay_wsn_profile_force_resync' );
 
