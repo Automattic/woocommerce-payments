@@ -128,12 +128,25 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 			$first_payload['payload_version']
 		);
 
-		// Now the emitter should skip — same data = same version.
+		// Now the emitter should skip the TRANSPORT — same data = same version.
 		$this->transport
 			->expects( $this->never() )
 			->method( 'send' );
 
+		// Seed a stale last_synced so we can assert it bumped.
+		update_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED, 100 );
+
 		$this->emitter->execute_push();
+
+		// But last_synced MUST still advance: the semantic is "WooPay has
+		// the latest state," and that's true whether we skipped or pushed.
+		// Without this, a save that produces an identical payload leaves
+		// the Hub UI badge stuck at the prior timestamp.
+		$this->assertGreaterThan(
+			100,
+			(int) get_option( WSN_Profile_Emitter::OPTION_LAST_SYNCED ),
+			'execute_push must bump last_synced even when the skip-emit guard triggers — otherwise the Hub UI badge stays stale after a save with no content change.'
+		);
 	}
 
 	public function test_execute_push_emits_when_payload_version_differs_from_last_synced_version() {

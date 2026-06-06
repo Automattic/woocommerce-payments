@@ -350,9 +350,20 @@ class WSN_Profile_Emitter {
 		try {
 			$payload = WSN_Profile_Payload_Composer::compose();
 
-			// Skip-emit guard: same content → no push.
+			// Skip-emit guard: same content → no push needed. We still
+			// update `last_synced` because the semantic the Hub UI
+			// surfaces is "the WooPay-side state matches what we'd send
+			// right now," and that's TRUE even when we skipped the
+			// transport. Without this, a save that produces an
+			// identical payload (e.g., merchant resaved the same value,
+			// or only changed a field WSN doesn't ship) leaves the
+			// badge stuck at the prior timestamp — looks broken from
+			// the merchant's POV even though the WooPay state is
+			// authoritative.
 			$last_version = (string) get_option( self::OPTION_LAST_SYNCED_VERSION, '' );
 			if ( '' !== $last_version && ( $payload['payload_version'] ?? '' ) === $last_version ) {
+				update_option( self::OPTION_LAST_SYNCED, time(), false );
+				delete_transient( self::TRANSIENT_LAST_ERROR );
 				return;
 			}
 
