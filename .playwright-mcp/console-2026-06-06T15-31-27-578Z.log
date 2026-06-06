@@ -1,4 +1,0 @@
-[     783ms] [LOG] JQMIGRATE: Migrate is installed with logging active, version 3.4.1 @ http://localhost:8082/wp-includes/js/jquery/jquery-migrate.js?ver=3.4.1:103
-[    8597ms] [LOG] JQMIGRATE: Migrate is installed with logging active, version 3.4.1 @ http://localhost:8082/wp-includes/js/jquery/jquery-migrate.js?ver=3.4.1:103
-[    8605ms] [INFO] [WooCommerce] Dependency detection enabled. Warnings will be shown for scripts that access wc.* globals without proper dependencies. @ http://localhost:8082/wp-admin/admin.php?page=wcpay-shopping-network:284
-[    8644ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:8082/wp-includes/js/dist/vendor/react-dom.js?ver=18.3.1.1:29904
