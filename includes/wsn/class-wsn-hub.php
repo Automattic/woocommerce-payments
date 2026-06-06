@@ -138,10 +138,24 @@ class WSN_Hub {
 				'version'      => WCPAY_VERSION_NUMBER,
 			];
 
+		// DROP unregistered transitive deps. webpack/shared.js force-bundles
+		// @wordpress/dataviews (used by the Overview tab's OrdersTable); the
+		// dependency-extraction plugin then lists every @wordpress/* package
+		// dataviews internally imports as a script dep, including some that
+		// WP core does NOT register a handle for (e.g. wp-ui). If even one
+		// unregistered handle is in the deps array, wp_enqueue_script
+		// silently drops the WHOLE script — the symptom is an enqueued CSS
+		// but no JS, and a blank React mount node. Filter the known
+		// offenders here so the script actually prints.
+		$unregistered_transitive_deps = [ 'wp-ui' ];
+		$dependencies                 = array_values(
+			array_diff( $asset['dependencies'], $unregistered_transitive_deps )
+		);
+
 		wp_enqueue_script(
 			self::SCRIPT_HANDLE,
 			plugins_url( 'dist/wsn-hub.js', WCPAY_PLUGIN_FILE ),
-			$asset['dependencies'],
+			$dependencies,
 			$asset['version'],
 			true
 		);

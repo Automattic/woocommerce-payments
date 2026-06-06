@@ -6,6 +6,18 @@
  * styles can't express: focus-visible states, media queries, and tab-nav chrome.
  */
 
+// Ship @wordpress/dataviews' prebuilt stylesheet alongside our own so the
+// Overview tab's OrdersTable renders styled in production. webpack/shared.js
+// force-bundles the dataviews JS (see the requestToExternal handler), so
+// the host WP's `wp-components` enqueue does NOT carry DataViews CSS — we
+// import it here and webpack inlines the bytes into dist/wsn-hub.css.
+// Single source of truth: the file we import is the same CSS the bundled
+// DataViews JS expects, so visual drift is impossible.
+//
+// Same pattern used at client/reports/fees/style.scss:3 for the Reports
+// surface; reused here to keep the asset story consistent across surfaces.
+@import '@wordpress/dataviews/build-style/style.css';
+
 // Visual treatment for the WSN Hub admin page.
 //
 // Matches AI Storefront's pattern exactly: NO overrides on WP admin's

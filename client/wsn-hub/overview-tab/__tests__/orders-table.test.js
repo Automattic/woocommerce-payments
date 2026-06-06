@@ -17,7 +17,7 @@ describe( 'OrdersTable', () => {
 
 		expect(
 			screen.getByText(
-				/No WSN orders yet — first WSN purchase will appear here/i
+				/No Network orders yet — your first Shopping Network purchase will appear here/i
 			)
 		).toBeInTheDocument();
 	} );
@@ -27,7 +27,7 @@ describe( 'OrdersTable', () => {
 
 		expect(
 			screen.getByText(
-				/No WSN orders yet — first WSN purchase will appear here/i
+				/No Network orders yet — your first Shopping Network purchase will appear here/i
 			)
 		).toBeInTheDocument();
 	} );
