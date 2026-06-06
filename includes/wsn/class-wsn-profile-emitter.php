@@ -26,19 +26,26 @@ defined( 'ABSPATH' ) || exit;
  *      (after_switch_theme, save_post_wp_global_styles,
  *      customize_save_after) and plugin updates — debouncing collapses
  *      bursts into one push.
- *   3. `updated_option` / `added_option` — fires for every wp_options
+ *   3. `wcpay_wsn_enabled_changed` — fires on WSN settings PUT when the
+ *      merchant flips the opt-in flag (Enable / Remove from the Hub UI).
+ *      Routes to `force_immediate_push` in BOTH directions. A "Remove"
+ *      composes the current profile with `enabled: false` and POSTs it
+ *      — soft delete: WooPay's storefront renderer gates on the flag and
+ *      any per-merchant state on their side survives for a future
+ *      re-enable. uninstall.php is the dedicated hard-delete path.
+ *   4. `updated_option` / `added_option` — fires for every wp_options
  *      write. We filter against `DERIVATION_SOURCE_OPTIONS` (blogname,
  *      blogdescription, site_logo, site_icon, woocommerce_default_country,
  *      woocommerce_store_city) and route matches to
  *      `schedule_debounced_push`. Picks up shop name / tagline / logo /
  *      store-location edits that don't go through the WSN settings PUT.
- *   4. Shipping zone hooks (`woocommerce_after_shipping_zone_object_save`,
+ *   5. Shipping zone hooks (`woocommerce_after_shipping_zone_object_save`,
  *      `woocommerce_shipping_zone_method_added` / `_deleted` /
  *      `_status_toggled`) — zones live in their own data store, NOT
  *      wp_options, so `updated_option` misses them. These cover free-
  *      shipping zone edits / method changes. All route through
  *      `schedule_debounced_push`.
- *   5. `wcpay_wsn_profile_backstop` — 6-hour recurring Action Scheduler
+ *   6. `wcpay_wsn_profile_backstop` — 6-hour recurring Action Scheduler
  *      job that catches missed hook fires (plugin deactivation during
  *      emit, fatal during compose, race during deploy). Also routes
  *      through `schedule_debounced_push` to coalesce with any
@@ -216,6 +223,16 @@ class WSN_Profile_Emitter {
 		// path the Retry button uses (force_immediate_push → ACTION_PUSH
 		// at time() → execute_push → skip-emit guard + error handling).
 		add_action( 'wcpay_wsn_profile_changed', [ $this, 'force_immediate_push' ], 10, 0 );
+
+		// Enable / Remove from the Hub UI — both directions are
+		// deliberate user actions, both route through force_immediate_push.
+		// The push composes the current profile (settings.enabled
+		// included), so a "Remove" reaches WooPay as a soft-delete
+		// (POST with enabled: false) — WooPay's storefront renderer
+		// gates on that flag, and any per-merchant state on their side
+		// survives for a future re-enable. Uninstall.php is the path
+		// for a hard delete (Transport::delete).
+		add_action( 'wcpay_wsn_enabled_changed', [ $this, 'force_immediate_push' ], 10, 0 );
 
 		// Appearance-change path stays debounced. `wcpay_woopay_appearance_changed`
 		// can fire repeatedly within a single request via theme writes

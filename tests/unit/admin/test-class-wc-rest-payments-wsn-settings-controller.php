@@ -21,6 +21,17 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	private $profile_changed_fire_count = 0;
 
+	/**
+	 * @var int Count of `wcpay_wsn_enabled_changed` fires during the current test.
+	 */
+	private $enabled_changed_fire_count = 0;
+
+	/**
+	 * @var array|null Args (after, before) from the most recent
+	 *                 wcpay_wsn_enabled_changed fire, or null if it hasn't fired.
+	 */
+	private $enabled_changed_args = null;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -48,10 +59,23 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				++$this->profile_changed_fire_count;
 			}
 		);
+
+		$this->enabled_changed_fire_count = 0;
+		$this->enabled_changed_args       = null;
+		add_action(
+			'wcpay_wsn_enabled_changed',
+			function ( $after, $before ) {
+				++$this->enabled_changed_fire_count;
+				$this->enabled_changed_args = [ $after, $before ];
+			},
+			10,
+			2
+		);
 	}
 
 	public function tear_down() {
 		remove_all_actions( 'wcpay_wsn_profile_changed' );
+		remove_all_actions( 'wcpay_wsn_enabled_changed' );
 
 		delete_option( WSN_Settings::OPTION_ENABLED );
 		delete_option( WSN_Settings::OPTION_HERO_IMAGE_ID );
@@ -182,6 +206,67 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		rest_get_server()->dispatch( $request );
 
 		$this->assertSame( 0, $this->profile_changed_fire_count );
+	}
+
+	public function test_put_fires_enabled_changed_on_enable() {
+		$this->authenticate_as_shop_manager();
+		// Starting state: disabled (default — option unset is treated as false
+		// by is_enabled()).
+
+		$request = new WP_REST_Request( 'PUT', self::ROUTE );
+		$request->set_param( 'enabled', true );
+		rest_get_server()->dispatch( $request );
+
+		$this->assertSame(
+			1,
+			$this->enabled_changed_fire_count,
+			'Enabling WSN must fire wcpay_wsn_enabled_changed exactly once so the emitter can push the new enabled state to WooPay.'
+		);
+		$this->assertSame( [ true, false ], $this->enabled_changed_args );
+	}
+
+	public function test_put_fires_enabled_changed_on_disable() {
+		$this->authenticate_as_shop_manager();
+		WSN_Settings::set_enabled( true );
+
+		$request = new WP_REST_Request( 'PUT', self::ROUTE );
+		$request->set_param( 'enabled', false );
+		rest_get_server()->dispatch( $request );
+
+		// Soft-delete signal — emitter routes this to an immediate push
+		// with settings.enabled = false, telling WooPay to stop showing
+		// the storefront without dropping any per-merchant state.
+		$this->assertSame(
+			1,
+			$this->enabled_changed_fire_count,
+			'Disabling WSN must fire wcpay_wsn_enabled_changed exactly once. Dropping this means clicking Remove silently does nothing on the WooPay side until the 6h backstop.'
+		);
+		$this->assertSame( [ false, true ], $this->enabled_changed_args );
+	}
+
+	public function test_put_does_not_fire_enabled_changed_when_value_unchanged() {
+		$this->authenticate_as_shop_manager();
+		WSN_Settings::set_enabled( true );
+
+		$request = new WP_REST_Request( 'PUT', self::ROUTE );
+		$request->set_param( 'enabled', true ); // Same value.
+		rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 0, $this->enabled_changed_fire_count );
+	}
+
+	public function test_put_does_not_fire_enabled_changed_when_enabled_not_in_request() {
+		$this->authenticate_as_shop_manager();
+		WSN_Settings::set_enabled( true );
+
+		// PUTting only a Profile-tab field must not retrigger
+		// wcpay_wsn_enabled_changed — the helper compares pre vs post,
+		// not whether the param was in the request.
+		$request = new WP_REST_Request( 'PUT', self::ROUTE );
+		$request->set_param( 'contact_email', 'hello@example.com' );
+		rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 0, $this->enabled_changed_fire_count );
 	}
 
 	public function test_put_with_invalid_email_returns_validation_error_and_skips_write() {

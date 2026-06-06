@@ -198,6 +198,7 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	 */
 	public function update_settings( WP_REST_Request $request ) {
 		$before_profile = $this->snapshot_profile_fields();
+		$before_enabled = WSN_Settings::is_enabled();
 		$errors         = [];
 
 		if ( $request->has_param( 'enabled' ) ) {
@@ -233,6 +234,7 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 		}
 
 		$this->maybe_fire_profile_changed( $before_profile );
+		$this->maybe_fire_enabled_changed( $before_enabled );
 
 		// Include derivations in the PUT response so the client can replace
 		// its overlay state (pendingMediaUrls / pre-save settings) with the
@@ -391,6 +393,45 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 				return;
 			}
 		}
+	}
+
+	/**
+	 * Fires the `wcpay_wsn_enabled_changed` action when the merchant flips
+	 * the WSN opt-in flag (Enable / Remove from the Hub UI).
+	 *
+	 * Separate from `wcpay_wsn_profile_changed` because `enabled` is not
+	 * a Profile-curation field — it's a lifecycle signal. The emitter
+	 * routes both directions differently:
+	 *   - true → false (Remove): soft-delete via an immediate push of
+	 *     the current profile with `enabled: false`, letting WooPay
+	 *     keep any per-merchant state for a future re-enable.
+	 *   - false → true (Enable): immediate push so the merchant's
+	 *     storefront appears within seconds of opting in.
+	 *
+	 * Both directions go through `force_immediate_push` — a flip is a
+	 * deliberate user action with no burst to collapse.
+	 *
+	 * @param bool $before The pre-mutation enabled state.
+	 */
+	private function maybe_fire_enabled_changed( bool $before ): void {
+		$after = WSN_Settings::is_enabled();
+		if ( $before === $after ) {
+			return;
+		}
+
+		/**
+		 * Fires when the merchant's WSN opt-in flag changes via the
+		 * settings REST endpoint.
+		 *
+		 * Consumers: WSN Profile Emitter (RSM-3945) — routes both
+		 * directions to an immediate push. Soft-delete on disable
+		 * (enabled: false in the payload), normal re-enable push on
+		 * enable.
+		 *
+		 * @param bool $after  Post-mutation enabled state.
+		 * @param bool $before Pre-mutation enabled state.
+		 */
+		do_action( 'wcpay_wsn_enabled_changed', $after, $before );
 	}
 
 	/**

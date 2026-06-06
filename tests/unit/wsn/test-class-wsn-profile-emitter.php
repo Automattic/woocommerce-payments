@@ -291,6 +291,17 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 			'init_hooks must register a force_immediate_push listener for the Retry-button-driven action — otherwise POST /profile-resync fires the action but nothing happens.'
 		);
 
+		// Enable/Remove from the Hub UI fires wcpay_wsn_enabled_changed.
+		// Both directions route to force_immediate_push so a Remove
+		// click reaches WooPay as a soft-delete (POST with
+		// enabled: false) within seconds. Regression guard: dropping
+		// this means clicking Remove silently does nothing on the
+		// WooPay side until the 6h backstop tick.
+		$this->assertNotFalse(
+			has_action( 'wcpay_wsn_enabled_changed', [ $this->emitter, 'force_immediate_push' ] ),
+			'wcpay_wsn_enabled_changed must route to force_immediate_push so Enable / Remove clicks reach WooPay immediately.'
+		);
+
 		// Derivation-source listeners: blogname/blogdescription/site_logo/
 		// site_icon/country/city changes go through updated_option +
 		// added_option (filtered against DERIVATION_SOURCE_OPTIONS by
@@ -328,6 +339,7 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 		remove_action( WSN_Profile_Emitter::ACTION_PUSH, [ $this->emitter, 'execute_push' ] );
 		remove_action( WSN_Profile_Emitter::ACTION_BACKSTOP, [ $this->emitter, 'schedule_debounced_push' ] );
 		remove_action( 'wcpay_wsn_profile_force_resync', [ $this->emitter, 'force_immediate_push' ] );
+		remove_action( 'wcpay_wsn_enabled_changed', [ $this->emitter, 'force_immediate_push' ] );
 		remove_action( 'updated_option', [ $this->emitter, 'maybe_schedule_on_option_change' ] );
 		remove_action( 'added_option', [ $this->emitter, 'maybe_schedule_on_option_change' ] );
 		remove_action( 'woocommerce_after_shipping_zone_object_save', [ $this->emitter, 'schedule_debounced_push' ] );
