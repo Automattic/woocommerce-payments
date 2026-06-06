@@ -157,18 +157,22 @@ class WSN_Profile_Transport {
 		$response = $this->remote_request( $args, $body );
 
 		if ( is_wp_error( $response ) ) {
-			throw new \Exception( esc_html( $response->get_error_message() ) );
+			// Plain-text message — esc_html() at the throw site would
+			// produce double-escaped entities ("&amp;", "&#039;") by the
+			// time the UI displays the string. Escaping belongs at the
+			// presentation/storage boundary; the emitter persists this
+			// to a transient and the React Profile-tab badge escapes via
+			// JSX text-node rendering when it renders.
+			throw new \Exception( $response->get_error_message() );
 		}
 
 		$status = (int) wp_remote_retrieve_response_code( $response );
 		if ( $status < 200 || $status >= 300 ) {
 			throw new \Exception(
-				esc_html(
-					sprintf(
-						'WSN Profile %s returned HTTP %d.',
-						$method,
-						$status
-					)
+				sprintf(
+					'WSN Profile %s returned HTTP %d.',
+					$method,
+					$status
 				)
 			);
 		}

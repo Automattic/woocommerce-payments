@@ -365,14 +365,20 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether the Woo Shopping Network Hub is enabled. Disabled by default.
 	 *
-	 * The merchant-facing settings surface at wp-admin → WooCommerce → Shopping Network
-	 * (registered as a WooCommerce submenu via `WSN_Hub::register_admin_menu()` using
-	 * `add_submenu_page( 'woocommerce', ... )`, NOT under the WooPayments sub-menu).
+	 * This is the DEVELOPER feature flag (`_wcpay_feature_wsn_hub`) that gates whether
+	 * the Hub admin surface (menu entry, REST controllers, asset enqueue) loads at all.
+	 * It's a binary on/off — read as boolean, default '0'. Unset and '0' are treated
+	 * identically here.
 	 *
-	 * Default-value rule: option is intentionally left UNSET on plugin activation. Unset
-	 * means "merchant has never visited the Hub" (eligible for onboarding nudges); '0'
-	 * means "merchant explicitly opted out" (leave alone). The distinction matters for
-	 * re-engagement surfaces. Pattern mirrors is_fraud_protection_welcome_tour_dismissed().
+	 * Not to be confused with the MERCHANT opt-in setting `wcpay_wsn_enabled`
+	 * (see WSN_Settings::is_enabled()), which DOES distinguish unset ("never engaged",
+	 * eligible for onboarding) from '0' ("explicitly opted out", leave alone). That
+	 * three-state semantic belongs to the merchant-facing setting, not this flag.
+	 *
+	 * When this flag is true, the menu entry appears at wp-admin → WooCommerce →
+	 * Shopping Network (registered as a WooCommerce submenu via
+	 * `WSN_Hub::register_admin_menu()` using `add_submenu_page( 'woocommerce', ... )`,
+	 * NOT under the WooPayments sub-menu).
 	 *
 	 * @return bool
 	 */
