@@ -242,7 +242,11 @@ class WSN_Free_Shipping_Summarizer {
 			return sprintf(
 				/* translators: 1: minimum order amount with currency, 2: shipping zone name */
 				__( 'Orders over %1$s (%2$s)', 'woocommerce-payments' ),
-				wp_strip_all_tags( wc_price( $zone_summary['min_amount'] ) ),
+				html_entity_decode(
+					wp_strip_all_tags( wc_price( $zone_summary['min_amount'] ) ),
+					ENT_QUOTES | ENT_HTML5,
+					'UTF-8'
+				),
 				$zone_name
 			);
 		}

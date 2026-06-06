@@ -272,10 +272,11 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 	 * can aggregate revenue across the full period if/when the cap matters.
 	 *
 	 * Formatted price fields are stripped to plain strings via
-	 * `wp_strip_all_tags( wc_price( ... ) )` because `wc_price()` returns HTML
-	 * markup (`<span class="...">$50.00</span>`) and our JSON consumer renders
-	 * values as React text nodes — escaped HTML would surface to the merchant
-	 * as visible markup, not as a formatted price.
+	 * `format_price_plain()` — which strips the wrapping `<span class="...">`
+	 * AND decodes HTML entities (`&#36;` → `$`, `&pound;` → `£`, etc.).
+	 * Strip-tags alone leaves the currency-symbol entity intact, so React
+	 * (which doesn't decode entities inside text nodes) would render
+	 * `&#36;45.99` literally. Strip + decode is the correct pair.
 	 *
 	 * @param WC_Order[] $recent_orders   Most recent marketplace-tagged orders (capped at RECENT_ORDERS_LIMIT).
 	 * @param int        $network_orders  Total marketplace-tagged orders in the period (NOT capped).
@@ -323,8 +324,8 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 
 		return [
 			'network_orders'            => $network_orders,
-			'network_revenue_formatted' => wp_strip_all_tags( wc_price( $network_revenue ) ),
-			'network_aov_formatted'     => wp_strip_all_tags( wc_price( $network_aov ) ),
+			'network_revenue_formatted' => self::format_price_plain( $network_revenue ),
+			'network_aov_formatted'     => self::format_price_plain( $network_aov ),
 			'top_source'                => $top_source,
 			'top_source_share'          => $top_share,
 			// Intentionally omitted (rendered as `—` by StatCard):
@@ -372,7 +373,7 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 				)
 			),
 			'source'          => $this->meta_string_or_null( $order, self::META_CHANNEL ),
-			'total_formatted' => wp_strip_all_tags( wc_price( $order->get_total() ) ),
+			'total_formatted' => self::format_price_plain( $order->get_total() ),
 			'edit_url'        => function_exists( 'wc_get_order_admin_edit_url' )
 				? wc_get_order_admin_edit_url( $order->get_id() )
 				: admin_url( 'post.php?post=' . $order->get_id() . '&action=edit' ),
@@ -391,5 +392,31 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 	private function meta_string_or_null( WC_Order $order, string $meta_key ): ?string {
 		$value = (string) $order->get_meta( $meta_key, true );
 		return '' === $value ? null : $value;
+	}
+
+	/**
+	 * Format a currency amount as a plain, React-renderable string.
+	 *
+	 * `wc_price()` returns HTML like `<span class="woocommerce-Price-amount">
+	 * <bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>45.99
+	 * </bdi></span>`. JSON-encoding that and rendering it as a React text
+	 * node would surface the markup literally. `wp_strip_all_tags()` alone
+	 * removes the tags but leaves `&#36;` intact — React doesn't decode
+	 * entities inside text nodes, so the merchant would see `&#36;45.99` in
+	 * the dashboard. Strip + html_entity_decode is the correct pair for
+	 * "plain currency string in a JSON payload."
+	 *
+	 * Static + private — the puller and order-formatter both use it but no
+	 * external surface needs it.
+	 *
+	 * @param float $amount Currency amount.
+	 * @return string Plain currency-formatted string, ready for JSON.
+	 */
+	private static function format_price_plain( float $amount ): string {
+		return html_entity_decode(
+			wp_strip_all_tags( wc_price( $amount ) ),
+			ENT_QUOTES | ENT_HTML5,
+			'UTF-8'
+		);
 	}
 }
