@@ -8,26 +8,34 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Listens for Profile-affecting changes, debounces them through Action
- * Scheduler, and emits the composed Profile payload to the WooPay server.
+ * Listens for Profile-affecting changes and emits the composed Profile
+ * payload to the WooPay server through Action Scheduler.
  *
- * Triggers (all funnel through `schedule_debounced_push`):
+ * Triggers, with the scheduling strategy each uses:
  *
  *   1. `wcpay_wsn_profile_changed` — fires on WSN settings PUT when any
- *      of the 4 PROFILE_FIELDS changed.
+ *      of the 4 PROFILE_FIELDS changed. Routes to `force_immediate_push`
+ *      (no debounce). A Save click is a single, deliberate, user-initiated
+ *      event; there's no burst to collapse, and merchants expect the WSN
+ *      storefront to reflect the change immediately.
  *   2. `wcpay_woopay_appearance_changed` — fires inside
  *      WC_Payments_Styles_Cache::set_woopay_appearance() after the
- *      appearance + font rules are persisted.
+ *      appearance + font rules are persisted. Routes to
+ *      `schedule_debounced_push` (60s window). These events can fire
+ *      repeatedly within a single request via theme writes
+ *      (after_switch_theme, save_post_wp_global_styles,
+ *      customize_save_after) and plugin updates — debouncing collapses
+ *      bursts into one push.
  *   3. `wcpay_wsn_profile_backstop` — 6-hour recurring Action Scheduler
  *      job that catches missed hook fires (plugin deactivation during
- *      emit, fatal during compose, race during deploy).
+ *      emit, fatal during compose, race during deploy). Also routes
+ *      through `schedule_debounced_push` to coalesce with any
+ *      appearance-debounce already pending.
  *
- * Debounce: every trigger re-schedules a single AS action 60 seconds in
- * the future. Rapid bursts of changes collapse into one push 60 seconds
- * after the last change. Mirrors `Compatibility_Service`'s pattern with
- * a tighter window (1 min vs 2 min) for fresher storefront updates —
- * the write workload is sparse, so the shorter window is negligibly more
- * expensive.
+ * `force_immediate_push` schedules an AS action at `time()`; the next AS
+ * tick fires it. `schedule_debounced_push` schedules at
+ * `time() + DEBOUNCE_SECONDS` (60s) and benefits from AS's same-hook+args
+ * collapse so rapid re-schedules don't multiply rows.
  *
  * Skip-emit guard: each push hashes the canonical payload to a
  * `payload_version`. When that version matches what's in
@@ -177,18 +185,30 @@ class WSN_Profile_Emitter {
 	 * short-circuits when a backstop is already pending.
 	 */
 	public function init_hooks(): void {
-		add_action( 'wcpay_wsn_profile_changed', [ $this, 'schedule_debounced_push' ], 10, 0 );
+		// Profile-tab Save: route through force_immediate_push so the
+		// merchant sees the WSN storefront reflect the change as soon as
+		// the AS tick fires (≤ a few seconds), not 60s later. This is a
+		// deliberate, one-shot, user-initiated event — there's no burst
+		// to collapse, and the rest-controller already protects against
+		// rapid resubmits via its endpoint-level checks. Same execution
+		// path the Retry button uses (force_immediate_push → ACTION_PUSH
+		// at time() → execute_push → skip-emit guard + error handling).
+		add_action( 'wcpay_wsn_profile_changed', [ $this, 'force_immediate_push' ], 10, 0 );
+
+		// Appearance-change path stays debounced. `wcpay_woopay_appearance_changed`
+		// can fire repeatedly within a single request via theme writes
+		// (after_switch_theme, save_post_wp_global_styles, customize_save_after)
+		// and plugin updates — the debounce collapses those bursts into a
+		// single push.
 		add_action( 'wcpay_woopay_appearance_changed', [ $this, 'schedule_debounced_push' ], 10, 0 );
+
 		add_action( self::ACTION_PUSH, [ $this, 'execute_push' ] );
 		add_action( self::ACTION_BACKSTOP, [ $this, 'schedule_debounced_push' ] );
 
 		// Manual "Retry sync" trigger from the Hub UI Profile-tab badge.
-		// Calls `force_immediate_push()` which schedules ACTION_PUSH at
-		// time() instead of the default 60s debounce, but still goes
-		// through `execute_push` so the skip-emit guard and error handling
-		// apply identically. REST throttle at the controller layer (60s
-		// site-wide transient) keeps the AS schedule/unschedule churn off
-		// the DB even under button-mashing.
+		// REST throttle at the controller layer (60s site-wide transient)
+		// keeps the AS schedule/unschedule churn off the DB under
+		// button-mashing.
 		add_action( 'wcpay_wsn_profile_force_resync', [ $this, 'force_immediate_push' ], 10, 0 );
 
 		$this->ensure_backstop_scheduled();

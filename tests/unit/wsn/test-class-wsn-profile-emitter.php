@@ -264,9 +264,18 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 	public function test_init_hooks_registers_listeners() {
 		$this->emitter->init_hooks();
 
+		// Profile-tab Save fires force_immediate_push (no debounce) — a
+		// merchant Save click is a single, deliberate event with no burst
+		// to collapse. Regression guard: if this re-attaches to
+		// schedule_debounced_push, merchants will wait 60s before seeing
+		// their WSN storefront reflect Profile-tab changes.
 		$this->assertNotFalse(
-			has_action( 'wcpay_wsn_profile_changed', [ $this->emitter, 'schedule_debounced_push' ] )
+			has_action( 'wcpay_wsn_profile_changed', [ $this->emitter, 'force_immediate_push' ] ),
+			'wcpay_wsn_profile_changed must route to force_immediate_push so Profile-tab saves push immediately, not after the 60s debounce window.'
 		);
+		// Appearance-change path stays debounced — these events can fire
+		// multiple times in one request via theme/customizer/plugin-update
+		// hooks; the debounce collapses bursts.
 		$this->assertNotFalse(
 			has_action( 'wcpay_woopay_appearance_changed', [ $this->emitter, 'schedule_debounced_push' ] )
 		);
@@ -283,7 +292,7 @@ class WSN_Profile_Emitter_Test extends WCPAY_UnitTestCase {
 
 		// Cleanup so other tests aren't affected by these listener
 		// registrations.
-		remove_action( 'wcpay_wsn_profile_changed', [ $this->emitter, 'schedule_debounced_push' ] );
+		remove_action( 'wcpay_wsn_profile_changed', [ $this->emitter, 'force_immediate_push' ] );
 		remove_action( 'wcpay_woopay_appearance_changed', [ $this->emitter, 'schedule_debounced_push' ] );
 		remove_action( WSN_Profile_Emitter::ACTION_PUSH, [ $this->emitter, 'execute_push' ] );
 		remove_action( WSN_Profile_Emitter::ACTION_BACKSTOP, [ $this->emitter, 'schedule_debounced_push' ] );
