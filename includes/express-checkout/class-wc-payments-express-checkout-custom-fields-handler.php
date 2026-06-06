@@ -137,19 +137,25 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 		$custom_checkout_data = $this->sanitize_custom_checkout_data( $custom_checkout_data );
 		$errors               = new WP_Error();
 
-		$this->validate_required_custom_checkout_fields( $custom_checkout_data, $errors );
+		$this->with_custom_checkout_post_data(
+			$custom_checkout_data,
+			function () use ( $custom_checkout_data, $errors, $order, $request ) {
+				$this->validate_required_custom_checkout_fields( $custom_checkout_data, $errors );
+				$this->validate_custom_checkout_fields_using_classic_hooks( $errors );
 
-		/**
-		 * Allows extensions to validate Express Checkout custom checkout fields.
-		 *
-		 * @since 10.9.0
-		 *
-		 * @param array           $custom_checkout_data Custom checkout data.
-		 * @param WP_Error        $errors Validation errors.
-		 * @param WC_Order        $order Order object.
-		 * @param WP_REST_Request $request Full request object.
-		 */
-		do_action( 'wcpay_express_checkout_after_checkout_validation', $custom_checkout_data, $errors, $order, $request );
+				/**
+				 * Allows extensions to validate Express Checkout custom checkout fields.
+				 *
+				 * @since 10.9.0
+				 *
+				 * @param array           $custom_checkout_data Custom checkout data.
+				 * @param WP_Error        $errors Validation errors.
+				 * @param WC_Order        $order Order object.
+				 * @param WP_REST_Request $request Full request object.
+				 */
+				do_action( 'wcpay_express_checkout_after_custom_fields_validation', $custom_checkout_data, $errors, $order, $request );
+			}
+		);
 
 		if ( $errors->has_errors() ) {
 			throw new RouteException(
@@ -159,17 +165,26 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 			);
 		}
 
-		/**
-		 * Allows extensions to save Express Checkout custom checkout fields to the order.
-		 *
-		 * @since 10.9.0
-		 *
-		 * @param int             $order_id Order ID.
-		 * @param array           $custom_checkout_data Custom checkout data.
-		 * @param WC_Order        $order Order object.
-		 * @param WP_REST_Request $request Full request object.
-		 */
-		do_action( 'wcpay_express_checkout_update_order_meta', $order->get_id(), $custom_checkout_data, $order, $request );
+		$this->save_registered_custom_checkout_fields( $order, $custom_checkout_data );
+
+		$this->with_custom_checkout_post_data(
+			$custom_checkout_data,
+			function () use ( $custom_checkout_data, $order, $request ) {
+				do_action( 'woocommerce_checkout_update_order_meta', $order->get_id(), $custom_checkout_data );
+
+				/**
+				 * Allows extensions to save Express Checkout custom checkout fields to the order.
+				 *
+				 * @since 10.9.0
+				 *
+				 * @param int             $order_id Order ID.
+				 * @param array           $custom_checkout_data Custom checkout data.
+				 * @param WC_Order        $order Order object.
+				 * @param WP_REST_Request $request Full request object.
+				 */
+				do_action( 'wcpay_express_checkout_update_custom_fields_order_meta', $order->get_id(), $custom_checkout_data, $order, $request );
+			}
+		);
 	}
 
 	/**
@@ -313,6 +328,96 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 					)
 				);
 			}
+		}
+	}
+
+	/**
+	 * Runs classic checkout validation hooks and copies newly-created error notices to the Store API error object.
+	 *
+	 * @param WP_Error $errors Validation errors.
+	 * @return void
+	 */
+	private function validate_custom_checkout_fields_using_classic_hooks( WP_Error $errors ) {
+		$previous_notices = wc_get_notices();
+		$previous_errors  = $previous_notices['error'] ?? [];
+
+		do_action( 'woocommerce_checkout_process' );
+
+		$current_notices = wc_get_notices();
+		$new_errors      = array_slice( $current_notices['error'] ?? [], count( $previous_errors ) );
+
+		foreach ( $new_errors as $index => $notice ) {
+			$message = $this->get_classic_checkout_error_notice_message( $notice );
+
+			if ( '' === $message ) {
+				continue;
+			}
+
+			$errors->add(
+				'wcpay_express_checkout_classic_checkout_validation_error_' . $index,
+				$message
+			);
+		}
+
+		wc_set_notices( $previous_notices );
+	}
+
+	/**
+	 * Gets the message from a WooCommerce checkout error notice.
+	 *
+	 * @param mixed $notice WooCommerce notice.
+	 * @return string
+	 */
+	private function get_classic_checkout_error_notice_message( $notice ): string {
+		if ( is_array( $notice ) ) {
+			$notice = $notice['notice'] ?? '';
+		}
+
+		return wp_strip_all_tags( (string) $notice );
+	}
+
+	/**
+	 * Saves WooCommerce-registered custom checkout fields to order meta.
+	 *
+	 * @param WC_Order $order Order object.
+	 * @param array    $custom_checkout_data Custom checkout data.
+	 * @return void
+	 */
+	private function save_registered_custom_checkout_fields( WC_Order $order, array $custom_checkout_data ) {
+		$updated_order_meta = false;
+
+		foreach ( array_keys( self::get_custom_checkout_fields() ) as $field_name ) {
+			if ( ! array_key_exists( $field_name, $custom_checkout_data ) ) {
+				continue;
+			}
+
+			$order->update_meta_data( $field_name, $custom_checkout_data[ $field_name ] );
+			$updated_order_meta = true;
+		}
+
+		if ( $updated_order_meta ) {
+			$order->save_meta_data();
+		}
+	}
+
+	/**
+	 * Temporarily exposes custom checkout data through $_POST for classic checkout callbacks.
+	 *
+	 * @param array    $custom_checkout_data Custom checkout data.
+	 * @param callable $callback Callback to run with bridged $_POST data.
+	 * @return mixed
+	 */
+	private function with_custom_checkout_post_data( array $custom_checkout_data, callable $callback ) {
+		$previous_post = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		foreach ( $custom_checkout_data as $field_name => $field_value ) {
+			$_POST[ $field_name ] = $field_value; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		}
+
+		try {
+			return $callback();
+		} finally {
+			$_POST = $previous_post; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		}
 	}
 

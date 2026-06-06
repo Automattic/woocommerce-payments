@@ -77,6 +77,39 @@ describe( 'Classic checkout custom fields compatibility', () => {
 		} );
 	} );
 
+	it( 'adds action-rendered custom checkout field values to the Store API extensions payload', () => {
+		global.wcpayExpressCheckoutParams.custom_checkout_fields = {};
+		document.body.innerHTML = `
+			<form name="checkout">
+				<input name="billing_first_name" value="Jane" />
+				<input name="payment_method" value="woocommerce_payments" />
+				<input name="_wpnonce" value="nonce" />
+				<input name="wc_order_attribution_source_type" value="organic" />
+				<input name="my_field_name" value="A required value" />
+				<select name="delivery_window">
+					<option value="morning" selected>Morning</option>
+					<option value="evening">Evening</option>
+				</select>
+				<input type="checkbox" name="gift_message" value="yes" checked />
+			</form>
+		`;
+
+		const extensionData = applyFilters(
+			'wcpay.express-checkout.cart-place-order-extension-data',
+			{}
+		);
+
+		expect( extensionData ).toMatchObject( {
+			[ EXTENSION_NAMESPACE ]: {
+				custom_checkout_data: JSON.stringify( {
+					my_field_name: 'A required value',
+					delivery_window: 'morning',
+					gift_message: 'yes',
+				} ),
+			},
+		} );
+	} );
+
 	it( 'does not add checkout form custom field values outside checkout context', () => {
 		global.wcpayExpressCheckoutParams.button_context = 'cart';
 		document.body.innerHTML = `

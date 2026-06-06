@@ -10,6 +10,52 @@ import { getExpressCheckoutData } from '../utils';
 
 const EXTENSION_NAMESPACE = 'woocommerce-payments/express-checkout';
 const CUSTOM_CHECKOUT_DATA_KEY = 'custom_checkout_data';
+const STANDARD_CHECKOUT_FIELDS = new Set( [
+	'billing_first_name',
+	'billing_last_name',
+	'billing_company',
+	'billing_country',
+	'billing_address_1',
+	'billing_address_2',
+	'billing_city',
+	'billing_state',
+	'billing_postcode',
+	'billing_phone',
+	'billing_email',
+	'shipping_first_name',
+	'shipping_last_name',
+	'shipping_company',
+	'shipping_country',
+	'shipping_address_1',
+	'shipping_address_2',
+	'shipping_city',
+	'shipping_state',
+	'shipping_postcode',
+	'shipping_phone',
+	'order_comments',
+] );
+const INTERNAL_CHECKOUT_FIELDS = new Set( [
+	'payment_method',
+	'terms',
+	'terms-field',
+	'privacy_policy',
+	'ship_to_different_address',
+	'createaccount',
+	'account_username',
+	'account_password',
+	'account_password-2',
+	'woocommerce-process-checkout-nonce',
+] );
+const INTERNAL_CHECKOUT_FIELD_PREFIXES = [
+	'_',
+	'wc-',
+	'wc_order_attribution_',
+	'woocommerce_',
+	'wcpay_',
+];
+const IGNORED_FORM_FIELD_TYPES = new Set( [ 'button', 'reset', 'submit' ] );
+
+const normalizeFieldName = ( fieldName ) => fieldName.replace( /\[\]$/, '' );
 
 const normalizeFormDataValue = ( value ) => {
 	if ( typeof File !== 'undefined' && value instanceof File ) {
@@ -27,6 +73,11 @@ const getCustomCheckoutFieldValue = ( form, formData, fieldName ) => {
 	const values = formData.has( fieldName )
 		? formData.getAll( fieldName )
 		: formData.getAll( `${ fieldName }[]` );
+	const namedElement = getNamedFormElement( form, fieldName );
+
+	if ( values.length > 1 && namedElement?.type === 'select-one' ) {
+		return normalizeFormDataValue( namedElement.value );
+	}
 
 	if ( values.length > 1 ) {
 		return values.map( normalizeFormDataValue );
@@ -36,7 +87,48 @@ const getCustomCheckoutFieldValue = ( form, formData, fieldName ) => {
 		return normalizeFormDataValue( values[ 0 ] );
 	}
 
-	return getNamedFormElement( form, fieldName ) ? '' : undefined;
+	return namedElement ? '' : undefined;
+};
+
+const isSupportedCheckoutFormElement = ( element ) => {
+	const tagName = element.tagName?.toLowerCase();
+
+	if ( ! [ 'input', 'select', 'textarea' ].includes( tagName ) ) {
+		return false;
+	}
+
+	if ( ! element.name || element.disabled ) {
+		return false;
+	}
+
+	return ! IGNORED_FORM_FIELD_TYPES.has(
+		( element.type ?? '' ).toLowerCase()
+	);
+};
+
+const isInternalCheckoutFieldName = ( fieldName, registeredFieldNames ) => {
+	if ( registeredFieldNames.has( fieldName ) ) {
+		return false;
+	}
+
+	return (
+		STANDARD_CHECKOUT_FIELDS.has( fieldName ) ||
+		INTERNAL_CHECKOUT_FIELDS.has( fieldName ) ||
+		INTERNAL_CHECKOUT_FIELD_PREFIXES.some( ( prefix ) =>
+			fieldName.startsWith( prefix )
+		)
+	);
+};
+
+const getCheckoutFormFieldNames = ( form, registeredFieldNames ) => {
+	return Array.from( form.elements )
+		.filter( isSupportedCheckoutFormElement )
+		.map( ( element ) => normalizeFieldName( element.name ) )
+		.filter(
+			( fieldName ) =>
+				fieldName &&
+				! isInternalCheckoutFieldName( fieldName, registeredFieldNames )
+		);
 };
 
 const getCustomCheckoutData = () => {
@@ -44,16 +136,22 @@ const getCustomCheckoutData = () => {
 		return {};
 	}
 
-	const customCheckoutFields =
-		getExpressCheckoutData( 'custom_checkout_fields' ) ?? {};
-	const fieldNames = Object.keys( customCheckoutFields );
-
-	if ( fieldNames.length === 0 ) {
+	const checkoutForm = document.querySelector( 'form[name="checkout"]' );
+	if ( ! checkoutForm || typeof FormData === 'undefined' ) {
 		return {};
 	}
 
-	const checkoutForm = document.querySelector( 'form[name="checkout"]' );
-	if ( ! checkoutForm || typeof FormData === 'undefined' ) {
+	const customCheckoutFields =
+		getExpressCheckoutData( 'custom_checkout_fields' ) ?? {};
+	const registeredFieldNames = new Set( Object.keys( customCheckoutFields ) );
+	const fieldNames = [
+		...new Set( [
+			...registeredFieldNames,
+			...getCheckoutFormFieldNames( checkoutForm, registeredFieldNames ),
+		] ),
+	];
+
+	if ( fieldNames.length === 0 ) {
 		return {};
 	}
 

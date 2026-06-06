@@ -19,6 +19,20 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	private $system_under_test;
 
 	/**
+	 * Classic checkout process callbacks added during a test.
+	 *
+	 * @var array
+	 */
+	private $classic_checkout_process_callbacks = [];
+
+	/**
+	 * Classic checkout update order meta callbacks added during a test.
+	 *
+	 * @var array
+	 */
+	private $classic_checkout_update_order_meta_callbacks = [];
+
+	/**
 	 * Test setup.
 	 */
 	public function set_up() {
@@ -32,8 +46,17 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	 */
 	public function tear_down() {
 		remove_all_filters( 'woocommerce_checkout_fields' );
-		remove_all_actions( 'wcpay_express_checkout_update_order_meta' );
-		remove_all_actions( 'wcpay_express_checkout_after_checkout_validation' );
+		remove_all_actions( 'wcpay_express_checkout_update_custom_fields_order_meta' );
+		remove_all_actions( 'wcpay_express_checkout_after_custom_fields_validation' );
+		foreach ( $this->classic_checkout_process_callbacks as $callback ) {
+			remove_action( 'woocommerce_checkout_process', $callback );
+		}
+		foreach ( $this->classic_checkout_update_order_meta_callbacks as $callback ) {
+			remove_action( 'woocommerce_checkout_update_order_meta', $callback );
+		}
+		$this->classic_checkout_process_callbacks           = [];
+		$this->classic_checkout_update_order_meta_callbacks = [];
+		wc_clear_notices();
 		WC()->checkout()->checkout_fields = null;
 
 		parent::tear_down();
@@ -69,7 +92,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$this->assertTrue( $custom_fields['billing_vat_id']['required'] );
 	}
 
-	public function test_process_store_api_checkout_request_passes_sanitized_custom_checkout_data_to_actions() {
+	public function test_process_store_api_checkout_request_passes_sanitized_custom_checkout_data_to_custom_field_actions() {
 		add_filter(
 			'woocommerce_checkout_fields',
 			function ( $fields ) {
@@ -100,7 +123,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$captured_data     = null;
 
 		add_action(
-			'wcpay_express_checkout_update_order_meta',
+			'wcpay_express_checkout_update_custom_fields_order_meta',
 			function ( $order_id, $custom_checkout_data ) use ( &$captured_order_id, &$captured_data ) {
 				$captured_order_id = $order_id;
 				$captured_data     = $custom_checkout_data;
@@ -119,6 +142,90 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 			],
 			$captured_data
 		);
+	}
+
+	public function test_process_store_api_checkout_request_saves_registered_custom_checkout_fields_to_order_meta() {
+		add_filter(
+			'woocommerce_checkout_fields',
+			function ( $fields ) {
+				$fields['order']['my_field_name'] = [
+					'type'     => 'text',
+					'label'    => 'My field name',
+					'required' => false,
+				];
+
+				return $fields;
+			}
+		);
+
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request(
+			[
+				'my_field_name' => ' A required value ',
+			]
+		);
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( 'A required value', $order->get_meta( 'my_field_name' ) );
+	}
+
+	public function test_process_store_api_checkout_request_runs_classic_checkout_process_validation() {
+		$checkout_process_callback = function () {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( empty( $_POST['my_field_name'] ) ) {
+				wc_add_notice( 'Please enter something into this new shiny field.', 'error' );
+			}
+		};
+
+		$this->classic_checkout_process_callbacks[] = $checkout_process_callback;
+
+		add_action(
+			'woocommerce_checkout_process',
+			$checkout_process_callback
+		);
+
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request(
+			[
+				'my_field_name' => '',
+			]
+		);
+
+		$this->expectException( RouteException::class );
+		$this->expectExceptionMessage( 'Please enter something into this new shiny field.' );
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+	}
+
+	public function test_process_store_api_checkout_request_runs_classic_checkout_update_order_meta_callbacks() {
+		$checkout_update_order_meta_callback = function ( $order_id ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST['my_field_name'] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing
+				update_post_meta( $order_id, 'My Field', sanitize_text_field( wp_unslash( $_POST['my_field_name'] ) ) );
+			}
+		};
+
+		$this->classic_checkout_update_order_meta_callbacks[] = $checkout_update_order_meta_callback;
+
+		add_action(
+			'woocommerce_checkout_update_order_meta',
+			$checkout_update_order_meta_callback
+		);
+
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request(
+			[
+				'my_field_name' => ' A required value ',
+			]
+		);
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+
+		$this->assertSame( 'A required value', get_post_meta( $order->get_id(), 'My Field', true ) );
 	}
 
 	public function test_process_store_api_checkout_request_throws_when_required_custom_field_is_empty() {
