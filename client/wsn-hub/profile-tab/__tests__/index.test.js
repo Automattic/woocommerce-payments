@@ -55,6 +55,13 @@ const DERIVATIONS = {
 	refund_page_label: null,
 	refund_page_url: null,
 	theme_type: 'block',
+	location: {
+		country: 'US',
+		region: 'CA',
+		city: 'San Francisco',
+		country_label: 'United States (US)',
+		region_label: 'California',
+	},
 };
 
 const PAGES_PAYLOAD = {
@@ -171,6 +178,70 @@ describe( 'ProfileTab', () => {
 				screen.getByDisplayValue( 'United States, Canada' )
 			).toBeInTheDocument()
 		);
+	} );
+
+	it( 'renders the readonly store-location string in City, Region, Country order', async () => {
+		renderProfile();
+
+		// Prefer the human labels (region_label "California", country_label
+		// "United States (US)") over the codes (region "CA", country "US")
+		// — the merchant UI shows the friendlier form while the WooPay
+		// payload still ships the codes.
+		await waitFor( () =>
+			expect(
+				screen.getByDisplayValue(
+					'San Francisco, California, United States (US)'
+				)
+			).toBeInTheDocument()
+		);
+	} );
+
+	it( 'falls back to region/country codes when labels are absent', async () => {
+		renderProfile( {
+			derivations: {
+				...DERIVATIONS,
+				location: {
+					country: 'US',
+					region: 'CA',
+					city: 'San Francisco',
+					country_label: null,
+					region_label: null,
+				},
+			},
+		} );
+
+		await waitFor( () =>
+			expect(
+				screen.getByDisplayValue( 'San Francisco, CA, US' )
+			).toBeInTheDocument()
+		);
+	} );
+
+	it( 'renders em-dash when no location resolves', async () => {
+		renderProfile( {
+			derivations: {
+				...DERIVATIONS,
+				location: {
+					country: null,
+					region: null,
+					city: null,
+					country_label: null,
+					region_label: null,
+				},
+			},
+		} );
+
+		// waitFor wraps polling assertions in act() — needed so the
+		// RefundPagePicker's mount-time /wsn/pages fetch state updates
+		// land inside act and don't trip @wordpress/jest-console.
+		await waitFor( () => {
+			const storeLocationLabel = screen.getByText( 'Store location' );
+			const input =
+				storeLocationLabel.parentElement.querySelector(
+					'input[readonly]'
+				);
+			expect( input ).toHaveValue( '—' );
+		} );
 	} );
 
 	it( 'disables Save until the merchant edits something', async () => {

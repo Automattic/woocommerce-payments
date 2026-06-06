@@ -23,11 +23,32 @@ import { colors, typography, spacing, radii } from '../tokens';
  * @param {Object}   props.derivations Resolved derivations from the GET /wsn/settings response.
  * @param {Function} props.onChange    Called with `{ key, value }` to update a single setting locally.
  */
+// Compose the human-readable store location string from derivations.location.
+// Returns null when nothing useful resolved so ReadonlySyncedField shows the
+// em-dash placeholder. Prefer labels (e.g. "California") over codes ("CA")
+// when available — codes are still what we ship to WooPay, but the merchant
+// UI shows the friendlier form. Order: City, Region, Country.
+const formatStoreLocation = ( location ) => {
+	if ( ! location ) {
+		return null;
+	}
+	const parts = [
+		location.city || null,
+		location.region_label || location.region || null,
+		location.country_label || location.country || null,
+	].filter( Boolean );
+	return parts.length > 0 ? parts.join( ', ' ) : null;
+};
+
 const BrandingCard = ( { settings, derivations, onChange } ) => {
 	// Shop name + tagline come from WP's blogname/blogdescription
 	// (get_bloginfo('name')/get_bloginfo('description') on the PHP side),
 	// which are edited in WP > Settings > General — NOT WC > General.
 	const wpGeneralEditUrl = '/wp-admin/options-general.php';
+	// Store location (city / state / country) lives on the WC General
+	// settings page — separate URL from WP General above.
+	const wcGeneralEditUrl = '/wp-admin/admin.php?page=wc-settings&tab=general';
+	const storeLocation = formatStoreLocation( derivations.location );
 
 	return (
 		<div
@@ -104,6 +125,23 @@ const BrandingCard = ( { settings, derivations, onChange } ) => {
 					) }
 					editUrl={ wpGeneralEditUrl }
 				/>
+				{ /*
+					Store location spans the grid's full width — one
+					combined "City, State, Country" string reads better
+					than three skinny cells, and it tracks how merchants
+					actually think of their store address.
+				*/ }
+				<div style={ { gridColumn: '1 / -1' } }>
+					<ReadonlySyncedField
+						label={ __( 'Store location', 'woocommerce-payments' ) }
+						value={ storeLocation }
+						syncedFrom={ __(
+							'WooCommerce › Settings › General › Store Address',
+							'woocommerce-payments'
+						) }
+						editUrl={ wcGeneralEditUrl }
+					/>
+				</div>
 			</div>
 
 			<div

@@ -150,7 +150,7 @@ class WSN_Profile_Payload_Composer {
 			'logo_thumb_b64'  => self::generate_logo_thumb(
 				$derivations['logo_attachment_id'] ?? null
 			),
-			'location'        => self::collect_location_allowlist(),
+			'location'        => self::collect_location_allowlist( $derivations ),
 		];
 
 		// Hash the content-only payload, then stamp volatile fields.
@@ -201,29 +201,27 @@ class WSN_Profile_Payload_Composer {
 	 * Explicit allowlist (not blocklist) so the privacy invariant
 	 * survives future code changes: if someone adds another address
 	 * field to WC and updates the WSN composer reflexively, this
-	 * function's signature makes the omission obvious.
+	 * function's signature makes the omission obvious. The privacy
+	 * test `test_serialized_payload_does_not_contain_stored_address_strings`
+	 * pins this contract to the wire payload.
 	 *
-	 * `woocommerce_default_country` stores country and state in a
-	 * single `<COUNTRY>:<STATE>` string (e.g. "US:CA"). Parse it.
+	 * Reads from `WSN_Derivations` (which is the single source of truth
+	 * for location data the Profile tab UI also reads). Restricts the
+	 * outbound shape to the three primitive codes — UI-only fields like
+	 * `country_label` / `region_label` are dropped here, not shipped.
 	 *
+	 * @param array $derivations The derivations array — passed in to avoid recomputing.
 	 * @return array { country: ?string, region: ?string, city: ?string }
 	 */
-	private static function collect_location_allowlist(): array {
-		$default_country = (string) get_option( 'woocommerce_default_country', '' );
-		$country         = null;
-		$region          = null;
-		if ( '' !== $default_country ) {
-			$parts   = explode( ':', $default_country, 2 );
-			$country = '' !== $parts[0] ? $parts[0] : null;
-			$region  = isset( $parts[1] ) && '' !== $parts[1] ? $parts[1] : null;
-		}
-
-		$city = (string) get_option( 'woocommerce_store_city', '' );
+	private static function collect_location_allowlist( array $derivations ): array {
+		$location = isset( $derivations['location'] ) && is_array( $derivations['location'] )
+			? $derivations['location']
+			: [];
 
 		return [
-			'country' => $country,
-			'region'  => $region,
-			'city'    => '' !== $city ? $city : null,
+			'country' => $location['country'] ?? null,
+			'region'  => $location['region'] ?? null,
+			'city'    => $location['city'] ?? null,
 		];
 	}
 

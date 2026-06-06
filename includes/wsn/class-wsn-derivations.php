@@ -131,6 +131,64 @@ class WSN_Derivations {
 			'refund_page_label'     => $refund_page_label,
 			'refund_page_url'       => $refund_page_url,
 			'theme_type'            => function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ? 'block' : 'classic',
+			// Location is computed here (single source for both the
+			// outbound payload + the Profile-tab readonly UI). Composer
+			// pulls country/region/city from this block — see
+			// WSN_Profile_Payload_Composer::collect_location_allowlist().
+			// `country_label` and `region_label` are the human forms
+			// (e.g. "United States" / "California") for the UI; they
+			// are NOT shipped to WooPay — the payload's `location`
+			// allowlist sticks to the three primitive codes.
+			'location'              => self::collect_location_for_ui(),
+		];
+	}
+
+	/**
+	 * Collect the merchant's store location for the Profile tab read-only UI.
+	 *
+	 * Returns the same three primitive fields the composer ships to WooPay
+	 * (country / region / city — these are the privacy allowlist), plus
+	 * human-friendly labels resolved via WooCommerce's country/state lookups
+	 * for the merchant-visible UI.
+	 *
+	 * @return array { country: ?string, region: ?string, city: ?string, country_label: ?string, region_label: ?string }
+	 */
+	private static function collect_location_for_ui(): array {
+		$default_country = (string) get_option( 'woocommerce_default_country', '' );
+		$country         = null;
+		$region          = null;
+		if ( '' !== $default_country ) {
+			$parts   = explode( ':', $default_country, 2 );
+			$country = '' !== $parts[0] ? $parts[0] : null;
+			$region  = isset( $parts[1] ) && '' !== $parts[1] ? $parts[1] : null;
+		}
+
+		$city = (string) get_option( 'woocommerce_store_city', '' );
+
+		// Resolve human labels via WC's `countries` helper. Falls back to
+		// the code when the helper isn't available (e.g. WC not bootstrapped
+		// in a CLI context) or the lookup returns nothing.
+		$country_label = null;
+		$region_label  = null;
+		if ( function_exists( 'WC' ) && null !== $country ) {
+			$countries = WC()->countries;
+			if ( $countries ) {
+				$names         = $countries->get_countries();
+				$country_label = $names[ $country ] ?? null;
+
+				if ( null !== $region ) {
+					$states       = $countries->get_states( $country );
+					$region_label = is_array( $states ) ? ( $states[ $region ] ?? null ) : null;
+				}
+			}
+		}
+
+		return [
+			'country'       => $country,
+			'region'        => $region,
+			'city'          => '' !== $city ? $city : null,
+			'country_label' => $country_label,
+			'region_label'  => $region_label,
 		];
 	}
 
