@@ -2,8 +2,8 @@
  * HeroBannerPicker — wide banner asset shown atop the merchant's storefront
  * page on pay.woo.com. Recommended dimensions 1440×420 (~3.43:1 aspect).
  *
- * Empty state: dashed dropzone matching the mockup, with "Drop an image
- * here, or click to upload" + Media Library link. Aspect-ratio preview
+ * Empty state: dashed upload zone matching the mockup, with "Click to
+ * upload" + Media Library link. Aspect-ratio preview
  * shows the actual banner shape so the merchant understands the surface
  * they're filling before selecting.
  *
@@ -204,7 +204,7 @@ const HeroBannerPicker = ( { attachmentId, resolvedUrl, onChange } ) => {
 										} }
 									>
 										{ __(
-											'Drop an image here, or click to upload',
+											'Click to upload an image',
 											'woocommerce-payments'
 										) }
 									</span>
