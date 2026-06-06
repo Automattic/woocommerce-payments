@@ -306,6 +306,17 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 
 		WC()->cart->calculate_totals();
 
+		// Stamp the wsn-express attribution on the draft order now, before the
+		// WooPay handoff. Firing an internal Store-API checkout POST with
+		// extensions.woopay_wsn.channel triggers
+		// woocommerce_store_api_checkout_update_order_from_request, which
+		// WSN_Order_Attribution hooks at priority 20 to write
+		// _woopay_marketplace_channel = wsn-express on the draft order. The
+		// attribution meta is saved before billing validation runs, so we
+		// deliberately ignore the 400 the Store-API returns for the empty
+		// billing address we supply here — we only need the hook to fire.
+		$this->stamp_express_attribution();
+
 		// Build the unclaimed-session payload the WooPay express
 		// button uses (`get_frontend_init_session_request()` packages
 		// `get_init_session_request()` + AES-encrypts it with the
@@ -381,5 +392,45 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 		$decoded['wsn_items_requested'] = count( $items_raw );
 
 		return rest_ensure_response( $decoded );
+	}
+
+	/**
+	 * Stamp wsn-express attribution on the draft order via an internal Store-API checkout preflight.
+	 */
+	private function stamp_express_attribution(): void {
+		// Bypass the nonce gate — same pattern WooPay_Session uses when it
+		// preloads /wc/store/v1/checkout server-side.
+		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_body_params(
+			[
+				// billing_address is required by the Store-API schema.
+				// An empty email passes the validate_callback (only rejects
+				// non-empty malformed addresses) but causes
+				// validate_order_before_payment to throw for the missing email —
+				// that happens AFTER update_order_from_request fires
+				// woocommerce_store_api_checkout_update_order_from_request and
+				// WSN_Order_Attribution saves the meta. We ignore the 400.
+				'billing_address'  => [ 'email' => '' ],
+				'shipping_address' => [],
+				'payment_method'   => 'woocommerce_payments',
+				'payment_data'     => [
+					[
+						'key'   => 'is-woopay-preflight-check',
+						'value' => true,
+					],
+				],
+				'extensions'       => [
+					'woopay_wsn' => [
+						'channel' => 'wsn-express',
+					],
+				],
+			]
+		);
+
+		rest_do_request( $request );
+
+		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 	}
 }
