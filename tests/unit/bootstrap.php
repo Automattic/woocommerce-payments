@@ -112,7 +112,6 @@ function _manually_load_plugin() {
 	// only when the feature flag is on; the bootstrap loads them unconditionally so tests can
 	// instantiate the classes directly without first enabling the flag.
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-settings.php';
-	require_once $_plugin_dir . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-derivations.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-payload-composer.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-transport.php';

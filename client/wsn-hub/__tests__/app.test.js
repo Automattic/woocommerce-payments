@@ -62,12 +62,7 @@ beforeEach( () => {
 					hero_image_url: null,
 					shop_name: '',
 					tagline: '',
-					shipping_regions: [],
-					free_shipping: {
-						has_free_shipping: false,
-						human_summary: '',
-						zones: [],
-					},
+					shipping_zones: [],
 					refund_page_label: null,
 					refund_page_url: null,
 					theme_type: 'block',

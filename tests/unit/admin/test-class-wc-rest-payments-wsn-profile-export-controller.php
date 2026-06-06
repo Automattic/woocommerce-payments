@@ -90,7 +90,7 @@ class WC_REST_Payments_WSN_Profile_Export_Controller_Test extends WCPAY_UnitTest
 		$this->assertArrayHasKey( 'tagline', $data['derivations'] );
 		$this->assertArrayHasKey( 'refund_page_url', $data['derivations'] );
 		$this->assertArrayHasKey( 'refund_page_label', $data['derivations'] );
-		$this->assertArrayHasKey( 'free_shipping', $data['derivations'] );
+		$this->assertArrayHasKey( 'shipping_zones', $data['derivations'] );
 
 		// Storefront-shape names must NOT appear (those are produced by
 		// the WooPay-side handler at merge time, not by this endpoint).

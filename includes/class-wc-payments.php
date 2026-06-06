@@ -624,7 +624,6 @@ class WC_Payments {
 			// rest_api_init vs. in_admin_header all touch them). require_once is
 			// idempotent.
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
-			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-derivations.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-payload-composer.php';
 			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-transport.php';

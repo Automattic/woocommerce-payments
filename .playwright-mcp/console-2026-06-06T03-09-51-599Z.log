@@ -1,0 +1,4 @@
+[    1474ms] [LOG] JQMIGRATE: Migrate is installed with logging active, version 3.4.1 @ http://localhost:8082/wp-includes/js/jquery/jquery-migrate.js?ver=3.4.1:103
+[    1477ms] [INFO] [WooCommerce] Dependency detection enabled. Warnings will be shown for scripts that access wc.* globals without proper dependencies. @ http://localhost:8082/wp-admin/admin.php?page=wcpay-shopping-network:283
+[    1485ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:8082/wp-includes/js/dist/vendor/react-dom.js?ver=18.3.1.1:29904
+[    2034ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8082/wp-content/plugins/woocommerce-payments/dist/wsn-hub.js?ver=10.8.0:0

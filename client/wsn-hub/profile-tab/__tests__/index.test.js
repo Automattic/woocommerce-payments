@@ -46,12 +46,20 @@ const DERIVATIONS = {
 	hero_image_url: null,
 	shop_name: 'Midcentury Manila',
 	tagline: 'Mid-century furniture',
-	shipping_regions: [ 'United States', 'Canada' ],
-	free_shipping: {
-		has_free_shipping: true,
-		human_summary: 'Orders over $50 (US) · Orders over $75 (CA)',
-		zones: [],
-	},
+	shipping_zones: [
+		{
+			zone_id: 1,
+			zone_locations: [ { type: 'country', code: 'US' } ],
+			is_rest_of_world: false,
+			free_shipping: { min_amount: 50, requires: 'min_amount' },
+		},
+		{
+			zone_id: 2,
+			zone_locations: [ { type: 'country', code: 'CA' } ],
+			is_rest_of_world: false,
+			free_shipping: { min_amount: 75, requires: 'min_amount' },
+		},
+	],
 	refund_page_label: null,
 	refund_page_url: null,
 	theme_type: 'block',
@@ -160,25 +168,29 @@ describe( 'ProfileTab', () => {
 		expect( onRetry ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'renders the readonly free-shipping summary from derivations', async () => {
+	it( 'renders the readonly free-shipping summary derived from shipping_zones', async () => {
 		renderProfile();
 
+		// New shape: zone labels come from zone_locations[].code, not
+		// merchant-chosen zone_name. min_amount is rendered as a bare
+		// number; receiver-side rendering handles currency formatting.
 		await waitFor( () =>
 			expect(
 				screen.getByDisplayValue(
-					'Orders over $50 (US) · Orders over $75 (CA)'
+					'Orders over 50 (US) · Orders over 75 (CA)'
 				)
 			).toBeInTheDocument()
 		);
 	} );
 
-	it( 'renders the readonly shipping regions joined with commas', async () => {
+	it( 'renders the readonly shipping regions joined with commas (codes, not names)', async () => {
 		renderProfile();
 
+		// New shape: shipping_zones[].zone_locations[].code provides the
+		// label. Previous behavior used merchant-chosen zone_name strings
+		// like "United States" / "Canada"; we now ship ISO codes.
 		await waitFor( () =>
-			expect(
-				screen.getByDisplayValue( 'United States, Canada' )
-			).toBeInTheDocument()
+			expect( screen.getByDisplayValue( 'US, CA' ) ).toBeInTheDocument()
 		);
 	} );
 

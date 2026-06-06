@@ -451,7 +451,6 @@ class WSN_Hub {
 		// fatals with "Class not found".
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
-		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-pages-controller.php';

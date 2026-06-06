@@ -134,7 +134,7 @@ class WSN_Profile_Payload_Composer_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'tagline', $d, 'Emit tagline (canonical), NOT description (storefront name).' );
 		$this->assertArrayHasKey( 'refund_page_url', $d, 'Emit separate refund_page_url, NOT bundled return_policy.' );
 		$this->assertArrayHasKey( 'refund_page_label', $d, 'Emit separate refund_page_label, NOT bundled return_policy.' );
-		$this->assertArrayHasKey( 'free_shipping', $d, 'Emit free_shipping object, NOT flattened shipping_promise string.' );
+		$this->assertArrayHasKey( 'shipping_zones', $d, 'Emit shipping_zones array (with per-zone free_shipping inlined), NOT flattened shipping_promise string.' );
 
 		$this->assertArrayNotHasKey( 'description', $d, 'Storefront-shape key description must not appear in canonical payload.' );
 		$this->assertArrayNotHasKey( 'shipping_promise', $d, 'Storefront-shape key shipping_promise must not appear in canonical payload.' );

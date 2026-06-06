@@ -126,8 +126,7 @@ class WSN_Derivations {
 			'shop_name'             => $shop_name,
 			'tagline'               => $tagline,
 			'default_contact_email' => WSN_Settings::resolve_default_contact_email(),
-			'shipping_regions'      => self::collect_shipping_region_names(),
-			'free_shipping'         => self::compute_free_shipping(),
+			'shipping_zones'        => self::collect_shipping_zones(),
 			'refund_page_label'     => $refund_page_label,
 			'refund_page_url'       => $refund_page_url,
 			'theme_type'            => function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ? 'block' : 'classic',
@@ -209,68 +208,183 @@ class WSN_Derivations {
 	}
 
 	/**
-	 * Collect human-readable zone names — what the Profile tab shows in the
-	 * readonly "Shipping regions" field.
+	 * Unified shipping-zones derivation — every zone the merchant ships
+	 * to, with per-zone free-shipping terms inlined.
 	 *
-	 * Note: `WC()->shipping()` returns WC_Shipping (the singleton), which does
-	 * NOT have a get_shipping_zones method — that lives on WC_Shipping_Zones
-	 * (the data class). Using the wrong one fatals; this is a load-bearing
-	 * distinction the test suite locks in.
+	 * Replaces the legacy `shipping_regions` (string array of zone labels)
+	 * and `free_shipping.zones` (free-shipping-only subset). One canonical
+	 * list with a nullable `free_shipping` sub-object per zone:
 	 *
-	 * Includes zone 0 ("Locations not covered by your other zones"), which
-	 * `WC_Shipping_Zones::get_zones()` excludes — stores with only the
-	 * catch-all zone would otherwise see an empty Shipping regions field
-	 * even though they ship internationally.
+	 *     [
+	 *         [
+	 *             'zone_id'          => 1,
+	 *             'zone_locations'   => [ [ 'type' => 'country', 'code' => 'US' ] ],
+	 *             'is_rest_of_world' => false,
+	 *             'free_shipping'    => [ 'min_amount' => 50, 'requires' => 'min_amount' ],
+	 *         ],
+	 *         [
+	 *             'zone_id'          => 2,
+	 *             'zone_locations'   => [ [ 'type' => 'country', 'code' => 'CA' ] ],
+	 *             'is_rest_of_world' => false,
+	 *             'free_shipping'    => null,
+	 *         ],
+	 *         [
+	 *             'zone_id'          => 0,
+	 *             'zone_locations'   => [],
+	 *             'is_rest_of_world' => true,
+	 *             'free_shipping'    => null,
+	 *         ],
+	 *     ]
 	 *
-	 * Filters every zone (including zone 0) to those with at least one
-	 * ENABLED shipping method. The signal merchants care about is "do you
-	 * actually ship to locations here", not "does WC have a row for this
-	 * zone." A zone with no enabled methods can't serve shoppers there,
-	 * so listing it as a destination misrepresents reach. The catch-all
-	 * is the worst offender — WC creates it by default and it's always
-	 * named, even on stores that don't ship outside named zones.
+	 * Filter rules:
+	 *   - Only zones with at least one ENABLED shipping method appear. A zone
+	 *     with no enabled methods can't serve shoppers there, so listing it
+	 *     as a destination would misrepresent reach.
+	 *   - Zone 0 (catch-all) gets `is_rest_of_world: true` AND empty
+	 *     `zone_locations`. WC names it "Locations not covered by your
+	 *     other zones"; receivers should render it as "Rest of World"
+	 *     using the flag, not by deriving a label from the empty
+	 *     locations array.
+	 *   - `free_shipping` is null when no `free_shipping` method instance
+	 *     qualifies. When one or more qualify, the CHEAPEST threshold
+	 *     within the zone wins. Coupon-only methods (`requires` in
+	 *     {coupon, both}) are dropped: WSN shoppers have no coupon.
+	 *     `requires=either` is normalized to `min_amount` because the
+	 *     coupon arm is unreachable.
 	 *
-	 * @return string[]
+	 * Performance: `WC_Shipping_Zones::get_zones()` batches
+	 * `shipping_methods` and `zone_locations` per zone so we don't trigger
+	 * extra DB reads. Zone 0 requires its own `WC_Shipping_Zone( 0 )`
+	 * lookup because WC core excludes it from `get_zones()`.
+	 *
+	 * @return array<array{zone_id: int, zone_locations: array, is_rest_of_world: bool, free_shipping: ?array}>
 	 */
-	private static function collect_shipping_region_names(): array {
+	private static function collect_shipping_zones(): array {
 		if ( ! class_exists( 'WC_Shipping_Zones' ) || ! class_exists( 'WC_Shipping_Zone' ) ) {
 			return [];
 		}
 
-		$names = [];
+		$zones = [];
 
-		// Named zones — get_zones() already returns shipping_methods
-		// batched per zone, so we don't trigger a second DB read per
-		// zone to check method enablement.
 		foreach ( WC_Shipping_Zones::get_zones() as $zone_data ) {
-			$zone_name = isset( $zone_data['zone_name'] ) ? (string) $zone_data['zone_name'] : '';
-			if ( '' === $zone_name ) {
-				continue;
-			}
 			$methods = isset( $zone_data['shipping_methods'] ) && is_array( $zone_data['shipping_methods'] )
 				? $zone_data['shipping_methods']
 				: [];
-			if ( self::has_enabled_method( $methods ) ) {
-				$names[] = $zone_name;
+			if ( ! self::has_enabled_method( $methods ) ) {
+				continue;
+			}
+
+			$zones[] = [
+				'zone_id'          => (int) ( $zone_data['id'] ?? 0 ),
+				'zone_locations'   => self::normalize_zone_locations(
+					$zone_data['zone_locations'] ?? []
+				),
+				'is_rest_of_world' => false,
+				'free_shipping'    => self::pick_free_shipping_terms( $methods ),
+			];
+		}
+
+		// Zone 0 — WC excludes it from get_zones(). Fetch explicitly.
+		$rest_of_world   = new WC_Shipping_Zone( 0 );
+		$rest_of_methods = $rest_of_world->get_shipping_methods( false );
+		if ( self::has_enabled_method( $rest_of_methods ) ) {
+			$zones[] = [
+				'zone_id'          => 0,
+				'zone_locations'   => [],
+				'is_rest_of_world' => true,
+				'free_shipping'    => self::pick_free_shipping_terms( $rest_of_methods ),
+			];
+		}
+
+		return $zones;
+	}
+
+	/**
+	 * Normalize WC zone-locations into pure-data array of [type, code] pairs.
+	 *
+	 * WC returns each location as a `stdClass`. Flatten to plain arrays so
+	 * the composer's payload_version hash stays deterministic — stdClass
+	 * serialization order isn't stable across PHP versions and would
+	 * rotate the hash spuriously.
+	 *
+	 * @param array $raw WC's `zone_locations` array.
+	 * @return array<array{type: string, code: string}>
+	 */
+	private static function normalize_zone_locations( array $raw ): array {
+		$out = [];
+		foreach ( $raw as $loc ) {
+			if ( is_object( $loc ) ) {
+				$type = isset( $loc->type ) ? (string) $loc->type : '';
+				$code = isset( $loc->code ) ? (string) $loc->code : '';
+			} elseif ( is_array( $loc ) ) {
+				$type = isset( $loc['type'] ) ? (string) $loc['type'] : '';
+				$code = isset( $loc['code'] ) ? (string) $loc['code'] : '';
+			} else {
+				continue;
+			}
+			if ( '' === $type || '' === $code ) {
+				continue;
+			}
+			$out[] = [
+				'type' => $type,
+				'code' => $code,
+			];
+		}
+		return $out;
+	}
+
+	/**
+	 * Pick the cheapest qualifying free-shipping terms from a zone's
+	 * methods. Returns null when no method qualifies.
+	 *
+	 * Qualification rules:
+	 *   - method id must be `free_shipping`
+	 *   - method must be enabled
+	 *   - `requires` must NOT be `coupon` or `both` (coupon-gated; WSN
+	 *     shoppers have no coupon)
+	 *   - `requires=either` is normalized to `min_amount` because the
+	 *     coupon arm is unreachable for WSN shoppers
+	 *
+	 * When multiple qualifying instances exist in a zone, the cheapest
+	 * threshold wins (lowest min_amount).
+	 *
+	 * @param array $methods Shipping methods array from WC.
+	 * @return array{min_amount: float, requires: string}|null
+	 */
+	private static function pick_free_shipping_terms( array $methods ): ?array {
+		$cheapest = null;
+
+		foreach ( $methods as $method ) {
+			if ( ! is_object( $method ) || ! isset( $method->id ) ) {
+				continue;
+			}
+			if ( 'free_shipping' !== $method->id ) {
+				continue;
+			}
+			if ( ! method_exists( $method, 'is_enabled' ) || ! $method->is_enabled() ) {
+				continue;
+			}
+
+			$requires   = $method->get_option( 'requires', '' );
+			$min_amount = (float) $method->get_option( 'min_amount', 0 );
+
+			if ( 'coupon' === $requires || 'both' === $requires ) {
+				continue;
+			}
+
+			$normalized_requires = ( 'either' === $requires ) ? 'min_amount' : (string) $requires;
+
+			$candidate = [
+				'min_amount' => $min_amount,
+				'requires'   => $normalized_requires,
+			];
+
+			if ( null === $cheapest || $candidate['min_amount'] < $cheapest['min_amount'] ) {
+				$cheapest = $candidate;
 			}
 		}
 
-		// Zone 0 — fetch explicitly. get_zones() excludes it. Single zone,
-		// one extra DB read for the methods.
-		//
-		// Relabel as "Rest of World" before surfacing. WC's literal
-		// zone_name ("Locations not covered by your other zones") is
-		// long and reads as bureaucratic in a merchant-facing UI;
-		// "Rest of World" is what merchants colloquially call it and
-		// matches the conventional WSN/storefront copy. Only the
-		// surfaced label changes — WC core stays untouched and the
-		// underlying zone is still zone 0.
-		$rest_of_world = new WC_Shipping_Zone( 0 );
-		if ( self::has_enabled_method( $rest_of_world->get_shipping_methods( false ) ) ) {
-			$names[] = __( 'Rest of World', 'woocommerce-payments' );
-		}
-
-		return $names;
+		return $cheapest;
 	}
 
 	/**
@@ -288,19 +402,5 @@ class WSN_Derivations {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Compute the free-shipping summary structure. Returns null when the
-	 * summarizer class isn't loaded — defensive against future autoload
-	 * changes.
-	 *
-	 * @return array|null
-	 */
-	private static function compute_free_shipping(): ?array {
-		if ( ! class_exists( 'WSN_Free_Shipping_Summarizer' ) ) {
-			return null;
-		}
-		return WSN_Free_Shipping_Summarizer::summarize();
 	}
 }
