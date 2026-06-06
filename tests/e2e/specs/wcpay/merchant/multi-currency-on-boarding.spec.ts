@@ -123,11 +123,11 @@ test.describe( 'Multi-currency on-boarding', { tag: '@critical' }, () => {
 		} );
 
 		test( 'should display suggested currencies at the beginning of the list', async () => {
+			// Use toBeVisible() (auto-waits) instead of .all() (snapshot,
+			// no wait) so lazy-loaded content has time to render.
 			await expect(
-				(
-					await page.getByTestId( 'recommended-currency' ).all()
-				 ).length
-			).toBeGreaterThan( 0 );
+				page.getByTestId( 'recommended-currency' ).first()
+			).toBeVisible();
 		} );
 
 		test( 'selected currencies are enabled after onboarding', async () => {
