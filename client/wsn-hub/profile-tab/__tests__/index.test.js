@@ -60,6 +60,7 @@ const DERIVATIONS = {
 			free_shipping: { min_amount: 75, requires: 'min_amount' },
 		},
 	],
+	currency: { code: 'USD', symbol: '$' },
 	refund_page_label: null,
 	refund_page_url: null,
 	theme_type: 'block',
@@ -172,12 +173,13 @@ describe( 'ProfileTab', () => {
 		renderProfile();
 
 		// New shape: zone labels come from zone_locations[].code, not
-		// merchant-chosen zone_name. min_amount is rendered as a bare
-		// number; receiver-side rendering handles currency formatting.
+		// merchant-chosen zone_name. min_amount is prefixed with
+		// derivations.currency.symbol (no fancier formatting — symbol +
+		// bare number). Receivers do their own price formatting.
 		await waitFor( () =>
 			expect(
 				screen.getByDisplayValue(
-					'Orders over 50 (US) · Orders over 75 (CA)'
+					'Orders over $50 (US) · Orders over $75 (CA)'
 				)
 			).toBeInTheDocument()
 		);

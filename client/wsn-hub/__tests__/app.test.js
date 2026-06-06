@@ -63,6 +63,7 @@ beforeEach( () => {
 					shop_name: '',
 					tagline: '',
 					shipping_zones: [],
+					currency: { code: 'USD', symbol: '$' },
 					refund_page_label: null,
 					refund_page_url: null,
 					theme_type: 'block',

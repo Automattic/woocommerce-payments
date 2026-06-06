@@ -126,6 +126,7 @@ class WSN_Derivations {
 			'shop_name'             => $shop_name,
 			'tagline'               => $tagline,
 			'default_contact_email' => WSN_Settings::resolve_default_contact_email(),
+			'currency'              => self::collect_currency(),
 			'shipping_zones'        => self::collect_shipping_zones(),
 			'refund_page_label'     => $refund_page_label,
 			'refund_page_url'       => $refund_page_url,
@@ -402,5 +403,40 @@ class WSN_Derivations {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Collect the store's currency identity. Single top-level block
+	 * because WC stores currency ONCE at the store level — there's no
+	 * per-zone or per-location currency override; the bare `min_amount`
+	 * floats inside every `shipping_zones[*].free_shipping` are in this
+	 * currency.
+	 *
+	 * Shape: just code + symbol. Receivers do their own price
+	 * formatting (position, separators, decimals) per their own
+	 * conventions — we don't ship WC's formatting settings.
+	 *
+	 * `get_woocommerce_currency_symbol()` returns HTML entities like
+	 * "&#36;"; we decode to a literal "$" so receivers handle a clean
+	 * glyph and don't have to know about WP's encoding contract.
+	 *
+	 * Falls back to USD / "$" when WC isn't loaded (defensive for CLI /
+	 * cron contexts where WC bootstrap may be deferred).
+	 *
+	 * @return array{code: string, symbol: string}
+	 */
+	private static function collect_currency(): array {
+		$code       = function_exists( 'get_woocommerce_currency' )
+			? (string) get_woocommerce_currency()
+			: 'USD';
+		$symbol_raw = function_exists( 'get_woocommerce_currency_symbol' )
+			? (string) get_woocommerce_currency_symbol()
+			: '$';
+		$symbol     = html_entity_decode( $symbol_raw, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+		return [
+			'code'   => $code,
+			'symbol' => $symbol,
+		];
 	}
 }

@@ -321,6 +321,7 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			'shop_name',
 			'tagline',
 			'default_contact_email',
+			'currency',
 			'shipping_zones',
 			'refund_page_label',
 			'refund_page_url',

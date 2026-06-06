@@ -52,15 +52,16 @@ const formatZoneLabel = ( zone ) => {
  * Build the free-shipping fragment for a single zone, or null if the
  * zone has no qualifying free-shipping terms.
  *
- * "Free shipping (US)" when min_amount is 0; "Orders over X (US)"
- * otherwise. No currency formatting here — the merchant's store
- * currency is implicit in the storefront context.
+ * "Free shipping (US)" when min_amount is 0; "Orders over $50 (US)"
+ * otherwise. min_amount is prefixed with derivations.currency.symbol
+ * (no fancy formatting — symbol + bare number).
  *
- * @param {Object} zone One entry from derivations.shipping_zones.
+ * @param {Object} zone     One entry from derivations.shipping_zones.
+ * @param {Object} currency derivations.currency block.
  * @return {string|null} The free-shipping fragment, or null if the zone
  *                       has no qualifying free-shipping terms.
  */
-const formatFreeShippingFragment = ( zone ) => {
+const formatFreeShippingFragment = ( zone, currency ) => {
 	const label = formatZoneLabel( zone );
 	const fs = zone?.free_shipping;
 	if ( ! label || ! fs ) {
@@ -73,10 +74,11 @@ const formatFreeShippingFragment = ( zone ) => {
 			label
 		);
 	}
+	const symbol = currency?.symbol || '';
 	return sprintf(
-		/* translators: 1: minimum order amount, 2: shipping zone label */
+		/* translators: 1: minimum order amount with currency symbol, 2: shipping zone label */
 		__( 'Orders over %1$s (%2$s)', 'woocommerce-payments' ),
-		fs.min_amount,
+		`${ symbol }${ fs.min_amount }`,
 		label
 	);
 };
@@ -105,8 +107,9 @@ const ContactPoliciesCard = ( { settings, derivations, onChange } ) => {
 
 	// "Free shipping" = only zones that HAVE free-shipping terms, each
 	// rendered as "Orders over X (label)" or "Free shipping (label)".
+	const currency = derivations.currency || null;
 	const freeShippingFragments = zones
-		.map( ( z ) => formatFreeShippingFragment( z ) )
+		.map( ( z ) => formatFreeShippingFragment( z, currency ) )
 		.filter( Boolean );
 	const freeShippingLabel =
 		freeShippingFragments.length > 0
