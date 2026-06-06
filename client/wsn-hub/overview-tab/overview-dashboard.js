@@ -245,12 +245,34 @@ const OverviewDashboard = ( { onDisable } ) => {
 				</div>
 			) }
 
+			{ /*
+				Stat-card grid: max 4 cards per row, expanding to fill
+				horizontal space until they hit the 4-column cap. Direct
+				port of AI Storefront's pattern at
+				`woocommerce-ai-storefront/client/settings/ai-storefront/settings-page.js:1234`.
+
+				The `max(180px, calc((100% - 36px) / 4))` formula:
+				- `(100% - 36px) / 4` = card width when 4 columns fit
+				  (36px = 3 gaps × 12px gap from spacing.s3)
+				- `max(180px, ...)` floors each card at 180px
+				- On wide containers the calc wins and caps at 4 columns
+				- On narrow containers the 180px floor wins and auto-fit
+				  packs as many ≥180px columns as fit
+				- 10 cards lay out as 4 + 4 + 2 with the last row
+				  left-aligned via auto-fit's empty-slot collapse.
+
+				`min-width: 0` lets the grid shrink below its content's
+				min-content size inside narrow flex/grid parents; per-card
+				overflow defense lives on StatCard's value div.
+			*/ }
 			<div
 				style={ {
 					display: 'grid',
-					gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+					gridTemplateColumns:
+						'repeat(auto-fit, minmax(max(180px, calc((100% - 36px) / 4)), 1fr))',
 					gap: spacing.s3,
 					marginBottom: spacing.s6,
+					minWidth: 0,
 					opacity: isLoading ? 0.5 : 1,
 					transition: 'opacity 0.1s',
 				} }
