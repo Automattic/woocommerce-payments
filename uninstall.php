@@ -35,11 +35,18 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-// Only fire the goodbye DELETE for merchants who actually opted into WSN
-// (i.e. there's a row on the WooPay side to delete). The option is set
-// when the merchant clicks Enable in the Hub; absent option = never
-// enrolled = nothing to clean up.
-if ( '1' !== (string) get_option( 'wcpay_wsn_enabled', '' ) ) {
+// Only fire the goodbye DELETE for merchants who actually ENGAGED with WSN
+// at some point (i.e. there's potentially a row on the WooPay side to
+// delete). The option is set the first time the merchant clicks Enable in
+// the Hub; once present it stays present whether the current value is '1'
+// (still enrolled) or '0' (opted out later) — both cases have produced a
+// WooPay-side row historically, and the DELETE is idempotent + swallowed
+// on failure. Absent option = never enrolled = nothing to clean up.
+//
+// Using a sentinel default for get_option() instead of a boolean check on
+// the value, so '0' and '1' both pass the gate while a truly-absent option
+// short-circuits.
+if ( '__wsn_absent__' === get_option( 'wcpay_wsn_enabled', '__wsn_absent__' ) ) {
 	return;
 }
 

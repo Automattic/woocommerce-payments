@@ -63,11 +63,11 @@ const safeOpenMediaModal = ( openFn ) => () => {
 };
 
 /**
- * @param {Object}                 props              Component props.
- * @param {number|null}            props.overrideId   Override attachment ID; null when using site logo.
- * @param {string|null}            props.resolvedUrl  Server-resolved URL for the current state.
- * @param {'override'|'site_logo'} props.logoSource   Which source produced resolvedUrl.
- * @param {Function}               props.onChange     Called with the new attachment ID (or null to reset).
+ * @param {Object}                 props             Component props.
+ * @param {number|null}            props.overrideId  Override attachment ID; null when using site logo.
+ * @param {string|null}            props.resolvedUrl Server-resolved URL for the current state.
+ * @param {'override'|'site_logo'} props.logoSource  Which source produced resolvedUrl.
+ * @param {Function}               props.onChange    Called with the new attachment ID (or null to reset).
  */
 const LogoWithOverride = ( {
 	overrideId,

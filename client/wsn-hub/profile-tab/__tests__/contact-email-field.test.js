@@ -143,7 +143,7 @@ describe( 'ContactEmailField', () => {
 	} );
 
 	describe( 'onChange handler', () => {
-		it( 'calls onChange with the typed value as a string when the user types', () => {
+		it( 'calls onChange with the typed value as a string when the user types', async () => {
 			const onChange = jest.fn();
 			render(
 				<ContactEmailField
@@ -158,7 +158,7 @@ describe( 'ContactEmailField', () => {
 			// between keystrokes), so the LAST call value will be just the
 			// single appended character — assert via the cumulative call list
 			// instead of value identity.
-			userEvent.type( getInput(), 'X' );
+			await userEvent.type( getInput(), 'X' );
 
 			expect( onChange ).toHaveBeenCalled();
 			// The final onChange call must have been with a string (not null).
@@ -167,7 +167,7 @@ describe( 'ContactEmailField', () => {
 			expect( typeof lastCallArg ).toBe( 'string' );
 		} );
 
-		it( 'calls onChange with "" when the "Use no contact email" button is clicked', () => {
+		it( 'calls onChange with "" when the "Use no contact email" button is clicked', async () => {
 			const onChange = jest.fn();
 			render(
 				<ContactEmailField
@@ -177,7 +177,7 @@ describe( 'ContactEmailField', () => {
 				/>
 			);
 
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', { name: /Use no contact email/i } )
 			);
 
@@ -185,7 +185,7 @@ describe( 'ContactEmailField', () => {
 			expect( onChange ).toHaveBeenCalledWith( '' );
 		} );
 
-		it( 'calls onChange with null when the "Reset to default" button is clicked', () => {
+		it( 'calls onChange with null when the "Reset to default" button is clicked', async () => {
 			const onChange = jest.fn();
 			render(
 				<ContactEmailField
@@ -195,7 +195,7 @@ describe( 'ContactEmailField', () => {
 				/>
 			);
 
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', { name: /Reset to default/i } )
 			);
 
@@ -203,7 +203,7 @@ describe( 'ContactEmailField', () => {
 			expect( onChange ).toHaveBeenCalledWith( null );
 		} );
 
-		it( 'calls onChange with "" (NOT null) when the user clears the input', () => {
+		it( 'calls onChange with "" (NOT null) when the user clears the input', async () => {
 			const onChange = jest.fn();
 			render(
 				<ContactEmailField
@@ -213,8 +213,8 @@ describe( 'ContactEmailField', () => {
 				/>
 			);
 
-			// userEvent.clear() fires a single change event with target.value = ''.
-			userEvent.clear( getInput() );
+			// await userEvent.clear() fires a single change event with target.value = ''.
+			await userEvent.clear( getInput() );
 
 			expect( onChange ).toHaveBeenCalled();
 			// The clear MUST be persisted as "" — converting to null would

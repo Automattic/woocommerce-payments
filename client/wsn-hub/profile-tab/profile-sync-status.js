@@ -21,7 +21,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button } from '@wordpress/components';
 
@@ -62,8 +62,14 @@ const formatRelativeTime = ( unixSeconds ) => {
 	}
 	const days = Math.floor( delta / 86400 );
 	return sprintf(
-		/* translators: %d: number of days */
-		__( '%d days ago', 'woocommerce-payments' ),
+		_n(
+			/* translators: %d: number of days */
+			'%d day ago',
+			/* translators: %d: number of days */
+			'%d days ago',
+			days,
+			'woocommerce-payments'
+		),
 		days
 	);
 };

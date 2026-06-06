@@ -138,7 +138,7 @@ describe( 'ProfileTab', () => {
 		expect( screen.getByText( /Loading Profile/i ) ).toBeInTheDocument();
 	} );
 
-	it( 'renders the load-error Notice with a Retry button bound to onRetry', () => {
+	it( 'renders the load-error Notice with a Retry button bound to onRetry', async () => {
 		const onRetry = jest.fn();
 		// In real usage the shell sets isLoading=false in its catch branch
 		// alongside loadError — so the merchant can interact with Retry.
@@ -154,7 +154,9 @@ describe( 'ProfileTab', () => {
 		expect(
 			screen.getAllByText( /Could not load Profile settings/i ).length
 		).toBeGreaterThan( 0 );
-		userEvent.click( screen.getByRole( 'button', { name: /Try again/i } ) );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Try again/i } )
+		);
 		expect( onRetry ).toHaveBeenCalledTimes( 1 );
 	} );
 
@@ -255,8 +257,8 @@ describe( 'ProfileTab', () => {
 
 		// Edit the contact email — dirty flag must flip.
 		const emailInput = screen.getByDisplayValue( 'hello@example.com' );
-		userEvent.clear( emailInput );
-		userEvent.type( emailInput, 'support@example.com' );
+		await userEvent.clear( emailInput );
+		await userEvent.type( emailInput, 'support@example.com' );
 
 		await waitFor( () =>
 			expect(
@@ -276,10 +278,10 @@ describe( 'ProfileTab', () => {
 		);
 
 		const emailInput = screen.getByDisplayValue( 'hello@example.com' );
-		userEvent.clear( emailInput );
-		userEvent.type( emailInput, 'new@example.com' );
+		await userEvent.clear( emailInput );
+		await userEvent.type( emailInput, 'new@example.com' );
 
-		userEvent.click(
+		await userEvent.click(
 			screen.getByRole( 'button', { name: /Save changes/i } )
 		);
 

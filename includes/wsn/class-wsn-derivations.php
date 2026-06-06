@@ -217,10 +217,16 @@ class WSN_Derivations {
 	 * (the data class). Using the wrong one fatals; this is a load-bearing
 	 * distinction the test suite locks in.
 	 *
+	 * Includes zone 0 ("Locations not covered by your other zones", aka
+	 * "Rest of the World"), which `WC_Shipping_Zones::get_zones()` excludes.
+	 * Stores with only the Rest-of-world zone would otherwise see an empty
+	 * "Shipping regions" field even though they ship internationally.
+	 * Mirrors the pattern used by WSN_Free_Shipping_Summarizer::collect_zones().
+	 *
 	 * @return string[]
 	 */
 	private static function collect_shipping_region_names(): array {
-		if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
+		if ( ! class_exists( 'WC_Shipping_Zones' ) || ! class_exists( 'WC_Shipping_Zone' ) ) {
 			return [];
 		}
 
@@ -230,6 +236,15 @@ class WSN_Derivations {
 				$names[] = (string) $zone_data['zone_name'];
 			}
 		}
+
+		// Zone 0 lives outside get_zones() — fetch explicitly. Single zone,
+		// one extra DB read.
+		$rest_of_world = new WC_Shipping_Zone( 0 );
+		$zone_name     = (string) $rest_of_world->get_zone_name();
+		if ( '' !== $zone_name ) {
+			$names[] = $zone_name;
+		}
+
 		return $names;
 	}
 

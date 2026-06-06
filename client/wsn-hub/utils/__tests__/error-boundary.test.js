@@ -62,7 +62,7 @@ describe( 'TabErrorBoundary', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'reloads the window when the Refresh button is clicked', () => {
+	it( 'reloads the window when the Refresh button is clicked', async () => {
 		// jsdom marks `window.location` as non-configurable, so we can't
 		// redefine `reload` directly. Replacing the whole `window.location`
 		// object IS allowed and is the canonical jsdom workaround.
@@ -78,7 +78,7 @@ describe( 'TabErrorBoundary', () => {
 				</TabErrorBoundary>
 			);
 
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', { name: /Refresh/i } )
 			);
 

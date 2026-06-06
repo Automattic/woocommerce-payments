@@ -49,14 +49,19 @@ export class TabErrorBoundary extends React.Component {
 	}
 
 	static getDerivedStateFromError( error ) {
+		// React calls this during the render phase when a child throws —
+		// returning { error } promotes us into the error state. This is the
+		// canonical "set state on error" hook for class-based boundaries.
 		return { error };
 	}
 
-	componentDidCatch( error ) {
-		// Persist the error in state so the fallback UI renders on the next
-		// pass. We intentionally do not re-throw — the boundary's job is to
-		// contain the failure to this subtree.
-		this.setState( { error } );
+	componentDidCatch() {
+		// React calls this during the commit phase, AFTER
+		// getDerivedStateFromError has already set our error state.
+		// Reserved for side-effect logging / error reporting. We
+		// intentionally do not re-throw — the boundary's job is to contain
+		// the failure to this subtree. No setState here: calling setState
+		// after getDerivedStateFromError would queue a redundant render.
 	}
 
 	render() {
