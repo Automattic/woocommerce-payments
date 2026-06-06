@@ -328,6 +328,18 @@ class WSN_Profile_Payload_Composer {
 
 		// Stream into a temp file so we can base64 the bytes without
 		// holding a full image object in memory beyond the encoder.
+		//
+		// `wp_tempnam()` lives in `wp-admin/includes/file.php` and is NOT
+		// auto-loaded by Action Scheduler workers (the context this composer
+		// usually runs in via the Profile emitter). Without this require_once
+		// the AS handler fatals with "Call to undefined function wp_tempnam()"
+		// and the failure surfaces in `wsn_profile_last_error` as
+		// "Sync failed: Call to undefined function wp_tempnam()". require_once
+		// is idempotent so re-entry from other contexts (admin GET, CLI) is
+		// safe.
+		if ( ! function_exists( 'wp_tempnam' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
 		$tmp = wp_tempnam( 'wsn-logo-thumb' );
 		if ( false === $tmp ) {
 			return null;
