@@ -75,12 +75,56 @@ class WSN_Free_Shipping_Summarizer_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $result['has_free_shipping'] );
 		$this->assertCount( 2, $result['zones'] );
 
-		// human_summary uses the U+00A0·U+00A0 separator and includes both zones.
+		// human_summary uses the U+00A0·U+00A0 separator and the
+		// 2-char ISO country codes (not the merchant zone names).
+		// "US" appears twice — once as the United States zone label,
+		// and as a substring of any string containing "US" — but the
+		// Canada zone surfaces as "CA" (the code), not "Canada".
 		$this->assertStringContainsString( 'US', $result['human_summary'] );
-		$this->assertStringContainsString( 'Canada', $result['human_summary'] );
+		$this->assertStringContainsString( 'CA', $result['human_summary'] );
+		$this->assertStringNotContainsString(
+			'Canada',
+			$result['human_summary'],
+			'human_summary must use ISO country codes (CA), not merchant zone names (Canada).'
+		);
 		$this->assertStringContainsString( '50', wp_strip_all_tags( $result['human_summary'] ) );
 		$this->assertStringContainsString( '75', wp_strip_all_tags( $result['human_summary'] ) );
 		$this->assertStringContainsString( '·', $result['human_summary'] );
+
+		// Each zone struct ships zone_locations + is_rest_of_world
+		// instead of the old zone_name. Receivers consume the standard
+		// WC contract.
+		foreach ( $result['zones'] as $zone ) {
+			$this->assertArrayHasKey( 'zone_id', $zone );
+			$this->assertArrayHasKey( 'zone_locations', $zone );
+			$this->assertArrayHasKey( 'is_rest_of_world', $zone );
+			$this->assertArrayNotHasKey( 'zone_name', $zone );
+		}
+
+		// Per-zone locations: zone 1 (US) ships [{country, US}];
+		// zone 2 (Canada) ships [{country, CA}].
+		$by_min_amount = [];
+		foreach ( $result['zones'] as $zone ) {
+			$by_min_amount[ (int) $zone['min_amount'] ] = $zone;
+		}
+		$this->assertSame(
+			[
+				[
+					'type' => 'country',
+					'code' => 'US',
+				],
+			],
+			$by_min_amount[50]['zone_locations']
+		);
+		$this->assertSame(
+			[
+				[
+					'type' => 'country',
+					'code' => 'CA',
+				],
+			],
+			$by_min_amount[75]['zone_locations']
+		);
 	}
 
 	public function test_summarize_silently_skips_coupon_only_free_shipping() {
