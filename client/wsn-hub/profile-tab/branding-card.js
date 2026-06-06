@@ -103,7 +103,12 @@ const BrandingCard = ( { settings, derivations, onChange } ) => {
 			<div
 				style={ {
 					display: 'grid',
-					gridTemplateColumns: '1fr 1fr',
+					// auto-fit collapses cells to a single column when the
+					// viewport can't fit two ≥260px columns. Wraps around
+					// ~580px-580px viewport (depending on card padding) so
+					// content stays readable on phones without a
+					// matchMedia branch.
+					gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
 					gap: spacing.s4,
 				} }
 			>

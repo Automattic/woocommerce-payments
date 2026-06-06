@@ -33,7 +33,7 @@
  * @format
  */
 
-import { useMemo, useState } from '@wordpress/element';
+import { useCallback, useMemo, useState } from '@wordpress/element';
 // Use the `/wp` entrypoint — this is the one client/reports/fees uses and
 // the one webpack/shared.js's requestToExternal handler force-bundles
 // against. Importing from the package root works at build time but the
@@ -169,6 +169,103 @@ const DEFAULT_VIEW = {
 	],
 };
 
+// localStorage key for persisted view preferences. Mirrors AI
+// Storefront's per-table key strategy. Bump the suffix if the persisted
+// shape ever needs an incompatible change.
+export const VIEW_STORAGE_KEY = 'wcpay_wsn_orders_view_v1';
+
+// Keys whose values are display preferences worth persisting. Transient
+// navigation state (search, filters, page) is intentionally NOT
+// persisted — restoring last-session filters on next visit surprises
+// merchants more than it helps. `fields` is also excluded: the column
+// set is dev-schema, and persisting it means stale storage overrides
+// the canonical DEFAULT_VIEW when columns are added or renamed.
+const PERSISTED_VIEW_KEYS = [
+	'type',
+	'perPage',
+	'sort',
+	'layout',
+	'hiddenFields',
+];
+
+// The only layout this component registers in defaultLayouts. A stored
+// type outside this set causes DataViews to render null — clamp to the
+// known-good layout if the stored value drifts.
+const SUPPORTED_LAYOUT_TYPES = new Set( [ 'table' ] );
+
+/**
+ * Load persisted view preferences from localStorage, merged on top of
+ * DEFAULT_VIEW. Falls back silently on any parse failure or when
+ * localStorage is unavailable (private browsing, SSR/jest).
+ *
+ * Exported so unit tests can exercise the parsing branches without
+ * spinning up the full component tree.
+ *
+ * @return {Object} View object safe to pass to DataViews as initial state.
+ */
+export const loadPersistedView = () => {
+	if ( typeof window === 'undefined' || ! window.localStorage ) {
+		return DEFAULT_VIEW;
+	}
+	try {
+		const raw = window.localStorage.getItem( VIEW_STORAGE_KEY );
+		if ( ! raw ) {
+			return DEFAULT_VIEW;
+		}
+		const parsed = JSON.parse( raw );
+		if (
+			! parsed ||
+			typeof parsed !== 'object' ||
+			Array.isArray( parsed )
+		) {
+			return DEFAULT_VIEW;
+		}
+		const safe = Object.fromEntries(
+			PERSISTED_VIEW_KEYS.filter( ( k ) => k in parsed ).map( ( k ) => [
+				k,
+				parsed[ k ],
+			] )
+		);
+		// Clamp type to a layout we register; otherwise DataViews
+		// renders null and the table disappears.
+		if ( 'type' in safe && ! SUPPORTED_LAYOUT_TYPES.has( safe.type ) ) {
+			safe.type = DEFAULT_VIEW.type;
+		}
+		return { ...DEFAULT_VIEW, ...safe };
+	} catch ( _err ) {
+		// Malformed JSON or quota exceeded — fall through to defaults.
+	}
+	return DEFAULT_VIEW;
+};
+
+/**
+ * Persist the display-preference subset of a DataViews view object to
+ * localStorage. Filters / search / page are intentionally NOT
+ * persisted; see PERSISTED_VIEW_KEYS comment.
+ *
+ * @param {Object} view Current DataViews view object.
+ */
+export const persistView = ( view ) => {
+	if ( typeof window === 'undefined' || ! window.localStorage ) {
+		return;
+	}
+	try {
+		const subset = Object.fromEntries(
+			PERSISTED_VIEW_KEYS.filter( ( k ) => k in view ).map( ( k ) => [
+				k,
+				view[ k ],
+			] )
+		);
+		window.localStorage.setItem(
+			VIEW_STORAGE_KEY,
+			JSON.stringify( subset )
+		);
+	} catch ( _err ) {
+		// Quota exceeded or private browsing — best-effort, in-memory
+		// state still works for the rest of the session.
+	}
+};
+
 // Plain <div> shell instead of @wordpress/components Card/CardBody.
 // Background: DataViews force-bundles its own copy of the WP-components
 // Stack family; nesting <DataViews> inside the host <CardBody> puts
@@ -214,7 +311,31 @@ const EmptyState = () => (
 );
 
 const OrdersTable = ( { orders } ) => {
-	const [ view, setView ] = useState( DEFAULT_VIEW );
+	// Initialize from localStorage so column-hide / sort / density
+	// settings the merchant chose last session restore on next visit.
+	const [ view, setView ] = useState( loadPersistedView );
+
+	// Wrap setView so every change goes through persistView. Cheap
+	// shallow compare on the persisted subset keeps us from writing
+	// to localStorage on transient state (search keystrokes, page
+	// flips) — those changes don't intersect with PERSISTED_VIEW_KEYS
+	// so the subset is identical pre/post.
+	const setViewAndPersist = useCallback( ( next ) => {
+		setView( ( prev ) => {
+			const subsetOf = ( v ) =>
+				JSON.stringify(
+					Object.fromEntries(
+						[ 'type', 'perPage', 'sort', 'layout', 'hiddenFields' ]
+							.filter( ( k ) => k in v )
+							.map( ( k ) => [ k, v[ k ] ] )
+					)
+				);
+			if ( subsetOf( prev ) !== subsetOf( next ) ) {
+				persistView( next );
+			}
+			return next;
+		} );
+	}, [] );
 
 	// Derive the status filter chip's enum from what's actually in the
 	// payload. Static enums would dangle empty options for statuses no
@@ -358,7 +479,7 @@ const OrdersTable = ( { orders } ) => {
 					data={ orders }
 					fields={ fields }
 					view={ view }
-					onChangeView={ setView }
+					onChangeView={ setViewAndPersist }
 					defaultLayouts={ { table: {} } }
 					getItemId={ ( item ) => String( item.id ) }
 					actions={ [] }

@@ -72,6 +72,16 @@
 		.components-tab-panel__tabs-item {
 			white-space: nowrap;
 		}
+
+		// Pull tab content away from the viewport edges so cards have
+		// breathing room on mobile. Per-tab content (Overview /
+		// Profile) renders inside .components-tab-panel__tab-content;
+		// adding horizontal padding here keeps each tab's body
+		// rhythm without changing the desktop chrome.
+		.components-tab-panel__tab-content {
+			padding-left: 16px;
+			padding-right: 16px;
+		}
 	}
 }
 
@@ -79,6 +89,11 @@
 	.wcpay-wsn-hub {
 		.components-tab-panel__tabs {
 			padding: 0 16px;
+		}
+
+		.components-tab-panel__tab-content {
+			padding-left: 12px;
+			padding-right: 12px;
 		}
 	}
 }

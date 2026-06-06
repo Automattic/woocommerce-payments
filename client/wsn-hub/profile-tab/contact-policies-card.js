@@ -63,7 +63,10 @@ const ContactPoliciesCard = ( { settings, derivations, onChange } ) => {
 			<div
 				style={ {
 					display: 'grid',
-					gridTemplateColumns: '1fr 1fr',
+					// auto-fit collapses to single column when the
+					// viewport can't fit two ≥260px columns. Same
+					// pattern used in BrandingCard.
+					gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
 					gap: spacing.s4,
 				} }
 			>

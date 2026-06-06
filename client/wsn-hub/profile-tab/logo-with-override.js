@@ -85,6 +85,7 @@ const LogoWithOverride = ( {
 			style={ {
 				display: 'flex',
 				alignItems: 'flex-start',
+				flexWrap: 'wrap',
 				gap: spacing.s5,
 				marginBottom: spacing.s5,
 			} }
@@ -132,7 +133,21 @@ const LogoWithOverride = ( {
 				) }
 			</div>
 
-			<div style={ { paddingTop: '4px', flex: 1, minWidth: 0 } }>
+			{ /*
+				Copy column sits next to the 100px logo on desktop;
+				wraps to a new row UNDER the logo on narrow viewports
+				when it can't fit at least 220px (single-word-per-line
+				breakpoint for the description copy). The `flex: 1` /
+				`minWidth: '220px'` pair keeps it greedy on desktop
+				and triggers the wrap on mobile.
+			*/ }
+			<div
+				style={ {
+					paddingTop: '4px',
+					flex: '1 1 220px',
+					minWidth: '220px',
+				} }
+			>
 				{ /* Source attribution dot + copy. Only shown when a default
 				     (site logo or site icon) is the active source — when
 				     override is set, the attribution is implicit
@@ -194,7 +209,8 @@ const LogoWithOverride = ( {
 				<div
 					style={ {
 						display: 'flex',
-						gap: spacing.s3,
+						flexWrap: 'wrap',
+						gap: `${ spacing.s2 } ${ spacing.s3 }`,
 						alignItems: 'center',
 					} }
 				>
@@ -225,12 +241,9 @@ const LogoWithOverride = ( {
 								style={ { fontSize: '12px', padding: 0 } }
 							>
 								{ hasOverride
-									? __(
-											'Choose a different image…',
-											'woocommerce-payments'
-									  )
+									? __( 'Replace…', 'woocommerce-payments' )
 									: __(
-											'Replace with custom logo…',
+											'Upload custom logo…',
 											'woocommerce-payments'
 									  ) }
 							</Button>

@@ -291,7 +291,10 @@ const ProfileTab = ( {
 	}
 
 	return (
-		<div style={ { maxWidth: '700px' } }>
+		// minWidth: 0 lets the wrapper shrink below its intrinsic
+		// min-content size (long word in a Picker or readonly textarea
+		// would otherwise force horizontal overflow on phones).
+		<div style={ { maxWidth: '700px', minWidth: 0 } }>
 			<h2
 				style={ {
 					fontSize: '18px',
