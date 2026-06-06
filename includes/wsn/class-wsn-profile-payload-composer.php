@@ -271,14 +271,84 @@ class WSN_Profile_Payload_Composer {
 				'font_rules' => null,
 			];
 		}
+		$appearance = isset( $stored['appearance'] ) && is_array( $stored['appearance'] )
+			? self::resolve_current_color_in_appearance( $stored['appearance'] )
+			: null;
 		return [
-			'appearance' => isset( $stored['appearance'] ) && is_array( $stored['appearance'] )
-				? $stored['appearance']
-				: null,
+			'appearance' => $appearance,
 			'font_rules' => isset( $stored['font_rules'] ) && is_array( $stored['font_rules'] )
 				? $stored['font_rules']
 				: null,
 		];
+	}
+
+	/**
+	 * Rewrite any `currentColor` keyword in the stored appearance to the
+	 * literal hex it would inherit, before the appearance is pushed to
+	 * WooPay.
+	 *
+	 * Why: `currentColor` is CSS-relative — it resolves to the rendering
+	 * element's own `color` property at paint time. Inside the merchant's
+	 * own checkout (where this data was extracted) the inheritance chain
+	 * yields one color; inside WooPay's hosted checkout the same widget
+	 * is embedded in WooPay's own DOM context, where `color` may inherit
+	 * a different value. Same stored data → different rendered output.
+	 *
+	 * This guard makes the WSN push self-contained: WooPay receives
+	 * literal hex values regardless of its own wrapper styling. Once the
+	 * root extractor bug is fixed (production issue #11777 — extractor
+	 * should resolve at extraction time), this guard becomes a no-op for
+	 * new data but continues to protect against stale option content
+	 * written by older code that ran before the upstream fix.
+	 *
+	 * The resolution chain is intentionally narrow: it covers the two
+	 * rules observed to ship `currentColor` in practice (`.Link`,
+	 * `.Footer-link`) and walks each to its semantic parent (`.Text`,
+	 * `.Footer`) and finally to `variables.colorText`, with `#000000` as
+	 * the ultimate fallback. Other rules pass through unchanged — we
+	 * don't speculate about hypothetical `currentColor` placements that
+	 * the extractor has never been observed to produce.
+	 *
+	 * Pure function on input. Determinism matters because the composer
+	 * uses sha256 of the canonical payload as the skip-emit guard's
+	 * version hash; two compose() calls on identical stored data MUST
+	 * produce identical hashes or every backstop tick would fire a real
+	 * push instead of no-opping.
+	 *
+	 * @param array $appearance The stored appearance object.
+	 * @return array Appearance with currentColor replaced by literal hex.
+	 */
+	private static function resolve_current_color_in_appearance( array $appearance ): array {
+		// Walk a rule's color: when it's `currentColor`, look up the
+		// fallback chain in order; first non-currentColor literal wins.
+		// `$rule_keys` are dotted-path strings into $appearance['rules'].
+		$resolve_chain = static function ( array $rule_keys, string $final_fallback ) use ( $appearance ) {
+			foreach ( $rule_keys as $key ) {
+				$candidate = $appearance['rules'][ $key ]['color'] ?? null;
+				if ( is_string( $candidate ) && '' !== $candidate && 'currentcolor' !== strtolower( $candidate ) ) {
+					return $candidate;
+				}
+			}
+			$variables_text = $appearance['variables']['colorText'] ?? null;
+			if ( is_string( $variables_text ) && '' !== $variables_text && 'currentcolor' !== strtolower( $variables_text ) ) {
+				return $variables_text;
+			}
+			return $final_fallback;
+		};
+
+		$rewrites = [
+			'.Link'        => [ '.Text' ],
+			'.Footer-link' => [ '.Footer', '.Text' ],
+		];
+
+		foreach ( $rewrites as $rule_key => $parents ) {
+			$current = $appearance['rules'][ $rule_key ]['color'] ?? null;
+			if ( is_string( $current ) && 'currentcolor' === strtolower( $current ) ) {
+				$appearance['rules'][ $rule_key ]['color'] = $resolve_chain( $parents, '#000000' );
+			}
+		}
+
+		return $appearance;
 	}
 
 	/**

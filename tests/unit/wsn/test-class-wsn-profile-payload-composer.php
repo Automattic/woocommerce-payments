@@ -233,6 +233,120 @@ class WSN_Profile_Payload_Composer_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $payload['font_rules'] );
 	}
 
+	public function test_appearance_resolves_link_current_color_to_text_color() {
+		// `currentColor` is CSS-relative — it resolves to the rendering
+		// element's `color` at paint time. The composer guards against
+		// shipping the keyword raw to WooPay (where it would resolve
+		// inside WooPay's own DOM context, producing a different color
+		// than the merchant's site shows). See production issue #11777.
+		update_option(
+			'wcpay_woopay_checkout_appearance',
+			[
+				'appearance' => [
+					'variables' => [
+						'colorText' => '#111111',
+					],
+					'rules'     => [
+						'.Text' => [ 'color' => '#222222' ],
+						'.Link' => [ 'color' => 'currentColor' ],
+					],
+				],
+				'font_rules' => [],
+				'version'    => 'test-version',
+			]
+		);
+
+		$payload = WSN_Profile_Payload_Composer::compose();
+
+		$this->assertSame(
+			'#222222',
+			$payload['appearance']['rules']['.Link']['color'],
+			'.Link.color = currentColor must be rewritten to .Text.color before push.'
+		);
+	}
+
+	public function test_appearance_resolves_footer_link_current_color_via_footer_then_text() {
+		// .Footer-link walks .Footer first; only falls back to .Text if
+		// .Footer also lacks a literal color.
+		update_option(
+			'wcpay_woopay_checkout_appearance',
+			[
+				'appearance' => [
+					'variables' => [
+						'colorText' => '#111111',
+					],
+					'rules'     => [
+						'.Footer'      => [ 'color' => '#abcdef' ],
+						'.Text'        => [ 'color' => '#222222' ],
+						'.Footer-link' => [ 'color' => 'currentColor' ],
+					],
+				],
+				'font_rules' => [],
+				'version'    => 'test-version',
+			]
+		);
+
+		$payload = WSN_Profile_Payload_Composer::compose();
+
+		$this->assertSame(
+			'#abcdef',
+			$payload['appearance']['rules']['.Footer-link']['color'],
+			'.Footer-link must resolve via .Footer.color before walking to .Text.'
+		);
+	}
+
+	public function test_appearance_falls_back_through_variables_colortext_then_black() {
+		// All semantic parents missing or also currentColor → use
+		// variables.colorText; if that's missing too, use #000000.
+		update_option(
+			'wcpay_woopay_checkout_appearance',
+			[
+				'appearance' => [
+					// No variables.colorText, no .Text, no .Footer.
+					'rules' => [
+						'.Link'        => [ 'color' => 'currentColor' ],
+						'.Footer-link' => [ 'color' => 'currentColor' ],
+					],
+				],
+				'font_rules' => [],
+				'version'    => 'test-version',
+			]
+		);
+
+		$payload = WSN_Profile_Payload_Composer::compose();
+
+		$this->assertSame( '#000000', $payload['appearance']['rules']['.Link']['color'] );
+		$this->assertSame( '#000000', $payload['appearance']['rules']['.Footer-link']['color'] );
+	}
+
+	public function test_appearance_leaves_literal_link_colors_alone() {
+		// Guard is a no-op when the stored value is already a hex.
+		// Important once the production extractor fix lands and
+		// currentColor stops being written into the option.
+		update_option(
+			'wcpay_woopay_checkout_appearance',
+			[
+				'appearance' => [
+					'variables' => [ 'colorText' => '#111111' ],
+					'rules'     => [
+						'.Text' => [ 'color' => '#222222' ],
+						'.Link' => [ 'color' => '#0000ff' ],
+					],
+				],
+				'font_rules' => [],
+				'version'    => 'test-version',
+			]
+		);
+
+		$payload = WSN_Profile_Payload_Composer::compose();
+
+		$this->assertSame(
+			'#0000ff',
+			$payload['appearance']['rules']['.Link']['color'],
+			'Literal hex link colors must pass through unchanged.'
+		);
+	}
+
 	public function test_appearance_and_font_rules_populated_when_styles_cache_set() {
 		update_option(
 			'wcpay_woopay_checkout_appearance',
