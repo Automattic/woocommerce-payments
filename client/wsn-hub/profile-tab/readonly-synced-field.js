@@ -79,19 +79,47 @@ const ReadonlySyncedField = ( { label, value, syncedFrom, editUrl } ) => {
 			>
 				{ label }
 			</label>
-			<input
+			{ /*
+				Textarea instead of <input> so long values (Shipping
+				regions when a merchant ships worldwide, free-shipping
+				summaries that list every zone, etc.) wrap onto
+				multiple lines instead of clipping horizontally. Native
+				<input type="text"> only ever shows one line and the
+				merchant has to scroll inside the field to read the
+				rest — hostile for readonly content. Single-line content
+				still renders at the same height as a plain input
+				because `rows={1}` + the same padding match the input
+				chrome visually; only multi-line content grows.
+			*/ }
+			<textarea
 				id={ inputId }
-				type="text"
 				readOnly
+				rows={ 1 }
+				wrap="soft"
 				value={ display }
 				style={ {
 					border: `1px solid ${ colors.borderStrong }`,
 					borderRadius: radii.sm,
 					padding: '7px 10px',
 					fontSize: '13px',
+					fontFamily: 'inherit',
+					lineHeight: 1.4,
 					color: colors.textMuted,
 					background: colors.surfaceAdmin,
 					cursor: 'default',
+					resize: 'none',
+					overflow: 'hidden',
+					width: '100%',
+					boxSizing: 'border-box',
+				} }
+				ref={ ( el ) => {
+					if ( ! el ) return;
+					// Auto-grow to fit content. The textarea reports
+					// scrollHeight relative to its current rendered
+					// size, so reset to 'auto' first to get a clean
+					// measurement of the content's natural height.
+					el.style.height = 'auto';
+					el.style.height = el.scrollHeight + 'px';
 				} }
 			/>
 			<span

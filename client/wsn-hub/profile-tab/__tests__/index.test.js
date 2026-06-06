@@ -238,9 +238,12 @@ describe( 'ProfileTab', () => {
 		// land inside act and don't trip @wordpress/jest-console.
 		await waitFor( () => {
 			const storeLocationLabel = screen.getByText( 'Store location' );
+			// ReadonlySyncedField uses a <textarea readonly> so long
+			// values wrap instead of clipping. Selector targets the
+			// textarea, not <input>.
 			const input =
 				storeLocationLabel.parentElement.querySelector(
-					'input[readonly]'
+					'textarea[readonly]'
 				);
 			expect( input ).toHaveValue( '—' );
 		} );

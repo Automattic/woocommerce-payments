@@ -257,10 +257,17 @@ class WSN_Derivations {
 
 		// Zone 0 — fetch explicitly. get_zones() excludes it. Single zone,
 		// one extra DB read for the methods.
+		//
+		// Relabel as "Rest of World" before surfacing. WC's literal
+		// zone_name ("Locations not covered by your other zones") is
+		// long and reads as bureaucratic in a merchant-facing UI;
+		// "Rest of World" is what merchants colloquially call it and
+		// matches the conventional WSN/storefront copy. Only the
+		// surfaced label changes — WC core stays untouched and the
+		// underlying zone is still zone 0.
 		$rest_of_world = new WC_Shipping_Zone( 0 );
-		$zone_name     = (string) $rest_of_world->get_zone_name();
-		if ( '' !== $zone_name && self::has_enabled_method( $rest_of_world->get_shipping_methods( false ) ) ) {
-			$names[] = $zone_name;
+		if ( self::has_enabled_method( $rest_of_world->get_shipping_methods( false ) ) ) {
+			$names[] = __( 'Rest of World', 'woocommerce-payments' );
 		}
 
 		return $names;
