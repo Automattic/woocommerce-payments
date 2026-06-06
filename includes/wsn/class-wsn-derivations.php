@@ -365,6 +365,9 @@ class WSN_Derivations {
 			if ( ! method_exists( $method, 'is_enabled' ) || ! $method->is_enabled() ) {
 				continue;
 			}
+			if ( ! method_exists( $method, 'get_option' ) ) {
+				continue;
+			}
 
 			$requires   = $method->get_option( 'requires', '' );
 			$min_amount = (float) $method->get_option( 'min_amount', 0 );
