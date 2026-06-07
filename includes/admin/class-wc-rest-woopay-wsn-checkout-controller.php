@@ -243,16 +243,16 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 
 		WC()->cart->calculate_totals();
 
-		// Stamp the wsn-express attribution on the draft order now, before the
-		// WooPay handoff. Firing an internal Store-API checkout POST with
-		// extensions.woopay_wsn.channel triggers
-		// woocommerce_store_api_checkout_update_order_from_request, which
-		// WSN_Order_Attribution hooks at priority 20 to write
-		// _woopay_marketplace_channel = wsn-express on the draft order. The
-		// attribution meta is saved before billing validation runs, so we
-		// deliberately ignore the 400 the Store-API returns for the empty
-		// billing address we supply here — we only need the hook to fire.
-		$this->stamp_express_attribution();
+		// Signal wsn-express attribution to WSN_Order_Attribution via the WC
+		// session. The session persists through the WooPay handoff — when
+		// WooPay's server completes the checkout via Store-API, the attribution
+		// hook reads this flag and stamps wsn-express on the real order instead
+		// of copying the wsn-pdp UTM the shopper's browser carried (a shopper
+		// who clicked a WSN PDP link before paying via WooPay express would
+		// otherwise be attributed to wsn-pdp, which is wrong).
+		if ( WC()->session && class_exists( 'WSN_Order_Attribution' ) ) {
+			WC()->session->set( WSN_Order_Attribution::SESSION_EXPRESS_FLAG, true );
+		}
 
 		// Build the unclaimed-session payload the WooPay express
 		// button uses (`get_frontend_init_session_request()` packages
@@ -424,47 +424,5 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 			'variation_id' => $variation_id,
 			'variation'    => $variation,
 		];
-	}
-
-	/**
-	 * Stamp wsn-express attribution on the draft order via an internal Store-API checkout preflight.
-	 */
-	private function stamp_express_attribution(): void {
-		// Bypass the nonce gate — same pattern WooPay_Session uses when it
-		// preloads /wc/store/v1/checkout server-side.
-		add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-
-		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
-		$request->set_body_params(
-			[
-				// billing_address is required by the Store-API schema.
-				// An empty email passes the validate_callback (only rejects
-				// non-empty malformed addresses) but causes
-				// validate_order_before_payment to throw for the missing email —
-				// that happens AFTER update_order_from_request fires
-				// woocommerce_store_api_checkout_update_order_from_request and
-				// WSN_Order_Attribution saves the meta. We ignore the 400.
-				'billing_address'  => [ 'email' => '' ],
-				'shipping_address' => [],
-				'payment_method'   => 'woocommerce_payments',
-				'payment_data'     => [
-					[
-						'key'   => 'is-woopay-preflight-check',
-						'value' => true,
-					],
-				],
-				'extensions'       => [
-					'woopay_wsn' => [
-						'channel' => 'wsn-express',
-					],
-				],
-			]
-		);
-
-		try {
-			rest_do_request( $request );
-		} finally {
-			remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-		}
 	}
 }
