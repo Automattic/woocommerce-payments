@@ -93,6 +93,7 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 										'required' => false,
 										'default'  => 1,
 										'minimum'  => 1,
+										'maximum'  => 999,
 										'sanitize_callback' => 'absint',
 									],
 									'variation_id' => [
@@ -159,8 +160,180 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 		$response->header( 'Access-Control-Allow-Origin', $origin );
 		$response->header( 'Access-Control-Allow-Methods', 'POST, OPTIONS' );
 		$response->header( 'Access-Control-Allow-Headers', 'Content-Type' );
-		$response->header( 'Access-Control-Allow-Credentials', 'true' );
 		return $response;
+	}
+
+	/**
+	 * Handle the checkout handoff. Populates the WC cart from the
+	 * SPA-supplied items, builds the WooPay init session body, POSTs
+	 * to WooPay /init, and returns the response (with `redirect_url`)
+	 * straight through.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function handle_checkout( WP_REST_Request $request ) {
+		$items_raw = (array) $request->get_param( 'items' );
+		if ( empty( $items_raw ) ) {
+			return new WP_Error(
+				'wsn_checkout_no_items',
+				__( 'No items supplied.', 'woocommerce-payments' ),
+				[ 'status' => 400 ]
+			);
+		}
+		if ( count( $items_raw ) > self::MAX_ITEMS ) {
+			$items_raw = array_slice( $items_raw, 0, self::MAX_ITEMS );
+		}
+
+		// WC's REST API runtime doesn't auto-instantiate the cart or
+		// customer the way the front-end bootstrap does, so a fresh
+		// request lands here with `WC()->cart === null`. The Store
+		// API gets around this by calling `wc_load_cart()`; mirror
+		// that here so subsequent `WC()->cart->*` calls work.
+		if ( function_exists( 'wc_load_cart' ) ) {
+			wc_load_cart();
+		}
+		if ( function_exists( 'WC' ) && WC() && WC()->session && ! WC()->session->has_session() ) {
+			WC()->session->set_customer_session_cookie( true );
+		}
+		if ( ! WC()->cart ) {
+			return new WP_Error(
+				'wsn_checkout_cart_unavailable',
+				__( 'WooCommerce cart is not available on this request.', 'woocommerce-payments' ),
+				[ 'status' => 500 ]
+			);
+		}
+
+		WC()->cart->empty_cart();
+
+		// Suppress the per-item calculate_totals() that fires via the
+		// woocommerce_add_to_cart hook so we do one recalculation at
+		// the end instead of one per item (N+1 → 1 for the loop).
+		remove_action( 'woocommerce_add_to_cart', [ WC()->cart, 'calculate_totals' ], 20 );
+
+		$added = 0;
+		foreach ( $items_raw as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$resolved = $this->resolve_item( $item );
+			if ( null === $resolved ) {
+				continue;
+			}
+			$result = WC()->cart->add_to_cart(
+				$resolved['product']->get_id(),
+				$resolved['quantity'],
+				$resolved['variation_id'],
+				$resolved['variation']
+			);
+			if ( $result ) {
+				++$added;
+			}
+		}
+
+		add_action( 'woocommerce_add_to_cart', [ WC()->cart, 'calculate_totals' ], 20 );
+
+		if ( 0 === $added ) {
+			return new WP_Error(
+				'wsn_checkout_add_failed',
+				__( 'Could not add any of the supplied items to the cart.', 'woocommerce-payments' ),
+				[ 'status' => 422 ]
+			);
+		}
+
+		WC()->cart->calculate_totals();
+
+		// Stamp the wsn-express attribution on the draft order now, before the
+		// WooPay handoff. Firing an internal Store-API checkout POST with
+		// extensions.woopay_wsn.channel triggers
+		// woocommerce_store_api_checkout_update_order_from_request, which
+		// WSN_Order_Attribution hooks at priority 20 to write
+		// _woopay_marketplace_channel = wsn-express on the draft order. The
+		// attribution meta is saved before billing validation runs, so we
+		// deliberately ignore the 400 the Store-API returns for the empty
+		// billing address we supply here — we only need the hook to fire.
+		$this->stamp_express_attribution();
+
+		// Build the unclaimed-session payload the WooPay express
+		// button uses (`get_frontend_init_session_request()` packages
+		// `get_init_session_request()` + AES-encrypts it with the
+		// merchant's blog_token). The cart we just populated is read
+		// inside `get_init_session_request()` via `/wc/store/v1/cart`,
+		// so the WooPay session inherits the WSN cart server-side.
+		$session_payload = WooPay_Session::get_frontend_init_session_request();
+		if ( empty( $session_payload ) || ! isset( $session_payload['blog_id'] ) ) {
+			return new WP_Error(
+				'wsn_checkout_session_payload_failed',
+				__( 'Could not build a WooPay session payload (missing blog token?).', 'woocommerce-payments' ),
+				[ 'status' => 500 ]
+			);
+		}
+
+		$body = [
+			'blog_id'      => $session_payload['blog_id'],
+			'data'         => $session_payload['data'],
+			'is_test_mode' => WC_Payments::mode()->is_test(),
+			'source_url'   => home_url(),
+		];
+
+		// The unclaimed `/sessions` endpoint doesn't require Jetpack
+		// signing — the request is authenticated by the encrypted
+		// `data` blob (HMAC'd with the merchant's blog_token). Use
+		// `wp_remote_post` so we don't pull in the Jetpack signing
+		// path the regular `init_woopay` flow uses; that path 401s
+		// on dev merchants without a real Jetpack connection.
+		$timeout = 30;
+		$args    = [
+			'method'  => 'POST',
+			'timeout' => $timeout,
+			'body'    => wp_json_encode( $body ),
+			'headers' => [
+				'Content-Type' => 'application/json',
+				'Accept'       => 'application/json',
+			],
+		];
+
+		// Hit the dev-only `/wsn-sessions` route — same body as
+		// `/sessions` but the WooPay side skips the iframe-nonce
+		// check because we can't reach the Connect iframe from the
+		// WSN SPA. Falls back to `/sessions` so production sandboxes
+		// (where the dev-only route isn't registered) still work
+		// when WooPay-eligibility + nonce are properly set up.
+		// The fallback timeout is capped at the remaining budget so
+		// the two hops together never exceed the original 30s.
+		$start        = microtime( true );
+		$sessions_url = \WCPay\WooPay\WooPay_Utilities::get_woopay_rest_url( 'wsn-sessions' );
+		$response     = wp_remote_post( $sessions_url, $args );
+		if ( ! is_wp_error( $response ) && 404 === (int) wp_remote_retrieve_response_code( $response ) ) {
+			$sessions_url    = \WCPay\WooPay\WooPay_Utilities::get_woopay_rest_url( 'sessions' );
+			$args['timeout'] = max( 5, $timeout - (int) ( microtime( true ) - $start ) );
+			$response        = wp_remote_post( $sessions_url, $args );
+		}
+		if ( is_wp_error( $response ) ) {
+			return new WP_Error(
+				'wsn_checkout_woopay_unreachable',
+				$response->get_error_message(),
+				[ 'status' => 502 ]
+			);
+		}
+
+		$response_body = wp_remote_retrieve_body( $response );
+		$decoded       = json_decode( $response_body, true );
+		if ( ! is_array( $decoded ) ) {
+			return new WP_Error(
+				'wsn_checkout_woopay_bad_response',
+				__( 'WooPay returned an unexpected response.', 'woocommerce-payments' ),
+				[ 'status' => 502 ]
+			);
+		}
+
+		// Decorate the response with the count of lines we actually
+		// landed on the cart so the SPA can surface a partial-success
+		// message ("3 of 4 items added") when slug resolution misses.
+		$decoded['wsn_items_added']     = $added;
+		$decoded['wsn_items_requested'] = count( $items_raw );
+
+		return rest_ensure_response( $decoded );
 	}
 
 	/**
@@ -219,8 +392,28 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 		if ( $variation_id > 0 ) {
 			$variation_product = wc_get_product( $variation_id );
 			if ( $variation_product instanceof WC_Product_Variation ) {
+				$parent = wc_get_product( $variation_product->get_parent_id() );
 				foreach ( (array) $variation_product->get_variation_attributes() as $attr_key => $attr_value ) {
-					$variation[ (string) $attr_key ] = sanitize_text_field( (string) $attr_value );
+					if ( '' !== (string) $attr_value ) {
+						// Specific value — use as-is.
+						$variation[ (string) $attr_key ] = sanitize_text_field( (string) $attr_value );
+					} elseif ( $parent instanceof WC_Product ) {
+						// "Any" slot: WC requires a concrete value for add_to_cart.
+						// Pick the first valid term so the WSN express handoff lands
+						// a purchasable cart line. The shopper can adjust on the WooPay
+						// checkout page if a more specific selection matters.
+						$attribute_name = preg_replace( '/^attribute_/', '', $attr_key );
+						$parent_attr    = $parent->get_attribute( $attribute_name );
+						if ( ! empty( $parent_attr ) ) {
+							$slugs = array_map( 'sanitize_title', array_map( 'trim', explode( '|', $parent_attr ) ) );
+						} else {
+							$terms = wc_get_product_terms( $parent->get_id(), $attribute_name, [ 'fields' => 'slugs' ] );
+							$slugs = is_array( $terms ) ? $terms : [];
+						}
+						if ( ! empty( $slugs ) ) {
+							$variation[ (string) $attr_key ] = sanitize_text_field( reset( $slugs ) );
+						}
+					}
 				}
 			}
 		}
@@ -231,167 +424,6 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 			'variation_id' => $variation_id,
 			'variation'    => $variation,
 		];
-	}
-
-	/**
-	 * Handle the checkout handoff. Populates the WC cart from the
-	 * SPA-supplied items, builds the WooPay init session body, POSTs
-	 * to WooPay /init, and returns the response (with `redirect_url`)
-	 * straight through.
-	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return WP_REST_Response|WP_Error
-	 */
-	public function handle_checkout( WP_REST_Request $request ) {
-		$items_raw = (array) $request->get_param( 'items' );
-		if ( empty( $items_raw ) ) {
-			return new WP_Error(
-				'wsn_checkout_no_items',
-				__( 'No items supplied.', 'woocommerce-payments' ),
-				[ 'status' => 400 ]
-			);
-		}
-		if ( count( $items_raw ) > self::MAX_ITEMS ) {
-			$items_raw = array_slice( $items_raw, 0, self::MAX_ITEMS );
-		}
-
-		// WC's REST API runtime doesn't auto-instantiate the cart or
-		// customer the way the front-end bootstrap does, so a fresh
-		// request lands here with `WC()->cart === null`. The Store
-		// API gets around this by calling `wc_load_cart()`; mirror
-		// that here so subsequent `WC()->cart->*` calls work.
-		if ( function_exists( 'wc_load_cart' ) ) {
-			wc_load_cart();
-		}
-		if ( function_exists( 'WC' ) && WC() && WC()->session && ! WC()->session->has_session() ) {
-			WC()->session->set_customer_session_cookie( true );
-		}
-		if ( ! WC()->cart ) {
-			return new WP_Error(
-				'wsn_checkout_cart_unavailable',
-				__( 'WooCommerce cart is not available on this request.', 'woocommerce-payments' ),
-				[ 'status' => 500 ]
-			);
-		}
-
-		WC()->cart->empty_cart();
-
-		$added = 0;
-		foreach ( $items_raw as $item ) {
-			if ( ! is_array( $item ) ) {
-				continue;
-			}
-			$resolved = $this->resolve_item( $item );
-			if ( null === $resolved ) {
-				continue;
-			}
-			$result = WC()->cart->add_to_cart(
-				$resolved['product']->get_id(),
-				$resolved['quantity'],
-				$resolved['variation_id'],
-				$resolved['variation']
-			);
-			if ( $result ) {
-				++$added;
-			}
-		}
-
-		if ( 0 === $added ) {
-			return new WP_Error(
-				'wsn_checkout_add_failed',
-				__( 'Could not add any of the supplied items to the cart.', 'woocommerce-payments' ),
-				[ 'status' => 422 ]
-			);
-		}
-
-		WC()->cart->calculate_totals();
-
-		// Stamp the wsn-express attribution on the draft order now, before the
-		// WooPay handoff. Firing an internal Store-API checkout POST with
-		// extensions.woopay_wsn.channel triggers
-		// woocommerce_store_api_checkout_update_order_from_request, which
-		// WSN_Order_Attribution hooks at priority 20 to write
-		// _woopay_marketplace_channel = wsn-express on the draft order. The
-		// attribution meta is saved before billing validation runs, so we
-		// deliberately ignore the 400 the Store-API returns for the empty
-		// billing address we supply here — we only need the hook to fire.
-		$this->stamp_express_attribution();
-
-		// Build the unclaimed-session payload the WooPay express
-		// button uses (`get_frontend_init_session_request()` packages
-		// `get_init_session_request()` + AES-encrypts it with the
-		// merchant's blog_token). The cart we just populated is read
-		// inside `get_init_session_request()` via `/wc/store/v1/cart`,
-		// so the WooPay session inherits the WSN cart server-side.
-		$session_payload = WooPay_Session::get_frontend_init_session_request();
-		if ( empty( $session_payload ) || ! isset( $session_payload['blog_id'] ) ) {
-			return new WP_Error(
-				'wsn_checkout_session_payload_failed',
-				__( 'Could not build a WooPay session payload (missing blog token?).', 'woocommerce-payments' ),
-				[ 'status' => 500 ]
-			);
-		}
-
-		$body = [
-			'blog_id'      => $session_payload['blog_id'],
-			'data'         => $session_payload['data'],
-			'is_test_mode' => WC_Payments::mode()->is_test(),
-			'source_url'   => home_url(),
-		];
-
-		// The unclaimed `/sessions` endpoint doesn't require Jetpack
-		// signing — the request is authenticated by the encrypted
-		// `data` blob (HMAC'd with the merchant's blog_token). Use
-		// `wp_remote_post` so we don't pull in the Jetpack signing
-		// path the regular `init_woopay` flow uses; that path 401s
-		// on dev merchants without a real Jetpack connection.
-		$args = [
-			'method'  => 'POST',
-			'timeout' => 30,
-			'body'    => wp_json_encode( $body ),
-			'headers' => [
-				'Content-Type' => 'application/json',
-				'Accept'       => 'application/json',
-			],
-		];
-
-		// Hit the dev-only `/wsn-sessions` route — same body as
-		// `/sessions` but the WooPay side skips the iframe-nonce
-		// check because we can't reach the Connect iframe from the
-		// WSN SPA. Falls back to `/sessions` so production sandboxes
-		// (where the dev-only route isn't registered) still work
-		// when WooPay-eligibility + nonce are properly set up.
-		$sessions_url = \WCPay\WooPay\WooPay_Utilities::get_woopay_rest_url( 'wsn-sessions' );
-		$response     = wp_remote_post( $sessions_url, $args );
-		if ( ! is_wp_error( $response ) && 404 === (int) wp_remote_retrieve_response_code( $response ) ) {
-			$sessions_url = \WCPay\WooPay\WooPay_Utilities::get_woopay_rest_url( 'sessions' );
-			$response     = wp_remote_post( $sessions_url, $args );
-		}
-		if ( is_wp_error( $response ) ) {
-			return new WP_Error(
-				'wsn_checkout_woopay_unreachable',
-				$response->get_error_message(),
-				[ 'status' => 502 ]
-			);
-		}
-
-		$response_body = wp_remote_retrieve_body( $response );
-		$decoded       = json_decode( $response_body, true );
-		if ( ! is_array( $decoded ) ) {
-			return new WP_Error(
-				'wsn_checkout_woopay_bad_response',
-				__( 'WooPay returned an unexpected response.', 'woocommerce-payments' ),
-				[ 'status' => 502 ]
-			);
-		}
-
-		// Decorate the response with the count of lines we actually
-		// landed on the cart so the SPA can surface a partial-success
-		// message ("3 of 4 items added") when slug resolution misses.
-		$decoded['wsn_items_added']     = $added;
-		$decoded['wsn_items_requested'] = count( $items_raw );
-
-		return rest_ensure_response( $decoded );
 	}
 
 	/**
@@ -429,8 +461,10 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 			]
 		);
 
-		rest_do_request( $request );
-
-		remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		try {
+			rest_do_request( $request );
+		} finally {
+			remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+		}
 	}
 }

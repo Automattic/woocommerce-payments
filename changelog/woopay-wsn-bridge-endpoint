@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Adds a dev-mode WSN→WooPay express checkout bridge endpoint that populates the WC cart server-side and stamps WSN express attribution on the resulting order.

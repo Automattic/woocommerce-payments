@@ -97,7 +97,7 @@ class WC_REST_WooPay_WSN_Checkout_Controller_Test extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'rest_pre_dispatch',
-			function ( $result, $server, $request ) use ( &$nonce_bypass_was_active ) {
+			function ( $result, $_server, $request ) use ( &$nonce_bypass_was_active ) {
 				if ( false !== strpos( $request->get_route(), '/wc/store/v1/checkout' ) ) {
 					$nonce_bypass_was_active = (bool) has_filter(
 						'woocommerce_store_api_disable_nonce_check',
@@ -119,6 +119,59 @@ class WC_REST_WooPay_WSN_Checkout_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	// ---- check_permission ----
+
+	public function test_check_permission_returns_true_in_dev_mode() {
+		WC_Payments::mode()->dev();
+		$this->assertTrue( $this->controller->check_permission() );
+		WC_Payments::mode()->live();
+	}
+
+	public function test_check_permission_returns_false_in_live_mode() {
+		WC_Payments::mode()->live();
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	// ---- handle_checkout: error paths ----
+
+	public function test_handle_checkout_returns_400_for_empty_items() {
+		$request = new WP_REST_Request( 'POST', '/wcpay/v1/woopay/wsn-checkout' );
+		$request->set_param( 'items', [] );
+
+		$result = $this->controller->handle_checkout( $request );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'wsn_checkout_no_items', $result->get_error_code() );
+		$this->assertSame( 400, $result->get_error_data()['status'] );
+	}
+
+	// ---- stamp_express_attribution: exception safety ----
+
+	public function test_stamp_express_attribution_removes_nonce_bypass_even_on_exception() {
+		add_filter(
+			'rest_pre_dispatch',
+			function ( $result, $_server, WP_REST_Request $request ) {
+				if ( false !== strpos( $request->get_route(), '/wc/store/v1/checkout' ) ) {
+					throw new \Exception( 'Simulated dispatch failure' );
+				}
+				return $result;
+			},
+			10,
+			3
+		);
+
+		try {
+			$this->invoke_stamp_express_attribution();
+		} catch ( \Exception $e ) {
+			unset( $e ); // Expected — we only need the finally block to have run.
+		}
+
+		$this->assertFalse(
+			has_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' ),
+			'woocommerce_store_api_disable_nonce_check must be removed even when rest_do_request throws'
+		);
+	}
+
 	// ---- helpers ----
 
 	/**
@@ -129,7 +182,7 @@ class WC_REST_WooPay_WSN_Checkout_Controller_Test extends WCPAY_UnitTestCase {
 	private function intercept_store_api_checkout_dispatch(): void {
 		add_filter(
 			'rest_pre_dispatch',
-			function ( $result, $server, WP_REST_Request $request ) {
+			function ( $result, $_server, WP_REST_Request $request ) {
 				if ( false !== strpos( $request->get_route(), '/wc/store/v1/checkout' ) ) {
 					$this->captured_body = $request->get_body_params();
 					return new WP_REST_Response( [], 200 );
@@ -146,7 +199,6 @@ class WC_REST_WooPay_WSN_Checkout_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	private function invoke_stamp_express_attribution(): void {
 		$method = new ReflectionMethod( WC_REST_WooPay_WSN_Checkout_Controller::class, 'stamp_express_attribution' );
-		$method->setAccessible( true );
 		$method->invoke( $this->controller );
 	}
 }
