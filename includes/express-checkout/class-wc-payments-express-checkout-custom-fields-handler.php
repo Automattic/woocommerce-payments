@@ -135,10 +135,11 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 			return;
 		}
 
-		$custom_checkout_data = $this->sanitize_custom_checkout_data( $custom_checkout_data );
-		$errors               = new WP_Error();
+		$custom_checkout_fields = self::get_custom_checkout_fields();
+		$custom_checkout_data   = $this->sanitize_custom_checkout_data( $custom_checkout_data, $custom_checkout_fields );
+		$errors                 = new WP_Error();
 
-		$this->validate_required_custom_checkout_fields( $custom_checkout_data, $errors );
+		$this->validate_required_custom_checkout_fields( $custom_checkout_data, $errors, $custom_checkout_fields );
 
 		/**
 		 * Allows extensions to validate Express Checkout custom checkout fields.
@@ -160,7 +161,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 			);
 		}
 
-		$this->save_registered_custom_checkout_fields( $order, $custom_checkout_data );
+		$this->save_registered_custom_checkout_fields( $order, $custom_checkout_data, $custom_checkout_fields );
 
 		/**
 		 * Allows extensions to save Express Checkout custom checkout fields to the order.
@@ -253,15 +254,15 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 	 * Sanitizes custom checkout data according to the checkout field type.
 	 *
 	 * @param array $custom_checkout_data Custom checkout data.
+	 * @param array $custom_checkout_fields Custom checkout field definitions.
 	 * @return array
 	 */
-	private function sanitize_custom_checkout_data( array $custom_checkout_data ): array {
-		$custom_checkout_fields = self::get_custom_checkout_fields();
-		$sanitized_data         = [];
+	private function sanitize_custom_checkout_data( array $custom_checkout_data, array $custom_checkout_fields ): array {
+		$sanitized_data = [];
 
 		foreach ( $custom_checkout_data as $field_name => $field_value ) {
 			$field_name = wc_clean( wp_unslash( $field_name ) );
-			$field_type = $custom_checkout_fields[ $field_name ]['type'] ?? 'text';
+			$field_type = $custom_checkout_fields[ $field_name ]['type'] ?? 'textarea';
 
 			$sanitized_data[ $field_name ] = $this->sanitize_custom_checkout_field_value( $field_value, $field_type );
 		}
@@ -298,10 +299,11 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 	 *
 	 * @param array    $custom_checkout_data Custom checkout data.
 	 * @param WP_Error $errors Validation errors.
+	 * @param array    $custom_checkout_fields Custom checkout field definitions.
 	 * @return void
 	 */
-	private function validate_required_custom_checkout_fields( array $custom_checkout_data, WP_Error $errors ) {
-		foreach ( self::get_custom_checkout_fields() as $field_name => $field ) {
+	private function validate_required_custom_checkout_fields( array $custom_checkout_data, WP_Error $errors, array $custom_checkout_fields ) {
+		foreach ( $custom_checkout_fields as $field_name => $field ) {
 			if ( empty( $field['required'] ) ) {
 				continue;
 			}
@@ -324,12 +326,13 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 	 *
 	 * @param WC_Order $order Order object.
 	 * @param array    $custom_checkout_data Custom checkout data.
+	 * @param array    $custom_checkout_fields Custom checkout field definitions.
 	 * @return void
 	 */
-	private function save_registered_custom_checkout_fields( WC_Order $order, array $custom_checkout_data ) {
+	private function save_registered_custom_checkout_fields( WC_Order $order, array $custom_checkout_data, array $custom_checkout_fields ) {
 		$updated_order_meta = false;
 
-		foreach ( array_keys( self::get_custom_checkout_fields() ) as $field_name ) {
+		foreach ( array_keys( $custom_checkout_fields ) as $field_name ) {
 			if ( ! array_key_exists( $field_name, $custom_checkout_data ) ) {
 				continue;
 			}

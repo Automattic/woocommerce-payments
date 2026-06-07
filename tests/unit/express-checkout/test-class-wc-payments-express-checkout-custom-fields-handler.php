@@ -176,7 +176,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$order   = WC_Helper_Order::create_order();
 		$request = $this->create_request(
 			[
-				'after_order_notes_field' => ' A hook-only value ',
+				'after_order_notes_field' => " A hook-only value\nwith another line ",
 			]
 		);
 
@@ -197,11 +197,41 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 
 		$this->assertSame(
 			[
-				'after_order_notes_field' => 'A hook-only value',
+				'after_order_notes_field' => "A hook-only value\nwith another line",
 			],
 			$captured_data
 		);
 		$this->assertSame( '', $order->get_meta( 'after_order_notes_field' ) );
+	}
+
+	public function test_process_store_api_checkout_request_loads_custom_checkout_fields_once() {
+		$get_checkout_fields_count = 0;
+
+		add_filter(
+			'woocommerce_checkout_fields',
+			function ( $fields ) use ( &$get_checkout_fields_count ) {
+				++$get_checkout_fields_count;
+
+				$fields['order']['my_field_name'] = [
+					'type'     => 'text',
+					'label'    => 'My field name',
+					'required' => true,
+				];
+
+				return $fields;
+			}
+		);
+
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request(
+			[
+				'my_field_name' => ' A required value ',
+			]
+		);
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+
+		$this->assertSame( 1, $get_checkout_fields_count );
 	}
 
 	public function test_process_store_api_checkout_request_does_not_run_classic_checkout_process_validation() {
