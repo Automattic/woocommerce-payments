@@ -172,6 +172,38 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$this->assertSame( 'A required value', $order->get_meta( 'my_field_name' ) );
 	}
 
+	public function test_process_store_api_checkout_request_exposes_unregistered_custom_checkout_fields_to_hooks_without_saving_by_default() {
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request(
+			[
+				'after_order_notes_field' => ' A hook-only value ',
+			]
+		);
+
+		$captured_data = null;
+
+		add_action(
+			'wcpay_express_checkout_update_custom_fields_order_meta',
+			function ( $order_id, $custom_checkout_data ) use ( &$captured_data ) {
+				$captured_data = $custom_checkout_data;
+			},
+			10,
+			2
+		);
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame(
+			[
+				'after_order_notes_field' => 'A hook-only value',
+			],
+			$captured_data
+		);
+		$this->assertSame( '', $order->get_meta( 'after_order_notes_field' ) );
+	}
+
 	public function test_process_store_api_checkout_request_does_not_run_classic_checkout_process_validation() {
 		$classic_checkout_process_ran = false;
 		$checkout_process_callback    = function () use ( &$classic_checkout_process_ran ) {

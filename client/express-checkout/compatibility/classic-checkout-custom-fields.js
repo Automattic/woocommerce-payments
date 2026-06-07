@@ -144,6 +144,8 @@ const getCustomCheckoutData = () => {
 	const customCheckoutFields =
 		getExpressCheckoutData( 'custom_checkout_fields' ) ?? {};
 	const registeredFieldNames = new Set( Object.keys( customCheckoutFields ) );
+	// Registered fields are validated and saved server-side. Additional form
+	// fields are exposed for extension hooks.
 	const fieldNames = [
 		...new Set( [
 			...registeredFieldNames,

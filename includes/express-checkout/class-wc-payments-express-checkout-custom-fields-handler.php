@@ -131,7 +131,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 		$custom_checkout_data = $this->get_custom_checkout_data_from_request( $request );
 
 		if ( [] === $custom_checkout_data ) {
-			// Normal Store API checkouts can include empty extension defaults without an Express Checkout custom-field payload.
+			// Required custom checkout field validation depends on Express Checkout sending its custom-field payload.
 			return;
 		}
 
