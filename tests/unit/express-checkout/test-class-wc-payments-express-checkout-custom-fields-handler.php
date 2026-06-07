@@ -172,12 +172,11 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$this->assertSame( 'A required value', $order->get_meta( 'my_field_name' ) );
 	}
 
-	public function test_process_store_api_checkout_request_runs_classic_checkout_process_validation() {
-		$checkout_process_callback = function () {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( empty( $_POST['my_field_name'] ) ) {
-				wc_add_notice( 'Please enter something into this new shiny field.', 'error' );
-			}
+	public function test_process_store_api_checkout_request_does_not_run_classic_checkout_process_validation() {
+		$classic_checkout_process_ran = false;
+		$checkout_process_callback    = function () use ( &$classic_checkout_process_ran ) {
+			$classic_checkout_process_ran = true;
+			wc_add_notice( 'Classic checkout validation should not run.', 'error' );
 		};
 
 		$this->classic_checkout_process_callbacks[] = $checkout_process_callback;
@@ -194,19 +193,17 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 			]
 		);
 
-		$this->expectException( RouteException::class );
-		$this->expectExceptionMessage( 'Please enter something into this new shiny field.' );
-
 		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+
+		$this->assertFalse( $classic_checkout_process_ran );
+		$this->assertSame( [], wc_get_notices( 'error' ) );
 	}
 
-	public function test_process_store_api_checkout_request_runs_classic_checkout_update_order_meta_callbacks() {
-		$checkout_update_order_meta_callback = function ( $order_id ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( isset( $_POST['my_field_name'] ) ) {
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing
-				update_post_meta( $order_id, 'My Field', sanitize_text_field( wp_unslash( $_POST['my_field_name'] ) ) );
-			}
+	public function test_process_store_api_checkout_request_does_not_run_classic_checkout_update_order_meta_callbacks() {
+		$classic_checkout_update_order_meta_ran = false;
+		$checkout_update_order_meta_callback    = function ( $order_id ) use ( &$classic_checkout_update_order_meta_ran ) {
+			$classic_checkout_update_order_meta_ran = true;
+			update_post_meta( $order_id, 'My Field', 'Classic checkout meta should not save.' );
 		};
 
 		$this->classic_checkout_update_order_meta_callbacks[] = $checkout_update_order_meta_callback;
@@ -225,7 +222,31 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 
 		$this->system_under_test->process_store_api_checkout_request( $order, $request );
 
-		$this->assertSame( 'A required value', get_post_meta( $order->get_id(), 'My Field', true ) );
+		$this->assertFalse( $classic_checkout_update_order_meta_ran );
+		$this->assertSame( '', get_post_meta( $order->get_id(), 'My Field', true ) );
+	}
+
+	public function test_process_store_api_checkout_request_throws_when_custom_field_validation_hook_adds_error() {
+		add_action(
+			'wcpay_express_checkout_after_custom_fields_validation',
+			function ( $custom_checkout_data, $errors ) {
+				$errors->add( 'my_custom_checkout_field_error', 'Custom checkout field error.' );
+			},
+			10,
+			2
+		);
+
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request(
+			[
+				'my_field_name' => 'A value',
+			]
+		);
+
+		$this->expectException( RouteException::class );
+		$this->expectExceptionMessage( 'Custom checkout field error.' );
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
 	}
 
 	public function test_process_store_api_checkout_request_ignores_empty_custom_checkout_data() {
@@ -235,6 +256,16 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$this->system_under_test->process_store_api_checkout_request( $order, $request );
 
 		$this->assertSame( '', $order->get_meta( 'my_field_name' ) );
+	}
+
+	public function test_process_store_api_checkout_request_throws_when_custom_checkout_data_is_invalid_json() {
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request_with_raw_custom_checkout_data( '{invalid-json' );
+
+		$this->expectException( RouteException::class );
+		$this->expectExceptionMessage( 'Invalid custom checkout field data.' );
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
 	}
 
 	public function test_process_store_api_checkout_request_throws_when_required_custom_field_is_empty() {
