@@ -33,6 +33,13 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	private $classic_checkout_update_order_meta_callbacks = [];
 
 	/**
+	 * Checkout fields callbacks added during a test.
+	 *
+	 * @var array
+	 */
+	private $checkout_fields_callbacks = [];
+
+	/**
 	 * Test setup.
 	 */
 	public function set_up() {
@@ -45,15 +52,18 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	 * Test teardown.
 	 */
 	public function tear_down() {
-		remove_all_filters( 'woocommerce_checkout_fields' );
 		remove_all_actions( 'wcpay_express_checkout_update_custom_fields_order_meta' );
 		remove_all_actions( 'wcpay_express_checkout_after_custom_fields_validation' );
+		foreach ( $this->checkout_fields_callbacks as $callback ) {
+			remove_filter( 'woocommerce_checkout_fields', $callback );
+		}
 		foreach ( $this->classic_checkout_process_callbacks as $callback ) {
 			remove_action( 'woocommerce_checkout_process', $callback );
 		}
 		foreach ( $this->classic_checkout_update_order_meta_callbacks as $callback ) {
 			remove_action( 'woocommerce_checkout_update_order_meta', $callback );
 		}
+		$this->checkout_fields_callbacks                    = [];
 		$this->classic_checkout_process_callbacks           = [];
 		$this->classic_checkout_update_order_meta_callbacks = [];
 		wc_clear_notices();
@@ -63,8 +73,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	}
 
 	public function test_get_custom_checkout_fields_includes_only_non_standard_fields() {
-		add_filter(
-			'woocommerce_checkout_fields',
+		$this->add_checkout_fields_filter(
 			function ( $fields ) {
 				$fields['billing']['billing_vat_id'] = [
 					'type'     => 'text',
@@ -93,8 +102,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	}
 
 	public function test_process_store_api_checkout_request_passes_sanitized_custom_checkout_data_to_custom_field_actions() {
-		add_filter(
-			'woocommerce_checkout_fields',
+		$this->add_checkout_fields_filter(
 			function ( $fields ) {
 				$fields['order']['my_field_name'] = [
 					'type'     => 'text',
@@ -145,8 +153,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	}
 
 	public function test_process_store_api_checkout_request_saves_registered_custom_checkout_fields_to_order_meta() {
-		add_filter(
-			'woocommerce_checkout_fields',
+		$this->add_checkout_fields_filter(
 			function ( $fields ) {
 				$fields['order']['my_field_name'] = [
 					'type'     => 'text',
@@ -204,11 +211,41 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$this->assertSame( '', $order->get_meta( 'after_order_notes_field' ) );
 	}
 
+	public function test_process_store_api_checkout_request_skips_empty_custom_checkout_field_names() {
+		$order   = WC_Helper_Order::create_order();
+		$request = $this->create_request(
+			[
+				' '                       => 'Skipped value',
+				'after_order_notes_field' => ' A hook-only value ',
+				"\n\t"                    => 'Also skipped',
+			]
+		);
+
+		$captured_data = null;
+
+		add_action(
+			'wcpay_express_checkout_update_custom_fields_order_meta',
+			function ( $order_id, $custom_checkout_data ) use ( &$captured_data ) {
+				$captured_data = $custom_checkout_data;
+			},
+			10,
+			2
+		);
+
+		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+
+		$this->assertSame(
+			[
+				'after_order_notes_field' => 'A hook-only value',
+			],
+			$captured_data
+		);
+	}
+
 	public function test_process_store_api_checkout_request_loads_custom_checkout_fields_once() {
 		$get_checkout_fields_count = 0;
 
-		add_filter(
-			'woocommerce_checkout_fields',
+		$this->add_checkout_fields_filter(
 			function ( $fields ) use ( &$get_checkout_fields_count ) {
 				++$get_checkout_fields_count;
 
@@ -331,8 +368,7 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 	}
 
 	public function test_process_store_api_checkout_request_throws_when_required_custom_field_is_empty() {
-		add_filter(
-			'woocommerce_checkout_fields',
+		$this->add_checkout_fields_filter(
 			function ( $fields ) {
 				$fields['order']['my_field_name'] = [
 					'type'     => 'text',
@@ -355,6 +391,17 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler_Test extends WCPAY_Unit
 		$this->expectExceptionMessage( 'My field name is a required field.' );
 
 		$this->system_under_test->process_store_api_checkout_request( $order, $request );
+	}
+
+	/**
+	 * Adds a checkout fields filter that will be removed after the test.
+	 *
+	 * @param callable $callback Filter callback.
+	 * @return void
+	 */
+	private function add_checkout_fields_filter( callable $callback ) {
+		$this->checkout_fields_callbacks[] = $callback;
+		add_filter( 'woocommerce_checkout_fields', $callback );
 	}
 
 	/**

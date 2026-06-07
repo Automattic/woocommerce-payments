@@ -44,6 +44,7 @@ const INTERNAL_CHECKOUT_FIELDS = new Set( [
 	'account_username',
 	'account_password',
 	'account_password-2',
+	'save_user_in_woopay',
 	'woocommerce-process-checkout-nonce',
 ] );
 const INTERNAL_CHECKOUT_FIELD_PREFIXES = [
@@ -52,6 +53,7 @@ const INTERNAL_CHECKOUT_FIELD_PREFIXES = [
 	'wc_order_attribution_',
 	'woocommerce_',
 	'wcpay_',
+	'woopay_',
 ];
 const IGNORED_FORM_FIELD_TYPES = new Set( [ 'button', 'reset', 'submit' ] );
 

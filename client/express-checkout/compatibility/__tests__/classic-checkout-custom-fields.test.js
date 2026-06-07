@@ -85,6 +85,9 @@ describe( 'Classic checkout custom fields compatibility', () => {
 				<input name="payment_method" value="woocommerce_payments" />
 				<input name="_wpnonce" value="nonce" />
 				<input name="wc_order_attribution_source_type" value="organic" />
+				<input name="save_user_in_woopay" value="1" />
+				<input name="woopay_source_url" value="https://example.test/checkout/" />
+				<input name="woopay_user_phone_field[no-country-code]" value="1234567890" />
 				<input name="my_field_name" value="A required value" />
 				<select name="delivery_window">
 					<option value="morning" selected>Morning</option>

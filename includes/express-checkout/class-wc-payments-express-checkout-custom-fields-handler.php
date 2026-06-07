@@ -262,6 +262,11 @@ class WC_Payments_Express_Checkout_Custom_Fields_Handler {
 
 		foreach ( $custom_checkout_data as $field_name => $field_value ) {
 			$field_name = wc_clean( wp_unslash( $field_name ) );
+
+			if ( '' === $field_name ) {
+				continue;
+			}
+
 			$field_type = $custom_checkout_fields[ $field_name ]['type'] ?? 'textarea';
 
 			$sanitized_data[ $field_name ] = $this->sanitize_custom_checkout_field_value( $field_value, $field_type );

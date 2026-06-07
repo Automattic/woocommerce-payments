@@ -13,7 +13,7 @@ Fields rendered directly into the checkout form, for example with `woocommerce_a
 ```php
 add_action(
 	'wcpay_express_checkout_after_custom_fields_validation',
-	function ( array $custom_checkout_data, WP_Error $errors ) {
+	function ( array $custom_checkout_data, WP_Error $errors, WC_Order $order, WP_REST_Request $request ) {
 		if ( empty( $custom_checkout_data['my_custom_field'] ) ) {
 			$errors->add(
 				'my_custom_field_required',
@@ -22,7 +22,7 @@ add_action(
 		}
 	},
 	10,
-	2
+	4
 );
 ```
 
@@ -31,7 +31,7 @@ add_action(
 ```php
 add_action(
 	'wcpay_express_checkout_update_custom_fields_order_meta',
-	function ( int $order_id, array $custom_checkout_data ) {
+	function ( int $order_id, array $custom_checkout_data, WC_Order $order, WP_REST_Request $request ) {
 		if ( ! isset( $custom_checkout_data['my_custom_field'] ) ) {
 			return;
 		}
@@ -43,6 +43,6 @@ add_action(
 		);
 	},
 	10,
-	2
+	4
 );
 ```
