@@ -55,8 +55,14 @@ test.describe(
 				} )
 				.click();
 
-			await adminPage.getByRole( 'link', { name: 'Run' } ).focus();
-			await adminPage.getByRole( 'link', { name: 'Run' } ).click();
+			// The pending-actions list can contain more than one "Run" link; scope to
+			// the first so the click is deterministic instead of throwing a strict-mode
+			// violation when an extra scheduled payment is queued.
+			const runAction = adminPage
+				.getByRole( 'link', { name: 'Run' } )
+				.first();
+			await runAction.focus();
+			await runAction.click();
 
 			await expect(
 				adminPage.getByText( actionSchedulerHook, { exact: true } )

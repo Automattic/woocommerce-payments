@@ -65,6 +65,7 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import DisputeRecommendationsCard from '../dispute-recommendations';
+import { getDisputeRecommendations } from '../dispute-recommendations/utils';
 import { recordOutcomeViewOnce } from '../dispute-outcome/tracks';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import ErrorBoundary from 'components/error-boundary';
@@ -877,13 +878,19 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 				wcpaySettings?.featureFlags
 					?.isDisputeAdditionalEvidenceTypesEnabled ?? false
 		  )
-		: undefined;
+		: '';
+
+	// Mirror the card: true only when the card actually renders entries.
+	const hasRecommendations =
+		showRecommendationsCard &&
+		dispute !== undefined &&
+		getDisputeRecommendations( dispute, productType ).length > 0;
 
 	useEffect( () => {
 		if ( shouldRecordOutcomeView && dispute ) {
-			recordOutcomeViewOnce( dispute, productType );
+			recordOutcomeViewOnce( dispute, productType, hasRecommendations );
 		}
-	}, [ shouldRecordOutcomeView, dispute, productType ] );
+	}, [ shouldRecordOutcomeView, dispute, productType, hasRecommendations ] );
 
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
