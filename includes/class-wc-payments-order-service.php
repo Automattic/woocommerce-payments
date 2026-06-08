@@ -128,6 +128,21 @@ class WC_Payments_Order_Service {
 	const WCPAY_MODE_META_KEY = '_wcpay_mode';
 
 	/**
+	 * WooCommerce email IDs that receive a persistent "[Test]" indicator in their subject and
+	 * heading when the order was paid in test mode. Covers the admin "New order" notification
+	 * and the customer-facing order confirmation emails merchants rely on for fulfilment.
+	 *
+	 * @const string[]
+	 */
+	const TEST_MODE_INDICATOR_EMAIL_IDS = [
+		'new_order',
+		'customer_processing_order',
+		'customer_completed_order',
+		'customer_on_hold_order',
+		'customer_invoice',
+	];
+
+	/**
 	 * Option key holding a one-way flag indicating the store has had at least one live WooPayments sale.
 	 *
 	 * @const string
@@ -207,6 +222,15 @@ class WC_Payments_Order_Service {
 	public function init_hooks(): void {
 		add_action( 'woocommerce_order_status_processing', [ $this, 'maybe_record_first_live_sale' ] );
 		add_action( 'woocommerce_order_status_completed', [ $this, 'maybe_record_first_live_sale' ] );
+
+		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
+		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
+		// send time (see maybe_add_test_mode_to_email_subject), so the marker survives a later
+		// switch back to live mode or WooPayments being deactivated.
+		foreach ( self::TEST_MODE_INDICATOR_EMAIL_IDS as $email_id ) {
+			add_filter( "woocommerce_email_subject_{$email_id}", [ $this, 'maybe_add_test_mode_to_email_subject' ], 10, 2 );
+			add_filter( "woocommerce_email_heading_{$email_id}", [ $this, 'maybe_add_test_mode_to_email_heading' ], 10, 2 );
+		}
 	}
 
 	/**
@@ -235,6 +259,42 @@ class WC_Payments_Order_Service {
 				WC_Tracks::record_event( 'wcpay_first_live_sale' );
 			}
 		}
+	}
+
+	/**
+	 * Prepends a persistent test-mode marker to an order email subject when the order was paid
+	 * in test mode. Hooked to `woocommerce_email_subject_{$email_id}` for the order emails in
+	 * self::TEST_MODE_INDICATOR_EMAIL_IDS.
+	 *
+	 * @param string $subject The email subject.
+	 * @param mixed  $order   The email object; a WC_Order for order emails.
+	 *
+	 * @return string The subject, prefixed with a test marker for test-mode orders.
+	 */
+	public function maybe_add_test_mode_to_email_subject( $subject, $order ): string {
+		if ( ! $order instanceof WC_Order || ! $this->is_order_in_test_mode( $order ) ) {
+			return $subject;
+		}
+
+		return $this->prepend_test_mode_email_marker( $subject );
+	}
+
+	/**
+	 * Prepends a persistent test-mode marker to an order email heading when the order was paid
+	 * in test mode. Hooked to `woocommerce_email_heading_{$email_id}` for the order emails in
+	 * self::TEST_MODE_INDICATOR_EMAIL_IDS.
+	 *
+	 * @param string $heading The email heading.
+	 * @param mixed  $order   The email object; a WC_Order for order emails.
+	 *
+	 * @return string The heading, prefixed with a test marker for test-mode orders.
+	 */
+	public function maybe_add_test_mode_to_email_heading( $heading, $order ): string {
+		if ( ! $order instanceof WC_Order || ! $this->is_order_in_test_mode( $order ) ) {
+			return $heading;
+		}
+
+		return $this->prepend_test_mode_email_marker( $heading );
 	}
 
 	/**
@@ -1318,7 +1378,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_completed( $order, $intent_data ) {
-		$note = $this->generate_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
+		$note = $this->generate_payment_success_note( $order, $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -1757,21 +1817,55 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Determines whether the order was paid while WooPayments was in test mode, based on the
+	 * mode persisted to the order meta at payment time. Read from the order, never from the
+	 * current global mode, so downstream indicators survive a later mode switch or WooPayments
+	 * being deactivated.
+	 *
+	 * @param WC_Order $order Order object.
+	 *
+	 * @return bool
+	 */
+	private function is_order_in_test_mode( WC_Order $order ): bool {
+		return Order_Mode::TEST === $order->get_meta( self::WCPAY_MODE_META_KEY );
+	}
+
+	/**
+	 * Prefixes an order email subject or heading with the localized test-mode marker.
+	 *
+	 * @param string $text The subject or heading to prefix.
+	 *
+	 * @return string
+	 */
+	private function prepend_test_mode_email_marker( string $text ): string {
+		/* translators: %s: the original email subject or heading. The leading "[Test]" flags an order paid in WooPayments test mode. */
+		return sprintf( __( '[Test] %s', 'woocommerce-payments' ), $text );
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
-	 * @param string $intent_id        The payment intent ID related to the intent/order.
-	 * @param string $charge_id        The charge ID related to the intent/order.
-	 * @param string $formatted_amount The formatted order total.
+	 * @param WC_Order $order            Order object, used to detect test-mode payments.
+	 * @param string   $intent_id        The payment intent ID related to the intent/order.
+	 * @param string   $charge_id        The charge ID related to the intent/order.
+	 * @param string   $formatted_amount The formatted order total.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
+	private function generate_payment_success_note( $order, $intent_id, $charge_id, $formatted_amount ) {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+
+		if ( $this->is_order_in_test_mode( $order ) ) {
+			/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment */
+			$message = __( 'A test payment of %1$s was processed using %2$s in <strong>test mode</strong> (<a>%3$s</a>). No real funds were collected.', 'woocommerce-payments' );
+		} else {
+			/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+			$message = __( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' );
+		}
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
+				$message,
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
