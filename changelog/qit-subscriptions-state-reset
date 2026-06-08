@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Scope the Action Scheduler "Run" locator to the first match in the QIT subscriptions renew test to avoid a strict-mode failure when more than one scheduled payment is pending
