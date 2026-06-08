@@ -36,10 +36,15 @@ export type BalanceRowKey =
 /**
  * Indent depth for a Balance summary row.
  *
- * `0` — top-level totals (Starting balance, Total charges captured, Net balance
- * change, Ending balance).
- * `1` — group rows (Fees, Refunds, Disputes, Payouts).
- * `2` — sub-rows nested inside a group (Charge fees, Dispute fees, etc.).
+ * `0` — top-level anchors (Starting balance, Total charges captured, Net
+ * balance change, Ending balance).
+ * `1` — Fees group header and all standalone non-anchor rows (Refunds, Refund
+ * failures, Disputes, Financing payout/paydown, Payout fees, Reader costs,
+ * Network costs, Other adjustments, Payouts). Only `fees` actually owns
+ * depth-2 children; the rest are leaves rendered at the same indent for
+ * visual hierarchy.
+ * `2` — sub-rows nested inside the Fees group (Charge fees, Dispute fees, Fee
+ * refunds).
  */
 export type BalanceRowDepth = 0 | 1 | 2;
 

@@ -392,6 +392,59 @@ describe( 'mapTimelineEvents', () => {
 			).toMatchSnapshot();
 		} );
 
+		test( 'renders a free-text refund reason when present', () => {
+			const [ , , mainItem ] = mapTimelineEvents( [
+				{
+					amount_refunded: 5000,
+					currency: 'USD',
+					datetime: 1585940281,
+					deposit: null,
+					type: 'partial_refund',
+					reason: 'Customer changed their mind',
+				},
+			] );
+
+			expect( mainItem.body ).toContain(
+				'Reason: Customer changed their mind'
+			);
+		} );
+
+		test( 'humanizes Stripe refund reason enums', () => {
+			const [ , , mainItem ] = mapTimelineEvents( [
+				{
+					amount_refunded: 5000,
+					currency: 'USD',
+					datetime: 1585940281,
+					deposit: null,
+					type: 'partial_refund',
+					reason: 'requested_by_customer',
+				},
+			] );
+
+			expect( mainItem.body ).toContain(
+				'Reason: Requested by customer'
+			);
+		} );
+
+		test( 'omits the refund reason line when none was captured', () => {
+			const [ , , mainItem ] = mapTimelineEvents( [
+				{
+					amount_refunded: 5000,
+					currency: 'USD',
+					datetime: 1585940281,
+					deposit: null,
+					type: 'partial_refund',
+				},
+			] );
+
+			expect(
+				mainItem.body.some(
+					( line ) =>
+						typeof line === 'string' && line.includes( 'Reason:' )
+				)
+			).toBe( false );
+		} );
+
 		test( 'formats dispute_won events', () => {
 			expect(
 				mapTimelineEvents( [
