@@ -128,9 +128,12 @@ class WC_Payments_Order_Service {
 	const WCPAY_MODE_META_KEY = '_wcpay_mode';
 
 	/**
-	 * WooCommerce email IDs that receive a persistent "[Test]" indicator in their subject and
-	 * heading when the order was paid in test mode. Covers the admin "New order" notification
-	 * and the customer-facing order confirmation emails merchants rely on for fulfilment.
+	 * Hook ID suffixes for the WooCommerce order emails that receive a persistent "[Test]"
+	 * indicator in their subject and heading when the order was paid in test mode. Covers the
+	 * admin "New order" notification and the customer-facing order emails merchants rely on for
+	 * fulfilment. `customer_invoice` and `customer_invoice_paid` are both listed because
+	 * WC_Email_Customer_Invoice fires the `_paid` filter variant for processing/completed orders
+	 * (the usual case for an invoice resend) and the plain variant otherwise.
 	 *
 	 * @const string[]
 	 */
@@ -140,6 +143,7 @@ class WC_Payments_Order_Service {
 		'customer_completed_order',
 		'customer_on_hold_order',
 		'customer_invoice',
+		'customer_invoice_paid',
 	];
 
 	/**

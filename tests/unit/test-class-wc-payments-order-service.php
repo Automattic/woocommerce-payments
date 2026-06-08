@@ -255,7 +255,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$subject = $this->order_service->maybe_add_test_mode_to_email_subject( '[Apparel Clothing]: New order #1811', $this->order );
 
-		$this->assertStringContainsString( 'Test', $subject );
+		$this->assertStringContainsString( '[Test]', $subject );
 		$this->assertStringContainsString( 'New order #1811', $subject );
 	}
 
@@ -279,7 +279,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$heading = $this->order_service->maybe_add_test_mode_to_email_heading( 'New order: #1811', $this->order );
 
-		$this->assertStringContainsString( 'Test', $heading );
+		$this->assertStringContainsString( '[Test]', $heading );
 		$this->assertStringContainsString( 'New order: #1811', $heading );
 	}
 
@@ -304,6 +304,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Orders with no stored mode (legacy or non-WooPayments orders) must not have their heading flagged.
+	 */
+	public function test_email_heading_unchanged_when_mode_meta_absent() {
+		$original = 'New order: #1811';
+
+		$this->assertSame( $original, $this->order_service->maybe_add_test_mode_to_email_heading( $original, $this->order ) );
+	}
+
+	/**
 	 * The callbacks must be a no-op (no fatal) when the second argument is not a WC_Order.
 	 */
 	public function test_email_marker_callbacks_ignore_non_order_argument() {
@@ -312,12 +321,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * init_hooks must register the subject and heading filters for the relevant order emails.
+	 * init_hooks must register the subject and heading filters for every order email in
+	 * TEST_MODE_INDICATOR_EMAIL_IDS, including the paid-invoice variant.
 	 */
 	public function test_init_hooks_registers_test_mode_email_filters() {
 		$this->order_service->init_hooks();
 
-		foreach ( [ 'new_order', 'customer_processing_order', 'customer_completed_order', 'customer_on_hold_order', 'customer_invoice' ] as $email_id ) {
+		foreach ( WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS as $email_id ) {
 			$this->assertNotFalse(
 				has_filter( "woocommerce_email_subject_{$email_id}", [ $this->order_service, 'maybe_add_test_mode_to_email_subject' ] ),
 				"Missing subject filter for {$email_id}"
@@ -327,6 +337,35 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				"Missing heading filter for {$email_id}"
 			);
 		}
+
+		// Paid invoices route through the *_paid filter variant (WC_Email_Customer_Invoice swaps
+		// the suffix for processing/completed orders), so it must be covered explicitly.
+		$this->assertContains( 'customer_invoice_paid', WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS );
+	}
+
+	/**
+	 * The marker must apply end-to-end through WordPress' filter system (not only via a direct
+	 * callback call), which guards against an accepted_args regression that would null $order and
+	 * silently drop the marker on every real email.
+	 */
+	public function test_test_mode_marker_applied_through_registered_filters() {
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$this->order->save();
+		$this->order_service->init_hooks();
+
+		$this->assertStringContainsString(
+			'[Test]',
+			apply_filters( 'woocommerce_email_subject_new_order', '[Apparel Clothing]: New order #1811', $this->order )
+		);
+		$this->assertStringContainsString(
+			'[Test]',
+			apply_filters( 'woocommerce_email_heading_new_order', 'New order: #1811', $this->order )
+		);
+		// Paid-invoice variant: the dominant path for invoice resends on WooPayments orders.
+		$this->assertStringContainsString(
+			'[Test]',
+			apply_filters( 'woocommerce_email_subject_customer_invoice_paid', 'Invoice for order #1811', $this->order )
+		);
 	}
 
 	/**
