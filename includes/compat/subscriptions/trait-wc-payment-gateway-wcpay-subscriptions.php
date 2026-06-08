@@ -409,46 +409,64 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT(), null, null, '', $this->get_payment_method_to_use_for_intent(), $customer_id );
 			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( API_Exception $e ) {
-			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
+			Logger::error( 'Error processing subscription renewal (payment method: ' . ( $token ? $token->get_token() : 'none' ) . '): ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
 
 			if ( ! empty( $payment_information ) ) {
+				$formatted_amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+					$renewal_order
+				);
+
 				if ( $this->is_unusable_saved_payment_method_error( $e ) ) {
-					// The saved payment method can no longer be charged off-session: it was removed/detached from
-					// its customer, its customer was deleted (leaving a dangling reference), or it no longer exists
-					// on the account. Stripe reports these states with several different technical messages ("You
-					// must save this PaymentMethod to a customer before you can update it", "...was detached from a
-					// Customer. It may not be used again", "No such PaymentMethod"), and they can surface at either
-					// the pre-confirm payment method update or the charge confirmation. Normalise them to one clear,
-					// actionable note so the renewal fails cleanly into dunning; WooCommerce Subscriptions then
-					// notifies the customer, who can add a new payment method to recover. See TRAPLAT-3995.
-					$error_details = esc_html__( 'The saved payment method is no longer available, so the renewal could not be charged. The customer needs to add a new payment method to continue the subscription', 'woocommerce-payments' );
+					// Replace the raw, technical Stripe error with a clear, actionable note. The saved payment method
+					// is rendered with get_display_name() (correct per token type) and wrapped in <strong> so it reads
+					// as the method/identifier rather than blending into the prose; the raw pm_ id is kept in the log
+					// above for debugging. States covered are described on is_unusable_saved_payment_method_error().
+					// TRAPLAT-3995.
+					$payment_method_name = $token ? $token->get_display_name() : '';
+					$note                = '' !== $payment_method_name
+						? sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1$s: the failed payment amount, %2$s: the saved payment method, e.g. "Visa ending in 4242 (expires 01/26)" */
+								__( 'A payment of %1$s <strong>failed</strong>: the saved payment method <strong>%2$s</strong> can no longer be used. A new payment method is required.', 'woocommerce-payments' ),
+								[ 'strong' => '<strong>' ]
+							),
+							$formatted_amount,
+							esc_html( $payment_method_name )
+						)
+						: sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1$s: the failed payment amount */
+								__( 'A payment of %1$s <strong>failed</strong>: the saved payment method can no longer be used. A new payment method is required.', 'woocommerce-payments' ),
+								[ 'strong' => '<strong>' ]
+							),
+							$formatted_amount
+						);
 				} else {
 					$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
 					if ( $e instanceof API_Merchant_Exception ) {
 						$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
 					}
+
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount, %2: error message  */
+							__(
+								'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+								'woocommerce-payments'
+							),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						$formatted_amount,
+						$error_details
+					);
 				}
 
-				$note = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed payment amount, %2: error message  */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
-						),
-						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
-					),
-					WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
-						$renewal_order
-					),
-					$error_details
-				);
 				$renewal_order->add_order_note( $note );
 			}
 		}
@@ -467,10 +485,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool True when the saved payment method is no longer usable for the renewal.
 	 */
 	private function is_unusable_saved_payment_method_error( API_Exception $e ): bool {
-		if ( in_array( $e->get_error_code(), [ 'payment_method_no_longer_available', 'resource_missing' ], true ) ) {
+		// Reliable, payment-method-specific code the platform returns once it ships the clearer error.
+		if ( 'payment_method_no_longer_available' === $e->get_error_code() ) {
 			return true;
 		}
 
+		// Fallback for states without a payment-method-specific code: the charge-confirmation failure carries
+		// only a generic `invalid_request_error` code, and this also keeps detection working before the platform
+		// ships `payment_method_no_longer_available`. Matching is intentionally case-insensitive (stripos).
 		$message = $e->getMessage();
 		foreach (
 			[
