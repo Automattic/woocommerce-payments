@@ -88,7 +88,7 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 			$this->database_cache->delete( Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY );
 			return new WP_Error(
 				'wcpay_address_service_error',
-				'An unexpected error occurred while retrieving the address service token.'
+				'Address autocomplete is unavailable because the payment account is not connected.'
 			);
 		}
 

@@ -235,10 +235,11 @@ class WC_Payments_Address_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_address_service_error', $result->get_error_code() );
 	}
 
-	public function test_get_address_service_jwt_proceeds_to_cache_when_connection_check_errors() {
-		// When is_stripe_connected throws (account data unavailable), the on_error=true
-		// parameter makes it return true, so we proceed to the cache rather than
-		// deleting a potentially valid cached token.
+	public function test_get_address_service_jwt_passes_on_error_true_to_connection_check() {
+		// Asserts that get_address_service_jwt() calls is_stripe_connected() with
+		// on_error=true. That flag makes the connection check resolve to "connected"
+		// when account data is transiently unavailable, so a transient error proceeds
+		// to the cache rather than deleting a potentially valid cached token.
 		$this->mock_account
 			->expects( $this->once() )
 			->method( 'is_stripe_connected' )
