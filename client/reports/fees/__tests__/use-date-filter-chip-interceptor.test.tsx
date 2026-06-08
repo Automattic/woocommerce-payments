@@ -6,6 +6,15 @@
 import React from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { View } from '@wordpress/dataviews/wp';
+import { recordEvent } from 'tracks';
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 /**
  * Internal dependencies
@@ -74,8 +83,13 @@ const fakeKeyEvent = ( target: HTMLElement, key: string ) =>
 		stopPropagation: jest.fn(),
 	} as unknown as React.KeyboardEvent< HTMLDivElement > );
 
+beforeEach( () => {
+	mockRecordEvent.mockReset();
+} );
+
 afterEach( () => {
 	document.body.innerHTML = '';
+	jest.useRealTimers();
 } );
 
 describe( 'useDateFilterChipInterceptor', () => {
@@ -361,6 +375,80 @@ describe( 'useDateFilterChipInterceptor', () => {
 				} ),
 			},
 		] );
+	} );
+
+	it( 'records initial named date range changes', () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-05-18T12:00:00.000Z' ) );
+		const { container } = buildContainerWithChip();
+		const setView = jest.fn();
+		const { result } = renderHook( () =>
+			useDateFilterChipInterceptor( {
+				container,
+				view: baseView(),
+				setView,
+				popoverId,
+			} )
+		);
+
+		act( () => {
+			result.current.onPopoverChange( {
+				operator: 'between',
+				value: [ '2026-04-01', '2026-04-30' ],
+			} );
+		} );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_date_filter_change',
+			{
+				preset: 'last_month',
+				range_days: 29,
+				is_initial_apply: true,
+			}
+		);
+	} );
+
+	it( 'records subsequent custom date range changes', () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-05-18T12:00:00.000Z' ) );
+		const { container } = buildContainerWithChip();
+		const setView = jest.fn();
+		const view = baseView( {
+			filters: [
+				{
+					field: 'date',
+					operator: 'is',
+					value: encodeCustomDateFilterValue( {
+						operator: 'before',
+						value: '2026-04-01',
+					} ),
+				},
+			],
+		} );
+		const { result } = renderHook( () =>
+			useDateFilterChipInterceptor( {
+				container,
+				view,
+				setView,
+				popoverId,
+			} )
+		);
+
+		act( () => {
+			result.current.onPopoverChange( {
+				operator: 'between',
+				value: [ '2026-03-10', '2026-04-22' ],
+			} );
+		} );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_date_filter_change',
+			{
+				preset: 'custom',
+				range_days: 43,
+				is_initial_apply: false,
+			}
+		);
 	} );
 
 	it( 'removes a value-less date filter on popover close', () => {

@@ -273,6 +273,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
 				return true;
 			}
+			if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
+				return true;
+			}
 		}
 
 		return false;

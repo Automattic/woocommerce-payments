@@ -71,6 +71,20 @@ class Get_Reporting_Balance_Summary_Test extends WCPAY_UnitTestCase {
 		$request->set_currency( 'usd1' );
 	}
 
+	public function test_get_reporting_balance_summary_request_throws_when_currency_is_missing() {
+		$request = new Get_Reporting_Balance_Summary( $this->mock_api_client, $this->mock_wc_payments_http_client );
+
+		$request->set_date_start( '2024-03-01T00:00:00.000Z' );
+		$request->set_date_end( '2024-03-31T23:59:59.999Z' );
+		// Intentionally omit set_currency() — the REQUIRED_PARAMS guard in the
+		// base class should refuse to dispatch this request.
+
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$this->expectExceptionMessageMatches( '/Missing parameter\(s\).*currency/' );
+
+		$request->get_params();
+	}
+
 	/**
 	 * @dataProvider invalid_date_setter_provider
 	 *

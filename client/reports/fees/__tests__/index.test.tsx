@@ -6,6 +6,7 @@
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { recordEvent } from 'tracks';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -34,6 +35,14 @@ jest.mock( '@woocommerce/data', () => ( {
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string ) => mockSpeak( message ),
 } ) );
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 jest.mock( 'multi-currency/interface/functions', () => ( {
 	formatExplicitCurrency: ( amount: number, currency: string ) =>
@@ -86,6 +95,100 @@ const baseRow = {
 	payment_method: { type: 'card' },
 };
 
+const emptyFeesSummary = { count: 0, sources: [], types: [] };
+const defaultFeesSummary = {
+	count: 1,
+	sources: [ 'card' ],
+	types: [ 'charge' ],
+};
+const filteredMarchQuery = {
+	date_between: [ '2026-03-01', '2026-03-31' ],
+	payment_method_type: 'card',
+};
+
+type FeesRow = typeof baseRow;
+
+type FeesState = {
+	feesRows: FeesRow[];
+	feesError: Record< string, unknown >;
+	isLoading: boolean;
+};
+
+type FeesSummaryState = {
+	feesSummary: {
+		count?: number;
+		sources?: string[];
+		types?: string[];
+	};
+	isLoading: boolean;
+};
+
+const buildFeesRow = ( overrides: Partial< FeesRow > = {} ): FeesRow => ( {
+	...baseRow,
+	...overrides,
+} );
+
+const buildFeesState = (
+	overrides: Partial< FeesState > = {}
+): FeesState => ( {
+	feesRows: [ buildFeesRow() ],
+	feesError: {},
+	isLoading: false,
+	...overrides,
+} );
+
+const buildFeesSummaryState = (
+	overrides: Partial< FeesSummaryState > = {}
+): FeesSummaryState => ( {
+	feesSummary: defaultFeesSummary,
+	isLoading: false,
+	...overrides,
+} );
+
+const mockFeesState = ( overrides: Partial< FeesState > = {} ) => {
+	mockUseReportsFees.mockReturnValue( buildFeesState( overrides ) );
+};
+
+const mockFeesSummaryState = (
+	overrides: Partial< FeesSummaryState > = {}
+) => {
+	mockUseReportsFeesSummary.mockReturnValue(
+		buildFeesSummaryState( overrides )
+	);
+};
+
+const mockFeesReportState = (
+	feesOverrides: Partial< FeesState > = {},
+	summaryOverrides: Partial< FeesSummaryState > = {}
+) => {
+	mockFeesState( feesOverrides );
+	mockFeesSummaryState( summaryOverrides );
+};
+
+const mockEmptyFeesReportState = (
+	isLoading = false,
+	feesError: Record< string, unknown > = {}
+) => {
+	mockFeesReportState(
+		{
+			feesRows: [],
+			feesError,
+			isLoading,
+		},
+		{
+			feesSummary: emptyFeesSummary,
+			isLoading,
+		}
+	);
+};
+
+const expectRecordedTracksEvent = (
+	eventName: string,
+	properties: unknown
+) => {
+	expect( mockRecordEvent ).toHaveBeenCalledWith( eventName, properties );
+};
+
 beforeEach( () => {
 	mockUseReportsFees.mockReset();
 	mockUseReportsFeesSummary.mockReset();
@@ -93,6 +196,7 @@ beforeEach( () => {
 	mockUpdateQueryString.mockReset();
 	mockUpdateUserPreferences.mockReset();
 	mockSpeak.mockReset();
+	mockRecordEvent.mockReset();
 
 	( window as unknown as Record< string, unknown > ).wcpaySettings = {
 		currentUserEmail: 'a@b.test',
@@ -101,22 +205,180 @@ beforeEach( () => {
 		locale: { userLocale: 'en_US' },
 	};
 
-	mockUseReportsFees.mockReturnValue( {
-		feesRows: [ baseRow ],
-		feesError: {},
-		isLoading: false,
-	} );
-	mockUseReportsFeesSummary.mockReturnValue( {
-		feesSummary: {
-			count: 1,
-			sources: [ 'card' ],
-			types: [ 'charge' ],
-		},
-		isLoading: false,
-	} );
+	mockFeesReportState();
 } );
 
 describe( 'FeesReport (DataViews)', () => {
+	it( 'records load success when fees data finishes loading', () => {
+		mockGetQuery.mockReturnValue( filteredMarchQuery );
+		mockFeesReportState(
+			{
+				feesRows: [],
+				isLoading: true,
+			},
+			{
+				feesSummary: emptyFeesSummary,
+				isLoading: true,
+			}
+		);
+
+		const { rerender } = render( <FeesReport /> );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockFeesReportState(
+			{
+				feesRows: [],
+			},
+			{
+				feesSummary: emptyFeesSummary,
+			}
+		);
+
+		rerender( <FeesReport /> );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_load_success', {
+			total_items: 0,
+			has_filters: true,
+			is_initial_empty: false,
+			is_filtered_empty: true,
+			range_days: 30,
+		} );
+	} );
+
+	it( 'records load error when fees data resolves with an error', () => {
+		mockGetQuery.mockReturnValue( filteredMarchQuery );
+		mockFeesState( {
+			feesRows: [],
+		} );
+
+		const { rerender } = render( <FeesReport /> );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockFeesState( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+		} );
+
+		rerender( <FeesReport /> );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_load_error', {
+			has_filters: true,
+			range_days: 30,
+		} );
+	} );
+
+	it( 'records reload clicks from the Fees error state', async () => {
+		const onReload = jest.fn();
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01', '2026-03-31' ],
+		} );
+		mockFeesState( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+		} );
+
+		render( <FeesReport onReload={ onReload } /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_reload_click', {
+			range_days: 30,
+		} );
+		expect( onReload ).toHaveBeenCalled();
+	} );
+
+	it( 'records load error when reloading from an existing Fees error fails again', () => {
+		mockGetQuery.mockReturnValue( filteredMarchQuery );
+		mockFeesState( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+		} );
+
+		const { rerender } = render( <FeesReport /> );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_load_error',
+			expect.anything()
+		);
+
+		mockFeesState( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+			isLoading: true,
+		} );
+
+		rerender( <FeesReport /> );
+
+		mockFeesState( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+		} );
+
+		rerender( <FeesReport /> );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_load_error', {
+			has_filters: true,
+			range_days: 30,
+		} );
+	} );
+
+	it.each( [
+		{
+			eventName: 'wcpay_reports_fees_load_success',
+			nextError: {},
+			expectedProperties: {
+				has_filters: false,
+				is_initial_empty: true,
+				range_days: null,
+			},
+			startsLoading: true,
+		},
+		{
+			eventName: 'wcpay_reports_fees_load_error',
+			nextError: { code: 'server_error' },
+			expectedProperties: {
+				has_filters: false,
+				range_days: null,
+			},
+			startsLoading: false,
+		},
+	] )(
+		'records all-time $eventName telemetry with a null range',
+		( { eventName, nextError, expectedProperties, startsLoading } ) => {
+			mockEmptyFeesReportState( startsLoading );
+			const { rerender } = render( <FeesReport /> );
+
+			mockEmptyFeesReportState( false, nextError );
+
+			rerender( <FeesReport /> );
+
+			expectRecordedTracksEvent(
+				eventName,
+				expect.objectContaining( expectedProperties )
+			);
+		}
+	);
+
+	it( 'records all-time reload clicks with a null range', async () => {
+		const onReload = jest.fn();
+		mockEmptyFeesReportState( false, { code: 'server_error' } );
+
+		render( <FeesReport onReload={ onReload } /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_reload_click', {
+			range_days: null,
+		} );
+		expect( onReload ).toHaveBeenCalled();
+	} );
+
 	it( 'queries the data store with no date params when URL has no date filter', () => {
 		render( <FeesReport /> );
 		const call = mockUseReportsFees.mock.calls[ 0 ][ 0 ];
@@ -344,10 +606,9 @@ describe( 'FeesReport (DataViews)', () => {
 	} );
 
 	it( 'renders the Figma error state with alert semantics and reload button when feesError is set', async () => {
-		mockUseReportsFees.mockReturnValue( {
+		mockFeesState( {
 			feesRows: [],
 			feesError: { code: 'oops' },
-			isLoading: false,
 		} );
 		const onReload = jest.fn();
 		const { container } = render( <FeesReport onReload={ onReload } /> );
@@ -371,16 +632,10 @@ describe( 'FeesReport (DataViews)', () => {
 	} );
 
 	it( 'renders the empty state when there are no rows and no active filters', () => {
-		mockUseReportsFees.mockReturnValue( {
-			feesRows: [],
-			feesError: {},
-			isLoading: false,
-		} );
-		mockUseReportsFeesSummary.mockReturnValue( {
-			feesSummary: { count: 0, sources: [], types: [] },
-			isLoading: false,
-		} );
+		mockEmptyFeesReportState();
+
 		render( <FeesReport /> );
+
 		expect( screen.getByText( 'No fees yet' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText(
@@ -393,16 +648,10 @@ describe( 'FeesReport (DataViews)', () => {
 		mockGetQuery.mockReturnValue( {
 			payment_method_type: 'card',
 		} );
-		mockUseReportsFees.mockReturnValue( {
-			feesRows: [],
-			feesError: {},
-			isLoading: false,
-		} );
-		mockUseReportsFeesSummary.mockReturnValue( {
-			feesSummary: { count: 0, sources: [], types: [] },
-			isLoading: false,
-		} );
+		mockEmptyFeesReportState();
+
 		render( <FeesReport /> );
+
 		expect( screen.queryByText( 'No fees yet' ) ).not.toBeInTheDocument();
 		expect( screen.getByText( 'No fees to display' ) ).toBeInTheDocument();
 		expect(
@@ -424,20 +673,13 @@ describe( 'FeesReport (DataViews)', () => {
 		// so we can flush the debounce deterministically.
 		jest.useFakeTimers();
 		try {
-			// Start in loading state.
-			mockUseReportsFees.mockReturnValue( {
+			mockFeesState( {
 				feesRows: [],
-				feesError: {},
 				isLoading: true,
 			} );
 			const { rerender } = render( <FeesReport /> );
 
-			// Transition to ready with data.
-			mockUseReportsFees.mockReturnValue( {
-				feesRows: [ baseRow ],
-				feesError: {},
-				isLoading: false,
-			} );
+			mockFeesState();
 			rerender( <FeesReport /> );
 
 			// Pre-flush: debounce timer hasn't elapsed yet.
