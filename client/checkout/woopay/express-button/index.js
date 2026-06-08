@@ -12,10 +12,19 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
 import { maybePersistAdminWoopayAppearance } from '../appearance/persist-admin';
+import {
+	getCachedPreferredCard,
+	setCachedPreferredCard,
+	isSameCard,
+} from './preferred-card-utils';
+import { fetchPreferredCard as fetchPreferredCardFromConnect } from './preferred-card-fetch';
 
 const oldWoopayRoots = [];
 
-const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
+const renderWooPayExpressCheckoutButton = (
+	listenForCartChanges = {},
+	preferredCard = null
+) => {
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
 		{
@@ -48,14 +57,39 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 					!! woopayContainer.getAttribute( 'data-product_page' )
 				}
 				emailSelector="#billing_email"
+				preferredCard={ preferredCard }
 			/>
 		);
 	}
 };
 
 let listenForCartChanges = null;
+let currentPreferredCard = getCachedPreferredCard();
+
 const renderWooPayExpressCheckoutButtonWithCallbacks = () => {
-	renderWooPayExpressCheckoutButton( listenForCartChanges );
+	renderWooPayExpressCheckoutButton(
+		listenForCartChanges,
+		currentPreferredCard
+	);
+};
+
+/**
+ * Queries the WooPay Connect iframe for the user's preferred payment method
+ * and re-renders the button if card data is available or has changed.
+ */
+const fetchPreferredCard = async () => {
+	try {
+		const card = await fetchPreferredCardFromConnect();
+
+		setCachedPreferredCard( card );
+
+		if ( ! isSameCard( card, currentPreferredCard ) ) {
+			currentPreferredCard = card;
+			renderWooPayExpressCheckoutButtonWithCallbacks();
+		}
+	} catch {
+		// Connect iframe unavailable — keep current state.
+	}
 };
 
 jQuery( ( $ ) => {
@@ -79,6 +113,9 @@ jQuery( ( $ ) => {
 
 window.addEventListener( 'load', () => {
 	renderWooPayExpressCheckoutButtonWithCallbacks();
+
+	// Query the Connect iframe for preferred card data to personalize the button.
+	fetchPreferredCard();
 
 	// When the checkout is loaded inside the Customizer preview, capture
 	// the live DOM appearance and persist it via the admin endpoint.

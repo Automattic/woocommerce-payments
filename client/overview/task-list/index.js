@@ -18,11 +18,8 @@ import { saveOption } from 'wcpay/data/settings/actions';
 const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const [ visibleTasks, setVisibleTasks ] = useState( tasks );
-	const {
-		deletedTodoTasks,
-		dismissedTodoTasks,
-		remindMeLaterTodoTasks,
-	} = overviewTasksVisibility;
+	const { deletedTodoTasks, dismissedTodoTasks, remindMeLaterTodoTasks } =
+		overviewTasksVisibility;
 
 	const getVisibleTasks = useCallback( () => {
 		const nowTimestamp = Date.now();

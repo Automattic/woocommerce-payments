@@ -27,8 +27,9 @@ env:
   E2E_JP_BLOG_TOKEN:             ${{ secrets.E2E_JP_BLOG_TOKEN }}
   E2E_JP_USER_TOKEN:             ${{ secrets.E2E_JP_USER_TOKEN }}
   WC_E2E_SCREENSHOTS:            1
-  E2E_SLACK_CHANNEL_ID:          ${{ secrets.E2E_SLACK_CHANNEL_ID }}
-  E2E_SLACK_TOKEN:               ${{ secrets.E2E_SLACK_TOKEN }}
+  # Empty creds on pull_request runs keep the Slack reporter silent. See WOOPMNT-6174.
+  E2E_SLACK_CHANNEL_ID:          ${{ github.event_name != 'pull_request' && secrets.E2E_SLACK_CHANNEL_ID || '' }}
+  E2E_SLACK_TOKEN:               ${{ github.event_name != 'pull_request' && secrets.E2E_SLACK_TOKEN || '' }}
   E2E_USE_LOCAL_SERVER:          false
   E2E_RESULT_FILEPATH:           'tests/e2e/results.json'
   WCPAY_USE_BUILD_ARTIFACT:      ${{ inputs.wcpay-use-build-artifact }}
@@ -47,7 +48,7 @@ jobs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.repo-branch || github.ref }}
 
@@ -113,13 +114,13 @@ jobs:
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.repo-branch || github.ref }}
 
       - name: "Download WooCommerce Payments build file"
         if: ${{ inputs.wcpay-use-build-artifact }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: woocommerce-payments
           path: ${{ env.WCPAY_ARTIFACT_DIRECTORY }}

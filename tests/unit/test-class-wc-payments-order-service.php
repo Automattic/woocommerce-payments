@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Mode;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
@@ -2100,5 +2101,120 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( count( $notes_before ), $notes_after );
+	}
+
+	public function test_maybe_record_first_live_sale_short_circuits_when_option_already_set(): void {
+		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
+		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$this->order->save();
+
+		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
+
+		$this->assertSame( '1', get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+	}
+
+	public function test_maybe_record_first_live_sale_short_circuits_when_order_id_invalid(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+
+		$this->order_service->maybe_record_first_live_sale( 99999999 );
+
+		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
+		$this->assertSame( '1', get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+	}
+
+	public function test_maybe_record_first_live_sale_skips_test_mode_order(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$this->order->save();
+
+		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
+
+		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
+		$this->assertSame( '1', get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+	}
+
+	public function test_maybe_record_first_live_sale_records_for_production_order(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$this->order->save();
+
+		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
+
+		$this->assertSame( '1', get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	public function test_has_live_sale_returns_true_when_option_is_set(): void {
+		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
+
+		$this->assertTrue( $this->order_service->has_live_sale() );
+
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	public function test_has_live_sale_returns_false_when_no_orders_exist(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$this->assertFalse( $this->order_service->has_live_sale() );
+	}
+
+	public function test_has_live_sale_falls_back_to_query_and_writes_option_for_production_order(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_status( 'completed' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$order->save();
+
+		$this->assertTrue( $this->order_service->has_live_sale() );
+		$this->assertSame( '1', get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
+
+		$order->delete( true );
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	public function test_has_live_sale_ignores_test_mode_wcpay_orders(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_status( 'completed' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$order->save();
+
+		$this->assertFalse( $this->order_service->has_live_sale() );
+		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
+
+		$order->delete( true );
+	}
+
+	public function test_has_live_sale_ignores_non_wcpay_orders(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'cheque' );
+		$order->set_status( 'completed' );
+		$order->save();
+
+		$this->assertFalse( $this->order_service->has_live_sale() );
+
+		$order->delete( true );
 	}
 }

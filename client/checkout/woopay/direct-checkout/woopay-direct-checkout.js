@@ -121,7 +121,8 @@ class WooPayDirectCheckout {
 	 * Sets the length of time to wait for when a message is sent to WooPay through the iframe.
 	 */
 	static async initPostMessageTimeout() {
-		const postMessageTimeout = await this.getSessionConnect().getPostMessageTimeout();
+		const postMessageTimeout =
+			await this.getSessionConnect().getPostMessageTimeout();
 		if ( postMessageTimeout ) {
 			setPostMessageTimeout( postMessageTimeout );
 		}
@@ -150,9 +151,10 @@ class WooPayDirectCheckout {
 				);
 			}
 
-			const woopaySessionData = await this.getSessionConnect().sendRedirectSessionDataToWooPay(
-				encryptedSessionData
-			);
+			const woopaySessionData =
+				await this.getSessionConnect().sendRedirectSessionDataToWooPay(
+					encryptedSessionData
+				);
 			if ( ! woopaySessionData?.redirect_url ) {
 				throw new Error( 'Could not retrieve WooPay checkout URL.' );
 			}
@@ -196,7 +198,8 @@ class WooPayDirectCheckout {
 	 * @return {string} WooPay redirect URL with parameters.
 	 */
 	static async getWooPayMinimumSessionUrl() {
-		const redirectData = await this.getWooPayMinimumSesssionDataFromMerchant();
+		const redirectData =
+			await this.getWooPayMinimumSesssionDataFromMerchant();
 		if ( redirectData?.success === false ) {
 			throw new Error(
 				'Could not retrieve redirect data from merchant.'
@@ -213,7 +216,7 @@ class WooPayDirectCheckout {
 		} = redirectData;
 		const redirectParams = new URLSearchParams( {
 			checkout_redirect: 1,
-			blog_id,
+			blog_id, // eslint-disable-line camelcase
 			session,
 			iv,
 			hash,
@@ -289,7 +292,7 @@ class WooPayDirectCheckout {
 	/**
 	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
 	 *
-	 * @param {*[]} elements The elements to add a click-event listener to.
+	 * @param {*[]}     elements       The elements to add a click-event listener to.
 	 * @param {boolean} userIsLoggedIn True if we determined the user is already logged in, false otherwise.
 	 */
 	static addRedirectToWooPayEventListener(
@@ -348,12 +351,12 @@ class WooPayDirectCheckout {
 			}
 
 			// If the button is in the classic cart, add a spinner.
-			const isCheckoutButton = element.classList.contains(
-				'checkout-button'
-			);
-			const isParentProceedToCheckout = element.parentElement?.classList?.contains(
-				'wc-proceed-to-checkout'
-			);
+			const isCheckoutButton =
+				element.classList.contains( 'checkout-button' );
+			const isParentProceedToCheckout =
+				element.parentElement?.classList?.contains(
+					'wc-proceed-to-checkout'
+				);
 
 			return isCheckoutButton && isParentProceedToCheckout;
 		};
@@ -404,7 +407,8 @@ class WooPayDirectCheckout {
 							);
 						}
 
-						woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
+						woopayRedirectUrl =
+							await this.getWooPayMinimumSessionUrl();
 					}
 
 					this.teardown();
@@ -462,7 +466,7 @@ class WooPayDirectCheckout {
 	/**
 	 * Validates a WooPay redirect URL.
 	 *
-	 * @param {string} redirectUrl The URL to validate.
+	 * @param {string} redirectUrl   The URL to validate.
 	 * @param {string} requiredParam The URL parameter that is required in the URL.
 	 *
 	 * @return {boolean} True if URL is valid, false otherwise.

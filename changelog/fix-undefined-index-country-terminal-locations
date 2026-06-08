@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix undefined index warning when store country is empty in terminal locations controller

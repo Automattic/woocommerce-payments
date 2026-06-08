@@ -36,8 +36,8 @@ describe( 'validateGiftCardFields', () => {
 	};
 
 	const getProductDataFromHook = () => {
-		const handler = require( '../use-express-checkout-product-handler' )
-			.default;
+		const handler =
+			require( '../use-express-checkout-product-handler' ).default;
 		const { getProductData } = handler( {} );
 		return getProductData;
 	};

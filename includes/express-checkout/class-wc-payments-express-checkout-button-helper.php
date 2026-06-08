@@ -273,20 +273,28 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
 				return true;
 			}
+			if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
+				return true;
+			}
 		}
 
 		return false;
 	}
 
 	/**
-	 * Checks if Amazon Pay can be used in Express Checkout.
+	 * Checks if Amazon Pay can be used as an express checkout button.
 	 *
 	 * This validates:
-	 * - Feature flag is enabled
-	 * - Gateway exists and is enabled
-	 * - Account has Amazon Pay fees configured (indicates availability)
-	 * - Tax settings are compatible
-	 * - Currency is supported for the account country
+	 * - Express checkout is not displayed in the payment methods list
+	 * - Amazon Pay feature flag is enabled
+	 * - Gateway exists and is available for express checkout
+	 * - Tax settings are compatible (Amazon Pay doesn't support taxes based on billing address)
 	 *
 	 * @return boolean
 	 */

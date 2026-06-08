@@ -32,9 +32,9 @@ export const getDefaultBorderRadius = () => {
 /**
  * Construct WC AJAX endpoint URL.
  *
- * @param {string} ajaxURL AJAX URL.
+ * @param {string} ajaxURL  AJAX URL.
  * @param {string} endpoint Request endpoint URL.
- * @param {string} prefix Optional prefix for endpoint action.
+ * @param {string} prefix   Optional prefix for endpoint action.
  * @return {string} URL with interpolated ednpoint.
  */
 export const buildAjaxURL = ( ajaxURL, endpoint, prefix = 'wcpay_' ) =>

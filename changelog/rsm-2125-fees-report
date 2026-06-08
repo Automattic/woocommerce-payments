@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add a WooPayments Reports area with a Fees ledger (behind a feature flag)

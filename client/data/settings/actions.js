@@ -192,7 +192,9 @@ export function* saveSettings() {
 			data: settings,
 		} );
 
-		yield updateSettingsValues( {
+		// otherwise mid-save edits linger in the store with `isDirty` falsely false
+		yield updateSettings( {
+			...settings,
 			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 
