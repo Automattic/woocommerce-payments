@@ -1146,7 +1146,10 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 
 		// When the substitute text color is itself currentColor (degenerate
 		// theme), fall back to black rather than store a relative keyword.
+		// The fallback check is case-insensitive and trimmed, like the color one.
 		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', 'currentColor' ) );
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', 'CURRENTCOLOR' ) );
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', ' currentColor ' ) );
 	}
 
 	public function test_resolve_current_color_passes_through_concrete_values() {
