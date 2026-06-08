@@ -115,6 +115,7 @@ class WCPayAsyncPriceRenderer {
 			clearTimeout( timeoutId! );
 
 			this.convertAllPrices();
+			this.syncCurrencySwitchers();
 			this.observeDynamicContent();
 			this.listenToWooCommerceEvents();
 		} catch ( error ) {
