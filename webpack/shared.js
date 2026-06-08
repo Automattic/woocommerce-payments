@@ -167,7 +167,15 @@ module.exports = {
 		new ProvidePlugin( {
 			process: 'process/browser.js',
 		} ),
-		new MiniCssExtractPlugin( { filename: '[name].css' } ),
+		new MiniCssExtractPlugin( {
+			filename: '[name].css',
+			// Shared component stylesheets (chip, clickable-cell, etc.) are
+			// imported by multiple async route chunks in different orders.
+			// The styles themselves have no cross-component ordering dependency,
+			// so the warning is a false positive. Revisit if a genuine
+			// order-sensitive conflict is ever introduced.
+			ignoreOrder: true,
+		} ),
 		new WebpackRTLPlugin( {
 			filenameSuffix: '-rtl.css',
 		} ),
