@@ -585,6 +585,7 @@ class WC_Payments {
 		self::$settings_service                     = new WC_Payments_Settings_Service();
 		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
+		self::$order_success_page->init_hooks();
 		self::$woopay_util                          = new WooPay_Utilities();
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );

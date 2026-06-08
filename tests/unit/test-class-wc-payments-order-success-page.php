@@ -24,6 +24,7 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->payments_order_success_page = new WC_Payments_Order_Success_Page();
+		$this->payments_order_success_page->init_hooks();
 	}
 
 	public function tear_down() {
