@@ -128,7 +128,12 @@ class WC_Payments_Subscription_Service {
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		/**
 		 * When a store is in staging mode, we don't want any subscription updates or purchases to be sent to the server.
 		 *

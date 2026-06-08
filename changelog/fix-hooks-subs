@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Move hooks out of subscription class constructors to init_hooks()

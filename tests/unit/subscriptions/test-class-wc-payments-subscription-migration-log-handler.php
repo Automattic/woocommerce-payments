@@ -77,6 +77,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 
 		// Log a message to create the migration file.
 		$logger = new WC_Payments_Subscription_Migration_Log_Handler();
+		$logger->init_hooks();
 		$logger->log( $message );
 
 		$log_files = $this->get_log_files();
@@ -126,6 +127,9 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 	 * This ensures memory-efficient stream-based merging maintains proper log order.
 	 */
 	public function test_extend_life_of_migration_file_logs_merges_files_in_chronological_order() {
+		$logger = new WC_Payments_Subscription_Migration_Log_Handler();
+		$logger->init_hooks();
+
 		$log_dir       = trailingslashit( WC_LOG_DIR );
 		$old_message   = 'Old message from yesterday';
 		$new_message   = 'New message from today';
@@ -181,6 +185,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 
 		$db_logger = $this->get_logger_with_db_log_handler();
 		$logger    = new WC_Payments_Subscription_Migration_Log_Handler();
+		$logger->init_hooks();
 
 		$this->set_logger_property( $logger, $db_logger );
 

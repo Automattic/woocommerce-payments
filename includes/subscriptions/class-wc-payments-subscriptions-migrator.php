@@ -87,6 +87,13 @@ class WC_Payments_Subscriptions_Migrator extends WCS_Background_Repairer {
 		$this->api_client    = $api_client;
 		$this->token_service = $token_service;
 		$this->logger        = new WC_Payments_Subscription_Migration_Log_Handler();
+	}
+
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
+		$this->logger->init_hooks();
 
 		// Don't copy migrated subscription meta keys to related orders.
 		add_filter( 'wc_subscriptions_object_data', [ $this, 'exclude_migrated_meta' ], 10, 1 );

@@ -30,7 +30,12 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 	 */
 	public function __construct( WC_Payments_Account $account ) {
 		$this->account = $account;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		if ( ! $this->is_subscriptions_plugin_active() ) {
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts_and_styles' ] );
 		}
