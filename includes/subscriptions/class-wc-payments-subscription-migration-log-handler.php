@@ -90,29 +90,48 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 					// Uses a temp file + atomic rename to avoid a deletion window where
 					// concurrent writes to the "today" file could be lost.
 					if ( file_exists( $new_file_path ) ) {
-						$temp_file_path = $new_file_path . '.tmp';
+						// Use a unique temp filename in the same directory (same filesystem,
+						// so the final rename is atomic) to avoid collisions if cleanup runs
+						// concurrently, e.g. overlapping cron runs.
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_tempnam
+						$temp_file_path = tempnam( $log_dir, self::HANDLE . '-merge-' );
+
+						// Bail on this file if the temp file couldn't be created.
+						if ( false === $temp_file_path ) {
+							continue;
+						}
 
 						// Copy old (historical) content to temp file first.
 						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_copy
-						copy( $old_file_path, $temp_file_path );
+						$merge_ok = copy( $old_file_path, $temp_file_path );
 
 						// Append current "today" file content (preserves: old logs first, then new logs).
-						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
-						$source_handle = fopen( $new_file_path, 'r' );
-						if ( false !== $source_handle ) {
-							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-							file_put_contents( $temp_file_path, $source_handle, FILE_APPEND );
-							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
-							fclose( $source_handle );
+						if ( $merge_ok ) {
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+							$source_handle = fopen( $new_file_path, 'r' );
+							if ( false !== $source_handle ) {
+								// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+								$merge_ok = false !== file_put_contents( $temp_file_path, $source_handle, FILE_APPEND );
+								// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+								fclose( $source_handle );
+							} else {
+								$merge_ok = false;
+							}
 						}
 
-						// Atomic rename: replaces the "today" file in one operation, no deletion window.
+						// Only replace the active "today" file and delete the historical file if
+						// the merge fully succeeded; otherwise leave both originals untouched so no
+						// log data is lost.
 						// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
-						rename( $temp_file_path, $new_file_path );
-
-						// Clean up the old (historical) file.
-						// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
-						unlink( $old_file_path );
+						if ( $merge_ok && rename( $temp_file_path, $new_file_path ) ) {
+							// Atomic replacement succeeded — clean up the old (historical) file.
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+							unlink( $old_file_path );
+						} elseif ( file_exists( $temp_file_path ) ) {
+							// Merge failed — discard the temp file and leave the originals intact.
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+							unlink( $temp_file_path );
+						}
 					} else {
 						// No merge needed — just rename old file to new filename (with today's date).
 						// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename

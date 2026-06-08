@@ -158,6 +158,10 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		// New file should exist with merged content.
 		$this->assertFileExists( $new_file_path, 'New log file should exist after merge.' );
 
+		// No temp merge files should be left behind after a successful merge.
+		$leftover_temp_files = glob( $log_dir . WC_Payments_Subscription_Migration_Log_Handler::HANDLE . '-merge-*' );
+		$this->assertEmpty( $leftover_temp_files, 'Temp merge files should be cleaned up after merge.' );
+
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$merged_content = file_get_contents( $new_file_path );
 
