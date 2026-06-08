@@ -37,6 +37,7 @@ jest.mock( '../fees', () => ( {
 // Reports header render without exercising the real @wordpress/data
 // selectors (this test only cares about tab navigation behavior).
 jest.mock( 'wcpay/data', () => ( {
+	WCPAY_STORE_NAME: 'wc/payments',
 	useReportsFeesSummary: () => ( {
 		feesSummary: { count: 0 },
 		isLoading: false,

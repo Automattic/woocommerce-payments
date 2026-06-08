@@ -9,7 +9,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
+import { WCPAY_STORE_NAME } from 'wcpay/data';
 import type { ReportsPeriodRange } from './period-selector';
 import type { ReportsTab } from './types';
 
