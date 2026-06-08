@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Added business name and WooPayments account ID to Balance report exports.

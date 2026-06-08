@@ -5,7 +5,7 @@
  */
 import React, { useContext, useEffect, useId, useRef } from 'react';
 import { Button } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { calendar } from '@wordpress/icons';
 import { recordEvent } from 'tracks';
@@ -34,11 +34,13 @@ import { formatBalanceAmount } from './format';
 import { BalanceDateFilterNowContext } from './context';
 import {
 	getRangeDays,
+	getBalanceReportIdentity,
 	getRowLabel,
 	hasBalanceActivity,
 	hasKeys,
 	isBalanceSummaryMalformed,
 	printContextClass,
+	type BalanceReportIdentity,
 } from './utils';
 import WooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
@@ -87,11 +89,13 @@ const BalancePrintReport = ( {
 	summary,
 	displayPeriod,
 	currency,
+	reportIdentity,
 }: {
 	visibleRows: BalanceRow[];
 	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
 	displayPeriod: ReportsPeriodRange;
 	currency: string;
+	reportIdentity: BalanceReportIdentity;
 } ): JSX.Element => (
 	<section className="wcpay-reports-balance-print" aria-hidden="true">
 		<header className="wcpay-reports-balance-print__header">
@@ -101,6 +105,21 @@ const BalancePrintReport = ( {
 				alt={ __( 'WooPayments', 'woocommerce-payments' ) }
 			/>
 			<div className="wcpay-reports-balance-print__business">
+				{ reportIdentity.businessName && (
+					<p>{ reportIdentity.businessName }</p>
+				) }
+				{ reportIdentity.accountId && (
+					<p>
+						{ sprintf(
+							/* translators: %s: WooPayments account ID. */
+							__(
+								'WooPayments account ID: %s',
+								'woocommerce-payments'
+							),
+							reportIdentity.accountId
+						) }
+					</p>
+				) }
 				{ woopaymentsBusinessDetails.map( ( line ) => (
 					<p key={ line }>{ line }</p>
 				) ) }
@@ -200,6 +219,7 @@ export const BalanceReport = ( {
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
+	const reportIdentity = getBalanceReportIdentity();
 	const printScopeActive =
 		hasDateFilterValue && ! isLoading && ! hasError && hasActivity;
 	const displayPeriod = {
@@ -473,6 +493,7 @@ export const BalanceReport = ( {
 					summary={ summary }
 					displayPeriod={ displayPeriod }
 					currency={ currency }
+					reportIdentity={ reportIdentity }
 				/>
 			</>
 		);

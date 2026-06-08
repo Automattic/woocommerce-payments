@@ -1056,6 +1056,8 @@ class WC_Payments_Admin {
 			'isStripeBillingEnabled'             => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'            => WC_Payments_Features::is_stripe_billing_eligible(),
 			'storeName'                          => get_bloginfo( 'name' ),
+			'accountBusinessName'                => $this->account->get_business_name(),
+			'accountId'                          => $this->account->get_stripe_account_id() ?? '',
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
 			'instantDepositsPreviouslyEligible'  => get_option( 'wcpay_instant_deposits_previously_eligible', false ),

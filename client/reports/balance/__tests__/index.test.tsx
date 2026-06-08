@@ -298,6 +298,16 @@ const expectRecordedTracksEvent = (
 };
 
 beforeEach( () => {
+	const testGlobal = globalThis as typeof globalThis & {
+		wcpaySettings: typeof wcpaySettings;
+	};
+	testGlobal.wcpaySettings = {
+		...testGlobal.wcpaySettings,
+		accountDefaultCurrency: 'USD',
+		accountBusinessName: 'Aperture Science LLC',
+		accountId: 'acct_wcpay_123',
+		storeName: 'Aperture Store',
+	} as typeof wcpaySettings;
 	mockCreateNotice.mockReset();
 	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
@@ -760,37 +770,39 @@ describe( 'BalanceReport', () => {
 
 		const csv = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ] as string;
 		expect( csv ).toMatch(
-			/^row_key,label,amount,count,currency,period_start,period_end\n/
+			/^business_name,woopayments_account_id,row_key,label,amount,count,currency,period_start,period_end\n/
 		);
 		expect( csv ).toContain(
-			'starting_balance,"Starting balance - formatted 2026-05-01 UTC",1000,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,starting_balance,"Starting balance - formatted 2026-05-01 UTC",1000,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'total_charges_captured,"Total charges captured",162672,8,usd,2026-05-01,2026-05-14'
-		);
-		expect( csv ).toContain( 'fees,Fees,-6064,,usd,2026-05-01,2026-05-14' );
-		expect( csv ).toContain(
-			'charge_fees,"Charge fees",-5958,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,total_charges_captured,"Total charges captured",162672,8,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'dispute_fees,"Dispute fees",-1500,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,fees,Fees,-6064,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'"Aperture Science LLC",acct_wcpay_123,charge_fees,"Charge fees",-5958,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'"Aperture Science LLC",acct_wcpay_123,dispute_fees,"Dispute fees",-1500,,usd,2026-05-01,2026-05-14'
 		);
 		// `fee_refunds` is positive in the fixture — pins the sign convention
 		// for the one sub-row that diverges from the negative fee siblings.
 		expect( csv ).toContain(
-			'fee_refunds,"Fee refunds",1644,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,fee_refunds,"Fee refunds",1644,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'payout_fees,"Payout fees",-100,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,payout_fees,"Payout fees",-100,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'reader_fees,"Reader costs",-150,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,reader_fees,"Reader costs",-150,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'refunds,Refunds,-21500,3,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,refunds,Refunds,-21500,3,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).not.toContain(
 			'This report is provided for informational reconciliation purposes only.'
@@ -852,6 +864,10 @@ describe( 'BalanceReport', () => {
 		expect(
 			printReport.querySelector( 'img[alt="WooPayments"]' )
 		).toBeInTheDocument();
+		expect( printReport ).toHaveTextContent( 'Aperture Science LLC' );
+		expect( printReport ).toHaveTextContent(
+			'WooPayments account ID: acct_wcpay_123'
+		);
 		expect( printReport ).toHaveTextContent( 'Automattic Inc.' );
 		expect( printReport ).toHaveTextContent( '60 29th Street #343' );
 		expect( printReport ).toHaveTextContent(

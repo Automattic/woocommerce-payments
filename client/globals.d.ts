@@ -142,6 +142,8 @@ declare global {
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
 		storeName: string;
+		accountBusinessName: string;
+		accountId: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		instantDepositsPreviouslyEligible: boolean;

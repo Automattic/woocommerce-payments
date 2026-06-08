@@ -15,6 +15,20 @@ import type { BalanceRow } from './rows';
 
 export const printContextClass = 'wcpay-reports-balance-print-context';
 
+export interface BalanceReportIdentity {
+	businessName: string;
+	accountId: string;
+}
+
+export const getBalanceReportIdentity = (): BalanceReportIdentity => ( {
+	businessName: (
+		wcpaySettings.accountBusinessName ||
+		wcpaySettings.storeName ||
+		''
+	).trim(),
+	accountId: ( wcpaySettings.accountId || '' ).trim(),
+} );
+
 export const getRangeDays = ( start?: string, end?: string ): number | null => {
 	if ( ! start || ! end ) {
 		return null;

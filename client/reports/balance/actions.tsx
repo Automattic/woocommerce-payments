@@ -18,6 +18,7 @@ import { getVisibleBalanceRows } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
 import { getBalanceCSV, getBalanceExportFileName } from './format';
 import {
+	getBalanceReportIdentity,
 	getRangeDays,
 	hasBalanceActivity,
 	hasKeys,
@@ -138,6 +139,7 @@ export const BalanceActions = (): JSX.Element => {
 					summary,
 					displayPeriod,
 					currency,
+					reportIdentity: getBalanceReportIdentity(),
 				} )
 			);
 			recordEvent( 'wcpay_reports_balance_export_success', payload );
