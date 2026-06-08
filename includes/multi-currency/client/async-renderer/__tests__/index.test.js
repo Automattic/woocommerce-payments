@@ -973,6 +973,74 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 	} );
 
+	describe( 'syncCurrencySwitchers', () => {
+		const createSwitcher = ( selected = 'USD', codes = [ 'USD', 'EUR' ] ) => {
+			const select = document.createElement( 'select' );
+			select.name = 'currency';
+			codes.forEach( ( code ) => {
+				const option = document.createElement( 'option' );
+				option.value = code;
+				option.textContent = code;
+				if ( code === selected ) {
+					option.selected = true;
+				}
+				select.appendChild( option );
+			} );
+			document.body.appendChild( select );
+			return select;
+		};
+
+		beforeEach( () => {
+			document.body.textContent = '';
+		} );
+
+		it( 'syncs the switcher to the selected currency', () => {
+			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'EUR' );
+		} );
+
+		it( 'leaves the switcher unchanged when the selected currency is not an option', () => {
+			const select = createSwitcher( 'USD', [ 'USD', 'GBP' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'USD' );
+		} );
+
+		it( 'is a no-op when the selected currency is already selected', () => {
+			const select = createSwitcher( 'EUR', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'EUR' );
+		} );
+
+		it( 'does not throw when no switcher is present', () => {
+			expect( () => renderer.syncCurrencySwitchers() ).not.toThrow();
+		} );
+
+		it( 'updates every switcher on the page', () => {
+			const a = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			const b = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( a.value ).toBe( 'EUR' );
+			expect( b.value ).toBe( 'EUR' );
+		} );
+
+		it( 'does not fire a change event when updating the value', () => {
+			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			const changeHandler = jest.fn();
+			select.addEventListener( 'change', changeHandler );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'EUR' );
+			expect( changeHandler ).not.toHaveBeenCalled();
+		} );
+
+		it( 'does nothing when config has no selected_currency', () => {
+			renderer.config = { ...mockConfig, selected_currency: '' };
+			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'USD' );
+		} );
+	} );
+
 	describe( 'observeDynamicContent', () => {
 		beforeEach( () => {
 			document.body.textContent = '';

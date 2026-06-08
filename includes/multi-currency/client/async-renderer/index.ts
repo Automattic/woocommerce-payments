@@ -515,6 +515,40 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
+	 * Sync currency switcher dropdowns to the localized (selected) currency.
+	 *
+	 * In cache-optimized mode the switcher's selected <option> is baked into the
+	 * cached HTML as the store default, because no WC session exists server-side.
+	 * This updates every <select name="currency"> to the selected_currency the
+	 * config reports (geolocation-derived), so the switcher matches the prices
+	 * the renderer just converted.
+	 *
+	 * Setting select.value programmatically does not fire a change event, so the
+	 * switcher's onchange="this.form.submit()" never triggers, so no session is
+	 * created and caching is unaffected. Only switchers that actually offer the
+	 * target currency as an option are updated.
+	 */
+	syncCurrencySwitchers(): void {
+		const selectedCode = this.config?.selected_currency;
+		if ( ! selectedCode ) {
+			return;
+		}
+
+		const selects = document.querySelectorAll< HTMLSelectElement >(
+			'select[name="currency"]'
+		);
+
+		selects.forEach( ( select ) => {
+			const hasOption = Array.from( select.options ).some(
+				( option ) => option.value === selectedCode
+			);
+			if ( hasOption && select.value !== selectedCode ) {
+				select.value = selectedCode;
+			}
+		} );
+	}
+
+	/**
 	 * Set up a MutationObserver to convert prices in dynamically added content.
 	 */
 	observeDynamicContent(): void {
