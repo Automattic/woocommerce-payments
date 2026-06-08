@@ -10,7 +10,13 @@ import type { View, ViewTable, Filter } from '@wordpress/dataviews/wp';
 /**
  * Internal dependencies
  */
-import { defaultPerPage, getDefaultFeesView, PersistedFeesView } from './view';
+import {
+	defaultPerPage,
+	getDefaultFeesView,
+	getFeesTableLayout,
+	getFeesTableFields,
+	PersistedFeesView,
+} from './view';
 import {
 	parseFeesDateFilterValueFromQuery,
 	serializeFeesDateFilterValueToQuery,
@@ -170,7 +176,9 @@ export const useFeesUrlSync = (
 		const defaultView = getDefaultFeesView() as ViewTable;
 		return {
 			...defaultView,
-			fields: persisted?.fields ?? defaultView.fields,
+			fields: getFeesTableFields(
+				persisted?.fields ?? defaultView.fields
+			),
 			perPage: parseIntOr(
 				query.per_page,
 				persisted?.perPage ?? defaultPerPage
@@ -185,7 +193,9 @@ export const useFeesUrlSync = (
 			},
 			search: getFirstQueryValue( query.search ) ?? '',
 			filters: buildFiltersFromQuery( query ),
-			layout: persisted?.layout ?? defaultView.layout,
+			layout: getFeesTableLayout(
+				persisted?.layout ?? defaultView.layout
+			),
 		};
 		// navTick forces re-derive when the URL changes externally (popstate).
 		// eslint-disable-next-line react-hooks/exhaustive-deps
