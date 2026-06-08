@@ -14,7 +14,7 @@ import { getSettingCountries, getSupportedCountriesType } from './utils';
 import { decodeEntities } from '@wordpress/html-entities';
 
 const getNoticeText = ( filterType: string, blocking: boolean ) => {
-	if ( 'all_except' === filterType ) {
+	if ( filterType === 'all_except' ) {
 		return blocking
 			? __(
 					'Orders from the following countries will be blocked by the filter: ',
@@ -24,7 +24,7 @@ const getNoticeText = ( filterType: string, blocking: boolean ) => {
 					'Orders from the following countries will be screened by the filter: ',
 					'woocommerce-payments'
 			  );
-	} else if ( 'specific' === filterType ) {
+	} else if ( filterType === 'specific' ) {
 		return blocking
 			? __(
 					'Orders from outside of the following countries will be blocked by the filter: ',

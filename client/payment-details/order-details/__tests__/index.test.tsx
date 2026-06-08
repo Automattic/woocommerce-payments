@@ -136,13 +136,6 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
-jest.mock( '@woocommerce/data', () => ( {
-	useUserPreferences: jest.fn( () => ( {
-		updateUserPreferences: jest.fn(),
-		wc_payments_wporg_review_2025_prompt_dismissed: false,
-	} ) ),
-} ) );
-
 const mockUseChargeFromOrder = useChargeFromOrder as jest.MockedFunction<
 	typeof useChargeFromOrder
 >;
@@ -168,6 +161,10 @@ describe( 'Order details page', () => {
 	beforeAll( () => {
 		jest.spyOn( console, 'error' ).mockImplementation( () => null );
 		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+		// Freeze time so moment().fromNow() produces stable relative dates.
+		jest.useFakeTimers( {
+			now: new Date( '2022-09-28T12:00:00Z' ),
+		} );
 	} );
 
 	beforeEach( () => {
@@ -214,6 +211,7 @@ describe( 'Order details page', () => {
 	} );
 
 	afterAll( () => {
+		jest.useRealTimers();
 		Object.defineProperty( window, 'location', {
 			configurable: true,
 			value: location,

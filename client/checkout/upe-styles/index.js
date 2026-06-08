@@ -40,6 +40,12 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+		},
 		backgroundSelectors: [
 			'li.wc_payment_method .wc-payment-form',
 			'li.wc_payment_method .payment_box',
@@ -158,6 +164,12 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+		},
 		backgroundSelectors: [
 			'#customer_details',
 			'#order_review',
@@ -266,9 +278,28 @@ export const appearanceSelectors = {
 			Object.entries( selectors.alternateSelectors ).forEach(
 				( altSelector ) => {
 					const [ key, value ] = altSelector;
+					const current = selectors[ key ];
 
-					if ( ! scope.querySelector( selectors[ key ] ) ) {
-						selectors[ key ] = value;
+					if ( Array.isArray( current ) ) {
+						// For array selectors, check if any element matches.
+						const anyMatch = current.some( ( s ) => {
+							try {
+								return scope.querySelector( s );
+							} catch ( e ) {
+								return false;
+							}
+						} );
+						if ( ! anyMatch ) {
+							selectors[ key ] = value;
+						}
+					} else {
+						try {
+							if ( ! scope.querySelector( selectors[ key ] ) ) {
+								selectors[ key ] = value;
+							}
+						} catch ( e ) {
+							selectors[ key ] = value;
+						}
 					}
 				}
 			);
@@ -283,7 +314,7 @@ export const appearanceSelectors = {
 	 * Returns selectors based on checkout type.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
-	 * @param {Object}  scope           The document scope to search in.
+	 * @param {Object}  scope            The document scope to search in.
 	 *
 	 * @return {Object} Selectors for checkout type specified.
 	 */
@@ -326,7 +357,7 @@ const hiddenElementsForUPE = {
 	 * Create hidden container for generating UPE styles.
 	 *
 	 * @param {string} elementID ID of element to create.
-	 * @param {Object} scope The document scope to search in.
+	 * @param {Object} scope     The document scope to search in.
 	 *
 	 * @return {Object} Object of the created hidden container element.
 	 */
@@ -367,7 +398,7 @@ const hiddenElementsForUPE = {
 	 * @param {Object} appendTarget   Element object where clone should be appended.
 	 * @param {string} elementToClone Selector of the element to be cloned.
 	 * @param {string} newElementID   Selector for the cloned element.
-	 * @param {Object} scope         The document scope to search in.
+	 * @param {Object} scope          The document scope to search in.
 	 */
 	appendClone: function (
 		appendTarget,
@@ -403,7 +434,7 @@ const hiddenElementsForUPE = {
 	 * Initialize hidden fields to generate UPE styles.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
-	 * @param {Object} scope The scope of the elements.
+	 * @param {Object}  scope            The scope of the elements.
 	 */
 	init: function ( elementsLocation, scope ) {
 		const selectors = appearanceSelectors.getSelectors( elementsLocation, scope ),
@@ -540,9 +571,8 @@ export const getFieldStyles = (
 		}
 
 		if ( camelCase === 'color' ) {
-			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
-				propertyValue
-			);
+			filteredStyles[ camelCase ] =
+				maybeConvertRGBAtoRGB( propertyValue );
 			return;
 		}
 
@@ -607,6 +637,7 @@ export const getFontRulesFromPage = ( scope = document ) => {
 			'fonts.gstatic.com',
 			'use.typekit.net',
 			'fonts.bunny.net',
+			'fonts.wp.com',
 		];
 	for ( let i = 0; i < sheets.length; i++ ) {
 		if ( ! sheets[ i ].href ) {
@@ -626,10 +657,10 @@ export const getFontRulesFromPage = ( scope = document ) => {
 /**
  * Ensure the font size of the element is smaller than the font size of target element.
  *
- * @param {string} selector Selector of the element to be checked.
- * @param {string} fontSize Pre-computed font size.
+ * @param {string} selector   Selector of the element to be checked.
+ * @param {string} fontSize   Pre-computed font size.
  * @param {number} percentage Percentage (0-1) to be used relative to the font size of the target element.
- * @param {Object} scope The scope of the elements.
+ * @param {Object} scope      The scope of the elements.
  *
  * @return {string} Font size of the element.
  */

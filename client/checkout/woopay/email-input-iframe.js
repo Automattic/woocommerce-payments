@@ -458,7 +458,7 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	window.addEventListener( 'message', ( e ) => {
-		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
+		if ( e.origin !== new URL( getConfig( 'woopayHost' ) ).origin ) {
 			return;
 		}
 		switch ( e.data.action ) {
@@ -516,7 +516,8 @@ export const handleWooPayEmailInput = async (
 
 						iframe.style.height = e.data.height + 'px';
 
-						const inputRect = woopayEmailInput.getBoundingClientRect();
+						const inputRect =
+							woopayEmailInput.getBoundingClientRect();
 
 						// iframe top is the input top minus the iframe height.
 						iframe.style.top =

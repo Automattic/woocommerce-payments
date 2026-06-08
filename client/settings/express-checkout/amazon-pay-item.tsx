@@ -17,10 +17,8 @@ import InlineNotice from 'wcpay/components/inline-notice';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
 
 const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
-	const [
-		isAmazonPayEnabled,
-		updateIsAmazonPayEnabled,
-	] = useAmazonPayEnabledSettings();
+	const [ isAmazonPayEnabled, updateIsAmazonPayEnabled ] =
+		useAmazonPayEnabledSettings();
 
 	const {
 		icon: AmazonPayIcon,

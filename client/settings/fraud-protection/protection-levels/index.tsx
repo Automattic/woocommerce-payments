@@ -30,14 +30,11 @@ const ProtectionLevels: React.FC = () => {
 	const initialProtectionLevelRef = useRef< string | null >( null );
 	const initialSettingsRef = useRef< Record< string, any > | null >( null );
 
-	const [
-		currentProtectionLevel,
-		updateProtectionLevel,
-	] = useCurrentProtectionLevel();
+	const [ currentProtectionLevel, updateProtectionLevel ] =
+		useCurrentProtectionLevel();
 
-	const [
-		advancedFraudProtectionSettings,
-	] = useAdvancedFraudProtectionSettings();
+	const [ advancedFraudProtectionSettings ] =
+		useAdvancedFraudProtectionSettings();
 
 	const { isDirty } = useSettings();
 	const currentSettings = useGetSettings();
@@ -56,7 +53,7 @@ const ProtectionLevels: React.FC = () => {
 
 	const isAdvancedSettingsConfigured =
 		Array.isArray( advancedFraudProtectionSettings ) &&
-		0 < advancedFraudProtectionSettings.length;
+		advancedFraudProtectionSettings.length > 0;
 
 	const handleLevelChange = ( level: string ) => () => {
 		recordEvent( 'wcpay_fraud_protection_risk_level_preset_enabled', {
@@ -128,7 +125,7 @@ const ProtectionLevels: React.FC = () => {
 
 	return (
 		<>
-			{ 'error' === advancedFraudProtectionSettings && (
+			{ advancedFraudProtectionSettings === 'error' && (
 				<InlineNotice icon status="error" isDismissible={ false }>
 					{ __(
 						'There was an error retrieving your fraud protection settings. Please refresh the page to try again.',
@@ -137,7 +134,7 @@ const ProtectionLevels: React.FC = () => {
 				</InlineNotice>
 			) }
 			<fieldset
-				disabled={ 'error' === advancedFraudProtectionSettings }
+				disabled={ advancedFraudProtectionSettings === 'error' }
 				id="fraud-protection-card-options"
 			>
 				<ul>

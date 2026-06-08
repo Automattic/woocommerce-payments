@@ -42,6 +42,7 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
+import { resolveProductType } from './resolve-product-type';
 import {
 	Button,
 	HorizontalRule,
@@ -105,15 +106,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
-	const [
-		isCoverLetterManuallyEdited,
-		setIsCoverLetterManuallyEdited,
-	] = useState( false );
+	const [ isCoverLetterManuallyEdited, setIsCoverLetterManuallyEdited ] =
+		useState( false );
 	const [ shippingCarrier, setShippingCarrier ] = useState( '' );
 	const [ shippingDate, setShippingDate ] = useState( '' );
-	const [ shippingTrackingNumber, setShippingTrackingNumber ] = useState(
-		''
-	);
+	const [ shippingTrackingNumber, setShippingTrackingNumber ] =
+		useState( '' );
 	const [ shippingAddress, setShippingAddress ] = useState( '' );
 	const [ isUploading, setIsUploading ] = useState<
 		Record< string, boolean >
@@ -125,11 +123,8 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ uploadedFiles, setUploadedFiles ] = useState<
 		Record< string, string >
 	>( {} );
-	const {
-		createSuccessNotice,
-		createErrorNotice,
-		createInfoNotice,
-	} = useDispatch( 'core/notices' );
+	const { createSuccessNotice, createErrorNotice, createInfoNotice } =
+		useDispatch( 'core/notices' );
 	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
 		invalidateResolutionForStoreSelector: ( selector: string ) => void;
 	};
@@ -147,6 +142,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	} >( {} );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
+	const getDisputeTracksProperties = () => ( {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+	} );
+
 	const isFeatureFlagEnabled =
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
 		false;
@@ -158,15 +159,15 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-				const isFetchedDisputeVisaCompliance = isVisaComplianceDispute(
-					d
-				);
+				const isFetchedDisputeVisaCompliance =
+					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
-				const suggestedProductType =
-					d.metadata?.__product_type ||
-					d.order?.suggested_product_type ||
-					'';
+				const suggestedProductType = resolveProductType(
+					d.metadata,
+					d.order?.suggested_product_type,
+					isFeatureFlagEnabled
+				);
 				setProductType( suggestedProductType );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
@@ -509,7 +510,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
+				: 'wcpay_dispute_save_evidence_success',
+			getDisputeTracksProperties()
 		);
 
 		createSuccessNotice( message, {
@@ -528,7 +530,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed',
+			getDisputeTracksProperties()
 		);
 
 		const message = submit
@@ -558,7 +561,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			recordEvent(
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked',
+				getDisputeTracksProperties()
 			);
 
 			// Build base evidence object
@@ -823,7 +827,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	const updateProductType = ( newType: string ) => {
-		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
+		recordEvent( 'wcpay_dispute_product_selected', {
+			...getDisputeTracksProperties(),
+			selection: newType,
+		} );
 		setProductType( newType );
 		// Reset the manual edit flag so the cover letter regenerates with the new product type
 		// This ensures attachment labels are updated to match the selected product type
@@ -900,6 +907,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 
 		recordEvent( 'wcpay_dispute_file_upload_started', {
+			...getDisputeTracksProperties(),
 			type: key,
 		} );
 
@@ -936,10 +944,12 @@ export default ( { query }: { query: { id: string } } ) => {
 			} ) );
 
 			recordEvent( 'wcpay_dispute_file_upload_success', {
+				...getDisputeTracksProperties(),
 				type: key,
 			} );
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
+				...getDisputeTracksProperties(),
 				message: err instanceof Error ? err.message : String( err ),
 			} );
 
@@ -974,10 +984,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute?.enhanced_eligibility_types
 	);
 
-	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields(
-		disputeReason,
-		productType
-	);
+	const recommendedShippingDocumentFields =
+		getRecommendedShippingDocumentFields( disputeReason, productType );
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
 		( field: RecommendedDocument ) => ( {
 			key: field.key,
@@ -1000,27 +1008,29 @@ export default ( { query }: { query: { id: string } } ) => {
 		} )
 	);
 
-	const recommendedShippingDocumentsFields = recommendedShippingDocumentFields.map(
-		( field: RecommendedDocument ) => ( {
-			key: field.key,
-			label: field.label,
-			description: field.description,
-			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
-			fileSize: fileSizes[ field.key ] || 0,
-			uploaded: !! evidence[ field.key ],
-			isLoading: isUploading[ field.key ] || false,
-			onFileChange: ( key: string, file: File ) =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doUploadFile( field.key, file ) ),
-			onFileRemove: () =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doRemoveFile( field.key ) ),
-			isBusy: isUploading[ field.key ] || false,
-			readOnly: readOnly,
-		} )
-	);
+	const recommendedShippingDocumentsFields =
+		recommendedShippingDocumentFields.map(
+			( field: RecommendedDocument ) => ( {
+				key: field.key,
+				label: field.label,
+				description: field.description,
+				fileName:
+					uploadedFiles[ field.key ] || evidence[ field.key ] || '',
+				fileSize: fileSizes[ field.key ] || 0,
+				uploaded: !! evidence[ field.key ],
+				isLoading: isUploading[ field.key ] || false,
+				onFileChange: ( key: string, file: File ) =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doUploadFile( field.key, file ) ),
+				onFileRemove: () =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doRemoveFile( field.key ) ),
+				isBusy: isUploading[ field.key ] || false,
+				readOnly: readOnly,
+			} )
+		);
 
 	const inlineNotice = ( bankNameValue: string | null ) => (
 		<InlineNotice
@@ -1286,7 +1296,8 @@ export default ( { query }: { query: { id: string } } ) => {
 										evidence.uncategorized_file,
 									shipping_carrier: shippingCarrier,
 									shipping_date: shippingDate,
-									shipping_tracking_number: shippingTrackingNumber,
+									shipping_tracking_number:
+										shippingTrackingNumber,
 									shipping_address: shippingAddress,
 								},
 							};

@@ -44,7 +44,6 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
 import { useDispatch } from '@wordpress/data';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import ErrorBoundary from 'components/error-boundary';
 import SpotlightPromotion from 'promotions/spotlight';
 
@@ -207,9 +206,11 @@ export const DisputesList = (): JSX.Element => {
 	const { createNotice } = useDispatch( 'core/notices' );
 
 	const headers = getHeaders( getQuery().orderby );
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		DisputesTableHeader
-	>( 'wc_payments_disputes_hidden_columns', headers );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< DisputesTableHeader >(
+			'wc_payments_disputes_hidden_columns',
+			headers
+		);
 
 	const totalRows = disputesSummary.count || 0;
 
@@ -219,7 +220,11 @@ export const DisputesList = (): JSX.Element => {
 		) => {
 			// Use client-side routing to avoid page refresh.
 			e.preventDefault();
-			recordEvent( 'wcpay_disputes_row_action_click' );
+			recordEvent( 'wcpay_disputes_row_action_click', {
+				dispute_id: dispute.dispute_id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+			} );
 			const history = getHistory();
 			history.push( getDetailsURL( dispute.charge_id, 'transactions' ) );
 		};
@@ -435,7 +440,7 @@ export const DisputesList = (): JSX.Element => {
 		];
 	}
 
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	const isCurrencyFiltered = typeof getQuery().store_currency_is === 'string';
 
 	const storeCurrencies =
 		disputesSummary.currencies ||
@@ -443,7 +448,6 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

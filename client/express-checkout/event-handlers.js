@@ -29,12 +29,29 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+import { getSetupFutureUsageForCart } from './utils/subscriptions';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
+
+const getElementsUpdateOptionsForCart = ( cartData ) => ( {
+	// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+	amount: applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice(
+			parseInt( cartData.totals.total_price, 10 ) -
+				parseInt( cartData.totals.total_refund || 0, 10 ),
+			cartData.totals
+		),
+		cartData
+	),
+	...( shouldUseConfirmationTokens()
+		? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+		: {} ),
+} );
 
 export const shippingAddressChangeHandler = async ( event, elements ) => {
 	lastSelectedAddress = event.address;
@@ -59,18 +76,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 
 		lastCartData = cartData;
 
@@ -109,18 +115,7 @@ export const shippingRateChangeHandler = async (
 
 		lastCartData = cartData;
 
-		elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
@@ -188,9 +183,10 @@ export const onConfirmHandler = async (
 		// Extract redirect URL from payment_details if redirect_url is empty
 		let redirectUrl = orderResponse.payment_result.redirect_url;
 		if ( ! redirectUrl ) {
-			const redirectDetail = orderResponse.payment_result.payment_details?.find(
-				( detail ) => detail.key === 'redirect'
-			);
+			const redirectDetail =
+				orderResponse.payment_result.payment_details?.find(
+					( detail ) => detail.key === 'redirect'
+				);
 			redirectUrl = redirectDetail?.value || '';
 		}
 

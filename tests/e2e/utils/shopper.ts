@@ -328,7 +328,7 @@ export const getPriceFromProduct = async ( page: Page, slug: string ) => {
 /**
  * Adds a product to the cart from the shop page.
  *
- * @param {Page} page The Playwright page object.
+ * @param {Page}    page    The Playwright page object.
  * @param {Product} product The product add to the cart.
  */
 export const addToCartFromShopPage = async (
@@ -404,12 +404,12 @@ export const setupCheckout = async (
 /**
  * Sets up checkout with any number of products.
  *
- * @param {Array<[string, number]>} lineItems A 2D array of line items where each line item is an array
- * that contains the product title as the first element, and the quantity as the second.
- * For example, if you want to checkout x2 "Hoodie" and x3 "Belt" then set this parameter like this:
+ * @param {Array<[string, number]>} lineItems      A 2D array of line items where each line item is an array
+ *                                                 that contains the product title as the first element, and the quantity as the second.
+ *                                                 For example, if you want to checkout x2 "Hoodie" and x3 "Belt" then set this parameter like this:
  *
- * `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
- * @param {CustomerAddress} billingAddress The billing address to use for the checkout.
+ *                                                 `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
+ * @param {CustomerAddress}         billingAddress The billing address to use for the checkout.
  */
 export async function setupProductCheckout(
 	page: Page,
@@ -461,8 +461,8 @@ export const expectFraudPreventionToken = async (
 /**
  * Places an order with custom options.
  *
- * @param  page The Playwright page object.
- * @param  options The custom options to use for the order.
+ * @param page    The Playwright page object.
+ * @param options The custom options to use for the order.
  * @return The order ID.
  */
 export const placeOrderWithOptions = async (
@@ -500,7 +500,7 @@ export const placeOrderWithOptions = async (
 /**
  * Places an order with a specified currency.
  *
- * @param {Page} page The Playwright page object.
+ * @param {Page}   page     The Playwright page object.
  * @param {string} currency The currency code to use for the order.
  * @return {Promise<string>} The order ID.
  */
@@ -721,8 +721,8 @@ export const removeCoupon = async ( page: Page ) => {
  * When using a 3DS card, call this function after clicking the 'Place order' button
  * to confirm the card authentication.
  *
- * @param  {Page}          page The Shopper page object.
- * @param  {boolean}       authorize Whether to authorize the transaction or not.
+ * @param {Page}    page      The Shopper page object.
+ * @param {boolean} authorize Whether to authorize the transaction or not.
  * @return {Promise<void>}      Void.
  */
 export const confirmCardAuthenticationWCB = async (

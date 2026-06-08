@@ -77,4 +77,45 @@ class Refund_Charge_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $amount, $params['amount'] );
 		$this->assertSame( $charge, $params['charge'] );
 	}
+
+	public function test_full_reason_preserves_existing_metadata() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_source( 'edit_order' );
+		$request->set_full_reason( 'Customer changed their mind' );
+
+		$params = $request->get_params();
+		$this->assertSame( 'edit_order', $params['metadata']['refund_source'] );
+		$this->assertSame( 'Customer changed their mind', $params['metadata']['merchant_refund_reason'] );
+	}
+
+	public function test_full_reason_with_stripe_enum_sets_both_reason_and_metadata() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_full_reason( 'duplicate' );
+
+		$params = $request->get_params();
+		$this->assertSame( 'duplicate', $params['reason'] );
+		$this->assertSame( 'duplicate', $params['metadata']['merchant_refund_reason'] );
+	}
+
+	public function test_full_reason_with_free_text_only_sets_metadata() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_full_reason( 'Customer changed their mind' );
+
+		$params = $request->get_params();
+		$this->assertNull( $params['reason'] );
+		$this->assertSame( 'Customer changed their mind', $params['metadata']['merchant_refund_reason'] );
+	}
+
+	public function test_full_reason_with_empty_reason_sets_nothing() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_full_reason( null );
+
+		$params = $request->get_params();
+		$this->assertNull( $params['reason'] );
+		$this->assertArrayNotHasKey( 'metadata', $params );
+	}
 }

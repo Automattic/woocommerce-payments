@@ -472,6 +472,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   >
                     <span />
                     <span />
+                    <span />
                   </div>
                 </li>
               </ul>
@@ -606,6 +607,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <div
                     class="woocommerce-timeline-item__body"
                   >
+                    <span />
                     <span />
                     <span />
                   </div>
@@ -1615,6 +1617,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
       >
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p
@@ -1625,6 +1628,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p
@@ -1635,6 +1639,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p
@@ -1645,6 +1650,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p

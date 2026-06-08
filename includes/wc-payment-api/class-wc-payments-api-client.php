@@ -55,6 +55,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const REFUNDS_API                  = 'refunds';
 	const DEPOSITS_API                 = 'deposits';
 	const TRANSACTIONS_API             = 'transactions';
+	const REPORTING_API                = 'reporting';
 	const DISPUTES_API                 = 'disputes';
 	const FILES_API                    = 'files';
 	const ONBOARDING_API               = 'onboarding';
@@ -109,6 +110,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		'company',
 		'customer_name',
 		'customer_email',
+		// Free-text refund reason can contain merchant-entered PII, so keep it out of logs.
+		'merchant_refund_reason',
 	];
 
 	const EVENT_AUTHORIZED            = 'authorized';
@@ -2967,6 +2970,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		if ( isset( $charge_array['captured'] ) ) {
 			$charge->set_captured( $charge_array['captured'] );
+		}
+
+		// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+		if ( isset( $charge_array['fee_breakdown_v1'] ) && is_array( $charge_array['fee_breakdown_v1'] ) ) {
+			$charge->set_fee_breakdown_v1( $charge_array['fee_breakdown_v1'] );
 		}
 
 		return $charge;

@@ -200,6 +200,8 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 			$reader = wp_array_slice_assoc( $response, [ 'id', 'livemode', 'device_type', 'label', 'location', 'metadata', 'status' ] );
 
+			WC_Payments::get_account_service()->refresh_account_data();
+
 			return rest_ensure_response( $reader );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response(

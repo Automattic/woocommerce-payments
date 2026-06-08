@@ -12,6 +12,7 @@ use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
+use WCPay\Onboarding_Experiment;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -72,6 +73,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $card_gateway_backup;
 
 	/**
+	 * Backup of the original onboarding experiment instance.
+	 *
+	 * @var Onboarding_Experiment
+	 */
+	private $onboarding_experiment_backup;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -83,7 +91,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'path' => '/payments/connect',
 		];
 
-		$this->card_gateway_backup = WC_Payments::get_gateway();
+		$this->card_gateway_backup          = WC_Payments::get_gateway();
+		$this->onboarding_experiment_backup = WC_Payments::get_onboarding_experiment();
 
 		// Always start off with live mode. If you want another mode, you should set it in the test.
 		WC_Payments::mode()->live();
@@ -107,6 +116,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Restore the card gateway instance.
 		WC_Payments::set_gateway( $this->card_gateway_backup );
 
+		// Restore the onboarding experiment so a mock set by a test does not leak into the next one.
+		WC_Payments::set_onboarding_experiment( $this->onboarding_experiment_backup );
+
 		parent::tear_down();
 	}
 
@@ -118,12 +130,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_onboarding_wizard_page' ] ), 'maybe_redirect_from_onboarding_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_connect_page' ] ), 'maybe_redirect_from_connect_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_overview_page' ] ), 'maybe_redirect_from_overview_page action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_payments_settings_to_onboarding' ] ), 'maybe_redirect_from_payments_settings_to_onboarding action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_instant_deposits_inbox_note' ] ), 'handle_instant_deposits_inbox_note action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_loan_approved_inbox_note' ] ), 'handle_loan_approved_inbox_note action does not exist.' );
 		$this->assertNotFalse( has_action( 'wcpay_instant_deposit_reminder', [ $this->wcpay_account, 'handle_instant_deposits_inbox_reminder' ] ), 'handle_instant_deposits_inbox_reminder action does not exist.' );
 		$this->assertNotFalse( has_filter( 'allowed_redirect_hosts', [ $this->wcpay_account, 'allowed_redirect_hosts' ] ), 'allowed_redirect_hooks filter does not exist.' );
 		$this->assertNotFalse( has_action( 'jetpack_site_registered', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_registered action does not exist.' );
+		$this->assertNotFalse( has_action( 'jetpack_site_disconnected', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_disconnected action does not exist.' );
 		$this->assertNotFalse( has_action( 'updated_option', [ $this->wcpay_account, 'possibly_update_wcpay_account_locale' ] ), 'updated_option action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
 		$this->assertNotFalse( has_action( WC_Payments_Account::STORE_SETUP_SYNC_ACTION, [ $this->wcpay_account, 'store_setup_sync' ] ), 'store_setup_sync action does not exist.' );
@@ -2115,6 +2129,196 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_accelerated_onboarding_treatment_redirects_to_nox_flow() {
+		$this->arrange_task_list_origin_with_partial_kyc();
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_TREATMENT );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_wcpay_connect' );
+
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_from_connect_page() );
+	}
+
+	public function test_accelerated_onboarding_control_falls_through_to_existing_connect_redirect() {
+		$this->arrange_task_list_origin_with_partial_kyc();
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
+
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_from_connect_page() );
+	}
+
+	public function test_accelerated_onboarding_skipped_when_details_submitted() {
+		wp_set_current_user( 1 );
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+			'from' => WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+		];
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => true,
+				'capabilities'      => [ 'card_payments' => 'active' ],
+			]
+		);
+		$this->mock_jetpack_connection( true );
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->expects( $this->never() )->method( 'get_variation' );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
+	}
+
+	public function test_accelerated_onboarding_does_not_fire_for_nox_in_context_origin() {
+		wp_set_current_user( 1 );
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+			'from' => WC_Payments_Onboarding_Service::FROM_WCADMIN_NOX_IN_CONTEXT,
+		];
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => false,
+				'capabilities'      => [ 'card_payments' => 'requested' ],
+			]
+		);
+		$this->mock_jetpack_connection( false );
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->expects( $this->never() )->method( 'get_variation' );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
+
+		$this->wcpay_account->maybe_redirect_from_connect_page();
+	}
+
+	private function arrange_task_list_origin_with_partial_kyc() {
+		wp_set_current_user( 1 );
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+			'from' => WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+		];
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => false,
+				'capabilities'      => [ 'card_payments' => 'requested' ],
+			]
+		);
+		$this->mock_jetpack_connection( false );
+	}
+
+	public function test_redirect_from_payments_settings_treatment_redirects_to_nox_flow() {
+		$this->arrange_settings_url_task_list_origin_with_partial_kyc();
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_TREATMENT );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_nox_flow' );
+
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
+	}
+
+	public function test_redirect_from_payments_settings_control_falls_through() {
+		$this->arrange_settings_url_task_list_origin_with_partial_kyc();
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
+	}
+
+	public function test_redirect_from_payments_settings_skips_when_section_param_present() {
+		wp_set_current_user( 1 );
+		$_GET = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments',
+			'from'    => WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+		];
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->expects( $this->never() )->method( 'get_variation' );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
+	}
+
+	public function test_redirect_from_payments_settings_skips_when_path_param_present() {
+		wp_set_current_user( 1 );
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+			'path' => '/woopayments/onboarding',
+			'from' => WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+		];
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->expects( $this->never() )->method( 'get_variation' );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
+	}
+
+	public function test_redirect_from_payments_settings_skips_without_task_list_origin() {
+		wp_set_current_user( 1 );
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+		];
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->expects( $this->never() )->method( 'get_variation' );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
+	}
+
+	private function arrange_settings_url_task_list_origin_with_partial_kyc() {
+		wp_set_current_user( 1 );
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+			'from' => WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+		];
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => false,
+				'capabilities'      => [ 'card_payments' => 'requested' ],
+			]
+		);
+	}
+
 	/**
 	 * @dataProvider data_maybe_redirect_from_overview_page
 	 */
@@ -3983,5 +4187,131 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->wcpay_account->get_cached_account_data();
+	}
+
+	// -------------------------------------------------------------------------
+	// maybe_record_kyc_completion_date tests
+	// -------------------------------------------------------------------------
+
+	public function test_maybe_record_kyc_completion_date_uses_current_time_for_post_launch_merchant(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		update_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION, time() );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => time() - 90 * DAY_IN_SECONDS,
+			]
+		);
+
+		$completion_date = (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		$this->assertGreaterThan( time() - 60, $completion_date );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+	}
+
+	public function test_maybe_record_kyc_completion_date_falls_back_to_account_created_for_pre_existing_merchant(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+
+		$account_created = time() - 90 * DAY_IN_SECONDS;
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => $account_created,
+			]
+		);
+
+		$this->assertSame( $account_created, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	public function test_maybe_record_kyc_completion_date_bails_when_no_submitted_date_and_no_created(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+			]
+		);
+
+		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+	}
+
+	public function test_maybe_record_kyc_completion_date_preserves_existing_date(): void {
+		$original_date = time() - 10 * DAY_IN_SECONDS;
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, $original_date );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => time() - 90 * DAY_IN_SECONDS,
+			]
+		);
+
+		$this->assertSame( $original_date, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	public function test_maybe_record_kyc_completion_date_skips_empty_account(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date( [] );
+
+		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+	}
+
+	public function test_maybe_record_kyc_completion_date_skips_test_drive_account(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => true,
+			]
+		);
+
+		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+	}
+
+	public function test_maybe_record_kyc_completion_date_skips_when_payments_not_enabled(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => false,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+			]
+		);
+
+		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+	}
+
+	public function test_maybe_record_kyc_completion_date_skips_when_not_live(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => false,
+				'is_test_drive'    => false,
+			]
+		);
+
+		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
 	}
 }

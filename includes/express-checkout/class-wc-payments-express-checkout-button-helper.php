@@ -273,20 +273,28 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
 				return true;
 			}
+			if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
+				return true;
+			}
 		}
 
 		return false;
 	}
 
 	/**
-	 * Checks if Amazon Pay can be used in Express Checkout.
+	 * Checks if Amazon Pay can be used as an express checkout button.
 	 *
 	 * This validates:
-	 * - Feature flag is enabled
-	 * - Gateway exists and is enabled
-	 * - Account has Amazon Pay fees configured (indicates availability)
-	 * - Tax settings are compatible
-	 * - Currency is supported for the account country
+	 * - Express checkout is not displayed in the payment methods list
+	 * - Amazon Pay feature flag is enabled
+	 * - Gateway exists and is available for express checkout
+	 * - Tax settings are compatible (Amazon Pay doesn't support taxes based on billing address)
 	 *
 	 * @return boolean
 	 */
@@ -316,29 +324,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Checks if any express checkout method (Google/Apple Pay or Amazon Pay) is enabled at a given location in settings.
-	 *
-	 * This only checks location settings (express_checkout_{location}_methods), not feature flags.
-	 * Feature flags are checked at initialization and in get_enabled_express_checkout_methods_for_context().
-	 *
-	 * @param string $location Location (product, cart, checkout).
-	 * @return boolean
-	 */
-	public function is_any_express_checkout_method_enabled_at( $location ) {
-		// Check Google Pay / Apple Pay (payment_request).
-		if ( $this->is_express_checkout_method_enabled_at( $location, 'payment_request' ) ) {
-			return true;
-		}
-
-		// Check Amazon Pay.
-		if ( $this->is_express_checkout_method_enabled_at( $location, 'amazon_pay' ) ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -525,18 +510,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Product page, but no express checkout methods available in settings.
-		if ( $this->is_product() && ! $this->is_any_express_checkout_method_enabled_at( 'product' ) ) {
-			return false;
-		}
-
-		// Checkout page, but no express checkout methods available in settings.
-		if ( $this->is_checkout() && ! $this->is_any_express_checkout_method_enabled_at( 'checkout' ) ) {
-			return false;
-		}
-
-		// Cart page, but no express checkout methods available in settings.
-		if ( $this->is_cart() && ! $this->is_any_express_checkout_method_enabled_at( 'cart' ) ) {
+		// No express checkout methods are actually enabled for the current page context
+		// (checks both location settings and feature flags/availability).
+		if ( empty( $this->get_enabled_express_checkout_methods_for_context() ) ) {
 			return false;
 		}
 

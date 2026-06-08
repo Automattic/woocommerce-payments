@@ -163,15 +163,18 @@ const createMockNewAccountOverview = (
 	};
 };
 
-const mockUseDepositIncludesLoan = useDepositIncludesLoan as jest.MockedFunction<
-	typeof useDepositIncludesLoan
->;
-const mockUseSelectedCurrencyOverview = useSelectedCurrencyOverview as jest.MockedFunction<
-	typeof useSelectedCurrencyOverview
->;
-const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
-	typeof useAllDepositsOverviews
->;
+const mockUseDepositIncludesLoan =
+	useDepositIncludesLoan as jest.MockedFunction<
+		typeof useDepositIncludesLoan
+	>;
+const mockUseSelectedCurrencyOverview =
+	useSelectedCurrencyOverview as jest.MockedFunction<
+		typeof useSelectedCurrencyOverview
+	>;
+const mockUseAllDepositsOverviews =
+	useAllDepositsOverviews as jest.MockedFunction<
+		typeof useAllDepositsOverviews
+	>;
 const mockUseDeposits = useDeposits as jest.MockedFunction<
 	typeof useDeposits
 >;
@@ -184,7 +187,7 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 	mockUseSelectedCurrencyOverview.mockReturnValue( {
 		account: mockAccount,
 		overview: currencies[ 0 ],
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 // Mocks the useSelectedCurrency hook to return no previously selected currency.
@@ -201,7 +204,7 @@ const mockDepositOverviews = ( currencies: AccountOverview.Overview[] ) => {
 			currencies: currencies,
 			account: mockAccount,
 		},
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 
@@ -273,8 +276,41 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'does not render the icon when loading', () => {
+		mockUseSelectedCurrencyOverview.mockReturnValue( {
+			account: mockAccount,
+			overview: createMockOverview( 'usd' ),
+			isLoading: true,
+		} );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: true,
+		} );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { container } = render( <DepositsOverview /> );
+
+		const placeholders = container.querySelectorAll(
+			'.is-loadable-placeholder'
+		);
+
+		expect( placeholders.length ).toBeGreaterThan( 0 );
+
+		// no help icon (or any SVG) inside the loading state
+		placeholders.forEach( ( placeholder ) => {
+			expect(
+				placeholder.querySelector( 'svg' )
+			).not.toBeInTheDocument();
+		} );
+	} );
+
 	test( `Component doesn't render for new accounts with no pending funds`, () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockUseDeposits.mockReturnValue( {
@@ -291,7 +327,8 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( `Component renders for new accounts with pending funds but no available funds`, () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur', 5000, 0 ) ] );
 		mockDepositOverviews( [
 			createMockNewAccountOverview( 'eur', 5000, 0 ),
@@ -415,7 +452,8 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Confirm new account waiting period notice does not show if outside waiting period', () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			true;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
 			12300,
@@ -437,7 +475,8 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Confirm new account waiting period notice shows if within waiting period', () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			false;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
 			12300,
