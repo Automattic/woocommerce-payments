@@ -561,8 +561,8 @@ describe( 'Event 2: recommendations_section_viewed', () => {
 				visible_count: Math.min( 3, expectedIds.length ),
 			} )
 		);
-		// Exact order, not just membership: guards the effect's sort from
-		// drifting out of step with renderCard's.
+		// Exact order, not just membership: the emit reads the same sorted
+		// list RecommendationSection renders, so ids track render order.
 		expect( calls[ 0 ][ 1 ].recommendation_ids ).toEqual( expectedIds );
 	} );
 

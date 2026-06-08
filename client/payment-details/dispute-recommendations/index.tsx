@@ -104,13 +104,29 @@ const RecommendationSection: React.FC< RecommendationSectionProps > = ( {
 	items,
 	learnMoreHref,
 } ) => {
-	if ( items.length === 0 ) {
-		return null;
-	}
-
 	const sorted = [ ...items ].sort( sortByLift );
 	const visible = sorted.slice( 0, VISIBLE_PER_SECTION );
 	const hidden = sorted.slice( VISIBLE_PER_SECTION );
+
+	// Fire the section-viewed event once per non-empty section, sourced from the
+	// same `sorted`/`visible` the card renders so recommendation_ids can't drift
+	// from render order. The module-scoped de-dup absorbs payment-details remounts.
+	useEffect( () => {
+		if ( sorted.length === 0 ) {
+			return;
+		}
+		recordSectionViewedOnce(
+			dispute,
+			productType,
+			section,
+			sorted.map( ( rec ) => rec.id ),
+			visible.length
+		);
+	}, [ dispute, productType, section, sorted, visible ] );
+
+	if ( items.length === 0 ) {
+		return null;
+	}
 
 	const subtitleNode = (
 		<>
@@ -194,36 +210,6 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 	);
 
 	const recommendations = getDisputeRecommendations( dispute, productType );
-
-	// Fire once per non-empty section. Re-derived inside the effect so deps stay
-	// [dispute, productType] (the module-scoped de-dup absorbs remounts); the
-	// sort matches RecommendationSection so recommendation_ids match render order.
-	useEffect( () => {
-		const recs = getDisputeRecommendations( dispute, productType );
-		const sections = [
-			{
-				key: 'whats_working_well' as const,
-				items: recs.filter( isPositive ),
-			},
-			{
-				key: 'what_could_help' as const,
-				items: recs.filter( ( r ) => ! isPositive( r ) ),
-			},
-		];
-		sections.forEach( ( { key, items } ) => {
-			if ( items.length === 0 ) {
-				return;
-			}
-			const ids = [ ...items ].sort( sortByLift ).map( ( r ) => r.id );
-			recordSectionViewedOnce(
-				dispute,
-				productType,
-				key,
-				ids,
-				Math.min( VISIBLE_PER_SECTION, ids.length )
-			);
-		} );
-	}, [ dispute, productType ] );
 
 	if ( recommendations.length === 0 ) {
 		return null;
