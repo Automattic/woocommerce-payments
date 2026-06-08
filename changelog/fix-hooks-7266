@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Move hooks out of WC_Payments_Email_IPP_Receipt constructor to init_hooks()

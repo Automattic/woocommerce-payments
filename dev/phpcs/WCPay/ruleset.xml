@@ -7,9 +7,6 @@
 		<exclude-pattern>*/includes/subscriptions/*</exclude-pattern>
 		<exclude-pattern>*/includes/compat/subscriptions/*</exclude-pattern>
 
-		<!-- https://github.com/Automattic/woocommerce-payments/issues/7266 -->
-		<exclude-pattern>*/includes/emails/*</exclude-pattern>
-
 		<!-- https://github.com/Automattic/woocommerce-payments/issues/7260 -->
 		<exclude-pattern>*/includes/class-woopay-tracker.php</exclude-pattern>
 		<exclude-pattern>*/includes/woopay/*</exclude-pattern>
