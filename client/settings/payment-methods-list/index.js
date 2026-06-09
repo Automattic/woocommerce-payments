@@ -14,7 +14,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import PaymentMethod from './payment-method';
 import methodsConfiguration from '../../payment-methods-map';

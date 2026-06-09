@@ -15,7 +15,7 @@ const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
 const mockSpeak = jest.fn();
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/reports', () => ( {
 	useReportsFees: ( q: unknown ) => mockUseReportsFees( q ),
 	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
 } ) );

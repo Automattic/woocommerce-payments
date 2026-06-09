@@ -538,6 +538,73 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
+	public function test_scheduled_subscription_payment_normalizes_unusable_pm_error_by_code() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'Raw platform error text', 'payment_method_no_longer_available', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+		$this->assertStringNotContainsString( 'Raw platform error text', $note );
+	}
+
+	public function test_scheduled_subscription_payment_normalizes_detached_payment_method_message() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'The provided PaymentMethod was detached from a Customer. It may not be used again.', 'invalid_request_error', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_normalizes_must_save_payment_method_message() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'You must save this PaymentMethod to a customer before you can update it', 'invalid_request_error', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_normalizes_unusable_pm_message_case_insensitively() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'no such paymentmethod: pm_123', 'invalid_request_error', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_keeps_raw_message_for_unrelated_error() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'Your card was declined', 'card_declined', 402 ) );
+
+		$this->assertStringContainsString( 'Your card was declined', $note );
+		$this->assertStringNotContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_keeps_raw_message_for_resource_missing_non_payment_method() {
+		// `resource_missing` is generic (e.g. a missing customer); it must not be treated as an unusable
+		// payment method. The payment-method case is covered by the `No such PaymentMethod` message instead.
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'No such customer: cus_123', 'resource_missing', 400 ) );
+
+		$this->assertStringContainsString( 'No such customer', $note );
+		$this->assertStringNotContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_unusable_pm_note_names_the_payment_method() {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => new WC_Subscription() ] );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willThrowException( new API_Exception( 'Raw platform error text', 'payment_method_no_longer_available', 400 ) );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$notes = wc_get_order_notes(
+			[
+				'order_id' => $renewal_order->get_id(),
+				'limit'    => 1,
+			]
+		);
+
+		// The note names the failed payment method (its display name), matching how WCPay renders methods elsewhere.
+		$this->assertStringContainsString( $token->get_display_name(), $notes[0]->content );
+		$this->assertStringContainsString( 'A new payment method is required', $notes[0]->content );
+	}
+
 	public function test_scheduled_subscription_payment_adds_mandate() {
 		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 		$token         = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
@@ -1250,5 +1317,38 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 				return $value;
 			}
 		);
+	}
+
+	/**
+	 * Runs a scheduled renewal whose payment processing throws $exception, and returns the latest
+	 * order note content. Used to exercise the unusable-saved-payment-method detection. TRAPLAT-3995.
+	 *
+	 * @param API_Exception $exception The exception thrown while processing the renewal payment.
+	 * @return string The content of the latest order note on the renewal order.
+	 */
+	private function get_failed_renewal_note_for_exception( API_Exception $exception ): string {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => new WC_Subscription() ] );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willThrowException( $exception );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+
+		$notes = wc_get_order_notes(
+			[
+				'order_id' => $renewal_order->get_id(),
+				'limit'    => 1,
+			]
+		);
+
+		return $notes[0]->content;
 	}
 }

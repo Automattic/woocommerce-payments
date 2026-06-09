@@ -11,8 +11,8 @@ import ProtectionLevels from '..';
 
 let mockFraudProtectionRule = [];
 
-jest.mock( 'wcpay/data', () => ( {
-	...jest.requireActual( 'wcpay/data' ),
+jest.mock( 'wcpay/data/settings', () => ( {
+	...jest.requireActual( 'wcpay/data/settings' ),
 	useAdvancedFraudProtectionSettings: jest.fn( () => [
 		mockFraudProtectionRule,
 		jest.fn(),
