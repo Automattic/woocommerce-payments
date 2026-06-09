@@ -191,6 +191,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
 		WC_Subscriptions::set_wcs_is_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order( null );
+		WC_Subscriptions::set_wcs_order_contains_subscription( null );
+		WC_Subscriptions::wcs_order_contains_renewal( null );
 		wcpay_get_test_container()->reset_all_replacements();
 		parent::tear_down_after_class();
 	}
