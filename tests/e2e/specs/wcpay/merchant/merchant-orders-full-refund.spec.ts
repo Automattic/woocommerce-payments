@@ -125,6 +125,10 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 			merchantPage.getByText( 'Payment status changed to Refunded.' )
 		).toBeVisible();
 
+		await expect(
+			merchantPage.getByText( 'Reason: No longer wanted' )
+		).toBeVisible();
+
 		// TODO: This visual regression test is not flaky, but we should revisit the approach.
 		// await expect( merchantPage ).toHaveScreenshot();
 	} );

@@ -94,6 +94,45 @@ export const resolveFeesDateFilterValue = (
 	return decodeCustomDateFilterValue( value );
 };
 
+export interface FeesDateQueryParams {
+	date_between?: string[];
+	date_before?: string;
+	date_after?: string;
+}
+
+export const buildFeesDateQueryFromFilterValue = (
+	value: unknown,
+	now: Date = new Date()
+): FeesDateQueryParams => {
+	const dateFilter = resolveFeesDateFilterValue( value, now );
+
+	if ( ! dateFilter ) {
+		return {};
+	}
+
+	if ( dateFilter.operator === 'on' ) {
+		return {
+			date_between: [ dateFilter.value, dateFilter.value ],
+		};
+	}
+
+	if ( dateFilter.operator === 'between' ) {
+		return {
+			date_between: dateFilter.value,
+		};
+	}
+
+	if ( dateFilter.operator === 'before' ) {
+		return {
+			date_before: dateFilter.value,
+		};
+	}
+
+	return {
+		date_after: dateFilter.value,
+	};
+};
+
 export const parseFeesDateFilterValueFromQuery = (
 	query: Record< string, unknown >
 ): string | undefined => {
@@ -135,6 +174,42 @@ export const parseFeesDateFilterValueFromQuery = (
 	}
 
 	return undefined;
+};
+
+export const buildFeesDateQueryFromUrlQuery = (
+	query: Record< string, unknown >,
+	now: Date = new Date()
+): FeesDateQueryParams => {
+	const normalizedQuery = buildFeesDateQueryFromFilterValue(
+		parseFeesDateFilterValueFromQuery( query ),
+		now
+	);
+
+	if (
+		normalizedQuery.date_between ||
+		normalizedQuery.date_before ||
+		normalizedQuery.date_after
+	) {
+		return normalizedQuery;
+	}
+
+	return {
+		date_between:
+			Array.isArray( query.date_between ) &&
+			query.date_between.every(
+				( value ) => typeof value === 'string' && value !== ''
+			)
+				? ( query.date_between as string[] )
+				: undefined,
+		date_before:
+			typeof query.date_before === 'string' && query.date_before !== ''
+				? query.date_before
+				: undefined,
+		date_after:
+			typeof query.date_after === 'string' && query.date_after !== ''
+				? query.date_after
+				: undefined,
+	};
 };
 
 export const serializeFeesDateFilterValueToQuery = (

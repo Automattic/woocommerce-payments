@@ -51,7 +51,7 @@ describe( 'getDisputeReadiness resolver', () => {
 	test( 'updates dispute readiness on success', () => {
 		expect( generator.next( readinessPayload ).value ).toEqual(
 			controls.dispatch(
-				'wc/payments',
+				'wc/payments/disputeReadiness',
 				'updateDisputeReadiness',
 				readinessPayload
 			)
@@ -61,7 +61,7 @@ describe( 'getDisputeReadiness resolver', () => {
 	test( 'updates dispute readiness error on failure', () => {
 		expect( generator.throw( errorResponse ).value ).toEqual(
 			controls.dispatch(
-				'wc/payments',
+				'wc/payments/disputeReadiness',
 				'updateErrorForDisputeReadiness',
 				errorResponse
 			)
