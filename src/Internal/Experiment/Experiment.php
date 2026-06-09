@@ -20,11 +20,11 @@ use WCPay\Internal\Proxy\LegacyProxy;
  */
 abstract class Experiment {
 	/**
-	 * The variation every failure path collapses to.
+	 * The variant every failure path collapses to.
 	 *
 	 * @var string
 	 */
-	public const VARIATION_CONTROL = 'control';
+	public const VARIANT_CONTROL = 'control';
 
 	/**
 	 * Legacy proxy for calling WP/legacy code.
@@ -32,6 +32,15 @@ abstract class Experiment {
 	 * @var LegacyProxy
 	 */
 	protected $legacy_proxy;
+
+	/**
+	 * Memoized variant for the current request, so repeated calls don't
+	 * re-hit ExPlat (Experimental_Abtest is constructed per call and its
+	 * in-memory cache would otherwise always be cold).
+	 *
+	 * @var string|null
+	 */
+	private $memoized_variant;
 
 	/**
 	 * Constructor.
@@ -59,32 +68,27 @@ abstract class Experiment {
 	abstract protected function assignment_key(): string;
 
 	/**
-	 * Exhaustive list of valid variation strings, including control.
+	 * Exhaustive list of valid variant strings, including control.
 	 *
 	 * @return string[]
 	 */
-	abstract protected function variations(): array;
+	abstract protected function variants(): array;
 
 	/**
-	 * Resolve the variant for the current request. Never throws.
+	 * Resolve the variant for the current request. Memoized per instance.
+	 * Never throws (assuming subclass hooks don't throw).
 	 *
-	 * @return string One of variations(); control on no consent, no
-	 *                assignment key, ExPlat failure, or unknown variation.
+	 * @return string One of variants(); control on no consent, no
+	 *                assignment key, ExPlat failure, or unknown variant.
 	 */
 	public function get_variant(): string {
-		$assignment_key = $this->assignment_key();
-
-		if ( '' === $assignment_key || ! $this->has_consent() ) {
-			return self::VARIATION_CONTROL;
+		if ( null !== $this->memoized_variant ) {
+			return $this->memoized_variant;
 		}
 
-		$variation = $this->create_abtest( $assignment_key )->get_variation( $this->name() );
+		$this->memoized_variant = $this->resolve_variant();
 
-		if ( ! in_array( $variation, $this->variations(), true ) ) {
-			return self::VARIATION_CONTROL;
-		}
-
-		return $variation;
+		return $this->memoized_variant;
 	}
 
 	/**
@@ -105,5 +109,26 @@ abstract class Experiment {
 	 */
 	protected function create_abtest( string $anon_id ): Experimental_Abtest {
 		return new Experimental_Abtest( $anon_id, 'woocommerce', true );
+	}
+
+	/**
+	 * Uncached variant resolution.
+	 *
+	 * @return string
+	 */
+	private function resolve_variant(): string {
+		$assignment_key = $this->assignment_key();
+
+		if ( '' === $assignment_key || ! $this->has_consent() ) {
+			return self::VARIANT_CONTROL;
+		}
+
+		$variant = $this->create_abtest( $assignment_key )->get_variation( $this->name() );
+
+		if ( ! in_array( $variant, $this->variants(), true ) ) {
+			return self::VARIANT_CONTROL;
+		}
+
+		return $variant;
 	}
 }
