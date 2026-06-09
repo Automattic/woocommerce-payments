@@ -229,8 +229,9 @@ class WC_Payments_Order_Service {
 
 		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
 		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
-		// send time (see maybe_add_test_mode_to_email_subject), so the marker survives a later
-		// switch back to live mode or WooPayments being deactivated.
+		// send time (see maybe_add_test_mode_to_email_subject), so the marker reflects how the
+		// order was paid even if the store later switches modes or the email is resent. These
+		// are runtime filters, so the marker only shows while WooPayments is active.
 		foreach ( self::TEST_MODE_INDICATOR_EMAIL_IDS as $email_id ) {
 			add_filter( "woocommerce_email_subject_{$email_id}", [ $this, 'maybe_add_test_mode_to_email_subject' ], 10, 2 );
 			add_filter( "woocommerce_email_heading_{$email_id}", [ $this, 'maybe_add_test_mode_to_email_heading' ], 10, 2 );
@@ -1824,9 +1825,11 @@ class WC_Payments_Order_Service {
 
 	/**
 	 * Determines whether the order was paid while WooPayments was in test mode, based on the
-	 * mode persisted to the order meta at payment time. Read from the order, never from the
-	 * current global mode, so downstream indicators survive a later mode switch or WooPayments
-	 * being deactivated.
+	 * mode persisted to the order meta at payment time. Reading from the order (never the
+	 * current global mode) keeps the determination correct across later mode switches and on
+	 * email resends. The order note this drives is a stored DB row that persists even after
+	 * WooPayments is deactivated; the email marker is applied by runtime filters, so it only
+	 * shows while the plugin is active.
 	 *
 	 * @param WC_Order $order Order object.
 	 *
