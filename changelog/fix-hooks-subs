@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Move hooks out of subscription class constructors to init_hooks()
+Comment: refactor: move hooks out of subscription class constructors to init_hooks()
