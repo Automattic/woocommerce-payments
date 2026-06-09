@@ -111,14 +111,10 @@ test.describe(
 				'option update wcpay_multi_currency_enable_auto_currency yes'
 			);
 
-			// Resolve the site home URL for absolute navigation.
-			homeUrl = (
-				await qit.wp( 'option get home', true )
-			).stdout.trim();
+			homeUrl = ( await qit.wp( 'option get home', true ) ).stdout.trim();
 
-			// Create a throwaway page containing the currency switcher block.
-			// The block is server-rendered regardless of theme, and the async
-			// renderer enqueues on any frontend page in cache-optimized mode.
+			// Block is server-rendered regardless of theme; the async renderer
+			// enqueues on any frontend page in cache-optimized mode.
 			switcherPageId = (
 				await qit.wp(
 					`post create --post_type=page --post_status=publish --post_title='MCCY Switcher Test' --porcelain --post_content='<!-- wp:woocommerce-payments/multi-currency-switcher /-->'`,
@@ -150,8 +146,7 @@ test.describe(
 				await merchant.deactivateMulticurrency( merchantPage );
 			}
 
-			// Delete the throwaway switcher page last, so a failure here cannot
-			// prevent the shared-state restoration above.
+			// Delete last so a failure here can't block the state restoration above.
 			if ( switcherPageId ) {
 				await qit.wp( `post delete ${ switcherPageId } --force` );
 			}
@@ -321,8 +316,7 @@ test.describe(
 					sessionStorage.removeItem( 'wcpay_mc_async_config' );
 				} );
 
-				// Force selected_currency to EUR deterministically, independent
-				// of the test server's geolocation.
+				// Force selected_currency to EUR regardless of test-server geolocation.
 				await shopperPage.route(
 					'**/wc/v3/payments/multi-currency/public/config',
 					async ( route ) => {
@@ -337,8 +331,6 @@ test.describe(
 					`${ homeUrl }/?page_id=${ switcherPageId }`
 				);
 
-				// After the async renderer initializes, the switcher value
-				// should reflect the localized currency.
 				const switcher = shopperPage
 					.locator( 'select[name="currency"]' )
 					.first();
