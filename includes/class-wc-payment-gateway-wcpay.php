@@ -1935,15 +1935,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$token->update_meta_data( 'is_attached_to_subscription', '1' );
 					$token->save_meta_data();
 				}
-			} elseif ( $save_payment_method_to_store && ! $intent_failed && ! is_null( $payment_information->get_payment_token() ) ) {
-				// A new card was entered and saved during this payment (e.g. paying a failed/pending
-				// subscription renewal). The token was just created on the user above, but it is not yet
-				// linked to the order. Attach it so the WCS failing-renewal hook chain
-				// (woocommerce_subscriptions_paid_for_failed_renewal_order -> change_failing_payment_method
-				// -> update_failing_payment_method -> get_payment_token( $renewal_order )) can find the new
-				// token and copy it onto the subscription, and so maybe_schedule_subscription_order_tracking()
-				// does not overwrite _payment_method_id back to the previously-stored card. See WOOPMNT-2882.
-				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
 			}
 
 			$needs_frontend_confirmation = (
