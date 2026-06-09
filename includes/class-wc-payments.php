@@ -651,6 +651,7 @@ class WC_Payments {
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
+		self::$webhook_reliability_service->init_hooks();
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service, self::$token_service );
 
