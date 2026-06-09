@@ -29,13 +29,21 @@ jest.mock( '@stripe/react-stripe-js', () => ( {
 	useStripe: jest.fn(),
 } ) );
 
-jest.mock( 'wcpay/data', () => {
-	const actual = jest.requireActual( 'wcpay/data' );
+jest.mock( 'wcpay/data/settings', () => {
+	const actual = jest.requireActual( 'wcpay/data/settings' );
 	return {
 		__esModule: true,
 		...actual,
 		useWooPayEnabledSettings: () => [ false, jest.fn() ],
 		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
+	};
+} );
+
+jest.mock( 'wcpay/data/pm-promotions', () => {
+	const actual = jest.requireActual( 'wcpay/data/pm-promotions' );
+	return {
+		__esModule: true,
+		...actual,
 		usePmPromotions: () => ( { pmPromotions: [], isLoading: false } ),
 	};
 } );

@@ -13,7 +13,11 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import { displayType } from 'documents/strings';
-import { Document, useDocuments, useDocumentsSummary } from 'data/index';
+import {
+	Document,
+	useDocuments,
+	useDocumentsSummary,
+} from 'wcpay/data/documents';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';

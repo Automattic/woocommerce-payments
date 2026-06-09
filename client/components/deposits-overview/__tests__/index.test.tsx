@@ -22,11 +22,11 @@ import {
 	useDepositIncludesLoan,
 	useDeposits,
 	useAllDepositsOverviews,
-} from 'wcpay/data';
+} from 'wcpay/data/deposits';
 import type { CachedDeposit } from 'wcpay/types/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
 	useDeposits: jest.fn(),

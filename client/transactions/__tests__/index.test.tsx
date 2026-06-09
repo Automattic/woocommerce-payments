@@ -12,14 +12,13 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import TransactionsPage from '../';
+import { useAuthorizationsSummary } from 'wcpay/data/authorizations';
+import { useManualCapture, useSettings } from 'wcpay/data/settings';
 import {
-	useAuthorizationsSummary,
 	useFraudOutcomeTransactionsSummary,
-	useManualCapture,
-	useSettings,
 	useTransactions,
 	useTransactionsSummary,
-} from 'data/index';
+} from 'wcpay/data/transactions';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -39,13 +38,10 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'data/index', () => ( {
-	useTransactions: jest.fn(),
-	useTransactionsSummary: jest.fn(),
-	useFraudOutcomeTransactionsSummary: jest.fn(),
-	useManualCapture: jest.fn(),
-	useSettings: jest.fn(),
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorizationsSummary: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/pm-promotions', () => ( {
 	usePmPromotions: jest
 		.fn()
 		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
@@ -53,6 +49,15 @@ jest.mock( 'data/index', () => ( {
 		activatePmPromotion: jest.fn(),
 		dismissPmPromotion: jest.fn(),
 	} ),
+} ) );
+jest.mock( 'wcpay/data/settings', () => ( {
+	useManualCapture: jest.fn(),
+	useSettings: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/transactions', () => ( {
+	useTransactions: jest.fn(),
+	useTransactionsSummary: jest.fn(),
+	useFraudOutcomeTransactionsSummary: jest.fn(),
 } ) );
 
 jest.mock( '@woocommerce/data', () => {
