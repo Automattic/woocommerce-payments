@@ -501,6 +501,123 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertEquals( 'HONG KONG', $shipping_address['state'] );
 	}
 
+	/**
+	 * Apple Pay can drop the Hong Kong region entirely, leaving `state` and `postcode` empty and
+	 * only the district in the `city` field. The region must be derived from the district.
+	 * This is the real-world failure reported in WOOPMNT-6188 (e.g. `1 Tai Po Road, Tai Po`).
+	 */
+	public function test_tokenized_cart_hk_shipping_region_derived_from_city_district() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => '',
+				'postcode' => '',
+				'city'     => 'Tai Po',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( 'NEW TERRITORIES', $shipping_address['state'] );
+	}
+
+	/**
+	 * The district-from-city derivation must also work for the billing address (the reported error).
+	 */
+	public function test_tokenized_cart_hk_billing_region_derived_from_city_district() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => '',
+				'postcode' => '',
+				'city'     => 'Tai Po',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$billing_address = $request->get_param( 'billing_address' );
+		$this->assertEquals( 'NEW TERRITORIES', $billing_address['state'] );
+	}
+
+	/**
+	 * A Kowloon district in the city field must derive the `KOWLOON` region.
+	 */
+	public function test_tokenized_cart_hk_region_derived_from_kowloon_district() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => '',
+				'postcode' => '',
+				'city'     => 'Kowloon City',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$billing_address = $request->get_param( 'billing_address' );
+		$this->assertEquals( 'KOWLOON', $billing_address['state'] );
+	}
+
+	/**
+	 * A Hong Kong Island district in the city field must derive the `HONG KONG` region.
+	 */
+	public function test_tokenized_cart_hk_region_derived_from_hk_island_district() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => '',
+				'postcode' => '',
+				'city'     => 'Central',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$billing_address = $request->get_param( 'billing_address' );
+		$this->assertEquals( 'HONG KONG', $billing_address['state'] );
+	}
+
+	/**
+	 * The district-from-city derivation must work for Chinese (中文) district names too (`大埔` = Tai Po).
+	 */
+	public function test_tokenized_cart_hk_region_derived_from_中文_district() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => '',
+				'postcode' => '',
+				'city'     => '大埔',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$billing_address = $request->get_param( 'billing_address' );
+		$this->assertEquals( 'NEW TERRITORIES', $billing_address['state'] );
+	}
+
 	public function test_tokenized_cart_italy_state_venezia_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
