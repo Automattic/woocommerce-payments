@@ -394,7 +394,7 @@ export async function mountStripePaymentElement(
  */
 export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
 	return api
-		.setupIntent( id, fingerprint )
+		.setupIntent( id, fingerprint ?? '' )
 		.then( function ( confirmedSetupIntent ) {
 			appendSetupIntentToForm( $form, confirmedSetupIntent );
 		} );
