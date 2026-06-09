@@ -40,6 +40,24 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'woopayments_review_prompt_design_v1', $this->sut->name() );
 	}
 
+	public function test_assignment_key_derives_from_blog_id() {
+		$this->mock_legacy_proxy
+			->method( 'call_function' )
+			->with( 'class_exists', '\Jetpack_Options' )
+			->willReturn( true );
+		$this->mock_legacy_proxy
+			->method( 'call_static' )
+			->with( '\Jetpack_Options', 'get_option', 'id' )
+			->willReturn( 123456 );
+
+		// The key format is a live experiment contract: changing it
+		// mid-experiment re-randomizes every store's assignment.
+		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'assignment_key' );
+		$method->setAccessible( true );
+
+		$this->assertSame( 'woopayments_store_123456', $method->invoke( $this->sut ) );
+	}
+
 	public function test_get_variant_returns_control_when_jetpack_options_missing() {
 		$this->mock_legacy_proxy
 			->method( 'call_function' )
