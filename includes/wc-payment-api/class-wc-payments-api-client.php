@@ -836,11 +836,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @throws API_Exception - If request throws.
 	 */
 	public function upload_file( $request ) {
-		$purpose     = $request->get_param( 'purpose' );
 		$file_params = $request->get_file_params();
-		$file_name   = $file_params['file']['name'];
-		$file_type   = $file_params['file']['type'];
-		$as_account  = (bool) $request->get_param( 'as_account' );
 
 		// Sometimes $file_params is empty array for large files (8+ MB).
 		$file_error = empty( $file_params ) || $file_params['file']['error'];
@@ -854,13 +850,42 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			);
 		}
 
-		$body = [
+		return $this->upload_evidence_file_contents(
 			// We disable php linting here because otherwise it will show a warning on improper
 			// use of `file_get_contents()` and say you should "use `wp_remote_get()` for
 			// remote URLs instead", which is unrelated to our use here.
 			// phpcs:disable
-			'file'      => base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
+			base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
 			// phpcs:enable
+			$file_params['file']['name'],
+			$file_params['file']['type'],
+			(string) $request->get_param( 'purpose' ),
+			(bool) $request->get_param( 'as_account' )
+		);
+	}
+
+	/**
+	 * Upload already-read evidence file contents (base64) to the Files API.
+	 *
+	 * Shared by the multipart REST upload path (`WC_REST_Payments_Files_Controller`)
+	 * and the agent file-upload ability, so both reach the same Files API call
+	 * with no logic drift. Callers that have a raw `$_FILES` upload should use
+	 * `upload_file()`; callers that already hold the file contents (e.g. an
+	 * ability receiving a base64 payload) call this directly.
+	 *
+	 * @param string $file_content_base64 Base64-encoded file contents.
+	 * @param string $file_name           File name including extension.
+	 * @param string $file_type           File MIME type (e.g. `image/png`).
+	 * @param string $purpose             Stripe file purpose (e.g. `dispute_evidence`).
+	 * @param bool   $as_account          Whether to upload on behalf of the connected account.
+	 *
+	 * @return array File object returned by the Files API.
+	 *
+	 * @throws API_Exception When the upload request fails.
+	 */
+	public function upload_evidence_file_contents( string $file_content_base64, string $file_name, string $file_type, string $purpose, bool $as_account = false ) {
+		$body = [
+			'file'       => $file_content_base64,
 			'file_name'  => $file_name,
 			'file_type'  => $file_type,
 			'purpose'    => $purpose,
@@ -2566,6 +2591,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
+	 * Note: `idempotency_key` is a reserved transport-layer param key. When present
+	 * in $params it is lifted into the `Idempotency-Key` header and stripped from
+	 * the body — it is never sent to the server as request data.
+	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
 	 * @param string $api              - The API endpoint to call.
 	 * @param string $method           - The HTTP method to make the request with.
@@ -2588,6 +2617,19 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 
 		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
+
+		// Honor a caller-supplied idempotency key (e.g. from an agent-driven
+		// ability) so duplicate retries dedupe to the original result. Lift it out
+		// of the body params either way — it is a transport-layer header, never
+		// request data sent to the server. The (string) cast guards against a
+		// non-string value injected via the wcpay_api_request_params filter. For
+		// GET/DELETE the key is stripped from the params here but intentionally
+		// not added as a header (those methods build a query string, not a body).
+		$caller_idempotency_key = '';
+		if ( is_array( $params ) && isset( $params['idempotency_key'] ) ) {
+			$caller_idempotency_key = (string) $params['idempotency_key'];
+			unset( $params['idempotency_key'] );
+		}
 
 		// Build the URL we want to send the request to.
 		$url = self::ENDPOINT_BASE;
@@ -2613,7 +2655,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			$headers['Idempotency-Key'] = $this->uuid();
+			$headers['Idempotency-Key'] = '' !== $caller_idempotency_key ? $caller_idempotency_key : $this->uuid();
 			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(

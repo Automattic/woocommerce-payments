@@ -18,7 +18,7 @@ import {
 	useSavedCards,
 	useCardPresentEligible,
 	useStripeBilling,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import { select } from '@wordpress/data';
 
 jest.mock( '@wordpress/data', () => ( {
@@ -32,7 +32,7 @@ select.mockReturnValue( {
 	getSettings: () => settingsMock,
 } );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
 	useAccountStatementDescriptorKanji: jest.fn(),
 	useAccountStatementDescriptorKana: jest.fn(),

@@ -252,6 +252,22 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$this->assertEquals( '%2$s%1$s', $this->frontend_currencies->get_woocommerce_price_format( '%2$s%1$s' ) );
 	}
 
+	public function test_get_woocommerce_currency_pos_returns_currency_pos_for_selected_currency() {
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'EUR' ) );
+
+		// The Cart and Checkout Blocks read the `woocommerce_currency_pos` option (via the Store API
+		// CurrencyFormatter) rather than the `woocommerce_price_format` filter the shortcode uses, so
+		// WCPay must also override the option to keep both paths aligned. EUR's default position is
+		// right_space (see i18n/currency-info.php), not the store's setting.
+		$this->assertEquals( 'right_space', $this->frontend_currencies->get_woocommerce_currency_pos( 'left' ) );
+	}
+
+	public function test_get_woocommerce_currency_pos_returns_original_pos_when_the_currency_is_same() {
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'USD' ) );
+
+		$this->assertEquals( 'left', $this->frontend_currencies->get_woocommerce_currency_pos( 'left' ) );
+	}
+
 	/**
 	 * @dataProvider currency_format_provider
 	 */

@@ -20,9 +20,9 @@ import {
 	usePaymentRequestButtonTheme,
 	useWooPayLocations,
 	useWooPayShowIncompatibilityNotice,
-} from '../../../data';
+} from 'wcpay/data/settings';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useWooPayEnabledSettings: jest.fn(),
 	useWooPayCustomMessage: jest.fn(),
