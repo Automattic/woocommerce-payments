@@ -89,7 +89,13 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	 * @return void
 	 */
 	public function set_fingerprint( string $fingerprint = '' ) {
-		$metadata = $this->get_param( 'metadata' );
+		// Setup intents don't set metadata before this point, so the param may not exist yet.
+		// get_param() throws when the key is missing, so fall back to an empty array.
+		try {
+			$metadata = $this->get_param( 'metadata' );
+		} catch ( Invalid_Request_Parameter_Exception $e ) {
+			$metadata = [];
+		}
 		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
 		$this->set_param( 'metadata', $metadata );
 	}
