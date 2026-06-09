@@ -9,7 +9,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
+import { store as reportsStore } from 'wcpay/data/reports';
 import type { ReportsPeriodRange } from './period-selector';
 import type { ReportsTab } from './types';
 
@@ -24,7 +24,7 @@ export function useReportsTabReload(
 	currency: string
 ): ( periodOverride?: ReportsPeriodRange ) => void {
 	const { invalidateResolution, invalidateResolutionForStoreSelector } =
-		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
+		useDispatch( reportsStore ) as unknown as WCPayResolutionDispatch;
 	const normalizedCurrency = currency.toLowerCase();
 
 	return useCallback(
