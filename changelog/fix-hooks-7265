@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Move hooks out of WC_Payments_Webhook_Reliability_Service constructor to init_hooks()
+Comment: refactor: move hooks out of WC_Payments_Webhook_Reliability_Service constructor to init_hooks()
