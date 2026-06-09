@@ -18,24 +18,29 @@ import { useDispatch } from '@wordpress/data';
 import NewEvidence from '../index';
 import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import type { DisputeReason } from 'wcpay/types/disputes';
-import {
-	useGetSettings,
-	useDisputeEvidence,
-	WCPAY_STORE_NAME,
-} from 'wcpay/data';
+import { useGetSettings } from 'wcpay/data/settings';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { PAYMENT_INTENTS_STORE_NAME } from 'wcpay/data/store-names';
 
 // Mock the API fetch calls
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 // Mock the data hooks
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useGetSettings: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 
-// Mock the dispatch hooks
+// Mock the dispatch hooks. `createReduxStore` returns the store name so the
+// slice stores that load through the component resolve to their name string —
+// which is what `useDispatch` is keyed on below.
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
+	createReduxStore: jest.fn( ( name ) => name ),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
@@ -813,7 +818,7 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 		mockUseDisputeEvidence.mockReturnValue( { updateDispute: jest.fn() } );
 		( mockUseDispatch as jest.Mock ).mockImplementation(
 			( storeName: string ) => {
-				if ( storeName === WCPAY_STORE_NAME ) {
+				if ( storeName === PAYMENT_INTENTS_STORE_NAME ) {
 					return {
 						invalidateResolutionForStoreSelector:
 							mockInvalidateResolutionForStoreSelector,

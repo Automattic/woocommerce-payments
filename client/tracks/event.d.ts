@@ -63,6 +63,8 @@ export type MerchantEvent =
 	| 'wcpay_dispute_file_upload_success'
 	| 'wcpay_dispute_file_upload_failed'
 	| 'wcpay_dispute_outcome_viewed'
+	| 'wcpay_dispute_outcome_recommendations_section_viewed'
+	| 'wcpay_dispute_outcome_action_clicked'
 	| 'wcpay_fraud_protection_banner_rendered'
 	| 'wcpay_fraud_protection_banner_learn_more_button_clicked'
 	| 'wcpay_fraud_protection_order_details_link_clicked'

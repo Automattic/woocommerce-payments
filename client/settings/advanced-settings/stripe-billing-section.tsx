@@ -14,7 +14,7 @@ import {
 	useStripeBillingMigration,
 	useSettings,
 	useManualCapture,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import Notices from './stripe-billing-notices/notices';
 import StripeBillingMigrationNoticeContext from './stripe-billing-notices/context';

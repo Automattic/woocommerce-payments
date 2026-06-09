@@ -12,7 +12,7 @@ import moment from 'moment';
  * Internal dependencies
  */
 import PaymentDetailsSummary from '../';
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
 import { recordEvent } from 'wcpay/tracks';
 import { _resetOutcomeViewTrackingForTests } from '../../dispute-outcome/tracks';
@@ -28,10 +28,12 @@ jest.mock( '@wordpress/date', () => ( {
 
 const mockDisputeDoAccept = jest.fn();
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorization: jest.fn( () => ( {
 		authorization: null,
 	} ) ),
+} ) );
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeAccept: jest.fn( () => ( {
 		doAccept: mockDisputeDoAccept,
 		isLoading: false,
@@ -43,6 +45,10 @@ jest.mock( 'wcpay/tracks', () => ( {
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -1253,6 +1259,13 @@ describe( 'PaymentDetailsSummary', () => {
 		// guard is unit-tested in `dispute-outcome/__tests__/tracks.test.ts`;
 		// these tests cover the remount path the dedup actually defends.
 		describe( 'Tracks dedup across the wrapper lifecycle', () => {
+			// The wrapper also renders the recommendations card, which fires its
+			// own section-viewed events, so count only the viewed-event firings.
+			const outcomeViewedCalls = () =>
+				recordEvent.mock.calls.filter(
+					( [ name ] ) => name === 'wcpay_dispute_outcome_viewed'
+				);
+
 			beforeEach( () => {
 				recordEvent.mockClear();
 				_resetOutcomeViewTrackingForTests();
@@ -1265,13 +1278,13 @@ describe( 'PaymentDetailsSummary', () => {
 					<PaymentDetailsSummary charge={ first } />
 				);
 
-				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
 
 				// Fresh object, same id: useEffect deps change; the Set catches it.
 				const second = getResolvedCharge( 'won' );
 				rerender( <PaymentDetailsSummary charge={ second } /> );
 
-				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
 			} );
 
 			test( 'unmounting and remounting the wrapper with the same dispute id fires the event once', () => {
@@ -1280,14 +1293,14 @@ describe( 'PaymentDetailsSummary', () => {
 					<PaymentDetailsSummary charge={ charge } />
 				);
 
-				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
 
 				// Production regression: per-instance refs reset on unmount;
 				// the module-scoped Set must survive it.
 				unmount();
 				render( <PaymentDetailsSummary charge={ charge } /> );
 
-				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
 			} );
 
 			test( 'a different dispute id after the first fires its own event', () => {
@@ -1295,7 +1308,7 @@ describe( 'PaymentDetailsSummary', () => {
 				const { unmount } = render(
 					<PaymentDetailsSummary charge={ first } />
 				);
-				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
 
 				// Dedup keyed by dispute id, not "have we ever fired".
 				unmount();
@@ -1303,10 +1316,78 @@ describe( 'PaymentDetailsSummary', () => {
 				second.dispute.id = 'dp_2';
 				render( <PaymentDetailsSummary charge={ second } /> );
 
-				expect( recordEvent ).toHaveBeenCalledTimes( 2 );
-				expect( recordEvent ).toHaveBeenLastCalledWith(
-					'wcpay_dispute_outcome_viewed',
+				const viewed = outcomeViewedCalls();
+				expect( viewed ).toHaveLength( 2 );
+				expect( viewed[ 1 ][ 1 ] ).toEqual(
 					expect.objectContaining( { dispute_id: 'dp_2' } )
+				);
+			} );
+		} );
+
+		// has_recommendations must mirror what the card actually renders, so it
+		// is gated by the same conditions as the card (won/lost, matching
+		// catalog entry, not merchant-accepted), not merely by the catalog match.
+		describe( 'has_recommendations property', () => {
+			beforeEach( () => {
+				recordEvent.mockClear();
+				_resetOutcomeViewTrackingForTests();
+				global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+			} );
+
+			test( 'fires has_recommendations: true when the card has entries', () => {
+				const charge = getResolvedCharge( 'lost' );
+				charge.dispute.reason = 'product_not_received';
+				charge.dispute.metadata.__product_type = 'physical_product';
+				charge.dispute.evidence = {}; // tracking missing → critical fires
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: true } )
+				);
+			} );
+
+			test( 'fires has_recommendations: false when no catalog entry matches', () => {
+				const charge = getResolvedCharge( 'won' );
+				charge.dispute.reason = 'bank_cannot_process';
+				charge.dispute.metadata.__product_type = 'physical_product';
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: false } )
+				);
+			} );
+
+			test( 'fires has_recommendations: false on an accepted dispute even when entries would match', () => {
+				// The card suppresses on __closed_by_merchant, so the flag must
+				// too: the merchant sees no card, so has_recommendations is false.
+				const charge = getResolvedCharge( 'lost' );
+				charge.dispute.reason = 'product_not_received';
+				charge.dispute.metadata.__product_type = 'physical_product';
+				charge.dispute.evidence = {};
+				charge.dispute.metadata.__closed_by_merchant = '1';
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: false } )
+				);
+			} );
+
+			test( 'fires has_recommendations: false for a warning_closed inquiry', () => {
+				const charge = getResolvedCharge( 'warning_closed' );
+				charge.dispute.reason = 'product_not_received';
+				charge.dispute.metadata.__product_type = 'physical_product';
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: false } )
 				);
 			} );
 		} );
