@@ -10,6 +10,7 @@ import { controls } from '@wordpress/data';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
+import { DISPUTE_READINESS_STORE_NAME as STORE_NAME } from '../store-names';
 
 export function* getDisputeReadiness(): unknown {
 	try {
@@ -17,14 +18,10 @@ export function* getDisputeReadiness(): unknown {
 			path: `${ NAMESPACE }/dispute-readiness`,
 		} );
 
-		yield controls.dispatch(
-			'wc/payments',
-			'updateDisputeReadiness',
-			result
-		);
+		yield controls.dispatch( STORE_NAME, 'updateDisputeReadiness', result );
 	} catch ( error ) {
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'updateErrorForDisputeReadiness',
 			error
 		);

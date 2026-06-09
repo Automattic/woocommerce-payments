@@ -13,18 +13,20 @@ import user from '@testing-library/user-event';
 import PaymentMethod from '../payment-method';
 import DuplicatedPaymentMethodsContext from '../../settings-manager/duplicated-payment-methods-context';
 import WCPaySettingsContext from '../../wcpay-settings-context';
+import { usePmPromotions } from 'wcpay/data/pm-promotions';
 import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-	usePmPromotions,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/pm-promotions', () => ( {
+	usePmPromotions: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
 	useManualCapture: jest.fn(),
-	usePmPromotions: jest.fn(),
 } ) );
 
 describe( 'PaymentMethod', () => {

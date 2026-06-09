@@ -23,7 +23,7 @@ import {
 import { fundLabelStrings } from './strings';
 import { ClickTooltip } from '../tooltip';
 import { formatCurrency } from 'multi-currency/interface/functions';
-import { useAllDepositsOverviews } from 'wcpay/data';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import { saveOption } from 'wcpay/data/settings/actions';
 import './style.scss';

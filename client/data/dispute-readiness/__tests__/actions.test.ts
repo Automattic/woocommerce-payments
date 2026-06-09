@@ -48,7 +48,7 @@ const expectUpdatesDisputeReadinessOnSuccess = (
 ) => {
 	expect( generator.next( readinessPayload ).value ).toEqual(
 		controls.dispatch(
-			'wc/payments',
+			'wc/payments/disputeReadiness',
 			'updateDisputeReadiness',
 			readinessPayload
 		)
@@ -61,7 +61,7 @@ const expectUpdatesDisputeReadinessErrorOnFailure = (
 ) => {
 	expect( generator.throw( errorResponse ).value ).toEqual(
 		controls.dispatch(
-			'wc/payments',
+			'wc/payments/disputeReadiness',
 			'updateErrorForDisputeReadiness',
 			errorResponse
 		)

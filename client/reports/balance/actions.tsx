@@ -13,7 +13,7 @@ import { recordEvent } from 'tracks';
 /**
  * Internal dependencies
  */
-import { useReportsBalanceSummary } from 'wcpay/data';
+import { useReportsBalanceSummary } from 'wcpay/data/reports';
 import { getVisibleBalanceRows } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
 import { getBalanceCSV, getBalanceExportFileName } from './format';
