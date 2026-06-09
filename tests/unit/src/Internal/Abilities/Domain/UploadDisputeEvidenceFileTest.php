@@ -41,6 +41,12 @@ class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_missing_file_input', $result->get_error_code() );
 	}
 
+	public function test_execute_returns_error_when_input_not_array(): void {
+		$result = UploadDisputeEvidenceFile::execute( null );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wcpay_missing_file_input', $result->get_error_code() );
+	}
+
 	public function test_execute_returns_error_when_file_type_unsupported(): void {
 		$result = UploadDisputeEvidenceFile::execute(
 			[
