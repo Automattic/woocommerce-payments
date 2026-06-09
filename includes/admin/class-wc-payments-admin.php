@@ -13,6 +13,7 @@ use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
+use WCPay\Internal\Experiment\ReviewPromptExperiment;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -1609,12 +1610,28 @@ class WC_Payments_Admin {
 
 		add_action( 'admin_footer', [ $this, 'inject_review_prompt_container' ] );
 
+		$experiment = wcpay_get_container()->get( ReviewPromptExperiment::class );
+
+		/**
+		 * Filters the review prompt experiment variant.
+		 *
+		 * Internal filter for QA: forces a specific design variant locally
+		 * without an ExPlat assignment. Not a public extension point.
+		 *
+		 * @since 10.9.0
+		 *
+		 * @param string $variant The assigned variant.
+		 */
+		$variant = apply_filters( 'wcpay_review_prompt_experiment_variant', $experiment->get_variant() );
+
 		wp_localize_script(
 			'WCPAY_REVIEW_PROMPT',
 			'wcpayReviewPromptSettings',
 			[
-				'isLive'  => WC_Payments::mode()->is_live(),
-				'version' => WCPAY_VERSION_NUMBER,
+				'isLive'     => WC_Payments::mode()->is_live(),
+				'version'    => WCPAY_VERSION_NUMBER,
+				'experiment' => $experiment->name(),
+				'variant'    => $variant,
 			]
 		);
 
