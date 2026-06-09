@@ -16,7 +16,7 @@ import {
 	updateAuthorization,
 } from '../actions';
 import authorizationsFixture from './authorizations.fixture.json';
-import { STORE_NAME } from 'wcpay/data/constants';
+import { STORE_NAME } from '../store';
 
 declare const global: {
 	wcpaySettings: {
@@ -52,7 +52,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'startResolution',
 					'getAuthorization',
 					[ mockPaymentIntentId ]
@@ -61,7 +61,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'setIsRequestingAuthorization',
 					true
 				)
@@ -91,7 +91,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizations'
 				)
@@ -99,7 +99,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizationsSummary'
 				)
@@ -107,7 +107,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/transactions',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactions'
 				)
@@ -115,7 +115,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/transactions',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactionsSummary'
 				)
@@ -123,7 +123,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/timeline',
 					'invalidateResolutionForStoreSelector',
 					'getTimeline'
 				)
@@ -131,7 +131,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/paymentIntents',
 					'invalidateResolutionForStoreSelector',
 					'getPaymentIntent'
 				)
@@ -139,7 +139,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/transactions',
 					'invalidateResolutionForStoreSelector',
 					'getTransactions'
 				)
@@ -155,7 +155,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'finishResolution',
 					'getAuthorization',
 					[ mockPaymentIntentId ]
@@ -164,7 +164,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'setIsRequestingAuthorization',
 					false
 				)
@@ -381,7 +381,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'startResolution',
 					'getAuthorization',
 					[ mockPaymentIntentId ]
@@ -390,7 +390,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'setIsRequestingAuthorization',
 					true
 				)
@@ -420,7 +420,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizations'
 				)
@@ -428,7 +428,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'invalidateResolutionForStoreSelector',
 					'getAuthorizationsSummary'
 				)
@@ -436,7 +436,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/transactions',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactions'
 				)
@@ -444,7 +444,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/transactions',
 					'invalidateResolutionForStoreSelector',
 					'getFraudOutcomeTransactionsSummary'
 				)
@@ -452,7 +452,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/timeline',
 					'invalidateResolutionForStoreSelector',
 					'getTimeline'
 				)
@@ -460,7 +460,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/paymentIntents',
 					'invalidateResolutionForStoreSelector',
 					'getPaymentIntent'
 				)
@@ -476,7 +476,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'finishResolution',
 					'getAuthorization',
 					[ mockPaymentIntentId ]
@@ -485,7 +485,7 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
-					'wc/payments',
+					'wc/payments/authorizations',
 					'setIsRequestingAuthorization',
 					false
 				)

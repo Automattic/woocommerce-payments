@@ -12,8 +12,9 @@ import React from 'react';
  */
 import PaymentOrderDetails from '..';
 import { chargeMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
-import { STORE_NAME } from 'wcpay/data/constants';
-import { useAuthorization, useChargeFromOrder, useTimeline } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
+import { useChargeFromOrder } from 'wcpay/data/charges';
+import { useTimeline } from 'wcpay/data/timeline';
 import { ApiError } from 'wcpay/types/errors';
 
 // Suppress React 18 deprecation warnings from external @woocommerce/components
@@ -113,15 +114,26 @@ const chargeFromOrderMock = {
 	status: 'pending',
 };
 
-jest.mock( 'data/index', () => ( {
-	useChargeFromOrder: jest.fn(),
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorization: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/charges', () => ( {
+	// Keep the real module (notably `getChargeData`, used by the
+	// payment-intents charge-fallback hook exercised via shared fixtures) and
+	// only stub the hook this suite drives.
+	...jest.requireActual( 'wcpay/data/charges' ),
+	useChargeFromOrder: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/timeline', () => ( {
 	useTimeline: jest.fn(),
 } ) );
 
 // Workaround for mocking @wordpress/data.
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -187,9 +199,10 @@ describe( 'Order details page', () => {
 			dateFormat: 'M j, Y',
 		};
 
-		const selectMock = jest.fn( ( storeName ) =>
-			STORE_NAME === storeName ? selectors : {}
-		);
+		// The charge-fallback hook reads from the charges and payment-intents
+		// stores (passed as descriptors); return the test's selectors regardless
+		// of which store is selected.
+		const selectMock = jest.fn( () => selectors );
 
 		( useSelect as jest.Mock ).mockImplementation(
 			( cb: ( callback: any ) => jest.Mock ) => cb( selectMock )

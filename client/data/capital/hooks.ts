@@ -8,7 +8,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import { SummaryResponse, LoansResponse } from './types';
 
 export const useActiveLoanSummary = (): SummaryResponse =>

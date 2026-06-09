@@ -7,9 +7,9 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import DisputedOrderNoticeHandler from '..';
-import { useCharge } from 'wcpay/data';
+import { useCharge } from 'wcpay/data/charges';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/charges', () => ( {
 	useCharge: jest.fn(),
 } ) );
 

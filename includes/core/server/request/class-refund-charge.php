@@ -113,6 +113,19 @@ class Refund_Charge extends Request {
 	}
 
 	/**
+	 * Sets a caller-supplied idempotency key so duplicate retries of the same
+	 * refund dedupe to the original result at the payment processor. The API
+	 * client lifts this into the `Idempotency-Key` header and strips it from
+	 * the request body.
+	 *
+	 * @param string $idempotency_key Caller-supplied idempotency key.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_idempotency_key( string $idempotency_key ) {
+		$this->set_param( 'idempotency_key', $idempotency_key );
+	}
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

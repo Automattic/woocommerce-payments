@@ -712,6 +712,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 else
 	info "Connecting to live server..."
 	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_JP_BLOG_TOKEN" --user_token="$E2E_JP_USER_TOKEN"
+	# Mirror the local path: a cold account cache makes is_available() false on the
+	# first run, so the Blocks checkout offers no payment methods until a refresh.
+	cli wp wcpay_dev refresh_account_data
 	success "Connected to live server"
 fi
 

@@ -4,16 +4,30 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, fireEvent } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
 import DisputeRecommendationsCard from '../index';
+import { sortByLift } from '../utils';
 import { getRecommendations } from 'wcpay/disputes/new-evidence/recommendations';
 import { RECOMMENDATIONS_CATALOG } from 'wcpay/disputes/new-evidence/recommendation-catalog';
+import { recordEvent } from 'wcpay/tracks';
+import { _resetOutcomeViewTrackingForTests } from '../../dispute-outcome/tracks';
 import type { ChargeDispute } from 'wcpay/types/charges';
+
+jest.mock( 'wcpay/tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const sectionViewedEvent =
+	'wcpay_dispute_outcome_recommendations_section_viewed';
+const sectionViewedCalls = () =>
+	( recordEvent as jest.Mock ).mock.calls.filter(
+		( [ name ] ) => name === sectionViewedEvent
+	);
 
 const buildDispute = (
 	overrides: Partial< ChargeDispute > = {}
@@ -505,5 +519,168 @@ describe( 'DisputeRecommendationsCard', () => {
 				screen.queryByRole( 'link', { name: /learn more/i } )
 			).not.toBeInTheDocument();
 		} );
+	} );
+} );
+
+describe( 'Event 2: recommendations_section_viewed', () => {
+	beforeEach( () => {
+		( recordEvent as jest.Mock ).mockClear();
+		_resetOutcomeViewTrackingForTests();
+	} );
+
+	it( 'fires once for the coaching section with section key, counts and ids', () => {
+		const dispute = buildDispute( {
+			status: 'lost',
+			reason: 'product_not_received',
+			metadata: { __product_type: 'physical_product' },
+			evidence: { receipt: 'r' },
+		} );
+		// Sorted-by-lift — the same order the card's effect emits them in.
+		const expectedIds = [
+			...getRecommendations(
+				{
+					reason: 'product_not_received',
+					productType: 'physical_product',
+					outcome: 'could_help',
+					evidence: { receipt: 'r' },
+				},
+				RECOMMENDATIONS_CATALOG
+			),
+		]
+			.sort( sortByLift )
+			.map( ( r ) => r.id );
+
+		render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+		const calls = sectionViewedCalls();
+		expect( calls ).toHaveLength( 1 );
+		expect( calls[ 0 ][ 1 ] ).toEqual(
+			expect.objectContaining( {
+				section: 'what_could_help',
+				recommendation_count: expectedIds.length,
+				visible_count: Math.min( 3, expectedIds.length ),
+			} )
+		);
+		// Exact order, not just membership: the emit reads the same sorted
+		// list RecommendationSection renders, so ids track render order.
+		expect( calls[ 0 ][ 1 ].recommendation_ids ).toEqual( expectedIds );
+	} );
+
+	it( 'fires for both sections when both render', () => {
+		render(
+			<DisputeRecommendationsCard
+				dispute={ wonPhysicalShippingProvided() }
+			/>
+		);
+
+		const sections = sectionViewedCalls().map(
+			( [ , props ] ) => props.section
+		);
+		expect( sections ).toHaveLength( 2 );
+		expect( sections ).toEqual(
+			expect.arrayContaining( [
+				'whats_working_well',
+				'what_could_help',
+			] )
+		);
+	} );
+
+	it( 'dedups per section across unmount/remount of the same dispute', () => {
+		const dispute = wonPhysicalShippingProvided();
+		const { unmount } = render(
+			<DisputeRecommendationsCard dispute={ dispute } />
+		);
+		expect( sectionViewedCalls() ).toHaveLength( 2 );
+
+		// Production regression: payment-details remounts the card during
+		// loading; the module-scoped Set must keep this at one per section.
+		unmount();
+		render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+		expect( sectionViewedCalls() ).toHaveLength( 2 );
+	} );
+
+	it( 'fires no section event when the card renders nothing', () => {
+		render(
+			<DisputeRecommendationsCard
+				dispute={ buildDispute( {
+					status: 'warning_closed',
+					reason: 'product_not_received',
+					metadata: { __product_type: 'physical_product' },
+				} ) }
+			/>
+		);
+
+		expect( sectionViewedCalls() ).toHaveLength( 0 );
+	} );
+} );
+
+describe( 'Event 4: action_clicked', () => {
+	const actionCalls = () =>
+		( recordEvent as jest.Mock ).mock.calls.filter(
+			( [ name ] ) => name === 'wcpay_dispute_outcome_action_clicked'
+		);
+
+	beforeEach( () => {
+		( recordEvent as jest.Mock ).mockClear();
+		_resetOutcomeViewTrackingForTests();
+	} );
+
+	it( 'fires learn_more_clicked when the "Learn more" link is clicked', async () => {
+		const dispute = buildDispute( {
+			status: 'lost',
+			reason: 'product_not_received',
+			metadata: { __product_type: 'physical_product' },
+			evidence: { receipt: 'r' },
+		} );
+
+		render( <DisputeRecommendationsCard dispute={ dispute } /> );
+		await expandSection( /what could help next time/i );
+		await user.click( screen.getByRole( 'link', { name: /learn more/i } ) );
+
+		expect( actionCalls() ).toHaveLength( 1 );
+		expect( actionCalls()[ 0 ][ 1 ] ).toEqual(
+			expect.objectContaining( {
+				action: 'learn_more_clicked',
+				section: 'what_could_help',
+				link_href:
+					'https://woocommerce.com/document/managing-payment-disputes/',
+			} )
+		);
+	} );
+
+	it( 'fires show_more_expanded on expand only, not on collapse', async () => {
+		// Four coaching entries (receipt dodges c15) overflow the cap-of-3 into
+		// the show-more disclosure.
+		const dispute = buildDispute( {
+			status: 'lost',
+			reason: 'product_not_received',
+			metadata: { __product_type: 'physical_product' },
+			evidence: { receipt: 'r' },
+		} );
+
+		const { container } = render(
+			<DisputeRecommendationsCard dispute={ dispute } />
+		);
+		await expandSection( /what could help next time/i );
+
+		const details = container.querySelector(
+			'.dispute-recommendations-card__show-more'
+		) as HTMLDetailsElement;
+
+		details.open = true;
+		fireEvent( details, new Event( 'toggle' ) );
+		expect( actionCalls() ).toHaveLength( 1 );
+		expect( actionCalls()[ 0 ][ 1 ] ).toEqual(
+			expect.objectContaining( {
+				action: 'show_more_expanded',
+				section: 'what_could_help',
+			} )
+		);
+
+		// Collapsing must not fire a second event.
+		details.open = false;
+		fireEvent( details, new Event( 'toggle' ) );
+		expect( actionCalls() ).toHaveLength( 1 );
 	} );
 } );

@@ -9,7 +9,6 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { usePaymentIntentWithChargeFallback } from '../';
-import { STORE_NAME } from '../../constants';
 import {
 	Charge,
 	OutcomeRiskLevel,
@@ -111,9 +110,10 @@ describe( 'Payment Intent hooks', () => {
 	beforeEach( () => {
 		selectors = {};
 
-		const selectMock = jest.fn( ( storeName ) =>
-			STORE_NAME === storeName ? selectors : {}
-		);
+		// The hook reads from the charges and payment-intents stores (passed as
+		// descriptors); each test sets up only the selectors its branch needs,
+		// so return them regardless of which store is selected.
+		const selectMock = jest.fn( () => selectors );
 
 		( useSelect as jest.Mock ).mockImplementation(
 			( cb: ( callback: any ) => jest.Mock ) => cb( selectMock )

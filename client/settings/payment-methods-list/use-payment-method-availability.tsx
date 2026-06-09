@@ -12,7 +12,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing-currencies-message';
 import { __, sprintf } from '@wordpress/i18n';

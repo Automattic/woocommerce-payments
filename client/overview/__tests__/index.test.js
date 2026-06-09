@@ -43,6 +43,9 @@ jest.mock( '@woocommerce/navigation', () => ( {
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
 	registerStore: jest.fn(),
 	combineReducers: jest.fn(),
 	useDispatch: jest.fn( () => ( { updateOptions: jest.fn() } ) ),
@@ -57,21 +60,23 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
 } ) );
 jest.mock( '@wordpress/data-controls' );
-jest.mock( 'wcpay/data', () => ( {
-	useGetSettings: jest
-		.fn()
-		.mockReturnValue( { enabled_payment_method_ids: [ 'foo', 'bar' ] } ),
-	useSettings: jest.fn().mockReturnValue( {} ),
-	useDisputes: jest
-		.fn()
-		.mockReturnValue( { disputes: [], isLoading: false } ),
+jest.mock( 'wcpay/data/capital', () => ( {
+	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
+} ) );
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useDeposits: jest
 		.fn()
 		.mockReturnValue( { deposits: [], isLoading: false } ),
 	useAllDepositsOverviews: jest
 		.fn()
 		.mockReturnValue( { overviews: { currencies: [] } } ),
-	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
+} ) );
+jest.mock( 'wcpay/data/disputes', () => ( {
+	useDisputes: jest
+		.fn()
+		.mockReturnValue( { disputes: [], isLoading: false } ),
+} ) );
+jest.mock( 'wcpay/data/pm-promotions', () => ( {
 	usePmPromotions: jest
 		.fn()
 		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
@@ -79,6 +84,12 @@ jest.mock( 'wcpay/data', () => ( {
 		activatePmPromotion: jest.fn(),
 		dismissPmPromotion: jest.fn(),
 	} ),
+} ) );
+jest.mock( 'wcpay/data/settings', () => ( {
+	useGetSettings: jest
+		.fn()
+		.mockReturnValue( { enabled_payment_method_ids: [ 'foo', 'bar' ] } ),
+	useSettings: jest.fn().mockReturnValue( {} ),
 } ) );
 
 select.mockReturnValue( {

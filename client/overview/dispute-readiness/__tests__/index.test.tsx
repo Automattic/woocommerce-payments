@@ -12,9 +12,12 @@ import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
  * Internal dependencies
  */
 import DisputeReadinessCard from '..';
-import { useDisputeReadiness, useDisputeReadinessActions } from 'data';
+import {
+	useDisputeReadiness,
+	useDisputeReadinessActions,
+} from 'wcpay/data/dispute-readiness';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data/dispute-readiness', () => ( {
 	useDisputeReadiness: jest.fn(),
 	useDisputeReadinessActions: jest.fn(),
 } ) );

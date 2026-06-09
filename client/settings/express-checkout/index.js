@@ -16,7 +16,7 @@ import AppleGooglePayExpressCheckoutItem from './apple-google-pay-item';
 import LinkExpressCheckoutItem from './link-item';
 import AmazonPayExpressCheckoutItem from './amazon-pay-item';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import { useGetAvailablePaymentMethodIds } from 'wcpay/data';
+import { useGetAvailablePaymentMethodIds } from 'wcpay/data/settings';
 
 const ExpressCheckout = () => {
 	const {

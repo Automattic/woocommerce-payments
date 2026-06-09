@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { ExternalLink, VisuallyHidden } from '@wordpress/components';
 import { Icon, caution, published } from '@wordpress/icons';
@@ -16,12 +16,15 @@ import DisputeStepItem from 'wcpay/components/dispute-step-item';
 import type { ChargeDispute } from 'wcpay/types/charges';
 import type {
 	Recommendation,
-	RecommendationOutcome,
 	RecommendationUrgency,
 } from 'wcpay/disputes/new-evidence/types';
-import { getRecommendations } from 'wcpay/disputes/new-evidence/recommendations';
-import { RECOMMENDATIONS_CATALOG } from 'wcpay/disputes/new-evidence/recommendation-catalog';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
+import {
+	recordSectionViewedOnce,
+	recordOutcomeAction,
+} from '../dispute-outcome/tracks';
+import type { DisputeOutcomeSection } from '../dispute-outcome/tracks';
+import { getDisputeRecommendations, sortByLift } from './utils';
 import './style.scss';
 
 interface Props {
@@ -36,29 +39,9 @@ const VISIBLE_PER_SECTION = 3;
 const LEARN_MORE_HREF =
 	'https://woocommerce.com/document/managing-payment-disputes/';
 
-// Map dispute status to the outcome framing used for catalog matching.
-// warning_* statuses have no entry: inquiries carry no merchant-submitted
-// evidence, so neither outcome's recommendations have a behavioral hook.
-const outcomeByStatus: Partial<
-	Record< ChargeDispute[ 'status' ], RecommendationOutcome >
-> = {
-	lost: 'could_help',
-	won: 'keep_doing',
-};
-
-// Higher lift first; unmeasured entries fall to the bottom in catalog order.
-const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
-	if ( typeof a.lift !== 'number' && typeof b.lift !== 'number' ) {
-		return 0;
-	}
-	if ( typeof a.lift !== 'number' ) {
-		return 1;
-	}
-	if ( typeof b.lift !== 'number' ) {
-		return -1;
-	}
-	return b.lift - a.lift;
-};
+// Shared by render and the section-view event so they split sections alike.
+const isPositive = ( rec: Recommendation ): boolean =>
+	rec.urgency === 'positive';
 
 // SR-only severity qualifier; the icon is aria-hidden, so sighted-only cues
 // need a textual equivalent.
@@ -99,22 +82,51 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	/>
 );
 
-// Both cards route their description through `subtitleNode` so the closed
-// state stays consistent: using `subtitle` for one and `subtitleNode` for
-// the other diverges the layout.
-const renderCard = (
-	heading: string,
-	description: string,
-	items: Recommendation[],
-	learnMoreHref?: string
-): JSX.Element | null => {
-	if ( items.length === 0 ) {
-		return null;
-	}
+interface RecommendationSectionProps {
+	dispute: ChargeDispute;
+	productType: string;
+	section: DisputeOutcomeSection;
+	heading: string;
+	description: string;
+	items: Recommendation[];
+	learnMoreHref?: string;
+}
 
+// One outcome section (renders nothing when it has no entries). The description
+// goes through `subtitleNode` so the collapsed state stays consistent whether
+// or not the section carries a "Learn more" link.
+const RecommendationSection: React.FC< RecommendationSectionProps > = ( {
+	dispute,
+	productType,
+	section,
+	heading,
+	description,
+	items,
+	learnMoreHref,
+} ) => {
 	const sorted = [ ...items ].sort( sortByLift );
 	const visible = sorted.slice( 0, VISIBLE_PER_SECTION );
 	const hidden = sorted.slice( VISIBLE_PER_SECTION );
+
+	// Fire the section-viewed event once per non-empty section, sourced from the
+	// same `sorted`/`visible` the card renders so recommendation_ids can't drift
+	// from render order. The module-scoped de-dup absorbs payment-details remounts.
+	useEffect( () => {
+		if ( sorted.length === 0 ) {
+			return;
+		}
+		recordSectionViewedOnce(
+			dispute,
+			productType,
+			section,
+			sorted.map( ( rec ) => rec.id ),
+			visible.length
+		);
+	}, [ dispute, productType, section, sorted, visible ] );
+
+	if ( items.length === 0 ) {
+		return null;
+	}
 
 	const subtitleNode = (
 		<>
@@ -122,7 +134,16 @@ const renderCard = (
 			{ learnMoreHref && (
 				<>
 					{ ' ' }
-					<ExternalLink href={ learnMoreHref }>
+					<ExternalLink
+						href={ learnMoreHref }
+						onClick={ () =>
+							recordOutcomeAction( dispute, productType, {
+								action: 'learn_more_clicked',
+								section,
+								linkHref: learnMoreHref,
+							} )
+						}
+					>
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 						{ /* SR-only context. Setting aria-label would override
 						     the whole accessible name and drop ExternalLink's
@@ -146,7 +167,18 @@ const renderCard = (
 			<AccordionBody title={ heading } subtitleNode={ subtitleNode } lg>
 				{ visible.map( renderItem ) }
 				{ hidden.length > 0 && (
-					<details className="dispute-recommendations-card__show-more">
+					<details
+						className="dispute-recommendations-card__show-more"
+						onToggle={ ( event ) => {
+							// Expand only; a collapse is not engagement.
+							if ( event.currentTarget.open ) {
+								recordOutcomeAction( dispute, productType, {
+									action: 'show_more_expanded',
+									section,
+								} );
+							}
+						} }
+					>
 						<summary>
 							{ sprintf(
 								/* translators: %d is the number of additional recommendations hidden by default. */
@@ -168,13 +200,8 @@ const renderCard = (
 };
 
 const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
-	const outcome = outcomeByStatus[ dispute.status ];
-	if ( ! outcome ) {
-		return null;
-	}
-
-	// COUPLED with summary/index.tsx: the Tracks event records this same
-	// productType. Keep both call sites in lockstep.
+	// COUPLED with summary/index.tsx: the wrapper resolves this same productType
+	// for its has_recommendations flag. Keep in lockstep.
 	const productType = resolveProductType(
 		dispute.metadata,
 		dispute.order?.suggested_product_type,
@@ -182,46 +209,45 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 			false
 	);
 
-	const recommendations = getRecommendations(
-		{
-			reason: dispute.reason,
-			productType,
-			outcome,
-			evidence: dispute.evidence,
-		},
-		RECOMMENDATIONS_CATALOG
-	);
+	const recommendations = getDisputeRecommendations( dispute, productType );
 
 	if ( recommendations.length === 0 ) {
 		return null;
 	}
 
-	const positives = recommendations.filter(
-		( r ) => r.urgency === 'positive'
-	);
+	const positives = recommendations.filter( isPositive );
 	const criticalsAndTips = recommendations.filter(
-		( r ) => r.urgency !== 'positive'
+		( r ) => ! isPositive( r )
 	);
 
 	return (
 		<>
-			{ renderCard(
-				__( "What's working well", 'woocommerce-payments' ),
-				__(
+			<RecommendationSection
+				dispute={ dispute }
+				productType={ productType }
+				section="whats_working_well"
+				heading={ __( "What's working well", 'woocommerce-payments' ) }
+				description={ __(
 					'These are the evidence strengths that supported your dispute response.',
 					'woocommerce-payments'
-				),
-				positives
-			) }
-			{ renderCard(
-				__( 'What could help next time', 'woocommerce-payments' ),
-				__(
+				) }
+				items={ positives }
+			/>
+			<RecommendationSection
+				dispute={ dispute }
+				productType={ productType }
+				section="what_could_help"
+				heading={ __(
+					'What could help next time',
+					'woocommerce-payments'
+				) }
+				description={ __(
 					'Strengthen future dispute responses by adding these details to your evidence before submitting.',
 					'woocommerce-payments'
-				),
-				criticalsAndTips,
-				LEARN_MORE_HREF
-			) }
+				) }
+				items={ criticalsAndTips }
+				learnMoreHref={ LEARN_MORE_HREF }
+			/>
 		</>
 	);
 };
