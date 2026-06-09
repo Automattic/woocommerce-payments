@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Move hooks out of WC_Payments_Order_Success_Page constructor to init_hooks()
+Comment: refactor: move hooks out of WC_Payments_Order_Success_Page constructor to init_hooks()
