@@ -12,6 +12,8 @@ declare module 'gridicons/dist/*' {
 
 declare module '*.svg';
 
+declare module '*.png';
+
 /**
  * URL for an existing file in /assets folder
  */
