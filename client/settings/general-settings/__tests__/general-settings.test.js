@@ -13,10 +13,10 @@ import {
 	useIsWCPayEnabled,
 	useTestMode,
 	useTestModeOnboarding,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useDevMode: jest.fn(),
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),

@@ -13,7 +13,7 @@ import SettingsSection from 'wcpay/settings/settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';
 import CardReaderListItem from './list-item';
-import { useReaders } from 'wcpay/data';
+import { useReaders } from 'wcpay/data/card-readers';
 
 const ReadersListDescription = () => (
 	<>
