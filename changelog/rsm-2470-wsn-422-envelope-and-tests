@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WSN settings controller 422 envelope (move per-field errors to data.params per WP REST convention); add test coverage for 3-state contact email, default contact email precedence, and logo fallback chain.

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Wire up the Woo Shopping Network Profile tab end-to-end (Media Library logo/hero pickers, contact email, refund-policy page picker, free shipping summary) and document the WCPay↔WooPay Profile-sync architecture (behind feature flag).

@@ -1,0 +1,288 @@
+<?php
+/**
+ * Class WSN_Settings_Test
+ *
+ * @package WooCommerce\Payments\Tests
+ */
+
+/**
+ * WSN_Settings unit tests.
+ *
+ * Focuses on the locked default-value rule for is_enabled() (unset must read as false,
+ * never as a synthetic default '1'), plus validation/sanitization on every setter.
+ */
+class WSN_Settings_Test extends WCPAY_UnitTestCase {
+
+	public function tear_down() {
+		delete_option( WSN_Settings::OPTION_ENABLED );
+		delete_option( WSN_Settings::OPTION_HERO_IMAGE_ID );
+		delete_option( WSN_Settings::OPTION_LOGO_OVERRIDE_ID );
+		delete_option( WSN_Settings::OPTION_CONTACT_EMAIL );
+		delete_option( WSN_Settings::OPTION_REFUND_PAGE_ID );
+		// WC email options touched by resolve_default_contact_email() tests — clean here
+		// too so a failing test that bails before its inline cleanup doesn't pollute siblings.
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
+		parent::tear_down();
+	}
+
+	/**
+	 * The critical default rule: unset MUST read as false, never as a synthetic default '1'.
+	 *
+	 * This is the contract the WSN indexer (RSM-3946) depends on for its fail-closed
+	 * `WHERE wcpay_wsn_enabled = '1'` filter. If this test breaks, every WCPay merchant
+	 * on the planet lands in WSN search results by default.
+	 */
+	public function test_is_enabled_returns_false_when_option_is_unset() {
+		$this->assertFalse( WSN_Settings::is_enabled() );
+	}
+
+	public function test_is_enabled_returns_false_when_option_is_zero_string() {
+		update_option( WSN_Settings::OPTION_ENABLED, '0' );
+		$this->assertFalse( WSN_Settings::is_enabled() );
+	}
+
+	public function test_is_enabled_returns_true_only_for_explicit_one_string() {
+		update_option( WSN_Settings::OPTION_ENABLED, '1' );
+		$this->assertTrue( WSN_Settings::is_enabled() );
+	}
+
+	public function test_set_enabled_writes_one_or_zero_not_delete() {
+		WSN_Settings::set_enabled( true );
+		$this->assertSame( '1', get_option( WSN_Settings::OPTION_ENABLED ) );
+
+		// Explicit opt-out persists '0' (not delete) so we can distinguish from never-engaged state.
+		WSN_Settings::set_enabled( false );
+		$this->assertSame( '0', get_option( WSN_Settings::OPTION_ENABLED ) );
+	}
+
+	public function test_set_enabled_writes_with_autoload_false() {
+		WSN_Settings::set_enabled( true );
+
+		// Use the wp_load_alloptions() membership check instead of inspecting the raw
+		// `autoload` column. WP 6.6+ introduced new autoload enum values
+		// (`auto-on`/`auto-off`/`on`/`off`) replacing the legacy `yes`/`no`, so a
+		// literal string comparison breaks across WP versions. Membership in
+		// alloptions is the version-agnostic contract: if the option is autoloaded,
+		// it's in the list; if not, it isn't.
+		$alloptions = wp_load_alloptions();
+		$this->assertArrayNotHasKey(
+			WSN_Settings::OPTION_ENABLED,
+			$alloptions,
+			'WSN options must be written with autoload=false (Hub is feature-flagged off by default, no reason to autoload on every WP request).'
+		);
+	}
+
+	public function test_set_contact_email_sanitizes_and_persists_valid() {
+		$this->assertTrue( WSN_Settings::set_contact_email( 'hello@example.com' ) );
+		$this->assertSame( 'hello@example.com', WSN_Settings::get_contact_email() );
+	}
+
+	public function test_set_contact_email_rejects_invalid_non_empty_string() {
+		$this->assertFalse( WSN_Settings::set_contact_email( 'not-an-email' ) );
+		$this->assertNull( WSN_Settings::get_contact_email() );
+	}
+
+	public function test_set_contact_email_with_null_clears_option() {
+		WSN_Settings::set_contact_email( 'hello@example.com' );
+		$this->assertTrue( WSN_Settings::set_contact_email( null ) );
+		$this->assertNull( WSN_Settings::get_contact_email() );
+	}
+
+	/**
+	 * Locks in the 3-state contract for contact_email: null (unset), '' (explicit empty),
+	 * and a valid email are all distinct states. Without this test, one careless
+	 * `empty( $email )` swap inside set_contact_email() silently reverts a merchant's
+	 * choice to "no contact email" back to "fall back to WC defaults" — invisibly.
+	 */
+	public function test_set_contact_email_with_empty_string_persists_explicit_empty() {
+		$this->assertTrue( WSN_Settings::set_contact_email( '' ) );
+		// Option row exists with empty value (not deleted) — pass `null` default so we
+		// can distinguish "missing row" from "row with empty string".
+		$this->assertSame( '', get_option( WSN_Settings::OPTION_CONTACT_EMAIL, null ) );
+		$this->assertSame( '', WSN_Settings::get_contact_email() );
+	}
+
+	public function test_resolve_default_contact_email_uses_reply_to_when_reply_to_name_is_set() {
+		update_option( 'woocommerce_email_reply_to_name', 'Store Support' );
+		update_option( 'woocommerce_email_reply_to_address', 'support@example.com' );
+		update_option( 'woocommerce_email_from_address', 'wordpress@example.com' );
+
+		$this->assertSame( 'support@example.com', WSN_Settings::resolve_default_contact_email() );
+
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
+	}
+
+	public function test_resolve_default_contact_email_falls_back_to_from_when_no_reply_to_name() {
+		delete_option( 'woocommerce_email_reply_to_name' );
+		update_option( 'woocommerce_email_from_address', 'wordpress@example.com' );
+
+		$this->assertSame( 'wordpress@example.com', WSN_Settings::resolve_default_contact_email() );
+
+		delete_option( 'woocommerce_email_from_address' );
+	}
+
+	public function test_resolve_default_contact_email_returns_null_when_neither_set() {
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
+
+		$this->assertNull( WSN_Settings::resolve_default_contact_email() );
+	}
+
+	public function test_resolve_default_contact_email_skips_invalid_reply_to_and_falls_through() {
+		update_option( 'woocommerce_email_reply_to_name', 'Store' );
+		update_option( 'woocommerce_email_reply_to_address', 'not-an-email' );
+		update_option( 'woocommerce_email_from_address', 'valid@example.com' );
+
+		$this->assertSame( 'valid@example.com', WSN_Settings::resolve_default_contact_email() );
+
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
+	}
+
+	public function test_set_refund_page_id_rejects_when_page_not_published() {
+		$draft_page_id = $this->factory->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'draft',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_refund_page_id( $draft_page_id ) );
+		$this->assertNull( WSN_Settings::get_refund_page_id() );
+	}
+
+	public function test_set_refund_page_id_rejects_post_that_is_not_a_page() {
+		$post_id = $this->factory->post->create(
+			[
+				'post_type'   => 'post',
+				'post_status' => 'publish',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_refund_page_id( $post_id ) );
+	}
+
+	public function test_set_refund_page_id_accepts_published_page() {
+		$page_id = $this->factory->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			]
+		);
+		$this->assertTrue( WSN_Settings::set_refund_page_id( $page_id ) );
+		$this->assertSame( $page_id, WSN_Settings::get_refund_page_id() );
+	}
+
+	public function test_get_refund_page_id_returns_null_when_underlying_page_unpublished_after_save() {
+		$page_id = $this->factory->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			]
+		);
+		WSN_Settings::set_refund_page_id( $page_id );
+
+		// Page gets unpublished out-of-band.
+		wp_update_post(
+			[
+				'ID'          => $page_id,
+				'post_status' => 'draft',
+			]
+		);
+
+		// Reader returns null even though the option still holds the ID — the Profile
+		// tab uses this to clear stale picker state.
+		$this->assertNull( WSN_Settings::get_refund_page_id() );
+	}
+
+	public function test_set_hero_image_id_rejects_post_that_is_not_an_attachment() {
+		$page_id = $this->factory->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_hero_image_id( $page_id ) );
+		$this->assertNull( WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_hero_image_id_rejects_non_image_attachment() {
+		// Attachments that aren't images (e.g., PDF) must also be rejected.
+		$pdf_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.pdf',
+				'post_mime_type' => 'application/pdf',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_hero_image_id( $pdf_attachment ) );
+		$this->assertNull( WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_hero_image_id_accepts_image_attachment() {
+		$image_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		$this->assertTrue( WSN_Settings::set_hero_image_id( $image_attachment ) );
+		$this->assertSame( $image_attachment, WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_hero_image_id_with_null_clears_option() {
+		$image_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		WSN_Settings::set_hero_image_id( $image_attachment );
+		$this->assertTrue( WSN_Settings::set_hero_image_id( null ) );
+		$this->assertNull( WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_logo_override_id_rejects_non_image_attachment() {
+		// set_logo_override_id shares its validation with set_hero_image_id — one
+		// representative test covers the contract; per-shape coverage of attachment
+		// vs page vs PDF is exercised on set_hero_image_id above.
+		$pdf_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.pdf',
+				'post_mime_type' => 'application/pdf',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_logo_override_id( $pdf_attachment ) );
+		$this->assertNull( WSN_Settings::get_logo_override_id() );
+	}
+
+	public function test_get_all_returns_expected_shape_when_everything_is_unset() {
+		$all = WSN_Settings::get_all();
+		$this->assertSame(
+			[
+				'enabled',
+				'hero_image_id',
+				'logo_override_id',
+				'contact_email',
+				'refund_page_id',
+			],
+			array_keys( $all )
+		);
+		$this->assertFalse( $all['enabled'] );
+		$this->assertNull( $all['hero_image_id'] );
+		$this->assertNull( $all['logo_override_id'] );
+		$this->assertNull( $all['contact_email'] );
+		$this->assertNull( $all['refund_page_id'] );
+	}
+}

@@ -608,6 +608,39 @@ class WC_Payments {
 		self::$token_service->init_hooks();
 		self::$fee_remediation->init();
 
+		// Woo Shopping Network Hub — feature-flagged off by default. Registers REST
+		// controllers under wc/v3/payments/wsn/* and the admin menu entry under
+		// wp-admin → WooCommerce → Shopping Network. The menu + React mount live in
+		// WSN_Hub::register_admin_menu() (via add_submenu_page( 'woocommerce', ... )
+		// + render_admin_page()), NOT in WC_Payments_Admin::add_payments_menu() or
+		// the woocommerce_admin_pages_list filter — this page is a vanilla WP admin
+		// page, not a WC Admin page, to avoid the WC Admin chrome colliding with the
+		// branded PageHeader. The React entry at client/wsn-hub/index.js mounts
+		// against the `#wcpay-wsn-hub-container` element rendered server-side.
+		if ( WC_Payments_Features::is_wsn_hub_enabled() ) {
+			// Load WSN_Settings + WSN_Derivations here (not lazily in WSN_Hub) so
+			// every WSN callback can safely call their statics regardless of which
+			// hook fires first for a given request type (admin_enqueue_scripts vs.
+			// rest_api_init vs. in_admin_header all touch them). require_once is
+			// idempotent.
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-derivations.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-payload-composer.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-transport.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-profile-emitter.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-order-attribution.php';
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-hub.php';
+
+			// Order-attribution hooks live OUTSIDE WSN_Hub because they fire on
+			// shopper-side checkout requests — WSN_Hub::init_hooks() only runs
+			// on Hub admin requests, so wiring there would silently no-op for
+			// the path that matters. Sub-flag still respected so we ship dark.
+			if ( WC_Payments_Features::is_wsn_order_attribution_enabled() ) {
+				( new WSN_Order_Attribution() )->init_hooks();
+			}
+			( new WSN_Hub() )->init_hooks();
+		}
+
 		$payment_methods = [];
 
 		$registry = PaymentMethodDefinitionRegistry::instance();

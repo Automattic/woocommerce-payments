@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Shopping Network Hub: Profile tab now shows the last storefront sync time and lets merchants manually trigger a resync if a sync failed.

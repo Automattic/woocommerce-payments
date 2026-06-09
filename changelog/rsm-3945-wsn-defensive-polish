@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+WSN Profile sync: defensive polish — cap stored exception messages at 200 chars (no endpoint URLs / stack frames leaking into the well-known wsn_profile_last_error transient), use self::DELETE constant for consistency with other API client methods, and add WSN_Hub integration tests to catch wire-up regressions (wrong service injection, missing require_once, inverted sub-flag check).

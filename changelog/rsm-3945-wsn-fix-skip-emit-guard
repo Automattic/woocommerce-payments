@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WSN Profile sync skip-emit guard: payload_version now hashes only content fields (client_updated_at was incorrectly included in the hash input, making every compose() produce a unique hash and the 6h backstop fire real POSTs every tick instead of no-opping when nothing changed).

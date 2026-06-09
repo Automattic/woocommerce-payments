@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add WSN_Profile_Payload_Composer (canonical-shape payload assembly for the Profile sync emitter coming in RSM-3945). Producer-stability principle: WCPay emits its own canonical names; WooPay-side handler does the storefront-shape rename at merge time.

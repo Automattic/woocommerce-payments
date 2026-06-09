@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add WSN_Profile_Emitter — listens on wcpay_wsn_profile_changed + wcpay_woopay_appearance_changed + 6h recurring backstop; debounces via Action Scheduler (1-min window); fires Jetpack-signed POST to WooPay server; skip-emit guard on payload_version; fire-and-forget with transient-recorded last_error.

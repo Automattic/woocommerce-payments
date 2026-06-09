@@ -304,6 +304,13 @@ addFilter(
 			rootLink,
 		} );
 
+		// Woo Shopping Network Hub is intentionally NOT registered via
+		// woocommerce_admin_pages_list — it's a vanilla WP submenu page under
+		// WooCommerce, with its own dedicated webpack bundle (`wsn-hub`) and own
+		// React mount handled by WSN_Hub::render_admin_page() in PHP. See
+		// includes/wsn/class-wsn-hub.php for the rationale (avoiding WC Admin
+		// layout chrome).
+
 		pages.push( {
 			container: MultiCurrencySetupPage,
 			path: '/payments/multi-currency-setup',

@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Wire up the WSN Profile sync emitter behind a sub-feature-flag (_wcpay_feature_wsn_profile_emitter, defaults OFF) gated under the existing _wcpay_feature_wsn_hub master flag. When on: instantiate WSN_Profile_Emitter at boot time (registers the change-listeners + 6h backstop) and register the WSN Profile Export REST controller.

@@ -1,0 +1,99 @@
+/**
+ * Top-level styles for the Woo Shopping Network Hub.
+ *
+ * Most per-component styling is inline (matches AI Storefront's convention —
+ * see tokens.js for the design system). This file is reserved for things inline
+ * styles can't express: focus-visible states, media queries, and tab-nav chrome.
+ */
+
+// Ship @wordpress/dataviews' prebuilt stylesheet alongside our own so the
+// Overview tab's OrdersTable renders styled in production. webpack/shared.js
+// force-bundles the dataviews JS (see the requestToExternal handler), so
+// the host WP's `wp-components` enqueue does NOT carry DataViews CSS — we
+// import it here and webpack inlines the bytes into dist/wsn-hub.css.
+// Single source of truth: the file we import is the same CSS the bundled
+// DataViews JS expects, so visual drift is impossible.
+//
+// Same pattern used at client/reports/fees/style.scss:3 for the Reports
+// surface; reused here to keep the asset story consistent across surfaces.
+@import '@wordpress/dataviews/build-style/style.css';
+
+// Visual treatment for the WSN Hub admin page.
+//
+// Matches AI Storefront's pattern exactly: NO overrides on WP admin's
+// default chrome (.wrap / #wpbody / #wpbody-content / .notice). The
+// PageHeader's `margin: 0 -20px` is the only mechanism that bleeds the
+// branded chrome out to the content-area edges (negating .wrap's default
+// 20px right padding). Anything more aggressive than this introduces
+// visual artifacts that don't appear in AI Storefront's live UI.
+
+.wcpay-wsn-hub {
+	background: #fff;
+
+	// TabPanel chrome: flatten WP admin's default borders so the tab nav
+	// reads as part of the page header strip. Matches AI Storefront's
+	// inline <style> block at settings-page.js:175-184.
+	.components-tab-panel__tabs {
+		background: #fff;
+		border-bottom: 1px solid #e0e0e0;
+		padding: 0 32px;
+		margin: 0 -20px;
+	}
+
+	.components-tab-panel__tabs-item {
+		font-size: 13px;
+		font-weight: 500;
+
+		&:focus-visible {
+			// Make keyboard focus visible against the white tab strip.
+			outline: 2px solid #2271b1;
+			outline-offset: -2px;
+		}
+	}
+
+	// Stub blocks for unfinished tabs. Replaced when each tab's real content
+	// ships in its own sub-issue.
+	&__tab-stub {
+		padding: 24px;
+		color: #50575e;
+		font-style: italic;
+	}
+}
+
+// Two-tier responsive breakpoints mirror AI Storefront's matchMedia behavior.
+@media ( max-width: 781px ) {
+	.wcpay-wsn-hub {
+		// Tab nav can run wider than viewport on narrow screens; let it scroll.
+		.components-tab-panel__tabs {
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.components-tab-panel__tabs-item {
+			white-space: nowrap;
+		}
+
+		// Pull tab content away from the viewport edges so cards have
+		// breathing room on mobile. Per-tab content (Overview /
+		// Profile) renders inside .components-tab-panel__tab-content;
+		// adding horizontal padding here keeps each tab's body
+		// rhythm without changing the desktop chrome.
+		.components-tab-panel__tab-content {
+			padding-left: 16px;
+			padding-right: 16px;
+		}
+	}
+}
+
+@media ( max-width: 600px ) {
+	.wcpay-wsn-hub {
+		.components-tab-panel__tabs {
+			padding: 0 16px;
+		}
+
+		.components-tab-panel__tab-content {
+			padding-left: 12px;
+			padding-right: 12px;
+		}
+	}
+}

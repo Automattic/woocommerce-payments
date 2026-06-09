@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add WSN Profile Export REST endpoint (GET /wc/v3/payments/wsn/profile-export) with Jetpack-signature permission_callback. WooPay-side reconciliation cron + lazy-fetch fallback call this endpoint to pull the same canonical Profile payload the POST emitter pushes.

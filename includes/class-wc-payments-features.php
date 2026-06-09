@@ -34,6 +34,9 @@ class WC_Payments_Features {
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
+	const WSN_HUB_FLAG_NAME                                   = '_wcpay_feature_wsn_hub';
+	const WSN_PROFILE_EMITTER_FLAG_NAME                       = '_wcpay_feature_wsn_profile_emitter';
+	const WSN_ORDER_ATTRIBUTION_FLAG_NAME                     = '_wcpay_feature_wsn_order_attribution';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -360,6 +363,67 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Woo Shopping Network Hub is enabled. Disabled by default.
+	 *
+	 * This is the DEVELOPER feature flag (`_wcpay_feature_wsn_hub`) that gates whether
+	 * the Hub admin surface (menu entry, REST controllers, asset enqueue) loads at all.
+	 * It's a binary on/off — read as boolean, default '0'. Unset and '0' are treated
+	 * identically here.
+	 *
+	 * Not to be confused with the MERCHANT opt-in setting `wcpay_wsn_enabled`
+	 * (see WSN_Settings::is_enabled()), which DOES distinguish unset ("never engaged",
+	 * eligible for onboarding) from '0' ("explicitly opted out", leave alone). That
+	 * three-state semantic belongs to the merchant-facing setting, not this flag.
+	 *
+	 * When this flag is true, the menu entry appears at wp-admin → WooCommerce →
+	 * Shopping Network (registered as a WooCommerce submenu via
+	 * `WSN_Hub::register_admin_menu()` using `add_submenu_page( 'woocommerce', ... )`,
+	 * NOT under the WooPayments sub-menu).
+	 *
+	 * @return bool
+	 */
+	public static function is_wsn_hub_enabled(): bool {
+		return '1' === get_option( self::WSN_HUB_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether the WSN Profile sync emitter is enabled (RSM-3945).
+	 *
+	 * Sub-flag of the Hub: when off, the Hub UI works exactly as before
+	 * but no outbound Profile push happens — settings stay merchant-side
+	 * only. Useful for a gated cohort rollout (turn on for a small set of
+	 * test merchants before fleet-wide).
+	 *
+	 * The Hub flag is the master gate. If the Hub is OFF, this returning
+	 * true does nothing — the emitter isn't even loaded.
+	 *
+	 * @return bool
+	 */
+	public static function is_wsn_profile_emitter_enabled(): bool {
+		return '1' === get_option( self::WSN_PROFILE_EMITTER_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether the WSN order-attribution write side is enabled
+	 * (sub-flag of the Hub).
+	 *
+	 * When on, `WSN_Order_Attribution` registers checkout hooks that
+	 * stamp `_woopay_marketplace_order` + `_woopay_marketplace_channel`
+	 * on orders originating through the Network — lighting up the
+	 * Hub Overview tab's read endpoint which has been returning
+	 * `is_empty: true` for non-WSN-tagged traffic.
+	 *
+	 * Independent of the Profile emitter sub-flag. Useful for a gated
+	 * cohort rollout (turn on for a small set of test merchants before
+	 * fleet-wide).
+	 *
+	 * @return bool
+	 */
+	public static function is_wsn_order_attribution_enabled(): bool {
+		return '1' === get_option( self::WSN_ORDER_ATTRIBUTION_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
 	 *
 	 * @return bool
@@ -439,6 +503,9 @@ class WC_Payments_Features {
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 				'reportsArea'                              => self::is_reports_area_enabled(),
+				'wsnHub'                                   => self::is_wsn_hub_enabled(),
+				'wsnProfileEmitter'                        => self::is_wsn_profile_emitter_enabled(),
+				'wsnOrderAttribution'                      => self::is_wsn_order_attribution_enabled(),
 			]
 		);
 	}

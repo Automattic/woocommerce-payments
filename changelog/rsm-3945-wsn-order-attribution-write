@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Shopping Network Hub: orders placed via the Network are now tagged on the merchant store so the Overview tab can attribute them.

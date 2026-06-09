@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Extract WSN derivation logic from the settings controller into WSN_Derivations so the upcoming Profile sync emitter (RSM-3945) can reuse it without instantiating the controller in a background-job context.

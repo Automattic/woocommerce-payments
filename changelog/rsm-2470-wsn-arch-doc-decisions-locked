@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Architecture doc: lock all 4 remaining decisions (Jetpack signature auth, WPCOM ops access, WooPay-side endpoint ownership, return_policy footer linkification already exists).

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+WSN Profile sync: replace MB_IN_BYTES with literal byte count (MB_IN_BYTES is not in the project's PHPStan stubs; CI PHP linting failed).

@@ -115,3 +115,7 @@ bin/jurassictube/
 
 # Git worktrees
 .worktrees/
+
+# Playwright MCP session artifacts
+.playwright-mcp/
+.claude/scheduled_tasks.lock

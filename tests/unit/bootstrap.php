@@ -108,6 +108,29 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-customer-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
 
+	// WSN Hub source files. In production these are lazy-loaded by WSN_Hub::register_rest_controllers()
+	// only when the feature flag is on; the bootstrap loads them unconditionally so tests can
+	// instantiate the classes directly without first enabling the flag.
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-settings.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-derivations.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-payload-composer.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-transport.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-profile-emitter.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-order-attribution.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-hub.php';
+
+	// Test stub for WSN_Profile_Transport — overrides the protected
+	// `remote_request` and `resolve_current_blog_id` seams so transport
+	// tests can run without an active Jetpack connection. PHPUnit's
+	// recursive testsuite scan also auto-loads this file, but the
+	// explicit require keeps loading deterministic if a future config
+	// narrows the testsuite directory pattern.
+	require_once $_plugin_dir . 'tests/unit/wsn/class-wsn-profile-transport-stub.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-pages-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-profile-export-controller.php';
+
 	// Load currency helper class early to ensure its implementation is used over the one resolved during further test initialization.
 	require_once __DIR__ . '/helpers/class-wc-helper-site-currency.php';
 

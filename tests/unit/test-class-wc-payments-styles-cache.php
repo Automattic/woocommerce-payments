@@ -273,6 +273,62 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $font_rules, WC_Payments_Styles_Cache::get_woopay_font_rules() );
 	}
 
+	public function test_set_woopay_appearance_fires_wcpay_woopay_appearance_changed_action() {
+		delete_option( 'wcpay_woopay_checkout_appearance' );
+		delete_option( 'wcpay_styles_cache_version' );
+
+		$captured = [];
+		$listener = static function ( $appearance, $font_rules, $version ) use ( &$captured ) {
+			$captured[] = [
+				'appearance' => $appearance,
+				'font_rules' => $font_rules,
+				'version'    => $version,
+			];
+		};
+		add_action( 'wcpay_woopay_appearance_changed', $listener, 10, 3 );
+
+		$appearance = [
+			'theme' => 'stripe',
+			'rules' => [ '.Input' => [ 'color' => '#333' ] ],
+		];
+		$font_rules = [
+			[ 'cssSrc' => 'https://fonts.googleapis.com/css?family=Roboto' ],
+		];
+
+		WC_Payments_Styles_Cache::set_woopay_appearance( $appearance, $font_rules );
+
+		remove_action( 'wcpay_woopay_appearance_changed', $listener, 10 );
+
+		$this->assertCount( 1, $captured, 'Action fires exactly once per set_woopay_appearance call.' );
+		$this->assertSame( $appearance, $captured[0]['appearance'] );
+		$this->assertSame( $font_rules, $captured[0]['font_rules'] );
+		$this->assertNotEmpty( $captured[0]['version'], 'Version arg is the current cache version.' );
+		$this->assertMatchesRegularExpression( '/^[a-f0-9]{32}$/', $captured[0]['version'] );
+	}
+
+	public function test_set_woopay_appearance_action_fires_after_option_is_written() {
+		delete_option( 'wcpay_woopay_checkout_appearance' );
+
+		$option_state_at_action_time = null;
+		$listener                    = static function () use ( &$option_state_at_action_time ) {
+			$option_state_at_action_time = get_option( 'wcpay_woopay_checkout_appearance' );
+		};
+		add_action( 'wcpay_woopay_appearance_changed', $listener );
+
+		$appearance = [ 'theme' => 'stripe' ];
+		WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
+
+		remove_action( 'wcpay_woopay_appearance_changed', $listener );
+
+		// Critical ordering invariant for downstream consumers (the RSM-3945
+		// emitter reads the option in its handler): the action must fire
+		// AFTER update_option, never before. If a listener that re-reads the
+		// option saw the pre-update state, skip-emit would silently miss
+		// the latest change.
+		$this->assertIsArray( $option_state_at_action_time );
+		$this->assertSame( $appearance, $option_state_at_action_time['appearance'] );
+	}
+
 	public function test_get_woopay_font_rules_returns_empty_when_not_set() {
 		// Force a non-block theme so get_woopay_appearance() does not auto-compute.
 		$stylesheet_filter = function () {

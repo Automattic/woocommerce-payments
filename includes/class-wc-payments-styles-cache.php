@@ -117,15 +117,35 @@ class WC_Payments_Styles_Cache {
 	 * @param array $font_rules Font CDN stylesheet URLs, each as [ 'cssSrc' => string ].
 	 */
 	public static function set_woopay_appearance( array $appearance, array $font_rules = [] ): void {
+		$version = self::get_styles_cache_version();
+
 		update_option(
 			'wcpay_woopay_checkout_appearance',
 			[
 				'appearance' => $appearance,
 				'font_rules' => $font_rules,
-				'version'    => self::get_styles_cache_version(),
+				'version'    => $version,
 			],
 			false
 		);
+
+		/**
+		 * Fires after the WooPay checkout appearance + font rules have been
+		 * persisted. Consumers that mirror the appearance to external
+		 * services (e.g. the RSM-3945 Profile sync emitter) listen here
+		 * instead of hooking each of the upstream invalidation hooks
+		 * (`after_switch_theme`, `save_post_wp_global_styles`,
+		 * `save_post_wp_template_part`, `save_post_wp_template`,
+		 * `customize_save_after`) — fewer triggers, single chokepoint,
+		 * version is already known.
+		 *
+		 * @since 10.9.0
+		 *
+		 * @param array  $appearance The Stripe Elements appearance object.
+		 * @param array  $font_rules Font CDN stylesheet URLs.
+		 * @param string $version    Hashed cache version that produced this appearance.
+		 */
+		do_action( 'wcpay_woopay_appearance_changed', $appearance, $font_rules, $version );
 	}
 
 	/**
@@ -136,13 +156,41 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
-	 * Called on theme/style change hooks. Invalidates the styles cache version
-	 * and any stored WooPay appearance so it can be recomputed lazily when
-	 * needed (e.g. via get_woopay_appearance()).
+	 * Called on theme/style change hooks. Invalidates the styles cache
+	 * version and any stored WooPay appearance.
+	 *
+	 * On block themes, also EAGERLY recomputes and stores a fresh
+	 * appearance. The recompute writes the option via set_woopay_appearance,
+	 * which fires `wcpay_woopay_appearance_changed` — the chokepoint that
+	 * downstream consumers (e.g. the WSN Profile sync emitter) subscribe
+	 * to. Without this eager recompute, block-theme stores rely on the
+	 * lazy compute-on-read path, and nothing reads the option until a
+	 * checkout page renders. Result: a merchant changes a theme.json
+	 * color, save_post_wp_global_styles fires, this method runs, the
+	 * option gets deleted — and no sync trigger fires until the next
+	 * checkout-page render (could be hours or days later).
+	 *
+	 * Classic themes can't auto-compute (`compute_woopay_appearance_from_theme()`
+	 * returns null for them) so they still depend on the shopper-side
+	 * DOM extract triggering at checkout time. That's an existing
+	 * limitation tracked separately; this method just makes block-theme
+	 * stores propagate changes promptly.
 	 */
 	public static function handle_theme_change(): void {
 		self::invalidate_styles_cache_version();
 		self::invalidate_woopay_appearance();
+
+		// Eager recompute on block themes so the appearance-changed
+		// action fires synchronously on theme/style save, rather than
+		// waiting for the next downstream reader. Cheap call — reads
+		// resolved theme.json values that WP just computed for the
+		// editor save anyway.
+		if ( wp_is_block_theme() ) {
+			$appearance = self::compute_woopay_appearance_from_theme();
+			if ( null !== $appearance && self::validate_appearance_schema( $appearance ) ) {
+				self::set_woopay_appearance( $appearance, self::get_font_rules_from_registered_styles() );
+			}
+		}
 	}
 
 	/**
