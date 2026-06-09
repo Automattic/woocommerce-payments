@@ -175,9 +175,7 @@ class WC_Payments_Styles_Cache {
 			$styles
 		);
 
-		// `currentColor` is relative to the rendering element's `color`, which
-		// differs inside WooPay's hosted-checkout wrapper. Resolve it to the
-		// theme text color now so a concrete value is stored, not the keyword.
+		// `currentColor` is relative and would re-resolve wrong inside WooPay; pin it now.
 		$link_color = self::resolve_current_color( $link_color, $text_color );
 
 		// Extract typography.
@@ -590,12 +588,9 @@ class WC_Payments_Styles_Cache {
 	/**
 	 * Resolves the CSS `currentColor` keyword to a concrete color value.
 	 *
-	 * `currentColor` is relative: it inherits the rendering element's `color`.
-	 * Stored verbatim it would resolve against WooPay's hosted-checkout wrapper
-	 * rather than the merchant's theme, so links could render the wrong color.
-	 * Substitute the already-resolved theme text color, falling back to black
-	 * when that substitute is itself unresolved. Non-`currentColor` values pass
-	 * through untouched.
+	 * `currentColor` is relative, so stored verbatim it resolves against WooPay's
+	 * wrapper instead of the theme. Returns the resolved theme text color (black
+	 * if that is itself `currentColor`); other values pass through.
 	 *
 	 * @param string $color    The color value, possibly the `currentColor` keyword.
 	 * @param string $fallback The resolved theme text color to substitute.
