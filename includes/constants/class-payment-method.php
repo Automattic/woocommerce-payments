@@ -45,6 +45,7 @@ class Payment_Method extends Base_Constant {
 	const WECHAT_PAY      = 'wechat_pay';
 	const GOOGLE_PAY      = 'google_pay';
 	const APPLE_PAY       = 'apple_pay';
+	const AMAZON_PAY      = 'amazon_pay';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,

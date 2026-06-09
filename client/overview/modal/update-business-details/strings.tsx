@@ -25,7 +25,7 @@ export default {
 
 	updateBusinessDetails: __(
 		'Update business details',
-		'woocommerce-payments '
+		'woocommerce-payments'
 	),
 
 	cancel: __( 'Cancel', 'woocommerce-payments' ),

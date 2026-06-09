@@ -66,9 +66,8 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 		};
 
 		const updateIsWCPayChosen = () => {
-			const WCPayRadioButtonStatus = getWCPayRadioButtonStatus(
-				isBlocksCheckout
-			);
+			const WCPayRadioButtonStatus =
+				getWCPayRadioButtonStatus( isBlocksCheckout );
 			setIsWCPayChosen( WCPayRadioButtonStatus );
 
 			if ( isBlocksCheckout && WCPayRadioButtonStatus ) {

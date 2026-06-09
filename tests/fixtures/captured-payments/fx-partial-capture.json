@@ -35,7 +35,14 @@
                   "fixed_rate": -3,
                   "currency": "usd"
               }
-          ]
+          ],
+          "fee_exchange_rate": {
+            "from_currency": "GBP",
+            "to_currency": "USD",
+            "from_amount": 70,
+            "to_amount": 88,
+            "rate": 0.7954545454545454
+          }
       },
       "currency": "GBP",
       "datetime": 1706898645,

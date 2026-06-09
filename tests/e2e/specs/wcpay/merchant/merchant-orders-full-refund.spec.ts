@@ -83,8 +83,8 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
 			await refundButton.click();
 
-			// Wait for refund to process
-			await merchantPage.waitForLoadState( 'networkidle' );
+			// Wait for the refund to finish processing.
+			await merchantPage.waitForLoadState( 'load' );
 
 			// Verify refund details
 			await expect(
@@ -123,6 +123,10 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 
 		await expect(
 			merchantPage.getByText( 'Payment status changed to Refunded.' )
+		).toBeVisible();
+
+		await expect(
+			merchantPage.getByText( 'Reason: No longer wanted' )
 		).toBeVisible();
 
 		// TODO: This visual regression test is not flaky, but we should revisit the approach.

@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
+use WCPay\Tests\PaymentMethods\Configs\MockPaymentMethodDefinition;
 use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WC_Payments_Token_Service;
@@ -83,6 +84,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
@@ -93,23 +95,10 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 		];
 
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
 		foreach ( $payment_method_definitions as $definition_class ) {
 			/** @var UPE_Payment_Method|MockObject */
 			$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
 				->setConstructorArgs( [ $this->mock_token_service, $definition_class ] )
-				->onlyMethods( [] )
-				->getMock();
-			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
-		}
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			/** @var UPE_Payment_Method|MockObject */
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
 				->onlyMethods( [] )
 				->getMock();
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
@@ -289,5 +278,27 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 		// Cleanup.
 		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( null );
+	}
+
+	public function test_get_title_returns_dynamic_title_from_charge_details() {
+		$payment_method = new UPE_Payment_Method( $this->mock_token_service, MockPaymentMethodDefinition::class );
+
+		$payment_details = [ 'dynamic_title' => 'Dynamic Mock Title' ];
+
+		$this->assertSame( 'Dynamic Mock Title', $payment_method->get_title( 'US', $payment_details ) );
+	}
+
+	public function test_get_title_falls_back_to_default_when_charge_details_return_null() {
+		$payment_method = new UPE_Payment_Method( $this->mock_token_service, MockPaymentMethodDefinition::class );
+
+		$payment_details = [ 'some_key' => 'some_value' ];
+
+		$this->assertSame( 'Mock Method', $payment_method->get_title( 'US', $payment_details ) );
+	}
+
+	public function test_get_title_uses_default_when_no_payment_details() {
+		$payment_method = new UPE_Payment_Method( $this->mock_token_service, MockPaymentMethodDefinition::class );
+
+		$this->assertSame( 'Mock Method', $payment_method->get_title( 'US' ) );
 	}
 }

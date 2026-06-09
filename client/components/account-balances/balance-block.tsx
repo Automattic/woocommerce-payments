@@ -14,12 +14,12 @@ import Loadable from 'components/loadable';
  *
  * @typedef {Object} BalanceBlockProps
  *
- * @property {string} id					The balance block id. Used to link the title and amount.
- * @property {string} title					The balance title.
- * @property {string} currencyCode			Currency code of the balance block.
- * @property {React.ReactElement} tooltip	The tooltip element.
- * @property {number} [amount]				Optional. The balance amount.
- * @property {boolean} [isLoading]			Optional. Whether the balance block is loading.
+ * @property {string}             id           The balance block id. Used to link the title and amount.
+ * @property {string}             title        The balance title.
+ * @property {string}             currencyCode Currency code of the balance block.
+ * @property {React.ReactElement} tooltip      The tooltip element.
+ * @property {number}             [amount]     Optional. The balance amount.
+ * @property {boolean}            [isLoading]  Optional. Whether the balance block is loading.
  */
 interface BalanceBlockProps {
 	id: string;
@@ -33,7 +33,7 @@ interface BalanceBlockProps {
 /**
  * Renders a balance block including a title, amount and tooltip.
  *
- * @param {BalanceBlockProps} props   Balance block props. See `BalanceBlockProps` interface.
+ * @param {BalanceBlockProps} props Balance block props. See `BalanceBlockProps` interface.
  *
  * @return {JSX.Element} Rendered balance element.
  */

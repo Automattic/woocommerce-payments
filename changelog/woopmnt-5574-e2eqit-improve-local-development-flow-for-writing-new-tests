@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Added local development workflow for QIT E2E tests with npm run test:qit-e2e-up, test:qit-e2e-down, and test:qit-e2e-reset commands

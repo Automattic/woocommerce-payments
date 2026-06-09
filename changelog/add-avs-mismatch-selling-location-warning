@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+feat: warn merchants on the AVS Mismatch fraud filter when their selling locations don't support AVS checks.

@@ -7,7 +7,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
  * Generates terms for reusable payment methods
  *
  * @param {Object} paymentMethodsConfig Object mapping payment method strings to their settings.
- * @param {string} value The terms value for each available payment method.
+ * @param {string} value                The terms value for each available payment method.
  * @return {Object} Terms parameter fit for UPE.
  */
 export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {

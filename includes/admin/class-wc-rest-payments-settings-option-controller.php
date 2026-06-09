@@ -27,7 +27,7 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 		'wcpay_onboarding_eligibility_modal_dismissed'     => 'bool',
 		'wcpay_connection_success_modal_dismissed'         => 'bool',
 		'wcpay_next_deposit_notice_dismissed'              => 'bool',
-		'wcpay_duplicate_payment_method_notices_dismissed' => 'bool',
+		'wcpay_duplicate_payment_method_notices_dismissed' => 'array',
 		'wcpay_instant_deposit_notice_dismissed'           => 'bool',
 		'wcpay_exit_survey_last_shown'                     => 'string',
 	];

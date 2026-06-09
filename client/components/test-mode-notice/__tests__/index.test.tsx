@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { isInTestMode } from 'utils';
+import { isInDevMode, isInTestMode } from 'utils';
 import { TestModeNotice } from '..';
 
 declare const global: {
@@ -20,12 +20,16 @@ declare const global: {
 };
 
 jest.mock( 'utils', () => ( {
+	isInDevMode: jest.fn(),
 	isInTestMode: jest.fn(),
 	getPaymentSettingsUrl: jest.fn().mockReturnValue( 'https://example.com/' ),
 } ) );
 
 const mockIsInTestMode = isInTestMode as jest.MockedFunction<
 	typeof isInTestMode
+>;
+const mockIsInDevMode = isInDevMode as jest.MockedFunction<
+	typeof isInDevMode
 >;
 
 type CurrentPage =
@@ -58,6 +62,7 @@ describe( 'Test mode notification', () => {
 
 	test.each( pages )( 'Returns valid component for %s page', ( page ) => {
 		mockIsInTestMode.mockReturnValue( true );
+		mockIsInDevMode.mockReturnValue( false );
 
 		const { container: testModeNotice } = render(
 			<TestModeNotice currentPage={ page } />
@@ -68,11 +73,51 @@ describe( 'Test mode notification', () => {
 
 	test.each( pages )( 'Returns empty div if not in test mode', ( page ) => {
 		mockIsInTestMode.mockReturnValue( false );
+		mockIsInDevMode.mockReturnValue( false );
 
 		const { container: testModeNotice } = render(
 			<TestModeNotice currentPage={ page } />
 		);
 
 		expect( testModeNotice ).toMatchSnapshot();
+	} );
+
+	test( 'Shows dev mode explanation on overview page when dev mode forces test', () => {
+		mockIsInTestMode.mockReturnValue( true );
+		mockIsInDevMode.mockReturnValue( true );
+
+		const { container } = render(
+			<TestModeNotice currentPage="overview" />
+		);
+
+		expect( container.textContent ).toContain(
+			'development or staging environment'
+		);
+	} );
+
+	test( 'Shows dev mode explanation on list pages when dev mode forces test', () => {
+		mockIsInTestMode.mockReturnValue( true );
+		mockIsInDevMode.mockReturnValue( true );
+
+		const { container } = render(
+			<TestModeNotice currentPage="transactions" />
+		);
+
+		expect( container.textContent ).toContain(
+			'development or staging environment'
+		);
+	} );
+
+	test( 'Does not show dev mode explanation when dev mode is not active', () => {
+		mockIsInTestMode.mockReturnValue( true );
+		mockIsInDevMode.mockReturnValue( false );
+
+		const { container } = render(
+			<TestModeNotice currentPage="overview" />
+		);
+
+		expect( container.textContent ).not.toContain(
+			'development or staging environment'
+		);
 	} );
 } );

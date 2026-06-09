@@ -41,6 +41,11 @@ function _manually_load_plugin() {
 	// Load the WooCommerce plugin so we can use its classes in our WooPayments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
+	// AbilityDefinition stub for WC < 10.9 test environments. The file's own
+	// `interface_exists()` guard keeps the real interface canonical when WC
+	// 10.9 is around.
+	require_once __DIR__ . '/../../dev/phpstan-abilities-stubs.php';
+
 	// Set a default currency to be used for the multi-currency tests because the default
 	// is not loaded even though it's set during the tests setup.
 	update_option( 'woocommerce_currency', 'USD' );
@@ -79,6 +84,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-banner.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
@@ -94,6 +100,8 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
 	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
@@ -138,6 +146,7 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
 function wcpay_init_subscriptions_core() {
 	require_once __DIR__ . '/helpers/class-wcs-helper-background-repairer.php';
 	require_once __DIR__ . '/helpers/class-wc-helper-subscriptions.php';
+	require_once __DIR__ . '/helpers/class-wc-subscriptions-change-payment-gateway.php';
 }
 
 // Placeholder for the test container.

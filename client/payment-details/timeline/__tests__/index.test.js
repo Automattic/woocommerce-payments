@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import PaymentDetailsTimeline from '../';
-import { useTimeline } from 'wcpay/data';
+import { useTimeline } from 'wcpay/data/timeline';
 
 // eslint-disable-next-line no-console
 const originalError = console.error;
@@ -31,7 +31,7 @@ afterAll( () => {
 	console.error = originalError;
 } );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/timeline', () => ( {
 	useTimeline: jest.fn(),
 } ) );
 
@@ -192,6 +192,7 @@ describe( 'PaymentDetailsTimeline', () => {
 				{
 					amount: 10000,
 					currency: 'USD',
+					balance_currency: 'USD',
 					datetime: 1586055370,
 					deposit: {
 						arrival_date: 1586141770,

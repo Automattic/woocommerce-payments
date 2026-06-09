@@ -27,6 +27,7 @@ test.describe(
 
 		test( 'should throw an error that the card was simply declined', async ( {
 			customerPage,
+			adminPage,
 		} ) => {
 			await shopper.fillCardDetails(
 				customerPage,
@@ -38,6 +39,26 @@ test.describe(
 				customerPage,
 				'Error: Your card was declined.'
 			);
+
+			// Verify the failed order has a note about the decline in WC admin.
+			await adminPage.goto(
+				'/wp-admin/admin.php?page=wc-orders&status=wc-failed',
+				{ waitUntil: 'load' }
+			);
+			// Click the most recent failed order link.
+			await adminPage
+				.locator( '.wp-list-table tbody tr' )
+				.first()
+				.locator( 'a.order-view' )
+				.click();
+			await adminPage.waitForLoadState( 'load' );
+			await expect(
+				adminPage
+					.locator(
+						'#woocommerce-order-notes .note_content'
+					)
+					.first()
+			).toContainText( /declined/i );
 		} );
 
 		test( 'should throw an error that the card expiration date is in the past', async ( {

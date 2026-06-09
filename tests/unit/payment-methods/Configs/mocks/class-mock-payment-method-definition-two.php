@@ -26,12 +26,20 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 		return 'second_mock_method_payments';
 	}
 
+	public static function get_stripe_payment_method_type(): string {
+		return self::get_id();
+	}
+
 	public static function get_payment_method_class(): string {
 		return 'SecondMockPaymentMethod';
 	}
 
 	public static function get_title( ?string $account_country = null ): string {
 		return 'Second Mock Method';
+	}
+
+	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+		return null;
 	}
 
 	public static function get_settings_label( ?string $account_country = null ): string {

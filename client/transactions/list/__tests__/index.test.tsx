@@ -16,8 +16,11 @@ import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
  */
 import { getUserTimeZone } from 'jest-utils/timezone';
 import { TransactionsList } from '..';
-import { useTransactions, useTransactionsSummary } from 'data';
-import type { Transaction } from 'data/transactions/hooks';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
+import type { Transaction } from 'wcpay/data/transactions/hooks';
 
 jest.mock( '@woocommerce/data', () => {
 	const actualModule = jest.requireActual( '@woocommerce/data' );
@@ -46,7 +49,7 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data/transactions', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );
@@ -66,9 +69,10 @@ const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
 >;
 
-const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
-	typeof useTransactionsSummary
->;
+const mockUseTransactionsSummary =
+	useTransactionsSummary as jest.MockedFunction<
+		typeof useTransactionsSummary
+	>;
 
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
@@ -256,7 +260,7 @@ describe( 'Transactions list', () => {
 	test( 'renders correctly when filtered by payout', () => {
 		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
-				( txn: Transaction ) => 'po_mock' === txn.deposit_id
+				( txn: Transaction ) => txn.deposit_id === 'po_mock'
 			),
 			transactionsError: undefined,
 			isLoading: false,

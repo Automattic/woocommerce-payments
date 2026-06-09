@@ -28,6 +28,7 @@ export interface PaymentMethodSelectProps {
 	initialUserId: number;
 	nonce: string;
 	ajaxUrl: string;
+	gatewayId: string;
 }
 
 /**
@@ -39,4 +40,5 @@ export interface WCPayPMSelectorData {
 	tokens: Token[];
 	ajaxUrl: string;
 	nonce: string;
+	gatewayId: string;
 }

@@ -20,11 +20,11 @@ import {
 	useAmazonPayEnabledSettings,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
 	usePaymentRequestEnabledSettings: jest.fn(),
 	useWooPayEnabledSettings: jest.fn(),
@@ -109,10 +109,10 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const [
-			woopayCheckbox,
-			paymentRequestCheckbox,
-		] = screen.getAllByRole( 'link', { name: 'Customize' } );
+		const [ woopayCheckbox, paymentRequestCheckbox ] = screen.getAllByRole(
+			'link',
+			{ name: 'Customize' }
+		);
 
 		expect( woopayCheckbox ).toHaveAttribute(
 			'href',

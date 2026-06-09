@@ -49,6 +49,22 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	const DRY_RUN_ACTION_HOOK = 'wcpay_remediate_canceled_authorization_fees_dry_run';
 
 	/**
+	 * Action Scheduler hook for the async affected orders check.
+	 */
+	const CHECK_AFFECTED_ORDERS_HOOK = 'wcpay_check_affected_auth_fee_orders';
+
+	/**
+	 * Option key for tracking the affected orders check state.
+	 *
+	 * Possible values:
+	 * - false (option doesn't exist): not yet checked.
+	 * - 'scheduled': async check is scheduled or running.
+	 * - 'has_affected_orders': affected orders were found.
+	 * - 'no_affected_orders': no affected orders found.
+	 */
+	const CHECK_STATE_OPTION_KEY = 'wcpay_has_affected_auth_fee_orders';
+
+	/**
 	 * Option key for tracking dry run mode.
 	 */
 	const DRY_RUN_OPTION_KEY = 'wcpay_fee_remediation_dry_run';
@@ -98,6 +114,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	public function init(): void {
 		add_action( self::ACTION_HOOK, [ $this, 'process_batch' ] );
 		add_action( self::DRY_RUN_ACTION_HOOK, [ $this, 'process_batch_dry_run' ] );
+		add_action( self::CHECK_AFFECTED_ORDERS_HOOK, [ $this, 'check_and_cache_affected_orders' ] );
 	}
 
 	/**
@@ -294,35 +311,33 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		$orders_table  = $wpdb->prefix . 'wc_orders';
 		$meta_table    = $wpdb->prefix . 'wc_orders_meta';
 
-		// Build the SQL query to find orders with canceled intent status that have either:
-		// 1. Incorrect fee metadata (_wcpay_transaction_fee or _wcpay_net), OR
-		// 2. Refund objects (which shouldn't exist for never-captured authorizations), OR
-		// 3. Incorrect order status of 'wc-refunded' (should be 'wc-cancelled').
-		$sql = "
-			SELECT DISTINCT o.id
-			FROM {$orders_table} o
-			INNER JOIN {$meta_table} pm_status ON o.id = pm_status.order_id
-			LEFT JOIN {$meta_table} pm_fee ON o.id = pm_fee.order_id
-				AND pm_fee.meta_key IN ('_wcpay_transaction_fee', '_wcpay_net')
-			LEFT JOIN {$orders_table} refunds ON o.id = refunds.parent_order_id
-				AND refunds.type = 'shop_order_refund'
-			WHERE o.type = 'shop_order'
-			AND o.date_created_gmt >= %s
-			AND pm_status.meta_key = '_intention_status'
-			AND pm_status.meta_value = %s
-			AND (pm_fee.order_id IS NOT NULL OR refunds.id IS NOT NULL OR o.status = 'wc-refunded')
-		";
+		$sql = "SELECT orders.id
+			FROM {$orders_table} orders
+			INNER JOIN {$meta_table} status_meta ON orders.id = status_meta.order_id AND status_meta.meta_key = '_intention_status' AND status_meta.meta_value = %s
+			LEFT JOIN {$meta_table} fees_meta ON orders.id = fees_meta.order_id AND fees_meta.meta_key = '_wcpay_transaction_fee'
+			WHERE orders.type = 'shop_order'
+				AND orders.date_created_gmt >= %s
+				AND (
+					-- Refunded with or without a refund.
+					orders.status = 'wc-refunded'
 
-		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
+					-- Cancelled with fees.
+					OR (
+						orders.status = 'wc-cancelled'
+						AND fees_meta.order_id IS NOT NULL
+					)
+				)";
+
+		$params = [ Intent_Status::CANCELED, self::BUG_START_DATE ];
 
 		// Add offset based on last order ID.
 		if ( $last_order_id > 0 ) {
-			$sql     .= ' AND o.id > %d';
+			$sql     .= ' AND orders.id > %d';
 			$params[] = $last_order_id;
 		}
 
 		// Add ordering and limit.
-		$sql     .= ' ORDER BY o.id ASC LIMIT %d';
+		$sql     .= ' ORDER BY orders.id ASC LIMIT %d';
 		$params[] = $limit;
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -346,31 +361,33 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		// 1. Incorrect fee metadata (_wcpay_transaction_fee or _wcpay_net), OR
 		// 2. Refund objects (which shouldn't exist for never-captured authorizations), OR
 		// 3. Incorrect order status of 'wc-refunded' (should be 'wc-cancelled').
-		$sql = "
-			SELECT DISTINCT p.ID
-			FROM {$wpdb->posts} p
-			INNER JOIN {$wpdb->postmeta} pm_status ON p.ID = pm_status.post_id
-			LEFT JOIN {$wpdb->postmeta} pm_fee ON p.ID = pm_fee.post_id
-				AND pm_fee.meta_key IN ('_wcpay_transaction_fee', '_wcpay_net')
-			LEFT JOIN {$wpdb->posts} refunds ON p.ID = refunds.post_parent
-				AND refunds.post_type = 'shop_order_refund'
-			WHERE p.post_type IN ('shop_order', 'shop_order_placeholder')
-			AND p.post_date >= %s
-			AND pm_status.meta_key = '_intention_status'
-			AND pm_status.meta_value = %s
-			AND (pm_fee.post_id IS NOT NULL OR refunds.ID IS NOT NULL OR p.post_status = 'wc-refunded')
-		";
+		$sql = "SELECT orders.ID
+			FROM {$wpdb->posts} orders
+			INNER JOIN {$wpdb->postmeta} status_meta ON orders.ID = status_meta.post_id AND status_meta.meta_key = '_intention_status' AND status_meta.meta_value = %s
+			LEFT JOIN {$wpdb->postmeta} fees_meta ON orders.ID = fees_meta.post_id AND fees_meta.meta_key = '_wcpay_transaction_fee'
+			WHERE orders.post_type IN ('shop_order', 'shop_order_placeholder')
+				AND orders.post_date >= %s
+				AND (
+					-- Refunded with or without a refund.
+					orders.post_status = 'wc-refunded'
 
-		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
+					-- Cancelled with fees
+					OR (
+						orders.post_status = 'wc-cancelled'
+						AND fees_meta.post_id IS NOT NULL
+					)
+				)";
+
+		$params = [ Intent_Status::CANCELED, self::BUG_START_DATE ];
 
 		// Add offset based on last order ID.
 		if ( $last_order_id > 0 ) {
-			$sql     .= ' AND p.ID > %d';
+			$sql     .= ' AND orders.ID > %d';
 			$params[] = $last_order_id;
 		}
 
 		// Add ordering and limit.
-		$sql     .= ' ORDER BY p.ID ASC LIMIT %d';
+		$sql     .= ' ORDER BY orders.ID ASC LIMIT %d';
 		$params[] = $limit;
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -426,6 +443,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		if ( $this->is_complete() ) {
 			return;
 		}
+
+		// This can affect the order transitions by unnecessarily reaching out to Stripe.
+		remove_action( 'woocommerce_order_status_cancelled', [ WC_Payments::get_order_service(), 'cancel_authorizations_on_order_status_change' ] );
 
 		$start_time = microtime( true );
 		$batch_size = $this->get_batch_size();
@@ -884,5 +904,22 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	public function has_affected_orders(): bool {
 		$orders = $this->get_affected_orders( 1 );
 		return ! empty( $orders );
+	}
+
+	/**
+	 * Run the affected orders query and cache the result.
+	 *
+	 * Called by Action Scheduler in a separate request.
+	 *
+	 * @return void
+	 */
+	public function check_and_cache_affected_orders(): void {
+		$result = $this->has_affected_orders();
+
+		update_option(
+			self::CHECK_STATE_OPTION_KEY,
+			$result ? 'has_affected_orders' : 'no_affected_orders',
+			true
+		);
 	}
 }

@@ -3,7 +3,6 @@
  */
 import React, { useCallback, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Icon, external } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,7 +15,7 @@ import MegaphoneIcon from './megaphone-icon';
 const wordpressOrgReviewUrl =
 	'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post';
 const marketplaceReviewUrl =
-	'https://woocommerce.com/products/woocommerce-payments/#reviews';
+	'https://woocommerce.com/products/woocommerce-payments/?review';
 
 /**
  * Helper to record an event with base properties and optional additional properties.
@@ -95,11 +94,7 @@ const ReviewPrompt: React.FC = () => {
 			eventProps
 		);
 
-		const windowOpened = window.open(
-			reviewUrl,
-			'_blank',
-			'noopener,noreferrer'
-		);
+		const windowOpened = window.open( reviewUrl, '_blank' );
 		if ( ! windowOpened ) {
 			// Make sure the request completes before redirecting away.
 			await dismissPrompt();
@@ -156,11 +151,10 @@ const ReviewPrompt: React.FC = () => {
 			primaryButtonLabel={
 				<>
 					{ __( 'Leave review', 'woocommerce-payments' ) }
-					<Icon
-						icon={ external }
-						size={ 20 }
-						style={ { marginLeft: '6px' } }
-					/>
+					<span
+						className="components-external-link__icon"
+						children={ '\u2197' }
+					></span>
 				</>
 			}
 			onPrimaryClick={ handlePrimaryClick }

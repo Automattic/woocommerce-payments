@@ -280,6 +280,21 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'unknown-error', $error->get_error_code() );
 	}
 
+	public function test_from_payment_request_with_error_empty_message() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
+				'wcpay-payment-method-error-message' => '',
+				'wcpay-payment-method-error-code'    => 'unknown-error',
+			]
+		);
+
+		$error = $payment_information->get_error();
+		$this->assertInstanceOf( \WP_Error::class, $error );
+		$this->assertEquals( "We're not able to process this payment. Please try again later.", $error->get_error_message() );
+	}
+
 	public function test_get_cvc_confirmation_from_request_returns_null_if_payment_method_is_empty() {
 		$cvc_confirmation = Payment_Information::get_cvc_confirmation_from_request( [ 'payment_method' => null ] );
 		$this->assertEquals( null, $cvc_confirmation );

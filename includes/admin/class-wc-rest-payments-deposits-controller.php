@@ -96,6 +96,8 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Retrieve deposits to respond with via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetDeposits
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_deposits( $request ) {
@@ -107,6 +109,8 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Retrieve deposits summary to respond with via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetDepositsSummary
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_deposits_summary( $request ) {
@@ -116,6 +120,8 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Retrieve an overview of all deposits from the API.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetDepositsOverview
 	 */
 	public function get_all_deposits_overviews() {
 		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview-all' );
@@ -159,6 +165,16 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function manual_deposit( $request ) {
+		$params = $request->get_params();
+		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['currency'] ] );
+	}
+
+	/**
 	 * Extract deposits filters from request
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
@@ -178,15 +194,5 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 				return null !== $filter;
 			}
 		);
-	}
-
-	/**
-	 * Trigger a manual deposit.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 */
-	public function manual_deposit( $request ) {
-		$params = $request->get_params();
-		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['currency'] ] );
 	}
 }

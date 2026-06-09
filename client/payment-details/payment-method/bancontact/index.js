@@ -57,15 +57,8 @@ const BancontactDetails = ( { charge = {}, isLoading } ) => {
 		? formatPaymentMethodDetails( charge )
 		: paymentMethodPlaceholders;
 
-	const {
-		id,
-		bankName,
-		bic,
-		verifiedName,
-		name,
-		email,
-		formattedAddress,
-	} = details;
+	const { id, bankName, bic, verifiedName, name, email, formattedAddress } =
+		details;
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;

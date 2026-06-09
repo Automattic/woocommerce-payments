@@ -84,8 +84,7 @@ describe( 'getDisputes resolver', () => {
 		generator = getDisputes( query );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path:
-					'/wc/v3/payments/disputes?page=1&pagesize=25&sort=some_key',
+				path: '/wc/v3/payments/disputes?page=1&pagesize=25&sort=some_key',
 			} )
 		);
 	} );

@@ -202,6 +202,9 @@ wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry y
 # This is also handled in test specs, but pre-setting it ensures consistency.
 wp option set wcpaydev_force_card_testing_protection_on 0 --quiet 2>/dev/null || true
 
+# Include test orders in analytics data (WC 10.7+ excludes _wcpay_mode=test orders by default).
+wp eval 'wp_mkdir_p( WPMU_PLUGIN_DIR ); file_put_contents( WPMU_PLUGIN_DIR . "/qit-include-test-orders-in-analytics.php", "<?php\nadd_filter( \"woocommerce_analytics_is_test_order\", \"__return_false\" );\n" );' 2>/dev/null || true
+
 # Disable WooCommerce tour dialogs that interfere with tests.
 wp option set woocommerce_orders_report_date_tour_shown yes --quiet 2>/dev/null || true
 

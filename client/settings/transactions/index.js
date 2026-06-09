@@ -14,19 +14,19 @@ import {
 } from '@wordpress/components';
 import CardBody from '../card-body';
 import {
+	store as settingsStore,
 	useAccountStatementDescriptor,
 	useAccountStatementDescriptorKanji,
 	useAccountStatementDescriptorKana,
 	useGetSavingError,
 	useSavedCards,
-} from '../../data';
+} from 'wcpay/data/settings';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';
 import SupportEmailInput from 'wcpay/settings/support-email-input';
 import React, { useEffect, useState } from 'react';
 import { select } from '@wordpress/data';
-import { STORE_NAME } from 'wcpay/data/constants';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANJI = 17;
@@ -34,10 +34,8 @@ const ACCOUNT_STATEMENT_MAX_LENGTH_KANA = 22;
 
 const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
-	const [
-		accountStatementDescriptor,
-		setAccountStatementDescriptor,
-	] = useAccountStatementDescriptor();
+	const [ accountStatementDescriptor, setAccountStatementDescriptor ] =
+		useAccountStatementDescriptor();
 	const [
 		accountStatementDescriptorKanji,
 		setAccountStatementDescriptorKanji,
@@ -46,12 +44,13 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 		accountStatementDescriptorKana,
 		setAccountStatementDescriptorKana,
 	] = useAccountStatementDescriptorKana();
-	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
-		?.account_statement_descriptor?.message;
+	const customerBankStatementErrorMessage =
+		useGetSavingError()?.data?.details?.account_statement_descriptor
+			?.message;
 
 	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
 	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
-	const settings = select( STORE_NAME ).getSettings();
+	const settings = select( settingsStore ).getSettings();
 
 	useEffect( () => {
 		if ( setTransactionInputsValid ) {
@@ -197,8 +196,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					) }
 				</p>
 				<div className="transactions__customer-support">
-					<SupportEmailInput setInputVallid={ setEmailInputValid } />
-					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
+					<SupportEmailInput setInputValid={ setEmailInputValid } />
+					<SupportPhoneInput setInputValid={ setPhoneInputValid } />
 				</div>
 			</CardBody>
 		</Card>

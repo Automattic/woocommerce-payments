@@ -27,7 +27,14 @@
             "fixed_rate": 0,
             "currency": "usd"
           }
-        ]
+        ],
+        "fee_exchange_rate": {
+          "from_currency": "CAD",
+          "to_currency": "USD",
+          "from_amount": 132,
+          "to_amount": 92,
+          "rate": 1.4347826086956522
+        }
       },
       "currency": "CAD",
       "datetime": 1736871090,

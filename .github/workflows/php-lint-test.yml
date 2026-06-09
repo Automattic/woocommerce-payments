@@ -19,9 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/composer/
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
@@ -37,11 +37,17 @@ jobs:
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: "Load version constants"
+        id: vc
+        uses: ./.github/actions/load-version-constants
       - name: "Generate matrix"
         id: generate_matrix
+        env:
+          GUTENBERG_FOR_PHP_MIN: ${{ steps.vc.outputs.gutenberg_for_php_min }}
         run: |
           # PHP 7.4+ can use latest Gutenberg
-          echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"22.3.0\"}]}" >> $GITHUB_OUTPUT
+          echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"$GUTENBERG_FOR_PHP_MIN\"}]}" >> $GITHUB_OUTPUT
 
   test:
     name: PHP testing
@@ -53,9 +59,9 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-test-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}

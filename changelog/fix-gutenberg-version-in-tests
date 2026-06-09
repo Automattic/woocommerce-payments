@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: fix: updated Gutenberg version in phpunit tests running with PHP 7.3
-
-

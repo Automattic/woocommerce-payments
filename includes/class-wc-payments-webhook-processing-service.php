@@ -501,18 +501,46 @@ class WC_Payments_Webhook_Processing_Service {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
 		}
 
-		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+		// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+		// Prefer the server-driven fee_breakdown_v1 envelope carried on the
+		// forwarded webhook body when present. Its totals are authoritative
+		// (post-refund, tax-adjusted) so we can always write correct meta
+		// without the prior truthy-check skipping $0 values.
+		$fee_breakdown_v1 = $charges_data[0]['fee_breakdown_v1'] ?? null;
+		if ( is_array( $fee_breakdown_v1 ) && isset( $fee_breakdown_v1['totals']['fee']['amount'], $fee_breakdown_v1['totals']['fee']['currency'] ) ) {
+			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount(
+				(int) $fee_breakdown_v1['totals']['fee']['amount'],
+				$fee_breakdown_v1['totals']['fee']['currency']
+			);
+			if ( isset( $fee_breakdown_v1['totals']['net']['amount'], $fee_breakdown_v1['totals']['net']['currency'] ) ) {
+				$meta_data_to_update['_wcpay_net'] = WC_Payments_Utils::interpret_stripe_amount(
+					(int) $fee_breakdown_v1['totals']['net']['amount'],
+					$fee_breakdown_v1['totals']['net']['currency']
+				);
+			}
+		} else {
+			$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
 
-		if ( $application_fee_amount ) {
-			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
-			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
+			if ( $application_fee_amount ) {
+				$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+				$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
 
-			$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
-			$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
+				$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+				$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
+			}
 		}
 
+		// Keys we always write when present in the envelope — including
+		// legitimate $0 values — because their truthiness is semantically
+		// meaningful for the order page "Transaction Fee" row and net.
+		$authoritative_keys = [ '_wcpay_transaction_fee', '_wcpay_net' ];
 		foreach ( $meta_data_to_update as $key => $value ) {
-			// Override existing meta data with incoming values, if present.
+			if ( in_array( $key, $authoritative_keys, true ) ) {
+				if ( null !== $value ) {
+					$order->update_meta_data( $key, $value );
+				}
+				continue;
+			}
 			if ( $value ) {
 				$order->update_meta_data( $key, $value );
 			}
@@ -523,6 +551,12 @@ class WC_Payments_Webhook_Processing_Service {
 		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
 		// However, the shape of the payment intent object are the same.
 		// Using this extraction method will reduce the code duplication.
+		$ipp_channel      = $event_object['metadata']['ipp_channel'] ?? '';
+		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
+		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
+			$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
+		}
+
 		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
 		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
@@ -601,6 +635,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$status       = $this->read_webhook_property( $event_object, 'status' );
+		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
@@ -613,7 +648,22 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+		// Fetch dispute summary data.
+		$dispute_summary = [];
+		try {
+			$dispute_summary = $this->api_client->get_dispute_summary( $dispute_id );
+		} catch ( Exception $e ) {
+			Logger::error(
+				sprintf(
+					'Failed to fetch dispute summary for dispute %1$s (charge %2$s): %3$s',
+					$dispute_id,
+					$charge_id,
+					$e->getMessage()
+				)
+			);
+		}
+
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete_dispute_caches();

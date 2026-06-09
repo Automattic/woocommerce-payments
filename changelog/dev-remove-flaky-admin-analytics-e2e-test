@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Remove flaky E2E admin analytics test in favor of QIT coverage

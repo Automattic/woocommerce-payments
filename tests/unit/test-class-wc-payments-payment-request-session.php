@@ -60,7 +60,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
 		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
 
-		$this->assertNotNull( apply_filters( 'woocommerce_session_handler', null ) );
+		$this->assertSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
 		$this->assertIsString( $response->get_headers()['X-WooPayments-Tokenized-Cart-Session'] );
 	}
 
@@ -83,7 +83,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
 		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
 
-		$this->assertNull( apply_filters( 'woocommerce_session_handler', null ) );
+		$this->assertNotSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
 		$this->assertNotContains( 'X-WooPayments-Tokenized-Cart-Session', array_keys( $response->get_headers() ) );
 	}
 
@@ -99,7 +99,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$session = new WC_Payments_Payment_Request_Session();
 		$session->init();
 
-		$this->assertNull( apply_filters( 'woocommerce_session_handler', null ) );
+		$this->assertNotSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
 	}
 
 	public function test_uses_custom_session_handler() {
@@ -124,7 +124,7 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 
 		rest_do_request( $request );
 
-		$this->assertNotNull( apply_filters( 'woocommerce_session_handler', null ) );
+		$this->assertSame( WC_Payments_Payment_Request_Session_Handler::class, apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ) );
 
 		$this->assertInstanceOf( WC_Payments_Payment_Request_Session_Handler::class, WC()->session );
 		// cart contents are not cleared.

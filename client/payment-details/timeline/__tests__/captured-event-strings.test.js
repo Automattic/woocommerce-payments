@@ -24,6 +24,32 @@ describe( 'Strings in captured events', () => {
 				country: 'US',
 			},
 			currencyData: {
+				EA: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: '.',
+					decimalSeparator: ',',
+					precision: 2,
+					defaultLocale: {
+						symbolPosition: 'right_space',
+						thousandSeparator: '.',
+						decimalSeparator: ',',
+					},
+				},
+				SE: {
+					code: 'SEK',
+					symbol: 'kr',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+					defaultLocale: {
+						symbolPosition: 'right_space',
+						decimalSeparator: ',',
+						thousandSeparator: ' ',
+					},
+				},
 				US: {
 					code: 'USD',
 					symbol: '$',

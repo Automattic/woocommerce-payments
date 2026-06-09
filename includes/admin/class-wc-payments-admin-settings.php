@@ -97,12 +97,23 @@ class WC_Payments_Admin_Settings {
 					?>
 				</b>
 				<?php
+				if ( WC_Payments::mode()->is_dev() ) {
+					printf(
+						/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
+						esc_html__( 'Test mode is active because your store is running in a development or staging environment. To disable it, switch to a production %1$sWordPress environment%2$s or remove the WCPAY_DEV_MODE constant. %3$sLearn more%4$s', 'woocommerce-payments' ),
+						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
+						'</a>',
+						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/' ) . '" target="_blank" rel="noreferrer noopener">',
+						'</a>'
+					);
+				} else {
 					printf(
 						/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
 						esc_html__( 'You can use %1$stest card numbers%2$s to simulate various types of transactions.', 'woocommerce-payments' ),
 						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>'
 					);
+				}
 				?>
 			</p>
 		</div>

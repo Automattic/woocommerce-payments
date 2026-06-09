@@ -37,7 +37,14 @@
           "fixed_rate": -30,
           "currency": "usd"
         }
-      ]
+      ],
+      "fee_exchange_rate": {
+        "from_currency": "EUR",
+        "to_currency": "USD",
+        "from_amount": 0,
+        "to_amount": 0,
+        "rate": 1
+      }
     },
     "currency": "EUR",
     "datetime": 1652000468,

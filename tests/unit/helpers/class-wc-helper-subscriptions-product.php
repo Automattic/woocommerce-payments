@@ -47,6 +47,14 @@ class WC_Subscriptions_Product extends WC_Product {
 	public static $sign_up_fee = 0;
 
 	/**
+	 * Mock trial length.
+	 *
+	 * @var int
+	 */
+	public static $trial_length = 0;
+
+
+	/**
 	 * Mock for static get_period.
 	 *
 	 * @param Product $product WC Product.
@@ -80,7 +88,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 * @param Product $product WC Product.
 	 */
 	public static function get_trial_length( $product ) {
-		return 0;
+		return self::$trial_length;
 	}
 
 	/**
@@ -135,5 +143,14 @@ class WC_Subscriptions_Product extends WC_Product {
 	 */
 	public static function set_sign_up_fee( $fee ) {
 		self::$sign_up_fee = $fee;
+	}
+
+	/**
+	 * Setter for trial_length.
+	 *
+	 * @param int $length The trial length.
+	 */
+	public static function set_trial_length( $length ) {
+		self::$trial_length = $length;
 	}
 }

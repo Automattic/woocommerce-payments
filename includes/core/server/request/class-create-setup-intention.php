@@ -74,6 +74,21 @@ class Create_Setup_Intention extends Request {
 	}
 
 	/**
+	 * Set metadata.
+	 *
+	 * @param array $metadata Metadata to set.
+	 *
+	 * @return void
+	 */
+	public function set_metadata( array $metadata ) {
+		if ( isset( $metadata['order_number'] ) ) {
+			$description = $this->get_intent_description( $metadata['order_number'] );
+			$this->set_param( 'description', $description );
+		}
+		$this->set_param( 'metadata', $metadata );
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.

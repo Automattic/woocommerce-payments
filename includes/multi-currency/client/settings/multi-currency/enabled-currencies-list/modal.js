@@ -133,6 +133,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		<>
 			{ isEnabledCurrenciesModalOpen && (
 				<ConfirmationModal
+					focusOnMount="firstContentElement"
 					title={ __(
 						'Add enabled currencies',
 						'woocommerce-payments'

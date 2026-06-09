@@ -10,16 +10,26 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import NotificationsEmailInput from '../notifications-email-input';
-import { useGetSavingError, useAccountCommunicationsEmail } from 'wcpay/data';
+import {
+	useGetSavingError,
+	useAccountCommunicationsEmail,
+	useSettings,
+} from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useAccountCommunicationsEmail: jest.fn(),
 	useGetSavingError: jest.fn(),
+	useSettings: jest.fn(),
 } ) );
 
-const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
-	typeof useAccountCommunicationsEmail
+const mockUseSettings = useSettings as jest.MockedFunction<
+	typeof useSettings
 >;
+
+const mockUseAccountCommunicationsEmail =
+	useAccountCommunicationsEmail as jest.MockedFunction<
+		typeof useAccountCommunicationsEmail
+	>;
 const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 	typeof useGetSavingError
 >;
@@ -31,6 +41,12 @@ describe( 'NotificationsEmailInput', () => {
 			jest.fn(),
 		] );
 		mockUseGetSavingError.mockReturnValue( null );
+		mockUseSettings.mockReturnValue( {
+			isLoading: false,
+			saveSettings: jest.fn(),
+			isSaving: false,
+			isDirty: false,
+		} );
 	} );
 
 	it( 'displays and updates email address', () => {
@@ -43,7 +59,9 @@ describe( 'NotificationsEmailInput', () => {
 
 		render( <NotificationsEmailInput /> );
 
-		expect( screen.getByDisplayValue( oldEmail ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Email address' ) ).toHaveValue(
+			oldEmail
+		);
 
 		const newEmail = 'new.communications@test.com';
 		fireEvent.change( screen.getByLabelText( 'Email address' ), {
@@ -162,6 +180,32 @@ describe( 'NotificationsEmailInput', () => {
 		).toMatch( /Please enter a valid email address./ );
 	} );
 
+	it( 'does not display client-side validation error for empty email after blur', () => {
+		mockUseAccountCommunicationsEmail.mockReturnValue( [ '', jest.fn() ] );
+		mockUseGetSavingError.mockReturnValue( null );
+
+		const { container } = render( <NotificationsEmailInput /> );
+
+		fireEvent.blur( screen.getByLabelText( 'Email address' ) );
+
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+	} );
+
+	it( 'calls onValidationChange with true for empty email on mount', () => {
+		const onValidationChange = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [ '', jest.fn() ] );
+
+		render(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		expect( onValidationChange ).toHaveBeenLastCalledWith( true );
+	} );
+
 	it( 'does not display client-side validation error for valid email after blur', () => {
 		mockUseAccountCommunicationsEmail.mockReturnValue( [
 			'valid@test.com',
@@ -214,5 +258,242 @@ describe( 'NotificationsEmailInput', () => {
 			container.querySelector( '.components-notice.is-error' )
 				?.textContent
 		).toMatch( /Error: Invalid email address: invalid-email/ );
+	} );
+
+	it( 'does not render the confirm field when email has not changed', () => {
+		render( <NotificationsEmailInput /> );
+
+		expect(
+			screen.queryByLabelText( 'Confirm email address' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'renders the confirm field when email is changed', () => {
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { rerender } = render( <NotificationsEmailInput /> );
+
+		// Simulate email change
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'new@test.com',
+			setEmail,
+		] );
+		rerender( <NotificationsEmailInput /> );
+
+		expect(
+			screen.getByLabelText( 'Confirm email address' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'hides the confirm field when email is changed back to original', () => {
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { rerender } = render( <NotificationsEmailInput /> );
+
+		// Change email
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'new@test.com',
+			setEmail,
+		] );
+		rerender( <NotificationsEmailInput /> );
+		expect(
+			screen.getByLabelText( 'Confirm email address' )
+		).toBeInTheDocument();
+
+		// Change back to original
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+		rerender( <NotificationsEmailInput /> );
+		expect(
+			screen.queryByLabelText( 'Confirm email address' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'renders warning notice about email significance', () => {
+		const { container } = render( <NotificationsEmailInput /> );
+
+		const warningNotice = container.querySelector(
+			'.components-notice.is-warning'
+		);
+		expect( warningNotice ).not.toBeNull();
+		expect( warningNotice?.textContent ).toContain(
+			'Anyone with access to this email address will be treated as the account owner.'
+		);
+	} );
+
+	it( 'shows mismatch error after blurring confirm field with different value', () => {
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { container, rerender } = render( <NotificationsEmailInput /> );
+
+		// Simulate email change to show confirm field
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'changed@test.com',
+			setEmail,
+		] );
+		rerender( <NotificationsEmailInput /> );
+
+		// Type a different value in confirm field
+		fireEvent.change( screen.getByLabelText( 'Confirm email address' ), {
+			target: { value: 'mismatch@test.com' },
+		} );
+
+		// Error should not show before blur
+		expect(
+			container.querySelectorAll( '.components-notice.is-error' )
+		).toHaveLength( 0 );
+
+		// Blur the confirm field
+		fireEvent.blur( screen.getByLabelText( 'Confirm email address' ) );
+
+		// Mismatch error should now be shown
+		const errorNotices = container.querySelectorAll(
+			'.components-notice.is-error'
+		);
+		const mismatchNotice = Array.from( errorNotices ).find( ( el ) =>
+			el.textContent?.includes( 'Email addresses do not match' )
+		);
+		expect( mismatchNotice ).toBeDefined();
+	} );
+
+	it( 'does not show mismatch error when confirm email matches', () => {
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { container, rerender } = render( <NotificationsEmailInput /> );
+
+		// Simulate email change to show confirm field
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'changed@test.com',
+			setEmail,
+		] );
+		rerender( <NotificationsEmailInput /> );
+
+		// Type matching value in confirm field
+		fireEvent.change( screen.getByLabelText( 'Confirm email address' ), {
+			target: { value: 'changed@test.com' },
+		} );
+		fireEvent.blur( screen.getByLabelText( 'Confirm email address' ) );
+
+		const errorNotices = container.querySelectorAll(
+			'.components-notice.is-error'
+		);
+		const mismatchNotice = Array.from( errorNotices ).find( ( el ) =>
+			el.textContent?.includes( 'Email addresses do not match' )
+		);
+		expect( mismatchNotice ).toBeUndefined();
+	} );
+
+	it( 'calls onValidationChange with false when emails do not match', () => {
+		const onValidationChange = jest.fn();
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { rerender } = render(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		// Simulate email change to show confirm field
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'changed@test.com',
+			setEmail,
+		] );
+		rerender(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		// Email changed but confirm is empty → mismatch → invalid
+		expect( onValidationChange ).toHaveBeenLastCalledWith( false );
+	} );
+
+	it( 'calls onValidationChange with false when email format is invalid', () => {
+		const onValidationChange = jest.fn();
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { rerender } = render(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		// Simulate email change to an invalid format (missing TLD)
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'test@test',
+			setEmail,
+		] );
+		rerender(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		// Type matching confirm email — emails match but format is invalid
+		fireEvent.change( screen.getByLabelText( 'Confirm email address' ), {
+			target: { value: 'test@test' },
+		} );
+
+		expect( onValidationChange ).toHaveBeenLastCalledWith( false );
+	} );
+
+	it( 'calls onValidationChange with true when confirm email matches', () => {
+		const onValidationChange = jest.fn();
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { rerender } = render(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		// Simulate email change
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'changed@test.com',
+			setEmail,
+		] );
+		rerender(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+		expect( onValidationChange ).toHaveBeenCalledWith( false );
+
+		// Type matching confirm email
+		fireEvent.change( screen.getByLabelText( 'Confirm email address' ), {
+			target: { value: 'changed@test.com' },
+		} );
+
+		expect( onValidationChange ).toHaveBeenCalledWith( true );
 	} );
 } );

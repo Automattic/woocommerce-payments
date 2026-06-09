@@ -31,17 +31,18 @@ import {
 	generateCoverLetter,
 	getBusinessDetails,
 } from './cover-letter-generator';
-import {
-	useGetSettings,
-	useDisputeEvidence,
-	WCPAY_STORE_NAME,
-} from 'wcpay/data';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { useGetSettings } from 'wcpay/data/settings';
+// The only dispatch made through this store handle invalidates getPaymentIntent,
+// which now lives in the payment-intents store.
+import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
+import { resolveProductType } from './resolve-product-type';
 import {
 	Button,
 	HorizontalRule,
@@ -105,15 +106,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
-	const [
-		isCoverLetterManuallyEdited,
-		setIsCoverLetterManuallyEdited,
-	] = useState( false );
+	const [ isCoverLetterManuallyEdited, setIsCoverLetterManuallyEdited ] =
+		useState( false );
 	const [ shippingCarrier, setShippingCarrier ] = useState( '' );
 	const [ shippingDate, setShippingDate ] = useState( '' );
-	const [ shippingTrackingNumber, setShippingTrackingNumber ] = useState(
-		''
-	);
+	const [ shippingTrackingNumber, setShippingTrackingNumber ] =
+		useState( '' );
 	const [ shippingAddress, setShippingAddress ] = useState( '' );
 	const [ isUploading, setIsUploading ] = useState<
 		Record< string, boolean >
@@ -125,12 +123,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ uploadedFiles, setUploadedFiles ] = useState<
 		Record< string, string >
 	>( {} );
-	const {
-		createSuccessNotice,
-		createErrorNotice,
-		createInfoNotice,
-	} = useDispatch( 'core/notices' );
-	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
+	const { createSuccessNotice, createErrorNotice, createInfoNotice } =
+		useDispatch( 'core/notices' );
+	const storeDispatch = useDispatch( paymentIntentsStore ) as {
 		invalidateResolutionForStoreSelector: ( selector: string ) => void;
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
@@ -147,10 +142,15 @@ export default ( { query }: { query: { id: string } } ) => {
 	} >( {} );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
+	const getDisputeTracksProperties = () => ( {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+	} );
+
 	const isFeatureFlagEnabled =
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
 		false;
-	const isVisaCompliance = isVisaComplianceDispute( dispute );
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -159,12 +159,15 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
+				const isFetchedDisputeVisaCompliance =
+					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
-				const suggestedProductType =
-					d.metadata?.__product_type ||
-					d.order?.suggested_product_type ||
-					'';
+				const suggestedProductType = resolveProductType(
+					d.metadata,
+					d.order?.suggested_product_type,
+					isFeatureFlagEnabled
+				);
 				setProductType( suggestedProductType );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
@@ -206,7 +209,10 @@ export default ( { query }: { query: { id: string } } ) => {
 				const savedCoverLetter = d.evidence?.uncategorized_text;
 				if ( savedCoverLetter ) {
 					setCoverLetter( savedCoverLetter );
-					if ( isVisaCompliance && isFeatureFlagEnabled ) {
+					if (
+						isFetchedDisputeVisaCompliance &&
+						isFeatureFlagEnabled
+					) {
 						// For Visa Compliance disputes, always consider the cover letter as manually edited
 						setIsCoverLetterManuallyEdited( true );
 					} else {
@@ -254,13 +260,17 @@ export default ( { query }: { query: { id: string } } ) => {
 							settings,
 							bankName,
 							refundStatus,
-							duplicateStatus
+							duplicateStatus,
+							suggestedProductType
 						);
 						setIsCoverLetterManuallyEdited(
 							savedCoverLetter !== generatedContent
 						);
 					}
-				} else if ( isVisaCompliance && isFeatureFlagEnabled ) {
+				} else if (
+					isFetchedDisputeVisaCompliance &&
+					isFeatureFlagEnabled
+				) {
 					setCoverLetter( '' );
 					// For Visa Compliance disputes, always consider the cover letter as manually edited
 					setIsCoverLetterManuallyEdited( true );
@@ -272,7 +282,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						settings,
 						bankName,
 						refundStatus,
-						duplicateStatus
+						duplicateStatus,
+						suggestedProductType
 					);
 					setCoverLetter( generatedCoverLetter );
 					setIsCoverLetterManuallyEdited( false );
@@ -284,11 +295,11 @@ export default ( { query }: { query: { id: string } } ) => {
 			}
 		};
 		fetchDispute();
-		// We intentionally exclude duplicateStatus from dependencies to prevent re-fetching dispute data
-		// when duplicate status changes (which would reset the product type selection).
+		// We intentionally exclude duplicateStatus and refundStatus from dependencies to prevent
+		// re-fetching dispute data when status changes (which would reset the product type selection).
 		// Cover letter regeneration on status changes is handled by the evidence update effect.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path, createErrorNotice, settings, bankName, refundStatus ] );
+	}, [ path, createErrorNotice, settings, bankName ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -348,24 +359,72 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		if ( ! dispute || ! settings ) return;
 
+		// Get the document fields that are applicable for the current reason + product type
+		// This ensures we only include evidence for fields shown in the current UI
+		const applicableDocumentFields = getRecommendedDocumentFields(
+			dispute.reason,
+			dispute.reason === 'credit_not_processed'
+				? refundStatus
+				: undefined,
+			dispute.reason === 'duplicate' ? duplicateStatus : undefined,
+			productType,
+			dispute.enhanced_eligibility_types
+		);
+		const applicableFieldKeys = new Set(
+			applicableDocumentFields.map( ( field ) => field.key )
+		);
+
+		// Helper to get evidence value only if the field is applicable
+		const getApplicableEvidence = (
+			key: string,
+			value: string | undefined
+		) => ( applicableFieldKeys.has( key ) ? value || '' : '' );
+
 		// Create a dispute object with current evidence state for generation
+		// Only include evidence for fields that are applicable to the current product type
 		const disputeWithCurrentEvidence = {
 			...dispute,
 			evidence: {
 				...dispute.evidence,
 				product_description: productDescription,
-				receipt: evidence.receipt,
-				customer_communication: evidence.customer_communication,
-				customer_signature: evidence.customer_signature,
-				refund_policy: evidence.refund_policy,
-				duplicate_charge_documentation:
-					evidence.duplicate_charge_documentation,
+				receipt: getApplicableEvidence( 'receipt', evidence.receipt ),
+				customer_communication: getApplicableEvidence(
+					'customer_communication',
+					evidence.customer_communication
+				),
+				customer_signature: getApplicableEvidence(
+					'customer_signature',
+					evidence.customer_signature
+				),
+				refund_policy: getApplicableEvidence(
+					'refund_policy',
+					evidence.refund_policy
+				),
+				duplicate_charge_documentation: getApplicableEvidence(
+					'duplicate_charge_documentation',
+					evidence.duplicate_charge_documentation
+				),
 				shipping_documentation: evidence.shipping_documentation,
-				service_documentation: evidence.service_documentation,
-				cancellation_policy: evidence.cancellation_policy,
-				cancellation_rebuttal: evidence.cancellation_rebuttal,
-				access_activity_log: evidence.access_activity_log,
-				uncategorized_file: evidence.uncategorized_file,
+				service_documentation: getApplicableEvidence(
+					'service_documentation',
+					evidence.service_documentation
+				),
+				cancellation_policy: getApplicableEvidence(
+					'cancellation_policy',
+					evidence.cancellation_policy
+				),
+				cancellation_rebuttal: getApplicableEvidence(
+					'cancellation_rebuttal',
+					evidence.cancellation_rebuttal
+				),
+				access_activity_log: getApplicableEvidence(
+					'access_activity_log',
+					evidence.access_activity_log
+				),
+				uncategorized_file: getApplicableEvidence(
+					'uncategorized_file',
+					evidence.uncategorized_file
+				),
 				shipping_carrier: shippingCarrier,
 				shipping_date: shippingDate,
 				shipping_tracking_number: shippingTrackingNumber,
@@ -379,7 +438,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			settings,
 			bankName,
 			refundStatus,
-			duplicateStatus
+			duplicateStatus,
+			productType
 		);
 
 		// Only auto-update if not manually edited, or if the current content matches what was previously generated
@@ -404,12 +464,14 @@ export default ( { query }: { query: { id: string } } ) => {
 		refundStatus,
 		duplicateStatus,
 		coverLetter,
+		productType,
 	] );
 
 	// --- Step logic ---
 	const disputeReason = dispute?.reason;
 	const hasShipping = needsShipping( disputeReason, productType );
 	let panelHeadings = [ 'Purchase info', 'Review' ];
+	const isVisaCompliance = isVisaComplianceDispute( dispute );
 	if ( isVisaCompliance && isFeatureFlagEnabled ) {
 		panelHeadings = [ 'Dispute information' ];
 	} else if ( hasShipping ) {
@@ -448,7 +510,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
+				: 'wcpay_dispute_save_evidence_success',
+			getDisputeTracksProperties()
 		);
 
 		createSuccessNotice( message, {
@@ -467,7 +530,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed',
+			getDisputeTracksProperties()
 		);
 
 		const message = submit
@@ -497,7 +561,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			recordEvent(
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked',
+				getDisputeTracksProperties()
 			);
 
 			// Build base evidence object
@@ -546,7 +611,23 @@ export default ( { query }: { query: { id: string } } ) => {
 				'shipping_address',
 			];
 
-			// Filter evidence: include shipping fields even if empty (to clear them),
+			// Define document/file field keys that need special handling
+			// These fields must be sent to Stripe even when empty to clear existing data
+			// when a document is removed by the user
+			const documentFieldKeys = [
+				'receipt',
+				'customer_communication',
+				'customer_signature',
+				'refund_policy',
+				'duplicate_charge_documentation',
+				'service_documentation',
+				'cancellation_policy',
+				'cancellation_rebuttal',
+				'access_activity_log',
+				'uncategorized_file',
+			];
+
+			// Filter evidence: include shipping and document fields even if empty (to clear them),
 			// but filter out other empty fields
 			const evidenceToSend = Object.fromEntries(
 				Object.entries( baseEvidence ).filter( ( [ key, value ] ) => {
@@ -554,7 +635,12 @@ export default ( { query }: { query: { id: string } } ) => {
 					if ( shippingFieldKeys.includes( key ) ) {
 						return true;
 					}
-					// For non-shipping fields, only include if they have a value
+					// Always include document fields (even if empty) to ensure they're cleared on Stripe
+					// when a document is removed by the user
+					if ( documentFieldKeys.includes( key ) ) {
+						return true;
+					}
+					// For other fields, only include if they have a value
 					return value && value !== '';
 				} )
 			);
@@ -741,8 +827,14 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	const updateProductType = ( newType: string ) => {
-		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
+		recordEvent( 'wcpay_dispute_product_selected', {
+			...getDisputeTracksProperties(),
+			selection: newType,
+		} );
 		setProductType( newType );
+		// Reset the manual edit flag so the cover letter regenerates with the new product type
+		// This ensures attachment labels are updated to match the selected product type
+		setIsCoverLetterManuallyEdited( false );
 	};
 
 	const updateProductDescription = ( value: string ) => {
@@ -815,6 +907,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 
 		recordEvent( 'wcpay_dispute_file_upload_started', {
+			...getDisputeTracksProperties(),
 			type: key,
 		} );
 
@@ -851,10 +944,12 @@ export default ( { query }: { query: { id: string } } ) => {
 			} ) );
 
 			recordEvent( 'wcpay_dispute_file_upload_success', {
+				...getDisputeTracksProperties(),
 				type: key,
 			} );
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
+				...getDisputeTracksProperties(),
 				message: err instanceof Error ? err.message : String( err ),
 			} );
 
@@ -885,10 +980,12 @@ export default ( { query }: { query: { id: string } } ) => {
 		disputeReason,
 		disputeReason === 'credit_not_processed' ? refundStatus : undefined,
 		disputeReason === 'duplicate' ? duplicateStatus : undefined,
-		productType
+		productType,
+		dispute?.enhanced_eligibility_types
 	);
 
-	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
+	const recommendedShippingDocumentFields =
+		getRecommendedShippingDocumentFields( disputeReason, productType );
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
 		( field: RecommendedDocument ) => ( {
 			key: field.key,
@@ -911,27 +1008,29 @@ export default ( { query }: { query: { id: string } } ) => {
 		} )
 	);
 
-	const recommendedShippingDocumentsFields = recommendedShippingDocumentFields.map(
-		( field: RecommendedDocument ) => ( {
-			key: field.key,
-			label: field.label,
-			description: field.description,
-			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
-			fileSize: fileSizes[ field.key ] || 0,
-			uploaded: !! evidence[ field.key ],
-			isLoading: isUploading[ field.key ] || false,
-			onFileChange: ( key: string, file: File ) =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doUploadFile( field.key, file ) ),
-			onFileRemove: () =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doRemoveFile( field.key ) ),
-			isBusy: isUploading[ field.key ] || false,
-			readOnly: readOnly,
-		} )
-	);
+	const recommendedShippingDocumentsFields =
+		recommendedShippingDocumentFields.map(
+			( field: RecommendedDocument ) => ( {
+				key: field.key,
+				label: field.label,
+				description: field.description,
+				fileName:
+					uploadedFiles[ field.key ] || evidence[ field.key ] || '',
+				fileSize: fileSizes[ field.key ] || 0,
+				uploaded: !! evidence[ field.key ],
+				isLoading: isUploading[ field.key ] || false,
+				onFileChange: ( key: string, file: File ) =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doUploadFile( field.key, file ) ),
+				onFileRemove: () =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doRemoveFile( field.key ) ),
+				isBusy: isUploading[ field.key ] || false,
+				readOnly: readOnly,
+			} )
+		);
 
 	const inlineNotice = ( bankNameValue: string | null ) => (
 		<InlineNotice
@@ -1197,7 +1296,8 @@ export default ( { query }: { query: { id: string } } ) => {
 										evidence.uncategorized_file,
 									shipping_carrier: shippingCarrier,
 									shipping_date: shippingDate,
-									shipping_tracking_number: shippingTrackingNumber,
+									shipping_tracking_number:
+										shippingTrackingNumber,
 									shipping_address: shippingAddress,
 								},
 							};
@@ -1210,7 +1310,8 @@ export default ( { query }: { query: { id: string } } ) => {
 									settings,
 									bankName,
 									refundStatus,
-									duplicateStatus
+									duplicateStatus,
+									productType
 								);
 								setCoverLetter( generatedContent );
 								setIsCoverLetterManuallyEdited( false );
@@ -1224,7 +1325,8 @@ export default ( { query }: { query: { id: string } } ) => {
 								settings,
 								bankName,
 								refundStatus,
-								duplicateStatus
+								duplicateStatus,
+								productType
 							);
 							setCoverLetter( newValue );
 							setIsCoverLetterManuallyEdited(

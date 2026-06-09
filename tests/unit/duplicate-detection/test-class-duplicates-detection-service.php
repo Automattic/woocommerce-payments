@@ -6,7 +6,7 @@
  */
 
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -80,7 +80,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_cc_one_enabled() {
-		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'no' );
+		$this->set_duplicates( CardDefinition::get_id(), 'yes', 'no' );
 
 		$result = $this->service->find_duplicates();
 
@@ -106,7 +106,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_prbs_enabled() {
-		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( CardDefinition::get_id(), 'yes', 'yes' );
 		$this->woopayments_gateway->is_payment_request_enabled_value = true;
 		$this->woopayments_gateway->enabled                          = 'yes';
 		$this->gateway_from_another_plugin->id                       = 'apple_pay';
@@ -116,8 +116,24 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'apple_pay_google_pay', array_keys( $result )[0] );
 	}
 
+	public function test_prb_detection_excludes_disabled_stripe_gateway() {
+		// WCPay gateway enabled with PRB.
+		$this->woopayments_gateway->id                               = 'woocommerce_payments';
+		$this->woopayments_gateway->enabled                          = 'yes';
+		$this->woopayments_gateway->is_payment_request_enabled_value = true;
+
+		// Stripe gateway disabled but with payment_request still enabled in settings.
+		$this->gateway_from_another_plugin->id       = 'stripe';
+		$this->gateway_from_another_plugin->enabled  = 'no';
+		$this->gateway_from_another_plugin->settings = [ 'payment_request' => 'yes' ];
+
+		$result = $this->service->find_duplicates();
+
+		$this->assertEmpty( $result );
+	}
+
 	public function test_duplicate_not_enabled_in_woopayments() {
-		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( CardDefinition::get_id(), 'yes', 'yes' );
 		$this->woopayments_gateway->id = 'not_woopayments_card';
 
 		$result = $this->service->find_duplicates();

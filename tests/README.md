@@ -4,9 +4,15 @@ This guide follows the [WooCommerce guide to unit tests](https://github.com/wooc
 
 ## Setup for running tests in the docker containers
 
-1. From the plugin directory, run `npm run up` or `docker compose up -d`
-2. Once the containers are up, run the tests from the plugin root directory using `npm test`
-  - Tests can be run in watch mode using `npm run test:watch` and `npm run test:php-watch` for JavaScript and PHP unit tests respectively
+1. Start the WordPress container: `npm run up` (or `npm run up:recreate` for first-time setup)
+   - This auto-starts shared infrastructure (database, phpMyAdmin) if not already running
+2. Once the containers are up, run tests from the plugin root directory:
+   - `npm run test:php` - Run PHP unit tests only
+   - `npm run test:js` - Run JavaScript unit tests only
+   - `npm test` - Run both JS and PHP tests
+3. Watch mode for iterative development:
+   - `npm run test:php-watch` - PHP tests in watch mode
+   - `npm run test:watch` - JavaScript tests in watch mode
 
 ## Initial Setup for running tests locally
 

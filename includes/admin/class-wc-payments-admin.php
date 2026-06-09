@@ -366,6 +366,19 @@ class WC_Payments_Admin {
 			],
 		];
 
+		if ( WC_Payments_Features::is_reports_area_enabled() ) {
+			$this->admin_child_pages['wc-payments-reports'] = [
+				'id'       => 'wc-payments-reports',
+				'title'    => __( 'Reports', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/reports',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 35,
+				],
+			];
+		}
+
 		try {
 			// Render full payments menu with sub-items only if:
 			// - we have working WPCOM/Jetpack connection;
@@ -397,12 +410,39 @@ class WC_Payments_Admin {
 			]
 		);
 
-		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
-		// That's expected, because account under review is hard-blocked account that spends in a review pretty short time-frame.
-		// Either merchant gets approved and continues to use payments or they remain suspended and can't use payments.
+		// Rejected and under-review merchants get a limited menu: Overview, Transactions, and Disputes.
+		// They need Disputes access to respond to dispute emails they receive, and Transactions for context.
+		// Payouts, Settings, Card Readers, Capital, and Documents remain hidden.
 		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
-			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-disputes'] );
+
+			// Register detail sub-pages so merchants can view individual items.
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-transaction-details',
+					'title'  => __( 'Payment details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions',
+					'path'   => '/payments/transactions/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-details-legacy-redirect',
+					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes',
+					'path'   => '/payments/disputes/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-challenge',
+					'title'  => __( 'Challenge dispute', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes-details-legacy-redirect',
+					'path'   => '/payments/disputes/challenge',
+				]
+			);
 			return;
 		}
 
@@ -1026,8 +1066,21 @@ class WC_Payments_Admin {
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
+			'woopayAppearance'                   => WC_Payments_Styles_Cache::get_woopay_appearance(),
+			'woopayFontRules'                    => WC_Payments_Styles_Cache::get_woopay_font_rules(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
+			'formattedStoreAddress'              => WC()->countries->get_formatted_address(
+				[
+					'address_1' => get_option( 'woocommerce_store_address', '' ),
+					'address_2' => get_option( 'woocommerce_store_address_2', '' ),
+					'city'      => get_option( 'woocommerce_store_city', '' ),
+					'state'     => WC()->countries->get_base_state(),
+					'postcode'  => get_option( 'woocommerce_store_postcode', '' ),
+					'country'   => WC()->countries->get_base_country(),
+				],
+				', '
+			),
 		];
 
 		/**
@@ -1274,9 +1327,16 @@ class WC_Payments_Admin {
 	 */
 	public function display_wcpay_transaction_fee( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
+		if ( ! $order || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
 			return;
 		}
+
+		$transaction_fee = $order->get_meta( '_wcpay_transaction_fee' );
+
+		if ( ! $transaction_fee ) {
+			return;
+		}
+
 		?>
 		<tr>
 			<td class="label wcpay-transaction-fee">
@@ -1294,7 +1354,7 @@ class WC_Payments_Admin {
 			</td>
 			<td width="1%"></td>
 			<td class="total">
-				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+				-<?php echo wp_kses( wc_price( $transaction_fee, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
 			</td>
 		</tr>
 		<?php

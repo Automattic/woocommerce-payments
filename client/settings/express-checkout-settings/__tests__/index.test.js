@@ -12,21 +12,22 @@ import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
-import { useGetPaymentMethodStatuses } from 'wcpay/data';
+import { useGetPaymentMethodStatuses } from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
 	useGetSettings: jest.fn().mockReturnValue( {} ),
 	useSettings: jest.fn().mockReturnValue( {} ),
 	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 	useGetPaymentMethodStatuses: jest.fn(),
+	useEnabledPaymentMethodIds: jest.fn().mockReturnValue( [ [], jest.fn() ] ),
 	usePaymentRequestEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ true, jest.fn() ] ),
 	usePaymentRequestLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings: jest
+	useExpressCheckoutInPaymentMethodsEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ false, jest.fn() ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true, jest.fn() ] ),

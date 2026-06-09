@@ -64,8 +64,8 @@ export const recordEvent = (
  *
  * Event names will be prefixed with 'wcpay_' when recorded.
  *
- * @param {string}  eventName         Name of the event – don't include the 'wcpay_' prefix, which will be added when recorded.
- * @param {Object}  [eventProperties] Event properties (optional).
+ * @param {string} eventName         Name of the event – don't include the 'wcpay_' prefix, which will be added when recorded.
+ * @param {Object} [eventProperties] Event properties (optional).
  */
 export const recordUserEvent = (
 	eventName: ShopperEvent,

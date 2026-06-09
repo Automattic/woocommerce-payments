@@ -46,6 +46,15 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Get the Stripe PaymentMethod type.
+	 *
+	 * @return string
+	 */
+	public static function get_stripe_payment_method_type(): string {
+		return self::get_id();
+	}
+
+	/**
 	 * Get the customer-facing title of the payment method
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
@@ -54,6 +63,18 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_title( ?string $account_country = null ): string {
 		return __( 'Amazon Pay', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Get a dynamic title based on charge details from Stripe.
+	 *
+	 * @param string $account_country The merchant's account country.
+	 * @param array  $payment_details The payment method details from the Stripe charge.
+	 *
+	 * @return string|null The dynamic title, or null to use the default get_title().
+	 */
+	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+		return null;
 	}
 
 	/**

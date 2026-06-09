@@ -11,10 +11,16 @@ project.properties
 *.sublime-workspace
 .sublimelinterrc
 .cursor/
+CLAUDE.local.md
 **/.claude/**/*.local.*
 .claude/local/
+.claude/docs/analysis/
+.claude/docs/plans/
+.claude/tmp/
+.serena/
 .zed/
 .phpactor.json
+.superpowers/
 
 # Bundle
 dist
@@ -78,6 +84,7 @@ docker/logs
 
 # Local machine docker override
 docker-compose.override.yml
+.env
 
 # Tunneling scripts
 /docker/bin/jt
@@ -96,6 +103,7 @@ tests/e2e/reports
 /blob-report/
 tests/e2e/.auth/
 tests/e2e/test-results/
+tests/e2e/.slack-thread-state.json
 tests/e2e/playwright/.cache/
 tests/e2e/tests/e2e/.auth/*
 

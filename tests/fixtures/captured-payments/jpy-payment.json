@@ -34,7 +34,14 @@
 					"fixed_rate": 0,
 					"currency": "jpy"
 				}
-			]
+			],
+			"fee_exchange_rate": {
+				"from_currency": "EUR",
+				"to_currency": "JPY",
+				"from_amount": 168,
+				"to_amount": 267,
+				"rate": 0.6292134831460674
+			}
 		},
 		"currency": "EUR",
 		"datetime": 1692261169,

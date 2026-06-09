@@ -11,7 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
-import { Transaction } from 'wcpay/data';
+import { Transaction } from 'wcpay/data/transactions';
 import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface TransactionsFiltersProps {

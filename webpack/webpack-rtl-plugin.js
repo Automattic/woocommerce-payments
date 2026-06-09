@@ -65,9 +65,8 @@ class WebpackRTLPlugin {
 								chunk.files.add( filename );
 
 								if ( this.cache.has( assetInstance ) ) {
-									const cachedRTL = this.cache.get(
-										assetInstance
-									);
+									const cachedRTL =
+										this.cache.get( assetInstance );
 									assets[ filename ] = cachedRTL;
 								} else {
 									const baseSource = assetInstance.source();

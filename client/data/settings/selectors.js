@@ -121,10 +121,10 @@ export const getIsPaymentRequestEnabled = ( state ) => {
 	return getSettings( state ).is_payment_request_enabled || false;
 };
 
-export const getIsAppleGooglePayInPaymentMethodsOptionsEnabled = ( state ) => {
+export const getIsExpressCheckoutInPaymentMethodsEnabled = ( state ) => {
 	return (
-		getSettings( state )
-			.is_apple_google_pay_in_payment_methods_options_enabled || false
+		getSettings( state ).is_express_checkout_in_payment_methods_enabled ||
+		false
 	);
 };
 

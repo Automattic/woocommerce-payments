@@ -171,7 +171,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @var array
 	 */
 	private $payment_method_classes = [
-		Payment_Method::CARD       => CC_Payment_Method::class,
+		Payment_Method::CARD       => \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 		Payment_Method::GIROPAY    => \WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 		Payment_Method::SOFORT     => \WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 		Payment_Method::BANCONTACT => \WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
@@ -822,7 +822,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'Bancontact',
 			'EPS',
 			'Przelewy24 (P24)',
-			'iDEAL',
+			'iDEAL | Wero',
 			'SEPA Direct Debit',
 			'BECS Direct Debit',
 		];
@@ -1066,8 +1066,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title( 'US' ) );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title( 'US', $mock_ideal_details ) );
+		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title( 'US' ) );
+		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title( 'US', $mock_ideal_details ) );
 		$this->assertTrue( $ideal_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $ideal_method->is_reusable() );
 

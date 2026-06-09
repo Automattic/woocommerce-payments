@@ -11,6 +11,12 @@ import { StoreNotice } from '@woocommerce/blocks-checkout';
  */
 import './style.scss';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import {
+	getCachedAppearance,
+	setCachedAppearance,
+	dispatchAppearanceEvent,
+	isAppearanceValid,
+} from 'wcpay/utils/appearance-cache';
 import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { useFingerprint } from './hooks';
@@ -27,8 +33,11 @@ const PaymentElements = ( { api, ...props } ) => {
 		paymentProcessorLoadErrorMessage,
 		setPaymentProcessorLoadErrorMessage,
 	] = useState( undefined );
-	const [ appearance, setAppearance ] = useState(
-		getUPEConfig( 'wcBlocksUPEAppearance' )
+	const [ appearance, setAppearance ] = useState( () =>
+		getCachedAppearance(
+			'blocks_checkout',
+			getUPEConfig( 'stylesCacheVersion' )
+		)
 	);
 	const [ fontRules, setFontRules ] = useState( [] );
 
@@ -38,35 +47,39 @@ const PaymentElements = ( { api, ...props } ) => {
 	const paymentMethodTypes = getPaymentMethodTypes( props.paymentMethodId );
 
 	useEffect( () => {
-		async function generateUPEAppearance() {
-			if ( ! containerRef.current ) {
-				return;
-			}
+		if ( ! appearance && containerRef.current ) {
 			setFontRules(
 				getFontRulesFromPage( containerRef.current.ownerDocument )
 			);
 			// Generate UPE input styles.
-			let upeAppearance = getAppearance(
+			const upeAppearance = getAppearance(
 				'blocks_checkout',
 				false,
 				containerRef.current.ownerDocument
 			);
-			upeAppearance = await api.saveUPEAppearance(
-				upeAppearance,
-				'blocks_checkout'
-			);
-			setAppearance( upeAppearance );
-		}
+			dispatchAppearanceEvent( upeAppearance, 'blocks_checkout' );
 
-		if ( ! appearance ) {
-			generateUPEAppearance();
+			// Only cache if extraction produced meaningful rules.
+			// Empty results (e.g. non-standard theme markup) should not be cached
+			// so the next page load can retry extraction.
+			if ( isAppearanceValid( upeAppearance ) ) {
+				setCachedAppearance(
+					'blocks_checkout',
+					getUPEConfig( 'stylesCacheVersion' ),
+					upeAppearance
+				);
+			}
+			setAppearance( upeAppearance );
+			// Defer dispatch so all payment method label listeners are attached first.
+			setTimeout( () => {
+				window.dispatchEvent( new Event( 'wcpay-appearance-cached' ) );
+			}, 0 );
 		}
 
 		if ( fingerprintErrorMessage ) {
 			setErrorMessage( fingerprintErrorMessage );
 		}
 	}, [
-		api,
 		appearance,
 		fingerprint,
 		fingerprintErrorMessage,
@@ -83,6 +96,7 @@ const PaymentElements = ( { api, ...props } ) => {
 					stripe={ stripeForUPE }
 					options={ {
 						mode: amount < 1 ? 'setup' : 'payment',
+						loader: 'never',
 						amount: amount,
 						currency: currency,
 						paymentMethodCreation: 'manual',

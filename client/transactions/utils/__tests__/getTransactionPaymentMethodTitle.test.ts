@@ -12,6 +12,7 @@ describe( 'getTransactionPaymentMethodTitle', () => {
 			title: 'Custom Payment Method',
 			icon: 'custom_icon',
 			darkIcon: 'custom_dark_icon',
+			isExpressCheckout: false,
 			showSaveOption: true,
 			countries: [ 'US', 'CA' ],
 			testingInstructions: 'Custom testing instructions',
@@ -23,6 +24,7 @@ describe( 'getTransactionPaymentMethodTitle', () => {
 			title: 'Custom Visa Title',
 			icon: 'visa_icon',
 			darkIcon: 'visa_dark_icon',
+			isExpressCheckout: false,
 			showSaveOption: true,
 			countries: [ 'US', 'CA' ],
 			testingInstructions: 'Custom testing instructions',
@@ -51,6 +53,12 @@ describe( 'getTransactionPaymentMethodTitle', () => {
 	it( 'should fallback to TRANSACTION_PAYMENT_METHOD_TITLES when method not in config', () => {
 		expect( getTransactionPaymentMethodTitle( 'visa', {} ) ).toBe(
 			TRANSACTION_PAYMENT_METHOD_TITLES.visa
+		);
+	} );
+
+	it( 'should return the EFTPOS title', () => {
+		expect( getTransactionPaymentMethodTitle( 'eftpos_au', {} ) ).toBe(
+			TRANSACTION_PAYMENT_METHOD_TITLES.eftpos_au
 		);
 	} );
 

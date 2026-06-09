@@ -11,7 +11,7 @@ const Container = ( { children, isBlocksCheckout } ) => {
 				<div className="wc-block-components-checkout-step__heading-container">
 					<div className="wc-block-components-checkout-step__heading">
 						<h2 className="wc-block-components-title wc-block-components-checkout-step__title">
-							{ __( 'Save my info' ) }
+							{ __( 'Save my info', 'woocommerce-payments' ) }
 						</h2>
 					</div>
 				</div>

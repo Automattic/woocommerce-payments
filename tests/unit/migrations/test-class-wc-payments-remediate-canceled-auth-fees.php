@@ -102,9 +102,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_affected_orders_returns_canceled_orders_with_fees() {
-		// Create order with canceled intent and fees.
+		// Create order with canceled intent, cancelled status, and fees.
 		$order = WC_Helper_Order::create_order();
 		$order->set_date_created( '2023-05-01' );
+		$order->set_status( 'cancelled' );
 		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order->save();
@@ -153,10 +154,12 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 0, $orders );
 	}
 
-	public function test_get_affected_orders_finds_orders_with_refunds_but_no_fees() {
-		// Create order with canceled intent and refund, but no fee metadata.
+	public function test_get_affected_orders_excludes_cancelled_orders_with_refunds_but_no_fees() {
+		// Create cancelled order with canceled intent and refund, but no fee metadata.
+		// The new query only matches cancelled orders when they have fee metadata.
 		$order = WC_Helper_Order::create_order();
 		$order->set_date_created( '2023-05-01' );
+		$order->set_status( 'cancelled' );
 		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order->save();
 
@@ -171,8 +174,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$orders = $this->remediation->get_affected_orders( 10 );
 
-		$this->assertCount( 1, $orders );
-		$this->assertEquals( $order->get_id(), $orders[0]->get_id() );
+		$this->assertCount( 0, $orders );
 	}
 
 	public function test_get_affected_orders_respects_batch_size() {
@@ -180,6 +182,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		for ( $i = 0; $i < 5; $i++ ) {
 			$order = WC_Helper_Order::create_order();
 			$order->set_date_created( '2023-05-01' );
+			$order->set_status( 'cancelled' );
 			$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 			$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 			$order->save();
@@ -194,18 +197,21 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		// Create 3 affected orders.
 		$order1 = WC_Helper_Order::create_order();
 		$order1->set_date_created( '2023-05-01' );
+		$order1->set_status( 'cancelled' );
 		$order1->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order1->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order1->save();
 
 		$order2 = WC_Helper_Order::create_order();
 		$order2->set_date_created( '2023-05-02' );
+		$order2->set_status( 'cancelled' );
 		$order2->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order2->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order2->save();
 
 		$order3 = WC_Helper_Order::create_order();
 		$order3->set_date_created( '2023-05-03' );
+		$order3->set_status( 'cancelled' );
 		$order3->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order3->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order3->save();
@@ -465,6 +471,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		for ( $i = 0; $i < 3; $i++ ) {
 			$order = WC_Helper_Order::create_order();
 			$order->set_date_created( '2023-05-01' );
+			$order->set_status( 'cancelled' );
 			$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 			$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 			$order->save();
@@ -481,12 +488,14 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 	public function test_process_batch_updates_last_order_id() {
 		$order1 = WC_Helper_Order::create_order();
 		$order1->set_date_created( '2023-05-01' );
+		$order1->set_status( 'cancelled' );
 		$order1->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order1->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order1->save();
 
 		$order2 = WC_Helper_Order::create_order();
 		$order2->set_date_created( '2023-05-02' );
+		$order2->set_status( 'cancelled' );
 		$order2->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order2->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order2->save();
@@ -508,6 +517,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 	public function test_process_batch_increments_error_count_on_failure() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_date_created( '2023-05-01' );
+		$order->set_status( 'cancelled' );
 		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order->save();
@@ -540,6 +550,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		// Create an affected order.
 		$order = WC_Helper_Order::create_order();
 		$order->set_date_created( '2023-05-01' );
+		$order->set_status( 'cancelled' );
 		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order->save();
@@ -584,9 +595,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$mock_remediation->method( 'is_hpos_enabled' )->willReturn( false );
 
-		// Create order with canceled intent and fees.
+		// Create order with canceled intent, cancelled status, and fees.
 		$order = WC_Helper_Order::create_order();
 		$order->set_date_created( '2023-05-01' );
+		$order->set_status( 'cancelled' );
 		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
 		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order->save();

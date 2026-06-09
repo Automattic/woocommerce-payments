@@ -40,7 +40,7 @@
         "to_currency": "usd",
         "from_amount": 25,
         "to_amount": 30,
-        "rate": 1.2002214394351323
+        "rate": 0.833333
       },
       "tax": {
         "percentage_rate": 0.2,

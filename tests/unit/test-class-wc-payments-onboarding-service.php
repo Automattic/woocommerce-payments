@@ -147,6 +147,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
+		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
 	}
 
 	public function test_create_embedded_kyc_session() {
@@ -326,6 +327,155 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 	}
 
+	public function test_set_test_mode_records_enabled_date() {
+		$before = time();
+		$this->onboarding_service->set_test_mode( true );
+		$after = time();
+
+		$date = get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		$this->assertGreaterThanOrEqual( $before, $date );
+		$this->assertLessThanOrEqual( $after, $date );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_preserves_original_enabled_date() {
+		$original_date = time() - 100;
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, $original_date );
+
+		$this->onboarding_service->set_test_mode( true );
+
+		$this->assertEquals( $original_date, get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_clears_enabled_date_when_disabled() {
+		$this->onboarding_service->set_test_mode( true );
+		$this->assertNotFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		$this->onboarding_service->set_test_mode( false );
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_invalidates_eligibility_transient() {
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$this->onboarding_service->set_test_mode( true );
+
+		$this->assertFalse(
+			get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ),
+			'set_test_mode() owns the eligibility transient cleanup so every flip site stays in sync.'
+		);
+
+		// Same on the way back to live.
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		$this->onboarding_service->set_test_mode( false );
+		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_records_date_when_toggled_on() {
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertNotFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_preserves_existing_date() {
+		$original_date = time() - 5 * DAY_IN_SECONDS;
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, $original_date );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertEquals( $original_date, get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_clears_date_when_toggled_off() {
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, time() );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'yes' ],
+			[ 'test_mode' => 'no' ]
+		);
+
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_does_not_write_onboarding_test_mode_option() {
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertFalse(
+			get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION ),
+			'Gateway toggle handler must not write TEST_MODE_OPTION — that flag is the higher-priority override and should only be flipped by set_test_mode() callers.'
+		);
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_invalidates_eligibility_cache() {
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_no_op_when_unchanged() {
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'yes' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertSame( '1', get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ) );
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_treats_non_array_old_value_as_off() {
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+
+		// First save: $old_value comes through as '' from update_option_<option> when the option didn't exist.
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			'',
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertNotFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
 	public function test_is_embedded_kyc_in_progress() {
 		$this->assertFalse( $this->onboarding_service->is_embedded_kyc_in_progress() );
 
@@ -470,6 +620,11 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 			'Via the referer URL - settings page'          => [
 				'WCADMIN_PAYMENT_SETTINGS',
 				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - NOX in-context'         => [
+				'WCADMIN_NOX_IN_CONTEXT',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout&path=/woopayments/onboarding',
 				[ 'wcpay-connect' => '1' ],
 			],
 			'Via the referer URL - incentive page'         => [
@@ -641,5 +796,194 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Test that explicit 'live' mode overrides environment-based auto-detection.
+	 */
+	public function test_create_embedded_kyc_session_explicit_live_mode_overrides_auto_detection() {
+		// Arrange: Force test mode via the onboarding test mode option (simulates leftover from test drive).
+		WC_Payments_Onboarding_Service::set_test_mode( true );
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( true ) // First arg is $live_account = true.
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => true,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_live_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: Pass explicit 'live' mode.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], [], 'live' );
+
+		// Assert: The session was created and the test mode flag was cleared.
+		$this->assertNotEmpty( $result );
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+	}
+
+	/**
+	 * Test that dev mode forces test even when explicit 'live' is passed.
+	 */
+	public function test_create_embedded_kyc_session_dev_mode_forces_test_despite_explicit_live() {
+		// Arrange: Force dev mode.
+		WC_Payments::mode()->dev();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( false ) // First arg is $live_account = false (forced by dev mode).
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => false,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_test_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: Pass explicit 'live' mode, but dev mode should override.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], [], 'live' );
+
+		// Assert.
+		$this->assertNotEmpty( $result );
+		$this->assertTrue( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+
+		// Clean up: Reset mode to avoid affecting other tests.
+		WC_Payments::mode()->live();
+	}
+
+	/**
+	 * Test backwards compatibility: no explicit mode falls back to auto-detection.
+	 */
+	public function test_create_embedded_kyc_session_no_explicit_mode_uses_auto_detection() {
+		// Arrange: Ensure live mode (no test mode flag, no dev mode).
+		WC_Payments_Onboarding_Service::set_test_mode( false );
+		WC_Payments::mode()->live();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( true ) // First arg is $live_account = true (auto-detected as live).
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => true,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_live_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: No explicit mode (backwards compat).
+		$result = $this->onboarding_service->create_embedded_kyc_session( [] );
+
+		// Assert.
+		$this->assertNotEmpty( $result );
+	}
+
+	public function test_init_test_drive_account_merges_additional_account_data() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [], [ 'extra_bootstrapping' => false ] );
+
+		// Assert: The `extra_bootstrapping => false` key should survive into the API call.
+		$this->assertArrayHasKey( 'extra_bootstrapping', $captured_account_data );
+		$this->assertFalse( $captured_account_data['extra_bootstrapping'] );
+	}
+
+	public function test_init_test_drive_account_without_additional_data_leaves_account_data_unchanged() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [] );
+
+		// Assert: No extra_bootstrapping key should be present.
+		$this->assertArrayNotHasKey( 'extra_bootstrapping', $captured_account_data );
+		// The base account data should still contain the expected keys.
+		$this->assertArrayHasKey( 'setup_mode', $captured_account_data );
+		$this->assertSame( 'test_drive', $captured_account_data['setup_mode'] );
+	}
+
+	public function test_add_woocommerce_store_id_to_request_adds_store_id() {
+		$store_id = 'test-store-uuid-1234';
+		update_option( 'woocommerce_store_id', $store_id );
+
+		$args   = [ 'existing_key' => 'value' ];
+		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( $args );
+
+		$this->assertSame( $store_id, $result['woocommerce_store_id'] );
+		$this->assertSame( 'value', $result['existing_key'] );
+	}
+
+	public function test_add_woocommerce_store_id_to_request_returns_empty_string_when_option_missing() {
+		delete_option( 'woocommerce_store_id' );
+
+		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( [] );
+
+		$this->assertSame( '', $result['woocommerce_store_id'] );
 	}
 }

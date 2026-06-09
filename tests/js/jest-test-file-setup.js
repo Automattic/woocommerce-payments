@@ -154,7 +154,7 @@ global.wooPaymentsPaymentMethodDefinitions = {
 		allows_manual_capture: true,
 	} ),
 	bancontact: buildMockDefinition( 'bancontact', 'Bancontact', [ 'EUR' ] ),
-	ideal: buildMockDefinition( 'ideal', 'iDEAL', [ 'EUR' ] ),
+	ideal: buildMockDefinition( 'ideal', 'iDEAL | Wero', [ 'EUR' ] ),
 	eps: buildMockDefinition( 'eps', 'EPS', [ 'EUR' ] ),
 	giropay: buildMockDefinition( 'giropay', 'Giropay', [ 'EUR' ] ),
 	sofort: buildMockDefinition( 'sofort', 'Sofort', [ 'EUR' ] ),

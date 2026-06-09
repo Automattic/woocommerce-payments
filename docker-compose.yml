@@ -1,6 +1,19 @@
+networks:
+  wcpay-network:
+    external: true
+
 volumes:
   ## Kludge for not having the ./docker directory bound recursively
   dockerdirectory:
+  ## Shared volumes for wp-content subdirectories (defined in docker-compose.infra.yml)
+  wcpay-plugins:
+    external: true
+  wcpay-themes:
+    external: true
+  wcpay-uploads:
+    external: true
+  wcpay-mu-plugins:
+    external: true
 
 services:
   wordpress:
@@ -8,42 +21,34 @@ services:
       context: .
       dockerfile: ./docker/wordpress_xdebug/Dockerfile
       args:
-        - XDEBUG_REMOTE_PORT=9000 # IDE/Editor's listener port
+        - XDEBUG_REMOTE_PORT=9000
         - XDEBUG_START_WITH_REQUEST=trigger
-    container_name: woocommerce_payments_wordpress
-    image: woocommerce_payments_wordpress
-    restart: always
-    depends_on:
-      - db
-    links:
-      - db:mysql
+    container_name: wcpay_wp_${WORKTREE_ID:-default}
+    image: wcpay_wp_${WORKTREE_ID:-default}
+    restart: unless-stopped
     ports:
-      - "8082:80"
+      - "${WORDPRESS_PORT:-8082}:80"
     env_file:
       - default.env
     volumes:
       - ./docker/wordpress:/var/www/html/
-      - ./docker/mu-plugins:/var/www/html/wp-content/mu-plugins
-      - ./docker/logs/apache2/:/var/log/apache2
+      ## Shared volumes overlay wp-content subdirectories
+      - wcpay-plugins:/var/www/html/wp-content/plugins
+      - wcpay-themes:/var/www/html/wp-content/themes
+      - wcpay-uploads:/var/www/html/wp-content/uploads
+      - wcpay-mu-plugins:/var/www/html/wp-content/mu-plugins
+      ## Per-worktree overlays on top of shared volumes
+      ## Note: wc-logs is a nested mount inside wcpay-uploads. Docker processes mounts
+      ## in order, so later mounts overlay earlier ones. This keeps wc-logs per-worktree
+      ## while sharing the rest of uploads across worktrees.
+      - ./docker/logs/wc-logs:/var/www/html/wp-content/uploads/wc-logs
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
-      - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
       - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-payments/docker
+      ## Other per-worktree mounts
+      - ./docker/logs/apache2/:/var/log/apache2
+      - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
       - ./docker/bin:/var/scripts
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  db:
-    container_name: woocommerce_payments_mysql
-    image: mariadb:10.5.8
-    ports:
-      - "5678:3306"
-    env_file:
-      - default.env
-    volumes:
-      - ./docker/data:/var/lib/mysql
-  phpMyAdmin:
-    container_name: woocommerce_payments_phpmyadmin
-    image: phpmyadmin:latest
-    ports:
-      - "8083:80"
-    env_file:
-      - default.env
+    networks:
+      - wcpay-network

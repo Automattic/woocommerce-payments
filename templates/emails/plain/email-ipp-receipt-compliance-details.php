@@ -16,7 +16,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-echo esc_html( sprintf( "%s:\t%s", __( 'Payment Method', 'woocommerce-payments' ), sprintf( '%s - %s', ucfirst( $payment_method_details['brand'] ), $payment_method_details['last4'] ) ) ) . "\n";
+$payment_method_display_name = $payment_method_display_name ?? '';
+
+echo esc_html( sprintf( "%s:\t%s", __( 'Payment Method', 'woocommerce-payments' ), sprintf( '%s - %s', $payment_method_display_name, $payment_method_details['last4'] ) ) ) . "\n";
 
 echo esc_html( sprintf( "%s:\t%s", __( 'Application Name', 'woocommerce-payments' ), ucfirst( $receipt['application_preferred_name'] ) ) ) . "\n";
 

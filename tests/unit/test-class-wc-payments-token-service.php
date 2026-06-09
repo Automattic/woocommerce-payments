@@ -287,6 +287,48 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
 	}
 
+	/**
+	 * Test add Amazon Pay token to user.
+	 */
+	public function test_add_token_to_user_for_amazon_pay() {
+		$mock_payment_method = [
+			'id'              => 'pm_mock',
+			'amazon_pay'      => [],
+			'billing_details' => [
+				'email' => 'test@amazon.com',
+			],
+			'type'            => \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id(),
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments_amazon_pay', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		// Email is stored in redacted format for privacy.
+		$this->assertEquals( '***test@amazon.com', $token->get_email() );
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $token );
+	}
+
+	/**
+	 * Test add Amazon Pay token to user without email.
+	 */
+	public function test_add_token_to_user_for_amazon_pay_without_email() {
+		$mock_payment_method = [
+			'id'         => 'pm_mock',
+			'amazon_pay' => [],
+			'type'       => \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id(),
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments_amazon_pay', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEmpty( $token->get_email() );
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $token );
+	}
+
 	public function test_add_payment_method_to_user() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [

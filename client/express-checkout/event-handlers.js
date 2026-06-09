@@ -12,6 +12,8 @@ import {
 	getErrorMessageFromNotice,
 	getExpressCheckoutData,
 	updateShippingAddressUI,
+	createPaymentCredential,
+	shouldUseConfirmationTokens,
 } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
@@ -27,11 +29,29 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+import { getSetupFutureUsageForCart } from './utils/subscriptions';
 
 let lastSelectedAddress = null;
+let lastCartData = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
+
+const getElementsUpdateOptionsForCart = ( cartData ) => ( {
+	// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+	amount: applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice(
+			parseInt( cartData.totals.total_price, 10 ) -
+				parseInt( cartData.totals.total_refund || 0, 10 ),
+			cartData.totals
+		),
+		cartData
+	),
+	...( shouldUseConfirmationTokens()
+		? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+		: {} ),
+} );
 
 export const shippingAddressChangeHandler = async ( event, elements ) => {
 	lastSelectedAddress = event.address;
@@ -56,13 +76,9 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		elements.update( {
-			amount: transformPrice(
-				parseInt( cartData.totals.total_price, 10 ) -
-					parseInt( cartData.totals.total_refund || 0, 10 ),
-				cartData.totals
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
+
+		lastCartData = cartData;
 
 		event.resolve( {
 			shippingRates,
@@ -73,20 +89,33 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 	}
 };
 
-export const shippingRateChangeHandler = async ( event, elements ) => {
+export const shippingRateChangeHandler = async (
+	event,
+	elements,
+	currentCartData = null
+) => {
+	// Use the most recent cart data from a previous address/rate change,
+	// falling back to the caller-provided data. This ensures we have
+	// up-to-date subscription extension data (e.g., shipping rates for
+	// the current address) when resolving the shipping package ID.
+	const effectiveCartData = lastCartData || currentCartData;
+
 	try {
 		const cartData = await cartApi.selectShippingRate( {
-			package_id: 0,
+			// Apply filter to get the correct package ID (e.g., for trial subscriptions
+			// where shipping is in subscription extensions, not main cart)
+			package_id: applyFilters(
+				'wcpay.express-checkout.shipping-package-id',
+				0,
+				effectiveCartData,
+				event.shippingRate.id
+			),
 			rate_id: event.shippingRate.id,
 		} );
 
-		elements.update( {
-			amount: transformPrice(
-				parseInt( cartData.totals.total_price, 10 ) -
-					parseInt( cartData.totals.total_refund || 0, 10 ),
-				cartData.totals
-			),
-		} );
+		lastCartData = cartData;
+
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
@@ -109,33 +138,17 @@ export const onConfirmHandler = async (
 		return abortPayment( submitError.message );
 	}
 
-	const useConfirmationToken =
-		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+	const useConfirmationTokens = shouldUseConfirmationTokens();
 
-	let paymentCredential;
-	if ( useConfirmationToken ) {
-		const {
-			confirmationToken,
-			error,
-		} = await stripe.createConfirmationToken( {
+	let credentialId;
+	try {
+		credentialId = await createPaymentCredential(
+			stripe,
 			elements,
-		} );
-
-		if ( error ) {
-			return abortPayment( error.message );
-		}
-
-		paymentCredential = confirmationToken;
-	} else {
-		const { paymentMethod, error } = await stripe.createPaymentMethod( {
-			elements,
-		} );
-
-		if ( error ) {
-			return abortPayment( error.message );
-		}
-
-		paymentCredential = paymentMethod;
+			useConfirmationTokens
+		);
+	} catch ( credentialError ) {
+		return abortPayment( credentialError.message );
 	}
 
 	try {
@@ -145,8 +158,8 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				paymentCredential.id,
-				useConfirmationToken,
+				credentialId,
+				useConfirmationTokens,
 				paymentMethodTypes
 			),
 			extensions: applyFilters(
@@ -170,9 +183,10 @@ export const onConfirmHandler = async (
 		// Extract redirect URL from payment_details if redirect_url is empty
 		let redirectUrl = orderResponse.payment_result.redirect_url;
 		if ( ! redirectUrl ) {
-			const redirectDetail = orderResponse.payment_result.payment_details?.find(
-				( detail ) => detail.key === 'redirect'
-			);
+			const redirectDetail =
+				orderResponse.payment_result.payment_details?.find(
+					( detail ) => detail.key === 'redirect'
+				);
 			redirectUrl = redirectDetail?.value || '';
 		}
 

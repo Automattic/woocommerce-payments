@@ -16,14 +16,7 @@ describe( 'CustomerDetails', () => {
 				name: 'John Doe',
 				phone: '123-456-7890',
 				email: 'john@example.com',
-				address: {
-					line1: '123 Main St',
-					line2: '',
-					city: 'City',
-					state: 'ST',
-					postal_code: '12345',
-					country: 'US',
-				},
+				formatted_address: '123 Main St, City, ST 12345, US',
 			},
 		},
 		order: { ip_address: '1.2.3.4' },
@@ -36,7 +29,31 @@ describe( 'CustomerDetails', () => {
 		expect( screen.getByText( '123-456-7890' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'john@example.com' ) ).toBeInTheDocument();
 		expect( screen.getByText( '1.2.3.4' ) ).toBeInTheDocument();
-		expect( screen.getByText( /123 Main St/ ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders formatted billing address as single line', () => {
+		render( <CustomerDetails dispute={ baseDispute as any } /> );
+		expect(
+			screen.getByText( '123 Main St, City, ST 12345, US' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'renders dash when formatted address is missing', () => {
+		const dispute = {
+			charge: {
+				billing_details: {
+					name: 'Jane Doe',
+					phone: '555-000-1234',
+					email: 'jane@example.com',
+				},
+			},
+			order: { ip_address: '5.6.7.8' },
+		};
+		render( <CustomerDetails dispute={ dispute as any } /> );
+		const addressEl = document.querySelector(
+			'.wcpay-dispute-evidence-customer-details__billing-value'
+		);
+		expect( addressEl?.textContent ).toBe( '-' );
 	} );
 
 	it( 'renders dashes for missing data', () => {

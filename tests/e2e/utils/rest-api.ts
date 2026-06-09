@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { HTTPClientFactory } from '@woocommerce/api';
+import axios, { AxiosInstance } from 'axios';
 
 /**
  * Internal dependencies
@@ -29,13 +29,15 @@ class RestAPI {
 		this.baseUrl = baseUrl;
 	}
 
-	private getAdminClient() {
-		return HTTPClientFactory.build( this.baseUrl )
-			.withBasicAuth(
-				config.users.admin.username,
-				config.users.admin.password
-			)
-			.create();
+	private getAdminClient(): AxiosInstance {
+		const base = this.baseUrl.replace( /\/$/, '' );
+		return axios.create( {
+			baseURL: `${ base }/wp-json`,
+			auth: {
+				username: config.users.admin.username,
+				password: config.users.admin.password,
+			},
+		} );
 	}
 
 	/**
@@ -51,22 +53,23 @@ class RestAPI {
 	): Promise< void > {
 		const client = this.getAdminClient();
 
-		const query = {
-			search: emailAddress,
-			context: 'edit',
-			role: 'all',
-		};
-		const customers = await client.get( userEndpoint, query );
+		const customers = await client.get( userEndpoint, {
+			params: {
+				search: emailAddress,
+				context: 'edit',
+				role: 'all',
+			},
+		} );
 		if ( customers.data && customers.data.length ) {
 			for ( let c = 0; c < customers.data.length; c++ ) {
-				const deleteUserPayload = {
-					force: true,
-					reassign: 0,
-				};
-
 				await client.delete(
 					`${ userEndpoint }/${ customers.data[ c ].id }`,
-					deleteUserPayload
+					{
+						params: {
+							force: true,
+							reassign: 0,
+						},
+					}
 				);
 			}
 		}
@@ -79,11 +82,12 @@ class RestAPI {
 	): Promise< void > {
 		const client = this.getAdminClient();
 
-		const query = {
-			sidebar: widgetArea,
-			context: 'edit',
-		};
-		const widgets = await client.get( widgetEndpoint, query );
+		const widgets = await client.get( widgetEndpoint, {
+			params: {
+				sidebar: widgetArea,
+				context: 'edit',
+			},
+		} );
 
 		if ( widgets.data && widgets.data.length ) {
 			for ( let c = 0; c < widgets.data.length; c++ ) {
@@ -95,13 +99,14 @@ class RestAPI {
 					) {
 						continue;
 					}
-					const deleteWidgetPayload = {
-						force: true,
-					};
 
 					await client.delete(
 						`${ widgetEndpoint }/${ widgets.data[ c ].id }`,
-						deleteWidgetPayload
+						{
+							params: {
+								force: true,
+							},
+						}
 					);
 				}
 			}
@@ -158,9 +163,9 @@ class RestAPI {
 	async createOrder(): Promise< string > {
 		const client = this.getAdminClient();
 
-		const products = await client.get(
-			`${ productsEndpoint }?search=${ config.products.simple.name }`
-		);
+		const products = await client.get( productsEndpoint, {
+			params: { search: config.products.simple.name },
+		} );
 
 		if ( ! products.data || ! products.data.length ) {
 			throw new Error( 'No products found.' );

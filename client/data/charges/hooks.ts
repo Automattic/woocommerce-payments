@@ -3,19 +3,15 @@
  * External dependencies
  */
 import { SelectorMap, useSelect } from '@wordpress/data';
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import { ChargeResponse } from './types';
 
 export const getChargeData = (
 	chargeId: string,
 	selectors: SelectorMap
 ): ChargeResponse => {
-	const {
-		getCharge,
-		isResolving,
-		getChargeError,
-		hasFinishedResolution,
-	} = selectors;
+	const { getCharge, isResolving, getChargeError, hasFinishedResolution } =
+		selectors;
 
 	return {
 		data: getCharge( chargeId ),
