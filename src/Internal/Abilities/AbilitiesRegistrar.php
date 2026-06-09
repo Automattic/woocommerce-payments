@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Registers WooPayments with the WordPress Abilities API.
  *
- * Registers 15 read-only abilities under the shared `woocommerce` category.
+ * Registers WooPayments read and write abilities under the shared
+ * `woocommerce` category.
  * All abilities gate on `manage_woocommerce` and are gated by the
  * `woocommerce_payments_abilities_enabled` filter (default `false`).
  *
@@ -66,6 +67,13 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetDisputes::class,
 		\WCPay\Internal\Abilities\Domain\GetAuthorizations::class,
 		\WCPay\Internal\Abilities\Domain\GetDeposits::class,
+		\WCPay\Internal\Abilities\Domain\RefundCharge::class,
+		\WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence::class,
+		\WCPay\Internal\Abilities\Domain\AcceptDispute::class,
+		\WCPay\Internal\Abilities\Domain\UploadDisputeEvidenceFile::class,
+		\WCPay\Internal\Abilities\Domain\GetBalance::class,
+		\WCPay\Internal\Abilities\Domain\GetFraudOutcomes::class,
+		\WCPay\Internal\Abilities\Domain\GetFeesSummary::class,
 	];
 
 	/**

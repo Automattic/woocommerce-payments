@@ -212,7 +212,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
 		$expected   = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
 
-		$this->assertCount( 15, $expected, 'ABILITY_CLASSES should contain all 15 migrated abilities.' );
+		$this->assertCount( 22, $expected, 'ABILITY_CLASSES should contain all registered abilities.' );
 
 		// Empty input → returns just the WCPay classes.
 		$result = AbilitiesRegistrar::append_classes( [] );
@@ -222,7 +222,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$caller = [ '\\Some\\Other\\Class' ];
 		$result = AbilitiesRegistrar::append_classes( $caller );
 		$this->assertSame( '\\Some\\Other\\Class', $result[0] );
-		$this->assertCount( 16, $result );
+		$this->assertCount( 23, $result );
 	}
 
 	public function test_every_ability_class_implements_ability_definition(): void {

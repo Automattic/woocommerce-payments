@@ -8,7 +8,7 @@ import { CardHeader, Flex, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useAllDepositsOverviews } from 'data';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import { useCurrentWpUser } from './hooks';
 import { CurrencySelect } from './currency-select';
 import './style.scss';

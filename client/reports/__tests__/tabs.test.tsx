@@ -12,7 +12,7 @@ import { recordEvent } from 'tracks';
  * Internal dependencies
  */
 import { ReportsPage } from '..';
-import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
+import { REPORTS_STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/store-names';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
 
@@ -36,7 +36,12 @@ jest.mock( '../fees', () => ( {
 // Stub the Fees + Balance summary hooks so the Export / Print actions in the
 // Reports header render without exercising the real @wordpress/data
 // selectors (this test only cares about tab navigation behavior).
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/reports', () => ( {
+	// The reload hook dispatches against this store descriptor; expose its name
+	// so `useDispatch` is keyed on the value the assertions compare against.
+	// (Literal, not the imported constant — jest.mock factories can't close over
+	// out-of-scope variables.)
+	store: 'wc/payments/reports',
 	useReportsFeesSummary: () => ( {
 		feesSummary: { count: 0 },
 		isLoading: false,

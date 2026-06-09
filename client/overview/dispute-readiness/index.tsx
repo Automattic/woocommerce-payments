@@ -24,9 +24,12 @@ import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 /**
  * Internal dependencies
  */
-import { useDisputeReadiness, useDisputeReadinessActions } from 'data';
+import {
+	useDisputeReadiness,
+	useDisputeReadinessActions,
+} from 'wcpay/data/dispute-readiness';
 import { recordEvent } from 'wcpay/tracks';
-import { DisputeReadinessSignal } from '../../data/dispute-readiness/types';
+import { DisputeReadinessSignal } from 'wcpay/data/dispute-readiness/types';
 import './style.scss';
 
 const learnMoreUrl =

@@ -46,6 +46,8 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 	/**
 	 * Retrieves the Balance report summary.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetBalance
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return WP_Error|WP_REST_Response

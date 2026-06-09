@@ -7,9 +7,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import SupportEmailInput from '..';
-import { useGetSavingError, useAccountBusinessSupportEmail } from 'wcpay/data';
+import {
+	useGetSavingError,
+	useAccountBusinessSupportEmail,
+} from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useAccountBusinessSupportEmail: jest.fn(),
 	useGetSavingError: jest.fn(),
 } ) );

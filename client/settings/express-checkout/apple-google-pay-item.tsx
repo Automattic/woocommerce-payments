@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import { usePaymentRequestEnabledSettings } from 'wcpay/data';
+import { usePaymentRequestEnabledSettings } from 'wcpay/data/settings';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
 import methodsConfiguration from '../../payment-methods-map';

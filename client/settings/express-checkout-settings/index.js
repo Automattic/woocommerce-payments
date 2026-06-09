@@ -18,7 +18,7 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
 import FormBusyState from 'wcpay/components/form-busy-state';
-import { useSettings } from 'wcpay/data';
+import { useSettings } from 'wcpay/data/settings';
 import { WooIcon } from 'wcpay/payment-methods-icons';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 

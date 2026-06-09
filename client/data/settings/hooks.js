@@ -9,7 +9,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
