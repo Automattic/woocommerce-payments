@@ -1,3 +1,4 @@
 Significance: patch
 Type: dev
-Comment: fix: suppress WC 10.9 EmailLogger notes in test base class for WC beta compatibility
+
+fix: suppress WC 10.9 EmailLogger notes in test base class for WC beta compatibility
