@@ -244,6 +244,8 @@ declare global {
 	const wcpayReviewPromptSettings: {
 		isLive: boolean;
 		version: string;
+		experiment: string;
+		variant: string;
 	};
 
 	const wcpayTestToLiveNoticeSettings: {

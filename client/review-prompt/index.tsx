@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import Spotlight from 'components/spotlight';
 import { useReviewPromptState } from './hooks';
 import { recordEvent } from 'wcpay/tracks';
-import MegaphoneIcon from './megaphone-icon';
+import { getVariantContent } from './variants';
 
 const wordpressOrgReviewUrl =
 	'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post';
@@ -44,17 +44,22 @@ const getTimeToClickProps = (
  */
 const getBaseEventProperties = () => {
 	return {
-		prompt_id: 'phase0_payments_settings_001',
+		prompt_id: 'review_prompt_settings_001',
 		extension: 'woopayments',
 		location: 'payments_settings_top_level',
 		trigger: 'none',
 		flag_enabled: true,
 		version: window.wcpayReviewPromptSettings?.version || 'unknown',
+		experiment: window.wcpayReviewPromptSettings?.experiment || 'unknown',
+		variant: window.wcpayReviewPromptSettings?.variant || 'control',
 	};
 };
 
 const ReviewPrompt: React.FC = () => {
 	const { dismissPrompt, setMaybeLater } = useReviewPromptState();
+	const content = getVariantContent(
+		window.wcpayReviewPromptSettings?.variant
+	);
 
 	const [ viewTimestamp, setViewTimestamp ] = useState< number | null >(
 		null
@@ -139,15 +144,10 @@ const ReviewPrompt: React.FC = () => {
 
 	return (
 		<Spotlight
-			icon={ <MegaphoneIcon /> }
-			heading={ __(
-				'Enjoying WooPayments so far?',
-				'woocommerce-payments'
-			) }
-			description={ __(
-				'Your feedback shapes our roadmap and supports the WooCommerce community. We are all ears!',
-				'woocommerce-payments'
-			) }
+			icon={ content.icon }
+			image={ content.image }
+			heading={ content.heading }
+			description={ content.description }
 			primaryButtonLabel={
 				<>
 					{ __( 'Leave review', 'woocommerce-payments' ) }

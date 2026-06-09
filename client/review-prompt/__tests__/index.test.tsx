@@ -90,6 +90,8 @@ declare const global: {
 	wcpayReviewPromptSettings: {
 		isLive: boolean;
 		version: string;
+		experiment: string;
+		variant: string;
 	};
 };
 
@@ -112,6 +114,8 @@ describe( 'ReviewPrompt', () => {
 		global.wcpayReviewPromptSettings = {
 			isLive: true,
 			version: '1.0.0',
+			experiment: 'woopayments_review_prompt_design_v1',
+			variant: 'control',
 		};
 	} );
 
@@ -136,12 +140,66 @@ describe( 'ReviewPrompt', () => {
 		expect( recordEvent ).toHaveBeenCalledWith(
 			'payments_review_prompt_shown',
 			expect.objectContaining( {
-				prompt_id: 'phase0_payments_settings_001',
+				prompt_id: 'review_prompt_settings_001',
 				extension: 'woopayments',
 				location: 'payments_settings_top_level',
 				trigger: 'none',
 				flag_enabled: true,
 				version: '1.0.0',
+				experiment: 'woopayments_review_prompt_design_v1',
+				variant: 'control',
+			} )
+		);
+	} );
+
+	it( 'renders treatment_illustration copy for that variant', () => {
+		global.wcpayReviewPromptSettings.variant = 'treatment_illustration';
+
+		render( <ReviewPrompt /> );
+
+		expect(
+			screen.getByText( 'We built it. You use it. What do you think?' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Leave a quick review and help shape what WooPayments does next.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'renders treatment_revised copy for that variant', () => {
+		global.wcpayReviewPromptSettings.variant = 'treatment_revised';
+
+		render( <ReviewPrompt /> );
+
+		expect( screen.getByText( 'Quick check-in?' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Your review helps us improve WooPayments and build a better experience for every store owner.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'falls back to control copy for an unknown variant', () => {
+		global.wcpayReviewPromptSettings.variant = 'mystery_variant';
+
+		render( <ReviewPrompt /> );
+
+		expect(
+			screen.getByText( 'Enjoying WooPayments so far?' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'includes the variant in event props for treatments', () => {
+		global.wcpayReviewPromptSettings.variant = 'treatment_revised';
+
+		render( <ReviewPrompt /> );
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'payments_review_prompt_shown',
+			expect.objectContaining( {
+				experiment: 'woopayments_review_prompt_design_v1',
+				variant: 'treatment_revised',
 			} )
 		);
 	} );
