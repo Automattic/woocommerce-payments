@@ -4019,10 +4019,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// The token was saved and attached above (before the status update). Set the order's
-				// payment method title from it here.
+				// payment method title and card meta (brand + last4) from the charge details here, mirroring
+				// the synchronous non-3DS path so 3DS/SCA confirmations record the same data.
 				if ( ! empty( $token ) ) {
 					$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 					$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+					$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 				}
 
 				$return_url = $this->get_return_url( $order );
