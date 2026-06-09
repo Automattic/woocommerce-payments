@@ -18,7 +18,7 @@ import {
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
 import OverviewCard from 'wcpay/components/overview-card';
-import { useActiveLoanSummary } from 'wcpay/data';
+import { useActiveLoanSummary } from 'wcpay/data/capital';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';

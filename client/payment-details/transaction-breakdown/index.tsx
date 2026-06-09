@@ -18,7 +18,7 @@ import {
 /**
  * Internal dependencies
  */
-import { useTimeline } from 'wcpay/data';
+import { useTimeline } from 'wcpay/data/timeline';
 import { TimelineItem } from 'wcpay/data/timeline/types';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { formatCurrency } from 'multi-currency/interface/functions';

@@ -15,7 +15,7 @@ import clsx from 'clsx';
 /**
  * Internal dependencies.
  */
-import { useDisputes, useDisputesSummary } from 'data/index';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
 import OrderLink from 'components/order-link';
 import Chip from 'components/chip';
 import DisputeStatusChip from 'components/dispute-status-chip';
@@ -37,7 +37,7 @@ import {
 	disputesDownloadEndpoint,
 } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
-import { useSettings } from 'wcpay/data';
+import { useSettings } from 'wcpay/data/settings';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

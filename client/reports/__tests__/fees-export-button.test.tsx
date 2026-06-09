@@ -24,6 +24,10 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 >;
 
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	useDispatch: () => ( { createNotice: mockCreateNotice } ),
 	select: () => ( {
 		getReportsFeesSummary: ( query: unknown ) =>
