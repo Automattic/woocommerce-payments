@@ -3932,6 +3932,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge    = $intent->get_charge();
 				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
+				// Capture the actual card details from the charge so the order's payment method title (and,
+				// via sync, the subscription's) reflects the card used — brand and funding — instead of a
+				// generic "Card". The 3DS/SCA pay-for-renewal flow lands here after frontend authentication;
+				// the synchronous non-3DS path already does this in process_payment_for_order(). See WOOPMNT-2882.
+				if ( ! empty( $charge ) ) {
+					$payment_method_details = $charge->get_payment_method_details();
+				}
+
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
