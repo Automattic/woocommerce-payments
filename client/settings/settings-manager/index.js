@@ -31,7 +31,7 @@ import {
 	useDepositDelayDays,
 	useGetDuplicatedPaymentMethodIds,
 	useSettings,
-} from '../../data';
+} from 'wcpay/data/settings';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 import VatFormModal from '../../vat/form-modal';

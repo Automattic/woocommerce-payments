@@ -52,7 +52,7 @@ import {
 	isAwaitingResponse,
 	isRefundable,
 } from 'wcpay/disputes/utils';
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';

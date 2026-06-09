@@ -10,7 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
-import { useDispute } from 'data/index';
+import { useDispute } from 'wcpay/data/disputes';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';

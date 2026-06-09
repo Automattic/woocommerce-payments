@@ -31,11 +31,11 @@ import {
 	generateCoverLetter,
 	getBusinessDetails,
 } from './cover-letter-generator';
-import {
-	useGetSettings,
-	useDisputeEvidence,
-	WCPAY_STORE_NAME,
-} from 'wcpay/data';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { useGetSettings } from 'wcpay/data/settings';
+// The only dispatch made through this store handle invalidates getPaymentIntent,
+// which now lives in the payment-intents store.
+import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
@@ -125,7 +125,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	>( {} );
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } =
 		useDispatch( 'core/notices' );
-	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
+	const storeDispatch = useDispatch( paymentIntentsStore ) as {
 		invalidateResolutionForStoreSelector: ( selector: string ) => void;
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();

@@ -16,7 +16,7 @@ import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
 	useSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import InlineNotice from 'wcpay/components/inline-notice';
 import ErrorBoundary from 'wcpay/components/error-boundary';
 import FormBusyState from 'wcpay/components/form-busy-state';

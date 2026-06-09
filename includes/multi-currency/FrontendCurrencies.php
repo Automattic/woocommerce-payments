@@ -114,6 +114,7 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
+			add_filter( 'option_woocommerce_currency_pos', [ $this, 'get_woocommerce_currency_pos' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
 			add_action( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
 			add_action( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
@@ -276,6 +277,27 @@ class FrontendCurrencies {
 			}
 		}
 		return $format;
+	}
+
+	/**
+	 * Returns the currency symbol position for the currently selected currency.
+	 *
+	 * The Cart and Checkout Blocks read the `woocommerce_currency_pos` option (via the Store API
+	 * CurrencyFormatter) rather than the `woocommerce_price_format` filter the shortcode uses. Without
+	 * overriding the option, the Blocks fall back to the store's position setting and format non-store
+	 * currencies (e.g. EUR) differently from the shortcode. Overriding it keeps both paths aligned to
+	 * the currency's CLDR-defined position.
+	 *
+	 * @param string $position The original currency position option value.
+	 *
+	 * @return string The currency position for the selected currency.
+	 */
+	public function get_woocommerce_currency_pos( $position ): string {
+		$currency_code = $this->get_currency_code();
+		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+			return $this->localization_service->get_currency_format( $currency_code )['currency_pos'];
+		}
+		return $position;
 	}
 
 	/**
