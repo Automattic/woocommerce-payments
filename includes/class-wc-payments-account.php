@@ -390,11 +390,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
 				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
 			],
-			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
-			'campaigns'           => [
-				// The flag for the payments settings review prompt (Phase 0). Eligibility is determined per-account on transact-platform-server.
-				'reviewPromptPhase0' => $account['eligibility_review_prompt_phase_0'] ?? false,
-			],
 		];
 	}
 
@@ -2809,7 +2804,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function is_review_prompt_eligible(): bool {
 		$account = $this->get_cached_account_data();
-		return $account['eligibility_review_prompt_phase_0'] ?? false;
+		return (bool) ( $account['eligibility_review_prompt'] ?? false );
 	}
 
 	/**

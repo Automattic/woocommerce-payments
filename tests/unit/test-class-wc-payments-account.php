@@ -4080,17 +4080,17 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'eligible when flag is true'        => [
 				[
-					'account_id'                        => 'acc_test',
-					'is_live'                           => true,
-					'eligibility_review_prompt_phase_0' => true,
+					'account_id'                => 'acc_test',
+					'is_live'                   => true,
+					'eligibility_review_prompt' => true,
 				],
 				true,
 			],
 			'not eligible when flag is false'   => [
 				[
-					'account_id'                        => 'acc_test',
-					'is_live'                           => true,
-					'eligibility_review_prompt_phase_0' => false,
+					'account_id'                => 'acc_test',
+					'is_live'                   => true,
+					'eligibility_review_prompt' => false,
 				],
 				false,
 			],
@@ -4098,6 +4098,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				[
 					'account_id' => 'acc_test',
 					'is_live'    => true,
+				],
+				false,
+			],
+			'old phase_0 field is ignored'      => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => true,
 				],
 				false,
 			],
