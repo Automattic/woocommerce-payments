@@ -74,8 +74,8 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			 * Moving this call to the top of the constructor will cause the placeholders to stop working and
 			 * lose the woocommerce_payments_ prefix in the settings.
 			 *
-			 * @see: WC_Email::_construct()
-			*/
+			 * @see WC_Email::__construct()
+			 */
 			parent::__construct();
 		}
 
