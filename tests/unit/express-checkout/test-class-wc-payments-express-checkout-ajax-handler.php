@@ -618,6 +618,28 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertEquals( 'NEW TERRITORIES', $billing_address['state'] );
 	}
 
+	/**
+	 * Some clients drop the space from "Hong Kong"; it must still resolve to the `HONG KONG` region.
+	 */
+	public function test_tokenized_cart_hk_region_derived_from_spaceless_hong_kong() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => '',
+				'postcode' => 'HongKong',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$billing_address = $request->get_param( 'billing_address' );
+		$this->assertEquals( 'HONG KONG', $billing_address['state'] );
+	}
+
 	public function test_tokenized_cart_italy_state_venezia_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
