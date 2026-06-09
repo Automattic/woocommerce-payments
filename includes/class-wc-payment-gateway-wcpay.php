@@ -3981,12 +3981,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Determine whether the payment method should be saved for this order. Subscriptions and
 			// subscription renewals must always save it so the subscription can be charged off-session
-			// for future renewals. wcs_order_contains_subscription()'s default order types exclude
-			// renewals, so we check for renewals explicitly. See WOOPMNT-2882.
-			$is_subscription            = function_exists( 'wcs_order_contains_subscription' )
-				&& ( wcs_order_contains_subscription( $order )
-					|| ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order ) ) );
-			$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			// for future renewals. is_payment_recurring() treats both as recurring — it accounts for
+			// renewals, which wcs_order_contains_subscription()'s default order types exclude. See WOOPMNT-2882.
+			$is_recurring_payment       = $this->is_payment_recurring( $order->get_id() );
+			$should_save_payment_method = $is_recurring_payment || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 			// Save and attach the payment token BEFORE updating the order status. Updating the status
 			// fires WCS' woocommerce_subscriptions_paid_for_failed_renewal_order hook, which runs
@@ -4003,10 +4001,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				} catch ( Exception $e ) {
 					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 
-					// For subscription orders, token creation failure is critical - renewals will fail.
-					// Re-throw the exception so the customer sees an error instead of a successful
-					// checkout that will fail on the first renewal.
-					if ( $is_subscription ) {
+					// For recurring payments (subscriptions and renewals), token creation failure is
+					// critical - renewals will fail. Re-throw the exception so the customer sees an error
+					// instead of a successful checkout that will fail on the first renewal.
+					if ( $is_recurring_payment ) {
 						throw new Exception(
 							__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
 						);
