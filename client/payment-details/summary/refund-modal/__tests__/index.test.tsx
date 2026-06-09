@@ -11,10 +11,10 @@ import { render } from '@testing-library/react';
  */
 import { Charge } from 'wcpay/types/charges';
 import RefundModal from '..';
-import { usePaymentIntentWithChargeFallback } from 'wcpay/data';
+import { usePaymentIntentWithChargeFallback } from 'wcpay/data/payment-intents';
 import { ApiError } from 'wcpay/types/errors';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/payment-intents', () => ( {
 	usePaymentIntentWithChargeFallback: jest.fn(),
 } ) );
 

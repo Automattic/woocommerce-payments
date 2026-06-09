@@ -25,7 +25,7 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/reports', () => ( {
 	useReportsBalanceSummary: ( period: unknown, currency?: string ) =>
 		mockUseReportsBalanceSummary( period, currency ),
 } ) );

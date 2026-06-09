@@ -16,7 +16,7 @@ import {
 	isRefundable,
 	isUnderReview,
 } from 'wcpay/disputes/utils';
-import { useCharge } from 'wcpay/data';
+import { useCharge } from 'wcpay/data/charges';
 import { recordEvent } from 'tracks';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

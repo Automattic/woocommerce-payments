@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Support a caller-supplied idempotency key on outbound payment API requests.

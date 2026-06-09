@@ -11,6 +11,7 @@ import { controls } from '@wordpress/data';
  */
 import { ACTION_TYPES } from './action-types';
 import { NAMESPACE } from '../constants';
+import { DISPUTE_READINESS_STORE_NAME as STORE_NAME } from '../store-names';
 import { ApiError } from '../../types/errors';
 import {
 	DisputeReadinessData,
@@ -39,14 +40,10 @@ export function* dismissDisputeReadinessCard(): unknown {
 			method: 'POST',
 		} );
 
-		yield controls.dispatch(
-			'wc/payments',
-			'updateDisputeReadiness',
-			result
-		);
+		yield controls.dispatch( STORE_NAME, 'updateDisputeReadiness', result );
 	} catch ( error ) {
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'updateErrorForDisputeReadiness',
 			error
 		);
@@ -60,14 +57,10 @@ export function* confirmStatementDescriptor(): unknown {
 			method: 'POST',
 		} );
 
-		yield controls.dispatch(
-			'wc/payments',
-			'updateDisputeReadiness',
-			result
-		);
+		yield controls.dispatch( STORE_NAME, 'updateDisputeReadiness', result );
 	} catch ( error ) {
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'updateErrorForDisputeReadiness',
 			error
 		);

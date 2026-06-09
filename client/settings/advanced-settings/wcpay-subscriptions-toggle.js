@@ -7,7 +7,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { CheckboxControl, ExternalLink } from '@wordpress/components';
-import { useWCPaySubscriptions } from 'wcpay/data';
+import { useWCPaySubscriptions } from 'wcpay/data/settings';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const WCPaySubscriptionsToggle = () => {

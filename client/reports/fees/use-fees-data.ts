@@ -9,7 +9,7 @@ import type { View, Filter } from '@wordpress/dataviews/wp';
 /**
  * Internal dependencies
  */
-import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
+import { useReportsFees, useReportsFeesSummary } from 'wcpay/data/reports';
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
 import { formatStringValue } from 'wcpay/utils';
 import { displayMethod, displayType } from './strings';

@@ -23,7 +23,7 @@ import {
 	buildFeesDateQueryFromUrlQuery,
 	type FeesDateQueryParams,
 } from './fees/date-filter-values';
-import { STORE_NAME } from 'wcpay/data/constants';
+import { store as reportsStore } from 'wcpay/data/reports';
 
 /**
  * Threshold above which an unfiltered export prompts the merchant for
@@ -90,7 +90,7 @@ const getFeesSummaryCount = (
 	fallback: number
 ): number => {
 	const summary = (
-		select( STORE_NAME ) as unknown as FeesSummaryStoreSelectors
+		select( reportsStore ) as unknown as FeesSummaryStoreSelectors
 	 ).getReportsFeesSummary( buildFeesSummaryStoreQuery( query ) );
 
 	return typeof summary?.count === 'number' ? summary.count : fallback;

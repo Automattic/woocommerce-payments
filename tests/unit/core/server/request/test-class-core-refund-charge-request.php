@@ -118,4 +118,12 @@ class Refund_Charge_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $params['reason'] );
 		$this->assertArrayNotHasKey( 'metadata', $params );
 	}
+
+	public function test_set_idempotency_key_sets_the_param(): void {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_test' );
+		$request->set_idempotency_key( 'ik_test_42' );
+
+		$this->assertSame( 'ik_test_42', $request->get_params()['idempotency_key'] );
+	}
 }

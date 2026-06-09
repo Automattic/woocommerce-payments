@@ -18,6 +18,7 @@ import {
 } from './types';
 import { ApiError } from '../../types/errors';
 import { NAMESPACE } from '../constants';
+import { PM_PROMOTIONS_STORE_NAME as STORE_NAME } from '../store-names';
 
 /**
  * Type guard to check if an error is an ApiError.
@@ -83,7 +84,7 @@ export function* activatePmPromotion( identifier: string ): unknown {
 
 		// Refetch promotions to update the list.
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'invalidateResolution',
 			'getPmPromotions',
 			[]
@@ -98,7 +99,7 @@ export function* activatePmPromotion( identifier: string ): unknown {
 			)
 		);
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
@@ -127,7 +128,7 @@ export function* dismissPmPromotion( id: string ): unknown {
 
 		// Refetch promotions to update the list.
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'invalidateResolution',
 			'getPmPromotions',
 			[]
@@ -142,7 +143,7 @@ export function* dismissPmPromotion( id: string ): unknown {
 			)
 		);
 		yield controls.dispatch(
-			'wc/payments',
+			STORE_NAME,
 			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
