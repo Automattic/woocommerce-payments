@@ -29,7 +29,7 @@ import {
 	useWooPayLocations,
 	useWooPayShowIncompatibilityNotice,
 	useWooPayGlobalThemeSupportEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import InlineNotice from 'wcpay/components/inline-notice';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';

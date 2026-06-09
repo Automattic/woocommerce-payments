@@ -11,7 +11,8 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import DisputesList from '..';
-import { useDisputes, useDisputesSummary, useSettings } from 'data';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
+import { useSettings } from 'wcpay/data/settings';
 import React, { act } from 'react';
 import {
 	CachedDispute,
@@ -24,6 +25,10 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 // Workaround for mocking @wordpress/data.
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -37,10 +42,11 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
-	useSettings: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/pm-promotions', () => ( {
 	usePmPromotions: jest
 		.fn()
 		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
@@ -48,6 +54,9 @@ jest.mock( 'data/index', () => ( {
 		activatePmPromotion: jest.fn(),
 		dismissPmPromotion: jest.fn(),
 	} ),
+} ) );
+jest.mock( 'wcpay/data/settings', () => ( {
+	useSettings: jest.fn(),
 } ) );
 
 jest.mock( '@woocommerce/data', () => {

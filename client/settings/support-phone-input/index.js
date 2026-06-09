@@ -12,7 +12,7 @@ import {
 	useAccountBusinessSupportPhone,
 	useGetSavingError,
 	useTestModeOnboarding,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
 import InlineNotice from 'wcpay/components/inline-notice';
 import './styles.scss';

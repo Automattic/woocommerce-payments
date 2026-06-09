@@ -14,7 +14,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	useAmazonPayEnabledSettings,
 	useGetAvailablePaymentMethodIds,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
 type ExpressCheckoutMethod = 'woopay' | 'google/apple' | 'amazon_pay';
 

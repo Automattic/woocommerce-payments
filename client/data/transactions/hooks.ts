@@ -10,7 +10,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import type { DepositStatus } from 'wcpay/types/deposits';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,

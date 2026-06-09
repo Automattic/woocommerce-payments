@@ -8,13 +8,17 @@
 namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use Automattic\WooCommerce\Utilities\PluginUtil;
+use WC_Payments_API_Client;
 use WCPay\Core\Mode;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\Internal\Service\DisputeService;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
+use WCPay\Internal\Service\FileService;
+use WCPay\Internal\Service\RefundService;
 use WCPay\Internal\Service\SessionService;
 
 /**
@@ -30,6 +34,9 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 		DuplicatePaymentPreventionService::class,
+		DisputeService::class,
+		RefundService::class,
+		FileService::class,
 	];
 
 	/**
@@ -48,5 +55,13 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( ExampleService::class )
 			->addArgument( Mode::class )
 			->addArgument( PluginUtil::class );
+
+		$container->addShared( RefundService::class );
+
+		$container->addShared( DisputeService::class )
+			->addArgument( WC_Payments_API_Client::class );
+
+		$container->addShared( FileService::class )
+			->addArgument( WC_Payments_API_Client::class );
 	}
 }

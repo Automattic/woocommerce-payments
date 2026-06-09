@@ -11,9 +11,9 @@ import {
 	useGetSavingError,
 	useAccountBusinessSupportPhone,
 	useTestModeOnboarding,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useAccountBusinessSupportPhone: jest.fn(),
 	useGetSavingError: jest.fn(),
 	useTestModeOnboarding: jest.fn(),

@@ -7,12 +7,15 @@ import React, { act } from 'react';
 /**
  * Internal dependencies
  */
-import { useReaders, useSettings } from 'wcpay/data';
+import { useReaders } from 'wcpay/data/card-readers';
+import { useSettings } from 'wcpay/data/settings';
 import ConnectedReaders from '..';
 
 // Mock the data hooks
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/card-readers', () => ( {
 	useReaders: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/settings', () => ( {
 	useSettings: jest.fn(),
 } ) );
 

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix docker-setup.sh exiting on fresh database installs

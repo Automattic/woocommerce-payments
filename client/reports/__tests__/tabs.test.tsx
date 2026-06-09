@@ -6,14 +6,23 @@
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
  */
 import { ReportsPage } from '..';
-import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
+import { REPORTS_STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/store-names';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const recordEventMock = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
 
 jest.mock( '../fees', () => ( {
 	FeesReport: ( { onReload }: { onReload?: () => void } ) => (
@@ -27,7 +36,12 @@ jest.mock( '../fees', () => ( {
 // Stub the Fees + Balance summary hooks so the Export / Print actions in the
 // Reports header render without exercising the real @wordpress/data
 // selectors (this test only cares about tab navigation behavior).
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/reports', () => ( {
+	// The reload hook dispatches against this store descriptor; expose its name
+	// so `useDispatch` is keyed on the value the assertions compare against.
+	// (Literal, not the imported constant — jest.mock factories can't close over
+	// out-of-scope variables.)
+	store: 'wc/payments/reports',
 	useReportsFeesSummary: () => ( {
 		feesSummary: { count: 0 },
 		isLoading: false,
@@ -148,6 +162,7 @@ describe( 'Reports page tabs', () => {
 		};
 		mockGetQuery.mockReturnValue( {} );
 		mockUpdateQueryString.mockClear();
+		recordEventMock.mockClear();
 		invalidateResolution.mockClear();
 		invalidateResolutionForStoreSelector.mockClear();
 		mockUseDispatch.mockImplementation( ( storeName ) => {
@@ -249,6 +264,66 @@ describe( 'Reports page tabs', () => {
 		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveFocus();
 	} );
 
+	it( 'emits page_view on mount with the resolved tab', async () => {
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		expect( recordEventMock ).toHaveBeenCalledWith( 'page_view', {
+			path: 'payments_reports',
+			tab: 'balance',
+		} );
+	} );
+
+	it( 'reflects ?tab=fees in the mount page_view event', async () => {
+		mockGetQuery.mockReturnValue( { tab: 'fees' } );
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		expect( recordEventMock ).toHaveBeenCalledWith( 'page_view', {
+			path: 'payments_reports',
+			tab: 'fees',
+		} );
+	} );
+
+	it( 'emits wcpay_reports_tab_change when the user switches tabs', async () => {
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+		recordEventMock.mockClear();
+
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'tab', { name: 'Fees' } )
+			);
+		} );
+
+		expect( recordEventMock ).toHaveBeenCalledWith(
+			'wcpay_reports_tab_change',
+			{ from_tab: 'balance', to_tab: 'fees' }
+		);
+	} );
+
+	it( 'does not emit wcpay_reports_tab_change when the same tab is re-selected', async () => {
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+		recordEventMock.mockClear();
+
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'tab', { name: 'Balance' } )
+			);
+		} );
+
+		expect( recordEventMock ).not.toHaveBeenCalledWith(
+			'wcpay_reports_tab_change',
+			expect.anything()
+		);
+	} );
+
 	it( 'reloads the Balance tab in place by invalidating the active Balance period', async () => {
 		await renderReportsPage( {
 			now: new Date( '2026-05-06T12:00:00Z' ),
@@ -266,6 +341,27 @@ describe( 'Reports page tabs', () => {
 					dateEnd: activeBalancePeriod.end,
 					currency: 'usd',
 				},
+			]
+		);
+	} );
+
+	it( 'reloads the Balance tab with the currency the caller passed in', async () => {
+		global.wcpaySettings.accountDefaultCurrency = 'EUR';
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Reload/i } )
+		);
+
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getReportsBalanceSummary',
+			[
+				expect.objectContaining( {
+					currency: 'eur',
+				} ),
 			]
 		);
 	} );

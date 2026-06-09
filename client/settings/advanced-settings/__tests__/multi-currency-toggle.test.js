@@ -9,10 +9,10 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import { useMultiCurrency } from 'wcpay/data';
+import { useMultiCurrency } from 'wcpay/data/settings';
 import MultiCurrencyToggle from '../multi-currency-toggle';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useMultiCurrency: jest.fn().mockReturnValue( [ true, jest.fn() ] ),
 } ) );
 

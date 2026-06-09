@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add remaining dispute Outcome View Tracks events: recommendations section view, action click, and the has_recommendations property on the view event

@@ -87,6 +87,45 @@ class Refund_Charge extends Request {
 	}
 
 	/**
+	 * Captures a refund reason coming from the merchant.
+	 *
+	 * Stripe's `reason` only accepts a fixed enum, so a matching value is forwarded
+	 * there. Any reason (including free text) is also stored as `merchant_refund_reason`
+	 * metadata so it survives the round trip and shows up in the payment timeline.
+	 *
+	 * @param string|null $reason The reason the merchant provided, enum or free text.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_full_reason( ?string $reason ) {
+		// These are reasons supported by Stripe https://stripe.com/docs/api/refunds/create#create_refund-reason.
+		if ( in_array( $reason, [ 'duplicate', 'fraudulent', 'requested_by_customer' ], true ) ) {
+			$this->set_reason( $reason );
+		}
+		if ( null !== $reason && '' !== $reason ) {
+			$this->set_param(
+				'metadata',
+				array_merge(
+					$this->get_params()['metadata'] ?? [],
+					[ 'merchant_refund_reason' => $reason ]
+				)
+			);
+		}
+	}
+
+	/**
+	 * Sets a caller-supplied idempotency key so duplicate retries of the same
+	 * refund dedupe to the original result at the payment processor. The API
+	 * client lifts this into the `Idempotency-Key` header and strips it from
+	 * the request body.
+	 *
+	 * @param string $idempotency_key Caller-supplied idempotency key.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_idempotency_key( string $idempotency_key ) {
+		$this->set_param( 'idempotency_key', $idempotency_key );
+	}
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string
