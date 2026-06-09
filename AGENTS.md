@@ -216,9 +216,9 @@ If non-zero, create a new branch off `develop` instead.
 **Before creating a PR:**
 - Add and commit a changelog entry: `npm run changelog:add -- --type=<type> --entry="<description>"`
 - Use PR template from `.github/PULL_REQUEST_TEMPLATE.md`
+- Open PRs in **draft mode** (`gh pr create --draft`).
 
 **After creating a PR:**
-- Open PRs in **draft mode** (`gh pr create --draft`).
 - Ask the author to review the PR description and testing instructions, then manually test the changes.
 - Add the `pr: needs review` label and reviewers only after the PR has been manually tested, and only when explicitly asked.
 
