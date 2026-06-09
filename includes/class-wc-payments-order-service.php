@@ -1382,7 +1382,9 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_completed( $order, $intent_data ) {
-		$note = $this->generate_payment_success_note( $order, $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
+		$note = $this->is_order_in_test_mode( $order )
+			? $this->generate_test_mode_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) )
+			: $this->generate_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -1849,27 +1851,47 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get content for the success order note.
 	 *
-	 * @param WC_Order $order            Order object, used to detect test-mode payments.
-	 * @param string   $intent_id        The payment intent ID related to the intent/order.
-	 * @param string   $charge_id        The charge ID related to the intent/order.
-	 * @param string   $formatted_amount The formatted order total.
+	 * @param string $intent_id        The payment intent ID related to the intent/order.
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $formatted_amount The formatted order total.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_payment_success_note( $order, $intent_id, $charge_id, $formatted_amount ) {
+	private function generate_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-
-		if ( $this->is_order_in_test_mode( $order ) ) {
-			/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment */
-			$message = __( 'A test payment of %1$s was processed using %2$s in <strong>test mode</strong> (<a>%3$s</a>). No real funds were collected.', 'woocommerce-payments' );
-		} else {
-			/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
-			$message = __( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' );
-		}
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				$message,
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$formatted_amount,
+			'WooPayments',
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+		);
+	}
+
+	/**
+	 * Get content for the success order note when the payment was made in test mode. Kept
+	 * separate from generate_payment_success_note() so the production note stays untouched.
+	 *
+	 * @param string $intent_id        The payment intent ID related to the intent/order.
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $formatted_amount The formatted order total.
+	 *
+	 * @return string Note content.
+	 */
+	private function generate_test_mode_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A test payment of %1$s was processed using %2$s in <strong>test mode</strong> (<a>%3$s</a>). No real funds were collected.', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
