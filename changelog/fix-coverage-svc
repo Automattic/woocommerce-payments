@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+fix: restore 100% src code coverage after write abilities addition
