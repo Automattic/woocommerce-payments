@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { makeExpressCheckoutElement } from '../payment-methods';
+import {
+	makeExpressCheckoutElement,
+	makeDynamicPlaceOrderButton,
+} from '../payment-methods';
+import DynamicButtonContainer from '../components/dynamic-button-container';
 import { checkPaymentMethodIsAvailable } from '../../utils/checkPaymentMethodIsAvailable';
 
 jest.mock( '../../utils/checkPaymentMethodIsAvailable', () => ( {
@@ -226,5 +230,69 @@ describe( 'makeExpressCheckoutElement', () => {
 				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
 			} );
 		} );
+	} );
+} );
+
+describe( 'makeDynamicPlaceOrderButton', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
+	it( 'registers under the gateway id from the server config', () => {
+		const method = makeDynamicPlaceOrderButton( mockApi, 'googlePay' );
+
+		expect( method.name ).toBe( 'woocommerce_payments_google_pay' );
+		expect( method.paymentMethodId ).toBe(
+			'woocommerce_payments_google_pay'
+		);
+		expect( method.ariaLabel ).toBe( 'Google Pay' );
+		expect( method.savedTokenComponent ).toBeNull();
+	} );
+
+	it( 'delegates canMakePayment to the availability check', async () => {
+		checkPaymentMethodIsAvailable.mockResolvedValue( true );
+
+		const result = await makeDynamicPlaceOrderButton(
+			mockApi,
+			'amazonPay'
+		).canMakePayment( { cart: mockCart } );
+
+		expect( result ).toBe( true );
+		expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
+			'amazonPay',
+			mockCart,
+			mockApi
+		);
+	} );
+
+	it( 'renders the place order button with the method configuration', () => {
+		const method = makeDynamicPlaceOrderButton( mockApi, 'amazonPay' );
+
+		const buttonElement = method.placeOrderButton( {
+			onSubmit: 'on-submit-prop',
+		} );
+
+		expect( buttonElement.type ).toBe( DynamicButtonContainer );
+		expect( buttonElement.props ).toEqual(
+			expect.objectContaining( {
+				expressPaymentMethod: 'amazonPay',
+				expressPaymentType: 'amazon_pay',
+				stripePaymentMethodType: 'amazon_pay',
+				gatewayId: 'woocommerce_payments_amazon_pay',
+				api: mockApi,
+				onSubmit: 'on-submit-prop',
+			} )
+		);
+	} );
+
+	it( 'labels the payment method with the server-provided title', () => {
+		const method = makeDynamicPlaceOrderButton( mockApi, 'applePay' );
+
+		expect( method.label.props ).toEqual(
+			expect.objectContaining( {
+				title: 'Apple Pay',
+				paymentMethodId: 'apple_pay',
+			} )
+		);
 	} );
 } );
