@@ -11,7 +11,6 @@ test.describe(
 	{ tag: '@merchant' },
 	() => {
 		let orderId: string;
-		let orderAmount: string;
 		let paymentIntentId: string;
 
 		test(
@@ -21,17 +20,10 @@ test.describe(
 				// Place an order to refund later and get the order ID so we can open it in the merchant view
 				orderId = await placeOrderWithCurrency( customerPage, 'USD' );
 
-				// Get the order total so we can verify the refund amount
-				orderAmount = await customerPage
-					.locator(
-						'.woocommerce-order-overview__total .woocommerce-Price-amount'
-					)
-					.textContent();
-
 				// Open the order
 				await goToOrder( adminPage, orderId );
 
-				await submitFullRefund( adminPage, { orderAmount } );
+				await submitFullRefund( adminPage );
 
 				// Get and store the payment intent ID for the next test
 				paymentIntentId = await adminPage

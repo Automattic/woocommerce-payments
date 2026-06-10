@@ -14,9 +14,7 @@ import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
 import { shouldRunWCBlocksTests } from '../../../utils/constants';
 import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
 
-const checkoutWithAlipay = async (
-	page: Page
-): Promise< { orderId: string; orderAmount: string } > => {
+const checkoutWithAlipay = async ( page: Page ): Promise< string > => {
 	await shopper.setupProductCheckout(
 		page,
 		[ [ config.products.belt, 1 ] ],
@@ -35,15 +33,7 @@ const checkoutWithAlipay = async (
 		page.getByRole( 'heading', { name: 'Order received' } )
 	).toBeVisible();
 
-	const orderAmount = await page
-		.locator(
-			'.woocommerce-order-overview__total .woocommerce-Price-amount'
-		)
-		.textContent();
-	const orderId =
-		page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
-
-	return { orderId, orderAmount: orderAmount ?? '' };
+	return page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
 };
 
 test.describe( 'Alipay Checkout', () => {
@@ -76,11 +66,9 @@ test.describe( 'Alipay Checkout', () => {
 	);
 
 	test( 'merchant can see and refund an Alipay order', async () => {
-		const { orderId, orderAmount } = await checkoutWithAlipay(
-			shopperPage
-		);
+		const orderId = await checkoutWithAlipay( shopperPage );
 
-		await verifyOrderAndRefund( merchantPage, orderId, { orderAmount } );
+		await verifyOrderAndRefund( merchantPage, orderId );
 	} );
 
 	describeif( shouldRunWCBlocksTests )(

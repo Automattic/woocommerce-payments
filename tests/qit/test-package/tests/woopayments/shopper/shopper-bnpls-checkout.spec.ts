@@ -24,7 +24,7 @@ const checkoutWithBnpl = async (
 	provider: string,
 	productSlug: string,
 	ctpEnabled: boolean
-): Promise< { orderId: string; orderAmount: string } > => {
+): Promise< string > => {
 	await navigation.goToProductPageBySlug( page, productSlug );
 
 	await page.locator( '.single_add_to_cart_button' ).click();
@@ -45,15 +45,7 @@ const checkoutWithBnpl = async (
 		page.getByRole( 'heading', { name: 'Order received' } )
 	).toBeVisible();
 
-	const orderAmount = await page
-		.locator(
-			'.woocommerce-order-overview__total .woocommerce-Price-amount'
-		)
-		.textContent();
-	const orderId =
-		page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
-
-	return { orderId, orderAmount: orderAmount ?? '' };
+	return page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
 };
 
 test.describe( 'BNPL checkout', { tag: [ '@shopper', '@critical' ] }, () => {
@@ -130,16 +122,14 @@ test.describe( 'BNPL checkout', { tag: [ '@shopper', '@critical' ] }, () => {
 
 	for ( const [ index, provider ] of bnplProviders.entries() ) {
 		test( `merchant can see and refund a ${ provider } order`, async () => {
-			const { orderId, orderAmount } = await checkoutWithBnpl(
+			const orderId = await checkoutWithBnpl(
 				shopperPage,
 				provider,
 				products[ index % products.length ],
 				false
 			);
 
-			await verifyOrderAndRefund( merchantPage, orderId, {
-				orderAmount,
-			} );
+			await verifyOrderAndRefund( merchantPage, orderId );
 		} );
 	}
 } );

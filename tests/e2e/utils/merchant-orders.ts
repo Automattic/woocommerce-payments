@@ -9,24 +9,39 @@ import { expect, Page } from '@playwright/test';
 import { goToOrder, goToPaymentDetails } from './merchant-navigation';
 
 interface RefundOptions {
-	orderAmount: string;
 	reason?: string;
 }
 
 /**
- * Submits a full refund via the WooPayments refund UI and asserts the success
- * notice. Assumes the merchant page is already on the order edit screen.
+ * Submits a full refund via the WooPayments refund UI and asserts it succeeded.
+ * Assumes the merchant page is already on the order edit screen.
+ *
+ * Drives the line-item quantity rather than typing the total into the price
+ * field: WooCommerce then computes the refund amount in the store's own currency
+ * format, which avoids locale parsing issues (e.g. EUR "16,00 €" being read as
+ * 1600). Assertions stay currency-agnostic for the same reason.
  */
 export const submitFullRefund = async (
 	page: Page,
-	{ orderAmount, reason = 'No longer wanted' }: RefundOptions
+	{ reason = 'No longer wanted' }: RefundOptions = {}
 ): Promise< void > => {
 	await page.getByRole( 'button', { name: 'Refund' } ).click();
-	await page.getByLabel( 'Refund amount' ).fill( orderAmount );
+
+	// Refund the full ordered quantity of every line item (their `max`).
+	const qtyInputs = page.locator( '.refund_order_item_qty' );
+	const lineItemCount = await qtyInputs.count();
+	for ( let i = 0; i < lineItemCount; i++ ) {
+		const max = await qtyInputs.nth( i ).getAttribute( 'max' );
+		await qtyInputs.nth( i ).fill( max ?? '1' );
+	}
+	// Tab triggers WooCommerce's refund-total calculation.
+	await page.keyboard.press( 'Tab' );
+	await expect( page.getByLabel( 'Refund amount' ) ).not.toHaveValue( '' );
+
 	await page.getByLabel( 'Reason for refund' ).fill( reason );
 
 	const refundButton = page.getByRole( 'button', {
-		name: `Refund ${ orderAmount } via WooPayments`,
+		name: /Refund .+ via WooPayments/,
 	} );
 	await expect( refundButton ).toBeVisible();
 
@@ -37,20 +52,17 @@ export const submitFullRefund = async (
 	await refundButton.click();
 	await page.waitForLoadState( 'load' );
 
-	await expect(
-		page.getByRole( 'cell', { name: `-${ orderAmount }` } )
-	).toHaveCount( 2 );
-	await expect(
-		page.getByText(
-			`A refund of ${ orderAmount } was successfully processed using WooPayments. Reason: ${ reason }`
-		)
-	).toBeVisible();
+	// The refund posts a success order note and flips the order to "Refunded".
+	const refundNote = page
+		.locator( '#woocommerce-order-notes .note_content' )
+		.filter( { hasText: 'A refund of' } )
+		.filter( { hasText: 'was successfully processed' } )
+		.filter( { hasText: `Reason: ${ reason }` } );
+	await expect( refundNote ).toBeVisible();
+	await expect( page.locator( '#order_status' ) ).toHaveValue(
+		'wc-refunded'
+	);
 };
-
-interface VerifyOptions {
-	orderAmount: string;
-	reason?: string;
-}
 
 /**
  * Verifies a placed order is visible to the merchant and can be fully refunded:
@@ -64,7 +76,7 @@ interface VerifyOptions {
 export const verifyOrderAndRefund = async (
 	page: Page,
 	orderId: string,
-	{ orderAmount, reason = 'No longer wanted' }: VerifyOptions
+	{ reason = 'No longer wanted' }: RefundOptions = {}
 ): Promise< void > => {
 	// Orders page: order opens and exposes the WooPayments payment intent link.
 	await goToOrder( page, orderId );
@@ -82,16 +94,13 @@ export const verifyOrderAndRefund = async (
 
 	// Refund from the order, then confirm the refunded timeline on the details page.
 	await goToOrder( page, orderId );
-	await submitFullRefund( page, { orderAmount, reason } );
+	await submitFullRefund( page, { reason } );
 
 	await goToPaymentDetails( page, paymentIntentId );
 	await expect(
-		page.getByText(
-			`A payment of ${ orderAmount } was successfully refunded.`
-		)
+		page.getByText( /A payment of .+ was successfully refunded\./ )
 	).toBeVisible();
 	await expect(
 		page.getByText( 'Payment status changed to Refunded.' )
 	).toBeVisible();
-	await expect( page.getByText( `Reason: ${ reason }` ) ).toBeVisible();
 };

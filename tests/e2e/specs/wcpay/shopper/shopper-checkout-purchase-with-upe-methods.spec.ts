@@ -36,7 +36,7 @@ import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
 const checkoutWithBancontact = async (
 	page: Page,
 	ctpEnabled: boolean
-): Promise< { orderId: string; orderAmount: string } > => {
+): Promise< string > => {
 	await addToCartFromShopPage( page );
 	await goToCheckout( page );
 	await fillBillingAddress(
@@ -51,15 +51,7 @@ const checkoutWithBancontact = async (
 	await page.getByRole( 'link', { name: 'Authorize Test Payment' } ).click();
 	await expect( page.getByText( 'Order received' ).first() ).toBeVisible();
 
-	const orderAmount = await page
-		.locator(
-			'.woocommerce-order-overview__total .woocommerce-Price-amount'
-		)
-		.textContent();
-	const orderId =
-		page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
-
-	return { orderId, orderAmount: orderAmount ?? '' };
+	return page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
 };
 
 test.describe(
@@ -127,14 +119,9 @@ test.describe(
 		} );
 
 		test( 'merchant can see and refund a Bancontact order', async () => {
-			const { orderId, orderAmount } = await checkoutWithBancontact(
-				shopperPage,
-				false
-			);
+			const orderId = await checkoutWithBancontact( shopperPage, false );
 
-			await verifyOrderAndRefund( merchantPage, orderId, {
-				orderAmount,
-			} );
+			await verifyOrderAndRefund( merchantPage, orderId );
 		} );
 	}
 );

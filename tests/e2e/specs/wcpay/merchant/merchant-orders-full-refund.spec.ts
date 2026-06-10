@@ -55,7 +55,7 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 			// Open the order
 			await goToOrder( merchantPage, orderId );
 
-			await submitFullRefund( merchantPage, { orderAmount } );
+			await submitFullRefund( merchantPage );
 		}
 	);
 
