@@ -107,6 +107,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const select = document.createElement( 'select' );
 			select.name = 'currency';
+			select.className = 'js-woopayments-currency-switcher';
 			[ 'USD', 'EUR' ].forEach( ( code ) => {
 				const option = document.createElement( 'option' );
 				option.value = code;
@@ -147,6 +148,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const select = document.createElement( 'select' );
 			select.name = 'currency';
+			select.className = 'js-woopayments-currency-switcher';
 			[ 'USD', 'EUR' ].forEach( ( code ) => {
 				const option = document.createElement( 'option' );
 				option.value = code;
@@ -1023,6 +1025,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		const createSwitcher = ( selected = 'USD', codes = [ 'USD', 'EUR' ] ) => {
 			const select = document.createElement( 'select' );
 			select.name = 'currency';
+			select.className = 'js-woopayments-currency-switcher';
 			codes.forEach( ( code ) => {
 				const option = document.createElement( 'option' );
 				option.value = code;

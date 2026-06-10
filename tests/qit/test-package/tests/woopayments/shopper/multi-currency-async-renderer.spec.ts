@@ -332,7 +332,7 @@ test.describe(
 				);
 
 				const switcher = shopperPage
-					.locator( 'select[name="currency"]' )
+					.locator( 'select.js-woopayments-currency-switcher' )
 					.first();
 				await expect( switcher ).toHaveValue( 'EUR', {
 					timeout: 15000,

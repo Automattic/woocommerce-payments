@@ -531,7 +531,7 @@ class WCPayAsyncPriceRenderer {
 		}
 
 		const selects = document.querySelectorAll< HTMLSelectElement >(
-			'select[name="currency"]'
+			'select.js-woopayments-currency-switcher'
 		);
 
 		selects.forEach( ( select ) => {
