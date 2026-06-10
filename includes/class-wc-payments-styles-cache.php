@@ -36,6 +36,17 @@ class WC_Payments_Styles_Cache {
 	];
 
 	/**
+	 * Option holding the manual-clear salt mixed into the styles cache version.
+	 * Regenerated only by bust_styles_cache() (the "Clear WooPayments calculated
+	 * styles" tool). Lets a merchant force a new version for style changes the
+	 * hash inputs can't detect (custom CSS, child themes, page builders) without
+	 * making routine recomputes non-deterministic.
+	 *
+	 * @var string
+	 */
+	const OPTION_STYLES_CACHE_SALT = 'wcpay_styles_cache_salt';
+
+	/**
 	 * Returns the styles cache version string used to invalidate localStorage
 	 * appearance caches. Reads from a stored WP option; if missing, computes
 	 * and stores it.
@@ -59,6 +70,26 @@ class WC_Payments_Styles_Cache {
 	 */
 	public static function invalidate_styles_cache_version(): void {
 		delete_option( 'wcpay_styles_cache_version' );
+	}
+
+	/**
+	 * Forces a brand-new styles cache version, even when the hash inputs are
+	 * unchanged. Backs the "Clear WooPayments calculated styles" admin tool.
+	 *
+	 * This is the escape hatch for "hash-invisible" style changes — custom CSS,
+	 * child-theme edits, page builders — that none of the version inputs capture,
+	 * so nothing auto-invalidates. Regenerating the salt changes the version,
+	 * which (a) busts shoppers' localStorage appearance caches so the front-end
+	 * re-extracts, and (b) makes the version-stamped WooPay appearance slot no
+	 * longer match, so get_woopay_appearance() stops serving the stale value.
+	 *
+	 * Deliberately separate from invalidate_styles_cache_version() (which runs on
+	 * every theme/style hook): routine invalidation must stay deterministic so the
+	 * WooPay slot survives recompute; only this deliberate clear changes the salt.
+	 */
+	public static function bust_styles_cache(): void {
+		update_option( self::OPTION_STYLES_CACHE_SALT, (string) time(), false );
+		self::invalidate_styles_cache_version();
 	}
 
 	/**
@@ -1203,6 +1234,13 @@ class WC_Payments_Styles_Cache {
 
 		// Theme mods capture Customizer changes (classic themes).
 		$parts .= wp_json_encode( get_theme_mods() );
+
+		// Manual-clear salt: covers "hash-invisible" style changes that none of
+		// the inputs above capture — custom CSS, child-theme CSS, page builders.
+		// Only bust_styles_cache() changes this value, so routine recomputes stay
+		// deterministic (the WooPay appearance slot is version-stamped and must
+		// survive recompute) while a deliberate clear forces a new version.
+		$parts .= get_option( self::OPTION_STYLES_CACHE_SALT, '' );
 
 		return md5( $parts );
 	}
