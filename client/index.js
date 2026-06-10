@@ -3,8 +3,10 @@
 /**
  * External dependencies
  */
+import { lazy, Suspense } from 'react';
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
+import { Spinner } from '@wordpress/components';
 // Create a dependency on wp-mediaelement. Necessary to prevent a type of JS error.
 // See discussion in WCPay PR #1263 in GitHub.
 // eslint-disable-next-line import/no-unresolved
@@ -14,25 +16,117 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
+// ConnectAccountPage is eagerly loaded — it's the first page shown to new merchants.
 import ConnectAccountPage from 'connect-account-page';
-import DepositsPage from 'deposits';
-import DepositDetailsPage from 'deposits/details';
-import TransactionsPage from 'transactions';
-import PaymentDetailsPage from 'payment-details';
-import DisputesPage from 'disputes';
-import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
-import DisputeNewEvidencePage from 'wcpay/disputes/new-evidence';
-import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
-import CardReadersPage from 'card-readers';
-import CapitalPage from 'capital';
-import OverviewPage from 'overview';
-import DocumentsPage from 'documents';
-import ReportsPage from 'reports';
-import OnboardingPage from 'onboarding';
-import OnboardingKycPage from 'onboarding/kyc';
-import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
+import ErrorBoundary from 'components/error-boundary';
 import { getTasks } from 'overview/task-list/tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
+
+const withSuspense = ( LazyComponent ) => ( props ) =>
+	(
+		<ErrorBoundary>
+			<Suspense
+				fallback={
+					<div className="wcpay-route-loading">
+						<Spinner />
+					</div>
+				}
+			>
+				<LazyComponent { ...props } />
+			</Suspense>
+		</ErrorBoundary>
+	);
+
+// Payouts: list → details is a linear drill-down; load together.
+const DepositsPage = withSuspense(
+	lazy( () => import( /* webpackChunkName: "wcpay-payouts" */ 'deposits' ) )
+);
+const DepositDetailsPage = withSuspense(
+	lazy( () =>
+		import( /* webpackChunkName: "wcpay-payouts" */ 'deposits/details' )
+	)
+);
+
+// Money movement: transactions, payment details, and disputes form a tight
+// navigation triangle (list → details → challenge → back), so they share a chunk.
+const TransactionsPage = withSuspense(
+	lazy( () =>
+		import( /* webpackChunkName: "wcpay-money-movement" */ 'transactions' )
+	)
+);
+const PaymentDetailsPage = withSuspense(
+	lazy( () =>
+		import(
+			/* webpackChunkName: "wcpay-money-movement" */ 'payment-details'
+		)
+	)
+);
+const DisputesPage = withSuspense(
+	lazy( () =>
+		import( /* webpackChunkName: "wcpay-money-movement" */ 'disputes' )
+	)
+);
+const RedirectToTransactionDetails = withSuspense(
+	lazy( () =>
+		import(
+			/* webpackChunkName: "wcpay-money-movement" */ 'disputes/redirect-to-transaction-details'
+		)
+	)
+);
+const DisputeNewEvidencePage = withSuspense(
+	lazy( () =>
+		import(
+			/* webpackChunkName: "wcpay-money-movement" */ 'wcpay/disputes/new-evidence'
+		)
+	)
+);
+
+// Onboarding: the main flow and KYC step are always navigated sequentially.
+const OnboardingPage = withSuspense(
+	lazy( () =>
+		import( /* webpackChunkName: "wcpay-onboarding" */ 'onboarding' )
+	)
+);
+const OnboardingKycPage = withSuspense(
+	lazy( () =>
+		import( /* webpackChunkName: "wcpay-onboarding" */ 'onboarding/kyc' )
+	)
+);
+
+// Standalone pages — no meaningful cross-links to other admin pages.
+const OverviewPage = withSuspense(
+	lazy( () => import( /* webpackChunkName: "wcpay-overview" */ 'overview' ) )
+);
+const MultiCurrencySetupPage = withSuspense(
+	lazy( () =>
+		import(
+			/* webpackChunkName: "wcpay-multi-currency-setup" */ 'multi-currency/interface/components'
+		).then( ( { MultiCurrencySetupPage: Page } ) => ( { default: Page } ) )
+	)
+);
+const CardReadersPage = withSuspense(
+	lazy( () =>
+		import( /* webpackChunkName: "wcpay-card-readers" */ 'card-readers' )
+	)
+);
+const CapitalPage = withSuspense(
+	lazy( () => import( /* webpackChunkName: "wcpay-capital" */ 'capital' ) )
+);
+const DocumentsPage = withSuspense(
+	lazy( () =>
+		import( /* webpackChunkName: "wcpay-documents" */ 'documents' )
+	)
+);
+const ReportsPage = withSuspense(
+	lazy( () => import( /* webpackChunkName: "wcpay-reports" */ 'reports' ) )
+);
+const FraudProtectionAdvancedSettingsPage = withSuspense(
+	lazy( () =>
+		import(
+			/* webpackChunkName: "wcpay-fraud-protection" */ './settings/fraud-protection/advanced-settings'
+		)
+	)
+);
 
 addFilter(
 	'woocommerce_admin_pages_list',

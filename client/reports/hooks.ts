@@ -9,7 +9,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
+import { store as reportsStore } from 'wcpay/data/reports';
 import type { ReportsPeriodRange } from './period-selector';
 import type { ReportsTab } from './types';
 
@@ -20,13 +20,12 @@ interface WCPayResolutionDispatch {
 
 export function useReportsTabReload(
 	tab: ReportsTab,
-	period: ReportsPeriodRange
+	period: ReportsPeriodRange,
+	currency: string
 ): ( periodOverride?: ReportsPeriodRange ) => void {
 	const { invalidateResolution, invalidateResolutionForStoreSelector } =
-		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
-	const currency = (
-		wcpaySettings.accountDefaultCurrency || ''
-	).toLowerCase();
+		useDispatch( reportsStore ) as unknown as WCPayResolutionDispatch;
+	const normalizedCurrency = currency.toLowerCase();
 
 	return useCallback(
 		( periodOverride?: ReportsPeriodRange ) => {
@@ -42,15 +41,15 @@ export function useReportsTabReload(
 					{
 						dateStart: balancePeriod.start,
 						dateEnd: balancePeriod.end,
-						currency,
+						currency: normalizedCurrency,
 					},
 				] );
 			}
 		},
 		[
-			currency,
 			invalidateResolution,
 			invalidateResolutionForStoreSelector,
+			normalizedCurrency,
 			period,
 			tab,
 		]

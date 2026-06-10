@@ -123,6 +123,77 @@ jobs:
           release-version: ${{ needs.get-last-released-version.outputs.releaseVersion }}
           glotpress-url: ${{ secrets.GLOTPRESS_IMPORT_URL }}
 
+  cleanup-testing-branches:
+    name: "Delete this release's testing branches"
+    needs: get-last-released-version
+    runs-on: ubuntu-latest
+    # Cleanup is housekeeping — never let it fail the release.
+    continue-on-error: true
+    env:
+      RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
+
+    steps:
+      - name: "Checkout repository (trunk)"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: 'trunk'
+          # BOTWOO_TOKEN can push (and therefore delete) branches; the default
+          # GITHUB_TOKEN is more restricted. Same token used for the develop merge.
+          token: ${{ secrets.BOTWOO_TOKEN }}
+
+      - name: "Delete testing/<version>-test-* branches"
+        run: |
+          git config user.name "botwoo"
+          git config user.email "botwoo@users.noreply.github.com"
+
+          # Escape regex metacharacters (just `.` for semver) so 10.6.0 can't
+          # accidentally match 10x6x0.
+          RELEASE_VERSION_RE="${RELEASE_VERSION//./\\.}"
+
+          # create-pre-release.yml names each pre-release branch testing/<version>-test-<n>
+          # and tags the same commit <version>-test-<n>. We only delete the branch
+          # once we've confirmed its tag exists, so the code stays reachable.
+          # Fail loudly if the remote can't be listed — a transient ls-remote
+          # error otherwise looks identical to "nothing to clean up", and these
+          # branches (scoped per release) would never get cleaned up later.
+          if ! HEADS=$(git ls-remote --heads origin "refs/heads/testing/*"); then
+            echo ":warning: \`git ls-remote\` failed; skipping cleanup this run." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          # grep legitimately exits 1 when there are simply no matching branches.
+          BRANCHES=$(printf '%s\n' "$HEADS" \
+            | awk '{print $2}' | sed 's#refs/heads/##' \
+            | grep -E "^testing/${RELEASE_VERSION_RE}-test-[0-9]+$" || true)
+
+          if [ -z "$BRANCHES" ]; then
+            echo ":information_source: No \`testing/${RELEASE_VERSION}-test-*\` branches to clean up." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+          DELETED=0
+          SKIPPED=0
+          while IFS= read -r BRANCH; do
+            [ -z "$BRANCH" ] && continue
+            # testing/10.6.0-test-1 -> tag 10.6.0-test-1
+            TAG="${BRANCH#testing/}"
+            if ! git ls-remote --tags --exit-code origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+              echo "- :no_entry: Skipped \`$BRANCH\`: no matching tag \`$TAG\` found, leaving the branch in place." >> $GITHUB_STEP_SUMMARY
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+            if git push origin --delete "$BRANCH" >/dev/null 2>&1; then
+              echo "- :wastebasket: Deleted \`$BRANCH\` (code preserved by tag \`$TAG\`)." >> $GITHUB_STEP_SUMMARY
+              DELETED=$((DELETED + 1))
+            else
+              echo "- :warning: Failed to delete \`$BRANCH\`; leaving it in place." >> $GITHUB_STEP_SUMMARY
+              SKIPPED=$((SKIPPED + 1))
+            fi
+          done <<< "$BRANCHES"
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Cleanup summary for \`$RELEASE_VERSION\`: $DELETED deleted, $SKIPPED skipped." >> $GITHUB_STEP_SUMMARY
+
   update-wiki:
     name: "Update the wiki for the next release"
     needs: get-last-released-version

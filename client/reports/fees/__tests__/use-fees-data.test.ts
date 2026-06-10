@@ -6,7 +6,7 @@ import { renderHook } from '@testing-library/react-hooks';
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/reports', () => ( {
 	useReportsFees: ( ...args: unknown[] ) => mockUseReportsFees( ...args ),
 	useReportsFeesSummary: ( ...args: unknown[] ) =>
 		mockUseReportsFeesSummary( ...args ),

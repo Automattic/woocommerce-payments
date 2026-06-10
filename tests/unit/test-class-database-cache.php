@@ -29,6 +29,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( self::MOCK_KEY );
+		delete_option( Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY );
 		delete_option( Database_Cache::ACCOUNT_KEY );
 		delete_option( Database_Cache::CURRENCIES_KEY );
 		delete_option( Database_Cache::TRACKING_INFO_KEY );
@@ -584,6 +585,59 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $old, $res );
 		$this->assertFalse( $refreshed );
 		$this->assert_cache_contains( $old );
+	}
+
+	public function test_address_autocomplete_errored_cache_expires_after_two_minutes() {
+		// An errored address autocomplete cache entry should expire after 2 minutes,
+		// allowing a quick retry rather than being stuck for 12 hours.
+		update_option(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			[
+				'data'    => null,
+				'fetched' => time() - 3 * MINUTE_IN_SECONDS,
+				'errored' => true,
+			],
+			'no'
+		);
+
+		$generator_called = false;
+		$this->database_cache->get_or_add(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			function () use ( &$generator_called ) {
+				$generator_called = true;
+				return 'new_token';
+			},
+			'__return_true'
+		);
+
+		$this->assertTrue( $generator_called, 'Generator should be called because the errored cache (2 min TTL) has expired.' );
+	}
+
+	public function test_address_autocomplete_success_cache_does_not_expire_after_two_minutes() {
+		// A successful address autocomplete cache entry should last 12 hours,
+		// not expire after just 2 minutes.
+		update_option(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			[
+				'data'    => 'valid_jwt_token',
+				'fetched' => time() - 3 * MINUTE_IN_SECONDS,
+				'errored' => false,
+			],
+			'no'
+		);
+
+		$generator_called = false;
+		$result           = $this->database_cache->get_or_add(
+			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+			function () use ( &$generator_called ) {
+				$generator_called = true;
+				return 'new_token';
+			},
+			'__return_true'
+		);
+
+		$this->assertFalse( $generator_called, 'Generator should NOT be called because the successful cache (12h TTL) has not expired.' );
+		$this->assertSame( 'valid_jwt_token', $result );
 	}
 
 	/**
