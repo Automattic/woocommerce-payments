@@ -1514,14 +1514,13 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// Update gateway option with the WooPay capability.
-		// WooPay and Link by Stripe are mutually exclusive. A live account's `woopay` capability
-		// auto-enables WooPay, but if the merchant has already opted into Link (e.g. while in sandbox)
-		// we honor that explicit choice and leave WooPay off. Otherwise the sandbox→live transition
-		// would silently override their selection and leave both active with neither toggle editable.
-		// See #9404.
-		$merchant_enabled_link = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $enabled_gateways, true );
-		if ( ! empty( $capabilities['woopay'] ) && ! $merchant_enabled_link ) {
+		// WooPay and Link by Stripe are mutually exclusive, so an account that can auto-enable WooPay
+		// must not do so while Link is enabled: that would leave both active with neither toggle
+		// editable, and silently discard a payment method the merchant deliberately turned on. Link is
+		// read from the merged list because it can be enabled either from existing settings or from this
+		// same capabilities payload. See #9404.
+		$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $enabled_payment_methods, true );
+		if ( ! empty( $capabilities['woopay'] ) && ! $is_link_enabled ) {
 			$gateway->update_is_woopay_enabled( true );
 		} elseif ( empty( $capabilities['woopay'] ) ) {
 			$gateway->update_is_woopay_enabled( false );

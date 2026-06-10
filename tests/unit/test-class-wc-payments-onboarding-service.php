@@ -996,6 +996,21 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
 	}
 
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_enabled_via_capabilities() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->never() )->method( 'update_is_woopay_enabled' );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids(
+			$mock_gateway,
+			[
+				'woopay' => true,
+				'link'   => true,
+			]
+		);
+	}
+
 	public function test_update_enabled_payment_methods_ids_enables_woopay_when_link_not_enabled() {
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
