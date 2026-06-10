@@ -15,32 +15,19 @@ import { applyFilters } from '@wordpress/hooks';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	shouldUseConfirmationTokens,
-	createPaymentCredential,
 	getExpressCheckoutData,
-	buildStripeElementsOptions,
 } from 'wcpay/express-checkout/utils';
-import { getSetupFutureUsageForCart } from 'wcpay/express-checkout/utils/subscriptions';
-import {
-	transformCartDataForDisplayItems,
-	transformPrice,
-} from 'wcpay/express-checkout/transformers/wc-to-stripe';
+import { transformPrice } from 'wcpay/express-checkout/transformers/wc-to-stripe';
 import ExpressCheckoutCartApi from 'wcpay/express-checkout/cart-api';
 // Side-effect import: registers the WC Subscriptions compatibility filters
 // (`total-amount`, `is-cart-eligible`, ...) used below.
 import 'wcpay/express-checkout/compatibility/wc-subscriptions';
-import {
-	appendPaymentMethodIdToForm,
-	appendConfirmationTokenToForm,
-	appendExpressPaymentTypeToForm,
-	appendFraudPreventionTokenInputToForm,
-} from 'wcpay/checkout/classic/upe-utils';
-import {
-	appendFingerprintInputToForm,
-	getFingerprint,
-} from 'wcpay/checkout/utils/fingerprint';
+import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
 import { getPaymentMethodsOverride } from 'wcpay/express-checkout/utils/payment-method-overrides';
 import { checkAllExpressMethodsAvailability } from 'wcpay/express-checkout/utils/checkPaymentMethodIsAvailable';
 import { snakeToCamel } from 'wcpay/express-checkout/constants';
+import { ExpressPaymentSession } from 'wcpay/express-checkout/session/express-payment-session';
+import { createClassicFormSink } from 'wcpay/express-checkout/session/sinks';
 import type WCPayAPI from 'wcpay/checkout/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -186,6 +173,26 @@ function showPaymentMethod( gatewayId: string ): void {
 }
 
 /**
+ * Renders an authorization error to the shopper, replacing any previous one and
+ * scrolling it into view - the classic checkout's notice convention.
+ */
+function showCheckoutError( message: string ): void {
+	const $notices = jQuery( '.woocommerce-notices-wrapper' ).first();
+	if ( ! $notices.length ) {
+		return;
+	}
+
+	$notices.find( '.woocommerce-error' ).remove();
+	$notices.append(
+		jQuery( '<div class="woocommerce-error" />' ).text( message )
+	);
+	jQuery( 'html, body' ).animate(
+		{ scrollTop: $notices.offset()!.top - 100 },
+		1000
+	);
+}
+
+/**
  * Registers a single express payment method with the WC Custom Place Order Button API.
  */
 function registerCustomPlaceOrderButton(
@@ -235,23 +242,26 @@ function registerCustomPlaceOrderButton(
 
 			try {
 				const stripe = ( await api.getStripe() ) as Stripe;
+
+				const session = new ExpressPaymentSession( {
+					method: camelKey,
+					expressPaymentType: paymentMethodId,
+					stripePaymentMethodType: stripePaymentMethodType ?? '',
+					amount: getEffectiveCartTotal(),
+					currency: currency!,
+					useConfirmationTokens,
+					isManualCapture: Boolean(
+						getExpressCheckoutData( 'is_manual_capture' )
+					),
+					cartData: cachedCartData,
+					storeName: getExpressCheckoutData( 'store_name' ) as
+						| string
+						| null,
+					needsPayerPhone: false,
+				} );
+
 				state.elements = stripe.elements(
-					buildStripeElementsOptions( {
-						amount: getEffectiveCartTotal(),
-						currency: currency!,
-						useConfirmationTokens,
-						paymentMethodTypes: stripePaymentMethodType
-							? [ stripePaymentMethodType ]
-							: [],
-						captureMethod: getExpressCheckoutData(
-							'is_manual_capture'
-						)
-							? 'manual'
-							: undefined,
-						setupFutureUsage: getSetupFutureUsageForCart(
-							cachedCartData ?? undefined
-						),
-					} )
+					session.getElementsOptions()
 				);
 
 				state.eceButton = state.elements.create( 'expressCheckout', {
@@ -288,83 +298,25 @@ function registerCustomPlaceOrderButton(
 						return;
 					}
 
-					// The checkout form owns address, shipping, and totals -
-					// the payment sheet only authorizes the payment, so no
-					// shipping address collection is needed here.
-					let lineItems;
-					try {
-						lineItems = cachedCartData
-							? transformCartDataForDisplayItems( cachedCartData )
-							: undefined;
-					} catch {
-						lineItems = undefined;
-					}
-
-					const storeName = getExpressCheckoutData( 'store_name' ) as
-						| string
-						| null;
-
-					event.resolve( {
-						...( storeName
-							? { business: { name: storeName } }
-							: {} ),
-						emailRequired: true,
-						phoneNumberRequired: false,
-						shippingAddressRequired: false,
-						lineItems,
-					} );
+					event.resolve( session.buildClickResolution() );
 				} );
 
 				state.eceButton.on( 'confirm', async () => {
+					const sink = createClassicFormSink( {
+						$form: jQuery( 'form.checkout' ),
+						fingerprint,
+						onSubmit: () => wcApi.submit(),
+						onError: showCheckoutError,
+					} );
+
 					try {
-						const { error: submitError } =
-							await state.elements!.submit();
-						if ( submitError ) {
-							throw new Error( submitError.message );
-						}
-
-						const $form = jQuery( 'form.checkout' );
-
-						const credential = await createPaymentCredential(
+						const result = await session.confirm(
 							stripe,
-							state.elements!,
-							useConfirmationTokens
+							state.elements!
 						);
-
-						if ( credential.type === 'confirmation_token' ) {
-							appendConfirmationTokenToForm(
-								$form,
-								credential.id
-							);
-						} else {
-							appendPaymentMethodIdToForm( $form, credential.id );
-						}
-
-						appendExpressPaymentTypeToForm(
-							$form,
-							paymentMethodId
-						);
-						appendFingerprintInputToForm( $form, fingerprint );
-						appendFraudPreventionTokenInputToForm( $form );
-						wcApi.submit();
+						sink.success( result );
 					} catch ( error ) {
-						const $notices = jQuery(
-							'.woocommerce-notices-wrapper'
-						).first();
-						if ( $notices.length ) {
-							$notices.find( '.woocommerce-error' ).remove();
-							$notices.append(
-								jQuery(
-									'<div class="woocommerce-error" />'
-								).text( ( error as Error ).message )
-							);
-							jQuery( 'html, body' ).animate(
-								{
-									scrollTop: $notices.offset()!.top - 100,
-								},
-								1000
-							);
-						}
+						sink.error( ( error as Error ).message );
 					}
 				} );
 

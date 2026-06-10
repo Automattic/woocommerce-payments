@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Refactor dynamic place order buttons onto a shared ExpressPaymentSession and payment-result sinks.

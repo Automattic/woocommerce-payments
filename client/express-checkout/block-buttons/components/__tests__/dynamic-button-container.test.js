@@ -234,7 +234,7 @@ describe( 'DynamicButtonContainer', () => {
 			);
 		} );
 
-		it( 'returns an error marker when credential creation fails', async () => {
+		it( 'returns an error response when credential creation fails', async () => {
 			createPaymentCredential.mockRejectedValue(
 				new Error( 'declined' )
 			);
@@ -244,13 +244,8 @@ describe( 'DynamicButtonContainer', () => {
 			const result = await getRegisteredPaymentSetupCallback( props )();
 
 			expect( result ).toEqual( {
-				type: 'success',
-				meta: {
-					paymentMethodData: {
-						payment_method: 'woocommerce_payments_google_pay',
-						'wcpay-payment-method': 'error',
-					},
-				},
+				type: 'error',
+				message: 'declined',
 			} );
 		} );
 

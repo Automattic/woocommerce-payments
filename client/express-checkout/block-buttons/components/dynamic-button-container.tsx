@@ -8,7 +8,7 @@ import {
 	useStripe,
 	useElements,
 } from '@stripe/react-stripe-js';
-import { select, useSelect } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
 
 /**
@@ -18,24 +18,13 @@ import {
 	getExpressCheckoutData,
 	getPaymentMethodsOverride,
 	shouldUseConfirmationTokens,
-	createPaymentCredential,
-	buildStripeElementsOptions,
 } from '../../utils';
 import type { AvailablePaymentMethods } from '@stripe/stripe-js';
-import {
-	transformCartDataForDisplayItems,
-	transformPrice,
-} from '../../transformers/wc-to-stripe';
-import { getSetupFutureUsageForCart } from '../../utils/subscriptions';
-import { validateElements } from 'wcpay/checkout/utils/validate-elements';
+import { transformPrice } from '../../transformers/wc-to-stripe';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
+import { ExpressPaymentSession } from 'wcpay/express-checkout/session/express-payment-session';
+import { createBlocksMetaSink } from 'wcpay/express-checkout/session/sinks';
 import type WCPayAPI from 'wcpay/checkout/api';
-
-declare global {
-	interface Window {
-		wcpayFraudPreventionToken?: string;
-	}
-}
 
 interface CartTotalItem {
 	key: string;
@@ -68,47 +57,43 @@ interface DynamicButtonContainerProps {
 	isEditor?: boolean;
 }
 
+interface DynamicButtonProps {
+	session: ExpressPaymentSession;
+	expressPaymentMethod: keyof AvailablePaymentMethods;
+	gatewayId: string;
+	validate: () => Promise< { hasError: boolean } >;
+	onSubmit: () => void;
+	eventRegistration: DynamicButtonContainerProps[ 'eventRegistration' ];
+	emitResponse: DynamicButtonContainerProps[ 'emitResponse' ];
+}
+
 /**
  * Inner component that has access to Stripe and Elements via hooks.
  * Renders the ExpressCheckoutElement and handles payment setup.
  */
 const DynamicButton = ( {
+	session,
 	expressPaymentMethod,
-	expressPaymentType,
-	stripePaymentMethodType,
 	gatewayId,
 	validate,
 	onSubmit,
 	eventRegistration: { onPaymentSetup },
 	emitResponse: { responseTypes },
-}: Omit< DynamicButtonContainerProps, 'api' | 'isEditor' > ) => {
+}: DynamicButtonProps ) => {
 	const stripe = useStripe();
 	const elements = useElements();
 
-	const useConfirmationTokens = shouldUseConfirmationTokens();
-
 	const handleClick = useCallback(
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		async ( event: any ) => {
 			const { hasError } = await validate();
 			if ( hasError ) {
 				return;
 			}
 
-			const cartData = ( select( WC_STORE_CART ) as any )?.getCartData();
-			const lineItems = transformCartDataForDisplayItems( cartData );
-
-			event.resolve( {
-				business: {
-					name: ( getExpressCheckoutData as any )( 'store_name' ),
-				},
-				lineItems,
-				emailRequired: true,
-				phoneNumberRequired:
-					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
-					false,
-			} );
+			event.resolve( session.buildClickResolution() );
 		},
-		[ validate ]
+		[ validate, session ]
 	);
 
 	const handleConfirm = useCallback( () => {
@@ -116,67 +101,25 @@ const DynamicButton = ( {
 	}, [ onSubmit ] );
 
 	useEffect( () => {
+		const sink = createBlocksMetaSink( { gatewayId, responseTypes } );
+
 		const unsubscribe = onPaymentSetup( async () => {
 			try {
-				await validateElements( elements! );
+				const result = await session.confirm( stripe!, elements! );
+				return sink.success( result );
 			} catch ( e ) {
-				return {
-					type: responseTypes.ERROR,
-					message: ( e as Error ).message,
-				};
+				return sink.error( ( e as Error ).message );
 			}
-
-			let credential;
-			try {
-				credential = await createPaymentCredential(
-					stripe!,
-					elements!,
-					useConfirmationTokens
-				);
-			} catch {
-				return {
-					type: responseTypes.SUCCESS,
-					meta: {
-						paymentMethodData: {
-							payment_method: gatewayId,
-							'wcpay-payment-method': 'error',
-						},
-					},
-				};
-			}
-
-			const credentialKey =
-				credential.type === 'confirmation_token'
-					? 'wcpay-confirmation-token'
-					: 'wcpay-payment-method';
-
-			return {
-				type: responseTypes.SUCCESS,
-				meta: {
-					paymentMethodData: {
-						payment_method: gatewayId,
-						[ credentialKey ]: credential.id,
-						express_payment_type: expressPaymentType,
-						'wcpay-express-payment-method-types': JSON.stringify( [
-							stripePaymentMethodType,
-						] ),
-						'wcpay-fraud-prevention-token':
-							window.wcpayFraudPreventionToken ?? '',
-					},
-				},
-			};
 		} );
 
 		return unsubscribe;
 	}, [
+		session,
 		stripe,
 		elements,
 		onPaymentSetup,
-		useConfirmationTokens,
 		responseTypes,
 		gatewayId,
-		expressPaymentType,
-		stripePaymentMethodType,
 	] );
 
 	const expressCheckoutOptions = useMemo(
@@ -200,20 +143,19 @@ const DynamicButton = ( {
  * and renders the DynamicButton inside it.
  */
 const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
-	const { api, billing, stripePaymentMethodType, isEditor } = props;
-
-	const useConfirmationTokens = shouldUseConfirmationTokens();
-	const isManualCaptureEnabled =
-		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
+	const {
+		api,
+		billing,
+		expressPaymentMethod,
+		expressPaymentType,
+		stripePaymentMethodType,
+		gatewayId,
+		isEditor,
+	} = props;
 
 	const stripePromise = useMemo( () => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
-
-	const paymentMethodTypes = useMemo(
-		() => [ stripePaymentMethodType ],
-		[ stripePaymentMethodType ]
-	);
 
 	const cartData = useSelect(
 		( selectCart ) => ( selectCart( WC_STORE_CART ) as any )?.getCartData(),
@@ -229,24 +171,38 @@ const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
 		cartData
 	) as number;
 
-	const elementsOptions = useMemo(
+	const session = useMemo(
 		() =>
-			buildStripeElementsOptions( {
+			new ExpressPaymentSession( {
+				method: expressPaymentMethod,
+				expressPaymentType,
+				stripePaymentMethodType,
 				amount,
 				currency: billing.currency.code,
-				useConfirmationTokens,
-				paymentMethodTypes,
-				captureMethod: isManualCaptureEnabled ? 'manual' : undefined,
-				setupFutureUsage: getSetupFutureUsageForCart( cartData ),
+				useConfirmationTokens: shouldUseConfirmationTokens(),
+				isManualCapture:
+					getExpressCheckoutData( 'is_manual_capture' ) ?? false,
+				cartData,
+				storeName: getExpressCheckoutData( 'store_name' ) as
+					| string
+					| null,
+				needsPayerPhone:
+					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
+					false,
 			} ),
 		[
+			expressPaymentMethod,
+			expressPaymentType,
+			stripePaymentMethodType,
 			amount,
 			billing.currency.code,
-			useConfirmationTokens,
-			paymentMethodTypes,
-			isManualCaptureEnabled,
 			cartData,
 		]
+	);
+
+	const elementsOptions = useMemo(
+		() => session.getElementsOptions(),
+		[ session ]
 	);
 
 	if ( isEditor ) {
@@ -255,7 +211,15 @@ const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
 
 	return (
 		<Elements stripe={ stripePromise } options={ elementsOptions }>
-			<DynamicButton { ...props } />
+			<DynamicButton
+				session={ session }
+				expressPaymentMethod={ expressPaymentMethod }
+				gatewayId={ gatewayId }
+				validate={ props.validate }
+				onSubmit={ props.onSubmit }
+				eventRegistration={ props.eventRegistration }
+				emitResponse={ props.emitResponse }
+			/>
 		</Elements>
 	);
 };
