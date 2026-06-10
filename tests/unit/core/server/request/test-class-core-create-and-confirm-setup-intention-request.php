@@ -113,8 +113,7 @@ class Create_And_Confirm_Setup_Intention_Test extends WCPAY_UnitTestCase {
 		$request->set_customer( 'cus_1' );
 		$request->set_payment_method( 'pm_1' );
 
-		// The setup-intent flow never calls set_metadata() first, so this used to throw
-		// "The passed key metadata does not exist in Request class".
+		// set_fingerprint() must work without a prior set_metadata() call.
 		$request->set_fingerprint( 'visitor-fingerprint' );
 
 		$params = $request->get_params();
