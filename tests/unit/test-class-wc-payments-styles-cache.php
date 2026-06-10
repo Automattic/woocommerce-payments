@@ -282,6 +282,35 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * The flip side of determinism: the version MUST change when a theme/style
+	 * input changes, otherwise a stale appearance would be served after a
+	 * Customizer edit. Guards against a future refactor dropping an input (e.g.
+	 * get_theme_mods()) from the hash, which the determinism test alone would
+	 * not catch.
+	 */
+	public function test_compute_styles_cache_version_changes_when_theme_mod_changes() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_styles_cache_version' );
+		$method->setAccessible( true );
+
+		$before = $method->invoke( null );
+
+		// Simulate a Customizer change (classic themes store these as theme mods).
+		set_theme_mod( 'wcpay_test_mod', 'changed' );
+
+		try {
+			$after = $method->invoke( null );
+
+			$this->assertNotSame(
+				$before,
+				$after,
+				'compute_styles_cache_version() must change when a theme mod changes.'
+			);
+		} finally {
+			remove_theme_mod( 'wcpay_test_mod' );
+		}
+	}
+
+	/**
 	 * Mirrors the production failure: a stored (classic-theme) WooPay appearance
 	 * must survive the version recompute that happens on a later request when the
 	 * version option has been invalidated but nothing about the theme changed.
