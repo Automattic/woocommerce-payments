@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add per-method E2E coverage for order visibility and refunds (Bancontact, Alipay, Affirm, Afterpay)
