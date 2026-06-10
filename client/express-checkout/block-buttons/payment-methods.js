@@ -60,12 +60,17 @@ const previewComponents = {
 
 export const makeExpressCheckoutElement = ( api, methodKey ) => {
 	const snakeKey = camelToSnake( methodKey );
+	// `expressCheckoutMethodsConfig` (unlike `paymentMethodsConfig`) is provided by the
+	// server in both modes, not just when the "in payment methods" setting is enabled.
 	const serverConfig =
-		getUPEConfig( 'paymentMethodsConfig' )?.[ snakeKey ] ?? {};
+		getUPEConfig( 'expressCheckoutMethodsConfig' )?.[ snakeKey ] ?? {};
 	const Preview = previewComponents[ methodKey ];
 	return {
 		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-		name: serverConfig.gatewayId,
+		// The registry name is deliberately different from the method's gateway ID:
+		// these registrations represent the standalone express buttons, not the
+		// payment-method-list entries.
+		name: `${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ methodKey }`,
 		title: serverConfig.title,
 		description: serverConfig.description,
 		gatewayId: 'woocommerce_payments',
@@ -101,7 +106,7 @@ const EmptyContent = () => null;
 export const makeDynamicPlaceOrderButton = ( api, methodKey ) => {
 	const snakeKey = camelToSnake( methodKey );
 	const serverConfig =
-		getUPEConfig( 'paymentMethodsConfig' )?.[ snakeKey ] ?? {};
+		getUPEConfig( 'expressCheckoutMethodsConfig' )?.[ snakeKey ] ?? {};
 	const Preview = previewComponents[ methodKey ];
 
 	return {

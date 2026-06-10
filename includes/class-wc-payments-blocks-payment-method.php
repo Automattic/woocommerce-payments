@@ -76,7 +76,28 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
-		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
+		$handles = [ 'WCPAY_BLOCKS_CHECKOUT' ];
+
+		// The express checkout methods (Apple Pay, Google Pay, Amazon Pay) register with the
+		// WC Blocks registry, and the checkout block only reads the registry as it mounts.
+		// Returning the script among the payment method handles makes WC Blocks print it
+		// before the checkout block's frontend script; enqueueing it on `wp_enqueue_scripts`
+		// alone would print it after the block has already mounted, and the express methods
+		// would never appear.
+		if ( $this->should_load_express_checkout_script() ) {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_BLOCKS_EXPRESS_CHECKOUT',
+				'dist/blocks-express-checkout',
+				[
+					'WCPAY_BLOCKS_CHECKOUT',
+				]
+			);
+			wp_set_script_translations( 'WCPAY_BLOCKS_EXPRESS_CHECKOUT', 'woocommerce-payments' );
+
+			$handles[] = 'WCPAY_BLOCKS_EXPRESS_CHECKOUT';
+		}
+
+		return $handles;
 	}
 
 	/**
@@ -104,5 +125,21 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			$woopay_config,
 			$this->wc_payments_checkout->get_payment_fields_js_config()
 		);
+	}
+
+	/**
+	 * Whether the blocks express checkout script (which registers Apple Pay, Google Pay,
+	 * and Amazon Pay with the WC Blocks registry) should load alongside the checkout script.
+	 *
+	 * @return bool
+	 */
+	private function should_load_express_checkout_script() {
+		// In the block editor, the script provides the express methods' previews.
+		if ( is_admin() ) {
+			return true;
+		}
+
+		return WC_Payments::get_express_checkout_helper()->should_show_express_checkout_button()
+			|| $this->gateway->is_express_checkout_in_payment_methods_enabled();
 	}
 }

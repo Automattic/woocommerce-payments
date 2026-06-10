@@ -11,7 +11,7 @@ jest.mock( '../../utils/checkPaymentMethodIsAvailable', () => ( {
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn().mockReturnValue( [] ),
 	getUPEConfig: jest.fn( ( key ) => {
-		if ( key === 'paymentMethodsConfig' ) {
+		if ( key === 'expressCheckoutMethodsConfig' ) {
 			return {
 				apple_pay: {
 					isExpressCheckout: true,
