@@ -34,13 +34,27 @@ const api = new WCPayAPI(
 	request
 );
 
-if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
+if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
+	// `paymentMethodsConfig` is the server's source of truth for which methods belong in
+	// the payment methods list - the same gating the shortcode checkout rows use. The
+	// `isPaymentRequestEnabled`/`isAmazonPayEnabled` flags describe the standalone express
+	// buttons instead (e.g. Amazon Pay's flag carries the wallet-sheet tax restriction,
+	// which doesn't apply when the checkout form computes the totals).
+	if ( enabledPaymentMethodsConfig?.apple_pay ) {
 		registerPaymentMethod( makeDynamicPlaceOrderButton( api, 'applePay' ) );
+	}
+	if ( enabledPaymentMethodsConfig?.google_pay ) {
 		registerPaymentMethod(
 			makeDynamicPlaceOrderButton( api, 'googlePay' )
 		);
-	} else {
+	}
+	if ( enabledPaymentMethodsConfig?.amazon_pay ) {
+		registerPaymentMethod(
+			makeDynamicPlaceOrderButton( api, 'amazonPay' )
+		);
+	}
+} else {
+	if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 		registerExpressPaymentMethod(
 			makeExpressCheckoutElement( api, 'applePay' )
 		);
@@ -48,14 +62,8 @@ if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 			makeExpressCheckoutElement( api, 'googlePay' )
 		);
 	}
-}
 
-if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
-	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
-		registerPaymentMethod(
-			makeDynamicPlaceOrderButton( api, 'amazonPay' )
-		);
-	} else {
+	if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
 		registerExpressPaymentMethod(
 			makeExpressCheckoutElement( api, 'amazonPay' )
 		);

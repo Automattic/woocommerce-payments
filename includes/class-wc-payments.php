@@ -1635,6 +1635,13 @@ class WC_Payments {
 	 * at priority 10. It does not affect subscription admin pages, AJAX, or frontend.
 	 */
 	public static function disable_express_checkout_in_block_editor() {
+		// When the express methods render in the payment methods list instead, their JS
+		// registrations use the gateway IDs, so the editor can match them to the gateways:
+		// they should stay enabled to appear in the sidebar's payment options.
+		if ( self::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return;
+		}
+
 		foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
 			if ( ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
 				continue;
