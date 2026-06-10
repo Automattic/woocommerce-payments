@@ -49,7 +49,6 @@
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8438 is closed. -->
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.elseFound" />
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.classFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound" />
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.returnFound" />
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound" />
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound" />
