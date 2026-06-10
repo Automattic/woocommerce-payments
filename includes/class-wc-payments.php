@@ -597,6 +597,7 @@ class WC_Payments {
 
 		// Initialise hooks.
 		self::$order_service->init_hooks();
+		self::$order_success_page->init_hooks();
 		self::$action_scheduler_service->init_hooks();
 		self::$account->init_hooks();
 		self::$fraud_service->init_hooks();
