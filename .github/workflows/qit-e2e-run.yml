@@ -50,7 +50,7 @@ jobs:
           name: ${{ inputs.artifact-name }}
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           php-version: ${{ inputs.php-version }}
           tools: composer
