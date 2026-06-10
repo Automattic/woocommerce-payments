@@ -8,6 +8,11 @@ import { expect, Page } from '@playwright/test';
  */
 import { goToOrder, goToPaymentDetails } from './merchant';
 
+// orderAmount carries its currency symbol (e.g. "$10.00" or "€10.00"), and "$",
+// "." etc. are regex metacharacters, so escape it before embedding in a RegExp.
+const escapeRegExp = ( value: string ): string =>
+	value.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+
 interface RefundOptions {
 	orderAmount: string;
 	reason?: string;
@@ -40,11 +45,12 @@ export const submitFullRefund = async (
 	await expect(
 		page.getByRole( 'cell', { name: `-${ orderAmount }` } )
 	).toHaveCount( 2 );
-	// Optional currency-code suffix (e.g. " USD") is rendered in some environments.
+	// Match the actual refunded amount (any currency); QIT also renders an
+	// optional currency-code suffix (e.g. " USD", " EUR").
 	await expect(
 		page.getByText(
 			new RegExp(
-				`A refund of \\$\\d+\\.\\d{2}(?: USD)? was successfully processed using WooPayments\\. Reason: ${ reason }`
+				`A refund of ${ escapeRegExp( orderAmount ) }(?: [A-Z]{3})? was successfully processed using WooPayments\\. Reason: ${ reason }`
 			)
 		)
 	).toBeVisible();
@@ -88,11 +94,12 @@ export const verifyOrderAndRefund = async (
 	await submitFullRefund( page, { orderAmount, reason } );
 
 	await goToPaymentDetails( page, paymentIntentId );
-	// Optional currency-code suffix (e.g. " USD") is rendered in some environments.
+	// Match the actual refunded amount (any currency); QIT also renders an
+	// optional currency-code suffix (e.g. " USD", " EUR").
 	await expect(
 		page.getByText(
 			new RegExp(
-				`A payment of \\$\\d+\\.\\d{2}(?: USD)? was successfully refunded\\.`
+				`A payment of ${ escapeRegExp( orderAmount ) }(?: [A-Z]{3})? was successfully refunded\\.`
 			)
 		)
 	).toBeVisible();
