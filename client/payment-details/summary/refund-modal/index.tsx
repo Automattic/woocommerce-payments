@@ -17,6 +17,7 @@ import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import { Charge } from 'wcpay/types/charges';
 import { usePaymentIntentWithChargeFallback } from 'wcpay/data/payment-intents';
 import { PaymentChargeDetailsResponse } from 'wcpay/payment-details/types';
+import { isAwaitingResponse, isInquiry } from 'wcpay/disputes/utils';
 import { recordEvent } from 'tracks';
 
 interface RefundModalProps {
@@ -45,6 +46,14 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 		charge.payment_intent as string
 	) as PaymentChargeDetailsResponse;
 
+	// Refunding a charge that still has an open inquiry resolves the inquiry,
+	// so we surface that context and keep the inquiry-specific tracking.
+	const dispute = charge.dispute;
+	const isOpenInquiry =
+		!! dispute &&
+		isInquiry( dispute.status ) &&
+		isAwaitingResponse( dispute.status );
+
 	const handleModalCancel = () => {
 		onModalClose();
 	};
@@ -53,6 +62,16 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 		recordEvent( 'payments_transactions_details_refund_full', {
 			payment_intent_id: charge.payment_intent,
 		} );
+
+		if ( isOpenInquiry && dispute ) {
+			recordEvent( 'wcpay_dispute_inquiry_refund_click', {
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			} );
+		}
+
 		setIsRefundInProgress( true );
 		await doRefund( charge, reason === 'other' ? null : reason );
 		setIsRefundInProgress( false );
@@ -85,6 +104,14 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 			}
 			onRequestClose={ handleModalCancel }
 		>
+			{ isOpenInquiry && (
+				<p>
+					{ __(
+						'Issuing a refund will close the inquiry, returning the amount in question back to the cardholder. No additional fees apply.',
+						'woocommerce-payments'
+					) }
+				</p>
+			) }
 			<p>
 				{ interpolateComponents( {
 					mixedString: sprintf(

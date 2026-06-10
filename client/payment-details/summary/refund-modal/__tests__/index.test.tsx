@@ -4,7 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -13,10 +14,21 @@ import { Charge } from 'wcpay/types/charges';
 import RefundModal from '..';
 import { usePaymentIntentWithChargeFallback } from 'wcpay/data/payment-intents';
 import { ApiError } from 'wcpay/types/errors';
+import { recordEvent } from 'tracks';
 
 jest.mock( 'wcpay/data/payment-intents', () => ( {
 	usePaymentIntentWithChargeFallback: jest.fn(),
 } ) );
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const getOpenInquiryDispute = (): any => ( {
+	id: 'dp_inquiry_1',
+	status: 'warning_needs_response',
+	reason: 'fraudulent',
+} );
 
 const mockUsePaymentIntentWithChargeFallback =
 	usePaymentIntentWithChargeFallback as jest.MockedFunction<
@@ -73,6 +85,7 @@ const getMockCharge = (): any => ( {
 
 describe( 'RefundModal', () => {
 	beforeEach( () => {
+		jest.clearAllMocks();
 		mockUsePaymentIntentWithChargeFallback.mockReturnValue( {
 			doRefund: jest.fn(),
 			data: getMockCharge(),
@@ -124,5 +137,65 @@ describe( 'RefundModal', () => {
 		expect(
 			screen.queryByRole( 'link', { name: /Go to the order/i } )
 		).not.toBeInTheDocument();
+	} );
+
+	test( 'explains the inquiry will be closed when the charge has an open inquiry', () => {
+		const charge = { ...getMockCharge(), dispute: getOpenInquiryDispute() };
+
+		render(
+			<RefundModal
+				charge={ charge as Charge }
+				formattedAmount={ 'USD 15' }
+				onModalClose={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.getByText( /Issuing a refund will close the inquiry/i )
+		).toBeInTheDocument();
+	} );
+
+	test( 'does not mention the inquiry for a charge without an open inquiry', () => {
+		render(
+			<RefundModal
+				charge={ getMockCharge() as Charge }
+				formattedAmount={ 'USD 15' }
+				onModalClose={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.queryByText( /Issuing a refund will close the inquiry/i )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'fires the inquiry refund tracks event when refunding an open inquiry', async () => {
+		const dispute = getOpenInquiryDispute();
+		const charge = { ...getMockCharge(), dispute };
+
+		render(
+			<RefundModal
+				charge={ charge as Charge }
+				formattedAmount={ 'USD 15' }
+				onModalClose={ jest.fn() }
+			/>
+		);
+
+		// Wrap in act so the refund promise and its trailing state updates flush.
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /Refund transaction/i } )
+			);
+		} );
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_inquiry_refund_click',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
 	} );
 } );
