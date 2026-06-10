@@ -5,7 +5,7 @@
  */
 import React, { useContext, useEffect, useId, useRef } from 'react';
 import { Button } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { calendar } from '@wordpress/icons';
 import { recordEvent } from 'tracks';
@@ -109,16 +109,7 @@ const BalancePrintReport = ( {
 						<p>{ reportIdentity.businessName }</p>
 					) }
 					{ reportIdentity.accountId && (
-						<p>
-							{ sprintf(
-								/* translators: %s: WooPayments account ID. */
-								__(
-									'WooPayments account ID: %s',
-									'woocommerce-payments'
-								),
-								reportIdentity.accountId
-							) }
-						</p>
+						<p>{ reportIdentity.accountId }</p>
 					) }
 					{ woopaymentsBusinessDetails.map( ( line ) => (
 						<p key={ line }>{ line }</p>

@@ -923,8 +923,9 @@ describe( 'BalanceReport', () => {
 			printReport.querySelector( 'img[alt="WooPayments"]' )
 		).toBeInTheDocument();
 		expect( printReport ).toHaveTextContent( 'Aperture Science LLC' );
-		expect( printReport ).toHaveTextContent(
-			'WooPayments account ID: acct_wcpay_123'
+		expect( printReport ).toHaveTextContent( 'acct_wcpay_123' );
+		expect( printReport ).not.toHaveTextContent(
+			'WooPayments account ID:'
 		);
 		expect( printReport ).toHaveTextContent( 'Automattic Inc.' );
 		expect( printReport ).toHaveTextContent( '60 29th Street #343' );
@@ -974,7 +975,7 @@ describe( 'BalanceReport', () => {
 				getPrintBusinessLines( getPrintReport( container ) )
 			).toEqual( [
 				'Aperture Store',
-				'WooPayments account ID: acct_wcpay_123',
+				'acct_wcpay_123',
 				...legalPrintBusinessDetails,
 			] );
 		} );
