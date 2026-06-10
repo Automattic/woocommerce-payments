@@ -86,17 +86,16 @@ export const verifyOrderAndRefund = async (
 	await expect( paymentIntentLink ).toBeVisible();
 	const paymentIntentId = await paymentIntentLink.innerText();
 
-	// Transactions: the payment-details page loads and shows the charge amount.
+	// Refund on this freshly-loaded order page, before navigating anywhere else:
+	// loading another page and returning invalidates the order's refund nonce,
+	// which makes the refund request fail.
+	await submitFullRefund( page, { reason } );
+
+	// Transactions: the payment-details page shows the charge and the refund.
 	await goToPaymentDetails( page, paymentIntentId );
 	await expect(
 		page.locator( '.payment-details-summary__amount' )
 	).toBeVisible();
-
-	// Refund from the order, then confirm the refunded timeline on the details page.
-	await goToOrder( page, orderId );
-	await submitFullRefund( page, { reason } );
-
-	await goToPaymentDetails( page, paymentIntentId );
 	await expect(
 		page.getByText( /A payment of .+ was successfully refunded\./ )
 	).toBeVisible();
