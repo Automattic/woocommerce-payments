@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Retry transient network operations (Docker image pulls, wordpress.org plugin/theme installs) in the E2E environment setup script.
