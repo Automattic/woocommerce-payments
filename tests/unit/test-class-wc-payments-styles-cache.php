@@ -416,6 +416,29 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Two clears in quick succession (even within the same wall-clock second)
+	 * must each produce a new version. A time()-based salt would collide on a
+	 * sub-second double "Clear" and silently no-op the second one; the uuid-based
+	 * salt guarantees every clear changes the version.
+	 */
+	public function test_consecutive_busts_each_change_the_version() {
+		delete_option( 'wcpay_styles_cache_salt' );
+		delete_option( 'wcpay_styles_cache_version' );
+
+		WC_Payments_Styles_Cache::bust_styles_cache();
+		$after_first = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		WC_Payments_Styles_Cache::bust_styles_cache();
+		$after_second = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		$this->assertNotSame(
+			$after_first,
+			$after_second,
+			'Each clear must change the version, even two clears within the same second.'
+		);
+	}
+
+	/**
 	 * Routine auto-invalidation (theme/style hooks) must NOT bump the salt — only
 	 * the deliberate manual clear does. invalidate_styles_cache_version() is
 	 * called by handle_theme_change() on every theme/style save, so if it changed

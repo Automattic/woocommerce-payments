@@ -88,7 +88,10 @@ class WC_Payments_Styles_Cache {
 	 * WooPay slot survives recompute; only this deliberate clear changes the salt.
 	 */
 	public static function bust_styles_cache(): void {
-		update_option( self::OPTION_STYLES_CACHE_SALT, (string) time(), false );
+		// wp_generate_uuid4() (not time()) so two clears within the same second
+		// still produce different salts — otherwise a sub-second double "Clear"
+		// would be a no-op, contradicting this method's guarantee.
+		update_option( self::OPTION_STYLES_CACHE_SALT, wp_generate_uuid4(), false );
 		self::invalidate_styles_cache_version();
 	}
 
