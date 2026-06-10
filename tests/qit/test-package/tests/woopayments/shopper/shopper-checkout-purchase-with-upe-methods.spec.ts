@@ -41,7 +41,13 @@ const checkoutWithBancontact = async (
 		.click();
 	await expect( page.getByText( 'Order received' ).first() ).toBeVisible();
 
-	return page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+	const orderId = page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ];
+	if ( ! orderId ) {
+		throw new Error(
+			`Expected an order-received URL with an order ID, got: ${ page.url() }`
+		);
+	}
+	return orderId;
 };
 
 test.describe(

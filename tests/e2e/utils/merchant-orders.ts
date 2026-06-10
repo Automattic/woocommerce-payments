@@ -69,12 +69,13 @@ export const submitFullRefund = async (
 
 /**
  * Verifies a placed order is visible to the merchant and can be fully refunded:
- * opens the order (Orders page), confirms the linked transaction is visible on
- * the WooPayments payment-details page, submits a full refund, then asserts the
- * refunded timeline on the payment-details page.
+ * opens the order (Orders page), fully refunds it there (asserting the refund
+ * note and Refunded status via submitFullRefund), then confirms the order's
+ * transaction is visible on the WooPayments payment-details page.
  *
  * "Transactions" is asserted via the per-transaction payment-details page only,
- * not the (async-synced, flaky) Transactions list.
+ * not the (async-synced, flaky) Transactions list. The refund timeline on that
+ * page is not asserted because async methods settle after the test runs.
  */
 export const verifyOrderAndRefund = async (
 	page: Page,
