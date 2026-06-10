@@ -254,6 +254,75 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertMatchesRegularExpression( '/^[a-f0-9]{32}$/', $second_version );
 	}
 
+	/**
+	 * The cache version must be a pure content hash: recomputing it without any
+	 * theme/style change must yield the same value. A non-deterministic version
+	 * (e.g. one that mixes in time()) orphans the stored WooPay appearance — for
+	 * classic themes that have no server-side recompute fallback, this leaves
+	 * WooPay permanently unthemed. Regression test for the time() leftover.
+	 */
+	public function test_compute_styles_cache_version_is_deterministic() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_styles_cache_version' );
+		$method->setAccessible( true );
+
+		$first = $method->invoke( null );
+
+		// Cross a wall-clock second boundary so a time()-dependent hash would
+		// change. The sleep makes the test deterministic (it always crosses the
+		// boundary) rather than flaky. A pure content hash is unaffected.
+		sleep( 1 );
+
+		$second = $method->invoke( null );
+
+		$this->assertSame(
+			$first,
+			$second,
+			'compute_styles_cache_version() must be deterministic when nothing changed (no time() component).'
+		);
+	}
+
+	/**
+	 * Mirrors the production failure: a stored (classic-theme) WooPay appearance
+	 * must survive the version recompute that happens on a later request when the
+	 * version option has been invalidated but nothing about the theme changed.
+	 */
+	public function test_stored_woopay_appearance_survives_version_recompute() {
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute
+		// from theme.json — exercises the classic-theme persisted-slot path.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
+
+		try {
+			delete_option( 'wcpay_woopay_checkout_appearance' );
+			delete_option( 'wcpay_styles_cache_version' );
+
+			$appearance = [
+				'theme' => 'stripe',
+				'rules' => [ '.Input' => [ 'color' => '#333' ] ],
+			];
+
+			// Shopper write stamps the appearance with the current version.
+			WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
+
+			// Simulate the next request: the version option is gone, so reading it
+			// forces a fresh recompute. Cross a second boundary so a time()-based
+			// version would change. With a deterministic version this still matches
+			// the stored stamp; with time() it would orphan the appearance.
+			delete_option( 'wcpay_styles_cache_version' );
+			sleep( 1 );
+
+			$this->assertEquals(
+				$appearance,
+				WC_Payments_Styles_Cache::get_woopay_appearance(),
+				'Stored WooPay appearance was orphaned by a non-deterministic cache version.'
+			);
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
+	}
+
 	public function test_set_woopay_appearance_stores_font_rules() {
 		delete_option( 'wcpay_woopay_checkout_appearance' );
 		delete_option( 'wcpay_styles_cache_version' );
