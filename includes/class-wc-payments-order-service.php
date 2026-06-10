@@ -1770,7 +1770,7 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -1798,7 +1798,7 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -1833,7 +1833,7 @@ class WC_Payments_Order_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: timestamp */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A terminal payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>)', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -1866,7 +1866,7 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s was <strong>authorized</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -1921,7 +1921,7 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s was <strong>successfully captured</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -1950,7 +1950,7 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A capture of %1$s <strong>failed</strong> to complete using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -1983,7 +1983,7 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				/* translators: %1: transaction ID of the payment, %2: transaction details URL */
 				__( 'Payment authorization has <strong>expired</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -2008,7 +2008,7 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: transaction ID of the payment */
+				/* translators: %1: transaction ID of the payment, %2: transaction details URL */
 				__( 'Payment authorization was successfully <strong>cancelled</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
@@ -2041,7 +2041,7 @@ class WC_Payments_Order_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				/* translators: %1: the amount held for review, %2: transaction details URL */
 				__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
 				[
 					'&#x26D4;' => '&#x26D4;',
@@ -2076,7 +2076,7 @@ class WC_Payments_Order_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
+				/* translators: %1: the blocked amount, %2: transaction details URL */
 				__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
 				[
 					'&#x1F6AB;' => '&#x1F6AB;',
