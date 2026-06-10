@@ -46,7 +46,7 @@ export const transformPrice = ( price, priceObject ) => {
  * - https://docs.stripe.com/js/elements_object/express_checkout_element_shippingratechange_event
  *
  * @param {Object} rawCartData Store API Cart response object.
- * @return {{pending: boolean, name: string, amount: integer}} `displayItems` for Stripe.
+ * @return {Array<{name: string, amount: number}>} `displayItems` for Stripe.
  */
 export const transformCartDataForDisplayItems = ( rawCartData ) => {
 	const displayPriceIncludingTax =

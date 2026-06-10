@@ -336,6 +336,13 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['woocommerce_payments'] ) ) {
 			WC_Payments::get_wc_payments_checkout()->register_scripts();
+
+			// On the shortcode checkout, the AssetDataRegistry `ece_data` fallback never
+			// prints (its `wc-settings` script is only enqueued on blocks pages), so the
+			// dynamic place order buttons need the params on the main checkout script.
+			if ( $is_dynamic_place_order ) {
+				wp_localize_script( 'wcpay-upe-checkout', 'wcpayExpressCheckoutParams', $express_checkout_params );
+			}
 		}
 	}
 

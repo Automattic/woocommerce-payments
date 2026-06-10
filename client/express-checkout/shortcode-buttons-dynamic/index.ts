@@ -7,6 +7,7 @@ import type {
 	StripeExpressCheckoutElement,
 	AvailablePaymentMethods,
 } from '@stripe/stripe-js';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -15,7 +16,18 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	shouldUseConfirmationTokens,
 	createPaymentCredential,
+	getExpressCheckoutData,
+	buildStripeElementsOptions,
 } from 'wcpay/express-checkout/utils';
+import { getSetupFutureUsageForCart } from 'wcpay/express-checkout/utils/subscriptions';
+import {
+	transformCartDataForDisplayItems,
+	transformPrice,
+} from 'wcpay/express-checkout/transformers/wc-to-stripe';
+import ExpressCheckoutCartApi from 'wcpay/express-checkout/cart-api';
+// Side-effect import: registers the WC Subscriptions compatibility filters
+// (`total-amount`, `is-cart-eligible`, ...) used below.
+import 'wcpay/express-checkout/compatibility/wc-subscriptions';
 import {
 	appendPaymentMethodIdToForm,
 	appendConfirmationTokenToForm,
@@ -65,6 +77,13 @@ interface PaymentMethodConfig {
 // Track which gateways have been registered to avoid duplicate registration.
 const registeredGateways: Record< string, boolean > = {};
 
+// Cart data from the Store API, refreshed on each `initExpressPaymentMethods` call
+// (page load and `updated_checkout`). Needed for the payment sheet's line items and
+// for subscription-aware behavior (`setupFutureUsage`, trial cart eligibility).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let cachedCartData: any = null;
+const cartApi = new ExpressCheckoutCartApi();
+
 /**
  * Gets the cart total in smallest currency unit (e.g., cents).
  * Uses the config value as the primary source, with DOM parsing as a fallback.
@@ -100,6 +119,40 @@ function getCartTotal(): number {
 }
 
 /**
+ * Gets the cart total to charge, after compatibility filters (e.g., the recurring
+ * total for trial subscription carts with a $0 total due today).
+ */
+function getEffectiveCartTotal(): number {
+	const baseTotal = cachedCartData
+		? transformPrice(
+				parseInt( cachedCartData.totals.total_price, 10 ) -
+					parseInt( cachedCartData.totals.total_refund || 0, 10 ),
+				cachedCartData.totals
+		  )
+		: getCartTotal();
+
+	return applyFilters(
+		'wcpay.express-checkout.total-amount',
+		baseTotal,
+		cachedCartData
+	) as number;
+}
+
+/**
+ * Whether express checkout methods should be offered for the current cart.
+ * Carts with a $0 total are not eligible, unless a compatibility filter says
+ * otherwise (e.g., free-trial subscription carts, where the customer still
+ * needs to authorize the recurring payment).
+ */
+function isCartEligible(): boolean {
+	return applyFilters(
+		'wcpay.express-checkout.is-cart-eligible',
+		getEffectiveCartTotal() > 0,
+		cachedCartData
+	) as boolean;
+}
+
+/**
  * Hides a payment method from the payment methods list.
  */
 function hidePaymentMethod( gatewayId: string ): void {
@@ -131,25 +184,27 @@ function registerCustomPlaceOrderButton(
 	paymentMethodId: string,
 	fingerprint: string
 ): void {
-	const config = ( getUPEConfig( 'paymentMethodsConfig' ) as Record<
-		string,
-		PaymentMethodConfig
-	> )?.[ paymentMethodId ];
+	const config = (
+		getUPEConfig( 'paymentMethodsConfig' ) as Record<
+			string,
+			PaymentMethodConfig
+		>
+	 )?.[ paymentMethodId ];
 	if ( ! config ) {
 		return;
 	}
 
 	const { gatewayId, stripePaymentMethodType } = config;
 	const camelKey = snakeToCamel( paymentMethodId );
-	const currency = ( getUPEConfig( 'currency' ) as
-		| string
-		| undefined )?.toLowerCase();
+	const currency = (
+		getUPEConfig( 'currency' ) as string | undefined
+	 )?.toLowerCase();
 
 	const useConfirmationTokens = shouldUseConfirmationTokens();
 
 	// Use the shared utility for payment method overrides.
-	const paymentMethodOptions = getPaymentMethodsOverride( camelKey )
-		.paymentMethods;
+	const paymentMethodOptions =
+		getPaymentMethodsOverride( camelKey ).paymentMethods;
 
 	const state: {
 		elements: StripeElements | null;
@@ -164,25 +219,31 @@ function registerCustomPlaceOrderButton(
 			container: HTMLElement,
 			wcApi: CustomPlaceOrderButtonApi
 		) {
-			const cartTotal = getCartTotal();
-
-			if ( cartTotal <= 0 ) {
+			if ( ! isCartEligible() ) {
 				hidePaymentMethod( gatewayId );
 				return;
 			}
 
 			try {
 				const stripe = ( await api.getStripe() ) as Stripe;
-				state.elements = stripe.elements( {
-					mode: 'payment',
-					amount: cartTotal,
-					currency: currency!,
-					...( useConfirmationTokens && stripePaymentMethodType
-						? {
-								paymentMethodTypes: [ stripePaymentMethodType ],
-						  }
-						: { paymentMethodCreation: 'manual' as const } ),
-				} );
+				state.elements = stripe.elements(
+					buildStripeElementsOptions( {
+						amount: getEffectiveCartTotal(),
+						currency: currency!,
+						useConfirmationTokens,
+						paymentMethodTypes: stripePaymentMethodType
+							? [ stripePaymentMethodType ]
+							: [],
+						captureMethod: getExpressCheckoutData(
+							'is_manual_capture'
+						)
+							? 'manual'
+							: undefined,
+						setupFutureUsage: getSetupFutureUsageForCart(
+							cachedCartData ?? undefined
+						),
+					} )
+				);
 
 				state.eceButton = state.elements.create( 'expressCheckout', {
 					buttonType: { applePay: 'plain', googlePay: 'plain' },
@@ -218,18 +279,37 @@ function registerCustomPlaceOrderButton(
 						return;
 					}
 
+					// The checkout form owns address, shipping, and totals -
+					// the payment sheet only authorizes the payment, so no
+					// shipping address collection is needed here.
+					let lineItems;
+					try {
+						lineItems = cachedCartData
+							? transformCartDataForDisplayItems( cachedCartData )
+							: undefined;
+					} catch {
+						lineItems = undefined;
+					}
+
+					const storeName = getExpressCheckoutData( 'store_name' ) as
+						| string
+						| null;
+
 					event.resolve( {
+						...( storeName
+							? { business: { name: storeName } }
+							: {} ),
 						emailRequired: true,
 						phoneNumberRequired: false,
 						shippingAddressRequired: false,
+						lineItems,
 					} );
 				} );
 
 				state.eceButton.on( 'confirm', async () => {
 					try {
-						const {
-							error: submitError,
-						} = await state.elements!.submit();
+						const { error: submitError } =
+							await state.elements!.submit();
 						if ( submitError ) {
 							throw new Error( submitError.message );
 						}
@@ -305,7 +385,6 @@ function registerCustomPlaceOrderButton(
  */
 async function registerExpressPaymentMethods( api: WCPayAPI ): Promise< void > {
 	const currency = ( getUPEConfig( 'currency' ) as string ).toLowerCase();
-	const cartTotal = getCartTotal();
 	const paymentMethodsConfig = getUPEConfig(
 		'paymentMethodsConfig'
 	) as Record< string, PaymentMethodConfig >;
@@ -325,14 +404,22 @@ async function registerExpressPaymentMethods( api: WCPayAPI ): Promise< void > {
 		hidePaymentMethod( config.gatewayId );
 	}
 
-	if ( cartTotal <= 0 ) {
+	try {
+		cachedCartData = await cartApi.getCart();
+	} catch {
+		// Without cart data, the payment sheet has no line items and
+		// subscription-aware behavior is skipped - still functional.
+		cachedCartData = null;
+	}
+
+	if ( ! isCartEligible() ) {
 		return;
 	}
 
 	// Check device/browser availability via hidden ECE element.
 	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
 		api,
-		cartTotal,
+		getEffectiveCartTotal(),
 		currency
 	);
 

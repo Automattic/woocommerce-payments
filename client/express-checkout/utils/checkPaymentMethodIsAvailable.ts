@@ -9,7 +9,6 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getStripeElementsMode } from '.';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 interface CartTotals {
@@ -55,8 +54,7 @@ const getEffectiveTotalPrice = ( cart: Cart ): string => {
 function checkAllMethodsInternal(
 	stripe: Stripe,
 	amount: number,
-	currency: string,
-	mode: string
+	currency: string
 ): Promise< Partial< AvailablePaymentMethods > > {
 	return new Promise( ( resolve ) => {
 		try {
@@ -67,7 +65,7 @@ function checkAllMethodsInternal(
 			document.body.appendChild( container );
 
 			const elements = stripe.elements( {
-				mode: mode as 'payment' | 'subscription',
+				mode: 'payment',
 				amount: Math.max( amount, 1 ),
 				currency,
 				paymentMethodCreation: 'manual',
@@ -106,20 +104,18 @@ let cachedStripePromise: Promise< Stripe > | null = null;
 let memoizedCheck:
 	| ( (
 			_amount: number,
-			_currency: string,
-			_mode: string
+			_currency: string
 	  ) => Promise< Partial< AvailablePaymentMethods > > )
 	| null = null;
 
 /**
  * Checks which express payment methods are available on the current device/browser.
- * Results are memoized by amount+currency+mode combination.
+ * Results are memoized by amount+currency combination.
  */
 export async function checkAllExpressMethodsAvailability(
 	api: WCPayAPI,
 	amount: number,
-	currency: string,
-	mode = 'payment'
+	currency: string
 ): Promise< Partial< AvailablePaymentMethods > > {
 	if ( ! cachedStripePromise ) {
 		cachedStripePromise = api.loadStripeForExpressCheckout();
@@ -141,15 +137,15 @@ export async function checkAllExpressMethodsAvailability(
 	if ( ! memoizedCheck ) {
 		memoizedCheck = memoize(
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			( _amount: number, _currency: string, _mode: string ) =>
-				checkAllMethodsInternal( stripe, _amount, _currency, _mode ),
+			( _amount: number, _currency: string ) =>
+				checkAllMethodsInternal( stripe, _amount, _currency ),
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			( _amount: number, _currency: string, _mode: string ) =>
-				`${ _amount }-${ _currency }-${ _mode }`
+			( _amount: number, _currency: string ) =>
+				`${ _amount }-${ _currency }`
 		);
 	}
 
-	return memoizedCheck( amount, currency, mode );
+	return memoizedCheck( amount, currency );
 }
 
 /**
@@ -171,13 +167,11 @@ export async function checkPaymentMethodIsAvailable(
 	}
 
 	const totalPrice = getEffectiveTotalPrice( cart );
-	const mode = getStripeElementsMode();
 
 	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
 		api,
 		Number( totalPrice ),
-		cart.cartTotals.currency_code.toLowerCase(),
-		mode
+		cart.cartTotals.currency_code.toLowerCase()
 	);
 
 	return Boolean( availablePaymentMethods[ paymentMethod ] );

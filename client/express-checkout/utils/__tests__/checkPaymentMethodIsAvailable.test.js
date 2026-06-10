@@ -15,7 +15,6 @@ jest.mock( '..', () => ( {
 		}
 		return null;
 	} ),
-	getStripeElementsMode: jest.fn( () => 'payment' ),
 } ) );
 
 jest.mock( '../../transformers/wc-to-stripe', () => ( {
@@ -148,20 +147,7 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 			expect( result ).toEqual( {} );
 		} );
 
-		it( 'passes mode parameter to stripe.elements()', async () => {
-			await checkAllExpressMethodsAvailability(
-				mockApi,
-				1000,
-				'usd',
-				'subscription'
-			);
-
-			expect( mockStripe.elements ).toHaveBeenCalledWith(
-				expect.objectContaining( { mode: 'subscription' } )
-			);
-		} );
-
-		it( 'defaults mode to payment', async () => {
+		it( 'probes in payment mode', async () => {
 			await checkAllExpressMethodsAvailability( mockApi, 1000, 'usd' );
 
 			expect( mockStripe.elements ).toHaveBeenCalledWith(

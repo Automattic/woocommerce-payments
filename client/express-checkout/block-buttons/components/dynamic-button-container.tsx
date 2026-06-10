@@ -8,7 +8,8 @@ import {
 	useStripe,
 	useElements,
 } from '@stripe/react-stripe-js';
-import { select } from '@wordpress/data';
+import { select, useSelect } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -16,13 +17,16 @@ import { select } from '@wordpress/data';
 import {
 	getExpressCheckoutData,
 	getPaymentMethodsOverride,
-	getStripeElementsMode,
 	shouldUseConfirmationTokens,
 	createPaymentCredential,
 	buildStripeElementsOptions,
 } from '../../utils';
 import type { AvailablePaymentMethods } from '@stripe/stripe-js';
-import { transformCartDataForDisplayItems } from '../../transformers/wc-to-stripe';
+import {
+	transformCartDataForDisplayItems,
+	transformPrice,
+} from '../../transformers/wc-to-stripe';
+import { getSetupFutureUsageForCart } from '../../utils/subscriptions';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 import type WCPayAPI from 'wcpay/checkout/api';
@@ -199,29 +203,49 @@ const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
 	const { api, billing, stripePaymentMethodType, isEditor } = props;
 
 	const useConfirmationTokens = shouldUseConfirmationTokens();
+	const isManualCaptureEnabled =
+		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 
 	const stripePromise = useMemo( () => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
-	const paymentMethodTypes = useMemo( () => [ stripePaymentMethodType ], [
-		stripePaymentMethodType,
-	] );
+	const paymentMethodTypes = useMemo(
+		() => [ stripePaymentMethodType ],
+		[ stripePaymentMethodType ]
+	);
+
+	const cartData = useSelect(
+		( selectCart ) => ( selectCart( WC_STORE_CART ) as any )?.getCartData(),
+		[]
+	);
+
+	// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+	const amount = applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice( billing.cartTotal.value, {
+			currency_minor_unit: billing.currency.minorUnit ?? 0,
+		} ),
+		cartData
+	) as number;
 
 	const elementsOptions = useMemo(
 		() =>
 			buildStripeElementsOptions( {
-				amount: billing.cartTotal.value,
+				amount,
 				currency: billing.currency.code,
 				useConfirmationTokens,
 				paymentMethodTypes,
-				mode: getStripeElementsMode(),
+				captureMethod: isManualCaptureEnabled ? 'manual' : undefined,
+				setupFutureUsage: getSetupFutureUsageForCart( cartData ),
 			} ),
 		[
-			billing.cartTotal.value,
+			amount,
 			billing.currency.code,
 			useConfirmationTokens,
 			paymentMethodTypes,
+			isManualCaptureEnabled,
+			cartData,
 		]
 	);
 
