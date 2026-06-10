@@ -12,12 +12,49 @@ import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
 import * as navigation from '../../../utils/shopper-navigation';
+import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
 
 const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
 
 // using multiple products to prevent the "order duplication service" to be triggered.
 const products = [ 'belt', 'sunglasses' ];
+
+const checkoutWithBnpl = async (
+	page: Page,
+	provider: string,
+	productSlug: string,
+	ctpEnabled: boolean
+): Promise< { orderId: string; orderAmount: string } > => {
+	await navigation.goToProductPageBySlug( page, productSlug );
+
+	await page.locator( '.single_add_to_cart_button' ).click();
+	await page.waitForLoadState( 'domcontentloaded' );
+	await expect(
+		page.getByText( /has been added to your cart\./ )
+	).toBeVisible();
+
+	await shopper.setupCheckout( page );
+	await shopper.selectPaymentMethod( page, provider );
+	await shopper.expectFraudPreventionToken( page, ctpEnabled );
+	await shopper.placeOrder( page );
+	await expect( page.getByText( /test payment page/ ) ).toBeVisible();
+	// sometimes it's a button, other times it's a link.
+	await page.getByText( 'Authorize Test Payment' ).click();
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const orderAmount = await page
+		.locator(
+			'.woocommerce-order-overview__total .woocommerce-Price-amount'
+		)
+		.textContent();
+	const orderId =
+		page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+
+	return { orderId, orderAmount: orderAmount ?? '' };
+};
 test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
@@ -61,40 +98,31 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 				const provider = bnplProviders[ i ];
 
 				test( `Checkout with ${ provider }`, async () => {
-					await navigation.goToProductPageBySlug(
+					await checkoutWithBnpl(
 						shopperPage,
-						products[ i % products.length ]
-					);
-
-					await shopperPage
-						.locator( '.single_add_to_cart_button' )
-						.click();
-					await shopperPage.waitForLoadState( 'domcontentloaded' );
-					await expect(
-						shopperPage.getByText( /has been added to your cart\./ )
-					).toBeVisible();
-
-					await shopper.setupCheckout( shopperPage );
-					await shopper.selectPaymentMethod( shopperPage, provider );
-					await shopper.expectFraudPreventionToken(
-						shopperPage,
+						provider,
+						products[ i % products.length ],
 						ctpEnabled
 					);
-					await shopper.placeOrder( shopperPage );
-					await expect(
-						shopperPage.getByText( /test payment page/ )
-					).toBeVisible();
-					// sometimes it's a button, other times it's a link.
-					await shopperPage
-						.getByText( 'Authorize Test Payment' )
-						.click();
-					await expect(
-						shopperPage.getByRole( 'heading', {
-							name: 'Order received',
-						} )
-					).toBeVisible();
 				} );
 			}
+		} );
+	}
+
+	for ( let i = 0; i < bnplProviders.length; i++ ) {
+		const provider = bnplProviders[ i ];
+
+		test( `merchant can see and refund a ${ provider } order`, async () => {
+			const { orderId, orderAmount } = await checkoutWithBnpl(
+				shopperPage,
+				provider,
+				products[ i % products.length ],
+				false
+			);
+
+			await verifyOrderAndRefund( merchantPage, orderId, {
+				orderAmount,
+			} );
 		} );
 	}
 } );

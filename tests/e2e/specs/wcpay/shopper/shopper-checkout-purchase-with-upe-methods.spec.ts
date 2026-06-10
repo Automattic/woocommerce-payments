@@ -31,6 +31,36 @@ import {
 } from '../../../utils/shopper';
 import { config } from '../../../config/default';
 import { goToCheckout } from '../../../utils/shopper-navigation';
+import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
+
+const checkoutWithBancontact = async (
+	page: Page,
+	ctpEnabled: boolean
+): Promise< { orderId: string; orderAmount: string } > => {
+	await addToCartFromShopPage( page );
+	await goToCheckout( page );
+	await fillBillingAddress(
+		page,
+		config.addresses[ 'upe-customer' ].billing.be
+	);
+	await expectFraudPreventionToken( page, ctpEnabled );
+	await selectPaymentMethod( page, 'Bancontact' );
+
+	await focusPlaceOrderButton( page );
+	await placeOrder( page );
+	await page.getByRole( 'link', { name: 'Authorize Test Payment' } ).click();
+	await expect( page.getByText( 'Order received' ).first() ).toBeVisible();
+
+	const orderAmount = await page
+		.locator(
+			'.woocommerce-order-overview__total .woocommerce-Price-amount'
+		)
+		.textContent();
+	const orderId =
+		page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+
+	return { orderId, orderAmount: orderAmount ?? '' };
+};
 
 test.describe(
 	'Local payment method checkout with card testing',
@@ -91,26 +121,19 @@ test.describe(
 				} );
 
 				test( 'should successfully place order with Bancontact', async () => {
-					await addToCartFromShopPage( shopperPage );
-					await goToCheckout( shopperPage );
-					await fillBillingAddress(
-						shopperPage,
-						config.addresses[ 'upe-customer' ].billing.be
-					);
-					await expectFraudPreventionToken( shopperPage, ctpEnabled );
-					await selectPaymentMethod( shopperPage, 'Bancontact' );
-
-					await focusPlaceOrderButton( shopperPage );
-					await placeOrder( shopperPage );
-					await shopperPage
-						.getByRole( 'link', {
-							name: 'Authorize Test Payment',
-						} )
-						.click();
-					await expect(
-						shopperPage.getByText( 'Order received' ).first()
-					).toBeVisible();
+					await checkoutWithBancontact( shopperPage, ctpEnabled );
 				} );
+			} );
+		} );
+
+		test( 'merchant can see and refund a Bancontact order', async () => {
+			const { orderId, orderAmount } = await checkoutWithBancontact(
+				shopperPage,
+				false
+			);
+
+			await verifyOrderAndRefund( merchantPage, orderId, {
+				orderAmount,
 			} );
 		} );
 	}
