@@ -3,6 +3,7 @@
  */
 import { test, expect } from '../../../fixtures/auth';
 import { goToOrder, goToPaymentDetails } from '../../../utils/merchant';
+import { submitFullRefund } from '../../../utils/merchant-orders';
 import { placeOrderWithCurrency } from '../../../utils/shopper';
 
 test.describe(
@@ -30,48 +31,7 @@ test.describe(
 				// Open the order
 				await goToOrder( adminPage, orderId );
 
-				// Click refund button
-				await adminPage
-					.getByRole( 'button', {
-						name: 'Refund',
-					} )
-					.click();
-
-				// Fill refund details
-				await adminPage
-					.getByLabel( 'Refund amount' )
-					.fill( orderAmount );
-				await adminPage
-					.getByLabel( 'Reason for refund' )
-					.fill( 'No longer wanted' );
-
-				const refundButton = await adminPage.getByRole( 'button', {
-					name: `Refund ${ orderAmount } via WooPayments`,
-				} );
-
-				await expect( refundButton ).toBeVisible();
-
-				// Click refund and handle confirmation dialog
-				adminPage.on( 'dialog', ( dialog ) => dialog.accept() );
-				await refundButton.click();
-
-				// Wait for refund to process
-				await adminPage.waitForLoadState( 'networkidle' );
-
-				// Verify refund details
-				await expect(
-					adminPage.getByRole( 'cell', {
-						name: `-${ orderAmount }`,
-					} )
-				).toHaveCount( 2 );
-				// Use regex to match the refund message, accounting for optional currency code suffix (e.g., "USD")
-				await expect(
-					adminPage.getByText(
-						new RegExp(
-							`A refund of \\$\\d+\\.\\d{2}(?: USD)? was successfully processed using WooPayments\\. Reason: No longer wanted`
-						)
-					)
-				).toBeVisible();
+				await submitFullRefund( adminPage, { orderAmount } );
 
 				// Get and store the payment intent ID for the next test
 				paymentIntentId = await adminPage
