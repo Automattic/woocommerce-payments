@@ -11,7 +11,7 @@ import { generateCSVDataFromTable } from '@woocommerce/csv-export';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import type { BalanceRow } from './rows';
-import { getRowLabel, type BalanceReportIdentity } from './utils';
+import { getBalanceReportIdentity, getRowLabel } from './utils';
 
 const formatYmdUTC = ( value: string ): string => value.slice( 0, 10 );
 
@@ -33,7 +33,7 @@ export const getBalanceCSV = ( {
 	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
 	displayPeriod: ReportsPeriodRange;
 	currency: string;
-	reportIdentity: BalanceReportIdentity;
+	reportIdentity: ReturnType< typeof getBalanceReportIdentity >;
 } ): string => {
 	const periodStart = formatYmdUTC( displayPeriod.start );
 	const periodEnd = formatYmdUTC( displayPeriod.end );

@@ -51,6 +51,8 @@ declare global {
 		isAccountValid: boolean;
 		accountStatus: Partial< {
 			email?: string;
+			businessName?: string;
+			accountId?: string;
 			created: string;
 			isLive?: boolean;
 			testDrive?: boolean;
@@ -142,8 +144,6 @@ declare global {
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
 		storeName: string;
-		accountBusinessName: string;
-		accountId: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		instantDepositsPreviouslyEligible: boolean;

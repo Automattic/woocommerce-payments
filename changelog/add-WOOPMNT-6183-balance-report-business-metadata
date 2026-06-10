@@ -1,4 +1,4 @@
-Significance: patch
+Significance: minor
 Type: add
 
-Added business name and WooPayments account ID to Balance report exports.
+Added business name and WooPayments account ID as leading columns to Balance report CSV exports.

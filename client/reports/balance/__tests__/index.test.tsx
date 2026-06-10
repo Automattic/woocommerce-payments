@@ -17,6 +17,10 @@ const mockAppliedDateFilterValue = {
 	value: [ '2026-04-01', '2026-04-30' ],
 };
 let consoleErrorSpy: jest.SpyInstance | undefined;
+const testGlobal = globalThis as typeof globalThis & {
+	wcpaySettings?: typeof wcpaySettings;
+};
+let originalWcpaySettings: typeof wcpaySettings | undefined;
 
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string, politeness?: string ) =>
@@ -142,6 +146,13 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
+const legalPrintBusinessDetails = [
+	'WooPayments',
+	'Automattic Inc.',
+	'60 29th Street #343',
+	'San Francisco, CA, 94110, US',
+];
+
 const period = {
 	start: '2026-05-01T00:00:00.000Z',
 	end: '2026-05-14T23:59:59.999Z',
@@ -233,6 +244,44 @@ const renderBalanceReportWithDateFilterNow = (
 		</BalanceDateFilterNowContext.Provider>
 	);
 
+const setBalanceReportIdentitySettings = ( {
+	businessName = testGlobal.wcpaySettings?.accountStatus?.businessName ?? '',
+	accountId = testGlobal.wcpaySettings?.accountStatus?.accountId ?? '',
+	storeName = testGlobal.wcpaySettings?.storeName ?? '',
+}: Partial< {
+	businessName: string;
+	accountId: string;
+	storeName: string;
+} > ) => {
+	testGlobal.wcpaySettings = {
+		...( testGlobal.wcpaySettings ?? {} ),
+		accountStatus: {
+			...( testGlobal.wcpaySettings?.accountStatus ?? {} ),
+			businessName,
+			accountId,
+		},
+		storeName,
+	} as typeof wcpaySettings;
+};
+
+const downloadBalanceCSV = async (): Promise< string > => {
+	await userEvent.click( screen.getByRole( 'button', { name: 'Export' } ) );
+
+	expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+
+	return mockDownloadCSVFile.mock.calls[ 0 ][ 1 ] as string;
+};
+
+const getPrintReport = ( container: HTMLElement ): HTMLElement =>
+	container.querySelector( '.wcpay-reports-balance-print' ) as HTMLElement;
+
+const getPrintBusinessLines = ( printReport: HTMLElement ): string[] =>
+	Array.from(
+		printReport.querySelectorAll(
+			'.wcpay-reports-balance-print__business p'
+		)
+	).map( ( line ) => line.textContent ?? '' );
+
 const zeroSummary = {
 	currency: 'usd',
 	period,
@@ -298,16 +347,20 @@ const expectRecordedTracksEvent = (
 };
 
 beforeEach( () => {
-	const testGlobal = globalThis as typeof globalThis & {
-		wcpaySettings: typeof wcpaySettings;
-	};
+	originalWcpaySettings = testGlobal.wcpaySettings;
 	testGlobal.wcpaySettings = {
-		...testGlobal.wcpaySettings,
+		...( testGlobal.wcpaySettings ?? {} ),
 		accountDefaultCurrency: 'USD',
-		accountBusinessName: 'Aperture Science LLC',
-		accountId: 'acct_wcpay_123',
+		accountStatus: {
+			...( testGlobal.wcpaySettings?.accountStatus ?? {} ),
+		},
 		storeName: 'Aperture Store',
 	} as typeof wcpaySettings;
+	setBalanceReportIdentitySettings( {
+		businessName: 'Aperture Science LLC',
+		accountId: 'acct_wcpay_123',
+		storeName: 'Aperture Store',
+	} );
 	mockCreateNotice.mockReset();
 	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
@@ -327,6 +380,11 @@ afterEach( () => {
 	);
 	jest.useRealTimers();
 	jest.restoreAllMocks();
+	if ( originalWcpaySettings === undefined ) {
+		delete testGlobal.wcpaySettings;
+	} else {
+		testGlobal.wcpaySettings = originalWcpaySettings;
+	}
 } );
 
 describe( 'BalanceReport', () => {
@@ -895,6 +953,85 @@ describe( 'BalanceReport', () => {
 				hidden: true,
 			} )
 		).not.toBeInTheDocument();
+	} );
+
+	describe( 'getBalanceReportIdentity fallback behavior', () => {
+		it( 'uses the store name in CSV and print output when the account business name is empty', async () => {
+			setBalanceReportIdentitySettings( {
+				businessName: '',
+				storeName: 'Aperture Store',
+			} );
+			const { container } = renderBalanceReport( {
+				onReload: jest.fn(),
+			} );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( csv ).toContain(
+				'"Aperture Store",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+			expect(
+				getPrintBusinessLines( getPrintReport( container ) )
+			).toEqual( [
+				'Aperture Store',
+				'WooPayments account ID: acct_wcpay_123',
+				...legalPrintBusinessDetails,
+			] );
+		} );
+
+		it( 'leaves CSV identity fields empty and suppresses optional print lines when identity data is unavailable', async () => {
+			setBalanceReportIdentitySettings( {
+				businessName: '',
+				accountId: '',
+				storeName: '',
+			} );
+			const { container } = renderBalanceReport( {
+				onReload: jest.fn(),
+			} );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( csv ).toContain(
+				'\n,,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+			expect(
+				getPrintBusinessLines( getPrintReport( container ) )
+			).toEqual( legalPrintBusinessDetails );
+		} );
+
+		it( 'leaves the CSV account column empty and suppresses the print account ID line when account ID is empty', async () => {
+			setBalanceReportIdentitySettings( {
+				accountId: '',
+			} );
+			const { container } = renderBalanceReport( {
+				onReload: jest.fn(),
+			} );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( csv ).toContain(
+				'"Aperture Science LLC",,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+			expect(
+				getPrintBusinessLines( getPrintReport( container ) )
+			).toEqual( [
+				'Aperture Science LLC',
+				...legalPrintBusinessDetails,
+			] );
+		} );
+
+		it( 'quotes comma-containing business names in CSV output', async () => {
+			setBalanceReportIdentitySettings( {
+				businessName: 'Smith, Jones & Associates',
+			} );
+			renderBalanceReport( { onReload: jest.fn() } );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( csv ).toContain(
+				'"Smith, Jones & Associates",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+		} );
 	} );
 
 	it( 'hides optional rows when their amount and count are zero', () => {

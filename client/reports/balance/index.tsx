@@ -40,7 +40,6 @@ import {
 	hasKeys,
 	isBalanceSummaryMalformed,
 	printContextClass,
-	type BalanceReportIdentity,
 } from './utils';
 import WooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
@@ -89,79 +88,83 @@ const BalancePrintReport = ( {
 	summary,
 	displayPeriod,
 	currency,
-	reportIdentity,
 }: {
 	visibleRows: BalanceRow[];
 	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
 	displayPeriod: ReportsPeriodRange;
 	currency: string;
-	reportIdentity: BalanceReportIdentity;
-} ): JSX.Element => (
-	<section className="wcpay-reports-balance-print" aria-hidden="true">
-		<header className="wcpay-reports-balance-print__header">
-			<img
-				className="wcpay-reports-balance-print__logo"
-				src={ WooPaymentsLogo }
-				alt={ __( 'WooPayments', 'woocommerce-payments' ) }
-			/>
-			<div className="wcpay-reports-balance-print__business">
-				{ reportIdentity.businessName && (
-					<p>{ reportIdentity.businessName }</p>
-				) }
-				{ reportIdentity.accountId && (
-					<p>
-						{ sprintf(
-							/* translators: %s: WooPayments account ID. */
-							__(
-								'WooPayments account ID: %s',
-								'woocommerce-payments'
-							),
-							reportIdentity.accountId
-						) }
-					</p>
-				) }
-				{ woopaymentsBusinessDetails.map( ( line ) => (
-					<p key={ line }>{ line }</p>
-				) ) }
-			</div>
-		</header>
-		<table className="wcpay-reports-balance-print__table">
-			<thead>
-				<tr>
-					<th scope="colgroup" colSpan={ 2 }>
-						{ __( 'Balance summary', 'woocommerce-payments' ) }
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				{ visibleRows.map( ( row ) => {
-					const amount = getDisplayedAmount(
-						row,
-						row.getAmount( summary )
-					);
+} ): JSX.Element => {
+	const reportIdentity = getBalanceReportIdentity();
 
-					return (
-						<tr
-							key={ row.key }
-							className={ getPrintRowClassName( row ) }
-						>
-							<th scope="row">
-								{ getRowLabel( row, displayPeriod ) }
-							</th>
-							<td>{ formatBalanceAmount( amount, currency ) }</td>
-						</tr>
-					);
-				} ) }
-			</tbody>
-		</table>
-		<p className="wcpay-reports-balance-print__disclaimer">
-			{ __(
-				'This report is provided for informational reconciliation purposes only. It is not an IRS form, tax statement, bank statement, legal document, or formal financial statement.',
-				'woocommerce-payments'
-			) }
-		</p>
-	</section>
-);
+	return (
+		<section className="wcpay-reports-balance-print" aria-hidden="true">
+			<header className="wcpay-reports-balance-print__header">
+				<img
+					className="wcpay-reports-balance-print__logo"
+					src={ WooPaymentsLogo }
+					alt={ __( 'WooPayments', 'woocommerce-payments' ) }
+				/>
+				<div className="wcpay-reports-balance-print__business">
+					{ reportIdentity.businessName && (
+						<p>{ reportIdentity.businessName }</p>
+					) }
+					{ reportIdentity.accountId && (
+						<p>
+							{ sprintf(
+								/* translators: %s: WooPayments account ID. */
+								__(
+									'WooPayments account ID: %s',
+									'woocommerce-payments'
+								),
+								reportIdentity.accountId
+							) }
+						</p>
+					) }
+					{ woopaymentsBusinessDetails.map( ( line ) => (
+						<p key={ line }>{ line }</p>
+					) ) }
+				</div>
+			</header>
+			<table className="wcpay-reports-balance-print__table">
+				<thead>
+					<tr>
+						<th scope="colgroup" colSpan={ 2 }>
+							{ __( 'Balance summary', 'woocommerce-payments' ) }
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{ visibleRows.map( ( row ) => {
+						const amount = getDisplayedAmount(
+							row,
+							row.getAmount( summary )
+						);
+
+						return (
+							<tr
+								key={ row.key }
+								className={ getPrintRowClassName( row ) }
+							>
+								<th scope="row">
+									{ getRowLabel( row, displayPeriod ) }
+								</th>
+								<td>
+									{ formatBalanceAmount( amount, currency ) }
+								</td>
+							</tr>
+						);
+					} ) }
+				</tbody>
+			</table>
+			<p className="wcpay-reports-balance-print__disclaimer">
+				{ __(
+					'This report is provided for informational reconciliation purposes only. It is not an IRS form, tax statement, bank statement, legal document, or formal financial statement.',
+					'woocommerce-payments'
+				) }
+			</p>
+		</section>
+	);
+};
 
 export const BalanceReport = ( {
 	onReload = () => undefined,
@@ -219,7 +222,6 @@ export const BalanceReport = ( {
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
-	const reportIdentity = getBalanceReportIdentity();
 	const printScopeActive =
 		hasDateFilterValue && ! isLoading && ! hasError && hasActivity;
 	const displayPeriod = {
@@ -493,7 +495,6 @@ export const BalanceReport = ( {
 					summary={ summary }
 					displayPeriod={ displayPeriod }
 					currency={ currency }
-					reportIdentity={ reportIdentity }
 				/>
 			</>
 		);

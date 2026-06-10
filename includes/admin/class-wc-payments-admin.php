@@ -963,8 +963,10 @@ class WC_Payments_Admin {
 			];
 		}
 
-		$account_status_data = $this->account->get_account_status_data();
-		$account_is_valid    = $this->account->is_stripe_account_valid();
+		$account_status_data                 = $this->account->get_account_status_data();
+		$account_status_data['businessName'] = $this->account->get_business_name() ?? '';
+		$account_status_data['accountId']    = $this->account->get_stripe_account_id() ?? '';
+		$account_is_valid                    = $this->account->is_stripe_account_valid();
 
 		$test_mode = false;
 		try {
@@ -1056,8 +1058,6 @@ class WC_Payments_Admin {
 			'isStripeBillingEnabled'             => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'            => WC_Payments_Features::is_stripe_billing_eligible(),
 			'storeName'                          => get_bloginfo( 'name' ),
-			'accountBusinessName'                => $this->account->get_business_name(),
-			'accountId'                          => $this->account->get_stripe_account_id() ?? '',
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
 			'instantDepositsPreviouslyEligible'  => get_option( 'wcpay_instant_deposits_previously_eligible', false ),
