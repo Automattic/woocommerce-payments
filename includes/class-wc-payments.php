@@ -695,10 +695,17 @@ class WC_Payments {
 
 		// Surfaces the currency-filtered ECE method list on the cart response
 		// so the JS can re-evaluate paymentMethodTypes after currency resolves.
-		add_action(
-			'woocommerce_blocks_loaded',
-			[ __CLASS__, 'register_express_checkout_store_api_extension' ]
-		);
+		// `woocommerce_blocks_loaded` fires on plugins_loaded@10 (via
+		// `woocommerce_loaded`), before this method runs at plugins_loaded@11,
+		// so register immediately when it has already fired.
+		if ( did_action( 'woocommerce_blocks_loaded' ) ) {
+			self::register_express_checkout_store_api_extension();
+		} else {
+			add_action(
+				'woocommerce_blocks_loaded',
+				[ __CLASS__, 'register_express_checkout_store_api_extension' ]
+			);
+		}
 
 		// Rejects order placement if the cart's currency drifted away from
 		// the one the Element booted with — e.g. a multi-currency plugin

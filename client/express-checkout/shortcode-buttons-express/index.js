@@ -404,11 +404,20 @@ jQuery( ( $ ) => {
 					return event.resolve();
 				}
 
-				return shippingAddressChangeHandler( event, elements );
+				return shippingAddressChangeHandler(
+					event,
+					elements,
+					wcpayECE.abortPayment
+				);
 			} );
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
-				shippingRateChangeHandler( event, elements, cachedCartData )
+				shippingRateChangeHandler(
+					event,
+					elements,
+					cachedCartData,
+					wcpayECE.abortPayment
+				)
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
