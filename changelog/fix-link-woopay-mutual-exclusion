@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop auto-enabling WooPay during a sandbox to live account transition when Link by Stripe is already enabled, so the two express checkouts can no longer end up active simultaneously.
