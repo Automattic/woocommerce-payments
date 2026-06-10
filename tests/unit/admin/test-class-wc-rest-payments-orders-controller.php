@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Prepare_Terminal_Payment;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
@@ -531,6 +532,204 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertEquals( 404, $data['status'] );
+	}
+
+	public function test_prepare_terminal_payment_success() {
+		$order = $this->create_mock_order();
+
+		$update_response = [
+			'id'     => $this->mock_intent_id,
+			'status' => Intent_Status::REQUIRES_CONFIRMATION,
+		];
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id, $update_response );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->prepare_terminal_payment( $request );
+
+		$this->assertSame( 200, $response->status );
+		$this->assertSame( $update_response, $response->get_data() );
+	}
+
+	public function test_prepare_terminal_payment_not_found() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => 'not_an_id',
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->prepare_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 404, $data['status'] );
+	}
+
+	/**
+	 * @dataProvider provider_prepare_terminal_payment_path_traversal_intent_ids
+	 */
+	public function test_prepare_terminal_payment_rejects_payment_intent_ids_with_path_traversal_patterns( string $payment_intent_id ) {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $payment_intent_id,
+			]
+		);
+
+		$response = $this->controller->prepare_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
+		$this->assertSame( 'wcpay_invalid_payment_intent_id', $response->get_error_code() );
+	}
+
+	public function provider_prepare_terminal_payment_path_traversal_intent_ids(): array {
+		return [
+			'dot-dot-slash traversal'             => [ '../etc/passwd' ],
+			'slash only'                          => [ '/' ],
+			'id with embedded slash'              => [ 'id/traversal' ],
+			'backslash traversal'                 => [ '..\\etc\\passwd' ],
+			'backslash only'                      => [ '\\' ],
+			'id with embedded backslash'          => [ 'id\\traversal' ],
+			'percent-encoded slash'               => [ 'id%2ftraversal' ],
+			'percent-encoded slash uppercase'     => [ 'id%2Ftraversal' ],
+			'percent-encoded backslash'           => [ 'id%5ctraversal' ],
+			'percent-encoded backslash uppercase' => [ 'id%5Ctraversal' ],
+			'percent-encoded dot sequence'        => [ '%2e%2e%2fetc' ],
+			'double-encoded percent'              => [ 'id%252ftraversal' ],
+			'percent sign only'                   => [ '%' ],
+			'empty string'                        => [ '' ],
+		];
+	}
+
+	public function test_prepare_terminal_payment_refunded_order() {
+		$order = $this->create_mock_order();
+
+		wc_create_refund(
+			[
+				'order_id'   => $order->get_id(),
+				'amount'     => 10.0,
+				'line_items' => [],
+			]
+		);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->prepare_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
+		$this->assertSame( 'wcpay_refunded_order_unpreparable', $response->get_error_code() );
+	}
+
+	public function test_prepare_terminal_payment_intent_order_mismatch() {
+		$order = $this->create_mock_order();
+
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
+		$prepare_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'PaymentIntent order mismatch.', 'payment_intent_order_mismatch', 400 ) );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->prepare_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
+		$this->assertSame( 'payment_intent_order_mismatch', $response->get_error_code() );
+	}
+
+	public function test_prepare_terminal_payment_handles_exceptions() {
+		$order = $this->create_mock_order();
+
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
+		$prepare_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new Exception( 'test error' ) );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->prepare_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+		$this->assertSame( 'wcpay_server_error', $response->get_error_code() );
+	}
+
+	public function test_prepare_terminal_payment_passes_through_api_exceptions() {
+		$order = $this->create_mock_order();
+
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
+		$prepare_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'No such payment_intent: pi_sensitive', 'resource_missing', 404 ) );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->prepare_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 404, $data['status'] );
+		$this->assertSame( 'resource_missing', $response->get_error_code() );
+		$this->assertSame( 'No such payment_intent: pi_sensitive', $response->get_error_message() );
 	}
 
 	public function test_capture_authorization_success() {

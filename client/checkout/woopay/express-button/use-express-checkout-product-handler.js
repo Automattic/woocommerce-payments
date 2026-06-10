@@ -10,7 +10,7 @@ import {
 	getProductId,
 	getQuantity,
 } from 'wcpay/utils/wc-product-page-selectors';
-import { isEmail } from './email-validation';
+import { isEmail } from 'wcpay/utils/email-validation';
 
 /**
  * Get the product form element.

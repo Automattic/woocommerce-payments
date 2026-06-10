@@ -6,6 +6,8 @@ import {
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
+// eslint-disable-next-line import/no-unresolved
+import { ExperimentalOrderMeta } from '@woocommerce/blocks-checkout';
 
 /**
  * Internal dependencies
@@ -44,8 +46,6 @@ const isInEditor = () => {
 const normalizeAmount = ( amount, decimalPlaces = 2 ) => {
 	return amount * Math.pow( 10, 2 - decimalPlaces );
 };
-
-const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
 
 const ProductDetail = ( { cart, context } ) => {
 	const [ appearance, setAppearance ] = useState( () =>

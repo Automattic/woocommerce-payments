@@ -15,6 +15,7 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 jest.mock( 'lodash', () => ( {
+	...jest.requireActual( 'lodash' ),
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
 
@@ -307,6 +308,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 			appearance: expect.anything(),
 			locale: 'it',
 			paymentMethodTypes: [ 'card' ],
+			setupFutureUsage: null,
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.

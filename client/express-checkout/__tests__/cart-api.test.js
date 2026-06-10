@@ -166,7 +166,6 @@ describe( 'ExpressCheckoutCartApi', () => {
 				method: 'GET',
 				path: expect.stringContaining( '/wc/store/v1/cart' ),
 				headers: expect.objectContaining( {
-					'X-WooPayments-Tokenized-Cart-Session-Nonce': undefined,
 					'X-WooPayments-Tokenized-Cart-Nonce':
 						'global_tokenized_cart_nonce',
 				} ),
@@ -184,7 +183,6 @@ describe( 'ExpressCheckoutCartApi', () => {
 				),
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
-					'X-WooPayments-Tokenized-Cart-Session-Nonce': undefined,
 					'X-WooPayments-Tokenized-Cart': true,
 					'X-WooPayments-Tokenized-Cart-Nonce':
 						'global_tokenized_cart_nonce',
@@ -192,5 +190,64 @@ describe( 'ExpressCheckoutCartApi', () => {
 				} ),
 			} )
 		);
+	} );
+
+	// Regression test for WOOPMNT-6135.
+	it( 'should keep sending the page-localized store_api_nonce when responses lack a rotating Nonce header', async () => {
+		// On shortcode checkout the custom session handler does not engage,
+		// and responses may not carry a rotating Nonce header. Reading
+		// `response.headers.get( 'Nonce' )` returns `null` in that case, and
+		// we must not let that overwrite the working store_api_nonce default
+		// on the next request — otherwise it serializes to the literal string
+		// "null" and the Store API rejects with `woocommerce_rest_missing_nonce`.
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => Promise.resolve( {} ),
+		} );
+		const api = new ExpressCheckoutCartApi();
+
+		await api.getCart();
+		await api.updateCustomer( {
+			billing_address: { last_name: 'Last' },
+		} );
+
+		const updateCustomerCall = apiFetch.mock.calls[ 1 ][ 0 ];
+		expect( updateCustomerCall.headers.Nonce ).toBe(
+			'global_store_api_nonce'
+		);
+	} );
+
+	// Regression test for WOOPMNT-6135.
+	it( 'should omit the session-nonce header on non-product contexts so it never serializes as "undefined"', async () => {
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => Promise.resolve( {} ),
+		} );
+		const api = new ExpressCheckoutCartApi();
+
+		await api.getCart();
+
+		const callArgs = apiFetch.mock.calls[ 0 ][ 0 ];
+		expect( callArgs.headers ).not.toHaveProperty(
+			'X-WooPayments-Tokenized-Cart-Session-Nonce'
+		);
+	} );
+
+	it( 'should send the session-nonce header on product contexts', async () => {
+		global.wcpayExpressCheckoutParams.button_context = 'product';
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => Promise.resolve( {} ),
+		} );
+		const api = new ExpressCheckoutCartApi();
+
+		await api.getCart();
+
+		const callArgs = apiFetch.mock.calls[ 0 ][ 0 ];
+		expect(
+			callArgs.headers[ 'X-WooPayments-Tokenized-Cart-Session-Nonce' ]
+		).toBe( 'global_tokenized_cart_session_nonce' );
 	} );
 } );

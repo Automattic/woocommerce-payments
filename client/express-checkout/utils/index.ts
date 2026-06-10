@@ -18,3 +18,7 @@ export { displayLoginConfirmation } from './login-confirmation';
 export { getExpressCheckoutButtonAppearance } from './button-appearance';
 export { getStripeElementsMode } from './stripe-mode';
 export { getExpressCheckoutButtonStyleSettings } from './button-style-settings';
+export {
+	cartHasAnySubscription,
+	getSetupFutureUsageForCart,
+} from './subscriptions';

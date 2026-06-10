@@ -32,6 +32,12 @@ import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
+// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+import {
+	composeCapturedBodyFromBreakdown,
+	formatEnvelopeNetString,
+	getEnvelopeDepositImpact,
+} from './envelope/compose';
 
 /**
  * Creates a timeline item about a payment status change
@@ -271,6 +277,9 @@ const isBaseFeeOnly = ( event ) => {
 };
 
 const formatNetString = ( event ) => {
+	// Legacy net math. Envelope-aware callers should use
+	// `formatEnvelopeNetString` from ./envelope/compose instead of this
+	// function — the split keeps envelope and legacy paths independent.
 	const {
 		amount_captured: amountCaptured,
 		fee,
@@ -441,6 +450,29 @@ export const composeFXString = ( event ) => {
 		},
 		undefined,
 		storeCurrency
+	);
+};
+
+// Human-readable labels for Stripe's fixed refund reason enum. Free-text
+// merchant reasons fall through and are shown as entered.
+const refundReasonLabels = {
+	duplicate: __( 'Duplicate', 'woocommerce-payments' ),
+	fraudulent: __( 'Fraudulent', 'woocommerce-payments' ),
+	requested_by_customer: __(
+		'Requested by customer',
+		'woocommerce-payments'
+	),
+};
+
+const getRefundReason = ( event ) => {
+	if ( ! event.reason ) {
+		return '';
+	}
+	const reason = refundReasonLabels[ event.reason ] ?? event.reason;
+	return sprintf(
+		/* translators: %s is the reason the refund was issued */
+		__( 'Reason: %s', 'woocommerce-payments' ),
+		reason
 	);
 };
 
@@ -823,16 +855,22 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'captured':
-			const formattedNet = formatNetString( event );
-			const body = [
-				composeFXString( event ),
-				composeFeeString( event ),
-				composeFeeBreakdown( event ),
-				event?.fee_rates?.tax?.amount !== 0
-					? composeTaxString( event )
-					: null,
-				composeNetString( event ),
-			].filter( Boolean );
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+			const formattedNet = event.fee_breakdown_v1
+				? formatEnvelopeNetString( event )
+				: formatNetString( event );
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+			const body = event.fee_breakdown_v1
+				? composeCapturedBodyFromBreakdown( event )
+				: [
+						composeFXString( event ),
+						composeFeeString( event ),
+						composeFeeBreakdown( event ),
+						event?.fee_rates?.tax?.amount !== 0
+							? composeTaxString( event )
+							: null,
+						composeNetString( event ),
+				  ].filter( Boolean );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -888,6 +926,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					[
 						composeFXString( event ),
 						getRefundTrackingDetails( event ),
+						getRefundReason( event ),
 					]
 				),
 			];
@@ -967,9 +1006,18 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					],
 				};
 			} else {
+				// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+				// Prefer the envelope's authoritative deposit impact when
+				// present; fall back to legacy |amount|+|fee| math. Routed
+				// through getEnvelopeDepositImpact so nothing here has to
+				// know the envelope shape.
+				const envelopeImpact = getEnvelopeDepositImpact( event );
+				const depositImpact =
+					envelopeImpact?.amount ??
+					Math.abs( event.amount ) + Math.abs( event.fee );
 				const formattedExplicitTotal = formatExplicitCurrency(
-					Math.abs( event.amount ) + Math.abs( event.fee ),
-					event.currency
+					depositImpact,
+					envelopeImpact?.currency ?? event.currency
 				);
 				const disputedAmount = isFXEvent( event )
 					? formatCurrency(
@@ -1025,9 +1073,16 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'dispute_won':
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+			// Envelope-authoritative deposit impact when present; legacy
+			// |amount|+|fee| fallback otherwise.
+			const disputeWonImpact = getEnvelopeDepositImpact( event );
+			const depositImpactWon =
+				disputeWonImpact?.amount ??
+				Math.abs( event.amount ) + Math.abs( event.fee );
 			const formattedExplicitTotal = formatExplicitCurrency(
-				Math.abs( event.amount ) + Math.abs( event.fee ),
-				event.currency
+				depositImpactWon,
+				disputeWonImpact?.currency ?? event.currency
 			);
 			return [
 				getStatusChangeTimelineItem(

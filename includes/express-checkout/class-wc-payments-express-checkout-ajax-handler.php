@@ -178,6 +178,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
 			$shipping_address = $request['shipping_address'];
 			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
+			$shipping_address = $this->transform_ece_address_lines_data( $shipping_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -188,6 +189,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
 			$billing_address = $request['billing_address'];
 			$billing_address = $this->transform_ece_address_state_data( $billing_address );
+			$billing_address = $this->transform_ece_address_lines_data( $billing_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -236,35 +238,29 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return $address;
 		}
 
-		// Due to a bug in Apple Pay, the "Region" part of a Hong Kong address is delivered in
-		// `shipping_postcode`, so we need some special case handling for that. According to
-		// our sources at Apple Pay people will sometimes use the district or even sub-district
-		// for this value. As such we check against all regions, districts, and sub-districts
-		// with both English and Mandarin spelling.
-		//
-		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
-		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
-		// algorithm becomes:
-		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
-		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
-		// 3. Fall back to the value supplied in the state. This will likely cause a validation error, in
-		// which case a merchant can reach out to us so we can either: 1) add whatever the customer used
-		// as a state to our list of valid states; or 2) let them know the customer must spell the state
-		// in some way that matches our list of valid states.
+		// Due to bugs in Apple Pay/Google Pay, the "Region" part of a Hong Kong address is delivered
+		// inconsistently: it may arrive in the `state` field, in the `postcode` field, or be dropped
+		// entirely — in which case only the district (e.g. "Tai Po") survives in the `city` field.
+		// People also sometimes supply a district or even sub-district rather than the region itself.
+		// To recover a valid WooCommerce region we map every Hong Kong region, district and
+		// sub-district (English + 中文) to its parent WC state key, then resolve from whichever field
+		// carries a recognizable value, in order of reliability: state, then postcode, then city.
 		//
 		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
 		// the address bug. More info on that in pc4etw-bY-p2.
 		if ( Country_Code::HONG_KONG === $country ) {
 			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
 
-			$state = $address['state'] ?? '';
-			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $state ) ) ) {
-				$postcode = $address['postcode'] ?? '';
-				if ( strtolower( $postcode ) === 'hongkong' ) {
-					$postcode = 'hong kong';
+			foreach ( [ $address['state'] ?? '', $address['postcode'] ?? '', $address['city'] ?? '' ] as $candidate ) {
+				$candidate = strtolower( trim( (string) $candidate ) );
+				// Some clients drop the space from "Hong Kong".
+				if ( 'hongkong' === $candidate ) {
+					$candidate = 'hong kong';
 				}
-				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $postcode ) ) ) {
-					$address['state'] = $postcode;
+				$region = \WCPay\Constants\Express_Checkout_Hong_Kong_States::get_region_for_district( $candidate );
+				if ( '' !== $region ) {
+					$address['state'] = $region;
+					break;
 				}
 			}
 		}
@@ -274,6 +270,41 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( ! empty( $state ) ) {
 			$address['state'] = $this->get_normalized_state( $state, $country );
 		}
+
+		return $address;
+	}
+
+	/**
+	 * Consolidates the address lines so `address_1` is always populated when any line is.
+	 *
+	 * Specifically fixes Amazon Pay on EU Stripe accounts, which can return an empty `line1` with
+	 * the street value in `line2` (e.g. `{ line1: "", line2: "Meininger Strasse 58" }`). WC
+	 * requires `address_1`, so without this the Store API rejects the order. Safe to run on all
+	 * addresses: if `address_1` is already set, this is a no-op.
+	 *
+	 * @param array $address The address to normalize.
+	 *
+	 * @return array
+	 */
+	private function transform_ece_address_lines_data( $address ) {
+		$lines = array_values(
+			array_filter(
+				[
+					trim( (string) ( $address['address_1'] ?? '' ) ),
+					trim( (string) ( $address['address_2'] ?? '' ) ),
+				],
+				function ( $line ) {
+					return '' !== $line;
+				}
+			)
+		);
+
+		if ( empty( $lines ) ) {
+			return $address;
+		}
+
+		$address['address_1'] = $lines[0];
+		$address['address_2'] = $lines[1] ?? '';
 
 		return $address;
 	}

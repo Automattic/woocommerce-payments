@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide Stripe Link on the My Account > Add payment method page to prevent setup intent errors when Link is enabled.

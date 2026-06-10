@@ -9,6 +9,10 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Prepare_Terminal_Payment;
+use WCPay\Core\Server\Response;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
@@ -76,6 +80,25 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'args'                => [
 					'payment_intent_id' => [
 						'required' => true,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			$this->rest_base . '/(?P<order_id>\w+)/prepare_terminal_payment',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'prepare_terminal_payment' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'order_id'          => [
+						'required' => true,
+						'type'     => 'integer',
+					],
+					'payment_intent_id' => [
+						'required' => true,
+						'type'     => 'string',
 					],
 				],
 			]
@@ -265,6 +288,72 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to capture a terminal payment via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
+		}
+	}
+
+	/**
+	 * Given an intent ID and an order ID, prepare a single-step terminal payment before confirmation.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function prepare_terminal_payment( WP_REST_Request $request ) {
+		try {
+			$intent_id = $request['payment_intent_id'];
+			$order_id  = absint( $request['order_id'] );
+
+			// Do not process non-existing orders.
+			$order = wc_get_order( $order_id );
+			if ( false === $order ) {
+				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+			}
+
+			// Match the export download route pattern: allow future Stripe ID formats while blocking path traversal.
+			if ( ! is_string( $intent_id ) || 1 !== preg_match( '/^[^\/\\\\%]+$/', $intent_id ) ) {
+				return new WP_Error(
+					'wcpay_invalid_payment_intent_id',
+					__( 'Invalid payment intent ID.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			// Do not process orders with refund(s).
+			if ( 0 < $order->get_total_refunded() ) {
+				return new WP_Error(
+					'wcpay_refunded_order_unpreparable',
+					__( 'Terminal payments cannot be prepared for partially or fully refunded orders.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			// TPS validates the PaymentIntent order metadata and state before applying terminal-specific updates.
+			$prepare_request = Prepare_Terminal_Payment::create( $intent_id );
+			$prepare_request->set_order_id( $order_id );
+			$prepare_request->set_hook_args( $order );
+			$response = $prepare_request->send();
+
+			if ( $response instanceof Response ) {
+				$response = $response->to_array();
+			}
+
+			return rest_ensure_response( $response );
+		} catch ( Invalid_Request_Parameter_Exception $e ) {
+			return new WP_Error(
+				'wcpay_invalid_payment_intent_id',
+				__( 'Invalid payment intent ID.', 'woocommerce-payments' ),
+				[ 'status' => 400 ]
+			);
+		} catch ( API_Exception $e ) {
+			$error_code = $e->get_error_code();
+			$http_code  = $e->get_http_code();
+			return new WP_Error(
+				'' !== $error_code ? $error_code : 'wcpay_prepare_terminal_payment_failed',
+				$e->getMessage(),
+				0 !== $http_code ? [ 'status' => $http_code ] : [ 'status' => 500 ]
+			);
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to prepare a terminal payment via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}

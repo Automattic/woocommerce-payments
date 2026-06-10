@@ -18,6 +18,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
+use WCPay\Onboarding_Experiment;
 
 /**
  * Class handling any account connection functionality
@@ -45,6 +46,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const NOX_ONBOARDING_LOCKED_KEY = 'woocommerce_woopayments_nox_onboarding_locked';
 
 	const STORE_SETUP_SYNC_ACTION = 'wcpay_store_setup_sync';
+
+	const KYC_COMPLETION_DATE_OPTION = 'wcpay_kyc_completion_date';
+
+	const KYC_SUBMITTED_DATE_OPTION = 'wcpay_kyc_submitted_date';
+
+	const POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT = 'wcpay_post_kyc_activation_eligible';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -123,6 +130,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_payments_settings_to_onboarding' ], 15 );
 
 		// Add handlers for inbox notes and reminders.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
@@ -139,6 +147,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
 		// Also do a store setup sync when the client is updated to a new version.
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'store_setup_sync' ] );
+
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_record_kyc_completion_date' ] );
 	}
 
 	/**
@@ -1094,6 +1104,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Determine from where the merchant was directed to the Connect page.
 		$from = WC_Payments_Onboarding_Service::get_from();
 
+		// Accelerated-onboarding experiment: route task-list clicks straight into the
+		// WooPayments onboarding modal for merchants who have not yet completed KYC.
+		if ( $this->maybe_accelerate_onboarding( $from ) ) {
+			return true;
+		}
+
 		// If the user came from the core Payments task list item or the WC Payments Settings NOX in-context flow,
 		// skip the Connect page and go directly to the Jetpack connection flow and/or onboarding wizard.
 		if ( in_array(
@@ -1119,6 +1135,79 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Redirects the WooCommerce Settings > Payments page to the WooPayments onboarding
+	 * modal when a merchant arrives from the core Payments task list and has not yet
+	 * completed KYC, gated by the accelerated-onboarding experiment.
+	 *
+	 * In current WC Admin, clicking "Set up payments" in the task list lands the merchant
+	 * on `?page=wc-settings&tab=checkout&from=WCADMIN_PAYMENT_TASK` (the providers list)
+	 * rather than on `/payments/connect`, so this is the URL that actually needs to be
+	 * intercepted for the experiment to engage.
+	 *
+	 * @return bool True if a redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_from_payments_settings_to_onboarding(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+		];
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) {
+			return false;
+		}
+
+		// A specific gateway section — or a deep-link path like /woopayments/onboarding — is
+		// already being handled by its own renderer; don't override those.
+		if ( ! empty( $_GET['section'] ) || ! empty( $_GET['path'] ) ) {
+			return false;
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$from = WC_Payments_Onboarding_Service::get_from();
+
+		return $this->maybe_accelerate_onboarding( $from );
+	}
+
+	/**
+	 * Shared experiment branch for accelerated onboarding. Redirects qualifying merchants
+	 * (task-list origin + KYC incomplete + treatment variation) into the WooPayments
+	 * onboarding modal.
+	 *
+	 * Shared by maybe_redirect_from_connect_page() (legacy `/payments/connect` landing) and
+	 * maybe_redirect_from_payments_settings_to_onboarding() (modern task-click landing).
+	 *
+	 * @param string $from Resolved onboarding origin.
+	 * @return bool True when a treatment redirect was issued, false otherwise.
+	 */
+	private function maybe_accelerate_onboarding( string $from ): bool {
+		if ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK !== $from ) {
+			return false;
+		}
+
+		if ( $this->is_details_submitted() ) {
+			return false;
+		}
+
+		$experiment = WC_Payments::get_onboarding_experiment();
+		$variation  = $experiment->get_variation();
+
+		if ( Onboarding_Experiment::VARIATION_TREATMENT !== $variation ) {
+			return false;
+		}
+
+		$this->redirect_service->redirect_to_nox_flow(
+			WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+			WC_Payments_Onboarding_Service::get_source()
+		);
+		return true;
 	}
 
 	/**
@@ -2177,6 +2266,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
+		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
+		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
+		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
+			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
+		}
+
 		// Track account connection finish.
 		$event_properties = [
 			'mode'      => 'test' === $mode ? 'test' : 'live',
@@ -2250,6 +2345,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
+
+		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
+		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
+		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
+			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
+		}
 
 		// Track account connection finish.
 		$incentive_id = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
@@ -2509,6 +2610,49 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
 			}
 		}
+	}
+
+	/**
+	 * Records the date a merchant's account first becomes KYC-approved and payments-enabled on live mode.
+	 * Stored once and never overwritten so the Post-KYC activation nudge clock starts from the real approval date.
+	 *
+	 * For post-launch merchants we have a `wcpay_kyc_submitted_date` set at finalize_*_connection,
+	 * which means the current observation is a fresh KYC and `time()` is accurate.
+	 * For pre-existing merchants we fall back to `account['created']` (Stripe's account creation timestamp)
+	 * so the nudge clock reflects roughly when KYC happened — imprecise but the best signal we have.
+	 *
+	 * @param array|bool $account The account data passed by woocommerce_payments_account_refreshed.
+	 *
+	 * @return void
+	 */
+	public function maybe_record_kyc_completion_date( $account ): void {
+		if ( empty( $account ) || ! is_array( $account ) ) {
+			return;
+		}
+
+		if ( empty( $account['payments_enabled'] ) || empty( $account['is_live'] ) || ! empty( $account['is_test_drive'] ) ) {
+			return;
+		}
+
+		// Preserve the original date — do not overwrite on subsequent refreshes.
+		if ( get_option( self::KYC_COMPLETION_DATE_OPTION ) ) {
+			return;
+		}
+
+		$kyc_submitted_date = (int) get_option( self::KYC_SUBMITTED_DATE_OPTION, 0 );
+		$account_created    = (int) ( $account['created'] ?? 0 );
+
+		if ( $kyc_submitted_date ) {
+			// Post-launch merchant — use the moment we observe payments_enabled flipping true.
+			$completion_date = time();
+		} elseif ( $account_created ) {
+			// Pre-existing merchant — fall back to the Stripe account creation timestamp.
+			$completion_date = $account_created;
+		} else {
+			return;
+		}
+
+		update_option( self::KYC_COMPLETION_DATE_OPTION, $completion_date, false );
 	}
 
 
@@ -2852,6 +2996,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		$active_plugin_ids = ( is_object( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'get_all_active_valid_plugins' ] ) ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
 		foreach ( $active_plugin_ids as $plugin_file ) {
+			// Normalize to relative path since get_plugins() keys are relative
+			// but wp_get_active_and_valid_plugins() returns absolute paths.
+			$plugin_file = plugin_basename( $plugin_file );
 			if ( isset( $all_plugins[ $plugin_file ] ) ) {
 				$plugin_data                  = $all_plugins[ $plugin_file ];
 				$plugins_list[ $plugin_file ] = [

@@ -17,6 +17,7 @@ use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -127,6 +128,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_MODE_META_KEY = '_wcpay_mode';
 
 	/**
+	 * Option key holding a one-way flag indicating the store has had at least one live WooPayments sale.
+	 *
+	 * @const string
+	 */
+	const HAS_LIVE_SALE_OPTION = 'wcpay_has_live_sale';
+
+	/**
 	 * Meta key used to store payment transaction Id.
 	 *
 	 * @const string
@@ -189,6 +197,80 @@ class WC_Payments_Order_Service {
 	 */
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
+	}
+
+	/**
+	 * Registers hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks(): void {
+		add_action( 'woocommerce_order_status_processing', [ $this, 'maybe_record_first_live_sale' ] );
+		add_action( 'woocommerce_order_status_completed', [ $this, 'maybe_record_first_live_sale' ] );
+	}
+
+	/**
+	 * Sets the one-way `HAS_LIVE_SALE_OPTION` flag the first time a live WooPayments
+	 * order reaches a successful status. Subsequent invocations short-circuit on the
+	 * autoloaded option read so they cost nothing for the lifetime of the store.
+	 *
+	 * @param int $order_id Order ID from the woocommerce_order_status_* hook.
+	 * @return void
+	 */
+	public function maybe_record_first_live_sale( $order_id ): void {
+		if ( get_option( self::HAS_LIVE_SALE_OPTION ) ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+
+		if ( Order_Mode::PRODUCTION === $order->get_meta( self::WCPAY_MODE_META_KEY ) ) {
+			update_option( self::HAS_LIVE_SALE_OPTION, '1', true );
+			delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+
+			if ( class_exists( 'WC_Tracks' ) ) {
+				WC_Tracks::record_event( 'wcpay_first_live_sale' );
+			}
+		}
+	}
+
+	/**
+	 * Returns whether the store has had at least one live (production) WooPayments sale.
+	 *
+	 * Reads the one-way `HAS_LIVE_SALE_OPTION` flag set by `maybe_record_first_live_sale()`;
+	 * falls back to a single `wc_get_orders` meta query when the option hasn't been
+	 * populated yet (e.g., for stores that took their first live sale before this
+	 * feature shipped). Writes the option on hit so subsequent reads short-circuit.
+	 *
+	 * @return bool
+	 */
+	public function has_live_sale(): bool {
+		if ( get_option( self::HAS_LIVE_SALE_OPTION ) ) {
+			return true;
+		}
+
+		$orders = wc_get_orders(
+			[
+				'payment_method' => 'woocommerce_payments',
+				'limit'          => 1,
+				'return'         => 'ids',
+				'status'         => [ 'wc-completed', 'wc-processing' ],
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'       => self::WCPAY_MODE_META_KEY,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value'     => Order_Mode::PRODUCTION,
+			]
+		);
+
+		if ( ! empty( $orders ) ) {
+			update_option( self::HAS_LIVE_SALE_OPTION, '1', true );
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -1406,9 +1488,39 @@ class WC_Payments_Order_Service {
 	 */
 	public function attach_transaction_fee_to_order( $order, $charge ) {
 		try {
-			// Only set transaction fee if the charge was actually captured.
-			// Canceled authorizations should not have fees since no payment was processed.
-			if ( $charge && null !== $charge->get_application_fee_amount() && $charge->is_captured() ) {
+			if ( ! $charge || ! $charge->is_captured() ) {
+				return;
+			}
+
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+			// Prefer the server-driven fee_breakdown_v1 envelope when present.
+			// totals.fee.amount is authoritative for every merchant-facing
+			// surface — the order page row, the _wcpay_net meta, and the
+			// timeline all read from the same place. Falls back to the
+			// legacy application_fee_amount inference for older servers.
+			$fee_breakdown_v1 = $charge->get_fee_breakdown_v1();
+			if ( is_array( $fee_breakdown_v1 ) && isset( $fee_breakdown_v1['totals']['fee']['amount'], $fee_breakdown_v1['totals']['fee']['currency'] ) ) {
+				$order->update_meta_data(
+					self::WCPAY_TRANSACTION_FEE_META_KEY,
+					WC_Payments_Utils::interpret_stripe_amount(
+						(int) $fee_breakdown_v1['totals']['fee']['amount'],
+						$fee_breakdown_v1['totals']['fee']['currency']
+					)
+				);
+				if ( isset( $fee_breakdown_v1['totals']['net']['amount'], $fee_breakdown_v1['totals']['net']['currency'] ) ) {
+					$order->update_meta_data(
+						'_wcpay_net',
+						WC_Payments_Utils::interpret_stripe_amount(
+							(int) $fee_breakdown_v1['totals']['net']['amount'],
+							$fee_breakdown_v1['totals']['net']['currency']
+						)
+					);
+				}
+				$order->save_meta_data();
+				return;
+			}
+
+			if ( null !== $charge->get_application_fee_amount() ) {
 				$order->update_meta_data(
 					self::WCPAY_TRANSACTION_FEE_META_KEY,
 					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )

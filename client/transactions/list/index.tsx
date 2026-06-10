@@ -22,7 +22,10 @@ import {
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'wcpay/data';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
 import { Transaction } from 'wcpay/data/transactions/hooks';
 import OrderLink from 'wcpay/components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
@@ -48,7 +51,7 @@ import DownloadButton from 'wcpay/components/download-button';
 import {
 	getTransactionsCSVRequestURL,
 	transactionsDownloadEndpoint,
-} from '../../data/transactions/resolvers';
+} from 'wcpay/data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
@@ -323,6 +326,7 @@ export const TransactionsList = (
 				: txn.type );
 		const clickable =
 			txn.type !== 'financing_payout' &&
+			txn.type !== 'network_costs' &&
 			! ( txn.type === 'financing_paydown' && txn.charge_id === '' )
 				? ( children: React.ReactNode ) => (
 						<ClickableCell href={ detailsURL }>
@@ -422,6 +426,8 @@ export const TransactionsList = (
 
 		const isReaderFee = dataType === 'card_reader_fee';
 
+		const isNetworkCosts = txn.type === 'network_costs';
+
 		const deposit = ! isFinancingType && (
 			<Deposit
 				depositId={ txn.deposit_id }
@@ -467,7 +473,7 @@ export const TransactionsList = (
 			source: {
 				value: txn.source,
 				display:
-					! isFinancingType && ! isReaderFee ? (
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts ? (
 						clickable(
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
@@ -503,14 +509,14 @@ export const TransactionsList = (
 			customer_name: {
 				value: txn.customer_name,
 				display:
-					! isFinancingType && ! isReaderFee
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts
 						? customerName
 						: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
 				display:
-					! isFinancingType && ! isReaderFee
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts
 						? customerEmail
 						: __( 'N/A', 'woocommerce-payments' ),
 			},

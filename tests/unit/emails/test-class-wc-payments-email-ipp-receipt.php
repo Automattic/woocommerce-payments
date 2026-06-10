@@ -172,4 +172,75 @@ class WC_Payments_Email_IPP_Receipt_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'true', $order->get_meta( '_new_receipt_email_sent' ) );
 	}
+
+	public function test_compliance_details_displays_terminal_card_brand_name() {
+		$charge = [
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'eftpos_au',
+					'last4'   => '0978',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test 42',
+						'account_type'               => 'debit',
+					],
+				],
+			],
+		];
+
+		ob_start();
+		$this->email->compliance_details( $charge, false );
+		$result = ob_get_clean();
+
+		$this->assertStringNotContainsString( '<img', $result );
+		$this->assertStringContainsString( 'eftpos - 0978', $result );
+	}
+
+	public function test_compliance_details_prefers_card_network_for_brand_name() {
+		$charge = [
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'visa',
+					'network' => 'eftpos_au',
+					'last4'   => '0978',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test 42',
+						'account_type'               => 'debit',
+					],
+				],
+			],
+		];
+
+		ob_start();
+		$this->email->compliance_details( $charge, false );
+		$result = ob_get_clean();
+
+		$this->assertStringNotContainsString( '<img', $result );
+		$this->assertStringContainsString( 'eftpos - 0978', $result );
+	}
+
+	public function test_compliance_details_uses_card_brand_for_unsupported_network() {
+		$charge = [
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'visa',
+					'network' => 'unsupported_network',
+					'last4'   => '0978',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test 42',
+						'account_type'               => 'debit',
+					],
+				],
+			],
+		];
+
+		ob_start();
+		$this->email->compliance_details( $charge, false );
+		$result = ob_get_clean();
+
+		$this->assertStringContainsString( 'Visa - 0978', $result );
+		$this->assertStringNotContainsString( 'Unsupported_network - 0978', $result );
+	}
 }

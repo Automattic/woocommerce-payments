@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Accept account_data parameter in test-drive account init endpoint

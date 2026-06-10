@@ -16,8 +16,9 @@ import type {
 	CachedDisputes,
 	DisputesSummary,
 } from 'wcpay/types/disputes';
+import type { ChargeDispute } from 'wcpay/types/charges';
 import type { ApiError } from 'wcpay/types/errors';
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 
 /**
  * Returns the dispute object, error object, and loading state.
@@ -52,7 +53,7 @@ export const useDispute = (
  * Does not return or fetch the dispute object.
  */
 export const useDisputeAccept = (
-	dispute: Dispute
+	dispute: Pick< ChargeDispute, 'id' | 'payment_intent' >
 ): {
 	doAccept: () => void;
 	isLoading: boolean;

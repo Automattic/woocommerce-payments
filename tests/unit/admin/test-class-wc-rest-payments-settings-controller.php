@@ -13,6 +13,7 @@ use WCPay\Constants\Country_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Service\DisputeReadinessService;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
@@ -652,6 +653,30 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'deposit_schedule_monthly_anchor', 'test deposit_schedule_monthly_anchor' );
 
 		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_updates_account_cache_and_clears_descriptor_confirmation() {
+		update_option(
+			DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION,
+			[
+				'confirmed'             => true,
+				'normalized_descriptor' => 'olddescriptor',
+			]
+		);
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'update_stripe_account' )
+			->with( [ 'statement_descriptor' => 'MY STORE' ] );
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'update_account_data' )
+			->with( 'statement_descriptor', 'MY STORE' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_statement_descriptor', 'MY STORE' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertFalse( get_option( DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION ) );
 	}
 
 	public function test_update_settings_calls_store_setup_sync() {

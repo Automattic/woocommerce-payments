@@ -36,6 +36,13 @@ class Mode {
 	private $dev_mode;
 
 	/**
+	 * Holds the triggers that activated dev mode.
+	 *
+	 * @var string[]
+	 */
+	private $dev_mode_triggers = [];
+
+	/**
 	 * Indicates the WCPay version which introduced the class.
 	 *
 	 * @var string
@@ -62,16 +69,26 @@ class Mode {
 			return;
 		}
 
-		$dev_mode = (
-			// Plugin-specific dev mode.
-			$this->is_wcpay_dev_mode_defined()
+		$triggers = [];
 
-			// WordPress Dev Environment.
-			|| in_array( $this->get_wp_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
+		// Plugin-specific dev mode.
+		if ( $this->is_wcpay_dev_mode_defined() ) {
+			$triggers[] = 'WCPAY_DEV_MODE';
+		}
 
-			// WordPress Development mode. If any development mode is enabled, we'll fall back to dev as well.
-			|| '' !== $this->wp_get_development_mode()
-		);
+		// WordPress Dev Environment.
+		$env_type = $this->get_wp_environment_type();
+		if ( in_array( $env_type, self::DEV_MODE_ENVIRONMENTS, true ) ) {
+			$triggers[] = 'WP_ENVIRONMENT_TYPE=' . $env_type;
+		}
+
+		// WordPress Development mode. If any development mode is enabled, we'll fall back to dev as well.
+		$dev_mode_setting = $this->wp_get_development_mode();
+		if ( '' !== $dev_mode_setting ) {
+			$triggers[] = 'WP_DEVELOPMENT_MODE=' . $dev_mode_setting;
+		}
+
+		$dev_mode = ! empty( $triggers );
 
 		/**
 		 * Allows WooPayments to enter dev (aka sandbox) mode.
@@ -80,6 +97,16 @@ class Mode {
 		 * @param bool $dev_mode Whether to enter WooPayments in dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
+
+		// Reconcile triggers with the post-filter result.
+		if ( $this->dev_mode && ! $dev_mode ) {
+			// The filter turned dev mode on with no underlying conditions.
+			$triggers[] = 'wcpay_dev_mode filter';
+		} elseif ( ! $this->dev_mode ) {
+			// Dev mode is off (filter may have suppressed it); no triggers apply.
+			$triggers = [];
+		}
+		$this->dev_mode_triggers = $triggers;
 
 		// If dev mode is active, we enable test mode onboarding.
 		$test_mode_onboarding = $this->dev_mode || \WC_Payments_Onboarding_Service::is_test_mode_enabled();
@@ -160,6 +187,18 @@ class Mode {
 	}
 
 	/**
+	 * Returns the triggers that activated dev mode.
+	 *
+	 * Returns an empty array when dev mode is not active.
+	 *
+	 * @return string[]
+	 */
+	public function get_dev_mode_triggers(): array {
+		$this->maybe_init();
+		return $this->dev_mode_triggers;
+	}
+
+	/**
 	 * Enable live payment processing.
 	 *
 	 * @return void
@@ -169,7 +208,8 @@ class Mode {
 		// We can't process live payments and be in test mode onboarding.
 		$this->test_mode_onboarding = false;
 		// We also can't be in dev mode.
-		$this->dev_mode = false;
+		$this->dev_mode          = false;
+		$this->dev_mode_triggers = [];
 	}
 
 	/**
@@ -201,7 +241,8 @@ class Mode {
 	public function live_mode_onboarding() {
 		$this->test_mode_onboarding = false;
 		// When onboarding in live mode, we can't be in dev mode.
-		$this->dev_mode = false;
+		$this->dev_mode          = false;
+		$this->dev_mode_triggers = [];
 		// Doesn't affect the payments processing mode.
 	}
 
@@ -213,7 +254,8 @@ class Mode {
 	 * @return void
 	 */
 	public function dev() {
-		$this->dev_mode = true;
+		$this->dev_mode          = true;
+		$this->dev_mode_triggers = [ 'manual' ];
 		// In dev mode, everything is in test mode.
 		$this->test_mode            = true;
 		$this->test_mode_onboarding = true;

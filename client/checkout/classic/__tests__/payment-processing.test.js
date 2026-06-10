@@ -32,6 +32,8 @@ jest.mock( '../upe-utils' );
 
 jest.mock( 'wcpay/checkout/utils/upe' );
 
+const { isLinkEnabled } = jest.requireMock( 'wcpay/checkout/utils/upe' );
+
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getUPEConfig: jest.fn( ( argument ) => {
 		if ( argument === 'paymentMethodsConfig' ) {
@@ -69,7 +71,7 @@ jest.mock( 'wcpay/checkout/utils/fingerprint', () => ( {
 
 jest.mock( 'wcpay/checkout/utils/show-error-checkout', () => jest.fn() );
 
-const mockUpdateFunction = jest.fn();
+const mockUpdateFunction = jest.fn( () => Promise.resolve() );
 
 const mockMountFunction = jest.fn();
 
@@ -228,7 +230,7 @@ describe( 'Stripe Payment Element mounting', () => {
 		expect( mockMountFunction ).toHaveBeenCalled();
 	} );
 
-	test( 'Terms are rendered for an already mounted element which should be saved', () => {
+	test( 'Terms are rendered for an already mounted element which should be saved', async () => {
 		const event = {
 			target: {
 				checked: true,
@@ -241,18 +243,18 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( 'card' );
-		renderTerms( event );
+		await renderTerms( event );
 		expect( mockUpdateFunction ).toHaveBeenCalled();
 	} );
 
-	test( 'Terms are not rendered when no selected payment method is found', () => {
+	test( 'Terms are not rendered when no selected payment method is found', async () => {
 		const event = {
 			target: {
 				checked: true,
 			},
 		};
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( null );
-		renderTerms( event );
+		await renderTerms( event );
 		expect( mockUpdateFunction ).not.toHaveBeenCalled();
 	} );
 
@@ -283,6 +285,46 @@ describe( 'Stripe Payment Element mounting', () => {
 
 		expect( apiMock.getStripeForUPE ).toHaveBeenCalled();
 		expect( mockElements ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'Link wallet is disabled on add_payment_method page even when Link is enabled', async () => {
+		isLinkEnabled.mockReturnValue( true );
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		__resetGatewayUPEComponentsElement( 'card' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement(
+			apiMock,
+			mockDomElement,
+			'add_payment_method'
+		);
+
+		expect( mockCreateFunction ).toHaveBeenCalledWith(
+			'payment',
+			expect.objectContaining( {
+				wallets: expect.objectContaining( { link: 'never' } ),
+			} )
+		);
+	} );
+
+	test( 'Link wallet is enabled on shortcode_checkout page when Link is enabled', async () => {
+		isLinkEnabled.mockReturnValue( true );
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		__resetGatewayUPEComponentsElement( 'card' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement(
+			apiMock,
+			mockDomElement,
+			'shortcode_checkout'
+		);
+
+		expect( mockCreateFunction ).toHaveBeenCalledWith(
+			'payment',
+			expect.objectContaining( {
+				wallets: expect.objectContaining( { link: 'auto' } ),
+			} )
+		);
 	} );
 } );
 

@@ -19,6 +19,8 @@ interface ElementsOptionsParams {
 	mode?: 'payment' | 'subscription';
 	appearance?: ReturnType< typeof getExpressCheckoutButtonAppearance >;
 	locale?: string;
+	captureMethod?: 'automatic' | 'manual';
+	setupFutureUsage?: 'off_session' | null;
 }
 
 /**
@@ -33,6 +35,8 @@ export function buildStripeElementsOptions( {
 	mode = 'payment',
 	appearance,
 	locale,
+	captureMethod,
+	setupFutureUsage,
 }: ElementsOptionsParams ) {
 	return {
 		mode,
@@ -41,6 +45,15 @@ export function buildStripeElementsOptions( {
 		...( useConfirmationTokens
 			? { paymentMethodTypes }
 			: { paymentMethodCreation: 'manual' as const } ),
+		// `captureMethod` and `setupFutureUsage` are only compatible with the
+		// confirmation tokens flow - with manual payment method creation, the
+		// equivalent values are set server-side on the intent instead.
+		...( useConfirmationTokens && captureMethod === 'manual'
+			? { captureMethod: 'manual' as const }
+			: {} ),
+		...( useConfirmationTokens && setupFutureUsage !== undefined
+			? { setupFutureUsage }
+			: {} ),
 		appearance:
 			appearance ?? getExpressCheckoutButtonAppearance( undefined ),
 		locale: ( locale ??

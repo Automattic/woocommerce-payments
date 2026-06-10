@@ -12,7 +12,10 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
+import {
+	useAuthorizations,
+	useAuthorizationsSummary,
+} from 'wcpay/data/authorizations';
 import Page from '../../components/page';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';

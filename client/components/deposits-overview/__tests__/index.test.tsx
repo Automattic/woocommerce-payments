@@ -22,11 +22,11 @@ import {
 	useDepositIncludesLoan,
 	useDeposits,
 	useAllDepositsOverviews,
-} from 'wcpay/data';
+} from 'wcpay/data/deposits';
 import type { CachedDeposit } from 'wcpay/types/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useDepositIncludesLoan: jest.fn(),
 	useInstantDeposit: jest.fn(),
 	useDeposits: jest.fn(),
@@ -274,6 +274,38 @@ describe( 'Deposits Overview information', () => {
 		getByText( 'View full payout history' );
 		getByText( 'Change payout schedule' );
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'does not render the icon when loading', () => {
+		mockUseSelectedCurrencyOverview.mockReturnValue( {
+			account: mockAccount,
+			overview: createMockOverview( 'usd' ),
+			isLoading: true,
+		} );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: true,
+		} );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { container } = render( <DepositsOverview /> );
+
+		const placeholders = container.querySelectorAll(
+			'.is-loadable-placeholder'
+		);
+
+		expect( placeholders.length ).toBeGreaterThan( 0 );
+
+		// no help icon (or any SVG) inside the loading state
+		placeholders.forEach( ( placeholder ) => {
+			expect(
+				placeholder.querySelector( 'svg' )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	test( `Component doesn't render for new accounts with no pending funds`, () => {

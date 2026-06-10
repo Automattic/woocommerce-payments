@@ -24,10 +24,10 @@ import {
 	Modal,
 	Tooltip,
 } from '@wordpress/components';
-import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { Dispute } from 'wcpay/types/disputes';
 import { recordEvent } from 'tracks';
-import { useDisputeAccept } from 'wcpay/data';
+import { useDisputeAccept } from 'wcpay/data/disputes';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
@@ -44,7 +44,21 @@ import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
 
 interface Props {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'id'
+		| 'amount'
+		| 'balance_transactions'
+		| 'created'
+		| 'currency'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'metadata'
+		| 'payment_intent'
+		| 'reason'
+		| 'status'
+	>;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	orderUrl: string | undefined;
@@ -95,7 +109,16 @@ function getAcceptDisputeProps( {
 	dispute,
 	isDisputeAcceptRequestPending,
 }: {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'amount'
+		| 'balance_transactions'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'reason'
+		| 'status'
+	>;
 	isDisputeAcceptRequestPending: boolean;
 } ): AcceptDisputeProps {
 	if ( isInquiry( dispute.status ) ) {
@@ -253,6 +276,13 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		);
 	};
 
+	const disputeTracksProperties = {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+		on_page: 'transaction_details',
+	};
+
 	const disputeAcceptAction = getAcceptDisputeProps( {
 		dispute,
 		isDisputeAcceptRequestPending,
@@ -339,10 +369,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					<ExternalLink
 						href={ getLearnMoreDocsUrl() }
 						onClick={ () => {
-							recordEvent( 'wcpay_dispute_help_link_clicked', {
-								dispute_status: dispute.status,
-								on_page: 'transaction_details',
-							} );
+							recordEvent(
+								'wcpay_dispute_help_link_clicked',
+								disputeTracksProperties
+							);
 						} }
 					>
 						{ getHelpLinkText() }
@@ -389,10 +419,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									onClick={ () => {
 										recordEvent(
 											'wcpay_dispute_challenge_clicked',
-											{
-												dispute_status: dispute.status,
-												on_page: 'transaction_details',
-											}
+											disputeTracksProperties
 										);
 									} }
 									__next40pxDefaultSize
@@ -414,10 +441,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							onClick={ () => {
 								recordEvent(
 									disputeAcceptAction.acceptButtonTracksEvent,
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									disputeTracksProperties
 								);
 								setModalOpen( true );
 							} }
@@ -516,12 +540,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										onClick={ () => {
 											recordEvent(
 												disputeAcceptAction.modalButtonTracksEvent,
-												{
-													dispute_status:
-														dispute.status,
-													on_page:
-														'transaction_details',
-												}
+												disputeTracksProperties
 											);
 
 											/**

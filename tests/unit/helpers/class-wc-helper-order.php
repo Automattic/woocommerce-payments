@@ -69,6 +69,8 @@ class WC_Helper_Order {
 			'status'        => Order_Status::PENDING,
 			'customer_id'   => $customer_id,
 			'customer_note' => '',
+			'created_via'   => 'checkout',
+			'cart_hash'     => 'test_cart_hash',
 			'total'         => '',
 		];
 

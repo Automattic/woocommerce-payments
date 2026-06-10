@@ -10,7 +10,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import type { DepositStatus } from 'wcpay/types/deposits';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
@@ -22,7 +22,8 @@ export type TransactionType =
 	| 'card_reader_fee'
 	| 'financing_payout'
 	| 'financing_paydown'
-	| 'fee_refund';
+	| 'fee_refund'
+	| 'network_costs';
 
 export type TransactionSource =
 	| 'ach_credit_transfer'

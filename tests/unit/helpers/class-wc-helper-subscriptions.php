@@ -62,6 +62,13 @@ function wcs_cart_contains_resubscribe() {
 	return ( WC_Subscriptions::$wcs_cart_contains_resubscribe )();
 }
 
+function wcs_cart_contains_switches() {
+	if ( ! WC_Subscriptions::$wcs_cart_contains_switches ) {
+		return;
+	}
+	return ( WC_Subscriptions::$wcs_cart_contains_switches )();
+}
+
 function wcs_create_renewal_order( $subscription ) {
 	if ( ! WC_Subscriptions::$wcs_create_renewal_order ) {
 		return;
@@ -181,6 +188,13 @@ class WC_Subscriptions {
 	public static $wcs_cart_contains_resubscribe = null;
 
 	/**
+	 * wcs_cart_contains_switches mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_cart_contains_switches = null;
+
+	/**
 	 * wcs_create_renewal_order mock.
 	 *
 	 * @var function
@@ -215,59 +229,63 @@ class WC_Subscriptions {
 	 */
 	public static $wcs_is_manual_renewal_enabled = null;
 
-	public static function set_wcs_order_contains_subscription( $function ) {
-		self::$wcs_order_contains_subscription = $function;
+	public static function set_wcs_order_contains_subscription( $callback ) {
+		self::$wcs_order_contains_subscription = $callback;
 	}
 
-	public static function set_wcs_get_subscriptions_for_order( $function ) {
-		self::$wcs_get_subscriptions_for_order = $function;
+	public static function set_wcs_get_subscriptions_for_order( $callback ) {
+		self::$wcs_get_subscriptions_for_order = $callback;
 	}
 
-	public static function set_wcs_get_subscriptions_for_renewal_order( $function ) {
-		self::$wcs_get_subscriptions_for_renewal_order = $function;
+	public static function set_wcs_get_subscriptions_for_renewal_order( $callback ) {
+		self::$wcs_get_subscriptions_for_renewal_order = $callback;
 	}
 
-	public static function set_wcs_is_subscription( $function ) {
-		self::$wcs_is_subscription = $function;
+	public static function set_wcs_is_subscription( $callback ) {
+		self::$wcs_is_subscription = $callback;
 	}
 
-	public static function set_wcs_get_subscription( $function ) {
-		self::$wcs_get_subscription = $function;
+	public static function set_wcs_get_subscription( $callback ) {
+		self::$wcs_get_subscription = $callback;
 	}
 
-	public static function set_wcs_get_subscriptions( $function ) {
-		self::$wcs_get_subscriptions = $function;
+	public static function set_wcs_get_subscriptions( $callback ) {
+		self::$wcs_get_subscriptions = $callback;
 	}
 
-	public static function wcs_cart_contains_renewal( $function ) {
-		self::$wcs_cart_contains_renewal = $function;
+	public static function wcs_cart_contains_renewal( $callback ) {
+		self::$wcs_cart_contains_renewal = $callback;
 	}
 
-	public static function wcs_get_order_type_cart_items( $function ) {
-		self::$wcs_get_order_type_cart_items = $function;
+	public static function wcs_get_order_type_cart_items( $callback ) {
+		self::$wcs_get_order_type_cart_items = $callback;
 	}
 
-	public static function wcs_cart_contains_resubscribe( $function ) {
-		self::$wcs_cart_contains_resubscribe = $function;
+	public static function wcs_cart_contains_resubscribe( $callback ) {
+		self::$wcs_cart_contains_resubscribe = $callback;
 	}
 
-	public static function wcs_create_renewal_order( $function ) {
-		self::$wcs_create_renewal_order = $function;
+	public static function wcs_cart_contains_switches( $callback ) {
+		self::$wcs_cart_contains_switches = $callback;
 	}
 
-	public static function wcs_order_contains_renewal( $function ) {
-		self::$wcs_order_contains_renewal = $function;
+	public static function wcs_create_renewal_order( $callback ) {
+		self::$wcs_create_renewal_order = $callback;
+	}
+
+	public static function wcs_order_contains_renewal( $callback ) {
+		self::$wcs_order_contains_renewal = $callback;
 	}
 
 	public static function is_duplicate_site() {
 		return false;
 	}
 
-	public static function set_wcs_is_manual_renewal_required( $function ) {
-		self::$wcs_is_manual_renewal_required = $function;
+	public static function set_wcs_is_manual_renewal_required( $callback ) {
+		self::$wcs_is_manual_renewal_required = $callback;
 	}
 
-	public static function set_wcs_is_manual_renewal_enabled( $function ) {
-		self::$wcs_is_manual_renewal_enabled = $function;
+	public static function set_wcs_is_manual_renewal_enabled( $callback ) {
+		self::$wcs_is_manual_renewal_enabled = $callback;
 	}
 }

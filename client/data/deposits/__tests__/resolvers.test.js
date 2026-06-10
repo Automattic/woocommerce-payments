@@ -149,7 +149,7 @@ describe( 'getDeposits resolver', () => {
 			depositsResponse.data.forEach( ( payout ) => {
 				expect( generator.next().value ).toEqual(
 					controls.dispatch(
-						'wc/payments',
+						'wc/payments/deposits',
 						'finishResolution',
 						'getDeposit',
 						[ payout.id ]

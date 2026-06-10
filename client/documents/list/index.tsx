@@ -13,7 +13,11 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import { displayType } from 'documents/strings';
-import { Document, useDocuments, useDocumentsSummary } from 'data/index';
+import {
+	Document,
+	useDocuments,
+	useDocumentsSummary,
+} from 'wcpay/data/documents';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
@@ -237,7 +241,7 @@ export const DocumentsList = (): JSX.Element => {
 		<Page>
 			<DocumentsFilters />
 			<TableCard
-				className="documents-list woocommerce-report-table has-search"
+				className="documents-list woocommerce-report-table"
 				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }

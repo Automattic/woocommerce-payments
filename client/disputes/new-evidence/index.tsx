@@ -31,17 +31,18 @@ import {
 	generateCoverLetter,
 	getBusinessDetails,
 } from './cover-letter-generator';
-import {
-	useGetSettings,
-	useDisputeEvidence,
-	WCPAY_STORE_NAME,
-} from 'wcpay/data';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { useGetSettings } from 'wcpay/data/settings';
+// The only dispatch made through this store handle invalidates getPaymentIntent,
+// which now lives in the payment-intents store.
+import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
+import { resolveProductType } from './resolve-product-type';
 import {
 	Button,
 	HorizontalRule,
@@ -124,7 +125,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	>( {} );
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } =
 		useDispatch( 'core/notices' );
-	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
+	const storeDispatch = useDispatch( paymentIntentsStore ) as {
 		invalidateResolutionForStoreSelector: ( selector: string ) => void;
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
@@ -141,6 +142,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	} >( {} );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
+	const getDisputeTracksProperties = () => ( {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+	} );
+
 	const isFeatureFlagEnabled =
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
 		false;
@@ -156,10 +163,11 @@ export default ( { query }: { query: { id: string } } ) => {
 					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
-				const suggestedProductType =
-					d.metadata?.__product_type ||
-					d.order?.suggested_product_type ||
-					'';
+				const suggestedProductType = resolveProductType(
+					d.metadata,
+					d.order?.suggested_product_type,
+					isFeatureFlagEnabled
+				);
 				setProductType( suggestedProductType );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
@@ -502,7 +510,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
+				: 'wcpay_dispute_save_evidence_success',
+			getDisputeTracksProperties()
 		);
 
 		createSuccessNotice( message, {
@@ -521,7 +530,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed',
+			getDisputeTracksProperties()
 		);
 
 		const message = submit
@@ -551,7 +561,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			recordEvent(
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked',
+				getDisputeTracksProperties()
 			);
 
 			// Build base evidence object
@@ -816,7 +827,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	const updateProductType = ( newType: string ) => {
-		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
+		recordEvent( 'wcpay_dispute_product_selected', {
+			...getDisputeTracksProperties(),
+			selection: newType,
+		} );
 		setProductType( newType );
 		// Reset the manual edit flag so the cover letter regenerates with the new product type
 		// This ensures attachment labels are updated to match the selected product type
@@ -893,6 +907,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 
 		recordEvent( 'wcpay_dispute_file_upload_started', {
+			...getDisputeTracksProperties(),
 			type: key,
 		} );
 
@@ -929,10 +944,12 @@ export default ( { query }: { query: { id: string } } ) => {
 			} ) );
 
 			recordEvent( 'wcpay_dispute_file_upload_success', {
+				...getDisputeTracksProperties(),
 				type: key,
 			} );
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
+				...getDisputeTracksProperties(),
 				message: err instanceof Error ? err.message : String( err ),
 			} );
 

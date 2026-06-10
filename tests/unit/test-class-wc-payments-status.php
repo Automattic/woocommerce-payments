@@ -58,6 +58,14 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Post-test teardown.
+	 */
+	public function tear_down(): void {
+		WC_Payments::mode()->live();
+		parent::tear_down();
+	}
+
+	/**
 	 * Test that debug_tools filter adds all tools.
 	 */
 	public function test_debug_tools_adds_wcpay_tools() {
@@ -262,5 +270,50 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		// Clean up filter.
 		remove_filter( 'user_has_cap', $filter_callback );
+	}
+
+	/**
+	 * Test that the Dev Mode row shows "Disabled" when dev mode is off.
+	 */
+	public function test_dev_mode_row_shows_disabled_when_dev_mode_off(): void {
+		$this->set_up_connected_mocks();
+		WC_Payments::mode()->live();
+
+		ob_start();
+		$this->status->render_status_report_section();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Dev Mode', $output );
+		$this->assertStringContainsString( 'Disabled', $output );
+	}
+
+	/**
+	 * Configures class-level mocks so that render_status_report_section() reaches the Dev Mode row.
+	 */
+	private function set_up_connected_mocks(): void {
+		$this->mock_http->method( 'is_connected' )->willReturn( true );
+		$this->mock_http->method( 'get_blog_id' )->willReturn( '123456789' );
+		$this->mock_gateway->method( 'is_connected' )->willReturn( true );
+		$this->mock_account->method( 'get_stripe_account_id' )->willReturn( 'acct_test123' );
+		$this->mock_gateway->method( 'needs_setup' )->willReturn( false );
+		$this->mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+		$this->mock_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
+		$this->mock_gateway->method( 'get_option' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				$map = [
+					'current_protection_level'       => 'standard',
+					'manual_capture'                 => 'no',
+					'account_business_support_phone' => '555-0123',
+				];
+				if ( isset( $map[ $key ] ) ) {
+					return $map[ $key ];
+				}
+				if ( strpos( $key, 'express_checkout_' ) === 0 ) {
+					return [];
+				}
+				return $default;
+			}
+		);
 	}
 }

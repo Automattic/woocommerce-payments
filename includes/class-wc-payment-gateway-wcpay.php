@@ -1234,6 +1234,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Log the exception.
 			Logger::exception( 'Error occurred during the payment process.', $e );
 
+			// Defense in depth: when the payment intent already succeeded, a
+			// downstream exception (e.g. third-party plugin throwing from
+			// woocommerce_reduce_order_stock, woocommerce_payment_complete, or
+			// woocommerce_order_status_processing) must not flip the order to
+			// Failed or surface a failure to the customer who has already been
+			// charged. Preserve the post-payment order status, record a
+			// diagnostic note, and complete the checkout normally.
+			if ( Intent_Status::SUCCEEDED === $this->order_service->get_intention_status_for_order( $order ) ) {
+				$order->add_order_note(
+					sprintf(
+						/* translators: %s: error message from the downstream exception */
+						__( 'Payment succeeded, but a downstream error occurred during post-payment processing: %s. Order status preserved.', 'woocommerce-payments' ),
+						esc_html( $e->getMessage() )
+					)
+				);
+
+				Logger::warning(
+					sprintf(
+						'Payment intent already succeeded; downstream %s on order #%d suppressed to preserve order status.',
+						get_class( $e ),
+						$order->get_id()
+					)
+				);
+
+				return [
+					'result'   => 'success',
+					'redirect' => $this->get_return_url( $order ),
+				];
+			}
+
 			// We set this variable to be used in following checks.
 			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
 
@@ -1443,7 +1473,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		} else {
+		} elseif ( empty( $options['is_changing_payment_method_for_subscription'] ) ) {
+			// A subscription carries the billing details from when it was created, which can be years
+			// behind whatever the customer last gave us elsewhere. Swapping the payment method isn't a
+			// signal that those details changed, so refreshing from them here risks overwriting fresher
+			// data with stale data — we leave the existing customer untouched in that case.
+
 			/**
 			 * Update customer data asynchronously via shutdown hook to avoid blocking the payment response.
 			 *
@@ -1528,7 +1563,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
 		$customer_details_options = [
-			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			'is_woopay'                                   => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			'is_changing_payment_method_for_subscription' => $is_changing_payment_method_for_subscription,
 		];
 
 		if ( $payment_information->get_customer_id() ) {
@@ -1974,7 +2010,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
-		$this->order_service->update_order_status_from_intent( $order, $intent );
+		if ( $is_changing_payment_method_for_subscription ) {
+			$this->with_stock_reduction_disabled(
+				function () use ( $order, $intent ) {
+					$this->order_service->update_order_status_from_intent( $order, $intent );
+				}
+			);
+		} else {
+			$this->order_service->update_order_status_from_intent( $order, $intent );
+		}
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
@@ -2003,6 +2047,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 				$order->save_meta_data();
 			}
+			if ( 'amazon_pay' === $payment_method_type
+				&& isset( $payment_method_details['amazon_pay']['funding']['card']['last4'] ) ) {
+				$funding_card = $payment_method_details['amazon_pay']['funding']['card'];
+				$order->add_meta_data( 'last4', $funding_card['last4'], true );
+				if ( isset( $funding_card['brand'] ) ) {
+					$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
+				}
+				$order->save_meta_data();
+			}
 		} else {
 			$payment_method_details = false;
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
@@ -2027,7 +2080,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $response;
 		}
 
-		wc_maybe_reduce_stock_levels( $order_id );
+		// Stock reduction is left to WooCommerce core: the status transition inside
+		// update_order_status_from_intent() triggers woocommerce_order_status_* and
+		// woocommerce_payment_complete, both of which run wc_maybe_reduce_stock_levels
+		// with idempotency-flag protection.
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
 		}
@@ -2415,11 +2471,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// Detect express checkout type: first from Stripe's wallet info (authoritative),
-		// then fall back to metadata that may have been set earlier in the flow.
+		// Detect express checkout type: first from metadata that may have been set earlier in the flow,
+		// then fall back to Stripe's wallet info (authoritative for Apple Pay, Google Pay, Link).
 		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
-		if ( ! $express_checkout_type && ! empty( $payment_method_details['card']['wallet']['type'] ) ) {
-			$express_checkout_type = sanitize_text_field( $payment_method_details['card']['wallet']['type'] );
+		$wallet_type           = is_array( $payment_method_details ) ? $payment_method_details['card']['wallet']['type'] ?? null : null;
+		// Amazon Pay reports its type at the top level rather than under card.wallet.
+		if ( ! $wallet_type && is_array( $payment_method_details )
+			&& 'amazon_pay' === ( $payment_method_details['type'] ?? null ) ) {
+			$wallet_type = 'amazon_pay';
+		}
+		if ( ! $express_checkout_type && $wallet_type ) {
+			$express_checkout_type = sanitize_text_field( $wallet_type );
 			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_checkout_type );
 		}
 
@@ -2437,19 +2499,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( $express_checkout_type ) {
 			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
-			$title          = $express_method ? $express_method->get_title() : null;
-			if ( $title ) {
-				$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-				if ( ! empty( $suffix ) ) {
-					$suffix = " ($suffix)";
-				}
-				$order->set_payment_method_title( $title . $suffix );
+			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
+			$suffix         = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+			if ( ! empty( $suffix ) ) {
+				$suffix = " ($suffix)";
 			}
+			$order->set_payment_method_title( $title . $suffix );
 		} else {
 			$order->set_payment_method_title( $payment_method->get_title( $this->get_account_country(), $payment_method_details ) );
 		}
 
 		$order->save();
+
+		$this->sync_payment_method_to_subscriptions( $order );
 	}
 
 	/**
@@ -2623,10 +2685,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( null !== $amount ) {
 					$refund_request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 				}
-				// These are reasons supported by Stripe https://stripe.com/docs/api/refunds/create#create_refund-reason.
-				if ( in_array( $reason, [ 'duplicate', 'fraudulent', 'requested_by_customer' ], true ) ) {
-					$refund_request->set_reason( $reason );
-				}
+				$refund_request->set_full_reason( $reason );
 				$refund = $refund_request->send();
 			}
 			$currency = strtoupper( $refund['currency'] );
@@ -3859,11 +3918,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$amount                 = $order->get_total();
-			$payment_method_details = false;
-			$is_changing_payment    = isset( $_POST['is_changing_payment'] ) && filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN );
+			$amount                                = $order->get_total();
+			$payment_method_details                = false;
+			$is_changing_payment                   = isset( $_POST['is_changing_payment'] )
+				? filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN )
+				: null;
+			$is_subscription_payment_method_change = $this->is_changing_payment_method_for_subscription_from_request( $is_changing_payment );
 
-			if ( $amount > 0 && ! $is_changing_payment ) {
+			if ( $amount > 0 && ! $is_subscription_payment_method_change ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
@@ -3887,7 +3949,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// This is similar to how WC Stripe Gateway handles it - calling payment_complete()
 				// directly ensures the order transitions to the correct status and activates subscriptions.
 				// Otherwise, the order would be in a "Pending payment" state and the subscription would be "Pending".
-				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() ) {
+				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() && ! $is_subscription_payment_method_change ) {
 					$order->payment_complete( $intent_id );
 
 					// Add a success note similar to mark_payment_completed().
@@ -3916,40 +3978,66 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
-			$this->order_service->update_order_status_from_intent( $order, $intent );
+
+			// Determine whether the payment method should be saved for this order. Subscriptions and
+			// subscription renewals must always save it so the subscription can be charged off-session
+			// for future renewals. is_payment_recurring() treats both as recurring — it accounts for
+			// renewals, which wcs_order_contains_subscription()'s default order types exclude. See WOOPMNT-2882.
+			$is_recurring_payment       = $this->is_payment_recurring( $order->get_id() );
+			$should_save_payment_method = $is_recurring_payment || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			// Save and attach the payment token BEFORE updating the order status. Updating the status
+			// fires WCS' woocommerce_subscriptions_paid_for_failed_renewal_order hook, which runs
+			// update_failing_payment_method() -> get_payment_token( $renewal_order ) to copy the token
+			// onto the subscription. If the token were attached afterwards (as it was previously), the
+			// subscription would keep the old failing card. Attaching it first also prevents
+			// maybe_schedule_subscription_order_tracking() from overwriting _payment_method_id back to
+			// the previously-stored card when the order status save fires. See WOOPMNT-2882.
+			$token = null;
+			if ( $intent->is_authorized() && $should_save_payment_method && ! empty( $payment_method_id ) ) {
+				try {
+					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
+					$this->add_token_to_order( $order, $token );
+				} catch ( Exception $e ) {
+					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+
+					// For recurring payments (subscriptions and renewals), token creation failure is
+					// critical - renewals will fail. Re-throw the exception so the customer sees an error
+					// instead of a successful checkout that will fail on the first renewal.
+					if ( $is_recurring_payment ) {
+						throw new Exception(
+							__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
+						);
+					}
+				}
+			}
+
+			if ( $is_subscription_payment_method_change ) {
+				$this->with_stock_reduction_disabled(
+					function () use ( $order, $intent ) {
+						$this->order_service->update_order_status_from_intent( $order, $intent );
+					}
+				);
+			} else {
+				$this->order_service->update_order_status_from_intent( $order, $intent );
+			}
 
 			if ( $intent->is_authorized() ) {
-				wc_maybe_reduce_stock_levels( $order_id );
-				WC()->cart->empty_cart();
+				// Stock reduction is left to WooCommerce core (see note in process_payment_for_order()).
+				if ( ! $is_subscription_payment_method_change ) {
+					WC()->cart->empty_cart();
+				}
 
-				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
-				$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] );
-				if ( $should_save_payment_method && ! empty( $payment_method_id ) ) {
-					try {
-						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
-						$this->add_token_to_order( $order, $token );
-
-						if ( ! empty( $token ) ) {
-							$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
-							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-						}
-					} catch ( Exception $e ) {
-						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-
-						// For subscription orders, token creation failure is critical - renewals will fail.
-						// Re-throw the exception so the customer sees an error instead of a successful
-						// checkout that will fail on the first renewal.
-						if ( $is_subscription ) {
-							throw new Exception(
-								__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
-							);
-						}
-					}
+				// The token was saved and attached above (before the status update). Set the order's
+				// payment method title from it here.
+				if ( ! empty( $token ) ) {
+					$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+					$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				}
 
 				$return_url = $this->get_return_url( $order );
 
-				if ( $is_changing_payment ) {
+				if ( $is_subscription_payment_method_change ) {
 					$this->maybe_update_subscription_payment_method( $order );
 					$return_url = method_exists( $order, 'get_view_order_url' ) ? $order->get_view_order_url() : $this->get_return_url( $order );
 				}
@@ -4928,6 +5016,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ): void {
 		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
 			$this->handle_afterpay_shipping_requirement( $order, $request );
+		}
+	}
+
+	/**
+	 * AJAX-aware variant of {@see is_changing_payment_method_for_subscription()}.
+	 *
+	 * The `update_order_status` AJAX endpoint receives an explicit `is_changing_payment`
+	 * POST flag that reflects the intent of the client request. When that flag is present
+	 * we trust it; otherwise we fall back to the trait's live `$_GET`-based detection.
+	 *
+	 * @param bool|null $is_changing_payment Explicit flag from the current request, or null to rely on the trait.
+	 * @return bool
+	 */
+	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
+		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
+	}
+
+	/**
+	 * Runs a callback with the `woocommerce_payment_complete_reduce_order_stock` filter forced to false.
+	 *
+	 * Payment-method-change flows must never decrement stock: the order was already paid once
+	 * and the customer is only updating the stored payment credential. The status transition
+	 * inside WooCommerce core would otherwise trigger `wc_maybe_reduce_stock_levels()` via
+	 * `woocommerce_payment_complete` and `woocommerce_order_status_*` hooks.
+	 *
+	 * The filter is added at `PHP_INT_MAX - 1` so it wins over any upstream filter that
+	 * might re-enable reduction, and we guard against double-adding to stay reentrant.
+	 *
+	 * @param callable $callback Callback to execute with stock reduction suppressed.
+	 * @return mixed The callback's return value.
+	 */
+	private function with_stock_reduction_disabled( callable $callback ) {
+		$filter           = 'woocommerce_payment_complete_reduce_order_stock';
+		$priority         = PHP_INT_MAX - 1;
+		$already_filtered = false !== has_filter( $filter, '__return_false' );
+
+		if ( ! $already_filtered ) {
+			add_filter( $filter, '__return_false', $priority );
+		}
+
+		try {
+			return $callback();
+		} finally {
+			if ( ! $already_filtered ) {
+				remove_filter( $filter, '__return_false', $priority );
+			}
 		}
 	}
 }

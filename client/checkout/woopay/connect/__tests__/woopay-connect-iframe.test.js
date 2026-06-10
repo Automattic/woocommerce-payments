@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -48,8 +48,9 @@ describe( 'WooPayConnectIframe', () => {
 	it( 'fetches configuration and sets iframe URL on mount', async () => {
 		const { container } = render( <WooPayConnectIframe /> );
 
-		const iframe = container.querySelector( 'iframe' );
 		await waitFor( () => {
+			const iframe = container.querySelector( 'iframe' );
+			expect( iframe ).not.toBeNull();
 			expect( iframe.src ).toContain( mockWoopayHost );
 			expect( iframe.src ).toContain( `testMode=${ mockTestMode }` );
 			expect( iframe.src ).toContain(
@@ -75,21 +76,25 @@ describe( 'WooPayConnectIframe', () => {
 
 		render( <WooPayConnectIframe /> );
 
-		// Simulate iframe load.
-		loadEventCallback();
-
+		// Wait for the iframe to render after async iframeUrl is set.
 		await waitFor( () => {
 			expect( mockAddEventListener ).toHaveBeenCalledWith(
 				'load',
 				expect.any( Function )
 			);
-			expect( setConnectIframeInjectedState ).toHaveBeenCalledWith(
-				INJECTED_STATE.INJECTED
-			);
-			const messageEvent = window.dispatchEvent.mock.calls[ 0 ][ 0 ];
-			expect( messageEvent.data.action ).toBe(
-				'get_iframe_post_message_success'
-			);
 		} );
+
+		// Simulate iframe load.
+		act( () => {
+			loadEventCallback();
+		} );
+
+		expect( setConnectIframeInjectedState ).toHaveBeenCalledWith(
+			INJECTED_STATE.INJECTED
+		);
+		const messageEvent = window.dispatchEvent.mock.calls[ 0 ][ 0 ];
+		expect( messageEvent.data.action ).toBe(
+			'get_iframe_post_message_success'
+		);
 	} );
 } );

@@ -10,6 +10,10 @@ declare module '@wordpress/date' {
 	): string;
 }
 
+declare module '@wordpress/dataviews/wp' {
+	export * from '@wordpress/dataviews';
+}
+
 declare module 'dompurify' {
 	/* eslint-disable @typescript-eslint/naming-convention */
 	const DOMPurify: {
@@ -23,8 +27,4 @@ declare module 'dompurify' {
 	};
 	export default DOMPurify;
 	/* eslint-enable @typescript-eslint/naming-convention */
-}
-
-declare module '@woocommerce/settings' {
-	const getSetting: ( key: string ) => string;
 }

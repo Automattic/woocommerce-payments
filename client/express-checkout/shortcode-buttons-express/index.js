@@ -19,12 +19,12 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	getStripeElementsMode,
 	displayLoginConfirmation,
 	shouldUseConfirmationTokens,
 	buildPaymentMethodTypes,
 	buildStripeElementsOptions,
 } from '../utils';
+import { getSetupFutureUsageForCart } from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -220,6 +220,13 @@ jQuery( ( $ ) => {
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
 			const useConfirmationTokens = shouldUseConfirmationTokens();
+			const isManualCaptureEnabled =
+				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
+			const hasSubscription =
+				getExpressCheckoutData( 'has_subscription' ) ?? false;
+			const {
+				setupFutureUsage = hasSubscription ? 'off_session' : null,
+			} = creationOptions;
 			const paymentMethodTypes = buildPaymentMethodTypes();
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
@@ -229,7 +236,10 @@ jQuery( ( $ ) => {
 					currency: creationOptions.currency,
 					useConfirmationTokens,
 					paymentMethodTypes,
-					mode: getStripeElementsMode(),
+					captureMethod: isManualCaptureEnabled
+						? 'manual'
+						: undefined,
+					setupFutureUsage,
 					appearance: getExpressCheckoutButtonAppearance(),
 				} )
 			);
@@ -476,6 +486,8 @@ jQuery( ( $ ) => {
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
 					currency: cachedCartData.totals.currency_code.toLowerCase(),
+					setupFutureUsage:
+						getSetupFutureUsageForCart( cachedCartData ),
 				} );
 			} else if (
 				getExpressCheckoutData( 'button_context' ) === 'product' &&
@@ -484,6 +496,11 @@ jQuery( ( $ ) => {
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
 					currency: getExpressCheckoutData( 'product' )?.currency,
+					setupFutureUsage: getExpressCheckoutData(
+						'has_subscription'
+					)
+						? 'off_session'
+						: null,
 				} );
 			} else {
 				expressCheckoutButtonUi.hideContainer();
@@ -530,10 +547,25 @@ jQuery( ( $ ) => {
 						// since the "total" is part of the initialization of the Stripe elements (and not part of the ECE button),
 						// if the totals change, we might need to update it on the element itself.
 						const newTotal = getTotalAmount();
+						const elementsUpdateOptions = {
+							...( shouldUseConfirmationTokens()
+								? {
+										setupFutureUsage:
+											getSetupFutureUsageForCart(
+												cachedCartData
+											),
+								  }
+								: {} ),
+							...( newTotal !== prevTotal && newTotal > 0
+								? { amount: newTotal }
+								: {} ),
+						};
 						if ( ! elements ) {
 							wcpayECE.init();
-						} else if ( newTotal !== prevTotal && newTotal > 0 ) {
-							elements.update( { amount: newTotal } );
+						} else if (
+							Object.keys( elementsUpdateOptions ).length
+						) {
+							await elements.update( elementsUpdateOptions );
 						}
 
 						// Check if cart is eligible (filter allows extensions to override)

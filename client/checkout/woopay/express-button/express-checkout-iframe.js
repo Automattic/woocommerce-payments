@@ -213,7 +213,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	};
 
 	function onMessage( e ) {
-		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
+		if ( e.origin !== new URL( getConfig( 'woopayHost' ) ).origin ) {
 			return;
 		}
 

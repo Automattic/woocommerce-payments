@@ -77,7 +77,7 @@ class WC_Payments_Styles_Cache {
 		// Auto-compute for block themes when no valid stored appearance exists.
 		if ( wp_is_block_theme() ) {
 			$appearance = self::compute_woopay_appearance_from_theme();
-			if ( null !== $appearance ) {
+			if ( null !== $appearance && self::validate_appearance_schema( $appearance ) ) {
 				$font_rules = self::get_font_rules_from_registered_styles();
 				self::set_woopay_appearance( $appearance, $font_rules );
 				return $appearance;
@@ -190,8 +190,34 @@ class WC_Payments_Styles_Cache {
 
 		// Extract input styles. WordPress theme.json uses 'textInput' as the
 		// element name (maps to textarea + text-like input types).
-		$input_el            = $styles['elements']['textInput'] ?? $styles['elements']['input'] ?? [];
-		$input_bg_color      = self::resolve_style_value( $input_el['color']['background'] ?? $bg_color, $bg_color, $styles );
+		$input_el = $styles['elements']['textInput'] ?? $styles['elements']['input'] ?? [];
+
+		// Input background resolution:
+		// 1. elements.textInput.color.background (standard theme.json path).
+		// 2. settings.custom.input-background (Woo/WP themes like Assembler).
+		// 3. White for light themes, page bg for dark (safe fallback).
+		//
+		// Most block themes leave input backgrounds undefined (transparent).
+		// The visible white comes from a parent container, but getComputedStyle
+		// resolves transparent to the page background, making inputs invisible
+		// on WooPay. oklch() expressions from step 2 are evaluated via
+		// resolve_oklch(); other unresolvable values fall through to default.
+		$custom_settings   = wp_get_global_settings( [ 'custom' ] );
+		$input_bg_default  = self::is_color_light( $bg_color ) ? '#ffffff' : $bg_color;
+		$input_bg_raw      = $input_el['color']['background']
+			?? $custom_settings['input-background']
+			?? $input_bg_default;
+		$input_bg_resolved = self::resolve_style_value( $input_bg_raw, $input_bg_default, $styles );
+		$input_bg_resolved = self::resolve_vars_in_expression( $input_bg_resolved );
+
+		// Accept only well-formed hex (#rgb / #rrggbb / #rrggbbaa) and rgb()/rgba()
+		// to prevent malformed values from landing verbatim in the appearance.
+		if ( preg_match( '/^(#[0-9a-f]{3}([0-9a-f]{3})?([0-9a-f]{2})?|rgba?\([\d\s.,%\/]+\))$/i', $input_bg_resolved ) ) {
+			$input_bg_color = $input_bg_resolved;
+		} else {
+			// Try evaluating CSS color functions (e.g. oklch() from Assembler).
+			$input_bg_color = self::resolve_oklch( $input_bg_resolved ) ?? $input_bg_default;
+		}
 		$input_text_color    = self::resolve_style_value( $input_el['color']['text'] ?? $text_color, $text_color, $styles );
 		$input_border_color  = self::resolve_style_value( $input_el['border']['color'] ?? $text_color, $text_color, $styles );
 		$input_border_radius = self::resolve_style_value( $input_el['border']['radius'] ?? '0px', '0px', $styles );
@@ -494,20 +520,36 @@ class WC_Payments_Styles_Cache {
 	 * @return bool True if light, false if dark.
 	 */
 	private static function is_color_light( string $color ): bool {
+		$rgb = self::parse_color( $color );
+		if ( null === $rgb ) {
+			return true; // Default to light for unparseable colors.
+		}
+
+		// Same formula as tinycolor: (r * 299 + g * 587 + b * 114) / 1000.
+		$brightness = ( $rgb[0] * 299 + $rgb[1] * 587 + $rgb[2] * 114 ) / 1000;
+		return $brightness > 125;
+	}
+
+	/**
+	 * Parses a hex color string into an [r, g, b] array of 0-255 integers.
+	 * Supports #rgb and #rrggbb formats. Returns null for unparseable values.
+	 *
+	 * @param string $color The hex color string.
+	 * @return array|null [r, g, b] array or null.
+	 */
+	private static function parse_color( string $color ): ?array {
 		$color = ltrim( $color, '#' );
 		if ( 3 === strlen( $color ) ) {
 			$color = $color[0] . $color[0] . $color[1] . $color[1] . $color[2] . $color[2];
 		}
-		if ( 6 !== strlen( $color ) ) {
-			return true; // Default to light for unparseable colors.
+		if ( 6 !== strlen( $color ) || ! ctype_xdigit( $color ) ) {
+			return null;
 		}
-		$r = hexdec( substr( $color, 0, 2 ) );
-		$g = hexdec( substr( $color, 2, 2 ) );
-		$b = hexdec( substr( $color, 4, 2 ) );
-
-		// Same formula as tinycolor: (r * 299 + g * 587 + b * 114) / 1000.
-		$brightness = ( $r * 299 + $g * 587 + $b * 114 ) / 1000;
-		return $brightness > 125;
+		return [
+			hexdec( substr( $color, 0, 2 ) ),
+			hexdec( substr( $color, 2, 2 ) ),
+			hexdec( substr( $color, 4, 2 ) ),
+		];
 	}
 
 	/**
@@ -538,6 +580,25 @@ class WC_Payments_Styles_Cache {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Substitutes any var(--wp--preset--*) references inside a CSS expression
+	 * with their resolved concrete values. Unlike resolve_css_var(), which
+	 * only handles values that *are* a var() reference, this walks the string
+	 * and replaces var() tokens wherever they appear — needed for expressions
+	 * like oklch(from var(--wp--preset--color--theme-1) ...) where the var
+	 * is nested inside another CSS function.
+	 *
+	 * @param string $value The CSS expression possibly containing var() tokens.
+	 * @return string The expression with var() tokens substituted.
+	 */
+	private static function resolve_vars_in_expression( string $value ): string {
+		return (string) preg_replace_callback(
+			'/var\(\s*--[^)]+\)/',
+			static fn( $m ) => self::resolve_css_var( $m[0] ),
+			$value
+		);
 	}
 
 	/**
@@ -615,6 +676,161 @@ class WC_Payments_Styles_Cache {
 					return $nested;
 				}
 			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Attempts to evaluate a CSS oklch() relative color expression to a hex
+	 * string. Supports the form: oklch(from <color> <L> <C> <H>) where <L>,
+	 * <C>, <H> can be channel references (l, c, h) optionally wrapped in
+	 * calc() with multiplication.
+	 *
+	 * Returns null if the expression cannot be parsed or evaluated.
+	 *
+	 * @param string $value The CSS value to evaluate.
+	 * @return string|null Hex color string (#rrggbb) or null.
+	 */
+	private static function resolve_oklch( string $value ): ?string {
+		// Match: oklch(from <color> <L-expr> <C-expr> <H-expr>).
+		// Each channel expression is either a bare token (\S+) or a calc(...) block.
+		$expr = '(calc\([^)]+\)|\S+)';
+		if ( ! preg_match( '/^oklch\(\s*from\s+(\S+)\s+' . $expr . '\s+' . $expr . '\s+' . $expr . '\s*\)$/', $value, $m ) ) {
+			return null;
+		}
+
+		$base_color = $m[1];
+		$l_expr     = $m[2];
+		$c_expr     = $m[3];
+		$h_expr     = $m[4];
+
+		// Parse the base color to linear sRGB.
+		$rgb = self::parse_color( $base_color );
+		if ( null === $rgb ) {
+			return null;
+		}
+
+		// sRGB (0-255) → linear sRGB (0-1).
+		$lin = array_map(
+			function ( $v ) {
+				$v /= 255.0;
+				return ( $v <= 0.04045 ) ? $v / 12.92 : pow( ( $v + 0.055 ) / 1.055, 2.4 );
+			},
+			$rgb
+		);
+
+		// Linear sRGB → OKLab.
+		$l_ = 0.4122214708 * $lin[0] + 0.5363325363 * $lin[1] + 0.0514459929 * $lin[2];
+		$m_ = 0.2119034982 * $lin[0] + 0.6806995451 * $lin[1] + 0.1073969566 * $lin[2];
+		$s_ = 0.0883024619 * $lin[0] + 0.2817188376 * $lin[1] + 0.6299787005 * $lin[2];
+
+		// cbrt() requires PHP 8.0; pow() returns NAN for negative bases
+		// with fractional exponents. Use sign-preserving cube root.
+		$cbrt = function ( $v ) {
+			return ( $v < 0 ) ? -pow( -$v, 1.0 / 3.0 ) : pow( $v, 1.0 / 3.0 );
+		};
+
+		$l_ = $cbrt( $l_ );
+		$m_ = $cbrt( $m_ );
+		$s_ = $cbrt( $s_ );
+
+		$ok_l = 0.2104542553 * $l_ + 0.7936177850 * $m_ - 0.0040720468 * $s_;
+		$ok_a = 1.9779984951 * $l_ - 2.4285922050 * $m_ + 0.4505937099 * $s_;
+		$ok_b = 0.0259040371 * $l_ + 0.7827717662 * $m_ - 0.8086757660 * $s_;
+
+		// OKLab → OKLch.
+		$lch_l = $ok_l;
+		$lch_c = sqrt( $ok_a * $ok_a + $ok_b * $ok_b );
+		$lch_h = rad2deg( atan2( $ok_b, $ok_a ) );
+		if ( $lch_h < 0 ) {
+			$lch_h += 360;
+		}
+
+		// Evaluate channel expressions.
+		$new_l = self::evaluate_channel_expr( $l_expr, $lch_l, $lch_c, $lch_h );
+		$new_c = self::evaluate_channel_expr( $c_expr, $lch_l, $lch_c, $lch_h );
+		$new_h = self::evaluate_channel_expr( $h_expr, $lch_l, $lch_c, $lch_h );
+
+		if ( null === $new_l || null === $new_c || null === $new_h ) {
+			return null;
+		}
+
+		// Clamp L to [0, 1] and C to [0, 0.5].
+		$new_l = max( 0, min( 1, $new_l ) );
+		$new_c = max( 0, min( 0.5, $new_c ) );
+
+		// OKLch → OKLab.
+		$ok_a2 = $new_c * cos( deg2rad( $new_h ) );
+		$ok_b2 = $new_c * sin( deg2rad( $new_h ) );
+
+		// OKLab → linear sRGB.
+		$l_ = $new_l + 0.3963377774 * $ok_a2 + 0.2158037573 * $ok_b2;
+		$m_ = $new_l - 0.1055613458 * $ok_a2 - 0.0638541728 * $ok_b2;
+		$s_ = $new_l - 0.0894841775 * $ok_a2 - 1.2914855480 * $ok_b2;
+
+		$l_ = $l_ * $l_ * $l_;
+		$m_ = $m_ * $m_ * $m_;
+		$s_ = $s_ * $s_ * $s_;
+
+		$r = +4.0767416621 * $l_ - 3.3077115913 * $m_ + 0.2309699292 * $s_;
+		$g = -1.2684380046 * $l_ + 2.6097574011 * $m_ - 0.3413193965 * $s_;
+		$b = -0.0041960863 * $l_ - 0.7034186147 * $m_ + 1.7076147010 * $s_;
+
+		// Linear sRGB → sRGB (gamma).
+		$to_srgb = function ( $v ) {
+			$v = max( 0, min( 1, $v ) );
+			return ( $v <= 0.0031308 ) ? $v * 12.92 : 1.055 * pow( $v, 1.0 / 2.4 ) - 0.055;
+		};
+
+		$r = (int) round( $to_srgb( $r ) * 255 );
+		$g = (int) round( $to_srgb( $g ) * 255 );
+		$b = (int) round( $to_srgb( $b ) * 255 );
+
+		return sprintf( '#%02x%02x%02x', $r, $g, $b );
+	}
+
+	/**
+	 * Evaluates a single OKLch channel expression.
+	 *
+	 * Supports: bare channel refs (l, c, h), numeric literals, and
+	 * calc() with a single multiplication (e.g. calc(l * 1.05)).
+	 *
+	 * @param string $expr  The channel expression.
+	 * @param float  $lch_l The L channel value.
+	 * @param float  $lch_c The C channel value.
+	 * @param float  $lch_h The H channel value.
+	 * @return float|null The evaluated value, or null if unparseable.
+	 */
+	private static function evaluate_channel_expr( string $expr, float $lch_l, float $lch_c, float $lch_h ): ?float {
+		$expr = trim( $expr );
+
+		$channels = [
+			'l' => $lch_l,
+			'c' => $lch_c,
+			'h' => $lch_h,
+		];
+
+		// Bare channel reference: l, c, h.
+		if ( isset( $channels[ $expr ] ) ) {
+			return $channels[ $expr ];
+		}
+
+		// Numeric literal.
+		if ( is_numeric( $expr ) ) {
+			return (float) $expr;
+		}
+
+		// calc(<channel> * <number>) or calc(<number> * <channel>).
+		if ( preg_match( '/^calc\(\s*([a-z]+)\s*\*\s*([\d.]+)\s*\)$/', $expr, $cm ) ) {
+			$ch  = $cm[1];
+			$mul = (float) $cm[2];
+			return isset( $channels[ $ch ] ) ? $channels[ $ch ] * $mul : null;
+		}
+		if ( preg_match( '/^calc\(\s*([\d.]+)\s*\*\s*([a-z]+)\s*\)$/', $expr, $cm ) ) {
+			$mul = (float) $cm[1];
+			$ch  = $cm[2];
+			return isset( $channels[ $ch ] ) ? $channels[ $ch ] * $mul : null;
 		}
 
 		return null;

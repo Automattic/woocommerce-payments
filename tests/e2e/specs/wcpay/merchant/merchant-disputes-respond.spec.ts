@@ -193,7 +193,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				).toBeVisible();
 
 				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					.fill( 'my product description' );
 			} );
 
@@ -520,16 +520,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			// so we retry the fill+verify cycle until the value sticks.
 			await expect( async () => {
 				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					.fill( 'my product description' );
 
 				// Blur the field to ensure value is committed to state
 				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					.press( 'Tab' );
 
 				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 				).toHaveValue( 'my product description', {
 					timeout: 2000,
 				} );
@@ -565,15 +565,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			}
 
 			// Wait for the success snackbar to confirm UI acknowledged the save.
+			// Stripe doesn't guarantee immediate read-after-write consistency,
+			// but the toPass() retry loop in the next step polls until the saved
+			// value is visible, so no extra wait is needed here.
 			await expect(
 				merchantPage.locator( '.components-snackbar__content', {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
-
-			// Stripe does not guarantee immediate read-after-write consistency.
-			// Allow time for the write to propagate before navigating away.
-			await merchantPage.waitForTimeout( 3000 );
 		} );
 
 		await test.step( 'Navigate back and verify previously saved values are restored', async () => {
@@ -601,7 +600,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				).toBeVisible();
 
 				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 				).toHaveValue( 'my product description', {
 					timeout: 5000,
 				} );
