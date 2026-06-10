@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { createBlocksMetaSink, createClassicFormSink } from '../sinks';
+import {
+	createBlocksMetaSink,
+	createClassicFormSink,
+	createStoreApiSink,
+} from '../sinks';
 import {
 	appendPaymentMethodIdToForm,
 	appendConfirmationTokenToForm,
@@ -160,5 +164,104 @@ describe( 'createClassicFormSink', () => {
 
 		expect( onError ).toHaveBeenCalledWith( 'declined' );
 		expect( onSubmit ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'createStoreApiSink', () => {
+	let api;
+	let cartApi;
+	let completePayment;
+	let abortPayment;
+
+	const event = {
+		billingDetails: {
+			name: 'Card Holder',
+			email: 'card.holder@example.com',
+			address: { country: 'US' },
+		},
+		expressPaymentType: 'google_pay',
+	};
+
+	const makeSink = () =>
+		createStoreApiSink( {
+			api,
+			cartApi,
+			event,
+			paymentMethodTypes: [ 'card' ],
+			completePayment,
+			abortPayment,
+		} );
+
+	beforeEach( () => {
+		window.wcpayFraudPreventionToken = 'fraud-token';
+		completePayment = jest.fn();
+		abortPayment = jest.fn();
+		api = { confirmIntent: jest.fn().mockReturnValue( true ) };
+		cartApi = { placeOrder: jest.fn() };
+	} );
+
+	it( 'places the order from the credential and completes payment on success', async () => {
+		cartApi.placeOrder.mockResolvedValue( {
+			payment_result: {
+				payment_status: 'success',
+				redirect_url: 'https://example.com/ok',
+			},
+		} );
+
+		await makeSink().success( {
+			credentialId: 'ct_123',
+			credentialType: 'confirmation_token',
+		} );
+
+		expect( cartApi.placeOrder ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				payment_data: expect.arrayContaining( [
+					expect.objectContaining( {
+						key: 'wcpay-confirmation-token',
+						value: 'ct_123',
+					} ),
+					expect.objectContaining( {
+						key: 'express_payment_type',
+						value: 'google_pay',
+					} ),
+					expect.objectContaining( {
+						key: 'wcpay-express-payment-method-types',
+						value: JSON.stringify( [ 'card' ] ),
+					} ),
+				] ),
+			} )
+		);
+		expect( api.confirmIntent ).toHaveBeenCalledWith(
+			'https://example.com/ok'
+		);
+		expect( completePayment ).toHaveBeenCalledWith(
+			'https://example.com/ok'
+		);
+		expect( abortPayment ).not.toHaveBeenCalled();
+	} );
+
+	it( 'aborts when the order does not succeed', async () => {
+		cartApi.placeOrder.mockResolvedValue( {
+			payment_result: {
+				payment_status: 'failure',
+				payment_details: [
+					{ key: 'errorMessage', value: 'Card declined.' },
+				],
+			},
+		} );
+
+		await makeSink().success( {
+			credentialId: 'pm_1',
+			credentialType: 'payment_method',
+		} );
+
+		expect( abortPayment ).toHaveBeenCalledWith( 'Card declined.' );
+		expect( completePayment ).not.toHaveBeenCalled();
+	} );
+
+	it( 'maps an authorization error to abortPayment', () => {
+		makeSink().error( 'Submit error' );
+
+		expect( abortPayment ).toHaveBeenCalledWith( 'Submit error' );
 	} );
 } );

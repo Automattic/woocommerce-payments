@@ -13,12 +13,38 @@ import {
 import { getSetupFutureUsageForCart } from 'wcpay/express-checkout/utils/subscriptions';
 import { transformCartDataForDisplayItems } from 'wcpay/express-checkout/transformers/wc-to-stripe';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
-import type { ExpressPaymentResult } from './payment-result';
+import type {
+	ExpressPaymentCredential,
+	ExpressPaymentResult,
+} from './payment-result';
 
 // The Store API cart shape, kept loose - only the fields the transformers and
 // subscription helpers read are relevant here.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CartData = any;
+
+/**
+ * Submits the elements and creates a payment credential. The shared primitive
+ * behind every confirm: the session uses it for the dynamic paths, and the
+ * standalone paths call it directly (they have no per-method session).
+ *
+ * @throws The Stripe error if element validation or credential creation fails.
+ */
+export async function confirmExpressCredential(
+	stripe: Stripe,
+	elements: StripeElements,
+	useConfirmationTokens: boolean
+): Promise< ExpressPaymentCredential > {
+	await validateElements( elements );
+
+	const credential = await createPaymentCredential(
+		stripe,
+		elements,
+		useConfirmationTokens
+	);
+
+	return { credentialId: credential.id, credentialType: credential.type };
+}
 
 export interface ExpressPaymentSessionConfig {
 	/** camelCase method key: 'applePay' | 'googlePay' | 'amazonPay'. */
@@ -115,17 +141,14 @@ export class ExpressPaymentSession {
 		stripe: Stripe,
 		elements: StripeElements
 	): Promise< ExpressPaymentResult > {
-		await validateElements( elements );
-
-		const credential = await createPaymentCredential(
+		const credential = await confirmExpressCredential(
 			stripe,
 			elements,
 			this.config.useConfirmationTokens
 		);
 
 		return {
-			credentialId: credential.id,
-			credentialType: credential.type,
+			...credential,
 			expressPaymentType: this.config.expressPaymentType,
 			stripePaymentMethodTypes: this.getPaymentMethodTypes(),
 		};

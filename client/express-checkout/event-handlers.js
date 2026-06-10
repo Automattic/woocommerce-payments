@@ -2,17 +2,14 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
  */
 import {
-	getErrorMessageFromNotice,
 	getExpressCheckoutData,
 	updateShippingAddressUI,
-	createPaymentCredential,
 	shouldUseConfirmationTokens,
 } from './utils';
 import {
@@ -20,16 +17,15 @@ import {
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
 import ExpressCheckoutCartApi from './cart-api';
-import {
-	transformStripePaymentMethodForStoreApi,
-	transformStripeShippingAddressForStoreApi,
-} from './transformers/stripe-to-wc';
+import { transformStripeShippingAddressForStoreApi } from './transformers/stripe-to-wc';
 import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
 import { getSetupFutureUsageForCart } from './utils/subscriptions';
+import { confirmExpressCredential } from './session/express-payment-session';
+import { createStoreApiSink } from './session/sinks';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
@@ -133,92 +129,30 @@ export const onConfirmHandler = async (
 	event,
 	paymentMethodTypes = []
 ) => {
-	const { error: submitError } = await elements.submit();
-	if ( submitError ) {
-		return abortPayment( submitError.message );
-	}
-
-	const useConfirmationTokens = shouldUseConfirmationTokens();
+	// The standalone buttons own the address and place the order via the Store
+	// API, so they deliver the credential through the Store API sink rather than
+	// the checkout form. `cartApi` is read live so test overrides apply.
+	const sink = createStoreApiSink( {
+		api,
+		cartApi,
+		event,
+		paymentMethodTypes,
+		completePayment,
+		abortPayment,
+	} );
 
 	let credential;
 	try {
-		credential = await createPaymentCredential(
+		credential = await confirmExpressCredential(
 			stripe,
 			elements,
-			useConfirmationTokens
+			shouldUseConfirmationTokens()
 		);
-	} catch ( credentialError ) {
-		return abortPayment( credentialError.message );
-	}
-
-	try {
-		// Kick off checkout processing step.
-		const orderResponse = await cartApi.placeOrder( {
-			// adding extension data as a separate action,
-			// so that we make it harder for external plugins to modify or intercept checkout data.
-			...transformStripePaymentMethodForStoreApi(
-				event,
-				credential.id,
-				useConfirmationTokens,
-				paymentMethodTypes
-			),
-			extensions: applyFilters(
-				'wcpay.express-checkout.cart-place-order-extension-data',
-				{}
-			),
-		} );
-
-		if ( orderResponse.payment_result.payment_status !== 'success' ) {
-			return abortPayment(
-				getErrorMessageFromNotice(
-					orderResponse.message ??
-						orderResponse.payment_result?.payment_details.find(
-							( detail ) => detail.key === 'errorMessage'
-						)?.value ??
-						''
-				)
-			);
-		}
-
-		// Extract redirect URL from payment_details if redirect_url is empty
-		let redirectUrl = orderResponse.payment_result.redirect_url;
-		if ( ! redirectUrl ) {
-			const redirectDetail =
-				orderResponse.payment_result.payment_details?.find(
-					( detail ) => detail.key === 'redirect'
-				);
-			redirectUrl = redirectDetail?.value || '';
-		}
-
-		const confirmationRequest = api.confirmIntent( redirectUrl );
-
-		// `true` means there is no intent to confirm.
-		if ( confirmationRequest === true ) {
-			completePayment( redirectUrl );
-		} else {
-			const authenticatedRedirectUrl = await confirmationRequest;
-
-			completePayment( authenticatedRedirectUrl );
-		}
 	} catch ( e ) {
-		// API errors are not parsed, so we need to do it ourselves.
-		if ( e.json ) {
-			e = await Promise.resolve( e.json() );
-		}
-
-		return abortPayment(
-			getErrorMessageFromNotice(
-				e.message ||
-					e.payment_result?.payment_details.find(
-						( detail ) => detail.key === 'errorMessage'
-					)?.value ||
-					__(
-						'There was a problem processing the order.',
-						'woocommerce-payments'
-					)
-			)
-		);
+		return sink.error( e.message );
 	}
+
+	return sink.success( credential );
 };
 
 export const onReadyHandler = async function ( { availablePaymentMethods } ) {

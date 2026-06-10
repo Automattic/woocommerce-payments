@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Refactor dynamic place order buttons onto a shared ExpressPaymentSession and payment-result sinks.
+Refactor express checkout paths onto a shared ExpressPaymentSession and payment-result sinks (blocks/classic dynamic place order buttons and the standalone Store API flow).

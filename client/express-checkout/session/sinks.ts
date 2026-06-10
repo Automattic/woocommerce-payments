@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
+
+/**
  * Internal dependencies
  */
 import {
@@ -8,7 +14,12 @@ import {
 	appendFraudPreventionTokenInputToForm,
 } from 'wcpay/checkout/classic/upe-utils';
 import { appendFingerprintInputToForm } from 'wcpay/checkout/utils/fingerprint';
-import type { ExpressPaymentResult } from './payment-result';
+import { getErrorMessageFromNotice } from 'wcpay/express-checkout/utils';
+import { transformStripePaymentMethodForStoreApi } from 'wcpay/express-checkout/transformers/stripe-to-wc';
+import type {
+	ExpressPaymentCredential,
+	ExpressPaymentResult,
+} from './payment-result';
 
 declare global {
 	interface Window {
@@ -17,13 +28,18 @@ declare global {
 }
 
 /**
- * Delivers an {@link ExpressPaymentResult} (or an authorization error) to
- * WooCommerce. Each environment hands the credential to WooCommerce differently;
- * this is the seam where that knowledge - and the exact field names the WCPay
- * server expects - lives.
+ * Delivers a credential (or an authorization error) to WooCommerce. Each
+ * environment hands the credential over differently; this is the seam where
+ * that knowledge - and the exact field names the WCPay server expects - lives.
+ *
+ * The dynamic paths carry the full {@link ExpressPaymentResult}; the standalone
+ * paths only have the bare {@link ExpressPaymentCredential}, hence the type
+ * parameter.
  */
-export interface ExpressPaymentResultSink {
-	success( result: ExpressPaymentResult ): unknown;
+export interface ExpressPaymentResultSink<
+	T extends ExpressPaymentCredential = ExpressPaymentResult
+> {
+	success( result: T ): unknown;
 	error( message: string ): unknown;
 }
 
@@ -110,5 +126,113 @@ export const createClassicFormSink = ( {
 	},
 	error( message: string ): void {
 		onError( message );
+	},
+} );
+
+interface StoreApiSinkContext {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	api: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	cartApi: any;
+	/** The Stripe Express Checkout `confirm` event (billing, shipping, payer, express type). */
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	event: any;
+	/** Stripe PaymentMethod types the elements were initialized with. */
+	paymentMethodTypes?: string[];
+	completePayment: ( redirectUrl: string ) => void;
+	abortPayment: ( message: string ) => void;
+}
+
+/**
+ * Standalone express buttons: the wallet sheet owns the address and totals, so
+ * the order is placed through the Store API (bypassing the checkout form) and
+ * any required intent is confirmed afterwards. The billing/shipping details
+ * come from the wallet `event`, and the express type is whichever wallet the
+ * shopper picked - so this works from the bare credential.
+ */
+export const createStoreApiSink = ( {
+	api,
+	cartApi,
+	event,
+	paymentMethodTypes = [],
+	completePayment,
+	abortPayment,
+}: StoreApiSinkContext ): ExpressPaymentResultSink< ExpressPaymentCredential > => ( {
+	async success( {
+		credentialId,
+		credentialType,
+	}: ExpressPaymentCredential ): Promise< void > {
+		const useConfirmationToken = credentialType === 'confirmation_token';
+
+		try {
+			const orderResponse = await cartApi.placeOrder( {
+				// adding extension data as a separate action,
+				// so that we make it harder for external plugins to modify or intercept checkout data.
+				...transformStripePaymentMethodForStoreApi(
+					event,
+					credentialId,
+					useConfirmationToken,
+					paymentMethodTypes
+				),
+				extensions: applyFilters(
+					'wcpay.express-checkout.cart-place-order-extension-data',
+					{}
+				),
+			} );
+
+			if ( orderResponse.payment_result.payment_status !== 'success' ) {
+				return abortPayment(
+					getErrorMessageFromNotice(
+						orderResponse.message ??
+							orderResponse.payment_result?.payment_details.find(
+								( detail: { key: string } ) =>
+									detail.key === 'errorMessage'
+							)?.value ??
+							''
+					) ?? ''
+				);
+			}
+
+			// Extract redirect URL from payment_details if redirect_url is empty
+			let redirectUrl = orderResponse.payment_result.redirect_url;
+			if ( ! redirectUrl ) {
+				const redirectDetail =
+					orderResponse.payment_result.payment_details?.find(
+						( detail: { key: string } ) => detail.key === 'redirect'
+					);
+				redirectUrl = redirectDetail?.value || '';
+			}
+
+			const confirmationRequest = api.confirmIntent( redirectUrl );
+
+			// `true` means there is no intent to confirm.
+			if ( confirmationRequest === true ) {
+				completePayment( redirectUrl );
+			} else {
+				completePayment( await confirmationRequest );
+			}
+		} catch ( e ) {
+			// API errors are not parsed, so we need to do it ourselves.
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const raw = e as any;
+			const error = raw?.json ? await Promise.resolve( raw.json() ) : raw;
+
+			return abortPayment(
+				getErrorMessageFromNotice(
+					error.message ||
+						error.payment_result?.payment_details.find(
+							( detail: { key: string } ) =>
+								detail.key === 'errorMessage'
+						)?.value ||
+						__(
+							'There was a problem processing the order.',
+							'woocommerce-payments'
+						)
+				) ?? ''
+			);
+		}
+	},
+	error( message: string ): void {
+		abortPayment( message );
 	},
 } );
