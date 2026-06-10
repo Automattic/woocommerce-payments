@@ -1774,12 +1774,13 @@ class WC_Payments_Order_Service {
 				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 	}
 
@@ -1801,12 +1802,13 @@ class WC_Payments_Order_Service {
 				__( 'A payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 
 		if ( ! empty( $message ) ) {
@@ -1835,12 +1837,13 @@ class WC_Payments_Order_Service {
 				__( 'A terminal payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>)', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
 			'WooPayments',
-			$intent_id ?? $charge_id
+			$intent_id ?? $charge_id,
+			$transaction_url
 		);
 
 		if ( ! empty( $message ) ) {
@@ -1867,12 +1870,13 @@ class WC_Payments_Order_Service {
 				__( 'A payment of %1$s was <strong>authorized</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 
 		return $note;
@@ -1921,12 +1925,13 @@ class WC_Payments_Order_Service {
 				__( 'A payment of %1$s was <strong>successfully captured</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 		return $note;
 	}
@@ -1949,12 +1954,13 @@ class WC_Payments_Order_Service {
 				__( 'A capture of %1$s <strong>failed</strong> to complete using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 
 		if ( ! empty( $message ) ) {
@@ -1981,10 +1987,11 @@ class WC_Payments_Order_Service {
 				__( 'Payment authorization has <strong>expired</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 	}
 
@@ -2005,10 +2012,11 @@ class WC_Payments_Order_Service {
 				__( 'Payment authorization was successfully <strong>cancelled</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 	}
 
@@ -2039,10 +2047,11 @@ class WC_Payments_Order_Service {
 					'&#x26D4;' => '&#x26D4;',
 					'strong'   => '<strong>',
 					'br'       => '<br>',
-					'a'        => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'        => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order )
+			$this->get_order_amount( $order ),
+			$transaction_url
 		);
 
 		return $note;
@@ -2073,10 +2082,11 @@ class WC_Payments_Order_Service {
 					'&#x1F6AB;' => '&#x1F6AB;',
 					'strong'    => '<strong>',
 					'br'        => '<br>',
-					'a'         => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'         => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order )
+			$this->get_order_amount( $order ),
+			$transaction_url
 		);
 
 		return $note;
