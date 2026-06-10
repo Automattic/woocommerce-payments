@@ -25,9 +25,9 @@ class WC_Payments_Order_Success_Page {
 	private $should_hide_status_description = false;
 
 	/**
-	 * Constructor.
+	 * Register all the hooks for the order success page.
 	 */
-	public function __construct() {
+	public function init_hooks() {
 		add_filter( 'woocommerce_order_received_verify_known_shoppers', [ $this, 'determine_woopay_order_received_verify_known_shoppers' ], 11 );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_render_multibanco_payment_instructions' ] );

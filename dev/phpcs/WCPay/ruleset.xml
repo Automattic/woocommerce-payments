@@ -14,7 +14,5 @@
 		<exclude-pattern>*/includes/class-woopay-tracker.php</exclude-pattern>
 		<exclude-pattern>*/includes/woopay/*</exclude-pattern>
 		<exclude-pattern>*/includes/woopay-user/*</exclude-pattern>
-
-		<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
 	</rule>
 </ruleset>

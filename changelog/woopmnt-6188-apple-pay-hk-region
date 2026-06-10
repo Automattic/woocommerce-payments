@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Apple Pay checkout failing with "Region is required" for Hong Kong addresses by resolving the WooCommerce region from the district when Apple Pay/Google Pay omit the region or deliver it in the postcode/city field.
