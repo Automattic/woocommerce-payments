@@ -125,6 +125,10 @@ export async function checkAllExpressMethodsAvailability(
 	try {
 		stripe = await cachedStripePromise;
 	} catch {
+		// Clear the caches so a transient failure (e.g. the Stripe script being
+		// temporarily unreachable) doesn't poison every subsequent call.
+		cachedStripePromise = null;
+		memoizedCheck = null;
 		return {};
 	}
 

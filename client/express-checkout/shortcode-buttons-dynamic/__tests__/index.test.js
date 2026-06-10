@@ -36,6 +36,7 @@ jest.mock(
 	} )
 );
 
+let mockStripeMinorUnit = 2;
 jest.mock( 'wcpay/express-checkout/utils', () => ( {
 	getExpressCheckoutData: jest.fn( ( key ) => {
 		if ( key === 'flags' ) {
@@ -43,7 +44,7 @@ jest.mock( 'wcpay/express-checkout/utils', () => ( {
 		}
 		if ( key === 'checkout' ) {
 			return {
-				stripe_minor_unit: 2,
+				stripe_minor_unit: mockStripeMinorUnit,
 				display_prices_with_tax: false,
 			};
 		}
@@ -289,6 +290,7 @@ describe( 'custom place order button flow', () => {
 
 	beforeEach( () => {
 		jest.clearAllMocks();
+		mockStripeMinorUnit = 2;
 		mockGetCart = jest.fn().mockResolvedValue( getSimpleCart() );
 		checkAllExpressMethodsAvailability.mockResolvedValue( {
 			applePay: true,
@@ -461,6 +463,55 @@ describe( 'custom place order button flow', () => {
 			'google_pay'
 		);
 		expect( wcApi.submit ).toHaveBeenCalled();
+	} );
+
+	it( 'parses the displayed total with the currency minor unit when cart data is unavailable', async () => {
+		mockGetCart = jest
+			.fn()
+			.mockRejectedValue( new Error( 'cart unavailable' ) );
+		// A zero-decimal currency, e.g. JPY.
+		mockStripeMinorUnit = 0;
+
+		const orderReviewTable = document.createElement( 'div' );
+		orderReviewTable.className = 'woocommerce-checkout-review-order-table';
+		orderReviewTable.innerHTML =
+			'<div class="order-total"><span class="woocommerce-Price-amount">¥1,234</span></div>';
+		document.body.appendChild( orderReviewTable );
+
+		getUPEConfig.mockImplementation( ( key ) => {
+			if ( key === 'isExpressCheckoutInPaymentMethodsEnabled' ) {
+				return true;
+			}
+			if ( key === 'currency' ) {
+				return 'JPY';
+			}
+			if ( key === 'cartTotal' ) {
+				return 0;
+			}
+			if ( key === 'paymentMethodsConfig' ) {
+				return {
+					google_pay: {
+						isExpressCheckout: true,
+						gatewayId: 'wcpay_gpay_dom_fallback_test',
+						stripePaymentMethodType: 'card',
+					},
+				};
+			}
+			return null;
+		} );
+		initExpressPaymentMethods( mockApi );
+		await flushAsync();
+
+		await registeredHandlers.wcpay_gpay_dom_fallback_test.render(
+			containerEl,
+			{ validate: jest.fn(), submit: jest.fn() }
+		);
+
+		expect( mockStripe.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( { amount: 1234, currency: 'jpy' } )
+		);
+
+		orderReviewTable.remove();
 	} );
 
 	it( 'hides the payment method row when Stripe reports the method as unavailable', async () => {

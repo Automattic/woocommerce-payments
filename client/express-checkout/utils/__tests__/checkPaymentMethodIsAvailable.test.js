@@ -171,6 +171,35 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 				mockApi.loadStripeForExpressCheckout
 			).toHaveBeenCalledTimes( 1 );
 		} );
+
+		it( 'retries loading stripe after a transient failure', async () => {
+			mockApi.loadStripeForExpressCheckout
+				.mockRejectedValueOnce( new Error( 'network error' ) )
+				.mockResolvedValue( mockStripe );
+
+			const failedResult = await checkAllExpressMethodsAvailability(
+				mockApi,
+				1000,
+				'usd'
+			);
+
+			expect( failedResult ).toEqual( {} );
+
+			const retriedResult = await checkAllExpressMethodsAvailability(
+				mockApi,
+				1000,
+				'usd'
+			);
+
+			expect( retriedResult ).toEqual( {
+				applePay: true,
+				googlePay: false,
+				amazonPay: true,
+			} );
+			expect(
+				mockApi.loadStripeForExpressCheckout
+			).toHaveBeenCalledTimes( 2 );
+		} );
 	} );
 
 	describe( 'checkPaymentMethodIsAvailable', () => {

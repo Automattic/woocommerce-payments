@@ -111,7 +111,16 @@ function getCartTotal(): number {
 		const total = parseFloat( normalized );
 
 		if ( ! isNaN( total ) && total > 0 ) {
-			return Math.round( total * 100 );
+			// Not all currencies have 2 decimals (JPY has 0, KWD has 3) -
+			// the exponent Stripe expects is computed server-side.
+			const stripeMinorUnit =
+				(
+					getExpressCheckoutData( 'checkout' ) as {
+						stripe_minor_unit?: number;
+					} | null
+				 )?.stripe_minor_unit ?? 2;
+
+			return Math.round( total * 10 ** stripeMinorUnit );
 		}
 	}
 
