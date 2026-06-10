@@ -346,3 +346,36 @@ $print-context: '.wcpay-reports-balance-print-context';
 		}
 	}
 }
+
+// The Balance summary renders through DataViews, but it must match the bespoke
+// summary table (and its loading skeleton, which renders that table). DataViews'
+// table layout adds a sortable column header and its own cell padding, so scope
+// a few overrides to neutralise that chrome and match the original row metrics.
+.wcpay-reports-balance-dv {
+	.dataviews-view-table {
+		width: 100%;
+		border-collapse: collapse;
+
+		// A fixed reconciliation summary has no sortable columns.
+		thead {
+			display: none;
+		}
+
+		td {
+			padding: 0;
+			height: 40px;
+			vertical-align: middle;
+			border-bottom: 1px solid $gray-100;
+		}
+
+		tr:last-child td {
+			border-bottom: 0;
+		}
+	}
+
+	// Let cell content sit flush; the card padding supplies the inset.
+	.dataviews-view-table__cell-content-wrapper {
+		padding: 0;
+		min-height: 0;
+	}
+}

@@ -217,6 +217,17 @@ export const BalanceDataView = ( {
 						marginTop: '16px',
 					} }
 				>
+					<div
+						style={ {
+							padding: '12px 0 16px',
+							fontSize: '15px',
+							fontWeight: 500,
+							lineHeight: '20px',
+							borderBottom: '1px solid #f0f0f0',
+						} }
+					>
+						{ __( 'Balance summary', 'woocommerce-payments' ) }
+					</div>
 					<DataViewsLayout />
 				</div>
 			</DataViewsComposed>
