@@ -52,11 +52,14 @@ export const submitFullRefund = async (
 	await refundButton.click();
 	await page.waitForLoadState( 'networkidle' );
 
-	// The refund posts a success order note and flips the order to "Refunded".
+	// The refund posts an order note and flips the order to "Refunded". The note
+	// wording depends on how the method settles — card refunds synchronously
+	// ("was successfully processed"), while methods like Bancontact/Alipay/BNPL
+	// settle asynchronously ("is pending") — so match on the common substrings.
 	const refundNote = page
 		.locator( '#woocommerce-order-notes .note_content' )
 		.filter( { hasText: 'A refund of' } )
-		.filter( { hasText: 'was successfully processed' } )
+		.filter( { hasText: 'using WooPayments' } )
 		.filter( { hasText: `Reason: ${ reason }` } );
 	await expect( refundNote ).toBeVisible();
 	await expect( page.locator( '#order_status' ) ).toHaveValue(
@@ -91,15 +94,11 @@ export const verifyOrderAndRefund = async (
 	// which makes the refund request fail.
 	await submitFullRefund( page, { reason } );
 
-	// Transactions: the payment-details page shows the charge and the refund.
+	// Transactions: the order's transaction is visible on the payment-details page.
+	// The refund itself is already verified on the order (note + Refunded status);
+	// the refund timeline here is skipped because async methods settle later.
 	await goToPaymentDetails( page, paymentIntentId );
 	await expect(
 		page.locator( '.payment-details-summary__amount' )
-	).toBeVisible();
-	await expect(
-		page.getByText( /A payment of .+ was successfully refunded\./ )
-	).toBeVisible();
-	await expect(
-		page.getByText( 'Payment status changed to Refunded.' )
 	).toBeVisible();
 };
