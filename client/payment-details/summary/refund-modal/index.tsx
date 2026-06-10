@@ -140,6 +140,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 							link: (
 								<Link
 									href={ orderUrl }
+									type="external"
 									onClick={ () =>
 										recordEvent(
 											'payments_transactions_details_partial_refund',
