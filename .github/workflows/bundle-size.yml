@@ -21,7 +21,7 @@ jobs:
                   node-version-file: '.nvmrc'
                   cache: npm
             - name: Checking for file changes
-              uses: preactjs/compressed-size-action@68177c91dc8dcaa2f80e10ced85ebee59fb676df # post-2.9.1
+              uses: preactjs/compressed-size-action@55bc26418aac9d1e7ee232255af3e3e9523ba23b # post-2.9.1
               with:
                   pattern: '{release/**/*.js,release/**/*.css}'
                   exclude: '{release/vendor/**}'
