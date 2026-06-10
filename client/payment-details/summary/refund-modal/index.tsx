@@ -6,8 +6,9 @@
 import React from 'react';
 import { Button, RadioControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -21,12 +22,18 @@ import { recordEvent } from 'tracks';
 interface RefundModalProps {
 	charge: Charge;
 	formattedAmount: string;
+	/**
+	 * URL of the associated order, when one exists. When provided, the modal
+	 * offers a link to the order screen for a partial / more granular refund.
+	 */
+	orderUrl?: string;
 	onModalClose: () => void;
 }
 
 const RefundModal: React.FC< RefundModalProps > = ( {
 	charge,
 	formattedAmount,
+	orderUrl,
 	onModalClose,
 } ) => {
 	const [ reason, setReason ] = useState< string | null >( null );
@@ -122,6 +129,33 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 				] }
 				onChange={ ( value: string ) => setReason( value ) }
 			/>
+			{ orderUrl && (
+				<p className="missing-order-notice-modal__partial-refund">
+					{ createInterpolateElement(
+						__(
+							'Need to refund part of the order? <link>Go to the order</link>.',
+							'woocommerce-payments'
+						),
+						{
+							link: (
+								<Link
+									href={ orderUrl }
+									onClick={ () =>
+										recordEvent(
+											'payments_transactions_details_partial_refund',
+											{
+												payment_intent_id:
+													charge.payment_intent,
+												order_id: charge.order?.id,
+											}
+										)
+									}
+								/>
+							),
+						}
+					) }
+				</p>
+			) }
 		</ConfirmationModal>
 	);
 };
