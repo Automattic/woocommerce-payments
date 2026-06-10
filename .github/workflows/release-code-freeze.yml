@@ -24,6 +24,7 @@ jobs:
       freeze: ${{ steps.check-freeze.outputs.FREEZE }}
       nextReleaseVersion: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
       nextReleaseDate: ${{ steps.define_var.outputs.RELEASE_PLANNED_DATE }}
+      currentVersion: ${{ steps.current-version.outputs.VERSION }}
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -87,6 +88,8 @@ jobs:
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
       RELEASE_PR_ID: ${{ needs.create-release-pr.outputs.release-pr-id }}
       GITHUB_RUN_ID: ${{ github.run_id }}
+      CURRENT_VERSION: ${{ needs.check-code-freeze.outputs.currentVersion }}
+      PRODUCT_AMBASSADORS_SLACK_IDS: "<@U03BURMGS95> <@UA4763TED>"  # Aashik and Francois. Update directly if needed.
     steps:
       - name: "Slack ping"
         uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
@@ -124,6 +127,13 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "If you absolutely need to include a PR that was not merged in `develop` yet, please consult the release lead."
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*For Product Ambassadors:* ${{ env.PRODUCT_AMBASSADORS_SLACK_IDS }} <https://github.com/Automattic/woocommerce-payments/compare/${{ env.CURRENT_VERSION }}...release/${{ env.RELEASE_VERSION }}|Here is what changed> in the upcoming (${{ env.RELEASE_VERSION }})."
                   }
                 },
                 {

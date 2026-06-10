@@ -101,13 +101,13 @@ describe( 'NonCompliantDisputeSteps', () => {
 		// Check step title
 		expect(
 			screen.getByText( /Accepting the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 
 		// Check step description - use container query to avoid text matching issues
 		const descriptions = container.querySelectorAll(
-			'.dispute-steps__item-description'
+			'.dispute-step-item__description'
 		);
 		const acceptDescription = Array.from( descriptions ).find( ( el ) =>
 			el.textContent?.includes( 'forfeit the funds' )
@@ -132,7 +132,7 @@ describe( 'NonCompliantDisputeSteps', () => {
 		// Check step title
 		expect(
 			screen.getByText( /Challenge the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 
@@ -189,14 +189,14 @@ describe( 'NonCompliantDisputeSteps', () => {
 		const { container } = render( <NonCompliantDisputeSteps /> );
 
 		// Check that icons are rendered
-		const icons = container.querySelectorAll( '.dispute-steps__item-icon' );
+		const icons = container.querySelectorAll( '.dispute-step-item__icon' );
 		expect( icons ).toHaveLength( 2 );
 	} );
 
 	test( 'renders two dispute steps', () => {
 		const { container } = render( <NonCompliantDisputeSteps /> );
 
-		const steps = container.querySelectorAll( '.dispute-steps__item' );
+		const steps = container.querySelectorAll( '.dispute-step-item' );
 		expect( steps ).toHaveLength( 2 );
 	} );
 
@@ -275,7 +275,7 @@ describe( 'NotDefendableInquirySteps', () => {
 		// Expand the accordion
 		fireEvent.click( screen.getByText( /Steps you can take/i ) );
 
-		const steps = container.querySelectorAll( '.dispute-steps__item' );
+		const steps = container.querySelectorAll( '.dispute-step-item' );
 		expect( steps ).toHaveLength( 3 );
 
 		// Step 1: return-specific description
@@ -288,7 +288,7 @@ describe( 'NotDefendableInquirySteps', () => {
 		// Step 3: return-specific step
 		expect(
 			screen.getByText( /Respond when the inquiry becomes a dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 
@@ -318,7 +318,7 @@ describe( 'NotDefendableInquirySteps', () => {
 		// Expand the accordion
 		fireEvent.click( screen.getByText( /Steps you can take/i ) );
 
-		const steps = container.querySelectorAll( '.dispute-steps__item' );
+		const steps = container.querySelectorAll( '.dispute-step-item' );
 		expect( steps ).toHaveLength( 2 );
 
 		// Step 1: generic description

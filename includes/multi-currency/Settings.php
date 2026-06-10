@@ -80,7 +80,7 @@ class Settings extends \WC_Settings_Page {
 		// Hide original save button.
 		$GLOBALS['hide_save_button'] = true;
 		?>
-			<div id="wcpay_multi_currency_settings_container" aria-describedby="wcpay_multi_currency_settings_container-description"></div>
+			<div id="wcpay_multi_currency_settings_container" class="wc-settings-prevent-change-event" aria-describedby="wcpay_multi_currency_settings_container-description"></div>
 		<?php
 	}
 

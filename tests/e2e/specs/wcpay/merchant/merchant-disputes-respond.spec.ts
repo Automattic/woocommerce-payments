@@ -565,15 +565,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			}
 
 			// Wait for the success snackbar to confirm UI acknowledged the save.
+			// Stripe doesn't guarantee immediate read-after-write consistency,
+			// but the toPass() retry loop in the next step polls until the saved
+			// value is visible, so no extra wait is needed here.
 			await expect(
 				merchantPage.locator( '.components-snackbar__content', {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
-
-			// Stripe does not guarantee immediate read-after-write consistency.
-			// Allow time for the write to propagate before navigating away.
-			await merchantPage.waitForTimeout( 3000 );
 		} );
 
 		await test.step( 'Navigate back and verify previously saved values are restored', async () => {

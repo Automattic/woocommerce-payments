@@ -41,7 +41,6 @@ export const useReportExport = () => {
 	const [ isExportInProgress, setIsExportInProgress ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const timeoutIdRef = useRef< NodeJS.Timeout | null >( null );
-	const retryCountRef = useRef( 0 );
 
 	useEffect( () => {
 		// Cancel the timeout if the component unmounts.
@@ -65,6 +64,18 @@ export const useReportExport = () => {
 		 * The interval in milliseconds to poll the server.
 		 */
 		interval?: number;
+		/**
+		 * The retry count for the current polling chain.
+		 */
+		retryCount?: number;
+		/**
+		 * Callback invoked when the export is ready for download.
+		 */
+		onSuccess?: () => void;
+		/**
+		 * Callback invoked when polling times out after the maximum number of retries.
+		 */
+		onError?: ( details: { reason: 'request' | 'timeout' } ) => void;
 	}
 
 	/**
@@ -74,9 +85,12 @@ export const useReportExport = () => {
 		checkFileURL,
 		userEmail,
 		interval = 1000,
+		retryCount = 0,
+		onSuccess,
+		onError,
 	}: PollForFileProps ) {
 		timeoutIdRef.current = setTimeout( async () => {
-			retryCountRef.current++;
+			const nextRetryCount = retryCount + 1;
 			let exportedFileURLResponse;
 			try {
 				exportedFileURLResponse = await apiFetch< ExportURLResponse >( {
@@ -102,19 +116,24 @@ export const useReportExport = () => {
 				link.click();
 
 				setIsExportInProgress( false );
+				onSuccess?.();
 
 				return;
 			}
 
-			if ( retryCountRef.current < maxRetries ) {
+			if ( nextRetryCount < maxRetries ) {
 				// If the file is not available, check again after 1 second.
 				pollForFile( {
 					checkFileURL,
 					userEmail,
+					retryCount: nextRetryCount,
+					onSuccess,
+					onError,
 				} );
 			} else {
 				// If the file is not available after the maximum number of retries, show that it will be emailed.
 				setIsExportInProgress( false );
+				onError?.( { reason: 'timeout' } );
 			}
 		}, interval );
 	}
@@ -132,6 +151,14 @@ export const useReportExport = () => {
 		 * The email address to send the export to.
 		 */
 		userEmail: string;
+		/**
+		 * Callback invoked when the export is ready for download.
+		 */
+		onSuccess?: () => void;
+		/**
+		 * Callback invoked when the export request fails or polling times out.
+		 */
+		onError?: ( details: { reason: 'request' | 'timeout' } ) => void;
 	}
 
 	/**
@@ -141,6 +168,8 @@ export const useReportExport = () => {
 		exportRequestURL,
 		exportFileAvailabilityEndpoint,
 		userEmail,
+		onSuccess,
+		onError,
 	}: RequestReportExportProps ) {
 		try {
 			setIsExportInProgress( true );
@@ -157,10 +186,19 @@ export const useReportExport = () => {
 				pollForFile( {
 					checkFileURL,
 					userEmail,
+					onSuccess,
+					onError,
 				} );
+			} else {
+				// A 2xx response without an export_id means the request did not
+				// produce an export. Recover the UI and surface the failure so
+				// the button doesn't stay stuck and the outcome is tracked.
+				setIsExportInProgress( false );
+				onError?.( { reason: 'request' } );
 			}
 		} catch ( error ) {
 			setIsExportInProgress( false );
+			onError?.( { reason: 'request' } );
 			createNotice(
 				'error',
 				__(

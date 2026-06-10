@@ -26,7 +26,9 @@ import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
-import { useDisputes, useGetSettings, useSettings } from 'data';
+import DisputeReadinessCard from './dispute-readiness';
+import { useDisputes } from 'wcpay/data/disputes';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
@@ -131,6 +133,10 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
+	const showDisputeReadinessCard =
+		wcpaySettings.featureFlags?.isDisputeReadinessOverviewEnabled &&
+		! accountRejected &&
+		! accountUnderReview;
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
@@ -373,6 +379,11 @@ const OverviewPage = () => {
 					accountLink={ accountStatus.accountLink }
 				/>
 			</ErrorBoundary>
+			{ showDisputeReadinessCard && (
+				<ErrorBoundary>
+					<DisputeReadinessCard />
+				</ErrorBoundary>
+			) }
 			{ hasActiveLoan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />

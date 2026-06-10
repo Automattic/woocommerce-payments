@@ -26,6 +26,7 @@ describe( 'Express checkout event handlers', () => {
 		global.wcpayExpressCheckoutParams.enabled_methods = [
 			'payment_request',
 		];
+		global.wcpayExpressCheckoutParams.has_subscription = false;
 
 		setCartApiHandler( {
 			updateCustomer: cartApiUpdateCustomerMock,
@@ -131,7 +132,10 @@ describe( 'Express checkout event handlers', () => {
 				} ),
 			} );
 
-			expect( elements.update ).toHaveBeenCalledWith( { amount: 1000 } );
+			expect( elements.update ).toHaveBeenCalledWith( {
+				amount: 1000,
+				setupFutureUsage: null,
+			} );
 			expect( event.resolve ).toHaveBeenCalledWith( {
 				shippingRates: [
 					expect.objectContaining( {
@@ -144,6 +148,53 @@ describe( 'Express checkout event handlers', () => {
 				lineItems: [],
 			} );
 			expect( event.reject ).not.toHaveBeenCalled();
+		} );
+
+		it( 'should update setupFutureUsage when cart contains a subscription', async () => {
+			cartApiUpdateCustomerMock.mockResolvedValue( {
+				items: [],
+				extensions: {
+					subscriptions: [
+						{
+							billing_period: 'month',
+							billing_interval: 1,
+							totals: { total_price: '1000' },
+						},
+					],
+				},
+				shipping_rates: [
+					{
+						package_id: 0,
+						name: 'Shipment 1',
+						destination: {},
+						items: [],
+						shipping_rates: [
+							{
+								rate_id: 'flat_rate:14',
+								name: 'Standard Shipping',
+								description: '',
+								delivery_time: '',
+								price: '1000',
+								taxes: '0',
+								meta_data: [],
+								selected: true,
+								currency_minor_unit: 2,
+							},
+						],
+					},
+				],
+				totals: {
+					total_price: 1000,
+					currency_minor_unit: 2,
+				},
+			} );
+
+			await shippingAddressChangeHandler( event, elements );
+
+			expect( elements.update ).toHaveBeenCalledWith( {
+				amount: 1000,
+				setupFutureUsage: 'off_session',
+			} );
 		} );
 
 		it( 'should handle displaying prices inclusive of tax', async () => {
@@ -219,7 +270,10 @@ describe( 'Express checkout event handlers', () => {
 				} ),
 			} );
 
-			expect( elements.update ).toHaveBeenCalledWith( { amount: 1000 } );
+			expect( elements.update ).toHaveBeenCalledWith( {
+				amount: 1000,
+				setupFutureUsage: null,
+			} );
 			expect( event.resolve ).toHaveBeenCalledWith( {
 				shippingRates: [
 					expect.objectContaining( {

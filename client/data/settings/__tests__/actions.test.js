@@ -85,8 +85,8 @@ describe( 'Settings actions tests', () => {
 			// Since the actual fetching process is mocked, pass the apiResponse to the next saveGenerator step directly
 			next = saveGenerator.next( apiResponse );
 			expect( next.value ).toEqual( {
-				type: 'SET_SETTINGS_VALUES',
-				payload: {
+				type: 'SET_SETTINGS',
+				data: {
 					payment_method_statuses:
 						apiResponse.data.payment_method_statuses,
 				},
@@ -100,6 +100,38 @@ describe( 'Settings actions tests', () => {
 
 			// Check if the saveGenerator is complete
 			expect( saveGenerator.next().done ).toBeTruthy();
+		} );
+
+		test( 'on success, restores the saved snapshot (discarding mid-save edits)', () => {
+			// on success, we reset back the settings to the state they were when the saving started (so any mid-save edits get discarded)
+			const snapshot = {
+				enabled_payment_method_ids: [ 'card' ],
+				is_wcpay_enabled: true,
+			};
+			select.mockReturnValue( {
+				getSettings: () => snapshot,
+			} );
+
+			const apiResponse = {
+				data: {
+					payment_method_statuses: { card: 'active' },
+				},
+			};
+			apiFetch.mockReturnValue( apiResponse );
+
+			const saveGenerator = saveSettings();
+			saveGenerator.next(); // updateIsSavingSettings( true )
+			saveGenerator.next(); // apiFetch
+			const next = saveGenerator.next( apiResponse );
+
+			expect( next.value ).toEqual( {
+				type: 'SET_SETTINGS',
+				data: {
+					...snapshot,
+					payment_method_statuses:
+						apiResponse.data.payment_method_statuses,
+				},
+			} );
 		} );
 
 		test( 'displays success notice after saving', () => {

@@ -36,6 +36,8 @@ class WC_REST_Payments_Timeline_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Retrieve timeline to respond with via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetTimeline
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_timeline( $request ) {

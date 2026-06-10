@@ -10,6 +10,10 @@ declare module '@wordpress/date' {
 	): string;
 }
 
+declare module '@wordpress/dataviews/wp' {
+	export * from '@wordpress/dataviews';
+}
+
 declare module 'dompurify' {
 	/* eslint-disable @typescript-eslint/naming-convention */
 	const DOMPurify: {

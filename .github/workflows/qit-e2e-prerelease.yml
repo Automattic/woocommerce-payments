@@ -69,3 +69,24 @@ jobs:
       E2E_QIT_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
       E2E_QIT_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
       E2E_QIT_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
+
+  summarize:
+    name: "Report failures to Slack"
+    needs: [qit-e2e]
+    # Post only when a matrix cell actually failed (not on cancel or a skipped
+    # upstream build). This workflow is workflow_dispatch only, so the post is
+    # gated by presence here alone — no event_name conditional needed.
+    if: ${{ !cancelled() && needs.qit-e2e.result == 'failure' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Post Slack summary
+        uses: ./.github/actions/qit-slack-summary
+        with:
+          slack-token: ${{ secrets.E2E_SLACK_TOKEN }}
+          channel-id: ${{ secrets.E2E_SLACK_CHANNEL_ID }}

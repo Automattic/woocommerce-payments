@@ -2650,6 +2650,58 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
+	public function test_manage_customer_details_for_order_skips_customer_update_when_changing_subscription_payment_method() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_existing' );
+
+		// The subscription's billing details may be stale, so a payment-method swap must not push
+		// them onto the backend customer where they could overwrite more recent data.
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
+
+		// Isolate the deferred-update hook so do_action() only fires what the method registers.
+		remove_all_actions( 'shutdown' );
+
+		$manage = new ReflectionMethod( $this->card_gateway, 'manage_customer_details_for_order' );
+		$manage->setAccessible( true );
+		[ , $customer_id ] = $manage->invoke(
+			$this->card_gateway,
+			$order,
+			[ 'is_changing_payment_method_for_subscription' => true ]
+		);
+
+		do_action( 'shutdown' );
+
+		$this->assertSame( 'cus_existing', $customer_id );
+	}
+
+	public function test_manage_customer_details_for_order_updates_existing_customer_on_shutdown() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_existing' );
+
+		// A regular payment must still refresh the backend customer with the order's data,
+		// so the skip above stays narrowly scoped to the payment-method-change flow.
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->willReturn( 'cus_existing' );
+
+		remove_all_actions( 'shutdown' );
+
+		$manage = new ReflectionMethod( $this->card_gateway, 'manage_customer_details_for_order' );
+		$manage->setAccessible( true );
+		$manage->invoke( $this->card_gateway, $order, [] );
+
+		do_action( 'shutdown' );
+	}
+
 	public function test_add_payment_method_no_intent() {
 		$result = $this->card_gateway->add_payment_method();
 		$this->assertEquals( 'error', $result['result'] );

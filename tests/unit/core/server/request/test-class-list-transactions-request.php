@@ -116,6 +116,9 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $date_after, $params['date_after'] );
 		$this->assertSame( $date_before, $params['date_before'] );
 		$this->assertSame( $date_between, $params['date_between'] );
+		$this->assertArrayNotHasKey( 'available_on_after', $params );
+		$this->assertArrayNotHasKey( 'available_on_before', $params );
+		$this->assertArrayNotHasKey( 'available_on_between', $params );
 		$this->assertSame( $match, $params['match'] );
 		$this->assertSame( $type, $params['type_is'] );
 		$this->assertSame( $type_is_not, $params['type_is_not'] );
@@ -168,6 +171,18 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$rest_request->set_param( 'date_after', $date_after );
 		$rest_request->set_param( 'date_before', $date_before );
 		$rest_request->set_param( 'date_between', $date_between );
+		$rest_request->set_param(
+			'available_on_after',
+			'2026-04-01 00:00:00'
+		);
+		$rest_request->set_param(
+			'available_on_before',
+			'2026-04-30 23:59:59'
+		);
+		$rest_request->set_param(
+			'available_on_between',
+			[ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ]
+		);
 		$rest_request->set_param( 'match', $match );
 		$rest_request->set_param( 'type_is', $type );
 		$rest_request->set_param( 'type_is_not', $type_is_not );
@@ -197,6 +212,9 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $date_after, $params['date_after'] );
 		$this->assertSame( $date_before, $params['date_before'] );
 		$this->assertSame( $date_between, $params['date_between'] );
+		$this->assertArrayNotHasKey( 'available_on_after', $params );
+		$this->assertArrayNotHasKey( 'available_on_before', $params );
+		$this->assertArrayNotHasKey( 'available_on_between', $params );
 		$this->assertSame( $match, $params['match'] );
 		$this->assertSame( $type, $params['type_is'] );
 		$this->assertSame( $type_is_not, $params['type_is_not'] );

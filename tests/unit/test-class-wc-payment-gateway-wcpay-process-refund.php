@@ -402,6 +402,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			->with( $charge_id );
 
 		$request->expects( $this->once() )
+			->method( 'set_full_reason' )
+			->with( $reason );
+
+		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $response );
 

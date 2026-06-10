@@ -1,0 +1,82 @@
+/** @format */
+
+.dispute-recommendations-card {
+	// Each section is its own Accordion card (Lucy review 2026-05-29). The
+	// Accordion shell (.wcpay-accordion) supplies the card border, radius
+	// and padding. It is not a .components-card, so it misses the 24px
+	// inter-card gap that `.woocommerce-payments-page .components-card`
+	// applies; add it back so successive cards sit clear of each other and
+	// of the Timeline below.
+	margin-bottom: $grid-unit-30;
+
+	&__show-more {
+		// Disclosure for items beyond the per-section cap.
+		margin-top: $grid-unit-10;
+
+		summary {
+			cursor: pointer;
+			font-size: 13px;
+			line-height: 20px;
+			color: $studio-blue-50;
+			user-select: none;
+			list-style: none;
+			display: inline-flex;
+			align-items: center;
+			gap: $grid-unit-05;
+
+			&::-webkit-details-marker {
+				display: none;
+			}
+
+			// CSS chevron so sighted users read this as a toggle, not a
+			// navigation link. Rotates 180° on open.
+			&::before {
+				content: '';
+				display: inline-block;
+				width: 0;
+				height: 0;
+				border-left: 4px solid transparent;
+				border-right: 4px solid transparent;
+				border-top: 5px solid currentColor;
+				transition: transform 0.15s ease;
+			}
+
+			&:hover {
+				color: $studio-blue-60;
+			}
+		}
+
+		&[open] > summary::before {
+			transform: rotate( -180deg );
+		}
+	}
+}
+
+// Urgency tint sits on the icon SVG via currentColor. No red: recommendations
+// coach, they don't flag errors (design review 2026-05-26). Strengths get the
+// green `published` checkmark; coaching (critical + tip) gets the amber
+// `caution` `!`. Tints are the WP design-system alert tones from Lucy's Figma;
+// they fall below WCAG 1.4.11 3:1 on white but the icon shape carries the
+// meaning, so color is reinforcement, not the sole differentiator. The
+// container sizing and row geometry live in the shared `DisputeStepItem`
+// stylesheet (`client/components/dispute-step-item/style.scss`).
+//
+// The shared `DisputeStepItem` ships a 1px gray-200 outline on the icon
+// container because "Steps you can take" needs it. Recommendations
+// don't (Lucy review 2026-06-02): the tinted glyph carries enough
+// weight on its own and the outline competed visually with the urgency
+// color. Override here so the rule stays scoped to this card.
+.dispute-recommendations__item {
+	.dispute-step-item__icon {
+		border: none;
+	}
+
+	&--positive .dispute-step-item__icon svg {
+		color: $alert-green;
+	}
+
+	&--critical .dispute-step-item__icon svg,
+	&--tip .dispute-step-item__icon svg {
+		color: $alert-yellow;
+	}
+}

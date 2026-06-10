@@ -64,13 +64,14 @@ module.exports = {
 	],
 	transform: {
 		'^.+\\.jsx?$': 'babel-jest',
-		'^.+\\.tsx?$': [ 'ts-jest', { isolatedModules: true } ],
+		'^.+\\.tsx?$': 'ts-jest',
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [
 		[
 			'node_modules/(?!',
 			'(@woocommerce/.+)',
+			'|@wordpress/dataviews/',
 			'|gridicons',
 			'|@automattic/components/',
 			'|@automattic/material-design-icons/',

@@ -8,7 +8,7 @@ import { CheckboxControl } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useIsWCPayEnabled } from 'wcpay/data';
+import { useIsWCPayEnabled } from 'wcpay/data/settings';
 import { recordEvent } from 'tracks';
 import DisableConfirmationModal from 'wcpay/disable-confirmation-modal';
 import useToggle from 'wcpay/utils/use-toggle';

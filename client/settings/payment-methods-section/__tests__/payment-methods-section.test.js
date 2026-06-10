@@ -20,7 +20,7 @@ import {
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
 	useGetDuplicatedPaymentMethodIds,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
@@ -32,7 +32,12 @@ jest.mock( '@woocommerce/components', () => {
 	};
 } );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/pm-promotions', () => ( {
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
+} ) );
+jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
@@ -41,9 +46,6 @@ jest.mock( 'wcpay/data', () => ( {
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
-	usePmPromotions: jest
-		.fn()
-		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
 } ) );
 
 jest.mock( 'multi-currency/interface/data', () => ( {

@@ -342,494 +342,504 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
         🇪🇺
       </h2>
       <div
-        class="settings-section"
+        aria-busy="false"
+        class="wcpay-form-busy-state"
       >
         <div
-          class="settings-section__details"
-        >
-          <h2>
-            Currency settings
-          </h2>
-          <p>
-            Choose between automatic or manual exchange rates and modify formatting rules to refine the display of your prices.
-          </p>
-        </div>
-        <div
-          class="settings-section__controls"
-        >
-          <div
-            class="components-surface components-card single-currency-settings-currency-settings emotion-0 emotion-1"
-            data-wp-c16t="true"
-            data-wp-component="Card"
-          >
-            <div
-              class="emotion-2 emotion-1"
-            >
-              <div
-                class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
-                data-wp-c16t="true"
-                data-wp-component="CardBody"
-              >
-                <h4>
-                  Exchange rate
-                </h4>
-                <fieldset>
-                  <ul>
-                    <li>
-                      <fieldset
-                        class="components-radio-control"
-                        id="inspector-radio-control-0"
-                      >
-                        <legend
-                          class="components-base-control__label emotion-6 emotion-7"
-                        />
-                        <div
-                          class="components-flex components-h-stack components-v-stack components-radio-control__group-wrapper emotion-8 emotion-1"
-                          data-wp-c16t="true"
-                          data-wp-component="VStack"
-                        >
-                          <div
-                            class="components-radio-control__option"
-                          >
-                            <input
-                              aria-describedby="inspector-radio-control-0-0-option-description"
-                              checked=""
-                              class="components-radio-control__input"
-                              id="inspector-radio-control-0-0"
-                              name="inspector-radio-control-0"
-                              type="radio"
-                              value="automatic"
-                            />
-                            <label
-                              class="components-radio-control__label"
-                              for="inspector-radio-control-0-0"
-                            >
-                              Fetch rates automatically
-                            </label>
-                            <p
-                              class="components-radio-control__option-description emotion-10 emotion-11"
-                              id="inspector-radio-control-0-0-option-description"
-                            >
-                              Current rate: 1 USD = 0.826381 EUR (Last updated: Sep 24, 2021 1:14AM)
-                            </p>
-                          </div>
-                          <div
-                            class="components-radio-control__option"
-                          >
-                            <input
-                              aria-describedby="inspector-radio-control-0-1-option-description"
-                              class="components-radio-control__input"
-                              id="inspector-radio-control-0-1"
-                              name="inspector-radio-control-0"
-                              type="radio"
-                              value="manual"
-                            />
-                            <label
-                              class="components-radio-control__label"
-                              for="inspector-radio-control-0-1"
-                            >
-                              Manual
-                            </label>
-                            <p
-                              class="components-radio-control__option-description emotion-10 emotion-11"
-                              id="inspector-radio-control-0-1-option-description"
-                            >
-                              Enter your fixed rate of exchange
-                            </p>
-                          </div>
-                        </div>
-                      </fieldset>
-                    </li>
-                  </ul>
-                </fieldset>
-                <h4>
-                  Formatting rules
-                </h4>
-                <fieldset>
-                  <ul>
-                    <li>
-                      <div
-                        class="components-base-control emotion-14 emotion-15"
-                      >
-                        <div
-                          class="components-base-control__field emotion-16 emotion-17"
-                        >
-                          <div
-                            class="components-flex components-input-base components-select-control emotion-18 emotion-19 emotion-20 emotion-1"
-                            data-wp-c16t="true"
-                            data-wp-component="InputBase"
-                          >
-                            <div
-                              class="components-flex-item emotion-22 emotion-23 emotion-1"
-                              data-wp-c16t="true"
-                              data-wp-component="FlexItem"
-                            >
-                              <label
-                                class="components-truncate components-text components-input-control__label emotion-25 emotion-26 emotion-1"
-                                data-wp-c16t="true"
-                                data-wp-component="Text"
-                                for="inspector-select-control-0"
-                              >
-                                Price rounding
-                              </label>
-                            </div>
-                            <div
-                              class="components-input-control__container emotion-28 emotion-29"
-                            >
-                              <select
-                                aria-describedby="inspector-select-control-0__help"
-                                class="components-select-control__input emotion-30 emotion-31"
-                                data-testid="price_rounding"
-                                id="inspector-select-control-0"
-                              >
-                                <option
-                                  value="0"
-                                >
-                                  None
-                                </option>
-                                <option
-                                  value="0.25"
-                                >
-                                  0.25
-                                </option>
-                                <option
-                                  value="0.5"
-                                >
-                                  0.50
-                                </option>
-                                <option
-                                  value="1"
-                                >
-                                  1.00 (recommended)
-                                </option>
-                                <option
-                                  value="5"
-                                >
-                                  5.00
-                                </option>
-                                <option
-                                  value="10"
-                                >
-                                  10.00
-                                </option>
-                              </select>
-                              <span
-                                class="components-input-control__suffix emotion-32 emotion-33"
-                              >
-                                <div
-                                  class="components-input-control-suffix-wrapper emotion-34 emotion-35 emotion-36"
-                                  data-wp-c16t="true"
-                                  data-wp-component="InputControlSuffixWrapper"
-                                >
-                                  <div
-                                    class="emotion-37 emotion-38"
-                                  >
-                                    <svg
-                                      aria-hidden="true"
-                                      focusable="false"
-                                      height="18"
-                                      viewBox="0 0 24 24"
-                                      width="18"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                                      />
-                                    </svg>
-                                  </div>
-                                </div>
-                              </span>
-                              <div
-                                aria-hidden="true"
-                                class="components-input-control__backdrop emotion-39 emotion-40"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <p
-                          class="components-base-control__help emotion-10 emotion-11"
-                          id="inspector-select-control-0__help"
-                        >
-                          Make your EUR prices consistent by rounding them up after they're converted. 
-                          <a
-                            class="components-external-link"
-                            href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding"
-                            rel="external noreferrer noopener"
-                            target="_blank"
-                          >
-                            <span
-                              class="components-external-link__contents"
-                            >
-                              Learn more
-                            </span>
-                            <span
-                              aria-label="(opens in a new tab)"
-                              class="components-external-link__icon"
-                            >
-                              ↗
-                            </span>
-                          </a>
-                        </p>
-                      </div>
-                    </li>
-                    <li>
-                      <div
-                        class="components-base-control emotion-14 emotion-15"
-                      >
-                        <div
-                          class="components-base-control__field emotion-16 emotion-17"
-                        >
-                          <div
-                            class="components-flex components-input-base components-select-control emotion-18 emotion-19 emotion-20 emotion-1"
-                            data-wp-c16t="true"
-                            data-wp-component="InputBase"
-                          >
-                            <div
-                              class="components-flex-item emotion-22 emotion-23 emotion-1"
-                              data-wp-c16t="true"
-                              data-wp-component="FlexItem"
-                            >
-                              <label
-                                class="components-truncate components-text components-input-control__label emotion-25 emotion-26 emotion-1"
-                                data-wp-c16t="true"
-                                data-wp-component="Text"
-                                for="inspector-select-control-1"
-                              >
-                                Charm pricing
-                              </label>
-                            </div>
-                            <div
-                              class="components-input-control__container emotion-28 emotion-29"
-                            >
-                              <select
-                                aria-describedby="inspector-select-control-1__help"
-                                class="components-select-control__input emotion-30 emotion-31"
-                                data-testid="price_charm"
-                                id="inspector-select-control-1"
-                              >
-                                <option
-                                  value="0"
-                                >
-                                  None
-                                </option>
-                                <option
-                                  value="-0.01"
-                                >
-                                  -0.01
-                                </option>
-                                <option
-                                  value="-0.05"
-                                >
-                                  -0.05
-                                </option>
-                              </select>
-                              <span
-                                class="components-input-control__suffix emotion-32 emotion-33"
-                              >
-                                <div
-                                  class="components-input-control-suffix-wrapper emotion-34 emotion-35 emotion-36"
-                                  data-wp-c16t="true"
-                                  data-wp-component="InputControlSuffixWrapper"
-                                >
-                                  <div
-                                    class="emotion-37 emotion-38"
-                                  >
-                                    <svg
-                                      aria-hidden="true"
-                                      focusable="false"
-                                      height="18"
-                                      viewBox="0 0 24 24"
-                                      width="18"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                                      />
-                                    </svg>
-                                  </div>
-                                </div>
-                              </span>
-                              <div
-                                aria-hidden="true"
-                                class="components-input-control__backdrop emotion-39 emotion-40"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <p
-                          class="components-base-control__help emotion-10 emotion-11"
-                          id="inspector-select-control-1__help"
-                        >
-                          Reduce the converted price for a specific amount. 
-                          <a
-                            class="components-external-link"
-                            href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing"
-                            rel="external noreferrer noopener"
-                            target="_blank"
-                          >
-                            <span
-                              class="components-external-link__contents"
-                            >
-                              Learn more
-                            </span>
-                            <span
-                              aria-label="(opens in a new tab)"
-                              class="components-external-link__icon"
-                            >
-                              ↗
-                            </span>
-                          </a>
-                        </p>
-                      </div>
-                    </li>
-                  </ul>
-                </fieldset>
-              </div>
-            </div>
-            <div
-              aria-hidden="true"
-              class="components-elevation emotion-72 emotion-1"
-              data-wp-c16t="true"
-              data-wp-component="Elevation"
-            />
-            <div
-              aria-hidden="true"
-              class="components-elevation emotion-72 emotion-1"
-              data-wp-c16t="true"
-              data-wp-component="Elevation"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="settings-section"
-      >
-        <div
-          class="settings-section__details"
-        >
-          <h2>
-            Preview
-          </h2>
-          <p>
-            Enter a price in your default currency (United States (US) dollar) to see it converted to Euro using the exchange rate and formatting rules above.
-          </p>
-        </div>
-        <div
-          class="settings-section__controls"
-        >
-          <div
-            class="components-surface components-card single-currency-settings-preview-wrapper emotion-0 emotion-1"
-            data-wp-c16t="true"
-            data-wp-component="Card"
-          >
-            <div
-              class="emotion-2 emotion-1"
-            >
-              <div
-                class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
-                data-wp-c16t="true"
-                data-wp-component="CardBody"
-              >
-                <div>
-                  <div>
-                    <div
-                      class="components-base-control with-value emotion-82 emotion-15"
-                    >
-                      <div
-                        class="components-base-control__field emotion-84 emotion-17"
-                      >
-                        <label
-                          class="components-base-control__label emotion-86 emotion-87"
-                          for="inspector-text-control-with-affixes-0"
-                        >
-                          United States (US) dollar
-                        </label>
-                        <div
-                          class="text-control-with-affixes text-control-with-suffix"
-                        >
-                          <input
-                            aria-describedby="inspector-text-control-with-affixes-0__suffix"
-                            class="components-text-control__input"
-                            data-testid="store_currency_value"
-                            id="inspector-text-control-with-affixes-0"
-                            type="text"
-                            value="20"
-                          />
-                          <span
-                            class="text-control-with-affixes__suffix"
-                            id="inspector-text-control-with-affixes-0__suffix"
-                          >
-                            $
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div>
-                    <div
-                      class="components-base-control with-value emotion-82 emotion-15"
-                    >
-                      <div
-                        class="components-base-control__field emotion-84 emotion-17"
-                      >
-                        <label
-                          class="components-base-control__label emotion-86 emotion-87"
-                          for="inspector-text-control-with-affixes-1"
-                        >
-                          Euro
-                        </label>
-                        <div
-                          class="text-control-with-affixes disabled"
-                        >
-                          <input
-                            aria-describedby=""
-                            class="components-text-control__input"
-                            data-testid="calculated_value"
-                            disabled=""
-                            id="inspector-text-control-with-affixes-1"
-                            type="text"
-                            value="€17.00"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              aria-hidden="true"
-              class="components-elevation emotion-72 emotion-1"
-              data-wp-c16t="true"
-              data-wp-component="Elevation"
-            />
-            <div
-              aria-hidden="true"
-              class="components-elevation emotion-72 emotion-1"
-              data-wp-c16t="true"
-              data-wp-component="Elevation"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="settings-section single-currency-settings-save-settings-section"
-      >
-        <div
-          class="settings-section__details"
+          aria-live="polite"
+          class="wcpay-form-busy-state__status screen-reader-text"
+          role="status"
         />
         <div
-          class="settings-section__controls"
+          class="settings-section"
         >
-          <button
-            class="components-button is-next-40px-default-size is-primary"
-            disabled=""
-            type="button"
+          <div
+            class="settings-section__details"
           >
-            Save changes
-          </button>
+            <h2>
+              Currency settings
+            </h2>
+            <p>
+              Choose between automatic or manual exchange rates and modify formatting rules to refine the display of your prices.
+            </p>
+          </div>
+          <div
+            class="settings-section__controls"
+          >
+            <div
+              class="components-surface components-card single-currency-settings-currency-settings emotion-0 emotion-1"
+              data-wp-c16t="true"
+              data-wp-component="Card"
+            >
+              <div
+                class="emotion-2 emotion-1"
+              >
+                <div
+                  class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="CardBody"
+                >
+                  <h4>
+                    Exchange rate
+                  </h4>
+                  <fieldset>
+                    <ul>
+                      <li>
+                        <fieldset
+                          class="components-radio-control"
+                          id="inspector-radio-control-0"
+                        >
+                          <legend
+                            class="components-base-control__label emotion-6 emotion-7"
+                          />
+                          <div
+                            class="components-flex components-h-stack components-v-stack components-radio-control__group-wrapper emotion-8 emotion-1"
+                            data-wp-c16t="true"
+                            data-wp-component="VStack"
+                          >
+                            <div
+                              class="components-radio-control__option"
+                            >
+                              <input
+                                aria-describedby="inspector-radio-control-0-0-option-description"
+                                checked=""
+                                class="components-radio-control__input"
+                                id="inspector-radio-control-0-0"
+                                name="inspector-radio-control-0"
+                                type="radio"
+                                value="automatic"
+                              />
+                              <label
+                                class="components-radio-control__label"
+                                for="inspector-radio-control-0-0"
+                              >
+                                Fetch rates automatically
+                              </label>
+                              <p
+                                class="components-radio-control__option-description emotion-10 emotion-11"
+                                id="inspector-radio-control-0-0-option-description"
+                              >
+                                Current rate: 1 USD = 0.826381 EUR (Last updated: Sep 24, 2021 1:14AM)
+                              </p>
+                            </div>
+                            <div
+                              class="components-radio-control__option"
+                            >
+                              <input
+                                aria-describedby="inspector-radio-control-0-1-option-description"
+                                class="components-radio-control__input"
+                                id="inspector-radio-control-0-1"
+                                name="inspector-radio-control-0"
+                                type="radio"
+                                value="manual"
+                              />
+                              <label
+                                class="components-radio-control__label"
+                                for="inspector-radio-control-0-1"
+                              >
+                                Manual
+                              </label>
+                              <p
+                                class="components-radio-control__option-description emotion-10 emotion-11"
+                                id="inspector-radio-control-0-1-option-description"
+                              >
+                                Enter your fixed rate of exchange
+                              </p>
+                            </div>
+                          </div>
+                        </fieldset>
+                      </li>
+                    </ul>
+                  </fieldset>
+                  <h4>
+                    Formatting rules
+                  </h4>
+                  <fieldset>
+                    <ul>
+                      <li>
+                        <div
+                          class="components-base-control emotion-14 emotion-15"
+                        >
+                          <div
+                            class="components-base-control__field emotion-16 emotion-17"
+                          >
+                            <div
+                              class="components-flex components-input-base components-select-control emotion-18 emotion-19 emotion-20 emotion-1"
+                              data-wp-c16t="true"
+                              data-wp-component="InputBase"
+                            >
+                              <div
+                                class="components-flex-item emotion-22 emotion-23 emotion-1"
+                                data-wp-c16t="true"
+                                data-wp-component="FlexItem"
+                              >
+                                <label
+                                  class="components-truncate components-text components-input-control__label emotion-25 emotion-26 emotion-1"
+                                  data-wp-c16t="true"
+                                  data-wp-component="Text"
+                                  for="inspector-select-control-0"
+                                >
+                                  Price rounding
+                                </label>
+                              </div>
+                              <div
+                                class="components-input-control__container emotion-28 emotion-29"
+                              >
+                                <select
+                                  aria-describedby="inspector-select-control-0__help"
+                                  class="components-select-control__input emotion-30 emotion-31"
+                                  data-testid="price_rounding"
+                                  id="inspector-select-control-0"
+                                >
+                                  <option
+                                    value="0"
+                                  >
+                                    None
+                                  </option>
+                                  <option
+                                    value="0.25"
+                                  >
+                                    0.25
+                                  </option>
+                                  <option
+                                    value="0.5"
+                                  >
+                                    0.50
+                                  </option>
+                                  <option
+                                    value="1"
+                                  >
+                                    1.00 (recommended)
+                                  </option>
+                                  <option
+                                    value="5"
+                                  >
+                                    5.00
+                                  </option>
+                                  <option
+                                    value="10"
+                                  >
+                                    10.00
+                                  </option>
+                                </select>
+                                <span
+                                  class="components-input-control__suffix emotion-32 emotion-33"
+                                >
+                                  <div
+                                    class="components-input-control-suffix-wrapper emotion-34 emotion-35 emotion-36"
+                                    data-wp-c16t="true"
+                                    data-wp-component="InputControlSuffixWrapper"
+                                  >
+                                    <div
+                                      class="emotion-37 emotion-38"
+                                    >
+                                      <svg
+                                        aria-hidden="true"
+                                        focusable="false"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        width="18"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                                        />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </span>
+                                <div
+                                  aria-hidden="true"
+                                  class="components-input-control__backdrop emotion-39 emotion-40"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <p
+                            class="components-base-control__help emotion-10 emotion-11"
+                            id="inspector-select-control-0__help"
+                          >
+                            Make your EUR prices consistent by rounding them up after they're converted. 
+                            <a
+                              class="components-external-link"
+                              href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding"
+                              rel="external noreferrer noopener"
+                              target="_blank"
+                            >
+                              <span
+                                class="components-external-link__contents"
+                              >
+                                Learn more
+                              </span>
+                              <span
+                                aria-label="(opens in a new tab)"
+                                class="components-external-link__icon"
+                              >
+                                ↗
+                              </span>
+                            </a>
+                          </p>
+                        </div>
+                      </li>
+                      <li>
+                        <div
+                          class="components-base-control emotion-14 emotion-15"
+                        >
+                          <div
+                            class="components-base-control__field emotion-16 emotion-17"
+                          >
+                            <div
+                              class="components-flex components-input-base components-select-control emotion-18 emotion-19 emotion-20 emotion-1"
+                              data-wp-c16t="true"
+                              data-wp-component="InputBase"
+                            >
+                              <div
+                                class="components-flex-item emotion-22 emotion-23 emotion-1"
+                                data-wp-c16t="true"
+                                data-wp-component="FlexItem"
+                              >
+                                <label
+                                  class="components-truncate components-text components-input-control__label emotion-25 emotion-26 emotion-1"
+                                  data-wp-c16t="true"
+                                  data-wp-component="Text"
+                                  for="inspector-select-control-1"
+                                >
+                                  Charm pricing
+                                </label>
+                              </div>
+                              <div
+                                class="components-input-control__container emotion-28 emotion-29"
+                              >
+                                <select
+                                  aria-describedby="inspector-select-control-1__help"
+                                  class="components-select-control__input emotion-30 emotion-31"
+                                  data-testid="price_charm"
+                                  id="inspector-select-control-1"
+                                >
+                                  <option
+                                    value="0"
+                                  >
+                                    None
+                                  </option>
+                                  <option
+                                    value="-0.01"
+                                  >
+                                    -0.01
+                                  </option>
+                                  <option
+                                    value="-0.05"
+                                  >
+                                    -0.05
+                                  </option>
+                                </select>
+                                <span
+                                  class="components-input-control__suffix emotion-32 emotion-33"
+                                >
+                                  <div
+                                    class="components-input-control-suffix-wrapper emotion-34 emotion-35 emotion-36"
+                                    data-wp-c16t="true"
+                                    data-wp-component="InputControlSuffixWrapper"
+                                  >
+                                    <div
+                                      class="emotion-37 emotion-38"
+                                    >
+                                      <svg
+                                        aria-hidden="true"
+                                        focusable="false"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        width="18"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                                        />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </span>
+                                <div
+                                  aria-hidden="true"
+                                  class="components-input-control__backdrop emotion-39 emotion-40"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <p
+                            class="components-base-control__help emotion-10 emotion-11"
+                            id="inspector-select-control-1__help"
+                          >
+                            Reduce the converted price for a specific amount. 
+                            <a
+                              class="components-external-link"
+                              href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing"
+                              rel="external noreferrer noopener"
+                              target="_blank"
+                            >
+                              <span
+                                class="components-external-link__contents"
+                              >
+                                Learn more
+                              </span>
+                              <span
+                                aria-label="(opens in a new tab)"
+                                class="components-external-link__icon"
+                              >
+                                ↗
+                              </span>
+                            </a>
+                          </p>
+                        </div>
+                      </li>
+                    </ul>
+                  </fieldset>
+                </div>
+              </div>
+              <div
+                aria-hidden="true"
+                class="components-elevation emotion-72 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="Elevation"
+              />
+              <div
+                aria-hidden="true"
+                class="components-elevation emotion-72 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="Elevation"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="settings-section"
+        >
+          <div
+            class="settings-section__details"
+          >
+            <h2>
+              Preview
+            </h2>
+            <p>
+              Enter a price in your default currency (United States (US) dollar) to see it converted to Euro using the exchange rate and formatting rules above.
+            </p>
+          </div>
+          <div
+            class="settings-section__controls"
+          >
+            <div
+              class="components-surface components-card single-currency-settings-preview-wrapper emotion-0 emotion-1"
+              data-wp-c16t="true"
+              data-wp-component="Card"
+            >
+              <div
+                class="emotion-2 emotion-1"
+              >
+                <div
+                  class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="CardBody"
+                >
+                  <div>
+                    <div>
+                      <div
+                        class="components-base-control with-value emotion-82 emotion-15"
+                      >
+                        <div
+                          class="components-base-control__field emotion-84 emotion-17"
+                        >
+                          <label
+                            class="components-base-control__label emotion-86 emotion-87"
+                            for="inspector-text-control-with-affixes-0"
+                          >
+                            United States (US) dollar
+                          </label>
+                          <div
+                            class="text-control-with-affixes text-control-with-suffix"
+                          >
+                            <input
+                              aria-describedby="inspector-text-control-with-affixes-0__suffix"
+                              class="components-text-control__input"
+                              data-testid="store_currency_value"
+                              id="inspector-text-control-with-affixes-0"
+                              type="text"
+                              value="20"
+                            />
+                            <span
+                              class="text-control-with-affixes__suffix"
+                              id="inspector-text-control-with-affixes-0__suffix"
+                            >
+                              $
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div
+                        class="components-base-control with-value emotion-82 emotion-15"
+                      >
+                        <div
+                          class="components-base-control__field emotion-84 emotion-17"
+                        >
+                          <label
+                            class="components-base-control__label emotion-86 emotion-87"
+                            for="inspector-text-control-with-affixes-1"
+                          >
+                            Euro
+                          </label>
+                          <div
+                            class="text-control-with-affixes disabled"
+                          >
+                            <input
+                              aria-describedby=""
+                              class="components-text-control__input"
+                              data-testid="calculated_value"
+                              disabled=""
+                              id="inspector-text-control-with-affixes-1"
+                              type="text"
+                              value="€17.00"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                aria-hidden="true"
+                class="components-elevation emotion-72 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="Elevation"
+              />
+              <div
+                aria-hidden="true"
+                class="components-elevation emotion-72 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="Elevation"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="settings-section single-currency-settings-save-settings-section"
+        >
+          <div
+            class="settings-section__details"
+          />
+          <div
+            class="settings-section__controls"
+          >
+            <button
+              class="components-button is-next-40px-default-size is-primary"
+              disabled=""
+              type="button"
+            >
+              Save changes
+            </button>
+          </div>
         </div>
       </div>
     </div>

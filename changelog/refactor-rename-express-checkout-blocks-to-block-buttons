@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-refactor: rename express-checkout/blocks to block-buttons and co-locate SCSS with shortcode entry point

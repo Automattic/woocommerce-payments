@@ -7,7 +7,6 @@
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
-use WC_Payments_Utils;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\Constants\Country_Code;
@@ -196,7 +195,20 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
 	public static function get_limits_per_currency(): array {
-		return WC_Payments_Utils::get_bnpl_limits_per_currency( self::get_id() );
+		return [
+			Currency_Code::CANADIAN_DOLLAR      => [
+				Country_Code::CANADA => [
+					'min' => 3500,
+					'max' => 3000000,
+				], // Represents CAD 35 - 30,000 CAD.
+			],
+			Currency_Code::UNITED_STATES_DOLLAR => [
+				Country_Code::UNITED_STATES => [
+					'min' => 3500,
+					'max' => 3000000,
+				],
+			], // Represents USD 35 - 30,000 USD.
+		];
 	}
 
 	/**
