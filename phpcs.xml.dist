@@ -45,11 +45,6 @@
 		<exclude name="WooCommerce.Commenting.CommentHooks.MissingHookComment" />
 		<exclude name="WooCommerce.Commenting.CommentHooks.MissingSinceComment" />
 		<exclude name="WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle" />
-
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8438 is closed. -->
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.elseFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.classFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.returnFound" />
 	</rule>
 
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">

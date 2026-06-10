@@ -63,7 +63,7 @@ class AsyncPriceRenderer {
 	/**
 	 * Wraps a price with skeleton markup for client-side conversion.
 	 *
-	 * @param string $return           The formatted price string.
+	 * @param string $price_html        The formatted price string.
 	 * @param float  $price            The raw price.
 	 * @param array  $args             Arguments passed to wc_price.
 	 * @param float  $unformatted_price The unformatted price.
@@ -71,7 +71,7 @@ class AsyncPriceRenderer {
 	 *
 	 * @return string The wrapped price markup.
 	 */
-	public function wrap_price_with_skeleton( $return, $price, $args, $unformatted_price, $original_price ) {
+	public function wrap_price_with_skeleton( $price_html, $price, $args, $unformatted_price, $original_price ) {
 		// The async renderer only runs on non-session pages (catalog/product).
 		// Cart/checkout have active sessions and use server-side FrontendPrices.
 		// Default to 'product' since catalog pages only call wc_price for products.
@@ -95,7 +95,7 @@ class AsyncPriceRenderer {
 			'<span class="woocommerce-Price-amount amount wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><bdi class="wcpay-price-skeleton"></bdi><span class="screen-reader-text wcpay-price-placeholder">%s</span></span>',
 			esc_attr( $unformatted_price ),
 			esc_attr( $price_type ),
-			wp_kses_post( $return )
+			wp_kses_post( $price_html )
 		);
 	}
 
