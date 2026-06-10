@@ -5318,6 +5318,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						'id'                     => $intent_id,
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
+						// Declare the charge explicitly so the asserted title is traceable to its inputs
+						// (network + funding) rather than relying on WC_Helper_Intention::create_charge() defaults.
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'funding' => 'credit',
+								],
+							],
+						],
 					]
 				)
 			);
