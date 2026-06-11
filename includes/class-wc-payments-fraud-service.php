@@ -127,8 +127,8 @@ class WC_Payments_Fraud_Service {
 			 *
 			 * @since 1.9.0
 			 *
-			 * @param array  $config     The fraud service configuration.
-			 * @param string $service_id The fraud service identifier (e.g. 'stripe').
+			 * @param array|null $config     The fraud service configuration, or null when the service should not be used.
+			 * @param string     $service_id The fraud service identifier (e.g. 'stripe').
 			 */
 			$services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
 		}
