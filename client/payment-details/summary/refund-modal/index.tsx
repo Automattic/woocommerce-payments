@@ -19,6 +19,7 @@ import { usePaymentIntentWithChargeFallback } from 'wcpay/data/payment-intents';
 import { PaymentChargeDetailsResponse } from 'wcpay/payment-details/types';
 import { isAwaitingResponse, isInquiry } from 'wcpay/disputes/utils';
 import { recordEvent } from 'tracks';
+import './style.scss';
 
 interface RefundModalProps {
 	charge: Charge;
@@ -80,7 +81,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 
 	return (
 		<ConfirmationModal
-			className="missing-order-notice-modal"
+			className="wcpay-refund-modal"
 			title={ __( 'Refund transaction', 'woocommerce-payments' ) }
 			actions={
 				<>
@@ -127,7 +128,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 				} ) }
 			</p>
 			<RadioControl
-				className="missing-order-notice-modal__reason"
+				className="wcpay-refund-modal__reason"
 				label={ __(
 					'Select a reason (Optional)',
 					'woocommerce-payments'
@@ -157,7 +158,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 				onChange={ ( value: string ) => setReason( value ) }
 			/>
 			{ orderUrl && (
-				<p className="missing-order-notice-modal__partial-refund">
+				<p className="wcpay-refund-modal__partial-refund">
 					{ createInterpolateElement(
 						__(
 							'Need to refund part of the order? <link>Go to the order</link>.',

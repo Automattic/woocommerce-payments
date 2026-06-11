@@ -1,4 +1,4 @@
-.missing-order-notice-modal__reason {
+.wcpay-refund-modal__reason {
 	.components-base-control__label {
 		font-weight: bold;
 	}
@@ -15,6 +15,6 @@
 // otherwise it reads as another reason option.
 .wcpay-confirmation-modal
 	.components-modal__content
-	p.missing-order-notice-modal__partial-refund {
+	p.wcpay-refund-modal__partial-refund {
 	margin-top: 1em;
 }
