@@ -160,9 +160,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				 *
 				 * @since 2.1.0
 				 *
-				 * @param int    $prepared_total The prepared (Stripe-formatted) order total.
-				 * @param float  $order_total    The raw order total.
-				 * @param object $cart           The WooCommerce cart object.
+				 * @param int          $prepared_total The prepared (Stripe-formatted) order total.
+				 * @param float|string $order_total    The raw order total.
+				 * @param WC_Cart      $cart           The WooCommerce cart object.
 				 */
 				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
 				'pending' => false,
@@ -783,8 +783,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 *
 		 * @since 2.1.0
 		 *
-		 * @param array  $data    The product data for the Express Checkout request.
-		 * @param object $product The product object.
+		 * @param array      $data    The product data for the Express Checkout request.
+		 * @param WC_Product $product The product object.
 		 */
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
@@ -855,8 +855,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 *
 		 * @since 3.4.0
 		 *
-		 * @param bool        $is_supported Whether the product is supported.
-		 * @param object|null $product      The product object, or null.
+		 * @param bool            $is_supported Whether the product is supported.
+		 * @param WC_Product|null $product      The product object, or null.
 		 */
 		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
 	}
