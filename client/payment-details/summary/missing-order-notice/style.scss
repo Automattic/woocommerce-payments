@@ -10,6 +10,9 @@
 }
 
 .missing-order-notice-modal__partial-refund {
-	margin-top: 16px;
+	// Give the helper link room to breathe below the radio group so it reads
+	// as a distinct note rather than another option.
+	margin-top: 24px;
 	margin-bottom: 0;
+	line-height: 1.5;
 }
