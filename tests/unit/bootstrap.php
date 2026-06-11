@@ -56,7 +56,7 @@ function _manually_load_plugin() {
 	// via update_option().
 	add_filter(
 		'default_option__wcpay_feature_subscriptions',
-		function ( $default ) {
+		function ( $default_value ) {
 			return '1';
 		},
 		10,

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show the actual card brand and last four digits (instead of a generic "Card") on subscription renewal and saved-card payments confirmed with 3D Secure.
