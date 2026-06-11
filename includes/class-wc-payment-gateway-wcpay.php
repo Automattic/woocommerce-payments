@@ -2517,9 +2517,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
 	 *
-	 * The exchange rate is analytics-only enrichment (the _wcpay_multi_currency_order_exchange_rate meta is
-	 * the fallback used for reporting), so a fetch failure must not block checkout — it is swallowed and
-	 * logged. This runs on the payment-completion path; see WOOPMNT-6209.
+	 * The Stripe exchange rate feeds the Multi-Currency reporting layer only (Analytics order-stats revenue
+	 * figures and the rate copied onto refund rows) — never the charge, refund, payout, or tax amounts. When
+	 * it is absent, Analytics falls back to the order-time _wcpay_multi_currency_order_exchange_rate, so a
+	 * fetch failure must not block checkout: it is swallowed and logged, at the cost of slightly less precise
+	 * reported revenue. This runs on the payment-completion path; see WOOPMNT-6209.
 	 *
 	 * @param WC_Order $order The order to update.
 	 * @param string   $charge_id ID of the charge to attach data from.
