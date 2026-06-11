@@ -7,7 +7,22 @@ import {
 	getQuantity,
 	isIAPIBlock,
 	getIAPIVariationId,
+	getIAPIVariationAttributes,
+	isIAPIFormInvalid,
 } from '../wc-product-page-selectors';
+
+// Mirrors the rendered IAPI variation selectors: one attribute group per
+// `…-variation-selector-attribute` element, with the attribute name in
+// `data-wp-context` and the chosen value on the checked pill / the <select>.
+const attributeGroup = ( name, optionsHtml ) =>
+	`<div class="wp-block-woocommerce-add-to-cart-with-options-variation-selector-attribute" data-wp-context='${ JSON.stringify(
+		{ name }
+	) }'>${ optionsHtml }</div>`;
+
+const pill = ( value, checked ) =>
+	`<button role="radio" value="${ value }" aria-checked="${
+		checked ? 'true' : 'false'
+	}">${ value }</button>`;
 
 describe( 'wc-product-page-selectors', () => {
 	beforeEach( () => {
@@ -146,6 +161,88 @@ describe( 'wc-product-page-selectors', () => {
 				'<input type="hidden" class="variation_id" name="variation_id" value="42" />',
 			].join( '' );
 			expect( getIAPIVariationId() ).toBe( 500 );
+		} );
+	} );
+
+	describe( 'getIAPIVariationAttributes', () => {
+		it( 'reads the checked pill value from each attribute group', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				attributeGroup(
+					'Flavor',
+					pill( 'orange-flavor', true ) + pill( 'unflavored', false )
+				),
+				attributeGroup(
+					'Size',
+					pill( 'medium', true ) + pill( 'small', false )
+				),
+				'</form>',
+			].join( '' );
+
+			expect( getIAPIVariationAttributes() ).toEqual( [
+				{ attribute: 'Flavor', value: 'orange-flavor' },
+				{ attribute: 'Size', value: 'medium' },
+			] );
+		} );
+
+		it( 'reads the value from a dropdown (select) attribute group', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				attributeGroup(
+					'Flavor',
+					'<select><option value="">Choose</option><option value="orange-flavor" selected>Orange</option></select>'
+				),
+				'</form>',
+			].join( '' );
+
+			expect( getIAPIVariationAttributes() ).toEqual( [
+				{ attribute: 'Flavor', value: 'orange-flavor' },
+			] );
+		} );
+
+		it( 'skips groups with no selection', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				attributeGroup(
+					'Flavor',
+					pill( 'orange-flavor', true ) + pill( 'unflavored', false )
+				),
+				attributeGroup(
+					'Size',
+					pill( 'medium', false ) + pill( 'small', false )
+				),
+				'</form>',
+			].join( '' );
+
+			expect( getIAPIVariationAttributes() ).toEqual( [
+				{ attribute: 'Flavor', value: 'orange-flavor' },
+			] );
+		} );
+
+		it( 'returns an empty array when there are no attribute groups', () => {
+			document.body.innerHTML =
+				'<form class="wp-block-add-to-cart-with-options"></form>';
+			expect( getIAPIVariationAttributes() ).toEqual( [] );
+		} );
+	} );
+
+	describe( 'isIAPIFormInvalid', () => {
+		it( 'returns true when the block form carries the is-invalid class', () => {
+			document.body.innerHTML =
+				'<form class="wp-block-add-to-cart-with-options is-invalid"></form>';
+			expect( isIAPIFormInvalid() ).toBe( true );
+		} );
+
+		it( 'returns false when the block form is valid', () => {
+			document.body.innerHTML =
+				'<form class="wp-block-add-to-cart-with-options"></form>';
+			expect( isIAPIFormInvalid() ).toBe( false );
+		} );
+
+		it( 'returns false when the IAPI block is not present', () => {
+			document.body.innerHTML =
+				'<form class="variations_form cart is-invalid"></form>';
+			expect( isIAPIFormInvalid() ).toBe( false );
 		} );
 	} );
 } );

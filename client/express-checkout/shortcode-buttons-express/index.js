@@ -12,7 +12,7 @@ import WCPayAPI from '../../checkout/api';
 import './express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import '../compatibility/wc-order-attribution';
-import { clearVariationStorage } from './compatibility/wc-product-page';
+import './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';
 import '../compatibility/wc-subscriptions';
 import {
@@ -43,7 +43,11 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from '../transformers/wc-to-stripe';
-import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
+import {
+	getAddToCartButtonElement,
+	isIAPIBlock,
+	isIAPIFormInvalid,
+} from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
 const fetchNewCartData = async () => {
@@ -176,7 +180,6 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( message ) => {
 			onAbortPaymentHandler();
-			clearVariationStorage();
 
 			$( '.woocommerce-error' ).remove();
 
@@ -205,7 +208,6 @@ jQuery( ( $ ) => {
 		 */
 		completePayment: ( url ) => {
 			onCompletePaymentHandler();
-			clearVariationStorage();
 			window.location = url;
 		},
 
@@ -280,32 +282,49 @@ jQuery( ( $ ) => {
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
-					const addToCartButton = jQuery(
-						getAddToCartButtonElement()
-					);
-
-					// First check if product can be added to cart.
-					if ( addToCartButton.is( '.disabled' ) ) {
-						if (
-							addToCartButton.is( '.wc-variation-is-unavailable' )
-						) {
-							window.alert(
-								window?.wc_add_to_cart_variation_params
-									?.i18n_unavailable_text ||
-									__(
-										'Sorry, this product is unavailable. Please choose a different combination.',
-										'woocommerce-payments'
-									)
-							);
-						} else {
+					// The IAPI Add to Cart + Options block doesn't mark its submit
+					// button with the classic `.disabled` class, so gate on the
+					// block's own validity verdict (`is-invalid`) instead.
+					if ( isIAPIBlock() ) {
+						if ( isIAPIFormInvalid() ) {
 							window.alert(
 								__(
 									'Please select your product options before proceeding.',
 									'woocommerce-payments'
 								)
 							);
+							return;
 						}
-						return;
+					} else {
+						const addToCartButton = jQuery(
+							getAddToCartButtonElement()
+						);
+
+						// First check if product can be added to cart.
+						if ( addToCartButton.is( '.disabled' ) ) {
+							if (
+								addToCartButton.is(
+									'.wc-variation-is-unavailable'
+								)
+							) {
+								window.alert(
+									window?.wc_add_to_cart_variation_params
+										?.i18n_unavailable_text ||
+										__(
+											'Sorry, this product is unavailable. Please choose a different combination.',
+											'woocommerce-payments'
+										)
+								);
+							} else {
+								window.alert(
+									__(
+										'Please select your product options before proceeding.',
+										'woocommerce-payments'
+									)
+								);
+							}
+							return;
+						}
 					}
 
 					// on product pages, we need to interact with an anonymous cart to check out the product,
@@ -430,10 +449,7 @@ jQuery( ( $ ) => {
 						// clearing the cart to avoid issues with products with low or limited availability
 						// being held hostage by customers cancelling the ECE.
 						getCartApiHandler().emptyCart();
-						clearVariationStorage();
 					} );
-				} else {
-					clearVariationStorage();
 				}
 
 				onCancelHandler();
@@ -531,12 +547,17 @@ jQuery( ( $ ) => {
 					if (
 						getExpressCheckoutData( 'button_context' ) === 'product'
 					) {
-						const addToCartButton = jQuery(
-							getAddToCartButtonElement()
-						);
+						// Don't refresh cart data when the product can't be
+						// added — the Store API call would fail. The IAPI block
+						// signals this via `is-invalid`; the classic button via
+						// the `.disabled` class.
+						const cannotAddToCart = isIAPIBlock()
+							? isIAPIFormInvalid()
+							: jQuery( getAddToCartButtonElement() ).is(
+									'.disabled'
+							  );
 
-						// First check if product can be added to cart.
-						if ( addToCartButton.is( '.disabled' ) ) {
+						if ( cannotAddToCart ) {
 							expressCheckoutButtonUi.unblockButton();
 							return;
 						}

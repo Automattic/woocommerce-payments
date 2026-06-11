@@ -12,26 +12,8 @@ import { addFilter, doAction } from '@wordpress/hooks';
 import { getExpressCheckoutData } from 'wcpay/express-checkout/utils';
 import {
 	isIAPIBlock,
-	getIAPIVariationId,
-	getProductId,
+	getIAPIVariationAttributes,
 } from 'wcpay/utils/wc-product-page-selectors';
-
-// Helper to get sessionStorage key for this product
-const getVariationStorageKey = () => {
-	const productId = getProductId();
-	return productId ? `wcpay_iapi_variation_${ productId }` : null;
-};
-
-/**
- * Clears the persisted variation_id from sessionStorage for the current product.
- * Call this after successful checkout to prevent stale data.
- */
-export const clearVariationStorage = () => {
-	const storageKey = getVariationStorageKey();
-	if ( storageKey ) {
-		sessionStorage.removeItem( storageKey );
-	}
-};
 
 jQuery( ( $ ) => {
 	// Classic shortcode: listen for jQuery variation-change event.
@@ -39,30 +21,43 @@ jQuery( ( $ ) => {
 		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
 
-	// IAPI block: the new block doesn't fire the legacy jQuery event.
-	// Listen for native option changes inside the block to keep button data in sync.
-	const blockRoot = document.querySelector(
-		'.wp-block-add-to-cart-with-options'
+	// IAPI block: the new block doesn't fire the legacy jQuery event, and its
+	// variation pills resolve selections through Interactivity API directives
+	// rather than native `change`/`input` events — so DOM event listeners miss
+	// them. The block does re-render its selectors (toggling `aria-checked`,
+	// selected classes, options) when the selection changes, so a
+	// MutationObserver on the selectors catches every path: pills, dropdowns,
+	// and default/URL-preselected variations.
+	//
+	// We observe only the variation selectors, never the whole form: the block
+	// renders the express button inside the same form, and refreshing the
+	// button mutates it (block/unblock overlays), which would retrigger the
+	// observer in a loop. The idempotency guard is a second line of defense —
+	// it ignores mutations that don't change the actual selection.
+	const variationSelectors = document.querySelectorAll(
+		'.wp-block-add-to-cart-with-options .wp-block-woocommerce-add-to-cart-with-options-variation-selector-attribute'
 	);
-	if ( blockRoot ) {
-		// Clear stored variation_id if it exists but no variation is now selected
-		const storageKey = getVariationStorageKey();
-		if ( storageKey && ! getIAPIVariationId() ) {
-			sessionStorage.removeItem( storageKey );
-		}
-
-		const updateButtonData = debounce( 250, () => {
-			const variationId = getIAPIVariationId();
-			if ( variationId && storageKey ) {
-				sessionStorage.setItem( storageKey, variationId );
-			} else if ( storageKey ) {
-				sessionStorage.removeItem( storageKey );
-			}
-			doAction( 'wcpay.express-checkout.update-button-data' );
-		} );
-
-		blockRoot.addEventListener( 'change', updateButtonData, true );
-		blockRoot.addEventListener( 'input', updateButtonData, true );
+	if ( variationSelectors.length ) {
+		let lastSelection = null;
+		const observer = new MutationObserver(
+			debounce( 250, () => {
+				const selection = JSON.stringify(
+					getIAPIVariationAttributes()
+				);
+				if ( selection === lastSelection ) {
+					return;
+				}
+				lastSelection = selection;
+				doAction( 'wcpay.express-checkout.update-button-data' );
+			} )
+		);
+		variationSelectors.forEach( ( selector ) =>
+			observer.observe( selector, {
+				subtree: true,
+				childList: true,
+				attributes: true,
+			} )
+		);
 	}
 } );
 
@@ -88,110 +83,20 @@ jQuery( ( $ ) => {
 } );
 
 /**
- * Filter 1: Override the product ID.
+ * Read the selected variation attributes from the classic variations form.
  *
- * Classic form: read from `.single_variation_wrap input[name="product_id"]`.
- * IAPI block:  read from the hidden `product_id` input inside the block, OR
- *              if a variation is already resolved, use the variation ID
- *              directly (the Store API accepts a variation ID as `id`).
+ * @return {Array<{attribute: string, value: string}>} Selected attribute pairs.
  */
-addFilter(
-	'wcpay.express-checkout.cart-add-item',
-	'automattic/wcpay/express-checkout',
-	( productData ) => {
-		if ( isIAPIBlock() ) {
-			// When a variation is fully resolved, send the variation ID as the
-			// cart item `id`. The Store API treats a variation ID as a valid
-			// product identifier, which avoids the need to send individual
-			// attribute key/value pairs (and the brittle label-matching they
-			// require). This is the same approach WooCommerce core uses when
-			// submitting the IAPI form.
-			const variationId = getIAPIVariationId();
-			const storageKey = getVariationStorageKey();
-			const storedVariationId = storageKey
-				? sessionStorage.getItem( storageKey )
-				: null;
-
-			if ( variationId ) {
-				return {
-					...productData,
-					id: variationId,
-					// Clear the variation array — not needed when sending
-					// the resolved variation ID directly.
-					variation: [],
-				};
-			}
-
-			// Fallback to sessionStorage if variation_id was persisted but DOM doesn't have it
-			// (e.g., after redirect back to product page with "Redirect to cart" enabled).
-			if ( storedVariationId ) {
-				return {
-					...productData,
-					id: parseInt( storedVariationId, 10 ),
-					variation: [],
-				};
-			}
-
-			// Variation not yet resolved — fall back to parent product ID
-			// so the caller can decide how to handle it (the click handler
-			// will show an alert via the disabled-button guard).
-			const hiddenInput = document.querySelector(
-				'.wp-block-add-to-cart-with-options input[name="product_id"]'
-			);
-			if ( hiddenInput ) {
-				return {
-					...productData,
-					id: parseInt( hiddenInput.value, 10 ),
-				};
-			}
-		}
-
-		const variationInformation = document.querySelector(
-			'.single_variation_wrap'
-		);
-		if ( variationInformation && ! isIAPIBlock() ) {
-			const productIdInput = variationInformation.querySelector(
-				'input[name="product_id"]'
-			);
-			if ( productIdInput ) {
-				return {
-					...productData,
-					id: parseInt( productIdInput.value, 10 ),
-				};
-			}
-		}
-		return productData;
+const getClassicVariationAttributes = () => {
+	const variationsForm = document.querySelector( '.variations_form' );
+	if ( ! variationsForm ) {
+		return [];
 	}
-);
 
-/**
- * Filter 2: Append variation attributes.
- *
- * Classic form: read from `.variations_form .variations select`.
- * IAPI block:  skip — Filter 1 already sends the resolved variation ID,
- *              which makes attribute key/value pairs unnecessary.
- */
-addFilter(
-	'wcpay.express-checkout.cart-add-item',
-	'automattic/wcpay/express-checkout',
-	( productData ) => {
-		// When the IAPI block is active and a variation ID is resolved, the
-		// `id` already points to the specific variation (set in Filter 1).
-		// No need to parse attributes from the DOM.
-		if ( isIAPIBlock() ) {
-			return productData;
-		}
-
-		// --- Classic shortcode path (unchanged) ---
-		const variationsForm = document.querySelector( '.variations_form' );
-		if ( ! variationsForm ) {
-			return productData;
-		}
-
-		const attributes = [];
-		const variationSelectElements =
-			variationsForm.querySelectorAll( '.variations select' );
-		Array.from( variationSelectElements ).forEach( function ( select ) {
+	const attributes = [];
+	variationsForm
+		.querySelectorAll( '.variations select' )
+		.forEach( ( select ) => {
 			const attributeName =
 				select.dataset.attribute_name || select.dataset.name;
 
@@ -217,6 +122,51 @@ addFilter(
 				value: select.value || '',
 			} );
 		} );
+
+	return attributes;
+};
+
+/**
+ * Override the product ID with the one from the variations wrapper.
+ *
+ * Both the classic form and the IAPI block expose the parent product ID via
+ * `.single_variation_wrap input[name="product_id"]`; the Store API resolves
+ * the concrete variation from the attributes appended below.
+ */
+addFilter(
+	'wcpay.express-checkout.cart-add-item',
+	'automattic/wcpay/express-checkout',
+	( productData ) => {
+		const productIdInput = document.querySelector(
+			'.single_variation_wrap input[name="product_id"]'
+		);
+		if ( productIdInput ) {
+			return {
+				...productData,
+				id: parseInt( productIdInput.value, 10 ),
+			};
+		}
+		return productData;
+	}
+);
+
+/**
+ * Append the selected variation attributes, reading them from whichever form
+ * is rendered. The Store API needs them even when a variation is resolved:
+ * "Any"-valued attributes carry no value on the variation, so it rejects the
+ * request unless the shopper's selection is sent.
+ */
+addFilter(
+	'wcpay.express-checkout.cart-add-item',
+	'automattic/wcpay/express-checkout',
+	( productData ) => {
+		const attributes = isIAPIBlock()
+			? getIAPIVariationAttributes()
+			: getClassicVariationAttributes();
+
+		if ( ! attributes.length ) {
+			return productData;
+		}
 
 		return {
 			...productData,

@@ -11,18 +11,20 @@ import { render } from '@testing-library/react';
  */
 import '../wc-product-page';
 
+const ATTR_CLASS =
+	'wp-block-woocommerce-add-to-cart-with-options-variation-selector-attribute';
+
+// A rendered IAPI variation attribute group with a single pill option.
+const iapiAttribute = ( name, value, checked = true ) =>
+	`<div class="${ ATTR_CLASS }" data-wp-context='${ JSON.stringify( {
+		name,
+	} ) }'>` +
+	`<button role="radio" value="${ value }" aria-checked="${ checked }">${ value }</button>` +
+	`</div>`;
+
 describe( 'ECE product page compatibility', () => {
 	afterEach( () => {
 		document.body.innerHTML = '';
-		// Clean up sessionStorage after each test
-		const keysToRemove = [];
-		for ( let i = 0; i < sessionStorage.length; i++ ) {
-			const key = sessionStorage.key( i );
-			if ( key && key.startsWith( 'wcpay_iapi_variation_' ) ) {
-				keysToRemove.push( key );
-			}
-		}
-		keysToRemove.forEach( ( key ) => sessionStorage.removeItem( key ) );
 	} );
 
 	describe( 'Classic shortcode form', () => {
@@ -229,12 +231,14 @@ describe( 'ECE product page compatibility', () => {
 	} );
 
 	describe( 'IAPI Add to Cart + Options block', () => {
-		it( 'uses the resolved variation ID directly when a variation is selected', () => {
-			// Simulate the IAPI block DOM as documented in the issue:
-			// The block wraps the form with .wp-block-add-to-cart-with-options
-			// and resolves variation_id via data-wp-bind--value.
+		it( 'sends the parent product ID with the selected attributes', () => {
+			// The Store API resolves the variation from the parent ID plus the
+			// selected attributes — which must be sent even when a variation is
+			// resolved, since "Any"-valued attributes carry no value on it.
 			document.body.innerHTML = [
 				'<form class="wp-block-add-to-cart-with-options wc-block-add-to-cart-with-options cart">',
+				iapiAttribute( 'Flavor', 'orange-flavor' ),
+				iapiAttribute( 'Size', 'medium' ),
 				'  <div class="single_variation_wrap">',
 				'    <input type="hidden" name="add-to-cart" value="257" />',
 				'    <input type="hidden" name="product_id" value="257" />',
@@ -250,17 +254,19 @@ describe( 'ECE product page compatibility', () => {
 				}
 			);
 
-			// When the IAPI block is present and variation_id is resolved,
-			// the filter should send the variation ID as `id` and clear `variation`.
 			expect( productData ).toStrictEqual( {
-				id: 263,
-				variation: [],
+				id: 257,
+				variation: [
+					{ attribute: 'Flavor', value: 'orange-flavor' },
+					{ attribute: 'Size', value: 'medium' },
+				],
 			} );
 		} );
 
-		it( 'falls back to the parent product ID when no variation is selected', () => {
+		it( 'sends no attributes when no variation is selected', () => {
 			document.body.innerHTML = [
 				'<form class="wp-block-add-to-cart-with-options wc-block-add-to-cart-with-options cart">',
+				iapiAttribute( 'Flavor', 'orange-flavor', false ),
 				'  <div class="single_variation_wrap">',
 				'    <input type="hidden" name="add-to-cart" value="257" />',
 				'    <input type="hidden" name="product_id" value="257" />',
@@ -276,23 +282,22 @@ describe( 'ECE product page compatibility', () => {
 				}
 			);
 
-			// No variation resolved — falls back to parent product_id.
-			// The click handler will block this with a "Please select" alert.
+			// The click handler blocks this case with a "Please select" alert
+			// before it reaches the Store API.
 			expect( productData ).toStrictEqual( {
 				id: 257,
 				variation: [],
 			} );
 		} );
 
-		it( 'does not attempt to read legacy variation selectors', () => {
-			// Even if legacy-style elements somehow exist alongside the block,
-			// the IAPI path should be used when the block class is present.
+		it( 'reads attributes from the block, not legacy variation selectors', () => {
 			document.body.innerHTML = [
 				'<form class="wp-block-add-to-cart-with-options variations_form">',
 				'  <table class="variations"><tbody><tr>',
 				'    <th class="label"><label for="pa_color">Color</label></th>',
 				'    <td><select id="pa_color" data-attribute_name="attribute_pa_color"><option value="red">Red</option></select></td>',
 				'  </tr></tbody></table>',
+				iapiAttribute( 'Color', 'red' ),
 				'  <div class="single_variation_wrap">',
 				'    <input type="hidden" name="product_id" value="100" />',
 				'    <input type="hidden" name="variation_id" value="105" />',
@@ -307,68 +312,9 @@ describe( 'ECE product page compatibility', () => {
 				}
 			);
 
-			// Should use the IAPI path (variation_id = 105), NOT the legacy
-			// attribute-parsing path.
 			expect( productData ).toStrictEqual( {
-				id: 105,
-				variation: [],
-			} );
-		} );
-
-		it( 'falls back to sessionStorage variation_id when DOM does not have it', () => {
-			// Simulate: user selected variation, was redirected to cart, came back,
-			// and the IAPI block lost the variation_id from DOM but we stored it.
-			document.body.innerHTML = [
-				'<form class="wp-block-add-to-cart-with-options">',
-				'  <input type="hidden" name="add-to-cart" value="257" />',
-				'  <input type="hidden" name="product_id" value="257" />',
-				'  <input type="hidden" name="variation_id" value="" />',
-				'</form>',
-			].join( '' );
-
-			// Store the variation_id in sessionStorage (as would happen on variation select)
-			sessionStorage.setItem( 'wcpay_iapi_variation_257', '263' );
-
-			const productData = applyFilters(
-				'wcpay.express-checkout.cart-add-item',
-				{
-					variation: [],
-				}
-			);
-
-			// Should fall back to sessionStorage value
-			expect( productData ).toStrictEqual( {
-				id: 263,
-				variation: [],
-			} );
-
-			// Clean up
-			sessionStorage.removeItem( 'wcpay_iapi_variation_257' );
-		} );
-
-		it( 'falls back to parent product ID when no variation_id in DOM or sessionStorage', () => {
-			document.body.innerHTML = [
-				'<form class="wp-block-add-to-cart-with-options">',
-				'  <input type="hidden" name="add-to-cart" value="257" />',
-				'  <input type="hidden" name="product_id" value="257" />',
-				'  <input type="hidden" name="variation_id" value="" />',
-				'</form>',
-			].join( '' );
-
-			// No stored variation_id
-			sessionStorage.removeItem( 'wcpay_iapi_variation_257' );
-
-			const productData = applyFilters(
-				'wcpay.express-checkout.cart-add-item',
-				{
-					variation: [],
-				}
-			);
-
-			// Falls back to parent product ID
-			expect( productData ).toStrictEqual( {
-				id: 257,
-				variation: [],
+				id: 100,
+				variation: [ { attribute: 'Color', value: 'red' } ],
 			} );
 		} );
 	} );
