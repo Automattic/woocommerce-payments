@@ -130,11 +130,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Utility method to access protected methods for testing.
 	 */
-	protected function invoke_method( &$object, $method_name, array $parameters = [] ) {
-		$reflection = new \ReflectionClass( get_class( $object ) );
+	protected function invoke_method( &$instance, $method_name, array $parameters = [] ) {
+		$reflection = new \ReflectionClass( get_class( $instance ) );
 		$method     = $reflection->getMethod( $method_name );
 		$method->setAccessible( true );
-		return $method->invokeArgs( $object, $parameters );
+		return $method->invokeArgs( $instance, $parameters );
 	}
 
 	/**

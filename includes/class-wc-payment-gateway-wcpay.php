@@ -2007,20 +2007,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
-		if ( $is_changing_payment_method_for_subscription ) {
-			$this->with_stock_reduction_disabled(
-				function () use ( $order, $intent ) {
-					$this->order_service->update_order_status_from_intent( $order, $intent );
-				}
-			);
-		} else {
-			$this->order_service->update_order_status_from_intent( $order, $intent );
-		}
-		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
-
-		$this->maybe_add_customer_notification_note( $order, $processing );
-
-		// Extract payment method details for setting the payment method title.
+		// Set the branded payment method title + card meta from the charge details BEFORE the status update.
+		// update_order_status_from_intent() -> payment_complete() fires the customer order/renewal email
+		// synchronously, and that email renders get_payment_method_title(); the title must already reflect the
+		// real card or the email falls back to a generic "Card". Re-deriving $charge here is a no-op (it already
+		// equals $intent->get_charge()), so attach_transaction_fee_to_order() below is unaffected. WOOPMNT-2882.
 		if ( $payment_needed ) {
 			$charge                 = $intent ? $intent->get_charge() : null;
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
@@ -2037,30 +2028,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type = Payment_Method::LINK;
 			}
 
-			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
-				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
-				if ( isset( $payment_method_details['card']['brand'] ) ) {
-					$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
-				}
-				$order->save_meta_data();
-			}
-			if ( 'amazon_pay' === $payment_method_type
-				&& isset( $payment_method_details['amazon_pay']['funding']['card']['last4'] ) ) {
-				$funding_card = $payment_method_details['amazon_pay']['funding']['card'];
-				$order->add_meta_data( 'last4', $funding_card['last4'], true );
-				if ( isset( $funding_card['brand'] ) ) {
-					$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
-				}
-				$order->save_meta_data();
-			}
+			$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 		} else {
 			$payment_method_details = false;
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
 			$payment_method_type    = $token ? $this->get_payment_method_type_for_setup_intent( $intent, $token ) : null;
 		}
 
-		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+
+		if ( $is_changing_payment_method_for_subscription ) {
+			$this->with_stock_reduction_disabled(
+				function () use ( $order, $intent ) {
+					$this->order_service->update_order_status_from_intent( $order, $intent );
+				}
+			);
+		} else {
+			$this->order_service->update_order_status_from_intent( $order, $intent );
+		}
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
+
+		$this->maybe_add_customer_notification_note( $order, $processing );
 
 		if ( isset( $status ) && ( Intent_Status::REQUIRES_ACTION === $status || Intent_Status::REQUIRES_CONFIRMATION === $status ) && $this->is_changing_payment_method_for_subscription() ) {
 			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
@@ -3932,6 +3920,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge    = $intent->get_charge();
 				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
+				// Capture the actual card details from the charge so the order's payment method title (and,
+				// via sync, the subscription's) reflects the card used — brand and funding — instead of a
+				// generic "Card". The 3DS/SCA pay-for-renewal flow lands here after frontend authentication;
+				// the synchronous non-3DS path already does this in process_payment_for_order(). See WOOPMNT-2882.
+				if ( ! empty( $charge ) ) {
+					$payment_method_details = $charge->get_payment_method_details();
+				}
+
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
@@ -3975,6 +3971,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
+
+			// Determine whether the payment method should be saved for this order. Subscriptions and
+			// subscription renewals must always save it so the subscription can be charged off-session
+			// for future renewals. is_payment_recurring() treats both as recurring — it accounts for
+			// renewals, which wcs_order_contains_subscription()'s default order types exclude. See WOOPMNT-2882.
+			$is_recurring_payment       = $this->is_payment_recurring( $order->get_id() );
+			$should_save_payment_method = $is_recurring_payment || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			// Save and attach the payment token BEFORE updating the order status. Updating the status
+			// fires WCS' woocommerce_subscriptions_paid_for_failed_renewal_order hook, which runs
+			// update_failing_payment_method() -> get_payment_token( $renewal_order ) to copy the token
+			// onto the subscription. If the token were attached afterwards (as it was previously), the
+			// subscription would keep the old failing card. Attaching it first also prevents
+			// maybe_schedule_subscription_order_tracking() from overwriting _payment_method_id back to
+			// the previously-stored card when the order status save fires. See WOOPMNT-2882.
+			$token = null;
+			if ( $intent->is_authorized() && $should_save_payment_method && ! empty( $payment_method_id ) ) {
+				try {
+					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
+					$this->add_token_to_order( $order, $token );
+				} catch ( Exception $e ) {
+					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+
+					// For recurring payments (subscriptions and renewals), token creation failure is
+					// critical - renewals will fail. Re-throw the exception so the customer sees an error
+					// instead of a successful checkout that will fail on the first renewal.
+					if ( $is_recurring_payment ) {
+						throw new Exception(
+							__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
+						);
+					}
+				}
+			}
+
+			// Set the branded payment method title + card meta from the charge details BEFORE the status
+			// update. update_order_status_from_intent() -> payment_complete() fires the customer order/renewal
+			// email synchronously, and that email renders get_payment_method_title(); the title must already
+			// reflect the real card or the email falls back to a generic "Card". $token is non-null only when
+			// the intent is authorized and the payment method was saved (see the token-attach guard above).
+			// See WOOPMNT-2882.
+			if ( ! empty( $token ) ) {
+				$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
+			}
+
 			if ( $is_subscription_payment_method_change ) {
 				$this->with_stock_reduction_disabled(
 					function () use ( $order, $intent ) {
@@ -3989,31 +4031,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Stock reduction is left to WooCommerce core (see note in process_payment_for_order()).
 				if ( ! $is_subscription_payment_method_change ) {
 					WC()->cart->empty_cart();
-				}
-
-				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
-				$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] );
-				if ( $should_save_payment_method && ! empty( $payment_method_id ) ) {
-					try {
-						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
-						$this->add_token_to_order( $order, $token );
-
-						if ( ! empty( $token ) ) {
-							$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
-							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-						}
-					} catch ( Exception $e ) {
-						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-
-						// For subscription orders, token creation failure is critical - renewals will fail.
-						// Re-throw the exception so the customer sees an error instead of a successful
-						// checkout that will fail on the first renewal.
-						if ( $is_subscription ) {
-							throw new Exception(
-								__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
-							);
-						}
-					}
 				}
 
 				$return_url = $this->get_return_url( $order );
@@ -4649,6 +4666,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return 'card' === $payment_method_type
 			&& is_array( $payment_method_details )
 			&& 'link' === ( $payment_method_details['card']['wallet']['type'] ?? null );
+	}
+
+	/**
+	 * Stores the card brand and last 4 digits on the order from the charge's payment method details,
+	 * so order/email displays and reporting reflect the actual card used. No-op when the details are
+	 * unavailable or the payment method does not carry card information (e.g. redirect methods, Link).
+	 *
+	 * @param WC_Order    $order                  The order to store the meta on.
+	 * @param string|null $payment_method_type    The Stripe payment method type (e.g. 'card', 'amazon_pay').
+	 * @param array|false $payment_method_details The charge's payment method details, or false when unavailable.
+	 */
+	private function store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details ) {
+		if ( ! is_array( $payment_method_details ) ) {
+			return;
+		}
+
+		if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+			$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+			if ( isset( $payment_method_details['card']['brand'] ) ) {
+				$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
+			}
+			$order->save_meta_data();
+		}
+
+		if ( 'amazon_pay' === $payment_method_type
+			&& isset( $payment_method_details['amazon_pay']['funding']['card']['last4'] ) ) {
+			$funding_card = $payment_method_details['amazon_pay']['funding']['card'];
+			$order->add_meta_data( 'last4', $funding_card['last4'], true );
+			if ( isset( $funding_card['brand'] ) ) {
+				$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
+			}
+			$order->save_meta_data();
+		}
 	}
 
 	/**

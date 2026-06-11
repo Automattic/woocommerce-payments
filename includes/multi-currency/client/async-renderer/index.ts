@@ -115,6 +115,7 @@ class WCPayAsyncPriceRenderer {
 			clearTimeout( timeoutId! );
 
 			this.convertAllPrices();
+			this.syncCurrencySwitchers();
 			this.observeDynamicContent();
 			this.listenToWooCommerceEvents();
 		} catch ( error ) {
@@ -510,6 +511,35 @@ class WCPayAsyncPriceRenderer {
 					.replace( '%1$s', fromText )
 					.replace( '%2$s', toText );
 				el.classList.add( 'wcpay-sr-converted' );
+			}
+		} );
+	}
+
+	/**
+	 * Sync every currency switcher to the selected (localized) currency.
+	 *
+	 * In cache-optimized mode the switcher's selected <option> is baked into the
+	 * cached HTML as the store default (no server-side session), so realign it
+	 * client-side to match the converted prices. Assigning select.value does not
+	 * fire a change event, so onchange="this.form.submit()" never runs: no
+	 * session is created and caching is preserved.
+	 */
+	syncCurrencySwitchers(): void {
+		const selectedCode = this.config?.selected_currency;
+		if ( ! selectedCode ) {
+			return;
+		}
+
+		const selects = document.querySelectorAll< HTMLSelectElement >(
+			'select.js-woopayments-currency-switcher'
+		);
+
+		selects.forEach( ( select ) => {
+			const hasOption = Array.from( select.options ).some(
+				( option ) => option.value === selectedCode
+			);
+			if ( hasOption && select.value !== selectedCode ) {
+				select.value = selectedCode;
 			}
 		} );
 	}
