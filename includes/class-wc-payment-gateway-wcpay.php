@@ -4764,10 +4764,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
+		// Catch \Exception (not just API_Exception): branding is a display enhancement, so a lookup failure
+		// of any kind must degrade to the generic title rather than break the $0 checkout that calls this
+		// before payment_complete(). See WOOPMNT-2882.
 		try {
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 			return ( is_array( $payment_method_details ) && isset( $payment_method_details['type'] ) ) ? $payment_method_details : false;
-		} catch ( API_Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Could not fetch payment method to brand the $0 order title: ' . $e->getMessage() );
 			return false;
 		}
