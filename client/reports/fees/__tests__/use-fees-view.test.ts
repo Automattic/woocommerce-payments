@@ -32,7 +32,6 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
-import { encodeCustomDateFilterValue } from '../date-filter-values';
 
 const renderUseFeesView = () => renderHook( () => useFeesView() );
 
@@ -65,8 +64,10 @@ const buildPaymentMethodFilter = ( value = 'card' ): Filter =>
 const buildTypeFilter = ( value: unknown, operator = 'is' ): Filter =>
 	buildFilter( 'type', value, operator );
 
-const buildDateFilter = ( value: unknown ): Filter =>
-	buildFilter( 'date', value );
+const buildDateFilter = (
+	operator: Filter[ 'operator' ],
+	value: unknown
+): Filter => buildFilter( 'date', value, operator );
 
 const expectRecordedTracksEvent = (
 	eventName: string,
@@ -170,20 +171,12 @@ describe( 'useFeesView', () => {
 		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
-	it( 'reads date_preset from URL into the native Date filter', () => {
+	it( 'ignores legacy date_preset URLs', () => {
 		mockGetQuery.mockReturnValue( {
 			date_preset: 'month_to_date',
 		} );
 		const { result } = renderUseFeesView();
-		expect( result.current[ 0 ].filters ).toEqual(
-			expect.arrayContaining( [
-				{
-					field: 'date',
-					operator: 'is',
-					value: 'month_to_date',
-				},
-			] )
-		);
+		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
 	it( 'reads custom date bounds from URL into the native Date filter', () => {
@@ -195,11 +188,8 @@ describe( 'useFeesView', () => {
 			expect.arrayContaining( [
 				{
 					field: 'date',
-					operator: 'is',
-					value: encodeCustomDateFilterValue( {
-						operator: 'between',
-						value: [ '2026-03-01', '2026-03-31' ],
-					} ),
+					operator: 'between',
+					value: [ '2026-03-01', '2026-03-31' ],
 				},
 			] )
 		);
@@ -342,14 +332,7 @@ describe( 'useFeesView', () => {
 	it( 'pushes native Date filter changes to URL', () => {
 		const { result } = renderUseFeesView();
 		updateFeesView( result, {
-			filters: [
-				buildDateFilter(
-					encodeCustomDateFilterValue( {
-						operator: 'before',
-						value: '2026-03-31',
-					} )
-				),
-			],
+			filters: [ buildDateFilter( 'before', '2026-03-31' ) ],
 		} );
 
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
@@ -397,25 +380,20 @@ describe( 'useFeesView', () => {
 		const { result } = renderUseFeesView();
 
 		updateFeesView( result, {
-			filters: [
-				buildDateFilter(
-					encodeCustomDateFilterValue( {
-						operator: 'before',
-						value: '2026-03-31',
-					} )
-				),
-			],
+			filters: [ buildDateFilter( 'before', '2026-03-31' ) ],
 		} );
 
 		expectNoRecordedTracksEvent( 'wcpay_reports_fees_filter_change' );
-		// Date telemetry is owned by useDateFilterChipInterceptor; useFeesView
-		// must not emit it directly, or the event would be double-tracked.
-		expectNoRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change' );
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'custom',
+			range_days: null,
+			is_initial_apply: true,
+		} );
 	} );
 
 	it( 'records a date filter reset when an applied date filter is removed', () => {
 		mockGetQuery.mockReturnValue( {
-			date_preset: 'month_to_date',
+			date_before: '2026-03-31',
 		} );
 		const { result } = renderUseFeesView();
 
@@ -435,7 +413,7 @@ describe( 'useFeesView', () => {
 		const { result } = renderUseFeesView();
 
 		updateFeesView( result, {
-			filters: [ buildDateFilter( undefined ) ],
+			filters: [ buildDateFilter( 'between', undefined ) ],
 		} );
 		mockRecordEvent.mockClear();
 

@@ -13,7 +13,6 @@ jest.mock( 'wcpay/data/reports', () => ( {
 } ) );
 
 import { buildFeesQuery, useFeesData } from '../use-fees-data';
-import { encodeCustomDateFilterValue } from '../date-filter-values';
 
 const baseView = ( overrides: Partial< View > = {} ): View =>
 	( {
@@ -90,11 +89,8 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'between',
-							value: [ '2026-03-01', '2026-03-31' ],
-						} ),
+						operator: 'between',
+						value: [ '2026-03-01', '2026-03-31' ],
 					},
 				],
 			} )
@@ -110,11 +106,8 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'on',
-							value: '2026-05-18',
-						} ),
+						operator: 'on',
+						value: '2026-05-18',
 					},
 				],
 			} )
@@ -130,11 +123,8 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'before',
-							value: '2026-03-31',
-						} ),
+						operator: 'before',
+						value: '2026-03-31',
 					},
 				],
 			} )
@@ -149,11 +139,8 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'after',
-							value: '2026-01-01',
-						} ),
+						operator: 'after',
+						value: '2026-01-01',
 					},
 				],
 			} )

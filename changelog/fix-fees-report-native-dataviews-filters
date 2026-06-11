@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use native DataViews filtering in the Fees report.
