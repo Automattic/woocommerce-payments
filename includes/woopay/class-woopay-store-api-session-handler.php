@@ -76,11 +76,11 @@ final class SessionHandler extends WC_Session {
 	 * Returns the session.
 	 *
 	 * @param string $customer_id Customer ID.
-	 * @param mixed  $default Default session value.
+	 * @param mixed  $default_value Default session value.
 	 *
 	 * @return string|array|bool
 	 */
-	public function get_session( $customer_id, $default = false ) {
+	public function get_session( $customer_id, $default_value = false ) {
 		global $wpdb;
 
 		// This mimics behaviour from default WC_Session_Handler class. There will be no sessions retrieved while WP setup is due.
@@ -96,7 +96,7 @@ final class SessionHandler extends WC_Session {
 		);
 
 		if ( is_null( $value ) ) {
-			$value = $default;
+			$value = $default_value;
 		}
 
 		return maybe_unserialize( $value );

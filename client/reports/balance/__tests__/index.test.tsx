@@ -18,6 +18,12 @@ const mockAppliedDateFilterValue = {
 };
 let consoleErrorSpy: jest.SpyInstance | undefined;
 
+declare const global: {
+	wcpaySettings?: typeof wcpaySettings;
+};
+
+let originalWcpaySettings: typeof wcpaySettings | undefined;
+
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string, politeness?: string ) =>
 		mockSpeak( message, politeness ),
@@ -142,6 +148,13 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
+const legalPrintBusinessDetails = [
+	'WooPayments',
+	'Automattic Inc.',
+	'60 29th Street #343',
+	'San Francisco, CA, 94110, US',
+];
+
 const period = {
 	start: '2026-05-01T00:00:00.000Z',
 	end: '2026-05-14T23:59:59.999Z',
@@ -233,6 +246,45 @@ const renderBalanceReportWithDateFilterNow = (
 		</BalanceDateFilterNowContext.Provider>
 	);
 
+const setBalanceReportIdentitySettings = ( {
+	businessName = global.wcpaySettings?.accountStatus?.businessName ?? '',
+	accountId = global.wcpaySettings?.accountStatus?.accountId ?? '',
+	storeName = global.wcpaySettings?.storeName ?? '',
+}: Partial< {
+	businessName: string;
+	accountId: string;
+	storeName: string;
+} > ) => {
+	global.wcpaySettings = {
+		...( global.wcpaySettings ?? {} ),
+		accountStatus: {
+			...( global.wcpaySettings?.accountStatus ?? {} ),
+			businessName,
+			accountId,
+		},
+		storeName,
+	} as typeof wcpaySettings;
+};
+
+const downloadBalanceCSV = async (): Promise< string > => {
+	await userEvent.click( screen.getByRole( 'button', { name: 'Export' } ) );
+
+	return mockDownloadCSVFile.mock.calls[ 0 ]?.[ 1 ] as string;
+};
+
+const getPrintReport = ( container: HTMLElement ): HTMLElement =>
+	container.querySelector( '.wcpay-reports-balance-print' ) as HTMLElement;
+
+const getPrintBusinessLines = ( printReport: HTMLElement ): string[] => {
+	const businessBlock = within( printReport ).getByTestId(
+		'balance-report-business'
+	);
+
+	return within( businessBlock )
+		.getAllByTestId( 'balance-report-business-line' )
+		.map( ( line ) => line.textContent ?? '' );
+};
+
 const zeroSummary = {
 	currency: 'usd',
 	period,
@@ -298,6 +350,20 @@ const expectRecordedTracksEvent = (
 };
 
 beforeEach( () => {
+	originalWcpaySettings = global.wcpaySettings;
+	global.wcpaySettings = {
+		...( global.wcpaySettings ?? {} ),
+		accountDefaultCurrency: 'USD',
+		accountStatus: {
+			...( global.wcpaySettings?.accountStatus ?? {} ),
+		},
+		storeName: 'Aperture Store',
+	} as typeof wcpaySettings;
+	setBalanceReportIdentitySettings( {
+		businessName: 'Aperture Science LLC',
+		accountId: 'acct_wcpay_123',
+		storeName: 'Aperture Store',
+	} );
 	mockCreateNotice.mockReset();
 	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
@@ -317,6 +383,11 @@ afterEach( () => {
 	);
 	jest.useRealTimers();
 	jest.restoreAllMocks();
+	if ( originalWcpaySettings === undefined ) {
+		delete global.wcpaySettings;
+	} else {
+		global.wcpaySettings = originalWcpaySettings;
+	}
 } );
 
 describe( 'BalanceReport', () => {
@@ -760,37 +831,39 @@ describe( 'BalanceReport', () => {
 
 		const csv = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ] as string;
 		expect( csv ).toMatch(
-			/^row_key,label,amount,count,currency,period_start,period_end\n/
+			/^business_name,woopayments_account_id,row_key,label,amount,count,currency,period_start,period_end\n/
 		);
 		expect( csv ).toContain(
-			'starting_balance,"Starting balance - formatted 2026-05-01 UTC",1000,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,starting_balance,"Starting balance - formatted 2026-05-01 UTC",1000,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'total_charges_captured,"Total charges captured",162672,8,usd,2026-05-01,2026-05-14'
-		);
-		expect( csv ).toContain( 'fees,Fees,-6064,,usd,2026-05-01,2026-05-14' );
-		expect( csv ).toContain(
-			'charge_fees,"Charge fees",-5958,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,total_charges_captured,"Total charges captured",162672,8,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'dispute_fees,"Dispute fees",-1500,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,fees,Fees,-6064,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'"Aperture Science LLC",acct_wcpay_123,charge_fees,"Charge fees",-5958,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'"Aperture Science LLC",acct_wcpay_123,dispute_fees,"Dispute fees",-1500,,usd,2026-05-01,2026-05-14'
 		);
 		// `fee_refunds` is positive in the fixture — pins the sign convention
 		// for the one sub-row that diverges from the negative fee siblings.
 		expect( csv ).toContain(
-			'fee_refunds,"Fee refunds",1644,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,fee_refunds,"Fee refunds",1644,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'payout_fees,"Payout fees",-100,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,payout_fees,"Payout fees",-100,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'reader_fees,"Reader costs",-150,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,reader_fees,"Reader costs",-150,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'refunds,Refunds,-21500,3,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,refunds,Refunds,-21500,3,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).not.toContain(
 			'This report is provided for informational reconciliation purposes only.'
@@ -852,6 +925,11 @@ describe( 'BalanceReport', () => {
 		expect(
 			printReport.querySelector( 'img[alt="WooPayments"]' )
 		).toBeInTheDocument();
+		expect( printReport ).toHaveTextContent( 'Aperture Science LLC' );
+		expect( printReport ).toHaveTextContent( 'acct_wcpay_123' );
+		expect( printReport ).not.toHaveTextContent(
+			'WooPayments account ID:'
+		);
 		expect( printReport ).toHaveTextContent( 'Automattic Inc.' );
 		expect( printReport ).toHaveTextContent( '60 29th Street #343' );
 		expect( printReport ).toHaveTextContent(
@@ -879,6 +957,89 @@ describe( 'BalanceReport', () => {
 				hidden: true,
 			} )
 		).not.toBeInTheDocument();
+	} );
+
+	describe( 'getBalanceReportIdentity fallback behavior', () => {
+		it( 'uses the store name in CSV and print output when the account business name is empty', async () => {
+			setBalanceReportIdentitySettings( {
+				businessName: '',
+				storeName: 'Aperture Store',
+			} );
+			const { container } = renderBalanceReport( {
+				onReload: jest.fn(),
+			} );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+			expect( csv ).toContain(
+				'"Aperture Store",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+			expect(
+				getPrintBusinessLines( getPrintReport( container ) )
+			).toEqual( [
+				'Aperture Store',
+				'acct_wcpay_123',
+				...legalPrintBusinessDetails,
+			] );
+		} );
+
+		it( 'leaves CSV identity fields empty and suppresses optional print lines when identity data is unavailable', async () => {
+			setBalanceReportIdentitySettings( {
+				businessName: '',
+				accountId: '',
+				storeName: '',
+			} );
+			const { container } = renderBalanceReport( {
+				onReload: jest.fn(),
+			} );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+			expect( csv ).toContain(
+				'\n,,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+			expect(
+				getPrintBusinessLines( getPrintReport( container ) )
+			).toEqual( legalPrintBusinessDetails );
+		} );
+
+		it( 'leaves the CSV account column empty and suppresses the print account ID line when account ID is empty', async () => {
+			setBalanceReportIdentitySettings( {
+				accountId: '',
+			} );
+			const { container } = renderBalanceReport( {
+				onReload: jest.fn(),
+			} );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+			expect( csv ).toContain(
+				'"Aperture Science LLC",,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+			expect(
+				getPrintBusinessLines( getPrintReport( container ) )
+			).toEqual( [
+				'Aperture Science LLC',
+				...legalPrintBusinessDetails,
+			] );
+		} );
+
+		it( 'quotes comma-containing business names in CSV output', async () => {
+			setBalanceReportIdentitySettings( {
+				businessName: 'Smith, Jones & Associates',
+			} );
+			renderBalanceReport( { onReload: jest.fn() } );
+
+			const csv = await downloadBalanceCSV();
+
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+			expect( csv ).toContain(
+				'"Smith, Jones & Associates",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+			);
+		} );
 	} );
 
 	it( 'hides optional rows when their amount and count are zero', () => {

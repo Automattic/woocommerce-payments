@@ -2037,22 +2037,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type = Payment_Method::LINK;
 			}
 
-			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
-				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
-				if ( isset( $payment_method_details['card']['brand'] ) ) {
-					$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
-				}
-				$order->save_meta_data();
-			}
-			if ( 'amazon_pay' === $payment_method_type
-				&& isset( $payment_method_details['amazon_pay']['funding']['card']['last4'] ) ) {
-				$funding_card = $payment_method_details['amazon_pay']['funding']['card'];
-				$order->add_meta_data( 'last4', $funding_card['last4'], true );
-				if ( isset( $funding_card['brand'] ) ) {
-					$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
-				}
-				$order->save_meta_data();
-			}
+			$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 		} else {
 			$payment_method_details = false;
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
@@ -3932,6 +3917,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge    = $intent->get_charge();
 				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
+				// Capture the actual card details from the charge so the order's payment method title (and,
+				// via sync, the subscription's) reflects the card used — brand and funding — instead of a
+				// generic "Card". The 3DS/SCA pay-for-renewal flow lands here after frontend authentication;
+				// the synchronous non-3DS path already does this in process_payment_for_order(). See WOOPMNT-2882.
+				if ( ! empty( $charge ) ) {
+					$payment_method_details = $charge->get_payment_method_details();
+				}
+
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->order_service->attach_intent_info_to_order( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
@@ -4026,10 +4019,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// The token was saved and attached above (before the status update). Set the order's
-				// payment method title from it here.
+				// payment method title and card meta (brand + last4) from the charge details here, mirroring
+				// the synchronous non-3DS path so 3DS/SCA confirmations record the same data.
 				if ( ! empty( $token ) ) {
 					$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 					$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+					$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 				}
 
 				$return_url = $this->get_return_url( $order );
@@ -4665,6 +4660,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return 'card' === $payment_method_type
 			&& is_array( $payment_method_details )
 			&& 'link' === ( $payment_method_details['card']['wallet']['type'] ?? null );
+	}
+
+	/**
+	 * Stores the card brand and last 4 digits on the order from the charge's payment method details,
+	 * so order/email displays and reporting reflect the actual card used. No-op when the details are
+	 * unavailable or the payment method does not carry card information (e.g. redirect methods, Link).
+	 *
+	 * @param WC_Order    $order                  The order to store the meta on.
+	 * @param string|null $payment_method_type    The Stripe payment method type (e.g. 'card', 'amazon_pay').
+	 * @param array|false $payment_method_details The charge's payment method details, or false when unavailable.
+	 */
+	private function store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details ) {
+		if ( ! is_array( $payment_method_details ) ) {
+			return;
+		}
+
+		if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+			$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+			if ( isset( $payment_method_details['card']['brand'] ) ) {
+				$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
+			}
+			$order->save_meta_data();
+		}
+
+		if ( 'amazon_pay' === $payment_method_type
+			&& isset( $payment_method_details['amazon_pay']['funding']['card']['last4'] ) ) {
+			$funding_card = $payment_method_details['amazon_pay']['funding']['card'];
+			$order->add_meta_data( 'last4', $funding_card['last4'], true );
+			if ( isset( $funding_card['brand'] ) ) {
+				$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
+			}
+			$order->save_meta_data();
+		}
 	}
 
 	/**
