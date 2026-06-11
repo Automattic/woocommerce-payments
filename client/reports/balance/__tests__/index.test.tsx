@@ -655,6 +655,15 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
+		// Provide an actual date-filter value (the default mock leaves it
+		// undefined) so the active Date chip renders alongside the rows.
+		mockBalanceDateFilterState( {
+			value: {
+				operator: 'between',
+				value: [ '2026-05-01', '2026-05-14' ],
+			},
+		} );
+
 		renderBalanceReport( { onReload: jest.fn() } );
 
 		// "Balance summary" renders as the card heading above the DataViews
@@ -667,6 +676,11 @@ describe( 'BalanceReport', () => {
 		) as HTMLElement;
 		expect(
 			within( dataView ).getByText( 'Balance summary' )
+		).toBeInTheDocument();
+		// The active Date chip is expanded by default — the mount effect opens
+		// the chips row DataViews keeps collapsed for non-primary filters.
+		expect(
+			dataView.querySelector( '.dataviews-filters__summary-chip' )
 		).toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 		expectBalanceText( 'Ending balance - formatted 2024-03-31 UTC' );

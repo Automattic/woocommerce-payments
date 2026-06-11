@@ -10,7 +10,7 @@
  *
  * External dependencies
  */
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { DataViews } from '@wordpress/dataviews/wp';
 import type { View, Field } from '@wordpress/dataviews/wp';
@@ -93,6 +93,25 @@ export const BalanceDataView = ( {
 	const [ pendingDateOperator, setPendingDateOperator ] = useState<
 		string | null
 	>( null );
+	const rootRef = useRef< HTMLDivElement >( null );
+
+	// DataViews keeps the chips row collapsed until the funnel is toggled —
+	// `isShowingFilter` starts false for non-primary filters and isn't part
+	// of the public API. Open it once on mount so the active Date chip shows
+	// by default; the funnel still collapses it afterwards. The selector only
+	// matches the funnel in toggle mode (an active filter exists) — the
+	// "Add filter" menu trigger carries aria-haspopup and is skipped.
+	useEffect( () => {
+		if ( preview ) {
+			return;
+		}
+		rootRef.current
+			?.querySelector< HTMLButtonElement >(
+				'.dataviews-filters__visibility-toggle[aria-pressed="false"]:not([aria-haspopup])'
+			)
+			?.click();
+	}, [ preview ] );
+
 	const items = useMemo(
 		() => buildItems( visibleRows, summary, displayPeriod ),
 		[ visibleRows, summary, displayPeriod ]
@@ -259,6 +278,7 @@ export const BalanceDataView = ( {
 	return (
 		<div
 			className="wcpay-reports-balance-dv"
+			ref={ rootRef }
 			{ ...( preview ? { 'aria-hidden': true } : {} ) }
 		>
 			<DataViewsComposed
