@@ -2180,9 +2180,9 @@ class WC_Payments {
 		 *
 		 * @since 5.6.0
 		 *
-		 * @param Request $request    Null, but if the filter returns a request, it will be used.
-		 * @param string  $class_name The name of the request class.
-		 * @param mixed   $id         The item ID, if the request needs it.
+		 * @param Request|null $request    Null by default; if a filter returns a request, it will be used.
+		 * @param string       $class_name The name of the request class.
+		 * @param mixed        $id         The item ID, if the request needs it.
 		 */
 		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
 		if ( $request instanceof Request ) {
