@@ -82,7 +82,7 @@ class StorefrontIntegration {
 		 *
 		 * @param array $args The widget display args.
 		 */
-		$args     = apply_filters(
+		$args = apply_filters(
 			MultiCurrency::FILTER_PREFIX . 'storefront_widget_args',
 			[
 				'before_widget' => '<div id="woocommerce-payments-multi-currency-storefront-widget" class="woocommerce-breadcrumb">',

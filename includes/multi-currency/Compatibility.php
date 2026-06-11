@@ -200,7 +200,7 @@ class Compatibility extends BaseCompatibility {
 		/**
 		 * Filters whether the store's default currency should be returned instead of the selected currency.
 		 *
-		 * @since 8.3.0
+		 * @since 3.2.0
 		 *
 		 * @param bool $return_store_currency Whether to return the store currency. Default false.
 		 */

@@ -67,8 +67,8 @@ class Geolocation {
 			 *
 			 * @param string $default_location The default location, as a country:state string.
 			 */
-			$location         = wc_format_country_state_string( apply_filters( 'woocommerce_customer_default_location', $default_location ) );
-			$country          = $location['country'];
+			$location = wc_format_country_state_string( apply_filters( 'woocommerce_customer_default_location', $default_location ) );
+			$country  = $location['country'];
 		}
 
 		return $country;
