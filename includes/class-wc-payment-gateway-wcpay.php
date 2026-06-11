@@ -4724,6 +4724,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		// Stripe reports Link as type='card' with card.wallet.type='link'. Link wraps a card but must not
+		// persist the underlying card's brand/last4 as the order's card meta. The positive-payment path
+		// normalizes the type to Payment_Method::LINK before calling; guarding here keeps every caller
+		// consistent — including the $0 SetupIntent paths, where the type stays 'card'. WOOPMNT-2882.
+		if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details ) ) {
+			return;
+		}
+
 		if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
 			$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
 			if ( isset( $payment_method_details['card']['brand'] ) ) {

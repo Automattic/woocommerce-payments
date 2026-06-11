@@ -5634,6 +5634,82 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
 	}
 
+	public function test_update_order_status_does_not_store_card_meta_for_link_on_zero_amount_setup_intent() {
+		// Stripe reports Link as type='card' with card.wallet.type='link'. On the $0 SetupIntent path the
+		// payment method type stays 'card' (it is not normalized to Link before storing meta), so without a
+		// guard the underlying card's brand/last4 would be persisted as the order's card meta. Regression
+		// guard: a $0 free trial paid with Link must not store last4/_card_brand. WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0 ); // $0 free trial routes to the SetupIntent branch.
+		$order->save();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		// Link-as-card shape: a card wrapped by Link. The card sub-details carry brand/last4, but the wallet
+		// type marks it as Link, so the card meta must not be persisted.
+		$this->mock_api_client
+			->method( 'get_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn(
+				[
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'brand'   => 'visa',
+						'last4'   => '4242',
+						'funding' => 'credit',
+						'wallet'  => [ 'type' => 'link' ],
+					],
+				]
+			);
+
+		$intent_id = 'seti_mock_link_free_trial';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'                => $intent_id,
+						'status'            => Intent_Status::SUCCEEDED,
+						'payment_method_id' => 'pm_mock',
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $saved->get_meta( 'last4' ), 'Link must not persist the underlying card last4.' );
+		$this->assertEmpty( $saved->get_meta( '_card_brand' ), 'Link must not persist the underlying card brand.' );
+		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'A Link payment must not be titled as a branded card.' );
+	}
+
 	public function return_ajax_wp_die_handler() {
 		return [ $this, 'ajax_wp_die_handler' ];
 	}
