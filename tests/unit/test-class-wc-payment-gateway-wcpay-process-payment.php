@@ -334,6 +334,55 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * The branded payment method title must be set BEFORE update_order_status_from_intent(), because that
+	 * call transitions the order status, which synchronously fires the customer/renewal email. The email
+	 * renders get_payment_method_title(), so if the title is set afterwards the email shows a generic "Card".
+	 * Regression guard for WOOPMNT-2882 (card brand missing from order/renewal emails on the sync path).
+	 */
+	public function test_process_payment_for_order_sets_title_before_status_transition() {
+		$order_id = 124;
+
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order->method( 'get_id' )->willReturn( $order_id );
+		$mock_order->method( 'get_total' )->willReturn( 12.23 );
+		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_mock' );
+
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )->method( 'format_response' )->willReturn( $intent );
+
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+		$charge_request->method( 'format_response' )->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+
+		// Record the relative order of the title write (on the order) vs the status transition.
+		$calls = [];
+		$mock_order->method( 'set_payment_method_title' )->willReturnCallback(
+			function () use ( &$calls ) {
+				$calls[] = 'title';
+			}
+		);
+		$this->mock_order_service->method( 'update_order_status_from_intent' )->willReturnCallback(
+			function () use ( &$calls ) {
+				$calls[] = 'status';
+			}
+		);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		$title_pos  = array_search( 'title', $calls, true );
+		$status_pos = array_search( 'status', $calls, true );
+		$this->assertNotFalse( $title_pos, 'set_payment_method_title should be called' );
+		$this->assertNotFalse( $status_pos, 'update_order_status_from_intent should be called' );
+		$this->assertLessThan( $status_pos, $title_pos, 'Payment method title must be set before the status transition that fires the email.' );
+	}
+
+	/**
 	 * Test processing payment with the status 'succeeded'.
 	 */
 	public function test_intent_status_success_logged_out_user() {
