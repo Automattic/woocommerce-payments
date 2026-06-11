@@ -39,6 +39,21 @@ const DataViewsFiltersToggled = dataViewsStatics.FiltersToggled;
 const DataViewsFiltersToggle = dataViewsStatics.FiltersToggle;
 const DataViewsLayout = dataViewsStatics.Layout;
 
+// DataViews keeps the chips row collapsed until the funnel is toggled —
+// `isShowingFilter` starts false for non-primary filters and isn't part of the
+// public API. We open it once by clicking the funnel button so the active Date
+// chip shows by default. The selector is scoped to the funnel-in-toggle-mode
+// form (an active filter exists); the "Add filter" menu trigger carries
+// aria-haspopup and is intentionally skipped so a filterless mount never pops
+// the menu.
+// TODO: Replace with a public DataViews API (e.g. a `defaultFiltersOpen` prop
+// or an `isShowingFilter` setter) once one ships upstream.
+const openFiltersRowWorkaround = ( root: HTMLElement | null ): void => {
+	root?.querySelector< HTMLButtonElement >(
+		'.dataviews-filters__visibility-toggle[aria-pressed="false"]:not([aria-haspopup])'
+	)?.click();
+};
+
 interface BalanceItem {
 	id: string;
 	label: string;
@@ -95,22 +110,16 @@ export const BalanceDataView = ( {
 		string | null
 	>( null );
 	const rootRef = useRef< HTMLDivElement >( null );
+	// Gate the funnel-click workaround to a single run per mount so React
+	// 18 StrictMode's double-invoke in development doesn't fire it twice.
+	const filtersRowOpenedRef = useRef( false );
 
-	// DataViews keeps the chips row collapsed until the funnel is toggled —
-	// `isShowingFilter` starts false for non-primary filters and isn't part
-	// of the public API. Open it once on mount so the active Date chip shows
-	// by default; the funnel still collapses it afterwards. The selector only
-	// matches the funnel in toggle mode (an active filter exists) — the
-	// "Add filter" menu trigger carries aria-haspopup and is skipped.
 	useEffect( () => {
-		if ( preview ) {
+		if ( preview || filtersRowOpenedRef.current ) {
 			return;
 		}
-		rootRef.current
-			?.querySelector< HTMLButtonElement >(
-				'.dataviews-filters__visibility-toggle[aria-pressed="false"]:not([aria-haspopup])'
-			)
-			?.click();
+		openFiltersRowWorkaround( rootRef.current );
+		filtersRowOpenedRef.current = true;
 	}, [ preview ] );
 
 	const items = useMemo(
