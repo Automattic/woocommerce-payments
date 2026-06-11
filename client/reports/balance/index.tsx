@@ -323,6 +323,8 @@ export const BalanceReport = ( {
 				role="alert"
 			/>
 		);
+	} else if ( ! hasActivity ) {
+		content = <BalanceEmptyState />;
 	} else {
 		content = (
 			<>
