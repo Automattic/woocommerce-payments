@@ -3974,11 +3974,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					// $0 orders (free trials) confirm a SetupIntent with no charge to read the card from.
 					// Source the card details from the confirmed payment method so the order, its synced
 					// subscription, and the completion email show the real card instead of a generic "Card".
-					// Set the title BEFORE payment_complete(), which fires the customer email. WOOPMNT-2882.
-					$pm_details = $this->get_setup_intent_payment_method_details( $intent->get_payment_method_id() );
-					if ( $pm_details ) {
-						$this->set_payment_method_title_for_order( $order, $pm_details['type'], $pm_details );
-						$this->store_card_details_meta_for_order( $order, $pm_details['type'], $pm_details );
+					// Set the title BEFORE payment_complete(), which fires the customer email. Assign into the
+					// method-scoped $payment_method_details (not a local) so the later ! empty( $token ) block
+					// re-applies the SAME branded title rather than overwriting it back to a generic "Card" with
+					// the still-false default — mirroring how the $amount > 0 branch feeds the charge details
+					// into $payment_method_details. WOOPMNT-2882.
+					$payment_method_details = $this->get_setup_intent_payment_method_details( $intent->get_payment_method_id() );
+					if ( $payment_method_details ) {
+						$this->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
+						$this->store_card_details_meta_for_order( $order, $payment_method_details['type'], $payment_method_details );
 					}
 
 					$order->payment_complete( $intent_id );
