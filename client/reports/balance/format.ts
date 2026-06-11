@@ -27,16 +27,15 @@ export const getBalanceCSV = ( {
 	summary,
 	displayPeriod,
 	currency,
-	reportIdentity,
 }: {
 	visibleRows: BalanceRow[];
 	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
 	displayPeriod: ReportsPeriodRange;
 	currency: string;
-	reportIdentity: ReturnType< typeof getBalanceReportIdentity >;
 } ): string => {
 	const periodStart = formatYmdUTC( displayPeriod.start );
 	const periodEnd = formatYmdUTC( displayPeriod.end );
+	const reportIdentity = getBalanceReportIdentity();
 
 	return generateCSVDataFromTable(
 		[
