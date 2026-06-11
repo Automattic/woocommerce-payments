@@ -4236,16 +4236,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method = $setup_intent->get_payment_method_id();
 			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
 
+			/**
+			 * Filters the URL to redirect to after a payment method is added.
+			 *
+			 * @since 2.3.0
+			 *
+			 * @param string $url The redirect URL.
+			 */
+			$redirect_url = apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) );
+
 			return [
 				'result'   => 'success',
-				/**
-				 * Filters the URL to redirect to after a payment method is added.
-				 *
-				 * @since 2.3.0
-				 *
-				 * @param string $url The redirect URL.
-				 */
-				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
+				'redirect' => $redirect_url,
 			];
 		} catch ( Exception $e ) {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
@@ -4623,19 +4625,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$available_methods[] = $definition_class::get_id();
 		}
 
-		$available_methods = array_values(
-			/**
-			 * Filters the list of available UPE payment methods.
-			 *
-			 * @since 2.5.0
-			 *
-			 * @param array $available_methods Available UPE payment method IDs.
-			 */
-			apply_filters(
-				'wcpay_upe_available_payment_methods',
-				$available_methods
-			)
-		);
+		/**
+		 * Filters the list of available UPE payment methods.
+		 *
+		 * @since 2.5.0
+		 *
+		 * @param array $available_methods Available UPE payment method IDs.
+		 */
+		$available_methods = apply_filters( 'wcpay_upe_available_payment_methods', $available_methods );
+		$available_methods = array_values( $available_methods );
 
 		$methods_with_fees = array_keys( $this->account->get_fees() );
 
