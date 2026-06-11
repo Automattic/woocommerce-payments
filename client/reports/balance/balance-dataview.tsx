@@ -108,7 +108,7 @@ export const BalanceDataView = ( {
 								gap: '12px',
 								paddingLeft: `${ item.depth * 24 }px`,
 								fontWeight: item.depth === 2 ? 400 : 500,
-								color: item.depth === 2 ? '#757575' : 'inherit',
+								color: item.depth === 2 ? '#757575' : '#2f2f2f',
 							} }
 						>
 							{ item.label }
@@ -150,7 +150,7 @@ export const BalanceDataView = ( {
 								textAlign: 'right',
 								fontVariantNumeric: 'tabular-nums',
 								fontWeight: item.depth >= 1 ? 400 : 500,
-								color: item.depth === 2 ? '#757575' : 'inherit',
+								color: item.depth === 2 ? '#757575' : '#2f2f2f',
 							} }
 						>
 							{ formatBalanceAmount( item.amount, currency ) }
