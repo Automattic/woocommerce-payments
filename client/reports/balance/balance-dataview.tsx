@@ -223,7 +223,6 @@ export const BalanceDataView = ( {
 							fontSize: '15px',
 							fontWeight: 500,
 							lineHeight: '20px',
-							borderBottom: '1px solid #f0f0f0',
 						} }
 					>
 						{ __( 'Balance summary', 'woocommerce-payments' ) }
