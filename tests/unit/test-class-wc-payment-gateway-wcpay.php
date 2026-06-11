@@ -1823,6 +1823,34 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
 	}
 
+	public function test_attach_exchange_info_to_order_swallows_charge_lookup_failure() {
+		// The Stripe exchange rate is analytics-only enrichment (the _wcpay_multi_currency_order_exchange_rate
+		// meta is the reporting fallback), so a Get_Charge failure must not propagate and break the
+		// payment-completion flow that calls this. WOOPMNT-6209.
+		$charge_id = 'ch_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new \Exception( 'server unavailable' ) );
+
+		// Must not throw — a failed exchange-rate lookup cannot block checkout.
+		$this->card_gateway->attach_exchange_info_to_order( $order, $charge_id );
+
+		// And no exchange-rate meta is written on failure.
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
 	public function test_save_payment_method_checkbox_displayed() {
 		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
 		$this->setOutputCallback(
