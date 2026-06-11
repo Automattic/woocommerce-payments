@@ -2007,20 +2007,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
-		if ( $is_changing_payment_method_for_subscription ) {
-			$this->with_stock_reduction_disabled(
-				function () use ( $order, $intent ) {
-					$this->order_service->update_order_status_from_intent( $order, $intent );
-				}
-			);
-		} else {
-			$this->order_service->update_order_status_from_intent( $order, $intent );
-		}
-		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
-
-		$this->maybe_add_customer_notification_note( $order, $processing );
-
-		// Extract payment method details for setting the payment method title.
+		// Set the branded payment method title + card meta from the charge details BEFORE the status update.
+		// update_order_status_from_intent() -> payment_complete() fires the customer order/renewal email
+		// synchronously, and that email renders get_payment_method_title(); the title must already reflect the
+		// real card or the email falls back to a generic "Card". Re-deriving $charge here is a no-op (it already
+		// equals $intent->get_charge()), so attach_transaction_fee_to_order() below is unaffected. WOOPMNT-2882.
 		if ( $payment_needed ) {
 			$charge                 = $intent ? $intent->get_charge() : null;
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
@@ -2044,8 +2035,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $token ? $this->get_payment_method_type_for_setup_intent( $intent, $token ) : null;
 		}
 
-		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+
+		if ( $is_changing_payment_method_for_subscription ) {
+			$this->with_stock_reduction_disabled(
+				function () use ( $order, $intent ) {
+					$this->order_service->update_order_status_from_intent( $order, $intent );
+				}
+			);
+		} else {
+			$this->order_service->update_order_status_from_intent( $order, $intent );
+		}
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
+
+		$this->maybe_add_customer_notification_note( $order, $processing );
 
 		if ( isset( $status ) && ( Intent_Status::REQUIRES_ACTION === $status || Intent_Status::REQUIRES_CONFIRMATION === $status ) && $this->is_changing_payment_method_for_subscription() ) {
 			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
@@ -4002,6 +4005,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
+			// Set the branded payment method title + card meta from the charge details BEFORE the status
+			// update. update_order_status_from_intent() -> payment_complete() fires the customer order/renewal
+			// email synchronously, and that email renders get_payment_method_title(); the title must already
+			// reflect the real card or the email falls back to a generic "Card". $token is non-null only when
+			// the intent is authorized and the payment method was saved (see the token-attach guard above).
+			// See WOOPMNT-2882.
+			if ( ! empty( $token ) ) {
+				$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
+			}
+
 			if ( $is_subscription_payment_method_change ) {
 				$this->with_stock_reduction_disabled(
 					function () use ( $order, $intent ) {
@@ -4016,15 +4031,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Stock reduction is left to WooCommerce core (see note in process_payment_for_order()).
 				if ( ! $is_subscription_payment_method_change ) {
 					WC()->cart->empty_cart();
-				}
-
-				// The token was saved and attached above (before the status update). Set the order's
-				// payment method title and card meta (brand + last4) from the charge details here, mirroring
-				// the synchronous non-3DS path so 3DS/SCA confirmations record the same data.
-				if ( ! empty( $token ) ) {
-					$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
-					$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-					$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 				}
 
 				$return_url = $this->get_return_url( $order );

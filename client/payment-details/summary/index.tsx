@@ -100,7 +100,8 @@ const isTapToPay = ( model: string ) => {
 const renderDisputeDetails = (
 	dispute: NonNullable< Charge[ 'dispute' ] >,
 	charge: Charge,
-	bankName: string | null
+	bankName: string | null,
+	onIssueRefund: () => void
 ) => {
 	if ( isAwaitingResponse( dispute.status ) ) {
 		return (
@@ -108,9 +109,9 @@ const renderDisputeDetails = (
 				dispute={ dispute }
 				customer={ charge.billing_details }
 				chargeCreated={ charge.created }
-				orderUrl={ charge.order?.url }
 				paymentMethod={ charge.payment_method_details?.type }
 				bankName={ bankName }
+				onIssueRefund={ onIssueRefund }
 			/>
 		);
 	}
@@ -750,13 +751,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 			{ charge.dispute && (
 				<ErrorBoundary>
-					{ renderDisputeDetails( charge.dispute, charge, bankName ) }
+					{ renderDisputeDetails(
+						charge.dispute,
+						charge,
+						bankName,
+						() => setIsRefundModalOpen( true )
+					) }
 				</ErrorBoundary>
 			) }
 			{ isRefundModalOpen && (
 				<RefundModal
 					charge={ charge }
 					formattedAmount={ formattedAmount }
+					orderUrl={ charge.order?.url }
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
 						recordEvent(

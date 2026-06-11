@@ -1054,7 +1054,7 @@ class WC_Payments_Utils {
 			array_merge(
 				[
 					'page' => 'wc-admin',
-					'path' => '/payments/transactions/details',
+					'path' => rawurlencode( '/payments/transactions/details' ),
 					'id'   => self::get_transaction_url_id( $primary_id, $fallback_id ),
 				],
 				$query_args
