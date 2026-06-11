@@ -5,7 +5,8 @@
  * passing children makes DataViews render only the composed pieces (the
  * funnel FiltersToggle, the native date filter chips and the rows Layout)
  * and omit the Search box, View-options gear, Pagination and Footer.
- * Field renders carry their styling inline; a scoped block in style.scss
+ * Field renders carry className-driven styling so depth colors live in SCSS
+ * (overridable in forced-colors mode); a scoped block in style.scss also
  * neutralises the DataViews table chrome (header row, cell padding) so the
  * summary matches the bespoke design it replaced.
  *
@@ -152,14 +153,7 @@ export const BalanceDataView = ( {
 					getValue: ( { item }: { item: BalanceItem } ) => item.label,
 					render: ( { item }: { item: BalanceItem } ) => (
 						<span
-							style={ {
-								display: 'inline-flex',
-								alignItems: 'center',
-								gap: '12px',
-								paddingLeft: `${ item.depth * 24 }px`,
-								fontWeight: item.depth === 2 ? 400 : 500,
-								color: item.depth === 2 ? '#757575' : '#2f2f2f',
-							} }
+							className={ `wcpay-reports-balance-dv__label wcpay-reports-balance-dv__label--depth-${ item.depth }` }
 						>
 							{ item.label }
 							{ typeof item.count === 'number' && (
@@ -168,20 +162,7 @@ export const BalanceDataView = ( {
 									   get the unambiguous "N items" text instead. */ }
 									<span
 										aria-hidden="true"
-										style={ {
-											display: 'inline-flex',
-											alignItems: 'center',
-											justifyContent: 'center',
-											minWidth: '20px',
-											height: '20px',
-											padding: '0 6px',
-											borderRadius: '10px',
-											background: '#f0f0f0',
-											color: '#757575',
-											fontSize: '11px',
-											fontWeight: 500,
-											lineHeight: '20px',
-										} }
+										className="wcpay-reports-balance-dv__count"
 									>
 										{ item.count }
 									</span>
@@ -209,16 +190,8 @@ export const BalanceDataView = ( {
 					getValue: ( { item }: { item: BalanceItem } ) =>
 						item.amount,
 					render: ( { item }: { item: BalanceItem } ) => (
-						// DataViews wraps cell content in a flex container, so
-						// grow to fill it before right-aligning the text.
 						<span
-							style={ {
-								flexGrow: 1,
-								textAlign: 'right',
-								fontVariantNumeric: 'tabular-nums',
-								fontWeight: item.depth >= 1 ? 400 : 500,
-								color: item.depth === 2 ? '#757575' : '#2f2f2f',
-							} }
+							className={ `wcpay-reports-balance-dv__amount wcpay-reports-balance-dv__amount--depth-${ item.depth }` }
 						>
 							{ formatBalanceAmount( item.amount, currency ) }
 						</span>
@@ -314,23 +287,8 @@ export const BalanceDataView = ( {
 				) }
 				{ ! preview && <DataViewsFiltersToggled /> }
 				{ children ?? (
-					<div
-						style={ {
-							background: '#fff',
-							border: '1px solid #e0e0e0',
-							borderRadius: '8px',
-							padding: '16px 24px 24px',
-							marginTop: '16px',
-						} }
-					>
-						<div
-							style={ {
-								padding: '12px 0 16px',
-								fontSize: '15px',
-								fontWeight: 500,
-								lineHeight: '20px',
-							} }
-						>
+					<div className="wcpay-reports-balance-dv__card">
+						<div className="wcpay-reports-balance-dv__caption">
 							{ __( 'Balance summary', 'woocommerce-payments' ) }
 						</div>
 						<DataViewsLayout />
