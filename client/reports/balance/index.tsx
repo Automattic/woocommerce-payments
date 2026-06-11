@@ -95,6 +95,11 @@ const BalancePrintReport = ( {
 	currency: string;
 } ): JSX.Element => {
 	const reportIdentity = getBalanceReportIdentity();
+	const businessLines = [
+		reportIdentity.businessName,
+		reportIdentity.accountId,
+		...woopaymentsBusinessDetails,
+	].filter( ( line ): line is string => line !== '' );
 
 	return (
 		<section className="wcpay-reports-balance-print" aria-hidden="true">
@@ -104,15 +109,17 @@ const BalancePrintReport = ( {
 					src={ WooPaymentsLogo }
 					alt={ __( 'WooPayments', 'woocommerce-payments' ) }
 				/>
-				<div className="wcpay-reports-balance-print__business">
-					{ reportIdentity.businessName && (
-						<p>{ reportIdentity.businessName }</p>
-					) }
-					{ reportIdentity.accountId && (
-						<p>{ reportIdentity.accountId }</p>
-					) }
-					{ woopaymentsBusinessDetails.map( ( line ) => (
-						<p key={ line }>{ line }</p>
+				<div
+					className="wcpay-reports-balance-print__business"
+					data-testid="balance-report-business"
+				>
+					{ businessLines.map( ( line, index ) => (
+						<p
+							key={ `${ line }-${ index }` }
+							data-testid="balance-report-business-line"
+						>
+							{ line }
+						</p>
 					) ) }
 				</div>
 			</header>

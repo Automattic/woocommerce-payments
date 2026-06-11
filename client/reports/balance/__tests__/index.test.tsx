@@ -17,9 +17,11 @@ const mockAppliedDateFilterValue = {
 	value: [ '2026-04-01', '2026-04-30' ],
 };
 let consoleErrorSpy: jest.SpyInstance | undefined;
-const testGlobal = globalThis as typeof globalThis & {
+
+declare const global: {
 	wcpaySettings?: typeof wcpaySettings;
 };
+
 let originalWcpaySettings: typeof wcpaySettings | undefined;
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -245,18 +247,18 @@ const renderBalanceReportWithDateFilterNow = (
 	);
 
 const setBalanceReportIdentitySettings = ( {
-	businessName = testGlobal.wcpaySettings?.accountStatus?.businessName ?? '',
-	accountId = testGlobal.wcpaySettings?.accountStatus?.accountId ?? '',
-	storeName = testGlobal.wcpaySettings?.storeName ?? '',
+	businessName = global.wcpaySettings?.accountStatus?.businessName ?? '',
+	accountId = global.wcpaySettings?.accountStatus?.accountId ?? '',
+	storeName = global.wcpaySettings?.storeName ?? '',
 }: Partial< {
 	businessName: string;
 	accountId: string;
 	storeName: string;
 } > ) => {
-	testGlobal.wcpaySettings = {
-		...( testGlobal.wcpaySettings ?? {} ),
+	global.wcpaySettings = {
+		...( global.wcpaySettings ?? {} ),
 		accountStatus: {
-			...( testGlobal.wcpaySettings?.accountStatus ?? {} ),
+			...( global.wcpaySettings?.accountStatus ?? {} ),
 			businessName,
 			accountId,
 		},
@@ -267,20 +269,21 @@ const setBalanceReportIdentitySettings = ( {
 const downloadBalanceCSV = async (): Promise< string > => {
 	await userEvent.click( screen.getByRole( 'button', { name: 'Export' } ) );
 
-	expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
-
-	return mockDownloadCSVFile.mock.calls[ 0 ][ 1 ] as string;
+	return mockDownloadCSVFile.mock.calls[ 0 ]?.[ 1 ] as string;
 };
 
 const getPrintReport = ( container: HTMLElement ): HTMLElement =>
 	container.querySelector( '.wcpay-reports-balance-print' ) as HTMLElement;
 
-const getPrintBusinessLines = ( printReport: HTMLElement ): string[] =>
-	Array.from(
-		printReport.querySelectorAll(
-			'.wcpay-reports-balance-print__business p'
-		)
-	).map( ( line ) => line.textContent ?? '' );
+const getPrintBusinessLines = ( printReport: HTMLElement ): string[] => {
+	const businessBlock = within( printReport ).getByTestId(
+		'balance-report-business'
+	);
+
+	return within( businessBlock )
+		.getAllByTestId( 'balance-report-business-line' )
+		.map( ( line ) => line.textContent ?? '' );
+};
 
 const zeroSummary = {
 	currency: 'usd',
@@ -347,12 +350,12 @@ const expectRecordedTracksEvent = (
 };
 
 beforeEach( () => {
-	originalWcpaySettings = testGlobal.wcpaySettings;
-	testGlobal.wcpaySettings = {
-		...( testGlobal.wcpaySettings ?? {} ),
+	originalWcpaySettings = global.wcpaySettings;
+	global.wcpaySettings = {
+		...( global.wcpaySettings ?? {} ),
 		accountDefaultCurrency: 'USD',
 		accountStatus: {
-			...( testGlobal.wcpaySettings?.accountStatus ?? {} ),
+			...( global.wcpaySettings?.accountStatus ?? {} ),
 		},
 		storeName: 'Aperture Store',
 	} as typeof wcpaySettings;
@@ -381,9 +384,9 @@ afterEach( () => {
 	jest.useRealTimers();
 	jest.restoreAllMocks();
 	if ( originalWcpaySettings === undefined ) {
-		delete testGlobal.wcpaySettings;
+		delete global.wcpaySettings;
 	} else {
-		testGlobal.wcpaySettings = originalWcpaySettings;
+		global.wcpaySettings = originalWcpaySettings;
 	}
 } );
 
@@ -968,6 +971,7 @@ describe( 'BalanceReport', () => {
 
 			const csv = await downloadBalanceCSV();
 
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
 				'"Aperture Store",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
 			);
@@ -992,6 +996,7 @@ describe( 'BalanceReport', () => {
 
 			const csv = await downloadBalanceCSV();
 
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
 				'\n,,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
 			);
@@ -1010,6 +1015,7 @@ describe( 'BalanceReport', () => {
 
 			const csv = await downloadBalanceCSV();
 
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
 				'"Aperture Science LLC",,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
 			);
@@ -1029,6 +1035,7 @@ describe( 'BalanceReport', () => {
 
 			const csv = await downloadBalanceCSV();
 
+			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
 				'"Smith, Jones & Associates",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
 			);
