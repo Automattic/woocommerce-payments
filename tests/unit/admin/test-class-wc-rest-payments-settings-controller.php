@@ -713,6 +713,38 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_update_settings_returns_field_targeted_error_for_bracketed_stripe_param() {
+		// Stripe sometimes sends `business_profile[support_phone]`; the bracketed form should
+		// be extracted and mapped to the same inline field as the bare shorthand.
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Invalid Japanese phone number.',
+					[ 'param' => 'business_profile[support_phone]' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'wcpay_server_error', $data['code'] );
+		$this->assertArrayNotHasKey( 'server_error', $data );
+		$this->assertSame(
+			'Invalid Japanese phone number.',
+			$data['data']['details']['account_business_support_phone']['message']
+		);
+		$this->assertSame(
+			'account_business_support_phone',
+			array_key_first( $data['data']['params'] )
+		);
+	}
+
 	public function test_update_settings_falls_back_to_server_error_for_fields_without_inline_ui() {
 		// `business_name` maps to the `account_business_name` setting, but no client
 		// component renders its errors inline, so the legacy shape must be kept.
@@ -777,6 +809,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 400, $response->get_status() );
 		$this->assertSame( 'Generic Stripe failure.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
 	}
 
 	public function test_update_settings_calls_store_setup_sync() {

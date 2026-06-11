@@ -4,17 +4,22 @@
 import scrollToFirstFieldError from '../scroll-to-first-field-error';
 
 describe( 'scrollToFirstFieldError()', () => {
+	beforeEach( () => {
+		window.matchMedia = jest.fn().mockReturnValue( { matches: false } );
+	} );
+
 	afterEach( () => {
 		document.body.innerHTML = '';
 	} );
 
-	it( 'scrolls to the input mapped to the first field in details', () => {
+	it( 'scrolls to and focuses the input for the first field in details', () => {
 		document.body.innerHTML =
 			'<input id="account-business-support-phone-input" />';
 		const element = document.getElementById(
 			'account-business-support-phone-input'
 		);
 		element.scrollIntoView = jest.fn();
+		element.focus = jest.fn();
 
 		scrollToFirstFieldError( {
 			account_business_support_phone: {
@@ -28,20 +33,46 @@ describe( 'scrollToFirstFieldError()', () => {
 			behavior: 'smooth',
 			block: 'center',
 		} );
+		expect( element.focus ).toHaveBeenCalledWith( { preventScroll: true } );
 	} );
 
-	it( 'falls back to the hyphenated convention for unmapped fields', () => {
+	it( 'uses reduced motion when prefers-reduced-motion is set', () => {
+		window.matchMedia = jest.fn().mockReturnValue( { matches: true } );
+		document.body.innerHTML =
+			'<input id="account-business-support-phone-input" />';
+		const element = document.getElementById(
+			'account-business-support-phone-input'
+		);
+		element.scrollIntoView = jest.fn();
+		element.focus = jest.fn();
+
+		scrollToFirstFieldError( {
+			account_business_support_phone: { message: 'Invalid.' },
+		} );
+
+		expect( element.scrollIntoView ).toHaveBeenCalledWith( {
+			behavior: 'auto',
+			block: 'center',
+		} );
+	} );
+
+	it( 'falls back to the hyphenated convention for any field key', () => {
 		document.body.innerHTML = '<input id="account-business-name-input" />';
 		const element = document.getElementById(
 			'account-business-name-input'
 		);
 		element.scrollIntoView = jest.fn();
+		element.focus = jest.fn();
 
 		scrollToFirstFieldError( {
 			account_business_name: { message: 'Invalid name.' },
 		} );
 
-		expect( element.scrollIntoView ).toHaveBeenCalled();
+		expect( element.scrollIntoView ).toHaveBeenCalledWith( {
+			behavior: 'smooth',
+			block: 'center',
+		} );
+		expect( element.focus ).toHaveBeenCalledWith( { preventScroll: true } );
 	} );
 
 	it.each( [ undefined, null, 'oops', {} ] )(

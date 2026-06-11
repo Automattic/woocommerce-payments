@@ -1016,20 +1016,25 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$param = $matches[1];
 		}
 
+		// First pass: exact match.
 		foreach ( WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING as $setting_key => $account_key ) {
-			if ( ! in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true ) ) {
-				continue;
-			}
-			if ( $account_key === $param ) {
-				return $setting_key;
-			}
-			// Match Stripe shorthand, e.g. account_key `business_support_phone` vs Stripe `support_phone`.
-			if ( str_ends_with( $account_key, '_' . $param ) ) {
+			if ( in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true ) && $account_key === $param ) {
 				return $setting_key;
 			}
 		}
 
-		return null;
+		// Second pass: suffix match, e.g. Stripe `support_phone` -> account key `business_support_phone`.
+		// Only returns when exactly one key matches — prevents ambiguous params from routing to the wrong field.
+		$suffix  = '_' . $param;
+		$matches = [];
+		foreach ( WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING as $setting_key => $account_key ) {
+			if ( in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true )
+				&& substr( $account_key, -strlen( $suffix ) ) === $suffix ) {
+				$matches[] = $setting_key;
+			}
+		}
+
+		return 1 === count( $matches ) ? $matches[0] : null;
 	}
 
 	/**
