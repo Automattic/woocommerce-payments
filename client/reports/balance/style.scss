@@ -379,8 +379,13 @@ $print-context: '.wcpay-reports-balance-print-context';
 			padding-left: 0;
 		}
 
+		// Mirror of the first cell: DataViews pads the last column 24px
+		// (`tr td:last-child`), which would hold the amount short of the card's
+		// right edge. Zero it so amounts align flush with the caption's right
+		// edge, matching the bespoke table.
 		td:last-child {
 			white-space: nowrap;
+			padding-right: 0;
 		}
 
 		tr:last-child td {
