@@ -394,8 +394,8 @@ class WC_Payments_WooPay_Button_Handler {
 		 *
 		 * @since 5.9.0
 		 *
-		 * @param bool       $is_supported Whether the product is supported by the WooPay Express button.
-		 * @param WC_Product $product      The product being checked.
+		 * @param bool                   $is_supported Whether the product is supported by the WooPay Express button.
+		 * @param WC_Product|false|null  $product      The product being checked, or false/null when none could be resolved.
 		 */
 		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );
 	}
