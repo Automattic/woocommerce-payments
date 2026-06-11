@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Currency_Code;
 use WCPay\Database_Cache;
 use WCPay\Onboarding_Experiment;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -3508,7 +3509,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 					],
 				]
 			);
@@ -3533,7 +3534,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		}
 
 		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
+		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => Currency_Code::SWISS_FRANC ] ) ) ); // Match it with note content sanitization process.
 		$time                     = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
@@ -3544,7 +3545,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'CHF',
+						'currency'            => Currency_Code::SWISS_FRANC,
 					],
 				]
 			);

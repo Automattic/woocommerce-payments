@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\PaymentMethods\Configs\Utils;
 
+use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
@@ -88,17 +89,17 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with supported currency and country.
 	 */
 	public function test_is_available_for_with_supported_currency_and_country() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		// Test with supported currency and country.
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'USD', 'US' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::UNITED_STATES_DOLLAR, 'US' ),
 			'Should be available for USD in US'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'CAD', 'CA' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::CANADIAN_DOLLAR, 'CA' ),
 			'Should be available for CAD in CA'
 		);
 	}
@@ -107,11 +108,11 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with unsupported currency.
 	 */
 	public function test_is_available_for_with_unsupported_currency() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'EUR', 'US' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::EURO, 'US' ),
 			'Should not be available for EUR in US'
 		);
 	}
@@ -120,11 +121,11 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with unsupported country.
 	 */
 	public function test_is_available_for_with_unsupported_country() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'USD', 'GB' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::UNITED_STATES_DOLLAR, 'GB' ),
 			'Should not be available for USD in GB'
 		);
 	}
@@ -135,12 +136,12 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	public function test_is_available_for_with_empty_support_arrays() {
 		// Empty arrays should allow all currencies and countries.
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( [], [], 'USD', 'US' ),
+			PaymentMethodUtils::is_available_for( [], [], Currency_Code::UNITED_STATES_DOLLAR, 'US' ),
 			'Empty arrays should allow all currencies and countries'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( [], [], 'EUR', 'GB' ),
+			PaymentMethodUtils::is_available_for( [], [], Currency_Code::EURO, 'GB' ),
 			'Empty arrays should allow all currencies and countries'
 		);
 	}
@@ -346,17 +347,17 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	public function test_is_domestic_currency_for_country_with_valid_combinations() {
 		// Test some known valid combinations.
 		$this->assertTrue(
-			PaymentMethodUtils::is_domestic_currency_for_country( 'USD', 'US' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::UNITED_STATES_DOLLAR, 'US' ),
 			'USD should be domestic for US'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_domestic_currency_for_country( 'EUR', 'DE' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::EURO, 'DE' ),
 			'EUR should be domestic for DE'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_domestic_currency_for_country( 'GBP', 'GB' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::POUND_STERLING, 'GB' ),
 			'GBP should be domestic for GB'
 		);
 	}
@@ -366,18 +367,18 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_is_domestic_currency_for_country_with_invalid_combinations() {
 		$this->assertFalse(
-			PaymentMethodUtils::is_domestic_currency_for_country( 'EUR', 'US' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::EURO, 'US' ),
 			'EUR should not be domestic for US'
 		);
 
 		$this->assertFalse(
-			PaymentMethodUtils::is_domestic_currency_for_country( 'USD', 'GB' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::UNITED_STATES_DOLLAR, 'GB' ),
 			'USD should not be domestic for GB'
 		);
 
 		// Test with invalid country code.
 		$this->assertFalse(
-			PaymentMethodUtils::is_domestic_currency_for_country( 'USD', 'XX' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::UNITED_STATES_DOLLAR, 'XX' ),
 			'Should return false for invalid country code'
 		);
 	}

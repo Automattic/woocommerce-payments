@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Mode;
 use WCPay\Core\Mode;
 use WCPay\Exceptions\Subscription_Mode_Mismatch_Exception;
@@ -149,7 +150,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 						'wc_item_id' => $mock_line_item->get_id(),
 					],
 					'price_data' => [
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 						'product'             => $mock_wcpay_product_id,
 						'unit_amount_decimal' => 1000.0,
 						'recurring'           => [
@@ -161,7 +162,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'price_data' => [
 						'product'             => $mock_wcpay_product_id,
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 						'unit_amount_decimal' => 1000.0,
 						'recurring'           => [
 							'interval'       => 'month',
@@ -479,7 +480,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 			'discounts' => [
 				[
 					'amount_off' => 500,
-					'currency'   => 'USD',
+					'currency'   => Currency_Code::UNITED_STATES_DOLLAR,
 					'duration'   => 'once',
 					'name'       => 'Coupon - test_coupon',
 				],
@@ -491,7 +492,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 					],
 					'quantity'   => 4,
 					'price_data' => [
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 						'product'             => '',
 						'unit_amount_decimal' => 1000.0,
 						'recurring'           => [
@@ -503,7 +504,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'price_data' => [
 						'product'             => 'wcpay_prod_test123',
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 						'unit_amount_decimal' => 1000.0,
 						'recurring'           => [
 							'interval'       => 'month',
@@ -518,7 +519,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'price_data' => [
 						'product'             => 'wcpay_prod_test456',
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 						'unit_amount_decimal' => 800.0,
 						'recurring'           => [
 							'interval'       => 'month',
@@ -768,12 +769,12 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_format_item_price_data() {
 		$expected = [
-			'currency'            => 'USD',
+			'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 			'product'             => '',
 			'unit_amount_decimal' => 1033.33,
 		];
 
-		$actual = WC_Payments_Subscription_Service::format_item_price_data( 'USD', '', 10.3333 );
+		$actual = WC_Payments_Subscription_Service::format_item_price_data( Currency_Code::UNITED_STATES_DOLLAR, '', 10.3333 );
 
 		$this->assertEquals( $expected, $actual );
 	}

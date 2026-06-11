@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
@@ -510,7 +511,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
 		$renewal_order->add_payment_token( $token );
-		$renewal_order->set_currency( 'EUR' );
+		$renewal_order->set_currency( Currency_Code::EURO );
 
 		$mock_subscription = new WC_Subscription();
 
@@ -537,7 +538,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
 		$this->assertStringContainsString( 'failed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => Currency_Code::EURO ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_scheduled_subscription_payment_normalizes_unusable_pm_error_by_code() {
