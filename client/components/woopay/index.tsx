@@ -12,10 +12,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { getConfig } from 'utils/checkout';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
-interface apiResponse {
-	url: Location;
-}
-
 interface woopayButtonProps {
 	isStatic?: boolean;
 	api: { request: Parameters< typeof initWooPay >[ 0 ] };
@@ -41,13 +37,17 @@ const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
 	}
 
 	const onClick = () => {
+		const promise = initWooPay( api.request );
+
+		if ( ! promise ) {
+			return;
+		}
+
 		setIsLoading( true );
-		( initWooPay( api.request ) as Promise< apiResponse > ).then(
-			( response ) => {
-				window.location = response.url;
-				setIsLoading( false );
-			}
-		);
+		promise.then( ( response ) => {
+			window.location = response.url;
+			setIsLoading( false );
+		} );
 	};
 
 	return (

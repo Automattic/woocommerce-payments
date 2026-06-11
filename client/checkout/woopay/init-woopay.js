@@ -28,7 +28,7 @@ let isRequesting = false;
  * @param {Function} request             The request transport (e.g. `api.request`).
  * @param {string}   [userEmail]         The shopper's email address.
  * @param {string}   [woopayUserSession] The WooPay user session token.
- * @return {Promise|undefined} The request promise, or undefined when a request is already in flight.
+ * @return {Promise<{url: Location}>|undefined} The request promise, or undefined when a request is already in flight.
  */
 export const initWooPay = ( request, userEmail, woopayUserSession ) => {
 	if ( isRequesting ) {
