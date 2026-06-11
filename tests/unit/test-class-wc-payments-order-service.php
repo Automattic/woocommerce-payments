@@ -341,6 +341,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Paid invoices route through the *_paid filter variant (WC_Email_Customer_Invoice swaps
 		// the suffix for processing/completed orders), so it must be covered explicitly.
 		$this->assertContains( 'customer_invoice_paid', WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS );
+
+		// The admin failure/cancellation notifications carry the marker too: a test-mode decline
+		// reaches process_payment (which persists the mode) before failing, so the order keeps its
+		// test-mode meta and the email would otherwise read as a real failed/cancelled payment.
+		$this->assertContains( 'failed_order', WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS );
+		$this->assertContains( 'cancelled_order', WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS );
 	}
 
 	/**

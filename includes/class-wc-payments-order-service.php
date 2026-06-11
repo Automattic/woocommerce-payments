@@ -130,15 +130,19 @@ class WC_Payments_Order_Service {
 	/**
 	 * Hook ID suffixes for the WooCommerce order emails that receive a persistent "[Test]"
 	 * indicator in their subject and heading when the order was paid in test mode. Covers the
-	 * admin "New order" notification and the customer-facing order emails merchants rely on for
-	 * fulfilment. `customer_invoice` and `customer_invoice_paid` are both listed because
-	 * WC_Email_Customer_Invoice fires the `_paid` filter variant for processing/completed orders
-	 * (the usual case for an invoice resend) and the plain variant otherwise.
+	 * admin notifications (New order, plus Failed/Cancelled order: a test-mode card decline
+	 * otherwise produces an admin email indistinguishable from a real failed payment) and the
+	 * customer-facing order emails merchants rely on for fulfilment. `customer_invoice` and
+	 * `customer_invoice_paid` are both listed because WC_Email_Customer_Invoice fires the `_paid`
+	 * filter variant for processing/completed orders (the usual case for an invoice resend) and
+	 * the plain variant otherwise.
 	 *
 	 * @const string[]
 	 */
 	const TEST_MODE_INDICATOR_EMAIL_IDS = [
 		'new_order',
+		'failed_order',
+		'cancelled_order',
 		'customer_processing_order',
 		'customer_completed_order',
 		'customer_on_hold_order',
