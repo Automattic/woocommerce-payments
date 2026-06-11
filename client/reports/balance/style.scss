@@ -370,9 +370,13 @@ $print-context: '.wcpay-reports-balance-print-context';
 		}
 
 		// Make the label column absorb the slack so the (content-width) amount
-		// column is pushed flush to the table's right edge.
+		// column is pushed flush to the table's right edge. DataViews indents
+		// the first column 24px (`.dataviews-view-table tr td:first-child`);
+		// zero it here so depth-0 rows sit flush with the caption — nested rows
+		// indent via the label render's own `padding-left` instead.
 		td:first-child {
 			width: 100%;
+			padding-left: 0;
 		}
 
 		td:last-child {
