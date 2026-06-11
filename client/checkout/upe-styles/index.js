@@ -14,6 +14,7 @@ import {
 	getBackgroundColor,
 	maybeConvertRGBAtoRGB,
 	handleAppearanceForFloatingLabel,
+	usesFloatingLabelPattern,
 } from './utils.js';
 
 const PMME_RELATIVE_TEXT_SIZE = 0.875;
@@ -799,8 +800,9 @@ export const getAppearance = (
 	}
 
 	const isFloatingLabel =
-		elementsLocation === 'blocks_checkout' ||
-		selectorLocation === 'woopay_blocks_checkout';
+		( elementsLocation === 'blocks_checkout' ||
+			selectorLocation === 'woopay_blocks_checkout' ) &&
+		usesFloatingLabelPattern( selectors.hiddenValidActiveLabel, scope );
 
 	let appearance = {
 		variables: globalRules,
