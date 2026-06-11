@@ -2968,6 +2968,37 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->wcpay_account->get_stripe_account_id() );
 	}
 
+	public function test_get_account_status_data_includes_business_name_and_account_id() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details(
+			[
+				'account_id'       => 'acct_wcpay_123',
+				'is_live'          => true,
+				'status'           => 'complete',
+				'payments_enabled' => true,
+				'business_profile' => [
+					'name' => 'Aperture Science LLC',
+				],
+			]
+		);
+
+		$account_status_data = $this->wcpay_account->get_account_status_data();
+
+		$this->assertSame( 'Aperture Science LLC', $account_status_data['businessName'] );
+		$this->assertSame( 'acct_wcpay_123', $account_status_data['accountId'] );
+	}
+
+	public function test_get_account_status_data_returns_only_error_for_missing_account() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details( [] );
+
+		$this->assertSame( [ 'error' => true ], $this->wcpay_account->get_account_status_data() );
+	}
+
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_test_account_in_dev_mode() {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
