@@ -200,14 +200,14 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * See "WC_Cart_Session::get_cart_from_session".
 	 *
 	 * @param string $key Key to get.
-	 * @param mixed  $default used if the session variable isn't set.
+	 * @param mixed  $default_value used if the session variable isn't set.
 	 * @return array|string value of session variable
 	 */
-	public function get( $key, $default = null ) {
+	public function get( $key, $default_value = null ) {
 		if ( 'cart' === $key && ! isset( $this->_data['cart'] ) ) {
 			return [];
 		}
 
-		return parent::get( $key, $default );
+		return parent::get( $key, $default_value );
 	}
 }
