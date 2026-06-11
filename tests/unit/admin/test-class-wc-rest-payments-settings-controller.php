@@ -679,6 +679,82 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_option( DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION ) );
 	}
 
+	public function test_update_settings_returns_field_targeted_error_when_stripe_param_maps_to_setting() {
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Invalid Japanese phone number.',
+					[ 'param' => 'support_phone' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'wcpay_server_error', $data['code'] );
+		$this->assertArrayNotHasKey( 'server_error', $data );
+		$this->assertSame(
+			'Invalid Japanese phone number.',
+			$data['data']['details']['account_business_support_phone']['message']
+		);
+		$this->assertSame(
+			'wcpay_failed_to_update_stripe_account',
+			$data['data']['details']['account_business_support_phone']['code']
+		);
+		$this->assertSame(
+			'Invalid Japanese phone number.',
+			$data['data']['params']['account_business_support_phone']
+		);
+	}
+
+	public function test_update_settings_falls_back_to_server_error_when_stripe_param_does_not_map() {
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Account is restricted.',
+					[ 'param' => 'unrelated_field' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'Account is restricted.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
+	}
+
+	public function test_update_settings_falls_back_to_server_error_when_no_param_provided() {
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Generic Stripe failure.'
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'Generic Stripe failure.', $data['server_error'] );
+	}
+
 	public function test_update_settings_calls_store_setup_sync() {
 		$this->mock_wcpay_account->expects( $this->once() )
 			->method( 'store_setup_sync' );
