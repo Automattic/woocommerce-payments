@@ -352,9 +352,22 @@ $print-context: '.wcpay-reports-balance-print-context';
 // table layout adds a sortable column header and its own cell padding, so scope
 // a few overrides to neutralise that chrome and match the original row metrics.
 .wcpay-reports-balance-dv {
+	// Mirror the Fees report's view-actions placement: pin the funnel toggle
+	// to the report tabs row (the .wcpay-reports-tab-panel positioning
+	// context), where DataViews normally puts filters and search.
+	&__actions {
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 1;
+		display: flex;
+		min-height: 48px;
+		align-items: center;
+	}
+
 	// The chip row's trailing "Add filter" text button duplicates the funnel
-	// toggle (which appears when no chip is shown) — with a single Date field
-	// it would only ever render disabled next to the active chip.
+	// toggle — with a single Date field it would only ever render disabled
+	// next to the active chip.
 	.dataviews-filters-button {
 		display: none;
 	}
@@ -404,5 +417,14 @@ $print-context: '.wcpay-reports-balance-print-context';
 	.dataviews-view-table__cell-content-wrapper {
 		padding: 0;
 		min-height: 0;
+	}
+}
+
+@media screen and ( max-width: 960px ) {
+	// The tabs row collapses on narrow screens (see reports/style.scss), so
+	// let the funnel flow in place above the report instead of overlaying.
+	.wcpay-reports-balance-dv__actions {
+		position: static;
+		justify-content: flex-end;
 	}
 }

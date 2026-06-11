@@ -34,7 +34,7 @@ const dataViewsStatics = DataViews as unknown as Record<
 	string,
 	React.ComponentType
 >;
-const DataViewsFilters = dataViewsStatics.Filters;
+const DataViewsFiltersToggled = dataViewsStatics.FiltersToggled;
 const DataViewsFiltersToggle = dataViewsStatics.FiltersToggle;
 const DataViewsLayout = dataViewsStatics.Layout;
 
@@ -256,8 +256,6 @@ export const BalanceDataView = ( {
 		}
 	};
 
-	const hasFilterChip = !! dateValue || pendingDateOperator !== null;
-
 	return (
 		<div
 			className="wcpay-reports-balance-dv"
@@ -275,21 +273,16 @@ export const BalanceDataView = ( {
 				{ /* Compose only the native date filter + the rows — no
 				   Search, View-options gear, Pagination or Footer. The preview
 				   (loading skeleton) omits the interactive filter entirely.
-				   With no active or in-progress filter, show just the funnel
-				   toggle (top right), whose menu re-adds the Date filter. */ }
-				{ ! preview &&
-					( hasFilterChip ? (
-						<DataViewsFilters />
-					) : (
-						<div
-							style={ {
-								display: 'flex',
-								justifyContent: 'flex-end',
-							} }
-						>
-							<DataViewsFiltersToggle />
-						</div>
-					) ) }
+				   The funnel toggle is always mounted, positioned next to the
+				   report tabs (see style.scss): with an active filter it shows
+				   a count badge and toggles the chips row; with none, its menu
+				   re-adds the Date filter. */ }
+				{ ! preview && (
+					<div className="wcpay-reports-balance-dv__actions">
+						<DataViewsFiltersToggle />
+					</div>
+				) }
+				{ ! preview && <DataViewsFiltersToggled /> }
 				{ children ?? (
 					<div
 						style={ {
