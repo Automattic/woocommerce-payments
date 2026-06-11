@@ -142,7 +142,6 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_get_or_add_returns_old_data_on_error() {
 		$refreshed        = false;
 		$called_generator = false;
-		$value            = [ 'mock' => true ];
 		$old              = [ 'old' => true ];
 
 		$this->write_mock_cache( $old, time() - YEAR_IN_SECONDS );
