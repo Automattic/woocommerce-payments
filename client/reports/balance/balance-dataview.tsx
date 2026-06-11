@@ -10,7 +10,7 @@
  *
  * External dependencies
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { DataViews } from '@wordpress/dataviews/wp';
 import type { View, Field } from '@wordpress/dataviews/wp';
@@ -35,6 +35,7 @@ const dataViewsStatics = DataViews as unknown as Record<
 	React.ComponentType
 >;
 const DataViewsFilters = dataViewsStatics.Filters;
+const DataViewsFiltersToggle = dataViewsStatics.FiltersToggle;
 const DataViewsLayout = dataViewsStatics.Layout;
 
 interface BalanceItem {
@@ -85,6 +86,13 @@ export const BalanceDataView = ( {
 	preview = false,
 	children,
 }: BalanceDataViewProps ): JSX.Element => {
+	// A filter entry the user is still editing (added via the funnel menu, or
+	// an operator switch that reset the value). The chip must stay rendered —
+	// with its date input — even though there's no applied value yet, and the
+	// controlled `view` below is otherwise derived solely from `dateValue`.
+	const [ pendingDateOperator, setPendingDateOperator ] = useState<
+		string | null
+	>( null );
 	const items = useMemo(
 		() => buildItems( visibleRows, summary, displayPeriod ),
 		[ visibleRows, summary, displayPeriod ]
@@ -100,7 +108,10 @@ export const BalanceDataView = ( {
 					enableHiding: false,
 					enableSorting: false,
 					filterBy: {
-						isPrimary: true,
+						// Deliberately not primary: a cleared filter removes
+						// the chip and leaves only the funnel toggle, which
+						// re-adds it (primary filters also hard-disable the
+						// funnel in DataViews).
 						operators: [ 'before', 'after', 'between', 'on' ],
 					},
 					getValue: () => displayPeriod.start,
@@ -188,38 +199,64 @@ export const BalanceDataView = ( {
 		[ currency, displayPeriod.start ]
 	);
 
-	const view = useMemo< View >(
-		() => ( {
+	const view = useMemo< View >( () => {
+		// A pending (valueless) entry wins so the chip reflects the edit in
+		// progress; the previously applied value keeps driving the data below
+		// until a new date is actually picked.
+		let filters: View[ 'filters' ] = [];
+		if ( pendingDateOperator ) {
+			filters = [
+				{
+					field: 'date',
+					operator:
+						pendingDateOperator as DateFilterValue[ 'operator' ],
+					value: undefined,
+				},
+			];
+		} else if ( dateValue ) {
+			filters = [
+				{
+					field: 'date',
+					operator: dateValue.operator,
+					value: dateValue.value,
+				},
+			];
+		}
+
+		return {
 			type: 'table',
 			search: '',
 			page: 1,
 			perPage: 100,
 			fields: [ 'label', 'amount' ],
-			filters: dateValue
-				? [
-						{
-							field: 'date',
-							operator: dateValue.operator,
-							value: dateValue.value,
-						},
-				  ]
-				: [],
+			filters,
 			layout: {},
-		} ),
-		[ dateValue ]
-	);
+		};
+	}, [ dateValue, pendingDateOperator ] );
 
 	const onChangeView = ( next: View ) => {
 		const dateFilter = next.filters?.find( ( f ) => f.field === 'date' );
 		if ( dateFilter && dateFilter.value !== undefined ) {
+			setPendingDateOperator( null );
 			onDateChange( {
 				operator: dateFilter.operator,
 				value: dateFilter.value,
 			} as DateFilterValue );
-		} else if ( dateValue ) {
+			return;
+		}
+		if ( dateFilter ) {
+			// Filter added from the funnel menu, or an operator switch reset
+			// the value — keep the chip mounted while the user picks a date.
+			setPendingDateOperator( dateFilter.operator );
+			return;
+		}
+		setPendingDateOperator( null );
+		if ( dateValue ) {
 			onDateChange( undefined );
 		}
 	};
+
+	const hasFilterChip = !! dateValue || pendingDateOperator !== null;
 
 	return (
 		<div
@@ -237,8 +274,22 @@ export const BalanceDataView = ( {
 			>
 				{ /* Compose only the native date filter + the rows — no
 				   Search, View-options gear, Pagination or Footer. The preview
-				   (loading skeleton) omits the interactive filter entirely. */ }
-				{ ! preview && <DataViewsFilters /> }
+				   (loading skeleton) omits the interactive filter entirely.
+				   With no active or in-progress filter, show just the funnel
+				   toggle (top right), whose menu re-adds the Date filter. */ }
+				{ ! preview &&
+					( hasFilterChip ? (
+						<DataViewsFilters />
+					) : (
+						<div
+							style={ {
+								display: 'flex',
+								justifyContent: 'flex-end',
+							} }
+						>
+							<DataViewsFiltersToggle />
+						</div>
+					) ) }
 				{ children ?? (
 					<div
 						style={ {

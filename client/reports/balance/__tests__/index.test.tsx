@@ -642,13 +642,13 @@ describe( 'BalanceReport', () => {
 			screen.getByRole( 'heading', { name: 'No balance activity' } )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'table' ) ).not.toBeInTheDocument();
-		// The primary Date chip stays mounted with no value, so a cleared
-		// filter can always be re-applied from the empty state.
+		// With no active filter the chip is gone, but the funnel toggle stays
+		// mounted so the Date filter can be re-added from the empty state.
 		const dataView = document.querySelector(
 			'.wcpay-reports-balance-dv'
 		) as HTMLElement;
 		expect(
-			within( dataView ).getByRole( 'button', { name: /date/i } )
+			within( dataView ).getByRole( 'button', { name: /add filter/i } )
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
