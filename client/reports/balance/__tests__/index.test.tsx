@@ -40,17 +40,6 @@ jest.mock( '../use-balance-date-filter', () => ( {
 	useBalanceDateFilter: () => mockUseBalanceDateFilter(),
 } ) );
 
-jest.mock( 'wcpay/reports/date-filter', () => ( {
-	__esModule: true,
-	default: ( {
-		label,
-	}: {
-		label?: string;
-		value?: unknown;
-		onChange: ( next: unknown ) => void;
-	} ) => <button type="button">{ label ?? 'Date' }</button>,
-} ) );
-
 // Mirror the production helper's contract: `skipSymbol = true` returns the
 // formatted amount followed by the ISO code (no `$`). `formatBalanceAmount`
 // then strips the trailing code and prepends `±USD ` for the code-first layout
@@ -141,8 +130,10 @@ const zeroSummary = {
 	ending_balance: { amount: 0 },
 };
 
-const getVisibleBalanceTable = () =>
-	screen.getByRole( 'table', { name: 'Balance summary' } );
+// The summary renders through DataViews; the "Balance summary" caption is a
+// sibling heading div, not the table's accessible name. The print-report table
+// is aria-hidden, so the role query resolves to the visible DataViews table.
+const getVisibleBalanceTable = () => screen.getByRole( 'table' );
 
 const expectBalanceText = ( text: string ) =>
 	expect(
@@ -199,57 +190,6 @@ describe( 'BalanceReport', () => {
 		);
 	} );
 
-	it( 'clears the active Date filter from the toolbar Reset button', async () => {
-		const { container } = renderBalanceReport( { onReload: jest.fn() } );
-		const toolbar = container.querySelector(
-			'.wcpay-reports-balance__toolbar'
-		) as HTMLElement;
-
-		expect(
-			within( toolbar ).getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
-		const resetButton = within( toolbar ).getByRole( 'button', {
-			name: 'Reset',
-		} );
-
-		await userEvent.click( resetButton );
-
-		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-			undefined
-		);
-	} );
-
-	it( 'moves focus from the Date filter to the error heading when a refresh fails', () => {
-		// Use mockReturnValue (not Once) so both BalanceActions and
-		// BalanceReport — which each call the hook in production — see the
-		// same state on every render.
-		mockUseReportsBalanceSummary.mockReturnValue( {
-			summary: balanceSummaryFixture,
-			error: {},
-			isLoading: false,
-		} );
-
-		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
-		screen.getByRole( 'button', { name: 'Date' } ).focus();
-
-		mockUseReportsBalanceSummary.mockReturnValue( {
-			summary: {},
-			error: { code: 'server_error' },
-			isLoading: false,
-		} );
-
-		rerender(
-			<>
-				<BalanceActions />
-				<BalanceReport onReload={ jest.fn() } />
-			</>
-		);
-
-		expect(
-			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
-		).toHaveFocus();
-	} );
-
 	it( 'does not move focus to the error heading when focus is outside the report', () => {
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: balanceSummaryFixture,
@@ -295,9 +235,6 @@ describe( 'BalanceReport', () => {
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
 			'Loading balance report'
 		);
-		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 	} );
@@ -320,9 +257,6 @@ describe( 'BalanceReport', () => {
 		expect( alert ).toHaveTextContent(
 			/We couldn't load your balance data\.\s*Try again in a few minutes\./
 		);
-		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 
@@ -391,14 +325,37 @@ describe( 'BalanceReport', () => {
 		).toHaveFocus();
 	} );
 
-	it( 'moves focus to the error heading when loading fails', () => {
+	it( 'moves focus to the error heading when a requested reload fails', async () => {
+		// Full production flow: error → Reload (focus moves to the loading
+		// heading) → the refresh fails again. The loading heading unmounts
+		// with the skeleton, so the pending-reload intent — not the live
+		// focus position — must drive the move to the error heading.
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
 			error: {},
 			isLoading: true,
 		} );
-		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
-		screen.getByRole( 'button', { name: 'Date' } ).focus();
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect(
+			screen.getByRole( 'heading', { name: 'Loading balance report' } )
+		).toHaveFocus();
 
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
@@ -540,9 +497,6 @@ describe( 'BalanceReport', () => {
 				"Your Balance summary will appear here once there's enough data to display."
 			)
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 	} );
@@ -564,9 +518,7 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.getByRole( 'heading', { name: 'No balance activity' } )
 		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'table', { name: 'Balance summary' } )
-		).not.toBeInTheDocument();
+		expect( screen.queryByRole( 'table' ) ).not.toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 	} );
@@ -574,14 +526,16 @@ describe( 'BalanceReport', () => {
 	it( 'renders the canonical Balance summary rows', () => {
 		renderBalanceReport( { onReload: jest.fn() } );
 
-		// "Balance summary" is the table's <caption>, not a separate heading
-		// — assert it via the table's accessible name + visible caption text.
+		// "Balance summary" renders as the card heading above the DataViews
+		// table (the bespoke <caption> is gone); the print report repeats the
+		// text in its own table header, so scope the query to the DataViews
+		// container.
 		expect( getVisibleBalanceTable() ).toBeInTheDocument();
+		const dataView = document.querySelector(
+			'.wcpay-reports-balance-dv'
+		) as HTMLElement;
 		expect(
-			within( getVisibleBalanceTable() ).getByText( 'Balance summary' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
+			within( dataView ).getByText( 'Balance summary' )
 		).toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 		expectBalanceText( 'Ending balance - formatted 2024-03-31 UTC' );
