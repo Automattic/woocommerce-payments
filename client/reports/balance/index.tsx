@@ -374,19 +374,24 @@ export const BalanceReport = ( {
 		[]
 	);
 
-	let content: JSX.Element;
+	// The state content renders inside BalanceDataView, below the always
+	// mounted native date filter — so a cleared filter leaves an empty Date
+	// chip that can be re-applied from any state, matching the original
+	// persistent toolbar. `undefined` means loaded: BalanceDataView renders
+	// its own rows card.
+	let stateContent: JSX.Element | undefined;
 
 	if ( ! hasDateFilterValue ) {
-		content = <BalanceEmptyState />;
+		stateContent = <BalanceEmptyState />;
 	} else if ( isLoading ) {
-		content = (
+		stateContent = (
 			<BalanceLoadingSkeleton
 				headingRef={ loadingHeadingRef }
 				headingTabIndex={ -1 }
 			/>
 		);
 	} else if ( hasError ) {
-		content = (
+		stateContent = (
 			<ReportState
 				title={ __( 'Balance unavailable', 'woocommerce-payments' ) }
 				description={
@@ -432,31 +437,29 @@ export const BalanceReport = ( {
 			/>
 		);
 	} else if ( ! hasActivity ) {
-		content = <BalanceEmptyState />;
-	} else {
-		content = (
-			<>
-				<BalanceDataView
-					visibleRows={ visibleRows }
-					summary={ summary }
-					displayPeriod={ displayPeriod }
-					currency={ currency }
-					dateValue={ value }
-					onDateChange={ onDateFilterChange }
-				/>
+		stateContent = <BalanceEmptyState />;
+	}
+
+	return (
+		<div className="wcpay-reports-balance" ref={ containerRef }>
+			<BalanceDataView
+				visibleRows={ visibleRows }
+				summary={ summary }
+				displayPeriod={ displayPeriod }
+				currency={ currency }
+				dateValue={ value }
+				onDateChange={ onDateFilterChange }
+			>
+				{ stateContent }
+			</BalanceDataView>
+			{ printScopeActive && (
 				<BalancePrintReport
 					visibleRows={ visibleRows }
 					summary={ summary }
 					displayPeriod={ displayPeriod }
 					currency={ currency }
 				/>
-			</>
-		);
-	}
-
-	return (
-		<div className="wcpay-reports-balance" ref={ containerRef }>
-			{ content }
+			) }
 		</div>
 	);
 };

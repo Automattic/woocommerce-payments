@@ -642,6 +642,14 @@ describe( 'BalanceReport', () => {
 			screen.getByRole( 'heading', { name: 'No balance activity' } )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'table' ) ).not.toBeInTheDocument();
+		// The primary Date chip stays mounted with no value, so a cleared
+		// filter can always be re-applied from the empty state.
+		const dataView = document.querySelector(
+			'.wcpay-reports-balance-dv'
+		) as HTMLElement;
+		expect(
+			within( dataView ).getByRole( 'button', { name: /date/i } )
+		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 	} );
@@ -1064,34 +1072,52 @@ describe( 'BalanceReport Tracks', () => {
 		} );
 	} );
 
-	// The native DataViews date filter only renders in the loaded view, so the
-	// initial-apply case (no active date filter → empty state → no filter UI)
-	// is currently unreachable. Re-add its telemetry coverage when the filter
-	// becomes persistent across report states.
-	it( 'records date filter applies with the stable Balance date-filter reference date', async () => {
-		jest.useFakeTimers();
-		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
-		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+	it.each( [
+		{
+			name: 'initial date filter applies',
+			hasDateFilterValue: false,
+			isInitialApply: true,
+		},
+		{
+			name: 'subsequent date filter applies',
+			hasDateFilterValue: true,
+			isInitialApply: false,
+		},
+	] )(
+		'records $name with the stable Balance date-filter reference date',
+		async ( { hasDateFilterValue, isInitialApply } ) => {
+			jest.useFakeTimers();
+			jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+			const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+			mockBalanceDateFilterState( {
+				hasDateFilterValue,
+			} );
 
-		renderBalanceReportWithDateFilterNow( stableNow, {
-			onReload: jest.fn(),
-		} );
+			renderBalanceReportWithDateFilterNow( stableNow, {
+				onReload: jest.fn(),
+			} );
 
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Apply custom date' } )
-		);
+			await userEvent.click(
+				screen.getByRole( 'button', { name: 'Apply custom date' } )
+			);
 
-		expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith( stableNow );
-		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-		expectRecordedTracksEvent( 'wcpay_reports_balance_date_filter_change', {
-			preset: 'last_month',
-			range_days: 30,
-			is_initial_apply: false,
-		} );
-		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-			mockAppliedDateFilterValue
-		);
-	} );
+			expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith(
+				stableNow
+			);
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expectRecordedTracksEvent(
+				'wcpay_reports_balance_date_filter_change',
+				{
+					preset: 'last_month',
+					range_days: 30,
+					is_initial_apply: isInitialApply,
+				}
+			);
+			expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+				mockAppliedDateFilterValue
+			);
+		}
+	);
 
 	it( 'records reset date filter changes when the native date filter is cleared', async () => {
 		renderBalanceReport( { onReload: jest.fn() } );

@@ -56,6 +56,10 @@ interface BalanceDataViewProps {
 	// native date Filters and mark the whole view aria-hidden so the blurred
 	// placeholder is skipped by assistive tech and keyboard navigation.
 	preview?: boolean;
+	// When provided, render this below the date Filters instead of the rows
+	// card. Keeps the primary Date chip mounted across the loading / error /
+	// empty report states, so a cleared filter can always be re-applied.
+	children?: React.ReactNode;
 }
 
 const buildItems = (
@@ -79,6 +83,7 @@ export const BalanceDataView = ( {
 	dateValue,
 	onDateChange,
 	preview = false,
+	children,
 }: BalanceDataViewProps ): JSX.Element => {
 	const items = useMemo(
 		() => buildItems( visibleRows, summary, displayPeriod ),
@@ -234,27 +239,29 @@ export const BalanceDataView = ( {
 				   Search, View-options gear, Pagination or Footer. The preview
 				   (loading skeleton) omits the interactive filter entirely. */ }
 				{ ! preview && <DataViewsFilters /> }
-				<div
-					style={ {
-						background: '#fff',
-						border: '1px solid #e0e0e0',
-						borderRadius: '8px',
-						padding: '16px 24px 24px',
-						marginTop: '16px',
-					} }
-				>
+				{ children ?? (
 					<div
 						style={ {
-							padding: '12px 0 16px',
-							fontSize: '15px',
-							fontWeight: 500,
-							lineHeight: '20px',
+							background: '#fff',
+							border: '1px solid #e0e0e0',
+							borderRadius: '8px',
+							padding: '16px 24px 24px',
+							marginTop: '16px',
 						} }
 					>
-						{ __( 'Balance summary', 'woocommerce-payments' ) }
+						<div
+							style={ {
+								padding: '12px 0 16px',
+								fontSize: '15px',
+								fontWeight: 500,
+								lineHeight: '20px',
+							} }
+						>
+							{ __( 'Balance summary', 'woocommerce-payments' ) }
+						</div>
+						<DataViewsLayout />
 					</div>
-					<DataViewsLayout />
-				</div>
+				) }
 			</DataViewsComposed>
 		</div>
 	);
