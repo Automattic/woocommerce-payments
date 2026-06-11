@@ -97,12 +97,12 @@ export const getIAPIVariationId = () => {
 /**
  * Read the shopper's selected variation attributes from the IAPI block.
  *
- * Sending the resolved variation ID alone is not enough: when the matched
- * variation is "Any" on an attribute, the Store API has no value to fill in
- * and rejects the request (`woocommerce_rest_missing_variation_data`) until
- * the shopper's chosen value is posted. So we always send the selected
- * attributes alongside the variation ID — exactly what the block's own
- * `addToCart` action does (`id: variation, variation: selectedAttributes`).
+ * The product ID alone is not enough: when the matched variation is "Any" on
+ * an attribute, that attribute has no value on the variation, so the Store API
+ * rejects the request (`woocommerce_rest_missing_variation_data`) until the
+ * shopper's chosen value is posted. Posting the selected attributes lets the
+ * Store API resolve the variation and record the choice — the same data the
+ * block's own `addToCart` action sends.
  *
  * The block holds the selection in its (locked, private) Interactivity store
  * and renders no `attribute_*` form inputs, so the only available source is
@@ -145,17 +145,69 @@ export const getIAPIVariationAttributes = () => {
 };
 
 /**
- * Whether the IAPI block currently can't be added to cart.
+ * Read the shopper's selected variation attributes from the classic form.
  *
- * The block toggles the `is-invalid` class on its form via
- * `data-wp-class--is-invalid="!state.isFormValid"`, so the class reflects the
- * block's own validation verdict — a variable product with no resolved
- * variation, an out-of-stock combination, or an invalid quantity. Simple
- * products keep a valid form, so they're never reported as invalid here.
- *
- * @return {boolean} True when the IAPI block form is in an invalid state.
+ * @return {Array<{attribute: string, value: string}>} Selected attribute pairs.
  */
-export const isIAPIFormInvalid = () => {
-	const form = document.querySelector( '.wp-block-add-to-cart-with-options' );
-	return !! form && form.classList.contains( 'is-invalid' );
+export const getClassicVariationAttributes = () => {
+	const variationsForm = document.querySelector( '.variations_form' );
+	if ( ! variationsForm ) {
+		return [];
+	}
+
+	const attributes = [];
+	variationsForm
+		.querySelectorAll( '.variations select' )
+		.forEach( ( select ) => {
+			const attributeName =
+				select.dataset.attribute_name || select.dataset.name;
+
+			attributes.push( {
+				// The Store API accepts the variable attribute's label, rather than an internal identifier:
+				// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/src/StoreApi/docs/cart.md#add-item
+				// It's an unfortunate hack that doesn't work when labels have special characters in them.
+				// fallback until https://github.com/woocommerce/woocommerce/pull/55317 has been consolidated in WC Core.
+				attribute: Array.from(
+					document.querySelector(
+						`label[for="${ attributeName.replace(
+							'attribute_',
+							''
+						) }"]`
+					).childNodes
+				)[ 0 ].textContent,
+				value: select.value || '',
+			} );
+
+			// proper logic for https://github.com/woocommerce/woocommerce/pull/55317 .
+			attributes.push( {
+				attribute: attributeName,
+				value: select.value || '',
+			} );
+		} );
+
+	return attributes;
+};
+
+/**
+ * Whether the current product can't be added to cart.
+ *
+ * The classic button carries a `.disabled` class; the IAPI block doesn't add
+ * that class to variable products, so it signals the same state through its
+ * form's `is-invalid` class (`data-wp-class--is-invalid="!state.isFormValid"`),
+ * which reflects the block's own validation verdict — unselected variation,
+ * out-of-stock combination, or invalid quantity. Simple products keep a valid
+ * form, so they're never reported as blocked.
+ *
+ * @return {boolean} True when the add-to-cart action is blocked.
+ */
+export const isAddToCartBlocked = () => {
+	if ( isIAPIBlock() ) {
+		const form = document.querySelector(
+			'.wp-block-add-to-cart-with-options'
+		);
+		return !! form && form.classList.contains( 'is-invalid' );
+	}
+
+	const button = getAddToCartButtonElement();
+	return !! button && button.classList.contains( 'disabled' );
 };

@@ -46,7 +46,7 @@ import {
 import {
 	getAddToCartButtonElement,
 	isIAPIBlock,
-	isIAPIFormInvalid,
+	isAddToCartBlocked,
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
@@ -282,49 +282,30 @@ jQuery( ( $ ) => {
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
-					// The IAPI Add to Cart + Options block doesn't mark its submit
-					// button with the classic `.disabled` class, so gate on the
-					// block's own validity verdict (`is-invalid`) instead.
-					if ( isIAPIBlock() ) {
-						if ( isIAPIFormInvalid() ) {
-							window.alert(
-								__(
-									'Please select your product options before proceeding.',
-									'woocommerce-payments'
-								)
+					if ( isAddToCartBlocked() ) {
+						// The classic form distinguishes an unavailable
+						// combination from an unmade selection; the IAPI block
+						// exposes only a single invalid state.
+						const unavailable =
+							! isIAPIBlock() &&
+							jQuery( getAddToCartButtonElement() ).is(
+								'.wc-variation-is-unavailable'
 							);
-							return;
-						}
-					} else {
-						const addToCartButton = jQuery(
-							getAddToCartButtonElement()
-						);
 
-						// First check if product can be added to cart.
-						if ( addToCartButton.is( '.disabled' ) ) {
-							if (
-								addToCartButton.is(
-									'.wc-variation-is-unavailable'
-								)
-							) {
-								window.alert(
-									window?.wc_add_to_cart_variation_params
+						window.alert(
+							unavailable
+								? window?.wc_add_to_cart_variation_params
 										?.i18n_unavailable_text ||
 										__(
 											'Sorry, this product is unavailable. Please choose a different combination.',
 											'woocommerce-payments'
 										)
-								);
-							} else {
-								window.alert(
-									__(
+								: __(
 										'Please select your product options before proceeding.',
 										'woocommerce-payments'
-									)
-								);
-							}
-							return;
-						}
+								  )
+						);
+						return;
 					}
 
 					// on product pages, we need to interact with an anonymous cart to check out the product,
@@ -542,25 +523,15 @@ jQuery( ( $ ) => {
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
 				async () => {
-					// if the product cannot be added to cart (because of missing variation selection, etc),
-					// don't try to add it to the cart to get new data - the call will likely fail.
+					// A blocked product (no variation selected, out of stock…) would
+					// fail the cart fetch, so skip the refresh.
 					if (
-						getExpressCheckoutData( 'button_context' ) === 'product'
+						getExpressCheckoutData( 'button_context' ) ===
+							'product' &&
+						isAddToCartBlocked()
 					) {
-						// Don't refresh cart data when the product can't be
-						// added — the Store API call would fail. The IAPI block
-						// signals this via `is-invalid`; the classic button via
-						// the `.disabled` class.
-						const cannotAddToCart = isIAPIBlock()
-							? isIAPIFormInvalid()
-							: jQuery( getAddToCartButtonElement() ).is(
-									'.disabled'
-							  );
-
-						if ( cannotAddToCart ) {
-							expressCheckoutButtonUi.unblockButton();
-							return;
-						}
+						expressCheckoutButtonUi.unblockButton();
+						return;
 					}
 
 					// any previously added notices can be removed.

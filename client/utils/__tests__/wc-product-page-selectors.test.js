@@ -8,7 +8,8 @@ import {
 	isIAPIBlock,
 	getIAPIVariationId,
 	getIAPIVariationAttributes,
-	isIAPIFormInvalid,
+	getClassicVariationAttributes,
+	isAddToCartBlocked,
 } from '../wc-product-page-selectors';
 
 // Mirrors the rendered IAPI variation selectors: one attribute group per
@@ -226,23 +227,55 @@ describe( 'wc-product-page-selectors', () => {
 		} );
 	} );
 
-	describe( 'isIAPIFormInvalid', () => {
-		it( 'returns true when the block form carries the is-invalid class', () => {
-			document.body.innerHTML =
-				'<form class="wp-block-add-to-cart-with-options is-invalid"></form>';
-			expect( isIAPIFormInvalid() ).toBe( true );
+	describe( 'getClassicVariationAttributes', () => {
+		it( 'reads label and slug pairs from the classic variations form', () => {
+			document.body.innerHTML = [
+				'<form class="variations_form">',
+				'  <table class="variations"><tbody>',
+				'    <tr><th><label for="pa_color">Color</label></th>',
+				'    <td><select data-attribute_name="attribute_pa_color">',
+				'      <option value="blue" selected>Blue</option>',
+				'    </select></td></tr>',
+				'  </tbody></table>',
+				'</form>',
+			].join( '' );
+
+			expect( getClassicVariationAttributes() ).toEqual( [
+				{ attribute: 'Color', value: 'blue' },
+				{ attribute: 'attribute_pa_color', value: 'blue' },
+			] );
 		} );
 
-		it( 'returns false when the block form is valid', () => {
+		it( 'returns an empty array when there is no classic form', () => {
 			document.body.innerHTML =
 				'<form class="wp-block-add-to-cart-with-options"></form>';
-			expect( isIAPIFormInvalid() ).toBe( false );
+			expect( getClassicVariationAttributes() ).toEqual( [] );
+		} );
+	} );
+
+	describe( 'isAddToCartBlocked', () => {
+		it( 'is true when the IAPI block form is invalid', () => {
+			document.body.innerHTML =
+				'<form class="wp-block-add-to-cart-with-options is-invalid"></form>';
+			expect( isAddToCartBlocked() ).toBe( true );
 		} );
 
-		it( 'returns false when the IAPI block is not present', () => {
+		it( 'is false when the IAPI block form is valid', () => {
 			document.body.innerHTML =
-				'<form class="variations_form cart is-invalid"></form>';
-			expect( isIAPIFormInvalid() ).toBe( false );
+				'<form class="wp-block-add-to-cart-with-options"></form>';
+			expect( isAddToCartBlocked() ).toBe( false );
+		} );
+
+		it( 'is true when the classic add-to-cart button is disabled', () => {
+			document.body.innerHTML =
+				'<button class="single_add_to_cart_button disabled">Add</button>';
+			expect( isAddToCartBlocked() ).toBe( true );
+		} );
+
+		it( 'is false when the classic add-to-cart button is enabled', () => {
+			document.body.innerHTML =
+				'<button class="single_add_to_cart_button">Add</button>';
+			expect( isAddToCartBlocked() ).toBe( false );
 		} );
 	} );
 } );

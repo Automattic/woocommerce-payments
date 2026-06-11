@@ -22,6 +22,14 @@ const iapiAttribute = ( name, value, checked = true ) =>
 	`<button role="radio" value="${ value }" aria-checked="${ checked }">${ value }</button>` +
 	`</div>`;
 
+// The same group rendered as a dropdown (the other option style).
+const iapiDropdownAttribute = ( name, value ) =>
+	`<div class="${ ATTR_CLASS }" data-wp-context='${ JSON.stringify( {
+		name,
+	} ) }'>` +
+	`<select><option value="">Choose</option><option value="${ value }" selected>${ value }</option></select>` +
+	`</div>`;
+
 describe( 'ECE product page compatibility', () => {
 	afterEach( () => {
 		document.body.innerHTML = '';
@@ -260,6 +268,30 @@ describe( 'ECE product page compatibility', () => {
 					{ attribute: 'Flavor', value: 'orange-flavor' },
 					{ attribute: 'Size', value: 'medium' },
 				],
+			} );
+		} );
+
+		it( 'reads attributes from the dropdown option style too', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options wc-block-add-to-cart-with-options cart">',
+				iapiDropdownAttribute( 'Flavor', 'orange-flavor' ),
+				'  <div class="single_variation_wrap">',
+				'    <input type="hidden" name="product_id" value="257" />',
+				'    <input type="hidden" name="variation_id" value="263" />',
+				'  </div>',
+				'</form>',
+			].join( '' );
+
+			const productData = applyFilters(
+				'wcpay.express-checkout.cart-add-item',
+				{
+					variation: [],
+				}
+			);
+
+			expect( productData ).toStrictEqual( {
+				id: 257,
+				variation: [ { attribute: 'Flavor', value: 'orange-flavor' } ],
 			} );
 		} );
 

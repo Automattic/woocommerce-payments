@@ -13,6 +13,7 @@ import { getExpressCheckoutData } from 'wcpay/express-checkout/utils';
 import {
 	isIAPIBlock,
 	getIAPIVariationAttributes,
+	getClassicVariationAttributes,
 } from 'wcpay/utils/wc-product-page-selectors';
 
 jQuery( ( $ ) => {
@@ -81,50 +82,6 @@ jQuery( ( $ ) => {
 		} )
 	);
 } );
-
-/**
- * Read the selected variation attributes from the classic variations form.
- *
- * @return {Array<{attribute: string, value: string}>} Selected attribute pairs.
- */
-const getClassicVariationAttributes = () => {
-	const variationsForm = document.querySelector( '.variations_form' );
-	if ( ! variationsForm ) {
-		return [];
-	}
-
-	const attributes = [];
-	variationsForm
-		.querySelectorAll( '.variations select' )
-		.forEach( ( select ) => {
-			const attributeName =
-				select.dataset.attribute_name || select.dataset.name;
-
-			attributes.push( {
-				// The Store API accepts the variable attribute's label, rather than an internal identifier:
-				// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/src/StoreApi/docs/cart.md#add-item
-				// It's an unfortunate hack that doesn't work when labels have special characters in them.
-				// fallback until https://github.com/woocommerce/woocommerce/pull/55317 has been consolidated in WC Core.
-				attribute: Array.from(
-					document.querySelector(
-						`label[for="${ attributeName.replace(
-							'attribute_',
-							''
-						) }"]`
-					).childNodes
-				)[ 0 ].textContent,
-				value: select.value || '',
-			} );
-
-			// proper logic for https://github.com/woocommerce/woocommerce/pull/55317 .
-			attributes.push( {
-				attribute: attributeName,
-				value: select.value || '',
-			} );
-		} );
-
-	return attributes;
-};
 
 /**
  * Override the product ID with the one from the variations wrapper.
