@@ -1,12 +1,13 @@
 /** @format */
 
 /**
- * SPIKE: render the Balance summary through DataViews using the composition
- * API — pass children so DataViews renders only the pieces we want
- * (the native date Filters + the rows Layout) and omits the Search box,
- * View-options gear, Pagination and Footer. Styling is done with inline
- * style props on the field renders (no custom CSS), per the all-DataViews
- * constraint. See WOOPMNT follow-up.
+ * Renders the Balance summary through DataViews using the composition API —
+ * passing children makes DataViews render only the composed pieces (the
+ * funnel FiltersToggle, the native date filter chips and the rows Layout)
+ * and omit the Search box, View-options gear, Pagination and Footer.
+ * Field renders carry their styling inline; a scoped block in style.scss
+ * neutralises the DataViews table chrome (header row, cell padding) so the
+ * summary matches the bespoke design it replaced.
  *
  * External dependencies
  */
