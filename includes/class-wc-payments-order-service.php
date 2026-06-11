@@ -276,7 +276,7 @@ class WC_Payments_Order_Service {
 	 * self::TEST_MODE_INDICATOR_EMAIL_IDS.
 	 *
 	 * @param string $subject The email subject.
-	 * @param mixed  $order   The email object; a WC_Order for order emails.
+	 * @param mixed  $order   The object the email concerns; a WC_Order for order emails (other types are ignored).
 	 *
 	 * @return string The subject, prefixed with a test marker for test-mode orders.
 	 */
@@ -294,7 +294,7 @@ class WC_Payments_Order_Service {
 	 * self::TEST_MODE_INDICATOR_EMAIL_IDS.
 	 *
 	 * @param string $heading The email heading.
-	 * @param mixed  $order   The email object; a WC_Order for order emails.
+	 * @param mixed  $order   The object the email concerns; a WC_Order for order emails (other types are ignored).
 	 *
 	 * @return string The heading, prefixed with a test marker for test-mode orders.
 	 */
