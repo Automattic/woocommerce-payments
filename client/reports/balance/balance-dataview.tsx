@@ -11,7 +11,7 @@
  * External dependencies
  */
 import React, { useMemo } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { DataViews } from '@wordpress/dataviews/wp';
 import type { View, Field } from '@wordpress/dataviews/wp';
 
@@ -52,6 +52,10 @@ interface BalanceDataViewProps {
 	currency: string;
 	dateValue: DateFilterValue | undefined;
 	onDateChange: ( next: DateFilterValue | undefined ) => void;
+	// Render as a non-interactive preview (the loading skeleton): hide the
+	// native date Filters and mark the whole view aria-hidden so the blurred
+	// placeholder is skipped by assistive tech and keyboard navigation.
+	preview?: boolean;
 }
 
 const buildItems = (
@@ -74,6 +78,7 @@ export const BalanceDataView = ( {
 	currency,
 	dateValue,
 	onDateChange,
+	preview = false,
 }: BalanceDataViewProps ): JSX.Element => {
 	const items = useMemo(
 		() => buildItems( visibleRows, summary, displayPeriod ),
@@ -113,24 +118,41 @@ export const BalanceDataView = ( {
 						>
 							{ item.label }
 							{ typeof item.count === 'number' && (
-								<span
-									style={ {
-										display: 'inline-flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-										minWidth: '20px',
-										height: '20px',
-										padding: '0 6px',
-										borderRadius: '10px',
-										background: '#f0f0f0',
-										color: '#757575',
-										fontSize: '11px',
-										fontWeight: 500,
-										lineHeight: '20px',
-									} }
-								>
-									{ item.count }
-								</span>
+								<>
+									{ /* The badge is decorative; screen readers
+									   get the unambiguous "N items" text instead. */ }
+									<span
+										aria-hidden="true"
+										style={ {
+											display: 'inline-flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											minWidth: '20px',
+											height: '20px',
+											padding: '0 6px',
+											borderRadius: '10px',
+											background: '#f0f0f0',
+											color: '#757575',
+											fontSize: '11px',
+											fontWeight: 500,
+											lineHeight: '20px',
+										} }
+									>
+										{ item.count }
+									</span>
+									<span className="screen-reader-text">
+										{ sprintf(
+											/* translators: %d: number of ledger entries included in this Balance row. */
+											_n(
+												'%d item',
+												'%d items',
+												item.count,
+												'woocommerce-payments'
+											),
+											item.count
+										) }
+									</span>
+								</>
 							) }
 						</span>
 					),
@@ -195,7 +217,10 @@ export const BalanceDataView = ( {
 	};
 
 	return (
-		<div className="wcpay-reports-balance-dv">
+		<div
+			className="wcpay-reports-balance-dv"
+			{ ...( preview ? { 'aria-hidden': true } : {} ) }
+		>
 			<DataViewsComposed
 				data={ items }
 				view={ view }
@@ -206,8 +231,9 @@ export const BalanceDataView = ( {
 				getItemId={ ( item: BalanceItem ) => item.id }
 			>
 				{ /* Compose only the native date filter + the rows — no
-				   Search, View-options gear, Pagination or Footer. */ }
-				<DataViewsFilters />
+				   Search, View-options gear, Pagination or Footer. The preview
+				   (loading skeleton) omits the interactive filter entirely. */ }
+				{ ! preview && <DataViewsFilters /> }
 				<div
 					style={ {
 						background: '#fff',
