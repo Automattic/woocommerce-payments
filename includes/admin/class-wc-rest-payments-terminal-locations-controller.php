@@ -110,7 +110,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_store_location( $request ) {
+	public function get_store_location( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		$store_address    = WC()->countries;
 		$location_address = array_filter(
 			[
@@ -278,7 +278,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_all_locations( $request ) {
+	public function get_all_locations( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		try {
 			return rest_ensure_response( array_map( [ $this, 'extract_location_fields' ], $this->fetch_locations() ) );
 		} catch ( API_Exception $e ) {

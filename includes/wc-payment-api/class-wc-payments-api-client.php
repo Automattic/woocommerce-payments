@@ -957,7 +957,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @return array
 	 * @throws API_Exception - If request throws.
 	 */
-	public function create_token( $request ) {
+	public function create_token( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		return $this->request( [], self::CONN_TOKENS_API, self::POST );
 	}
 

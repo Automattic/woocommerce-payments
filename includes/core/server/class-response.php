@@ -58,7 +58,7 @@ class Response implements ArrayAccess {
 	 * @param mixed $value               The value.
 	 * @throws Server_Response_Exception It is not possible.
 	 */
-	public function offsetSet( $offset, $value ): void {
+	public function offsetSet( $offset, $value ): void { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_malformed' );
 	}
 
@@ -68,7 +68,7 @@ class Response implements ArrayAccess {
 	 * @param mixed $offset                The offset to remove.
 	 * @throws Server_Response_Exception   It is not possible.
 	 */
-	public function offsetUnset( $offset ): void {
+	public function offsetUnset( $offset ): void { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_malformed' );
 	}
 

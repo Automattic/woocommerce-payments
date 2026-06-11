@@ -2052,7 +2052,7 @@ class WC_Payments {
 	 * @param string $value Field value.
 	 * @return string
 	 */
-	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) {
+	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		$class = $args['class'][0];
 		if ( false === strpos( $class, 'woopay-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';

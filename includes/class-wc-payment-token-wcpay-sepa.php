@@ -47,7 +47,7 @@ class WC_Payment_Token_WCPay_SEPA extends WC_Payment_Token {
 	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
 	 * @return string
 	 */
-	public function get_display_name( $deprecated = '' ) {
+	public function get_display_name( $deprecated = '' ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		$display = sprintf(
 			/* translators: last 4 digits of IBAN account */
 			__( 'SEPA IBAN ending in %s', 'woocommerce-payments' ),

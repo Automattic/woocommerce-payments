@@ -46,7 +46,7 @@ final class Generic extends Request {
 	 *
 	 * @throws Server_Request_Exception
 	 */
-	public static function create( $id = null ) {
+	public static function create( $id = null ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		throw new Server_Request_Exception( 'You cannot create request this way.', 'wcpay_core_server_request_invalid_method_call' );
 	}
 

@@ -96,7 +96,7 @@ abstract class Base_Constant implements \JsonSerializable {
 	 * @return static
 	 * @throws \InvalidArgumentException
 	 */
-	public static function __callStatic( $name, $arguments ) {
+	public static function __callStatic( $name, $arguments ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		if ( ! isset( static::$object_cache[ $name ] ) ) {
 			// Instantiating constants by class name using the 'new static($name)' approach is integral to this method's functionality.
 			static::$object_cache[ $name ] = new static( $name );

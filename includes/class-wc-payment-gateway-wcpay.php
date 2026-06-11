@@ -2169,7 +2169,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( "Begin processing UPE redirect payment for order {$order_id} for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			list( $user, $_unused_customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			$payment_needed = 0 < $order->get_total();
 
@@ -2183,7 +2183,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status                 = $intent->get_status();
 				$charge                 = $intent->get_charge();
 				$charge_id              = $charge ? $charge->get_id() : null;
-				$currency               = $intent->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
@@ -2202,7 +2201,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status                 = $intent->get_status();
 				$charge_id              = '';
 				$charge                 = null;
-				$currency               = $order->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = false;
 				$payment_method_type    = $intent->get_payment_method_type();

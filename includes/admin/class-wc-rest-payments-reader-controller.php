@@ -175,7 +175,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_all_readers( $request ) {
+	public function get_all_readers( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		try {
 			return rest_ensure_response( $this->fetch_readers() );
 		} catch ( API_Exception $e ) {

@@ -162,7 +162,7 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function reactivate( $request ) {
+	public function reactivate( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		try {
 			$this->gateway->enable();
 			Logger::debug( 'Gateway re-enabled after ToS decline.' );
@@ -181,7 +181,7 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function remove_stripe_connect_track( $request ) {
+	public function remove_stripe_connect_track( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		delete_option( '_wcpay_onboarding_stripe_connected' );
 		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}
