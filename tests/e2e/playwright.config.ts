@@ -57,8 +57,9 @@ export default defineConfig( {
 	fullyParallel: false,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
 	forbidOnly: !! process.env.CI,
-	retries: 0,
-	/* Opt out of parallel tests. */
+	// Retry once in CI to handle transient failures; keep 0 locally for fast feedback.
+	retries: process.env.CI ? 1 : 0,
+	/* Opt out of parallel tests — merchant tests share global state (settings, capture mode). */
 	workers: 1,
 	/* Reporters to use. See https://playwright.dev/docs/test-reporters */
 	reporter: process.env.CI
@@ -75,7 +76,9 @@ export default defineConfig( {
 	use: {
 		baseURL: getBaseUrl(),
 		screenshot: 'only-on-failure',
-		trace: 'retain-on-failure',
+		// Retain a trace whenever a test is retried, so flaky tests that recover on
+		// the retry still leave a trace to diagnose (retain-on-failure discards them).
+		trace: 'on-first-retry',
 		video: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
 	},
@@ -93,20 +96,21 @@ export default defineConfig( {
 	testMatch: getTestMatch( E2E_GROUP, E2E_BRANCH ),
 	testIgnore: /specs\/performance/,
 
-	// When running blocks tests, filter by @blocks tag
-	grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
-
 	/* Configure projects for major browsers */
 	projects: [
 		{
 			name: 'basic',
 			use: { ...devices[ 'Desktop Chrome' ] },
 			testMatch: /basic.spec.ts/,
+			// When running blocks tests, filter by @blocks tag (project-level).
+			// This ensures it doesn't exclude setup tests from the setup project.
+			grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
 			dependencies: [ 'setup' ],
 		},
 		{
 			name: 'chromium',
 			use: { ...devices[ 'Desktop Chrome' ] },
+			grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
 			dependencies: [ 'setup' ],
 		},
 		// Setup project

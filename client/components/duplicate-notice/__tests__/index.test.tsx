@@ -103,9 +103,7 @@ describe( 'DuplicateNotice', () => {
 		expect( props.setDismissedDuplicateNotices ).toHaveBeenCalledWith( {
 			[ paymentMethod ]: [ 'woocommerce_payments' ],
 		} );
-		expect(
-			mockSaveOption
-		).toHaveBeenCalledWith(
+		expect( mockSaveOption ).toHaveBeenCalledWith(
 			'wcpay_duplicate_payment_method_notices_dismissed',
 			{ [ paymentMethod ]: [ 'woocommerce_payments' ] }
 		);

@@ -12,7 +12,8 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -145,7 +146,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method = $this->createMock( UPE_Payment_Method::class );
 		$mock_payment_method->method( 'is_reusable' )->willReturn( true );
 
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
@@ -183,7 +184,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->willReturn( self::CUSTOMER_ID );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->any() )
 			->method( 'update_customer_for_user' )
 			->willReturn( self::CUSTOMER_ID );
 
@@ -198,6 +199,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcpay_gateway->expects( $this->any() )
 			->method( 'get_metadata_from_order' )
 			->willReturn( [] );
+	}
+
+	public function tear_down() {
+		$_GET     = [];
+		$_POST    = [];
+		$_REQUEST = [];
+		parent::tear_down();
 	}
 
 	public function test_new_card_subscription() {
@@ -628,6 +636,72 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		// are tested in WC_Payment_Gateway_WCPay_Subscriptions_Test.
 		$payment_tokens = $order->get_payment_tokens();
 		$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+	}
+
+	public function test_stock_is_not_reduced_when_changing_subscription_payment_method() {
+		$product = $this->create_stock_managed_product( 10 );
+		$order   = WC_Helper_Order::create_order( self::USER_ID, 0, $product );
+
+		$_GET = [ 'change_payment_method' => 10 ];
+
+		$this->mock_wcs_order_contains_subscription( false );
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) {
+				return true;
+			}
+		);
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->setup_intent );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $this->token );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( 10, wc_get_product( $product->get_id() )->get_stock_quantity() );
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_order_stock_reduced', true ) );
+	}
+
+	public function test_stock_is_reduced_for_regular_subscription_purchase() {
+		$product = $this->create_stock_managed_product( 10 );
+		$order   = WC_Helper_Order::create_order( self::USER_ID, 50, $product );
+
+		$subscriptions = [ new WC_Subscription() ];
+		$subscriptions[0]->set_parent( $order );
+
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->payment_intent );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $this->token );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( 6, wc_get_product( $product->get_id() )->get_stock_quantity() );
+	}
+
+	private function create_stock_managed_product( int $stock_quantity ): WC_Product_Simple {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( $stock_quantity );
+		$product->save();
+
+		return wc_get_product( $product->get_id() );
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {

@@ -32,10 +32,13 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isDisputeAdditionalEvidenceTypesEnabled: boolean;
+			isDisputeOutcomeViewEnabled: boolean;
+			isDisputeReadinessOverviewEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
 			amazonPay: boolean;
+			reportsArea: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -90,11 +93,6 @@ declare global {
 			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
 			 */
 			campaigns: {
-				/**
-				 * The flag for the WordPress.org merchant review campaign in 2025.
-				 * Eligibility is determined per-account on transact-platform-server.
-				 */
-				wporgReview2025: boolean;
 				/**
 				 * The flag for the payments settings review prompt (Phase 0).
 				 * Eligibility is determined per-account on transact-platform-server.
@@ -156,6 +154,7 @@ declare global {
 		defaultExpressCheckoutBorderRadius: string;
 		dateFormat: string;
 		timeFormat: string;
+		formattedStoreAddress: string;
 	};
 
 	const wooPaymentsPaymentMethodDefinitions: Record<
@@ -257,6 +256,24 @@ declare global {
 		version: string;
 	};
 
+	const wcpayTestToLiveNoticeSettings: {
+		ctaUrl: string;
+		dismissUrl: string;
+		snoozeUrl: string;
+	};
+
+	const wcpayPostKycActivationNoticeSettings: {
+		stage: 7 | 14 | 30;
+		ctaUrl: string;
+		dismissUrl: string;
+	};
+
+	const wcpayOneAndDoneNoticeSettings: {
+		ctaUrl: string;
+		dismissUrl: string;
+		snoozeUrl: string;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -281,7 +298,6 @@ declare global {
 		wcAjaxUrl: string;
 		createSetupIntentNonce: string;
 		initWooPayNonce: string;
-		saveUPEAppearanceNonce: string;
 		genericErrorMessage: string;
 		fraudServices: unknown[];
 		features: string[];
@@ -307,13 +323,6 @@ declare global {
 		gatewayId: string;
 		isCheckout: boolean;
 		paymentMethodsConfig: typeof wooPaymentsPaymentMethodsConfig;
-		upeAppearance: string | false;
-		upeAddPaymentMethodAppearance: string | false;
-		upeBnplProductPageAppearance: string | false;
-		upeBnplClassicCartAppearance: string | false;
-		upeBnplCartBlockAppearance: string | false;
-		wcBlocksUPEAppearance: string | false;
-		wcBlocksUPEAppearanceTheme: string | false;
 		cartContainsSubscription: boolean;
 		currency: string;
 		cartTotal: number;
@@ -325,6 +334,7 @@ declare global {
 		>;
 		storeCountry: string;
 		isExpressCheckoutInPaymentMethodsEnabled: boolean;
+		stylesCacheVersion: string;
 		isOrderPay?: boolean;
 		orderId?: number;
 		isChangingPayment?: boolean;
@@ -338,6 +348,9 @@ declare global {
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
+		wcpayTestToLiveNoticeSettings?: typeof wcpayTestToLiveNoticeSettings;
+		wcpayPostKycActivationNoticeSettings?: typeof wcpayPostKycActivationNoticeSettings;
+		wcpayOneAndDoneNoticeSettings?: typeof wcpayOneAndDoneNoticeSettings;
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		wcpay_upe_config?: typeof wcpay_upe_config;
 	}

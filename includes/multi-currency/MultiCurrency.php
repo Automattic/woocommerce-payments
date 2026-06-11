@@ -167,6 +167,13 @@ class MultiCurrency {
 	protected $tracking;
 
 	/**
+	 * AsyncPriceRenderer instance.
+	 *
+	 * @var AsyncPriceRenderer
+	 */
+	protected $async_renderer;
+
+	/**
 	 * Simulation variables array.
 	 *
 	 * @var array
@@ -195,6 +202,7 @@ class MultiCurrency {
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
+		$this->async_renderer          = new AsyncPriceRenderer( $this );
 	}
 
 	/**
@@ -266,7 +274,31 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		// If the store currency is not in the list of available WooCommerce currencies
+		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
+		// Multi-Currency cannot function without a valid base currency.
+		if ( ! array_key_exists( get_woocommerce_currency(), get_woocommerce_currencies() ) ) {
+			Logger::error(
+				sprintf(
+					'Multi-Currency disabled: store currency "%s" is not a recognized WooCommerce currency. '
+					. 'A custom currency may have been removed. Update the currency at WooCommerce → Settings → General.',
+					get_woocommerce_currency()
+				)
+			);
+			// Initialize properties to safe defaults so lazy-init getters and
+			// later init-hook callbacks don't re-trigger init() or fatal.
+			$this->available_currencies = [];
+			$this->enabled_currencies   = [];
+			return;
+		}
+
 		$store_currency_updated = $this->check_store_currency_for_change();
+
+		// If the store currency has been updated, invalidate the exchange rate cache
+		// before initializing currencies so fresh rates are fetched immediately.
+		if ( $store_currency_updated ) {
+			$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
+		}
 
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
@@ -288,8 +320,26 @@ class MultiCurrency {
 		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
-		$this->frontend_prices->init_hooks();
-		$this->frontend_currencies->init_hooks();
+
+		// Use async (client-side) rendering only when should_use_async_rendering()
+		// is true: cache-optimized mode, no active session, and not a Store API
+		// request. Otherwise, use server-side FrontendPrices/FrontendCurrencies.
+		// A ?currency= URL param forces server-side conversion (session will be
+		// created at init priority 11). Auto-switching is also required: without
+		// it, session-less visitors always see the default currency, so skeletons
+		// add unnecessary JS latency with no benefit.
+		$has_pending_currency_switch = isset( $_GET['currency'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		$use_async_rendering         = $this->should_use_async_rendering();
+
+		if ( $use_async_rendering && ! $has_pending_currency_switch && $this->is_using_auto_currency_switching() ) {
+			$this->async_renderer->init_hooks();
+		}
+
+		if ( ! $use_async_rendering || $has_pending_currency_switch ) {
+			$this->frontend_prices->init_hooks();
+			$this->frontend_currencies->init_hooks();
+		}
+
 		$this->tracking->init_hooks();
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
@@ -731,6 +781,13 @@ class MultiCurrency {
 			return;
 		}
 
+		// Don't create a session during async rendering for automatic
+		// currency switches (e.g. geolocation). Explicit user switches
+		// (persist_change = true) always persist.
+		if ( $this->should_use_async_rendering() && ! $persist_change ) {
+			return;
+		}
+
 		// We discard the cache for the front-end.
 		$this->frontend_currencies->selected_currency_changed();
 
@@ -746,8 +803,8 @@ class MultiCurrency {
 
 		if ( 0 === $user_id && WC()->session ) {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
-			// Set the session cookie if is not yet to persist the selected currency.
-			if ( ! WC()->session->has_session() && ! headers_sent() && $persist_change ) {
+			// Set the session cookie if not yet set to persist the selected currency.
+			if ( ! $this->has_active_session() && ! headers_sent() && $persist_change ) {
 				$this->utils->set_customer_session_cookie( true );
 			}
 		} elseif ( $user_id ) {
@@ -783,6 +840,12 @@ class MultiCurrency {
 	public function update_selected_currency_by_geolocation() {
 		// We only want to automatically set the currency if the option is enabled and it shouldn't be disabled for any reason.
 		if ( ! $this->is_using_auto_currency_switching() || $this->compatibility->should_disable_currency_switching() ) {
+			return;
+		}
+
+		// When async rendering handles pricing, currency switching is done
+		// client-side via the JS renderer. Skip server-side geolocation.
+		if ( $this->should_use_async_rendering() ) {
 			return;
 		}
 
@@ -1060,6 +1123,111 @@ class MultiCurrency {
 	public function is_cache_optimized_mode(): bool {
 		return \WC_Payments_Features::is_mc_cache_optimized_enabled()
 			&& self::RENDERING_MODE_CACHE === $this->get_rendering_mode();
+	}
+
+	/**
+	 * Checks if there is an active cookie-based WooCommerce session.
+	 *
+	 * Returns false for Store API requests that use Cart-Token JWT sessions,
+	 * since WC's Store API SessionHandler does not implement has_session().
+	 * Use Utils::is_store_api_request() to detect those separately.
+	 *
+	 * @return bool
+	 */
+	public function has_active_session(): bool {
+		return isset( WC()->session )
+			&& method_exists( WC()->session, 'has_session' )
+			&& WC()->session->has_session();
+	}
+
+	/**
+	 * Whether the async (client-side) price renderer should handle pricing
+	 * instead of server-side FrontendPrices.
+	 *
+	 * Returns true only when all conditions are met:
+	 * - Cache-optimized rendering mode is enabled.
+	 * - No active WC session (cookie-based).
+	 * - Not a Store API request (uses Cart-Token JWT sessions that bypass
+	 *   has_active_session, but still needs server-side conversion).
+	 *
+	 * @return bool
+	 */
+	private function should_use_async_rendering(): bool {
+		return $this->is_cache_optimized_mode()
+			&& ! $this->has_active_session()
+			&& ! Utils::is_store_api_request();
+	}
+
+	/**
+	 * Gets the public configuration data for the async price renderer.
+	 *
+	 * @return array The public config data including currencies, rates, and formatting.
+	 */
+	public function get_public_config(): array {
+		$enabled_currencies = $this->get_enabled_currencies();
+		$default_currency   = $this->get_default_currency();
+
+		// Determine selected currency WITHOUT initializing a WC session.
+		// This keeps the response cacheable and avoids setting session cookies.
+		$selected_code = $default_currency->get_code();
+
+		if ( $this->has_active_session() ) {
+			// Session already exists (e.g. cart/checkout) — read from it safely.
+			$stored = WC()->session->get( self::CURRENCY_SESSION_KEY );
+			if ( $stored && isset( $enabled_currencies[ strtoupper( $stored ) ] ) ) {
+				$selected_code = strtoupper( $stored );
+			}
+		} elseif ( $this->is_using_auto_currency_switching() ) {
+			// Use geolocation to determine currency (does not create a session).
+			$geo_currency = $this->geolocation->get_currency_by_customer_location();
+			if ( $geo_currency && isset( $enabled_currencies[ $geo_currency ] ) ) {
+				$selected_code = $geo_currency;
+			}
+		}
+
+		$charm_only_products = $this->get_apply_charm_only_to_products();
+
+		$currencies_data = [];
+		$default_code    = $default_currency->get_code();
+		foreach ( $enabled_currencies as $currency ) {
+			$code = $currency->get_code();
+
+			// For the default currency, use the merchant's WooCommerce store
+			// settings (which they can customize) instead of the localization
+			// service's hardcoded locale defaults. This ensures the JS-rendered
+			// prices match what wc_price() produces server-side.
+			if ( $code === $default_code ) {
+				$decimals     = wc_get_price_decimals();
+				$decimal_sep  = wc_get_price_decimal_separator();
+				$thousand_sep = wc_get_price_thousand_separator();
+				$symbol_pos   = get_option( 'woocommerce_currency_pos' );
+			} else {
+				$format       = $this->localization_service->get_currency_format( $code );
+				$decimals     = absint( $format['num_decimals'] );
+				$decimal_sep  = $format['decimal_sep'];
+				$thousand_sep = $format['thousand_sep'];
+				$symbol_pos   = $format['currency_pos'];
+			}
+
+			$currencies_data[ $code ] = [
+				'code'         => $code,
+				'symbol'       => get_woocommerce_currency_symbol( $code ),
+				'rate'         => $currency->get_rate(),
+				'decimals'     => $decimals,
+				'decimal_sep'  => $decimal_sep,
+				'thousand_sep' => $thousand_sep,
+				'symbol_pos'   => $symbol_pos,
+				'rounding'     => (float) $currency->get_rounding(),
+				'charm'        => (float) $currency->get_charm(),
+			];
+		}
+
+		return [
+			'default_currency'    => $default_currency->get_code(),
+			'selected_currency'   => $selected_code,
+			'charm_only_products' => (bool) $charm_only_products,
+			'currencies'          => $currencies_data,
+		];
 	}
 
 	/**

@@ -164,9 +164,8 @@ describe( 'DuplicateStatus', () => {
 	it( 'handles multiple rapid clicks correctly', () => {
 		// Wrapper to manage duplicateStatus state
 		const Wrapper: React.FC = () => {
-			const [ duplicateStatus, setDuplicateStatus ] = React.useState(
-				'is_duplicate'
-			);
+			const [ duplicateStatus, setDuplicateStatus ] =
+				React.useState( 'is_duplicate' );
 			return (
 				<DuplicateStatus
 					duplicateStatus={ duplicateStatus }

@@ -16,10 +16,8 @@ import { recordEvent } from '../tracks';
 
 import './style.scss';
 
-const {
-	connectUrl,
-	pluginScope,
-} = window.wcpaySubscriptionProductOnboardingModal;
+const { connectUrl, pluginScope } =
+	window.wcpaySubscriptionProductOnboardingModal;
 
 const FinishSetupButton = () => {
 	const [ isFinishingSetup, setIsFinishingSetup ] = useState( false );

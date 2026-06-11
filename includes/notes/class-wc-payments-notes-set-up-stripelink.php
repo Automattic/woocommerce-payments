@@ -7,8 +7,8 @@
 
 use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
-use WCPay\Payment_Methods\CC_Payment_Method;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -51,7 +51,7 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 		// Retrieve enabled payment methods at checkout.
 		$enabled_payment_methods = self::$gateway->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true );
 		// If card payment method is not enabled or Link payment method is enabled, skip.
-		if ( ! in_array( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true )
+		if ( ! in_array( CardDefinition::get_id(), $enabled_payment_methods, true )
 				|| in_array( LinkDefinition::get_id(), $enabled_payment_methods, true ) ) {
 			return false;
 		}

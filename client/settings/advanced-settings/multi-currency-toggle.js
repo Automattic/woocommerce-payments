@@ -7,14 +7,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { CheckboxControl, ExternalLink } from '@wordpress/components';
-import { useMultiCurrency } from 'wcpay/data';
+import { useMultiCurrency } from 'wcpay/data/settings';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const MultiCurrencyToggle = () => {
-	const [
-		isMultiCurrencyEnabled,
-		updateIsMultiCurrencyEnabled,
-	] = useMultiCurrency();
+	const [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ] =
+		useMultiCurrency();
 
 	const handleMultiCurrencyStatusChange = ( value ) => {
 		updateIsMultiCurrencyEnabled( value );

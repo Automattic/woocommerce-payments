@@ -366,6 +366,7 @@ exports[`mapTimelineEvents Multi-Currency events formats full_refund events 1`] 
     "body": [
       "1,00 EUR → 1,20222 USD: 21,64 $ USD",
       "",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of 18,00 € EUR was successfully refunded.",
@@ -400,6 +401,7 @@ exports[`mapTimelineEvents Multi-Currency events formats partial_refund events 1
     "body": [
       "1,00 EUR → 1,2 USD: 6,00 $ USD",
       "Acquirer Reference Number (ARN) 4785767637658864",
+      "",
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of 5,00 € EUR was successfully refunded.",
@@ -1020,6 +1022,52 @@ exports[`mapTimelineEvents single currency events formats dispute_lost events wi
 ]
 `;
 
+exports[`mapTimelineEvents single currency events formats dispute_lost events with network cost but missing fee currency 1`] = `
+[
+  {
+    "body": [
+      "Network cost for the dispute.",
+    ],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      $5.00 USD was deducted from your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2ef"
+      >
+        Apr 5, 2020 payout
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <MinusIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Disputed: Lost
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      <strong>
+        Dispute lost.
+      </strong>
+       Your customer's bank reviewed the evidence and decided in the customer's favor.
+    </React.Fragment>,
+    "icon": <CrossIcon
+      className="is-error"
+    />,
+  },
+]
+`;
+
 exports[`mapTimelineEvents single currency events formats dispute_needs_response events 1`] = `
 [
   {
@@ -1141,6 +1189,7 @@ exports[`mapTimelineEvents single currency events formats full_refund events 1`]
     "body": [
       undefined,
       "Acquirer Reference Number (ARN) 4785767637658864",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of $100.00 USD was successfully refunded.",
@@ -1174,6 +1223,7 @@ exports[`mapTimelineEvents single currency events formats partial_refund events 
   {
     "body": [
       undefined,
+      "",
       "",
     ],
     "date": 2020-04-03T18:58:01.000Z,

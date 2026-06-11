@@ -41,13 +41,26 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_receipts_service;
 
+	/**
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_account_service;
+
+	/**
+	 * @var WC_Payments_Account
+	 */
+	private $original_account_service;
+
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_wcpay_gateway    = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$this->mock_receipts_service = $this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class );
-		$this->controller            = new WC_REST_Payments_Reader_Controller( $this->mock_api_client, $this->mock_wcpay_gateway, $this->mock_receipts_service );
+		$this->mock_api_client          = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_wcpay_gateway       = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_receipts_service    = $this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class );
+		$this->mock_account_service     = $this->createMock( WC_Payments_Account::class );
+		$this->original_account_service = WC_Payments::get_account_service();
+		WC_Payments::set_account_service( $this->mock_account_service );
+		$this->controller = new WC_REST_Payments_Reader_Controller( $this->mock_api_client, $this->mock_wcpay_gateway, $this->mock_receipts_service );
 
 		$this->reader = [
 			'id'          => 'tmr_P400-123-456-789',
@@ -66,6 +79,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
+		WC_Payments::set_account_service( $this->original_account_service );
 		delete_transient( Controller::STORE_READERS_TRANSIENT_KEY );
 	}
 
@@ -204,6 +218,10 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->with( 'tml_1234', 'puppies-plug-could', 'Blue Rabbit' )
 			->willReturn( $reader );
 
+		$this->mock_account_service
+			->expects( $this->once() )
+			->method( 'refresh_account_data' );
+
 		$request = new WP_REST_Request(
 			'POST',
 			'/wc/v3/payments/readers'
@@ -239,6 +257,10 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'register_terminal_reader' )
 			->with( 'tml_1234', 'puppies-plug-could' )
 			->willThrowException( new API_Exception( 'Something bad happened', 'test error', 500 ) );
+
+		$this->mock_account_service
+			->expects( $this->never() )
+			->method( 'refresh_account_data' );
 
 		$request = new WP_REST_Request(
 			'POST',

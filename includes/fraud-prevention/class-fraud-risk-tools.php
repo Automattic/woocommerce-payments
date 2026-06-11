@@ -128,12 +128,12 @@ class Fraud_Risk_Tools {
 	/**
 	 * Validates the array to see if it's a valid ruleset.
 	 *
-	 * @param   array $array  The array to validate.
+	 * @param   array $ruleset  The array to validate.
 	 *
-	 * @return  bool         Whether if the given array is a ruleset, or not.
+	 * @return  bool           Whether if the given array is a ruleset, or not.
 	 */
-	public static function is_valid_ruleset_array( array $array ) {
-		foreach ( $array as $rule ) {
+	public static function is_valid_ruleset_array( array $ruleset ) {
+		foreach ( $ruleset as $rule ) {
 			if ( ! Rule::validate_array( $rule ) ) {
 				return false;
 			}
@@ -299,16 +299,16 @@ class Fraud_Risk_Tools {
 	/**
 	 * Returns the array representation of ruleset.
 	 *
-	 * @param array $array The array of Rule objects.
+	 * @param array $ruleset The array of Rule objects.
 	 *
 	 * @return  array
 	 */
-	private static function get_ruleset_array( $array ) {
+	private static function get_ruleset_array( $ruleset ) {
 		return array_map(
 			function ( Rule $rule ) {
 				return $rule->to_array();
 			},
-			$array
+			$ruleset
 		);
 	}
 

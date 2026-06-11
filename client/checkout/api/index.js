@@ -8,8 +8,9 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { getAppearance } from 'checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'checkout/upe-styles';
 import { getAppearanceType } from '../utils';
+import { isShortcodeCheckout } from 'wcpay/checkout/woopay/utils';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -76,7 +77,7 @@ export default class WCPayAPI {
 	/**
 	 * Generates a new instance of Stripe.
 	 *
-	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
+	 * @param {boolean} forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Object} The Stripe Object.
 	 */
 	__getStripe( forceAccountRequest = false ) {
@@ -135,7 +136,7 @@ export default class WCPayAPI {
 	 * Extracts the details about a payment intent from the redirect URL,
 	 * and displays the intent confirmation modal (if needed).
 	 *
-	 * @param {string} redirectUrl The redirect URL, returned from the server.
+	 * @param {string}  redirectUrl             The redirect URL, returned from the server.
 	 * @param {boolean} shouldSavePaymentMethod Whether the payment method should be saved.
 	 * @return {Promise<string>|boolean} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
@@ -337,47 +338,28 @@ export default class WCPayAPI {
 		return setupIntent;
 	}
 
-	/**
-	 * Saves the calculated UPE appearance values in a transient.
-	 *
-	 * @param {Object} appearance The UPE appearance object with style values
-	 * @param {string} elementsLocation The location of the elements.
-	 *
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	saveUPEAppearance( appearance, elementsLocation ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			elements_location: elementsLocation,
-			appearance: JSON.stringify( appearance ),
-			action: 'save_upe_appearance',
-			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
-		} )
-			.then( ( response ) => {
-				return response.data;
-			} )
-			.catch( ( error ) => {
-				if ( error.message ) {
-					throw error;
-				} else {
-					// Covers the case of error on the Ajaxrequest.
-					throw new Error( error.statusText );
-				}
-			} );
-	}
-
 	initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;
 			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 			const nonce = getConfig( 'initWooPayNonce' );
-			const appearanceType = getAppearanceType();
+			let appearance = null;
+			let fontRules = null;
+			if ( getConfig( 'isWooPayGlobalThemeSupportEnabled' ) ) {
+				if ( isShortcodeCheckout() ) {
+					const appearanceType = getAppearanceType();
+					appearance = getAppearance( appearanceType, true );
+					fontRules = getFontRulesFromPage();
+				} else {
+					appearance = getConfig( 'woopayAppearance' );
+					fontRules = getConfig( 'woopayFontRules' );
+				}
+			}
 
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,
-				appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-					? getAppearance( appearanceType, true )
-					: null,
+				appearance,
+				font_rules: fontRules,
 				email: userEmail,
 				user_session: woopayUserSession,
 				order_id: getConfig( 'order_id' ),

@@ -43,9 +43,7 @@ export default {
 	getOptionKeywords( option: CompletionOption ): string[] {
 		return [ option.label ];
 	},
-	getFreeTextOptions(
-		query: string
-	): {
+	getFreeTextOptions( query: string ): {
 		key: string;
 		label: JSX.Element;
 		value: { label: string };

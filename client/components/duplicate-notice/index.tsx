@@ -56,9 +56,10 @@ function DuplicateNotice( {
 	] );
 
 	if ( Array.isArray( dismissedNotices?.[ paymentMethod ] ) ) {
-		const isNoticeDismissedForEveryGateway = gatewaysEnablingPaymentMethod.every(
-			( value ) => dismissedNotices[ paymentMethod ].includes( value )
-		);
+		const isNoticeDismissedForEveryGateway =
+			gatewaysEnablingPaymentMethod.every( ( value ) =>
+				dismissedNotices[ paymentMethod ].includes( value )
+			);
 
 		if ( isNoticeDismissedForEveryGateway ) {
 			return null;

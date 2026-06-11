@@ -26,20 +26,16 @@ import {
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( '../../upe-styles' );
+jest.mock( 'wcpay/utils/appearance-cache' );
 
 jest.mock( '../upe-utils' );
 
 jest.mock( 'wcpay/checkout/utils/upe' );
 
+const { isLinkEnabled } = jest.requireMock( 'wcpay/checkout/utils/upe' );
+
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getUPEConfig: jest.fn( ( argument ) => {
-		if (
-			argument === 'wcBlocksUPEAppearance' ||
-			argument === 'upeAppearance'
-		) {
-			return {};
-		}
-
 		if ( argument === 'paymentMethodsConfig' ) {
 			return {
 				card: {
@@ -75,7 +71,7 @@ jest.mock( 'wcpay/checkout/utils/fingerprint', () => ( {
 
 jest.mock( 'wcpay/checkout/utils/show-error-checkout', () => jest.fn() );
 
-const mockUpdateFunction = jest.fn();
+const mockUpdateFunction = jest.fn( () => Promise.resolve() );
 
 const mockMountFunction = jest.fn();
 
@@ -107,7 +103,6 @@ const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
 } );
 
 const apiMock = {
-	saveUPEAppearance: jest.fn().mockResolvedValue( {} ),
 	getStripeForUPE: jest.fn( () =>
 		Promise.resolve( {
 			elements: mockElements,
@@ -124,13 +119,6 @@ describe( 'Stripe Payment Element mounting', () => {
 		mockDomElement = document.createElement( 'div' );
 		eventHandlersFromElementsCreate = {};
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if (
-				argument === 'wcBlocksUPEAppearance' ||
-				argument === 'upeAppearance'
-			) {
-				return {};
-			}
-
 			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					card: {
@@ -163,33 +151,17 @@ describe( 'Stripe Payment Element mounting', () => {
 	} );
 
 	[
-		{
-			elementsLocation: 'shortcode_checkout',
-			expectedProperty: 'upeAppearance',
-		},
-		{
-			elementsLocation: 'add_payment_method',
-			expectedProperty: 'upeAddPaymentMethodAppearance',
-		},
-		{
-			elementsLocation: 'other',
-			expectedProperty: 'upeAppearance',
-		},
-	].forEach( ( { elementsLocation, expectedProperty } ) => {
+		{ elementsLocation: 'shortcode_checkout' },
+		{ elementsLocation: 'add_payment_method' },
+		{ elementsLocation: 'other' },
+	].forEach( ( { elementsLocation } ) => {
 		describe( `when elementsLocation is ${ elementsLocation }`, () => {
 			beforeEach( () => {
 				__resetGatewayUPEComponentsElement( 'giropay' );
 			} );
 
-			test( 'initializes the appearance when it is not set and saves it', async () => {
+			test( 'initializes the appearance by computing it from the DOM', async () => {
 				getUPEConfig.mockImplementation( ( argument ) => {
-					if (
-						argument === 'upeAddPaymentMethodAppearance' ||
-						argument === 'upeAppearance'
-					) {
-						return null;
-					}
-
 					if ( argument === 'paymentMethodsConfig' ) {
 						return {
 							giropay: {
@@ -222,56 +194,10 @@ describe( 'Stripe Payment Element mounting', () => {
 					elementsLocation
 				);
 
-				expect( getAppearance ).toHaveBeenCalled();
-				expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
-					appearanceMock,
+				expect( getAppearance ).toHaveBeenCalledWith(
 					elementsLocation
 				);
-				expect( getUPEConfig ).toHaveBeenCalledWith( expectedProperty );
 				expect( dispatchMock ).toHaveBeenCalled();
-			} );
-
-			test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', async () => {
-				const appearanceMock = { backgroundColor: '#fff' };
-				getAppearance.mockReturnValue( appearanceMock );
-				getFingerprint.mockImplementation( () => {
-					return 'fingerprint';
-				} );
-				getUPEConfig.mockImplementation( ( argument ) => {
-					if ( argument === 'currency' ) {
-						return 'eur';
-					}
-
-					if (
-						argument === 'upeAppearance' ||
-						argument === 'upeAddPaymentMethodAppearance'
-					) {
-						return {
-							backgroundColor: '#fff',
-						};
-					}
-
-					if ( argument === 'paymentMethodsConfig' ) {
-						return {
-							giropay: {
-								label: 'Giropay',
-								forceNetworkSavedCards: false,
-							},
-						};
-					}
-				} );
-
-				mockDomElement.dataset.paymentMethodType = 'giropay';
-
-				await mountStripePaymentElement(
-					apiMock,
-					mockDomElement,
-					elementsLocation
-				);
-
-				expect( getUPEConfig ).toHaveBeenCalledWith( expectedProperty );
-				expect( getAppearance ).not.toHaveBeenCalled();
-				expect( apiMock.saveUPEAppearance ).not.toHaveBeenCalled();
 			} );
 		} );
 	} );
@@ -304,7 +230,7 @@ describe( 'Stripe Payment Element mounting', () => {
 		expect( mockMountFunction ).toHaveBeenCalled();
 	} );
 
-	test( 'Terms are rendered for an already mounted element which should be saved', () => {
+	test( 'Terms are rendered for an already mounted element which should be saved', async () => {
 		const event = {
 			target: {
 				checked: true,
@@ -317,18 +243,18 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( 'card' );
-		renderTerms( event );
+		await renderTerms( event );
 		expect( mockUpdateFunction ).toHaveBeenCalled();
 	} );
 
-	test( 'Terms are not rendered when no selected payment method is found', () => {
+	test( 'Terms are not rendered when no selected payment method is found', async () => {
 		const event = {
 			target: {
 				checked: true,
 			},
 		};
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( null );
-		renderTerms( event );
+		await renderTerms( event );
 		expect( mockUpdateFunction ).not.toHaveBeenCalled();
 	} );
 
@@ -338,13 +264,6 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if (
-				argument === 'wcBlocksUPEAppearance' ||
-				argument === 'upeAppearance'
-			) {
-				return {};
-			}
-
 			if ( argument === 'currency' ) {
 				return 'eur';
 			}
@@ -366,6 +285,46 @@ describe( 'Stripe Payment Element mounting', () => {
 
 		expect( apiMock.getStripeForUPE ).toHaveBeenCalled();
 		expect( mockElements ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'Link wallet is disabled on add_payment_method page even when Link is enabled', async () => {
+		isLinkEnabled.mockReturnValue( true );
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		__resetGatewayUPEComponentsElement( 'card' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement(
+			apiMock,
+			mockDomElement,
+			'add_payment_method'
+		);
+
+		expect( mockCreateFunction ).toHaveBeenCalledWith(
+			'payment',
+			expect.objectContaining( {
+				wallets: expect.objectContaining( { link: 'never' } ),
+			} )
+		);
+	} );
+
+	test( 'Link wallet is enabled on shortcode_checkout page when Link is enabled', async () => {
+		isLinkEnabled.mockReturnValue( true );
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		__resetGatewayUPEComponentsElement( 'card' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement(
+			apiMock,
+			mockDomElement,
+			'shortcode_checkout'
+		);
+
+		expect( mockCreateFunction ).toHaveBeenCalledWith(
+			'payment',
+			expect.objectContaining( {
+				wallets: expect.objectContaining( { link: 'auto' } ),
+			} )
+		);
 	} );
 } );
 
@@ -819,6 +778,50 @@ describe( 'Payment processing', () => {
 		document.body.appendChild( postcodeInput );
 		document.body.appendChild( stateInput );
 	}
+
+	test( 'Payment processing trims whitespace from postal code', async () => {
+		setupBillingDetailsFields();
+		document.getElementById( 'billing_postcode' ).value = ' NG8 4GP ';
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: checkoutForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			paymentMethod: { id: 'paymentMethodId' },
+		} );
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				params: expect.objectContaining( {
+					billing_details: expect.objectContaining( {
+						address: expect.objectContaining( {
+							postal_code: 'NG8 4GP',
+						} ),
+					} ),
+				} ),
+			} )
+		);
+	} );
 } );
 
 describe( 'Setup intent creation and confirmation', () => {

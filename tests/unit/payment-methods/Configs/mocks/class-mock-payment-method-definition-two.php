@@ -26,6 +26,10 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 		return 'second_mock_method_payments';
 	}
 
+	public static function get_stripe_payment_method_type(): string {
+		return self::get_id();
+	}
+
 	public static function get_payment_method_class(): string {
 		return 'SecondMockPaymentMethod';
 	}

@@ -36,7 +36,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/download/(?P<export_id>.*)',
+			'/' . $this->rest_base . '/download/(?P<export_id>[^/\\\\%]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_export_url' ],
@@ -93,6 +93,8 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Retrieve disputes to respond with via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetDisputes
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_disputes( WP_REST_Request $request ) {
@@ -114,6 +116,8 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Retrieve disputes summary to respond with via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetDisputesSummary
+	 *
 	 * @param  WP_REST_Request $request Request data.
 	 * @return WP_REST_Response|WP_Error
 	 */
@@ -124,6 +128,8 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Retrieve dispute to respond with via API.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetDispute
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */

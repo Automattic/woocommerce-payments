@@ -23,14 +23,11 @@ interface OrderItemsThresholdCustomFormProps {
 	setting: string;
 }
 
-const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProps > = ( {
-	setting,
-} ) => {
-	const {
-		protectionSettingsUI,
-		setProtectionSettingsUI,
-		setIsDirty,
-	} = useContext( FraudPreventionSettingsContext );
+const OrderItemsThresholdCustomForm: React.FC<
+	OrderItemsThresholdCustomFormProps
+> = ( { setting } ) => {
+	const { protectionSettingsUI, setProtectionSettingsUI, setIsDirty } =
+		useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
 		() =>

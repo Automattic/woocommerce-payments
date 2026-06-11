@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useGetSettings, useSettings } from '../../data';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import { recordEvent } from '../../tracks';
 import SettingsSection from '../settings-section';
 import './style.scss';
@@ -27,13 +27,10 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 	] = useState( null );
 	// Keep the inital value of is_woopay_enabled
 	// in state for showing the feedback modal on change.
-	const [ initialIsWooPayEnabled, setInitialIsWooPayEnabled ] = useState(
-		null
-	);
-	const [
-		isWooPayDisableFeedbackOpen,
-		setIsWooPayDisableFeedbackOpen,
-	] = useState( false );
+	const [ initialIsWooPayEnabled, setInitialIsWooPayEnabled ] =
+		useState( null );
+	const [ isWooPayDisableFeedbackOpen, setIsWooPayDisableFeedbackOpen ] =
+		useState( false );
 
 	if (
 		initialIsPaymentRequestEnabled === null &&

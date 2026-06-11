@@ -13,14 +13,8 @@ import { OnboardingContextProvider, useOnboardingContext } from '../context';
 describe( 'OnboardingContext', () => {
 	it( 'sets initial values and updates correctly', async () => {
 		const TestComponent: React.FC = () => {
-			const {
-				data,
-				setData,
-				errors,
-				setErrors,
-				touched,
-				setTouched,
-			} = useOnboardingContext();
+			const { data, setData, errors, setErrors, touched, setTouched } =
+				useOnboardingContext();
 			const handleClick = () => {
 				setData( {
 					business_type: 'Individual',

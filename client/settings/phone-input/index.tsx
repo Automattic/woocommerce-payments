@@ -40,20 +40,18 @@ const PhoneNumberInput = ( {
 	...props
 }: PhoneNumberInputProps ): JSX.Element => {
 	const [ focusLost, setFocusLost ] = useState< boolean >( false );
-	const [
-		inputInstance,
-		setInputInstance,
-	] = useState< intlTelInput.Plugin | null >( null );
+	const [ inputInstance, setInputInstance ] =
+		useState< intlTelInput.Plugin | null >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
 
 	// in some special cases, the phone number is valid but the library doesn't recognize it as such
 	const isValidNumber = ( instance: intlTelInput.Plugin ): boolean => {
 		// Special case for Singapore: some numbers are valid but the library doesn't recognize them
 		if (
-			'65' === instance.getSelectedCountryData().dialCode &&
+			instance.getSelectedCountryData().dialCode === '65' &&
 			! instance.isValidNumber()
 		) {
-			if ( 11 !== instance.getNumber().length ) {
+			if ( instance.getNumber().length !== 11 ) {
 				return false;
 			}
 
@@ -69,10 +67,10 @@ const PhoneNumberInput = ( {
 		// Special case for Hong Kong: the latest HK Telecom numbers have adopted new numbers starting with 4.
 		// Numbers starting from 7 and 8 also can be mobile numbers (as well as pager numbers and forwarding service).
 		if (
-			'852' === instance.getSelectedCountryData().dialCode &&
+			instance.getSelectedCountryData().dialCode === '852' &&
 			! instance.isValidNumber()
 		) {
-			if ( 12 !== instance.getNumber().length ) {
+			if ( instance.getNumber().length !== 12 ) {
 				return false;
 			}
 
@@ -122,7 +120,7 @@ const PhoneNumberInput = ( {
 		};
 
 		//if in admin panel
-		if ( 'undefined' !== typeof wcpaySettings ) {
+		if ( typeof wcpaySettings !== 'undefined' ) {
 			const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
 			// Special case for Japan: Only Japanese phone numbers are accepted by Stripe
 			if ( accountCountry === 'JP' ) {

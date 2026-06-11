@@ -82,7 +82,8 @@ describeif( shouldRunSubscriptionsTests )(
 				.locator( '#actions' )
 				.getByRole( 'button', { name: /Apply.+/i } )
 				.click();
-			await merchantPage.waitForLoadState( 'networkidle' );
+			// Wait for the renewal action to complete.
+			await merchantPage.waitForLoadState( 'load' );
 
 			// Check if a new order is present in related orders
 			await expect(

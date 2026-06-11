@@ -38,4 +38,13 @@ class Get_Account extends Request {
 	public function get_method(): string {
 		return 'GET';
 	}
+
+	/**
+	 * Set the WooCommerce store ID to send with the account request.
+	 *
+	 * @param string $woocommerce_store_id The WooCommerce store ID (UUID).
+	 */
+	public function set_woocommerce_store_id( string $woocommerce_store_id ): void {
+		$this->set_param( 'woocommerce_store_id', $woocommerce_store_id );
+	}
 }

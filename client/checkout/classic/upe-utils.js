@@ -161,7 +161,7 @@ export const generateCheckoutEventNames = () => {
 /**
  * Appends the payment method ID to the form.
  *
- * @param {Object} $form jQuery form object
+ * @param {Object} $form           jQuery form object
  * @param {string} paymentMethodId Payment method ID to append
  */
 export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
@@ -173,7 +173,7 @@ export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
 /**
  * Appends payment method error data to the form.
  *
- * @param {Object} $form jQuery form object
+ * @param {Object} $form              jQuery form object
  * @param {Object} paymentMethodError Error object containing code, decline_code, message, and type
  */
 export const appendPaymentMethodErrorDataToForm = (
@@ -249,7 +249,7 @@ export function dispatchChangeEventFor( element ) {
  *
  * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  * @return {boolean} Whether the payment method is restricted to selected billing country.
- **/
+ */
 export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
@@ -260,7 +260,7 @@ export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
  * Hides the payment method if it has set specific countries in the PHP class.
  *
  * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
- **/
+ */
 export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const upeContainer = upeElement?.closest( '.wc_payment_method' );
 	if ( ! upeContainer ) {

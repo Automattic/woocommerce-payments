@@ -12,7 +12,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import ACTION_TYPES from './action-types';
-import { NAMESPACE, STORE_NAME } from '../constants';
+import { NAMESPACE } from '../constants';
+import { SETTINGS_STORE_NAME as STORE_NAME } from '../store-names';
 
 function updateSettingsValues( payload ) {
 	return {
@@ -192,7 +193,9 @@ export function* saveSettings() {
 			data: settings,
 		} );
 
-		yield updateSettingsValues( {
+		// otherwise mid-save edits linger in the store with `isDirty` falsely false
+		yield updateSettings( {
+			...settings,
 			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 

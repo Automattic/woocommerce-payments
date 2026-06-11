@@ -33,7 +33,6 @@ const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
 	{}
 );
 
-/* TODO: implement other payment statuses (SCA and authorizations) */
 const paymentStatusMappings: Record< string, StatusMapping > = {
 	refunded_partial: {
 		type: 'light',

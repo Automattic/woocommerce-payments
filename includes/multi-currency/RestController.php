@@ -53,6 +53,22 @@ class RestController extends \WP_REST_Controller {
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
+		// Public endpoint for the async price renderer. Only registered when
+		// cache-optimized mode is active.
+		// Intentionally unauthenticated: it serves anonymous visitors so the
+		// client-side JS can convert prices without a WC session.
+		if ( $this->multi_currency->is_cache_optimized_mode() ) {
+			register_rest_route(
+				$this->namespace,
+				'/' . $this->rest_base . '/public/config',
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_public_config' ],
+					'permission_callback' => '__return_true',
+				]
+			);
+		}
+
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/currencies',
@@ -258,6 +274,20 @@ class RestController extends \WP_REST_Controller {
 		$params = $request->get_params();
 		$this->multi_currency->update_settings( $params );
 		return rest_ensure_response( $this->multi_currency->get_settings() );
+	}
+
+	/**
+	 * Gets the public configuration for the async price renderer.
+	 *
+	 * @return \WP_REST_Response The public config data.
+	 */
+	public function get_public_config() {
+		$response = rest_ensure_response( $this->multi_currency->get_public_config() );
+		// Cache for 5 minutes in the browser. The response varies per visitor IP
+		// (geolocation-based currency), so CDN caching is not possible, but
+		// browser caching avoids repeated requests during a single browsing session.
+		$response->header( 'Cache-Control', 'private, max-age=300' );
+		return $response;
 	}
 
 	/**

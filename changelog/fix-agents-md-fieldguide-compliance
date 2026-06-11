@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Comment: Make AGENTS.md the primary agent guidelines file, CLAUDE.md references it via @AGENTS.md per fieldguide

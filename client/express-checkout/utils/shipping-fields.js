@@ -107,10 +107,10 @@ const updateShortcodeShippingUI = ( eventAddress ) => {
  * Determines the current context (cart or checkout) and updates either
  * WooCommerce Blocks or shortcode-based shipping forms, if applicable.
  *
- * @param {Object} newAddress - The new shipping address object returned by the payment event.
- * @param {string} newAddress.country - The country code of the shipping address.
- * @param {string} [newAddress.state] - The state/province of the shipping address.
- * @param {string} [newAddress.city] - The city of the shipping address.
+ * @param {Object} newAddress            - The new shipping address object returned by the payment event.
+ * @param {string} newAddress.country    - The country code of the shipping address.
+ * @param {string} [newAddress.state]    - The state/province of the shipping address.
+ * @param {string} [newAddress.city]     - The city of the shipping address.
  * @param {string} [newAddress.postcode] - The postal/ZIP code of the shipping address.
  */
 export const updateShippingAddressUI = ( newAddress ) => {

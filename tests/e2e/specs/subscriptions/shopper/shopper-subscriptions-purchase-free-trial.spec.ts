@@ -134,10 +134,8 @@ describeif( shouldRunSubscriptionsTests )(
 					.click();
 				await shopperPage.frames()[ 0 ].waitForLoadState( 'load' );
 				await confirmCardAuthentication( shopperPage, true );
-				await shopperPage
-					.frames()[ 0 ]
-					.waitForLoadState( 'networkidle' );
-				await shopperPage.waitForLoadState( 'networkidle' );
+				// Wait for the order confirmation page to load after 3DS authentication.
+				await shopperPage.waitForLoadState( 'load' );
 				await expect(
 					shopperPage.getByRole( 'heading', {
 						name: 'Order received',

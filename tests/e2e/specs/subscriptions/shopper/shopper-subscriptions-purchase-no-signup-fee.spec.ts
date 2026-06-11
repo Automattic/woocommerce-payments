@@ -47,7 +47,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await shopperPage
 					.getByRole( 'button', { name: 'Add to cart', exact: true } )
 					.click();
-				await shopperPage.waitForLoadState( 'networkidle' );
+				// Wait for the "added to cart" confirmation message.
 				await expect(
 					shopperPage.getByText( /has been added to your cart\./ )
 				).toBeVisible();

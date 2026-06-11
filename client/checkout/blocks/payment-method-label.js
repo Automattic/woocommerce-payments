@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -10,6 +10,8 @@ import { __ } from '@wordpress/i18n';
 import { PaymentMethodsLogos } from './payment-methods-logos';
 import { getCardBrands } from 'wcpay/utils/card-brands';
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { getCachedTheme } from 'wcpay/utils/appearance-cache';
+import { getIconTheme } from 'wcpay/checkout/utils/icon-theme';
 
 const cardBrandsBreakpointConfigs = [
 	{ breakpoint: 550, maxElements: 2 },
@@ -20,13 +22,12 @@ const cardBrandsBreakpointConfigs = [
  * Renders the payment method icon along with the test mode badge.
  * The badge is included here so it can be positioned via CSS within the same flex container.
  * For card payments, shows card brand logos.
- * For other payment methods, shows the payment method icon based on theme.
+ * For other payment methods, shows the payment method icon.
  *
- * @param {Object} props Component props.
+ * @param {Object} props                 Component props.
  * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
- * @param {string} props.icon The light theme icon URL.
- * @param {string} props.darkIcon The dark theme icon URL.
- * @param {string} props.title The payment method title for alt text.
+ * @param {string} props.icon            The icon URL.
+ * @param {string} props.title           The payment method title for alt text.
  * @return {JSX.Element} The payment method icon component.
  */
 const PaymentMethodIcon = memo( function PaymentMethodIcon( {
@@ -36,6 +37,24 @@ const PaymentMethodIcon = memo( function PaymentMethodIcon( {
 	title,
 } ) {
 	const isTestMode = getUPEConfig( 'testMode' );
+	const stylesCacheVersion = getUPEConfig( 'stylesCacheVersion' );
+
+	const [ theme, setTheme ] = useState( () => {
+		const cached = getCachedTheme( 'blocks_checkout', stylesCacheVersion );
+		if ( cached ) {
+			return cached;
+		}
+		// First load with empty cache: determine theme from page background.
+		return getIconTheme( 'blocks' );
+	} );
+
+	useEffect( () => {
+		const handler = () =>
+			setTheme( getCachedTheme( 'blocks_checkout', stylesCacheVersion ) );
+		window.addEventListener( 'wcpay-appearance-cached', handler );
+		return () =>
+			window.removeEventListener( 'wcpay-appearance-cached', handler );
+	}, [ stylesCacheVersion ] );
 
 	const testModeBadge = isTestMode && (
 		<span className="test-mode badge">
@@ -56,9 +75,7 @@ const PaymentMethodIcon = memo( function PaymentMethodIcon( {
 		);
 	}
 
-	const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
-	const iconSrc =
-		upeAppearanceTheme === 'night' && darkIcon ? darkIcon : icon;
+	const iconSrc = theme === 'night' && darkIcon ? darkIcon : icon;
 
 	return (
 		<>
@@ -76,12 +93,11 @@ const PaymentMethodIcon = memo( function PaymentMethodIcon( {
  * Payment method label component that uses the WooCommerce Blocks PaymentMethodLabel
  * with the icon prop for proper icon positioning.
  *
- * @param {Object} props Component props passed by WooCommerce Blocks.
- * @param {Object} props.components Components provided by WooCommerce Blocks, including PaymentMethodLabel.
- * @param {string} props.title The payment method title to display.
+ * @param {Object} props                 Component props passed by WooCommerce Blocks.
+ * @param {Object} props.components      Components provided by WooCommerce Blocks, including PaymentMethodLabel.
+ * @param {string} props.title           The payment method title to display.
  * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
- * @param {string} props.icon The light theme icon URL.
- * @param {string} props.darkIcon The dark theme icon URL.
+ * @param {string} props.icon            The icon URL.
  * @return {JSX.Element} The payment method label component.
  */
 const PaymentMethodLabel = ( {
@@ -105,10 +121,10 @@ const PaymentMethodLabel = ( {
 		[ paymentMethodId, icon, darkIcon, title ]
 	);
 
-	return useMemo( () => <Label text={ title } icon={ iconProp } />, [
-		title,
-		iconProp,
-	] );
+	return useMemo(
+		() => <Label text={ title } icon={ iconProp } />,
+		[ title, iconProp ]
+	);
 };
 
 export default PaymentMethodLabel;

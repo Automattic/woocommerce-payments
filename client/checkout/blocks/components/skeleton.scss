@@ -1,0 +1,35 @@
+.wcpay-skeleton__element {
+	background: color-mix( in srgb, currentColor 5%, transparent );
+	border: none;
+	border-radius: 4px;
+	overflow: hidden;
+	position: relative;
+
+	&::after {
+		animation: wcpay-skeleton-shimmer 1.25s infinite;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			color-mix( in srgb, currentColor 5%, transparent ) 50%,
+			transparent 100%
+		);
+		content: '';
+		inset: 0;
+		position: absolute;
+		transform: translateX( -100% );
+
+		@media ( prefers-reduced-motion: reduce ) {
+			animation: none;
+		}
+	}
+
+	&--static::after {
+		display: none;
+	}
+}
+
+@keyframes wcpay-skeleton-shimmer {
+	100% {
+		transform: translateX( 100% );
+	}
+}

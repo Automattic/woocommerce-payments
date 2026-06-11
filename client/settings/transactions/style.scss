@@ -28,3 +28,16 @@
 		}
 	}
 }
+
+.manual-capture-confirmation-modal.wcpay-confirmation-modal {
+	max-width: 512px;
+
+	p {
+		font-size: 13px;
+		line-height: 20px;
+	}
+
+	.wcpay-confirmation-modal__separator {
+		display: none;
+	}
+}

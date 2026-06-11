@@ -6,8 +6,8 @@ import tinycolor from 'tinycolor2';
 /**
  * Generates hover colors from a background color and a text color.
  *
- * @param {string}  backgroundColor Background color, Any format accepted by tinyColor library
- * @param {string}  color Text color, any format accepted by tinyColor library
+ * @param {string} backgroundColor Background color, Any format accepted by tinyColor library
+ * @param {string} color           Text color, any format accepted by tinyColor library
  * @return {Object} Object with new background color and text color.
  */
 export const generateHoverColors = ( backgroundColor, color ) => {
@@ -49,7 +49,7 @@ export const generateHoverColors = ( backgroundColor, color ) => {
 /**
  * Generates hover rules for UPE using a set of appearance rules as a basis.
  *
- * @param {Object}  baseRules UPE appearance rules to use as a base to generate hover colors
+ * @param {Object} baseRules UPE appearance rules to use as a base to generate hover colors
  * @return {Object} Object with generated hover rules.
  */
 export const generateHoverRules = ( baseRules ) => {
@@ -75,9 +75,9 @@ export const generateHoverRules = ( baseRules ) => {
  * Generates outline style for UPE using outline width, style and color.
  * UPE does not accept the individual properties, we need to concat them.
  *
- * @param {string}  outlineWidth Outline width from computed styles.
- * @param {string}  outlineStyle Outline width from computed styles.
- * @param {string}  outlineColor Outline width from computed styles.
+ * @param {string} outlineWidth Outline width from computed styles.
+ * @param {string} outlineStyle Outline width from computed styles.
+ * @param {string} outlineColor Outline width from computed styles.
  * @return {string} Object with generated hover rules.
  */
 export const generateOutlineStyle = (
@@ -102,7 +102,13 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 	let color = null;
 	let i = 0;
 	while ( ! color && i < selectors.length ) {
-		const element = scope.querySelector( selectors[ i ] );
+		let element;
+		try {
+			element = scope.querySelector( selectors[ i ] );
+		} catch ( e ) {
+			i++;
+			continue;
+		}
 		if ( ! element ) {
 			i++;
 			continue;
@@ -110,10 +116,13 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 
 		const windowObject = scope.defaultView || window;
 
-		const bgColor = windowObject.getComputedStyle( element )
-			.backgroundColor;
-		// If backgroundColor property present and alpha > 0.
-		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
+		const bgColor =
+			windowObject.getComputedStyle( element ).backgroundColor;
+		// Accept colors that are mostly opaque (alpha >= 0.5).  Low-alpha
+		// values like rgba(129,110,153,0.14) are decorative overlays, not
+		// real backgrounds — skip them so we fall through to the actual
+		// page background beneath.
+		if ( bgColor && tinycolor( bgColor ).getAlpha() >= 0.5 ) {
 			color = bgColor;
 		}
 		i++;
@@ -124,11 +133,28 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 /**
  * Determines whether background color is light or dark.
  *
+ * When the color has an alpha channel (e.g. rgba), it is composited against
+ * white first, since that is the default page background.  Without this,
+ * a low-opacity dark color like rgba(129,110,153,0.14) would be reported as
+ * "dark" even though it appears nearly white to the user.
+ *
  * @param {string} color CSS color value.
  * @return {boolean} True, if background is light; false, if background is dark.
  */
 export const isColorLight = ( color ) => {
-	return tinycolor( color ).getBrightness() > 125;
+	const tc = tinycolor( color );
+	const alpha = tc.getAlpha();
+	if ( alpha < 1 ) {
+		// Composite against white (#fff) using "source over" blending.
+		const rgb = tc.toRgb();
+		const blended = tinycolor( {
+			r: Math.round( rgb.r * alpha + 255 * ( 1 - alpha ) ),
+			g: Math.round( rgb.g * alpha + 255 * ( 1 - alpha ) ),
+			b: Math.round( rgb.b * alpha + 255 * ( 1 - alpha ) ),
+		} );
+		return blended.getBrightness() > 125;
+	}
+	return tc.getBrightness() > 125;
 };
 
 /**
@@ -154,7 +180,7 @@ export const maybeConvertRGBAtoRGB = ( color ) => {
 /**
  * Modifies the appearance object to include styles for floating label.
  *
- * @param {Object} appearance object to modify.
+ * @param {Object} appearance          object to modify.
  * @param {Object} floatingLabelStyles Floating label styles.
  * @return {Object} Modified appearance object.
  */
@@ -219,9 +245,8 @@ export const handleAppearanceForFloatingLabel = (
 		appearance.rules[ '.Label' ].marginTop = `${ Math.floor(
 			( originalPaddingBottom - 1 ) / 3
 		) }px`;
-		appearance.rules[
-			'.Label--floating'
-		].marginTop = originalLabelMarginTop;
+		appearance.rules[ '.Label--floating' ].marginTop =
+			originalLabelMarginTop;
 	}
 
 	return appearance;

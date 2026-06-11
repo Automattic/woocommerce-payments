@@ -138,27 +138,26 @@ type TooltipPortalProps = {
 	parentElement: HTMLElement;
 };
 
-const TooltipPortal: React.FC< React.PropsWithChildren<
-	TooltipPortalProps
-> > = memo( ( { children, parentElement } ) => {
-	const node = useRef< HTMLElement | null >( null );
-	if ( ! node.current ) {
-		node.current = document.createElement( 'div' );
-		parentElement.appendChild( node.current );
-	}
+const TooltipPortal: React.FC< React.PropsWithChildren< TooltipPortalProps > > =
+	memo( ( { children, parentElement } ) => {
+		const node = useRef< HTMLElement | null >( null );
+		if ( ! node.current ) {
+			node.current = document.createElement( 'div' );
+			parentElement.appendChild( node.current );
+		}
 
-	// on component unmount, clear any reference to the created node
-	useEffect( () => {
-		return () => {
-			if ( node.current ) {
-				parentElement.removeChild( node.current );
-				node.current = null;
-			}
-		};
-	}, [ parentElement ] );
+		// on component unmount, clear any reference to the created node
+		useEffect( () => {
+			return () => {
+				if ( node.current ) {
+					parentElement.removeChild( node.current );
+					node.current = null;
+				}
+			};
+		}, [ parentElement ] );
 
-	return createPortal( children, node.current );
-} );
+		return createPortal( children, node.current );
+	} );
 
 type TooltipBaseProps = {
 	className?: string;
@@ -210,7 +209,16 @@ const TooltipBase: React.FC< React.PropsWithChildren< TooltipBaseProps > > = ( {
 				return;
 			}
 
+			const viewportPadding = 8;
+
 			tooltipElement.style.maxWidth = maxWidth;
+
+			// Cap maxWidth to the viewport so the tooltip can never be wider
+			// than the available space on narrow screens.
+			const viewportMaxWidth = window.innerWidth - 2 * viewportPadding;
+			if ( tooltipElement.offsetWidth > viewportMaxWidth ) {
+				tooltipElement.style.maxWidth = `${ viewportMaxWidth }px`;
+			}
 
 			const wrappedElementRect = wrappedElement.getBoundingClientRect();
 			const tooltipElementRect = tooltipElement.getBoundingClientRect();
@@ -222,18 +230,15 @@ const TooltipBase: React.FC< React.PropsWithChildren< TooltipBaseProps > > = ( {
 			const elementMiddle =
 				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
 			const tooltipWidth = tooltipElement.offsetWidth;
-			let tooltipLeft = elementMiddle - tooltipWidth / 2;
-			const tooltipRight =
-				window.innerWidth -
-				( wrappedElementRect.left + tooltipElement.offsetWidth );
 
-			if ( tooltipLeft < 0 ) {
-				// create a gap with the left edge if the element is out of view port
-				tooltipLeft = 45;
-			} else if ( tooltipRight < 0 ) {
-				// create a gap with the right edge if the element is out of view port
-				tooltipLeft = tooltipLeft - 85;
-			}
+			// Center on the trigger, then clamp inside the viewport so the
+			// tooltip stays visible at any breakpoint or scroll position.
+			const minLeft = viewportPadding;
+			const maxLeft = window.innerWidth - tooltipWidth - viewportPadding;
+			const tooltipLeft = Math.max(
+				minLeft,
+				Math.min( elementMiddle - tooltipWidth / 2, maxLeft )
+			);
 
 			tooltipElement.style.left = `${ tooltipLeft }px`;
 

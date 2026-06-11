@@ -20,7 +20,7 @@ import {
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
 	useGetDuplicatedPaymentMethodIds,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 
 jest.mock( '@woocommerce/components', () => {
@@ -31,17 +31,18 @@ jest.mock( '@woocommerce/components', () => {
 	};
 } );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
-	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
-	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
+} ) );
+
+jest.mock( 'wcpay/data/pm-promotions', () => ( {
 	usePmPromotions: jest
 		.fn()
 		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
@@ -162,7 +163,9 @@ describe( 'BuyNowPayLaterSection', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'should render the delete modal on an already active payment method', async () => {
+	it( 'should disable an already active payment method without confirmation modal', async () => {
+		const mockUnselect = jest.fn();
+		useUnselectedPaymentMethod.mockReturnValue( [ null, mockUnselect ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'affirm' ],
 			jest.fn(),
@@ -184,18 +187,13 @@ describe( 'BuyNowPayLaterSection', () => {
 		expect( affirmCheckbox ).toBeInTheDocument();
 		expect( affirmCheckbox ).toBeChecked();
 
-		jest.useFakeTimers();
-
-		// Disabling an already active PM should show the delete modal
 		await user.click( affirmCheckbox );
-		jest.runOnlyPendingTimers();
 
+		expect( mockUnselect ).toHaveBeenCalledWith( 'affirm' );
 		expect(
 			screen.queryByText(
 				/Your customers will no longer be able to pay using Affirm\./
 			)
-		).toBeInTheDocument();
-
-		jest.useRealTimers();
+		).not.toBeInTheDocument();
 	} );
 } );

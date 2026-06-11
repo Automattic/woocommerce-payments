@@ -21,6 +21,7 @@ use WCPay\Logger;
 class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
+	const TEST_MODE_ENABLED_DATE_OPTION              = 'wcpay_test_mode_enabled_date';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
@@ -116,6 +117,13 @@ class WC_Payments_Onboarding_Service {
 	public function init_hooks() {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
+		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_woocommerce_store_id_to_request' ] );
+		add_action(
+			'update_option_woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings',
+			[ $this, 'maybe_handle_gateway_test_mode_toggle' ],
+			10,
+			2
+		);
 	}
 
 	/**
@@ -683,17 +691,18 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Note: This is a subset of the WC_Payments_Account::maybe_handle_onboarding method.
 	 *
-	 * @param string $country      The country code to use for the account.
-	 *                             This is a ISO 3166-1 alpha-2 country code.
-	 * @param array  $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                             indicating whether the capability should be requested when the account is created
-	 *                             and enabled in the settings.
+	 * @param string $country                 The country code to use for the account.
+	 *                                         This is a ISO 3166-1 alpha-2 country code.
+	 * @param array  $capabilities             Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                                         indicating whether the capability should be requested when the account is created
+	 *                                         and enabled in the settings.
+	 * @param array  $additional_account_data  Optional. Additional account data to merge into the account data sent to the platform.
 	 *
 	 * @return bool Whether the account was created.
 	 * @throws API_Exception When the API request fails.
 	 * @throws Exception When an onboarding initialization is already in progress.
 	 */
-	public function init_test_drive_account( string $country, array $capabilities = [] ): bool {
+	public function init_test_drive_account( string $country, array $capabilities = [], array $additional_account_data = [] ): bool {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
@@ -733,12 +742,20 @@ class WC_Payments_Onboarding_Service {
 		);
 
 		// Attempt to create the account.
+		// Filter out empty values first, then merge additional data so that
+		// boolean `false` values (e.g. `extra_bootstrapping: false`) are preserved.
+		$account_data = WC_Payments_Utils::array_filter_recursive( $account_data );
+
+		if ( ! empty( $additional_account_data ) ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct( $account_data, $additional_account_data );
+		}
+
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			false,
 			WC_Payments_Account::get_connect_url(),
 			$site_data,
 			WC_Payments_Utils::array_filter_recursive( $user_data ),
-			WC_Payments_Utils::array_filter_recursive( $account_data ),
+			$account_data,
 			self::get_actioned_notes(),
 		);
 
@@ -925,6 +942,9 @@ class WC_Payments_Onboarding_Service {
 		// Clear the entire database cache since everything hinges on the account.
 		// If the account is gone, everything else is too.
 		$this->database_cache->delete_all();
+
+		// Clean up the test-to-live banner state.
+		self::sync_banner_state( false );
 	}
 
 	/**
@@ -1043,12 +1063,33 @@ class WC_Payments_Onboarding_Service {
 	public static function set_test_mode( bool $test_mode ): void {
 		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no', true );
 
-		// Switch WC_Payments onboarding mode immediately.
 		if ( $test_mode ) {
 			\WC_Payments::mode()->test_mode_onboarding();
 		} else {
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
+
+		self::sync_banner_state( $test_mode );
+	}
+
+	/**
+	 * Hook handler for `update_option_woocommerce_<gateway_id>_settings`. Keeps
+	 * the test-to-live nudge's bookkeeping in sync when the gateway's
+	 * `test_mode` value flips.
+	 *
+	 * @param mixed $old_value Previous gateway settings array, or '' on first save.
+	 * @param mixed $new_value New gateway settings array.
+	 * @return void
+	 */
+	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void {
+		$old_test_mode = is_array( $old_value ) ? ( $old_value['test_mode'] ?? 'no' ) : 'no';
+		$new_test_mode = is_array( $new_value ) ? ( $new_value['test_mode'] ?? 'no' ) : 'no';
+
+		if ( $old_test_mode === $new_test_mode ) {
+			return;
+		}
+
+		self::sync_banner_state( 'yes' === $new_test_mode );
 	}
 
 	/**
@@ -1145,12 +1186,12 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'page=wc-admin&task=payments' ) ) {
 			return self::FROM_WCADMIN_PAYMENTS_TASK;
 		}
-		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
-			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
-		}
 		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) &&
 			false !== strpos( $referer, 'path=/woopayments/onboarding' ) ) {
 			return self::FROM_WCADMIN_NOX_IN_CONTEXT;
+		}
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
 		}
 		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
 			return self::FROM_WCADMIN_INCENTIVE;
@@ -1418,6 +1459,21 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Add the WooCommerce store ID to outgoing onboarding request args.
+	 *
+	 * @param array $args The request args.
+	 *
+	 * @return array
+	 */
+	public function add_woocommerce_store_id_to_request( array $args ): array {
+		$store_id_key                 = ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) )
+			? \WC_Install::STORE_ID_OPTION
+			: 'woocommerce_store_id';
+		$args['woocommerce_store_id'] = get_option( $store_id_key, '' );
+		return $args;
+	}
+
+	/**
 	 * Update payment methods to 'enabled' based on the capabilities
 	 * provided during the NOX onboarding process. Merchants can preselect their preferred
 	 * payment methods as part of this flow.
@@ -1575,5 +1631,28 @@ class WC_Payments_Onboarding_Service {
 		wc_admin_record_tracks_event( $name, $properties );
 
 		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
+	}
+
+	/**
+	 * Maintains banner state that depends on test mode: sets/clears
+	 * TEST_MODE_ENABLED_DATE_OPTION (test-to-live nudge clock) and drops the
+	 * test-to-live and post-KYC eligibility transients.
+	 *
+	 * @param bool $test_mode True if test mode is being enabled, false if disabled.
+	 * @return void
+	 */
+	private static function sync_banner_state( bool $test_mode ): void {
+		if ( $test_mode ) {
+			// Preserve the original enable date on subsequent calls.
+			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
+				update_option( self::TEST_MODE_ENABLED_DATE_OPTION, time(), false );
+			}
+		} else {
+			// Cleared on disable so re-entering test mode restarts the nudge clock.
+			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
+		}
+
+		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 }

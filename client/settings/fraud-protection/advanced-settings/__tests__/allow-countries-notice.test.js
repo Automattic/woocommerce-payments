@@ -42,10 +42,8 @@ describe( 'Allowed countries rule card notice tests', () => {
 	test( 'renders correctly when specific countries are allowed, others will be hold', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries =
+			[ 'CA', 'US' ];
 		mockContext.protectionSettingsUI.test_key.block = false;
 
 		const container = render(
@@ -62,10 +60,8 @@ describe( 'Allowed countries rule card notice tests', () => {
 	test( 'renders correctly when specific countries are allowed, others will be blocked', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries =
+			[ 'CA', 'US' ];
 		mockContext.protectionSettingsUI.test_key.block = true;
 
 		const container = render(
@@ -82,10 +78,8 @@ describe( 'Allowed countries rule card notice tests', () => {
 	test( 'renders correctly when countries except some are allowed, others will be hold', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'all_except';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_all_except_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_all_except_countries =
+			[ 'CA', 'US' ];
 		mockContext.protectionSettingsUI.test_key.block = false;
 
 		const container = render(
@@ -102,10 +96,8 @@ describe( 'Allowed countries rule card notice tests', () => {
 	test( 'renders correctly when countries except some are allowed, others will be blocked', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'all_except';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_all_except_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_all_except_countries =
+			[ 'CA', 'US' ];
 		mockContext.protectionSettingsUI.test_key.block = true;
 
 		const container = render(
@@ -122,9 +114,8 @@ describe( 'Allowed countries rule card notice tests', () => {
 	test( 'renders html entities correctly', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
-			'ST',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries =
+			[ 'ST' ];
 		global.wcSettings.countries.ST =
 			'S&atilde;o Tom&eacute; and Pr&iacute;ncipe';
 		mockContext.protectionSettingsUI.test_key.block = true;

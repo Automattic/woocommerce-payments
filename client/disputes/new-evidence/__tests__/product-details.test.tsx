@@ -69,7 +69,8 @@ describe( 'ProductDetails', () => {
 	} );
 
 	it( 'does not show Booking/Reservation option when feature flag is disabled', () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
+			false;
 		render( <ProductDetails { ...baseProps } /> );
 		const select = screen.getByLabelText( /PRODUCT TYPE/i );
 		const options = Array.from( select.querySelectorAll( 'option' ) ).map(
@@ -85,13 +86,15 @@ describe( 'ProductDetails', () => {
 	} );
 
 	it( 'shows Booking/Reservation and Other options when feature flag is enabled, without Multiple product types', () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
+			true;
 		render( <ProductDetails { ...baseProps } /> );
 		const select = screen.getByLabelText( /PRODUCT OR SERVICE TYPE/i );
 		const options = Array.from( select.querySelectorAll( 'option' ) ).map(
 			( option ) => ( option as HTMLOptionElement ).value
 		);
 		expect( options ).toContain( 'booking_reservation' );
+		expect( options ).toContain( 'event' );
 		expect( options ).toContain( 'other' );
 		expect( options ).not.toContain( 'multiple' );
 		expect( options ).toEqual( [
@@ -99,6 +102,7 @@ describe( 'ProductDetails', () => {
 			'digital_product_or_service',
 			'offline_service',
 			'booking_reservation',
+			'event',
 			'other',
 		] );
 	} );

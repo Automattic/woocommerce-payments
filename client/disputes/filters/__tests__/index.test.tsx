@@ -15,8 +15,7 @@ import { DisputesFilters } from '..';
 import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
-jest.mock( '@woocommerce/settings', () => ( {
-	...jest.requireActual( '@woocommerce/settings' ),
+jest.mock( 'wcpay/utils/wc-settings', () => ( {
 	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 

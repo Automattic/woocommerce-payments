@@ -30,18 +30,31 @@ if [ -z "$DEV_TOOLS_PLUGIN_PATH" ]; then
 fi
 
 if [ -n "$DEV_TOOLS_PLUGIN_PATH" ] && [ -d "$DEV_TOOLS_PLUGIN_PATH" ]; then
-	if [ "$(cd $DEV_TOOLS_PLUGIN_PATH && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd $DEV_TOOLS_PLUGIN_PATH && pwd)" ]; then
+	if [ "$(cd "$DEV_TOOLS_PLUGIN_PATH" && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd "$DEV_TOOLS_PLUGIN_PATH" && pwd)" ]; then
 		echo
 		echo "\033[32mDetermining if there is an update for the WCPay Dev Tools plugin...\033[0m"
 
-		DEV_TOOLS_BRANCH=$(cd $DEV_TOOLS_PLUGIN_PATH && git branch --show-current)
+		DEV_TOOLS_BRANCH=$(cd "$DEV_TOOLS_PLUGIN_PATH" && git branch --show-current)
 		if [ "$DEV_TOOLS_BRANCH" = "trunk" ]; then
 			echo "  \033[32mThe current branch is trunk. Check if we are safe to pull from origin/trunk...\033[0m"
-			if [ "$(cd $DEV_TOOLS_PLUGIN_PATH && git status --porcelain)" ]; then
+			if [ "$(cd "$DEV_TOOLS_PLUGIN_PATH" && git status --porcelain)" ]; then
 				echo "\033[33m  There are uncommitted local changes on the WCPay Dev Tools repo. Skipping any attempt to update it.\033[0m"
 			else
 				echo "  \033[32mPulling the latest changes from origin/trunk, if any...\033[0m"
-				cd $DEV_TOOLS_PLUGIN_PATH && git pull
+				DEV_TOOLS_HEAD_BEFORE=$(cd "$DEV_TOOLS_PLUGIN_PATH" && git rev-parse HEAD)
+				(cd "$DEV_TOOLS_PLUGIN_PATH" && git pull)
+				DEV_TOOLS_HEAD_AFTER=$(cd "$DEV_TOOLS_PLUGIN_PATH" && git rev-parse HEAD)
+				# Install dependencies and build only when new changes were pulled
+				if [ "$DEV_TOOLS_HEAD_BEFORE" != "$DEV_TOOLS_HEAD_AFTER" ]; then
+					if [ -f "$DEV_TOOLS_PLUGIN_PATH/composer.json" ]; then
+						echo "  \033[32mInstalling WCPay Dev Tools Composer dependencies...\033[0m"
+						(cd "$DEV_TOOLS_PLUGIN_PATH" && composer install)
+					fi
+					if [ -f "$DEV_TOOLS_PLUGIN_PATH/package.json" ]; then
+						echo "  \033[32mBuilding WCPay Dev Tools...\033[0m"
+						(cd "$DEV_TOOLS_PLUGIN_PATH" && npm install && npm run build)
+					fi
+				fi
 			fi
 		else
 			echo "\033[33m  The WCPay Dev Tools local clone is not on the trunk branch. Skipping any attempt to update it.\033[0m"

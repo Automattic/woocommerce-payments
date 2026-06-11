@@ -1,19 +1,42 @@
 @import '../style';
 
-.wcpay-payment-element {
+.wcpay-payment-element-wrapper {
+	position: relative;
+
+	&.is-apm {
+		min-height: 100px;
+	}
+}
+
+.wcpay-payment-element-skeleton {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+	opacity: 1;
+	transition: opacity 300ms ease-out;
 	margin-bottom: 2rem;
+
+	&.is-hidden {
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+.wcpay-skeleton-row {
+	display: flex;
+	gap: 12px;
+	margin-top: 12px;
+}
+
+.wcpay-payment-element {
+	margin-bottom: 1rem;
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
 #express-payment-method-woopay {
 	width: 100%;
-}
-
-.wc-block-components-main
-	.wc-block-components-checkout-step--with-step-number
-	.wc-block-components-checkout-step__content
-	> :last-child {
-	padding: 0;
 }
 
 .wc-block-checkout__payment-method {
@@ -72,4 +95,3 @@
 }
 
 @import '../woopay/style';
-@import '../../components/loadable/style';

@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.ref }}
 
@@ -23,11 +23,8 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
-      - name: Install PHP & Composer
-        run: sudo apt-get update && sudo apt-get install -y php-cli php-zip unzip
-
       - name: Install QIT CLI
-        run: composer global require woocommerce/qit-cli
+        run: composer global require woocommerce/qit-cli:^1.0
 
       - name: Authenticate QIT
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
@@ -35,16 +32,20 @@ jobs:
       - name: Run Security Test
         run: |
           set +e
-          qit run:security woocommerce-payments --zip=woocommerce-payments.zip --wait
+          qit run:security woocommerce-payments --zip=woocommerce-payments.zip
           EXIT_CODE=$?
-          # QIT exit codes (v0.10.0):
+          # QIT exit codes (qit-cli 1.1.x):
           # 0 = success
           # 1 = failed (critical security errors)
-          # 2 = warning (non-critical issues)
+          # 2 = invalid (bad arguments/config)
+          # 3 = warning (non-critical issues)
           if [ $EXIT_CODE -eq 1 ]; then
             echo "Security test failed with critical errors."
             exit 1
           elif [ $EXIT_CODE -eq 2 ]; then
+            echo "Security test failed: invalid arguments or configuration."
+            exit 1
+          elif [ $EXIT_CODE -eq 3 ]; then
             echo "Security test completed with warnings (non-critical issues). CI will pass."
             exit 0
           elif [ $EXIT_CODE -ne 0 ]; then
@@ -56,16 +57,20 @@ jobs:
       - name: Run Malware Test
         run: |
           set +e
-          qit run:malware woocommerce-payments --zip=woocommerce-payments.zip --wait
+          qit run:malware woocommerce-payments --zip=woocommerce-payments.zip
           EXIT_CODE=$?
-          # QIT exit codes (v0.10.0):
+          # QIT exit codes (qit-cli 1.1.x):
           # 0 = success
           # 1 = failed (critical malware detected)
-          # 2 = warning
+          # 2 = invalid (bad arguments/config)
+          # 3 = warning
           if [ $EXIT_CODE -eq 1 ]; then
             echo "Malware test failed."
             exit 1
           elif [ $EXIT_CODE -eq 2 ]; then
+            echo "Malware test failed: invalid arguments or configuration."
+            exit 1
+          elif [ $EXIT_CODE -eq 3 ]; then
             echo "Malware test completed with warnings. CI will pass."
             exit 0
           elif [ $EXIT_CODE -ne 0 ]; then

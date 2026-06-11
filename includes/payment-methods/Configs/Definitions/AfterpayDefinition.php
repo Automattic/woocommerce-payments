@@ -7,7 +7,6 @@
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
-use WC_Payments_Utils;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\Constants\Country_Code;
@@ -44,6 +43,15 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_stripe_id(): string {
 		return PaymentMethodUtils::get_stripe_id( self::get_id() );
+	}
+
+	/**
+	 * Get the Stripe PaymentMethod type.
+	 *
+	 * @return string
+	 */
+	public static function get_stripe_payment_method_type(): string {
+		return self::get_id();
 	}
 
 	/**
@@ -231,7 +239,38 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
 	public static function get_limits_per_currency(): array {
-		return WC_Payments_Utils::get_bnpl_limits_per_currency( self::get_id() );
+		return [
+			Currency_Code::AUSTRALIAN_DOLLAR    => [
+				Country_Code::AUSTRALIA => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents AUD 1 - 2,000 AUD.
+			],
+			Currency_Code::CANADIAN_DOLLAR      => [
+				Country_Code::CANADA => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents CAD 1 - 2,000 CAD.
+			],
+			Currency_Code::NEW_ZEALAND_DOLLAR   => [
+				Country_Code::NEW_ZEALAND => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents NZD 1 - 2,000 NZD.
+			],
+			Currency_Code::POUND_STERLING       => [
+				Country_Code::UNITED_KINGDOM => [
+					'min' => 100,
+					'max' => 120000,
+				], // Represents GBP 1 - 1,200 GBP.
+			],
+			Currency_Code::UNITED_STATES_DOLLAR => [
+				Country_Code::UNITED_STATES => [
+					'min' => 100,
+					'max' => 400000,
+				], // Represents USD 1 - 4,000 USD.
+			],
+		];
 	}
 
 	/**

@@ -73,6 +73,77 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTes
 		$this->assertSame( $doc->getElementById( 'account_type' )->textContent, 'Account Type: Test' );
 	}
 
+	public function test_get_receipt_markup_displays_terminal_card_brand_name() {
+		$mock_order  = WC_Helper_Order::create_order();
+		$mock_charge = [
+			'amount_captured'        => 10,
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'cartes_bancaires',
+					'last4'   => '4242',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test 42',
+						'account_type'               => 'test',
+					],
+				],
+			],
+		];
+
+		$result = $this->receipts_service->get_receipt_markup( $this->mock_settings, $mock_order, $mock_charge );
+
+		$this->assertStringNotContainsString( '<img class="card-brand-logo"', $result );
+		$this->assertStringContainsString( 'Cartes Bancaires - 4242', $result );
+	}
+
+	public function test_get_receipt_markup_prefers_card_network_for_brand_name() {
+		$mock_order  = WC_Helper_Order::create_order();
+		$mock_charge = [
+			'amount_captured'        => 10,
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'visa',
+					'network' => 'cartes_bancaires',
+					'last4'   => '4242',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test 42',
+						'account_type'               => 'test',
+					],
+				],
+			],
+		];
+
+		$result = $this->receipts_service->get_receipt_markup( $this->mock_settings, $mock_order, $mock_charge );
+
+		$this->assertStringNotContainsString( '<img class="card-brand-logo"', $result );
+		$this->assertStringContainsString( 'Cartes Bancaires - 4242', $result );
+	}
+
+	public function test_get_receipt_markup_uses_card_brand_for_unsupported_network() {
+		$mock_order  = WC_Helper_Order::create_order();
+		$mock_charge = [
+			'amount_captured'        => 10,
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'visa',
+					'network' => 'unsupported_network',
+					'last4'   => '4242',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test 42',
+						'account_type'               => 'test',
+					],
+				],
+			],
+		];
+
+		$result = $this->receipts_service->get_receipt_markup( $this->mock_settings, $mock_order, $mock_charge );
+
+		$this->assertStringContainsString( 'Visa - 4242', $result );
+		$this->assertStringNotContainsString( 'Unsupported_network - 4242', $result );
+	}
+
 	/**
 	 * @dataProvider provide_charge_validation_data
 	 */

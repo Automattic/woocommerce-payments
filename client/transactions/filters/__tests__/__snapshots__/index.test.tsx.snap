@@ -177,5 +177,10 @@ HTMLOptionsCollection [
   >
     Fee refund
   </option>,
+  <option
+    value="network_costs"
+  >
+    Network costs
+  </option>,
 ]
 `;

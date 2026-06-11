@@ -16,6 +16,12 @@
 		margin-bottom: -4px;
 		margin-bottom: -0.25rem;
 		margin-top: 1px;
+
+		&--cartes_bancaires,
+		&--eftpos_au {
+			width: 40px;
+			width: 2.5rem;
+		}
 	}
 }
 

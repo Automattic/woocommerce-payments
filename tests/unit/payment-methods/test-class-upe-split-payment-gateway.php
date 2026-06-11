@@ -171,7 +171,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @var array
 	 */
 	private $payment_method_classes = [
-		Payment_Method::CARD       => CC_Payment_Method::class,
+		Payment_Method::CARD       => \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 		Payment_Method::GIROPAY    => \WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 		Payment_Method::SOFORT     => \WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 		Payment_Method::BANCONTACT => \WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,

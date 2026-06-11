@@ -1,6 +1,6 @@
 # Payment Flow — Detailed Reference
 
-**Last updated:** 2026-02-20
+**Last updated:** 2026-03-04
 
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
@@ -36,6 +36,12 @@ $request->set_level3( $level3_data );
 $request->set_payment_methods( $payment_methods );     // ['card'], ['card', 'link'], etc.
 $response = $request->send();
 ```
+
+### Stripe Link Charge Quirk
+
+Stripe returns `payment_method_details.type = 'card'` (not `'link'`) in charge objects for Link payments, because Link wraps a stored card. To correctly identify Link:
+- **Don't** rely on `charge.payment_method_details.type` — it's `'card'` for Link
+- **Do** check `card.wallet.type === 'link'` via `WC_Payment_Gateway_WCPay::is_link_card_wallet()`, or the saved token type (`WC_Payment_Token_WCPay_Link`)
 
 ### 3. Request Execution
 
@@ -154,6 +160,16 @@ Key difference from shortcode path: The shortcode path uses `should_show_express
 | `wcpay_api_request_headers` | Before sending HTTP request | `WC_Payments_API_Client` |
 | `wcpay_api_request_response` | After receiving HTTP response | `WC_Payments_API_Client` |
 
+## Subscription Payment Method Change Flow
+
+When a customer changes their subscription's payment method, the order total is $0. Two paths exist:
+- **Saved token path** (`$save_payment_method_to_store = true`): Skips zero-amount shortcut, creates a SetupIntent to confirm the payment method. After confirmation, `WC_Subscriptions_Change_Payment_Gateway::update_payment_method()` is called.
+- **New payment method path**: Frontend handles SetupIntent confirmation, then `update_order_status()` saves the token and updates the subscription.
+
+The functional flow works for all token types (CC, Link, Amazon Pay). Display logic is separate — order notes and `set_payment_method_title()` must handle each token type explicitly.
+
+Key files: `trait-wc-payment-gateway-wcpay-subscriptions.php` (subscription hooks, token title helpers), gateway `process_payment_for_order()` (zero-amount path at ~line 1564).
+
 ## Common Request Classes
 
 | Class | API Path | Method | Use Case |
@@ -167,6 +183,20 @@ Key difference from shortcode path: The shortcode path uses `should_show_express
 | `List_Transactions` | `transactions` | GET | Admin transaction list |
 | `List_Disputes` | `disputes` | GET | Admin dispute list |
 | (direct) | `disputes/{id}/summary` | GET | Fetch dispute summary (webhook-only, no Request class) |
+
+## Stripe Elements Appearance Caching
+
+Appearance objects for Stripe Elements are cached **client-side in localStorage** (`wcpay_appearance_<location>`). The cache is versioned via `stylesCacheVersion` (MD5 hash of theme styles + plugin version), passed from PHP through `wcpayConfig`.
+
+**Locations:** `checkout`, `blocks_checkout`, `bnpl_product_page`, `bnpl_cart_block`, `add_payment_method`
+
+**Cache flow:** `getCachedAppearance()` → cache hit? return it : `getAppearance(location)` → `dispatchAppearanceEvent(appearance, location)` → `setCachedAppearance(location, version, appearance)`
+
+**CustomEvent hook:** `wcpay_elements_appearance` — synchronous CustomEvent dispatched before caching. Merchants modify `event.detail.appearance` in place. Replaces the removed PHP `apply_filters('wcpay_elements_appearance')`.
+
+**Dark icon detection (server-rendered pages):** The order success page uses `data-dark-src` on `<img>` tags + inline JS in `wp_footer` that computes background luminance via `getComputedStyle()` to swap icons for dark themes.
+
+**Key files:** `client/utils/appearance-cache.js`, `client/checkout/classic/payment-processing.js`, `client/checkout/blocks/payment-elements.js`, `includes/class-wc-payments-order-success-page.php`
 
 ## Plugin Initialization Chain
 
