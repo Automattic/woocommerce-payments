@@ -559,11 +559,11 @@ class WC_Payments_Styles_Cache {
 	 * any non-string value that cannot be resolved.
 	 *
 	 * @param mixed  $value          The style value — string, ref object array, or other.
-	 * @param string $default        Fallback value when resolution fails.
+	 * @param string $default_value  Fallback value when resolution fails.
 	 * @param array  $styles_context The already-resolved styles array to look up refs in.
 	 * @return string The resolved string value or the default.
 	 */
-	private static function resolve_style_value( $value, string $default, array $styles_context = [] ): string {
+	private static function resolve_style_value( $value, string $default_value, array $styles_context = [] ): string {
 		// Handle ref objects: {"ref": "styles.typography.fontFamily"}.
 		if ( is_array( $value ) && isset( $value['ref'] ) ) {
 			$path = explode( '.', $value['ref'] );
@@ -576,7 +576,7 @@ class WC_Payments_Styles_Cache {
 		}
 
 		if ( ! is_string( $value ) ) {
-			return $default;
+			return $default_value;
 		}
 
 		return $value;
