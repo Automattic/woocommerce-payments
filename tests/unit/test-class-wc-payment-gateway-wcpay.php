@@ -5285,6 +5285,133 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_order_stock_reduced', true ) );
 	}
 
+	public function test_update_order_status_sets_branded_payment_method_title_from_charge_details() {
+		// A payment confirmed asynchronously (e.g. 3DS/SCA) that saves the payment method lands here.
+		// The order's payment method title must reflect the actual card from the charge, not a generic
+		// "Card" label. This also propagates to the subscription. Regression guard for WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		$intent_id = 'pi_mock_3ds_renewal';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						// Declare the charge explicitly so the asserted title is traceable to its inputs
+						// (network + funding) rather than relying on WC_Helper_Intention::create_charge() defaults.
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$this->assertSame( 'Visa credit card', wc_get_order( $order->get_id() )->get_payment_method_title() );
+	}
+
+	public function test_update_order_status_stores_card_last4_and_brand_meta_from_charge_details() {
+		// The asynchronous (3DS/SCA) confirmation path must record the same last4/brand order meta as the
+		// synchronous path, so order/email displays and reporting reflect the actual card. WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		$intent_id = 'pi_mock_3ds_renewal_meta';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'brand'   => 'visa',
+									'last4'   => '4242',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( '4242', $saved->get_meta( 'last4' ) );
+		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
+	}
+
 	public function return_ajax_wp_die_handler() {
 		return [ $this, 'ajax_wp_die_handler' ];
 	}
