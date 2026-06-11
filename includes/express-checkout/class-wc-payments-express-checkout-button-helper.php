@@ -890,11 +890,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Sanitize string for comparison.
 	 *
-	 * @param string $string String to be sanitized.
+	 * @param string $value String to be sanitized.
 	 *
 	 * @return string The sanitized string.
 	 */
-	public function sanitize_string( $string ) {
-		return trim( wc_strtolower( remove_accents( $string ) ) );
+	public function sanitize_string( $value ) {
+		return trim( wc_strtolower( remove_accents( $value ) ) );
 	}
 }
