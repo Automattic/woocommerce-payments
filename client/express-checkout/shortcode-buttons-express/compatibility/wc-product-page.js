@@ -14,6 +14,7 @@ import {
 	isIAPIBlock,
 	getIAPIVariationAttributes,
 	getClassicVariationAttributes,
+	getIAPIVariationSelectorGroups,
 } from 'wcpay/utils/wc-product-page-selectors';
 
 jQuery( ( $ ) => {
@@ -35,9 +36,7 @@ jQuery( ( $ ) => {
 	// button mutates it (block/unblock overlays), which would retrigger the
 	// observer in a loop. The idempotency guard is a second line of defense —
 	// it ignores mutations that don't change the actual selection.
-	const variationSelectors = document.querySelectorAll(
-		'.wp-block-add-to-cart-with-options .wp-block-woocommerce-add-to-cart-with-options-variation-selector-attribute'
-	);
+	const variationSelectors = getIAPIVariationSelectorGroups();
 	if ( variationSelectors.length ) {
 		let lastSelection = null;
 		const observer = new MutationObserver(
@@ -84,50 +83,35 @@ jQuery( ( $ ) => {
 } );
 
 /**
- * Override the product ID with the one from the variations wrapper.
+ * Resolve a variable product to its variation for the cart-add-item request.
  *
  * Both the classic form and the IAPI block expose the parent product ID via
- * `.single_variation_wrap input[name="product_id"]`; the Store API resolves
- * the concrete variation from the attributes appended below.
+ * `.single_variation_wrap input[name="product_id"]` and hold the selection in
+ * their respective DOM. We send the parent ID plus the selected attributes;
+ * the Store API resolves the concrete variation. The attributes are required
+ * even when a variation is resolved, because "Any"-valued attributes carry no
+ * value on the variation and the Store API rejects the request without them.
  */
 addFilter(
 	'wcpay.express-checkout.cart-add-item',
 	'automattic/wcpay/express-checkout',
 	( productData ) => {
+		const result = { ...productData };
+
 		const productIdInput = document.querySelector(
 			'.single_variation_wrap input[name="product_id"]'
 		);
 		if ( productIdInput ) {
-			return {
-				...productData,
-				id: parseInt( productIdInput.value, 10 ),
-			};
+			result.id = parseInt( productIdInput.value, 10 );
 		}
-		return productData;
-	}
-);
 
-/**
- * Append the selected variation attributes, reading them from whichever form
- * is rendered. The Store API needs them even when a variation is resolved:
- * "Any"-valued attributes carry no value on the variation, so it rejects the
- * request unless the shopper's selection is sent.
- */
-addFilter(
-	'wcpay.express-checkout.cart-add-item',
-	'automattic/wcpay/express-checkout',
-	( productData ) => {
 		const attributes = isIAPIBlock()
 			? getIAPIVariationAttributes()
 			: getClassicVariationAttributes();
-
-		if ( ! attributes.length ) {
-			return productData;
+		if ( attributes.length ) {
+			result.variation = [ ...productData.variation, ...attributes ];
 		}
 
-		return {
-			...productData,
-			variation: [ ...productData.variation, ...attributes ],
-		};
+		return result;
 	}
 );

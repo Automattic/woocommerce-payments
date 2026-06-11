@@ -70,6 +70,11 @@ export const isIAPIBlock = () => {
 /**
  * Get the resolved variation ID from the IAPI block's hidden input.
  *
+ * Used by the WooPay button, which passes the resolved variation ID to the WC
+ * AJAX add-to-cart endpoint. The ECE/Store API path resolves the variation
+ * differently — from the parent ID plus the posted attributes
+ * (`getIAPIVariationAttributes`) — and doesn't use this.
+ *
  * The new block binds the variation ID onto `<input name="variation_id">`
  * inside `.single_variation_wrap`. A non-empty, non-zero value means a
  * variation has been fully resolved.
@@ -95,6 +100,16 @@ export const getIAPIVariationId = () => {
 };
 
 /**
+ * The IAPI block's variation attribute groups (one per attribute).
+ *
+ * @return {NodeList} The variation-selector-attribute elements.
+ */
+export const getIAPIVariationSelectorGroups = () =>
+	document.querySelectorAll(
+		'.wp-block-add-to-cart-with-options .wp-block-woocommerce-add-to-cart-with-options-variation-selector-attribute'
+	);
+
+/**
  * Read the shopper's selected variation attributes from the IAPI block.
  *
  * The product ID alone is not enough: when the matched variation is "Any" on
@@ -116,30 +131,26 @@ export const getIAPIVariationId = () => {
 export const getIAPIVariationAttributes = () => {
 	const attributes = [];
 
-	document
-		.querySelectorAll(
-			'.wp-block-add-to-cart-with-options .wp-block-woocommerce-add-to-cart-with-options-variation-selector-attribute'
-		)
-		.forEach( ( group ) => {
-			let name;
-			try {
-				name = JSON.parse( group.dataset.wpContext )?.name;
-			} catch ( e ) {
-				name = undefined;
-			}
-			if ( ! name ) {
-				return;
-			}
+	getIAPIVariationSelectorGroups().forEach( ( group ) => {
+		let name;
+		try {
+			name = JSON.parse( group.dataset.wpContext )?.name;
+		} catch ( e ) {
+			name = undefined;
+		}
+		if ( ! name ) {
+			return;
+		}
 
-			const select = group.querySelector( 'select' );
-			const value = select
-				? select.value
-				: group.querySelector( '[aria-checked="true"]' )?.value;
+		const select = group.querySelector( 'select' );
+		const value = select
+			? select.value
+			: group.querySelector( '[aria-checked="true"]' )?.value;
 
-			if ( value ) {
-				attributes.push( { attribute: name, value } );
-			}
-		} );
+		if ( value ) {
+			attributes.push( { attribute: name, value } );
+		}
+	} );
 
 	return attributes;
 };
@@ -161,22 +172,27 @@ export const getClassicVariationAttributes = () => {
 		.forEach( ( select ) => {
 			const attributeName =
 				select.dataset.attribute_name || select.dataset.name;
+			if ( ! attributeName ) {
+				return;
+			}
 
-			attributes.push( {
-				// The Store API accepts the variable attribute's label, rather than an internal identifier:
-				// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/src/StoreApi/docs/cart.md#add-item
-				// It's an unfortunate hack that doesn't work when labels have special characters in them.
-				// fallback until https://github.com/woocommerce/woocommerce/pull/55317 has been consolidated in WC Core.
-				attribute: Array.from(
-					document.querySelector(
-						`label[for="${ attributeName.replace(
-							'attribute_',
-							''
-						) }"]`
-					).childNodes
-				)[ 0 ].textContent,
-				value: select.value || '',
-			} );
+			// The Store API matches on the attribute's registered key, which
+			// differs between WooCommerce versions: older ones expect the
+			// human label, newer ones the `attribute_*` slug. We send both so
+			// the backend resolves one of them — the label form is fragile when
+			// labels contain special characters.
+			// The Store API accepts the variable attribute's label, rather than an internal identifier:
+			// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/src/StoreApi/docs/cart.md#add-item
+			// fallback until https://github.com/woocommerce/woocommerce/pull/55317 has been consolidated in WC Core.
+			const label = document.querySelector(
+				`label[for="${ attributeName.replace( 'attribute_', '' ) }"]`
+			);
+			if ( label ) {
+				attributes.push( {
+					attribute: Array.from( label.childNodes )[ 0 ].textContent,
+					value: select.value || '',
+				} );
+			}
 
 			// proper logic for https://github.com/woocommerce/woocommerce/pull/55317 .
 			attributes.push( {
@@ -210,4 +226,24 @@ export const isAddToCartBlocked = () => {
 
 	const button = getAddToCartButtonElement();
 	return !! button && button.classList.contains( 'disabled' );
+};
+
+/**
+ * Whether the blocked product is an unavailable variation combination, as
+ * opposed to one the shopper simply hasn't finished selecting.
+ *
+ * Only the classic button distinguishes the two (via `.wc-variation-is-unavailable`);
+ * the IAPI block exposes a single invalid state, so this is always false there.
+ *
+ * @return {boolean} True when the selected combination is unavailable.
+ */
+export const isVariationUnavailable = () => {
+	if ( isIAPIBlock() ) {
+		return false;
+	}
+
+	const button = getAddToCartButtonElement();
+	return (
+		!! button && button.classList.contains( 'wc-variation-is-unavailable' )
+	);
 };

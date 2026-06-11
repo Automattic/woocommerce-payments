@@ -44,9 +44,8 @@ import {
 	transformPrice,
 } from '../transformers/wc-to-stripe';
 import {
-	getAddToCartButtonElement,
-	isIAPIBlock,
 	isAddToCartBlocked,
+	isVariationUnavailable,
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
@@ -283,17 +282,8 @@ jQuery( ( $ ) => {
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
 					if ( isAddToCartBlocked() ) {
-						// The classic form distinguishes an unavailable
-						// combination from an unmade selection; the IAPI block
-						// exposes only a single invalid state.
-						const unavailable =
-							! isIAPIBlock() &&
-							jQuery( getAddToCartButtonElement() ).is(
-								'.wc-variation-is-unavailable'
-							);
-
 						window.alert(
-							unavailable
+							isVariationUnavailable()
 								? window?.wc_add_to_cart_variation_params
 										?.i18n_unavailable_text ||
 										__(

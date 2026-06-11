@@ -10,6 +10,7 @@ import {
 	getIAPIVariationAttributes,
 	getClassicVariationAttributes,
 	isAddToCartBlocked,
+	isVariationUnavailable,
 } from '../wc-product-page-selectors';
 
 // Mirrors the rendered IAPI variation selectors: one attribute group per
@@ -225,6 +226,23 @@ describe( 'wc-product-page-selectors', () => {
 				'<form class="wp-block-add-to-cart-with-options"></form>';
 			expect( getIAPIVariationAttributes() ).toEqual( [] );
 		} );
+
+		it( 'reads label-valued custom attributes verbatim', () => {
+			// Custom (non-taxonomy) attributes use the label as the value,
+			// special characters and all — these must round-trip unchanged.
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				attributeGroup(
+					'棒球',
+					pill( 'Baseball ⚾️', true ) + pill( 'Soccer ⚽️', false )
+				),
+				'</form>',
+			].join( '' );
+
+			expect( getIAPIVariationAttributes() ).toEqual( [
+				{ attribute: '棒球', value: 'Baseball ⚾️' },
+			] );
+		} );
 	} );
 
 	describe( 'getClassicVariationAttributes', () => {
@@ -276,6 +294,26 @@ describe( 'wc-product-page-selectors', () => {
 			document.body.innerHTML =
 				'<button class="single_add_to_cart_button">Add</button>';
 			expect( isAddToCartBlocked() ).toBe( false );
+		} );
+	} );
+
+	describe( 'isVariationUnavailable', () => {
+		it( 'is true for an unavailable classic combination', () => {
+			document.body.innerHTML =
+				'<button class="single_add_to_cart_button disabled wc-variation-is-unavailable">Add</button>';
+			expect( isVariationUnavailable() ).toBe( true );
+		} );
+
+		it( 'is false for a classic button that is merely disabled', () => {
+			document.body.innerHTML =
+				'<button class="single_add_to_cart_button disabled">Add</button>';
+			expect( isVariationUnavailable() ).toBe( false );
+		} );
+
+		it( 'is always false for the IAPI block (no unavailable sub-state)', () => {
+			document.body.innerHTML =
+				'<form class="wp-block-add-to-cart-with-options is-invalid"></form>';
+			expect( isVariationUnavailable() ).toBe( false );
 		} );
 	} );
 } );
