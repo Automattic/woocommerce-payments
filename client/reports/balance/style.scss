@@ -354,6 +354,7 @@ $print-context: '.wcpay-reports-balance-print-context';
 .wcpay-reports-balance-dv {
 	.dataviews-view-table {
 		width: 100%;
+		table-layout: auto;
 		border-collapse: collapse;
 
 		// A fixed reconciliation summary has no sortable columns.
@@ -366,6 +367,16 @@ $print-context: '.wcpay-reports-balance-print-context';
 			height: 40px;
 			vertical-align: middle;
 			border-bottom: 1px solid $gray-100;
+		}
+
+		// Make the label column absorb the slack so the (content-width) amount
+		// column is pushed flush to the table's right edge.
+		td:first-child {
+			width: 100%;
+		}
+
+		td:last-child {
+			white-space: nowrap;
 		}
 
 		tr:last-child td {
