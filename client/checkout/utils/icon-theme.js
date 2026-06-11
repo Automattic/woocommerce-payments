@@ -4,7 +4,7 @@
 import {
 	getBackgroundColor,
 	isColorLight,
-} from 'wcpay/checkout/upe-styles/utils';
+} from 'wcpay/checkout/styles/utils';
 
 /**
  * Classic checkout: skips .payment_box which may have an explicit light

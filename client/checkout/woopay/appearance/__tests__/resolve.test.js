@@ -3,7 +3,7 @@
  */
 import { resolveWoopayAppearance } from '../resolve';
 import { getConfig } from 'wcpay/utils/checkout';
-import { getAppearance } from 'checkout/upe-styles';
+import { getAppearance } from 'checkout/styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
 import {
 	isSupportedThemeEntrypoint,
@@ -14,7 +14,7 @@ import { maybePersistWoopayAppearance } from 'wcpay/checkout/woopay/appearance/p
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
-jest.mock( 'checkout/upe-styles', () => ( {
+jest.mock( 'checkout/styles', () => ( {
 	getAppearance: jest.fn(),
 } ) );
 jest.mock( 'wcpay/checkout/utils', () => ( {

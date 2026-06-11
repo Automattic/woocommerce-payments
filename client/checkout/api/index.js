@@ -8,7 +8,7 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { getAppearance, getFontRulesFromPage } from 'checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'checkout/styles';
 import { getAppearanceType } from '../utils';
 import { isShortcodeCheckout } from 'wcpay/checkout/woopay/utils';
 

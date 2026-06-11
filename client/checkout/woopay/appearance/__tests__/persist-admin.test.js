@@ -7,7 +7,7 @@ let mockIsPreviewing;
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: ( ...args ) => mockGetConfig( ...args ),
 } ) );
-jest.mock( 'wcpay/checkout/upe-styles', () => ( {
+jest.mock( 'wcpay/checkout/styles', () => ( {
 	getAppearance: ( ...args ) => mockGetAppearance( ...args ),
 	getFontRulesFromPage: ( ...args ) => mockGetFontRulesFromPage( ...args ),
 } ) );

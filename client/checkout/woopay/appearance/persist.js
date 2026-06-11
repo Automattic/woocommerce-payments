@@ -11,7 +11,7 @@
  */
 import { getConfig } from 'wcpay/utils/checkout';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
-import { getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getFontRulesFromPage } from 'wcpay/checkout/styles';
 import { appendAppearanceToFormData } from './form-data';
 
 let persistAttempted = false;

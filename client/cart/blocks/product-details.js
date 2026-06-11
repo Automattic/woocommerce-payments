@@ -12,7 +12,7 @@ import { ExperimentalOrderMeta } from '@woocommerce/blocks-checkout';
 /**
  * Internal dependencies
  */
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/styles';
 import {
 	getCachedAppearance,
 	setCachedAppearance,

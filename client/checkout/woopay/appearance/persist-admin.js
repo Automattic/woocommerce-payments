@@ -10,7 +10,7 @@
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { appendAppearanceToFormData } from './form-data';
