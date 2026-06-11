@@ -15,6 +15,16 @@ import type { BalanceRow } from './rows';
 
 export const printContextClass = 'wcpay-reports-balance-print-context';
 
+export const getRangeDays = ( start?: string, end?: string ): number | null => {
+	if ( ! start || ! end ) {
+		return null;
+	}
+
+	return Math.round(
+		( new Date( end ).getTime() - new Date( start ).getTime() ) / 86400000
+	);
+};
+
 export const hasKeys = (
 	value: Record< string, unknown > | undefined
 ): boolean => Object.keys( value ?? {} ).length > 0;

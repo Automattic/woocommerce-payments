@@ -41,6 +41,7 @@ import {
 } from 'multi-currency/interface/components';
 import FormBusyState from 'wcpay/components/form-busy-state';
 import interpolateComponents from '@automattic/interpolate-components';
+import useConfirmNavigation from 'wcpay/utils/use-confirm-navigation';
 
 const CurrencySettingsDescription = () => (
 	<>
@@ -72,9 +73,14 @@ const SingleCurrencySettings = () => {
 		useCurrencySettings( currency );
 
 	const storeCurrency = currencies.default ? currencies.default : {};
-	const targetCurrency = currencies.available
-		? currencies.available[ currency ]
-		: {};
+	const targetCurrency = currencies.available?.[ currency ] ?? {};
+
+	// Once currencies have loaded, a currency code that isn't among them means
+	// the URL points at something we can't render (e.g. a stale or hand-edited
+	// deep link). Send the merchant back to the list rather than show a broken
+	// form.
+	const isInvalidCurrency =
+		!! currencies.available && ! currencies.available[ currency ];
 
 	const targetCurrencyRoundingOptions = targetCurrency.is_zero_decimal
 		? zeroDecimalCurrencyRoundingOptions
@@ -122,6 +128,31 @@ const SingleCurrencySettings = () => {
 			);
 		}
 	}, [ currencySettings, currency, initialPriceRoundingType ] );
+
+	useEffect( () => {
+		if ( isInvalidCurrency ) {
+			setCurrencyCodeToShowSettingsFor( null );
+		}
+	}, [ isInvalidCurrency, setCurrencyCodeToShowSettingsFor ] );
+
+	// Warn before leaving (breadcrumb, browser back/forward, refresh, tab close)
+	// while there are unsaved edits, so the merchant doesn't lose them silently.
+	const confirmNavigationCallback = useConfirmNavigation( () =>
+		isDirty
+			? __(
+					'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
+					'woocommerce-payments'
+			  )
+			: undefined
+	);
+	useEffect( confirmNavigationCallback, [
+		confirmNavigationCallback,
+		isDirty,
+	] );
+
+	if ( isInvalidCurrency ) {
+		return null;
+	}
 
 	const dateFormat = storeSettings.date_format ?? 'M j, Y';
 	const timeFormat = storeSettings.time_format ?? 'g:iA';

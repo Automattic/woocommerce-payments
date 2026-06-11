@@ -10,14 +10,14 @@ import React from 'react';
  * Internal dependencies
  */
 import DisputeAwaitingResponseDetails from '../dispute-awaiting-response-details';
-import { useDisputeAccept } from 'wcpay/data';
+import { useDisputeAccept } from 'wcpay/data/disputes';
 import type { ChargeBillingDetails, ChargeDispute } from 'wcpay/types/charges';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import { recordEvent } from 'tracks';
 
 const mockDisputeDoAccept = jest.fn();
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeAccept: jest.fn( () => ( {
 		doAccept: mockDisputeDoAccept,
 		isLoading: false,
@@ -25,6 +25,10 @@ jest.mock( 'wcpay/data', () => ( {
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -174,12 +178,12 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		// Check for the two steps: Accept and Challenge
 		expect(
 			screen.getByText( /Accepting the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( /Challenge the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 

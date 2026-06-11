@@ -68,6 +68,28 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertArrayHasKey( '/wc/v3/payments/reports/balance', $routes );
 	}
 
+	public function test_balance_route_advertises_item_schema() {
+		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
+		$this->setExpectedIncorrectUsage( 'register_rest_route' );
+		$this->controller->register_routes();
+
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wc/v3/payments/reports/balance', $routes );
+
+		$route_options = rest_get_server()->get_route_options( '/wc/v3/payments/reports/balance' );
+		$this->assertSame( [ $this->controller, 'get_item_schema' ], $route_options['schema'] );
+
+		$schema = $this->controller->get_item_schema();
+
+		$this->assertSame( 'object', $schema['type'] );
+		$this->assertArrayHasKey( 'currency', $schema['properties'] );
+		$this->assertArrayHasKey( 'starting_balance', $schema['properties'] );
+		$this->assertSame( 'number', $schema['properties']['starting_balance']['properties']['amount']['type'] );
+		$this->assertArrayHasKey( 'ending_balance', $schema['properties'] );
+		$this->assertArrayHasKey( 'fees', $schema['properties'] );
+		$this->assertArrayHasKey( 'period', $schema['properties'] );
+	}
+
 	public function test_register_routes_returns_early_when_reports_area_disabled() {
 		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_disabled_flag' ] );
 
@@ -182,7 +204,7 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
 		$this->setExpectedIncorrectUsage( 'register_rest_route' );
 		$this->controller->register_routes();
-		wp_set_current_user( $this->factory->user->create( [ 'role' => 'subscriber' ] ) );
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
 
 		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/balance' );
 		$request->set_param( 'date_start', '2024-03-01T00:00:00.000Z' );

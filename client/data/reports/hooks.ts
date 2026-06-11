@@ -11,7 +11,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 
 export type ReportsFeeType =

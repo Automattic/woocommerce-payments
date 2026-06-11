@@ -354,7 +354,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                             <span
                               class="components-toggle-control__help"
                             >
-                              This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                              This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                             </span>
                           </p>
                         </div>
@@ -1560,7 +1560,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                           <span
                             class="components-toggle-control__help"
                           >
-                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                           </span>
                         </p>
                       </div>
@@ -2791,7 +2791,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                             <span
                               class="components-toggle-control__help"
                             >
-                              This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                              This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                             </span>
                           </p>
                         </div>
@@ -3785,7 +3785,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                           <span
                             class="components-toggle-control__help"
                           >
-                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                           </span>
                         </p>
                       </div>
@@ -4821,7 +4821,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                           <span
                             class="components-toggle-control__help"
                           >
-                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                           </span>
                         </p>
                       </div>
@@ -5774,7 +5774,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                         <span
                           class="components-toggle-control__help"
                         >
-                          This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                          This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                         </span>
                       </p>
                     </div>
@@ -6856,7 +6856,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                             <span
                               class="components-toggle-control__help"
                             >
-                              This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                              This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                             </span>
                           </p>
                         </div>
@@ -7958,7 +7958,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                           <span
                             class="components-toggle-control__help"
                           >
-                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match.
+                            This filter compares the post code submitted by the customer against the post code on file with the card issuer. The payment will be blocked if the two post codes do not match. AVS checks are not supported by every country or card issuer, so this filter will not block all payments with a mismatched post code.
                           </span>
                         </p>
                       </div>

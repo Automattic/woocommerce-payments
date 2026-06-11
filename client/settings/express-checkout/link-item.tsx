@@ -13,7 +13,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useWooPayEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import InlineNotice from 'wcpay/components/inline-notice';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';

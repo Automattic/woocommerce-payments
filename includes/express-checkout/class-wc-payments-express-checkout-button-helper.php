@@ -273,6 +273,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
 				return true;
 			}
+			if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
+				return true;
+			}
 		}
 
 		return false;
@@ -881,11 +890,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Sanitize string for comparison.
 	 *
-	 * @param string $string String to be sanitized.
+	 * @param string $value String to be sanitized.
 	 *
 	 * @return string The sanitized string.
 	 */
-	public function sanitize_string( $string ) {
-		return trim( wc_strtolower( remove_accents( $string ) ) );
+	public function sanitize_string( $value ) {
+		return trim( wc_strtolower( remove_accents( $value ) ) );
 	}
 }

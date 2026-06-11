@@ -12,9 +12,9 @@ import {
 	useAdvancedFraudProtectionSettings,
 	useCurrentProtectionLevel,
 	useSettings,
-} from '../../../../data';
+} from 'wcpay/data/settings';
 
-jest.mock( '../../../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useSettings: jest.fn(),
 	useCurrentProtectionLevel: jest.fn(),
 	useAdvancedFraudProtectionSettings: jest.fn(),

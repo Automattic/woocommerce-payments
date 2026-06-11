@@ -18,6 +18,7 @@ import {
 } from 'multi-currency/data';
 
 import MultiCurrencySettingsContext from 'multi-currency/context';
+import useConfirmNavigation from 'wcpay/utils/use-confirm-navigation';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useCurrencies: jest.fn(),
@@ -27,6 +28,10 @@ jest.mock( 'multi-currency/data', () => ( {
 	useCurrencySettings: jest.fn(),
 	useStoreSettings: jest.fn(),
 } ) );
+
+jest.mock( 'wcpay/utils/use-confirm-navigation', () =>
+	jest.fn( () => () => {} )
+);
 
 const availableCurrencies = {
 	USD: {
@@ -166,6 +171,51 @@ describe( 'Single currency settings screen', () => {
 	test( 'Page renders correctly', () => {
 		const { container } = getContainer();
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'redirects back to the list for a currency that is not available', () => {
+		const setCurrencyCodeToShowSettingsFor = jest.fn();
+
+		render(
+			<MultiCurrencySettingsContext.Provider
+				value={ {
+					currencyCodeToShowSettingsFor: 'GBP',
+					setCurrencyCodeToShowSettingsFor,
+				} }
+			>
+				<SingleCurrencySettings />
+			</MultiCurrencySettingsContext.Provider>
+		);
+
+		expect( setCurrencyCodeToShowSettingsFor ).toHaveBeenCalledWith( null );
+		expect(
+			screen.queryByText( /Currency Settings/i )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'only warns about unsaved changes once the form is dirty', () => {
+		getContainer();
+
+		expect( useConfirmNavigation ).toHaveBeenCalled();
+
+		// The latest getMessage passed to the hook reflects the current dirty
+		// state of the form.
+		const latestGetMessage = () =>
+			useConfirmNavigation.mock.calls[
+				useConfirmNavigation.mock.calls.length - 1
+			][ 0 ];
+
+		// Pristine form: nothing to confirm, so navigation isn't blocked.
+		expect( latestGetMessage()() ).toBeUndefined();
+
+		// Editing a setting marks the form dirty.
+		fireEvent.change( screen.getByTestId( 'price_rounding' ), {
+			target: { value: '0.5' },
+		} );
+
+		expect( latestGetMessage()() ).toEqual(
+			expect.stringContaining( 'unsaved changes' )
+		);
 	} );
 
 	test( 'Settings work correctly', async () => {

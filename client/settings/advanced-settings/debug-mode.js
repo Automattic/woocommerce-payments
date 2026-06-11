@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useDebugLog, useDevMode } from 'wcpay/data';
+import { useDebugLog, useDevMode } from 'wcpay/data/settings';
 
 const DebugMode = () => {
 	const isDevModeEnabled = useDevMode();

@@ -10,7 +10,7 @@ import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
  */
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
-import { FraudOutcomeTransaction } from '../../data';
+import { FraudOutcomeTransaction } from 'wcpay/data/transactions';
 import { getDetailsURL } from '../../components/details-link';
 import ClickableCell from '../../components/clickable-cell';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
