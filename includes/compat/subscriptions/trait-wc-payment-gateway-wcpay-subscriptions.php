@@ -136,22 +136,22 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * For other tokens, returns the default title.
 	 *
 	 * @param WC_Payment_Token|null $token   The payment token.
-	 * @param string                $default The default title to return if token cannot be processed.
+	 * @param string                $default_title The default title to return if token cannot be processed.
 	 * @return string The payment method title with identifying details.
 	 */
-	private function get_payment_method_title_from_token( $token, $default ) {
+	private function get_payment_method_title_from_token( $token, $default_title ) {
 		if ( ! $token ) {
-			return $default;
+			return $default_title;
 		}
 
 		if ( $token instanceof WC_Payment_Token_CC ) {
 			$last4 = $token->get_last4();
 			// Avoid duplication if the title already contains the last4.
-			if ( ! empty( $last4 ) && false === strpos( $default, $last4 ) ) {
-				// Use the specific card brand (e.g. "Visa") when available instead of $default,
+			if ( ! empty( $last4 ) && false === strpos( $default_title, $last4 ) ) {
+				// Use the specific card brand (e.g. "Visa") when available instead of $default_title,
 				// which may refer to a different payment method type (e.g. "Link" from a previous subscription payment).
 				$card_type = $token->get_card_type();
-				$title     = ! empty( $card_type ) ? wc_get_credit_card_type_label( $card_type ) : $default;
+				$title     = ! empty( $card_type ) ? wc_get_credit_card_type_label( $card_type ) : $default_title;
 				// translators: 1: payment method likely credit card, 2: last 4 digit.
 				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $title, $last4 );
 			}
@@ -160,23 +160,23 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( $token instanceof WC_Payment_Token_WCPay_Amazon_Pay ) {
 			$email = $token->get_email();
 			// Avoid duplication if the title already contains the email.
-			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
+			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
 				// translators: 1: payment method (Amazon Pay), 2: redacted customer email.
-				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default, $email );
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default_title, $email );
 			}
 		}
 
 		if ( $token instanceof WC_Payment_Token_WCPay_Link ) {
 			$email = $token->get_redacted_email();
 			// Avoid duplication if the title already contains the email.
-			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
-				// Link uses the card gateway, so $default is "Card". Use "Stripe Link" instead.
+			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
+				// Link uses the card gateway, so $default_title is "Card". Use "Stripe Link" instead.
 				// translators: 1: payment method (Stripe Link), 2: redacted customer email.
 				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $email );
 			}
 		}
 
-		return $default;
+		return $default_title;
 	}
 
 	/**
