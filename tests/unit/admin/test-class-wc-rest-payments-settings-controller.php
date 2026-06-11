@@ -713,6 +713,30 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_update_settings_falls_back_to_server_error_for_fields_without_inline_ui() {
+		// `business_name` maps to the `account_business_name` setting, but no client
+		// component renders its errors inline, so the legacy shape must be kept.
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Invalid business name.',
+					[ 'param' => 'business_name' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_name', 'Some name' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'Invalid business name.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
+	}
+
 	public function test_update_settings_falls_back_to_server_error_when_stripe_param_does_not_map() {
 		$this->mock_wcpay_account
 			->method( 'update_stripe_account' )

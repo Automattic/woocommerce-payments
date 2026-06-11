@@ -28,6 +28,23 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	protected $rest_base = 'payments/settings';
 
 	/**
+	 * Settings fields whose server errors the client renders inline, next to the field.
+	 *
+	 * Server errors are returned in the `rest_invalid_param` envelope only for these keys;
+	 * all other fields keep the legacy `server_error` shape, which the client shows as a
+	 * notice. Keep in sync with the components reading `savingError.data.details` in
+	 * `client/settings/`.
+	 *
+	 * @var string[]
+	 */
+	const INLINE_ERROR_SETTING_KEYS = [
+		'account_statement_descriptor',
+		'account_business_support_email',
+		'account_business_support_phone',
+		'account_communications_email',
+	];
+
+	/**
 	 * Instance of WC_Payment_Gateway_WCPay.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -980,7 +997,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * Stripe returns the offending field as either a bare key (e.g. `support_phone`) or a
 	 * bracketed path (e.g. `business_profile[support_phone]`). We strip the wrapping and
-	 * match against {@see WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING}.
+	 * match against {@see WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING}, but only
+	 * return fields the client renders inline ({@see self::INLINE_ERROR_SETTING_KEYS}) —
+	 * for any other field the inline envelope would suppress the notice without anything
+	 * rendering the message, and it would be lost.
 	 *
 	 * @param string|null $param Stripe param value.
 	 *
@@ -997,6 +1017,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		foreach ( WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING as $setting_key => $account_key ) {
+			if ( ! in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true ) ) {
+				continue;
+			}
 			if ( $account_key === $param ) {
 				return $setting_key;
 			}
