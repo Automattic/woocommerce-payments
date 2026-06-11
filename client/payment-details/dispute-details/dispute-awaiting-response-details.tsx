@@ -63,9 +63,8 @@ interface Props {
 	paymentMethod: string | null;
 	bankName: string | null;
 	/**
-	 * Opens the refund modal on the transaction details page. The inquiry
-	 * "Issue refund" flow uses this to refund inline instead of redirecting
-	 * to the order screen.
+	 * Opens the refund modal on the transaction details page so the inquiry
+	 * "Issue refund" flow can refund inline.
 	 */
 	onIssueRefund: () => void;
 }
@@ -108,8 +107,8 @@ interface AcceptDisputeProps {
 /**
  * Returns the copy and tracks events for the dispute-accept modal.
  *
- * Inquiries no longer use this modal — their "Issue refund" button opens the
- * transaction refund modal directly — so this only covers the dispute case.
+ * Inquiries open the refund modal directly, so this only covers the dispute
+ * case.
  */
 function getAcceptDisputeProps( {
 	dispute,

@@ -687,11 +687,10 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 			screen.getByRole( 'button', { name: /Issue refund/i } )
 		);
 
-		// The inquiry refund flow opens the transaction refund modal inline
-		// rather than redirecting to the order screen.
+		// The inquiry "Issue refund" button opens the refund modal inline.
 		expect( mockOnIssueRefund ).toHaveBeenCalledTimes( 1 );
 
-		// No local confirmation dialog is shown for inquiries anymore.
+		// Inquiries don't show the local confirmation dialog.
 		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
 
 		expect( recordEvent ).toHaveBeenCalledWith(

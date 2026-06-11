@@ -46,8 +46,8 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 		charge.payment_intent as string
 	) as PaymentChargeDetailsResponse;
 
-	// Refunding a charge that still has an open inquiry resolves the inquiry,
-	// so we surface that context and keep the inquiry-specific tracking.
+	// Refunding a charge with an open inquiry resolves the inquiry, so the
+	// modal surfaces that context and records the inquiry-specific event.
 	const dispute = charge.dispute;
 	const isOpenInquiry =
 		!! dispute &&
