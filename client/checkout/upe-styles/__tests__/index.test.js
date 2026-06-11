@@ -509,4 +509,21 @@ describe( 'getAppearance floating label detection on blocks checkout', () => {
 		expect( appearance.rules[ '.Input' ].paddingTop ).toBe( '10px' );
 		expect( appearance.rules[ '.Input' ].paddingBottom ).toBe( '10px' );
 	} );
+
+	test( 'does not clamp fontSizeBase relative to the payment method labels', () => {
+		const scope = makeScope( 'absolute' );
+		// Give the radio-control label group a concrete size so the former
+		// PMME clamp (0.875 of this value) would fire if still present.
+		scope
+			.querySelector( '.wc-block-components-radio-control__label-group' )
+			.style.setProperty( 'font-size', '12px' );
+
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			scope
+		);
+
+		expect( appearance.variables.fontSizeBase ).toBe( '13px' );
+	} );
 } );
