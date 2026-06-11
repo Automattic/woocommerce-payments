@@ -160,7 +160,6 @@ export const BalanceReport = ( {
 	const containerRef = useRef< HTMLDivElement >( null );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
-	const toolbarRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
 	// Marks that the user just pressed Reload, so the next error→loading
@@ -183,13 +182,19 @@ export const BalanceReport = ( {
 	};
 	const currency = summary.currency ?? '';
 	useEffect( () => {
+		// Focus the error heading when the failure interrupts the user inside
+		// the report. `reloadRequestedRef` covers the Reload → loading → fail
+		// path: the focused loading heading unmounts with the skeleton, so by
+		// the time this effect runs focus has already fallen back to <body>
+		// and the containment check alone would miss it.
 		if (
 			hasError &&
 			! previousErrorRef.current &&
-			( containerRef.current?.contains(
-				containerRef.current.ownerDocument.activeElement
-			) ??
-				false )
+			( reloadRequestedRef.current ||
+				( containerRef.current?.contains(
+					containerRef.current.ownerDocument.activeElement
+				) ??
+					false ) )
 		) {
 			errorHeadingRef.current?.focus();
 		}
@@ -200,9 +205,7 @@ export const BalanceReport = ( {
 		// `isLoading=true` after invalidateResolution, but the loading
 		// skeleton still renders because `isLoading` wins in the content
 		// branch — so gate on `isLoading` alone here. The ref is consumed
-		// only at the terminal state (success below or the error branch
-		// above) so we can also restore focus to the toolbar on
-		// Reload → success.
+		// at the terminal states (success below or the error branch above).
 		if ( reloadRequestedRef.current && isLoading ) {
 			loadingHeadingRef.current?.focus();
 		}
@@ -216,14 +219,7 @@ export const BalanceReport = ( {
 		}
 
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
-			if ( reloadRequestedRef.current ) {
-				toolbarRef.current
-					?.querySelector< HTMLButtonElement >(
-						'.wcpay-date-filter__chip-trigger'
-					)
-					?.focus();
-				reloadRequestedRef.current = false;
-			}
+			reloadRequestedRef.current = false;
 
 			const message = __(
 				'Balance report loaded.',
