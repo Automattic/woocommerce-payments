@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Stop shrinking the Payment Element base font size at checkout: remove the leftover PMME font clamp from the appearance derivation.

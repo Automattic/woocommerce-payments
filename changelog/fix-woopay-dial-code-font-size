@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Match the WooPay save-info phone field dial code font size to the phone input instead of a hardcoded 16px.

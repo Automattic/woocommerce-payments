@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Align Payment Element card fields with themes that restyle block checkout labels as static: use above labels and skip the floating-label padding compensation.
+Align checkout card fields with themes that restyle the block checkout: respect static label patterns, stop shrinking the Payment Element base font size, and match the WooPay dial code size to the phone input.
