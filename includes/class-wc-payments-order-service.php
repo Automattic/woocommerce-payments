@@ -128,6 +128,29 @@ class WC_Payments_Order_Service {
 	const WCPAY_MODE_META_KEY = '_wcpay_mode';
 
 	/**
+	 * Hook ID suffixes for the WooCommerce order emails that receive a persistent "[Test]"
+	 * indicator in their subject and heading when the order was paid in test mode. Covers the
+	 * admin notifications (New order, plus Failed/Cancelled order: a test-mode card decline
+	 * otherwise produces an admin email indistinguishable from a real failed payment) and the
+	 * customer-facing order emails merchants rely on for fulfilment. `customer_invoice` and
+	 * `customer_invoice_paid` are both listed because WC_Email_Customer_Invoice fires the `_paid`
+	 * filter variant for processing/completed orders (the usual case for an invoice resend) and
+	 * the plain variant otherwise.
+	 *
+	 * @const string[]
+	 */
+	const TEST_MODE_INDICATOR_EMAIL_IDS = [
+		'new_order',
+		'failed_order',
+		'cancelled_order',
+		'customer_processing_order',
+		'customer_completed_order',
+		'customer_on_hold_order',
+		'customer_invoice',
+		'customer_invoice_paid',
+	];
+
+	/**
 	 * Option key holding a one-way flag indicating the store has had at least one live WooPayments sale.
 	 *
 	 * @const string
@@ -207,6 +230,16 @@ class WC_Payments_Order_Service {
 	public function init_hooks(): void {
 		add_action( 'woocommerce_order_status_processing', [ $this, 'maybe_record_first_live_sale' ] );
 		add_action( 'woocommerce_order_status_completed', [ $this, 'maybe_record_first_live_sale' ] );
+
+		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
+		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
+		// send time (see maybe_add_test_mode_to_email_subject), so the marker reflects how the
+		// order was paid even if the store later switches modes or the email is resent. These
+		// are runtime filters, so the marker only shows while WooPayments is active.
+		foreach ( self::TEST_MODE_INDICATOR_EMAIL_IDS as $email_id ) {
+			add_filter( "woocommerce_email_subject_{$email_id}", [ $this, 'maybe_add_test_mode_to_email_subject' ], 10, 2 );
+			add_filter( "woocommerce_email_heading_{$email_id}", [ $this, 'maybe_add_test_mode_to_email_heading' ], 10, 2 );
+		}
 	}
 
 	/**
@@ -235,6 +268,42 @@ class WC_Payments_Order_Service {
 				WC_Tracks::record_event( 'wcpay_first_live_sale' );
 			}
 		}
+	}
+
+	/**
+	 * Prepends a persistent test-mode marker to an order email subject when the order was paid
+	 * in test mode. Hooked to `woocommerce_email_subject_{$email_id}` for the order emails in
+	 * self::TEST_MODE_INDICATOR_EMAIL_IDS.
+	 *
+	 * @param string $subject The email subject.
+	 * @param mixed  $order   The object the email concerns; a WC_Order for order emails (other types are ignored).
+	 *
+	 * @return string The subject, prefixed with a test marker for test-mode orders.
+	 */
+	public function maybe_add_test_mode_to_email_subject( $subject, $order ): string {
+		if ( ! $order instanceof WC_Order || ! $this->is_order_in_test_mode( $order ) ) {
+			return $subject;
+		}
+
+		return $this->prepend_test_mode_email_marker( $subject );
+	}
+
+	/**
+	 * Prepends a persistent test-mode marker to an order email heading when the order was paid
+	 * in test mode. Hooked to `woocommerce_email_heading_{$email_id}` for the order emails in
+	 * self::TEST_MODE_INDICATOR_EMAIL_IDS.
+	 *
+	 * @param string $heading The email heading.
+	 * @param mixed  $order   The object the email concerns; a WC_Order for order emails (other types are ignored).
+	 *
+	 * @return string The heading, prefixed with a test marker for test-mode orders.
+	 */
+	public function maybe_add_test_mode_to_email_heading( $heading, $order ): string {
+		if ( ! $order instanceof WC_Order || ! $this->is_order_in_test_mode( $order ) ) {
+			return $heading;
+		}
+
+		return $this->prepend_test_mode_email_marker( $heading );
 	}
 
 	/**
@@ -1318,7 +1387,9 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_completed( $order, $intent_data ) {
-		$note = $this->generate_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
+		$note = $this->is_order_in_test_mode( $order )
+			? $this->generate_test_mode_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) )
+			: $this->generate_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -1757,6 +1828,34 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Determines whether the order was paid while WooPayments was in test mode, based on the
+	 * mode persisted to the order meta at payment time. Reading from the order (never the
+	 * current global mode) keeps the determination correct across later mode switches and on
+	 * email resends. The order note this drives is a stored DB row that persists even after
+	 * WooPayments is deactivated; the email marker is applied by runtime filters, so it only
+	 * shows while the plugin is active.
+	 *
+	 * @param WC_Order $order Order object.
+	 *
+	 * @return bool
+	 */
+	private function is_order_in_test_mode( WC_Order $order ): bool {
+		return Order_Mode::TEST === $order->get_meta( self::WCPAY_MODE_META_KEY );
+	}
+
+	/**
+	 * Prefixes an order email subject or heading with the localized test-mode marker.
+	 *
+	 * @param string $text The subject or heading to prefix.
+	 *
+	 * @return string
+	 */
+	private function prepend_test_mode_email_marker( string $text ): string {
+		/* translators: %s: the original email subject or heading. The leading "[Test]" flags an order paid in WooPayments test mode. */
+		return sprintf( __( '[Test] %s', 'woocommerce-payments' ), $text );
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.
@@ -1770,8 +1869,37 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s was <strong>successfully charged</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$formatted_amount,
+			'WooPayments',
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
+		);
+	}
+
+	/**
+	 * Get content for the success order note when the payment was made in test mode. Kept
+	 * separate from generate_payment_success_note() so the production note stays untouched.
+	 *
+	 * @param string $intent_id        The payment intent ID related to the intent/order.
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $formatted_amount The formatted order total.
+	 *
+	 * @return string Note content.
+	 */
+	private function generate_test_mode_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				__( 'A test payment of %1$s was processed using %2$s in <strong>test mode</strong> (<a>%3$s</a>). No real funds were collected.', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
@@ -1797,16 +1925,17 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 
 		if ( ! empty( $message ) ) {
@@ -1831,16 +1960,17 @@ class WC_Payments_Order_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: timestamp */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A terminal payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>)', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
 			'WooPayments',
-			$intent_id ?? $charge_id
+			$intent_id ?? $charge_id,
+			$transaction_url
 		);
 
 		if ( ! empty( $message ) ) {
@@ -1863,16 +1993,17 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s was <strong>authorized</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 
 		return $note;
@@ -1917,16 +2048,17 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A payment of %1$s was <strong>successfully captured</strong> using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 		return $note;
 	}
@@ -1945,16 +2077,17 @@ class WC_Payments_Order_Service {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A capture of %1$s <strong>failed</strong> to complete using %2$s (<a>%3$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 
 		if ( ! empty( $message ) ) {
@@ -1977,14 +2110,15 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				/* translators: %1: transaction ID of the payment, %2: transaction details URL */
 				__( 'Payment authorization has <strong>expired</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 	}
 
@@ -2001,14 +2135,15 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: transaction ID of the payment */
+				/* translators: %1: transaction ID of the payment, %2: transaction details URL */
 				__( 'Payment authorization was successfully <strong>cancelled</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 	}
 
@@ -2033,16 +2168,17 @@ class WC_Payments_Order_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				/* translators: %1: the amount held for review, %2: transaction details URL */
 				__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
 				[
 					'&#x26D4;' => '&#x26D4;',
 					'strong'   => '<strong>',
 					'br'       => '<br>',
-					'a'        => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'        => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order )
+			$this->get_order_amount( $order ),
+			$transaction_url
 		);
 
 		return $note;
@@ -2067,16 +2203,17 @@ class WC_Payments_Order_Service {
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
+				/* translators: %1: the blocked amount, %2: transaction details URL */
 				__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
 				[
 					'&#x1F6AB;' => '&#x1F6AB;',
 					'strong'    => '<strong>',
 					'br'        => '<br>',
-					'a'         => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'         => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$this->get_order_amount( $order )
+			$this->get_order_amount( $order ),
+			$transaction_url
 		);
 
 		return $note;

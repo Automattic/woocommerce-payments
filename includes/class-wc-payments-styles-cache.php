@@ -175,6 +175,9 @@ class WC_Payments_Styles_Cache {
 			$styles
 		);
 
+		// `currentColor` is relative and would re-resolve wrong inside WooPay; pin it now.
+		$link_color = self::resolve_current_color( $link_color, $text_color );
+
 		// Extract typography.
 		$font_family = self::resolve_style_value( $styles['typography']['fontFamily'] ?? 'inherit', 'inherit', $styles );
 		$font_size   = self::resolve_style_value( $styles['typography']['fontSize'] ?? '16px', '16px', $styles );
@@ -285,7 +288,7 @@ class WC_Payments_Styles_Cache {
 					'color'           => $footer_colors['text'] ?? $text_color,
 				],
 				'.Footer-link'    => [
-					'color' => $footer_colors['text'] ?? $link_color,
+					'color' => self::resolve_current_color( $footer_colors['text'] ?? $link_color, $text_color ),
 				],
 				'.Button'         => [
 					'color'           => $button_text_color,
@@ -580,6 +583,25 @@ class WC_Payments_Styles_Cache {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Resolves the CSS `currentColor` keyword to a concrete color value.
+	 *
+	 * `currentColor` is relative, so stored verbatim it resolves against WooPay's
+	 * wrapper instead of the theme. Returns the resolved theme text color (black
+	 * if that is itself `currentColor`); other values pass through.
+	 *
+	 * @param string $color    The color value, possibly the `currentColor` keyword.
+	 * @param string $fallback The resolved theme text color to substitute.
+	 * @return string A concrete color value, never `currentColor`.
+	 */
+	private static function resolve_current_color( string $color, string $fallback ): string {
+		if ( 0 !== strcasecmp( trim( $color ), 'currentcolor' ) ) {
+			return $color;
+		}
+
+		return 0 === strcasecmp( trim( $fallback ), 'currentcolor' ) ? '#000000' : $fallback;
 	}
 
 	/**

@@ -1030,6 +1030,136 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_currentcolor_link_resolves_to_text_color_in_appearance() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// Modern block themes (e.g. Assembler) declare the link color as the
+		// `currentColor` keyword. It is relative to the rendering element's
+		// color, so it must be resolved to a concrete hex before storage —
+		// otherwise it resolves against WooPay's wrapper, not the theme.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#1e1e1e',
+						],
+						'elements' => [
+							'link' => [
+								'color' => [
+									'text' => 'currentColor',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// currentColor must become the resolved theme text color, never be
+			// stored verbatim, for both the link and footer-link rules.
+			$this->assertSame( '#1e1e1e', $result['rules']['.Link']['color'] );
+			$this->assertSame( '#1e1e1e', $result['rules']['.Footer-link']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_concrete_link_color_is_unchanged_in_appearance() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// A theme with a normal hex link color must be unaffected by the
+		// currentColor resolution — no regression for the common case.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#000000',
+						],
+						'elements' => [
+							'link' => [
+								'color' => [
+									'text' => '#0066cc',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			$this->assertSame( '#0066cc', $result['rules']['.Link']['color'] );
+			$this->assertSame( '#0066cc', $result['rules']['.Footer-link']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_resolve_current_color_substitutes_text_color() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '#1e1e1e', $method->invoke( null, 'currentColor', '#1e1e1e' ) );
+	}
+
+	public function test_resolve_current_color_is_case_insensitive() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '#333333', $method->invoke( null, 'currentcolor', '#333333' ) );
+		$this->assertSame( '#333333', $method->invoke( null, 'CURRENTCOLOR', '#333333' ) );
+		$this->assertSame( '#333333', $method->invoke( null, ' currentColor ', '#333333' ) );
+	}
+
+	public function test_resolve_current_color_falls_back_to_black_when_text_unresolved() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		// When the substitute text color is itself currentColor (degenerate
+		// theme), fall back to black rather than store a relative keyword.
+		// The fallback check is case-insensitive and trimmed, like the color one.
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', 'currentColor' ) );
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', 'CURRENTCOLOR' ) );
+		$this->assertSame( '#000000', $method->invoke( null, 'currentColor', ' currentColor ' ) );
+	}
+
+	public function test_resolve_current_color_passes_through_concrete_values() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_current_color' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '#0066cc', $method->invoke( null, '#0066cc', '#1e1e1e' ) );
+		$this->assertSame( 'rgb(0, 102, 204)', $method->invoke( null, 'rgb(0, 102, 204)', '#1e1e1e' ) );
+	}
+
 	public function test_input_background_falls_back_to_white_when_undefined_on_light_theme() {
 		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
 			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
