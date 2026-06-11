@@ -25,4 +25,27 @@ describe( 'DateFilter', () => {
 		} );
 		expect( dialog ).toBeInTheDocument();
 	} );
+
+	it( 'uses onClear for chip clears without calling onChange', async () => {
+		const onChange = jest.fn();
+		const onClear = jest.fn();
+
+		render(
+			<DateFilter
+				value={ {
+					operator: 'between',
+					value: [ '2026-04-01', '2026-04-30' ],
+				} }
+				onChange={ onChange }
+				onClear={ onClear }
+			/>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /clear date filter/i } )
+		);
+
+		expect( onClear ).toHaveBeenCalledTimes( 1 );
+		expect( onChange ).not.toHaveBeenCalled();
+	} );
 } );

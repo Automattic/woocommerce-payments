@@ -89,3 +89,19 @@ runs:
             ${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}
           if-no-files-found: ignore
           retention-days: 14
+
+    # Surface any PHP fatals from the WordPress debug log into the run log (no
+    # file upload). Runs on always() so it catches a fatal even when the hardened
+    # dev-tools helper recovers and the job stays green.
+    - name: Surface PHP fatals from the WordPress debug log
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        LOG="tests/e2e/docker/wordpress/wp-content/debug.log"
+        if [[ ! -f "$LOG" ]]; then exit 0; fi
+        FATALS=$(grep -nE 'PHP (Fatal|Parse) error|Uncaught|Maximum execution time|Allowed memory size' "$LOG" 2>/dev/null || true)
+        # Clean runs print nothing; only surface the group when there are fatals.
+        if [[ -z "$FATALS" ]]; then exit 0; fi
+        echo "::group::PHP fatals during E2E (from debug.log)"
+        echo "$FATALS" | tail -50
+        echo "::endgroup::"

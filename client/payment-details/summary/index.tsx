@@ -52,7 +52,7 @@ import {
 	isAwaitingResponse,
 	isRefundable,
 } from 'wcpay/disputes/utils';
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
@@ -65,6 +65,7 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import DisputeRecommendationsCard from '../dispute-recommendations';
+import { getDisputeRecommendations } from '../dispute-recommendations/utils';
 import { recordOutcomeViewOnce } from '../dispute-outcome/tracks';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import ErrorBoundary from 'components/error-boundary';
@@ -99,7 +100,8 @@ const isTapToPay = ( model: string ) => {
 const renderDisputeDetails = (
 	dispute: NonNullable< Charge[ 'dispute' ] >,
 	charge: Charge,
-	bankName: string | null
+	bankName: string | null,
+	onIssueRefund: () => void
 ) => {
 	if ( isAwaitingResponse( dispute.status ) ) {
 		return (
@@ -107,9 +109,9 @@ const renderDisputeDetails = (
 				dispute={ dispute }
 				customer={ charge.billing_details }
 				chargeCreated={ charge.created }
-				orderUrl={ charge.order?.url }
 				paymentMethod={ charge.payment_method_details?.type }
 				bankName={ bankName }
+				onIssueRefund={ onIssueRefund }
 			/>
 		);
 	}
@@ -749,13 +751,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 			{ charge.dispute && (
 				<ErrorBoundary>
-					{ renderDisputeDetails( charge.dispute, charge, bankName ) }
+					{ renderDisputeDetails(
+						charge.dispute,
+						charge,
+						bankName,
+						() => setIsRefundModalOpen( true )
+					) }
 				</ErrorBoundary>
 			) }
 			{ isRefundModalOpen && (
 				<RefundModal
 					charge={ charge }
 					formattedAmount={ formattedAmount }
+					orderUrl={ charge.order?.url }
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
 						recordEvent(
@@ -877,13 +885,19 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 				wcpaySettings?.featureFlags
 					?.isDisputeAdditionalEvidenceTypesEnabled ?? false
 		  )
-		: undefined;
+		: '';
+
+	// Mirror the card: true only when the card actually renders entries.
+	const hasRecommendations =
+		showRecommendationsCard &&
+		dispute !== undefined &&
+		getDisputeRecommendations( dispute, productType ).length > 0;
 
 	useEffect( () => {
 		if ( shouldRecordOutcomeView && dispute ) {
-			recordOutcomeViewOnce( dispute, productType );
+			recordOutcomeViewOnce( dispute, productType, hasRecommendations );
 		}
-	}, [ shouldRecordOutcomeView, dispute, productType ] );
+	}, [ shouldRecordOutcomeView, dispute, productType, hasRecommendations ] );
 
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>

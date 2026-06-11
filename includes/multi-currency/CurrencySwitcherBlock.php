@@ -140,7 +140,7 @@ class CurrencySwitcherBlock {
 		$widget_content  = '<form>';
 		$widget_content .= $this->get_get_params();
 		$widget_content .= '<div class="currency-switcher-holder" style="' . esc_attr( $div_styles ) . '">';
-		$widget_content .= '<select name="currency" onchange="this.form.submit()" style="' . esc_attr( $select_styles ) . '">';
+		$widget_content .= '<select name="currency" class="js-woopayments-currency-switcher" onchange="this.form.submit()" style="' . esc_attr( $select_styles ) . '">';
 
 		foreach ( $enabled_currencies as $currency ) {
 			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );

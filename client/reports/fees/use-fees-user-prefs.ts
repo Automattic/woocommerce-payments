@@ -10,7 +10,11 @@ import type { View, ViewTable } from '@wordpress/dataviews/wp';
 /**
  * Internal dependencies
  */
-import { feesViewUserMetaKey, PersistedFeesView, FeesFieldId } from './view';
+import {
+	feesViewUserMetaKey,
+	getFeesTableFields,
+	PersistedFeesView,
+} from './view';
 
 const persistDebounceMs = 750;
 
@@ -18,6 +22,19 @@ const isPersistedShapeEqual = (
 	a: PersistedFeesView | undefined,
 	b: PersistedFeesView
 ): boolean => a !== undefined && JSON.stringify( a ) === JSON.stringify( b );
+
+const normalizePersistedFeesView = (
+	persisted: PersistedFeesView | null | undefined
+): PersistedFeesView | undefined => {
+	if ( ! persisted ) {
+		return undefined;
+	}
+
+	return {
+		...persisted,
+		fields: getFeesTableFields( persisted.fields ),
+	};
+};
 
 interface UseFeesUserPrefsResult {
 	persisted: PersistedFeesView | undefined;
@@ -28,9 +45,11 @@ interface UseFeesUserPrefsResult {
 export const useFeesUserPrefs = (): UseFeesUserPrefsResult => {
 	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
 	const prefs = userPrefs as unknown as Record< string, unknown >;
-	const persisted = prefs[ feesViewUserMetaKey ] as
+	const rawPersisted = prefs[ feesViewUserMetaKey ] as
 		| PersistedFeesView
+		| null
 		| undefined;
+	const persisted = normalizePersistedFeesView( rawPersisted );
 	// `undefined` means user_meta hasn't loaded yet; `null`-ish empty string is
 	// what wp-data returns once the resolver finishes with no stored value.
 	const hasLoadedPersisted = feesViewUserMetaKey in prefs;
@@ -49,7 +68,7 @@ export const useFeesUserPrefs = (): UseFeesUserPrefsResult => {
 	const persistViewShape = useCallback(
 		( next: View ) => {
 			const nextPersisted: PersistedFeesView = {
-				fields: ( next.fields ?? [] ) as FeesFieldId[],
+				fields: getFeesTableFields( next.fields ),
 				perPage: next.perPage,
 				layout: ( next as ViewTable ).layout,
 			};

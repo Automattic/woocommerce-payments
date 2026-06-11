@@ -15,7 +15,7 @@ import {
 	useAdvancedFraudProtectionSettings,
 	useSettings,
 	useGetSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import FraudProtectionHelpText from './fp-help-text';
 import BasicFraudProtectionModal from './fp-modal';
 import { getAdminUrl } from 'wcpay/utils';

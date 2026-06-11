@@ -8,7 +8,8 @@ import { Button } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
-import { DataViews } from '@wordpress/dataviews/wp';
+import { DataViews, type Filter, type View } from '@wordpress/dataviews/wp';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
@@ -18,6 +19,7 @@ import { useFeesData } from './use-fees-data';
 import { getFeesFields } from './fields';
 import { CustomDateFilterPopover } from './custom-date-filter-popover';
 import { useDateFilterChipInterceptor } from './use-date-filter-chip-interceptor';
+import { resolveFeesDateFilterValue } from './date-filter-values';
 import { ReportState } from '../report-state';
 import './style.scss';
 
@@ -26,11 +28,32 @@ interface FeesReportProps {
 }
 
 const customDatePopoverId = 'wcpay-fees-date-filter-popover';
+const millisecondsPerDay = 86400000;
+
+const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
+	filters.find( ( filter ) => filter.field === 'date' );
+
+const getDateRangeDays = ( view: View ): number | null => {
+	const dateFilter = resolveFeesDateFilterValue(
+		findDateFilter( view.filters )?.value
+	);
+	if ( ! dateFilter || dateFilter.operator !== 'between' ) {
+		return null;
+	}
+
+	const start = new Date( dateFilter.value[ 0 ] ).getTime();
+	const end = new Date( dateFilter.value[ 1 ] ).getTime();
+	return Math.round( ( end - start ) / millisecondsPerDay );
+};
 
 export const FeesReport = ( {
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	const [ view, setView ] = useFeesView();
+	// Stable reference date so date-filter telemetry presets are matched
+	// against a single `now` for the lifetime of the report, even across a
+	// day boundary.
+	const stableDateFilterNow = useRef( new Date() ).current;
 	const [ dataViewsContainer, setDataViewsContainer ] =
 		useState< HTMLDivElement | null >( null );
 	const initialEmptyHeadingId = useId();
@@ -60,6 +83,7 @@ export const FeesReport = ( {
 		view,
 		setView,
 		popoverId: customDatePopoverId,
+		now: stableDateFilterNow,
 	} );
 
 	const fields = useMemo(
@@ -76,6 +100,7 @@ export const FeesReport = ( {
 	const hasNoRows = ! isLoading && ! hasError && rows.length === 0;
 	const isInitialEmpty = hasNoRows && ! hasFilters;
 	const isFilteredEmpty = hasNoRows && hasFilters;
+	const rangeDays = useMemo( () => getDateRangeDays( view ), [ view ] );
 
 	// Move focus to the error region and announce when an error surfaces, so
 	// keyboard/AT users notice the table disappearing. `role="alert"` on the
@@ -83,24 +108,45 @@ export const FeesReport = ( {
 	// keyboard context.
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousErrorRef = useRef( hasError );
+	const previousLoadingRef = useRef( isLoading );
 	useEffect( () => {
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
+
+		if ( reachedErrorTerminal ) {
+			recordEvent( 'wcpay_reports_fees_load_error', {
+				has_filters: hasFilters,
+				range_days: rangeDays,
+			} );
+		}
+
 		if ( hasError && ! previousErrorRef.current ) {
 			errorHeadingRef.current?.focus();
 		}
+
 		previousErrorRef.current = hasError;
-	}, [ hasError ] );
+	}, [ hasError, hasFilters, isLoading, rangeDays ] );
 
 	// Announce "Fees report loaded" to AT users on every loading→ready edge.
 	// Debounced (500ms) and de-duplicated so rapid filter changes — which can
 	// cause loading→ready→loading→ready bursts — collapse into a single
 	// announcement instead of spamming AT users.
-	const previousLoadingRef = useRef( isLoading );
 	const speakTimerRef = useRef< ReturnType< typeof setTimeout > | null >(
 		null
 	);
 	const lastSpokenRef = useRef< string | null >( null );
 	useEffect( () => {
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			recordEvent( 'wcpay_reports_fees_load_success', {
+				total_items: totalItems,
+				has_filters: hasFilters,
+				is_initial_empty: isInitialEmpty,
+				is_filtered_empty: isFilteredEmpty,
+				range_days: rangeDays,
+			} );
+
 			const message = sprintf(
 				/* translators: %d: number of fees loaded into the report table. */
 				__( '%d fees loaded.', 'woocommerce-payments' ),
@@ -119,7 +165,15 @@ export const FeesReport = ( {
 			}, 500 );
 		}
 		previousLoadingRef.current = isLoading;
-	}, [ isLoading, hasError, totalItems ] );
+	}, [
+		hasError,
+		hasFilters,
+		isFilteredEmpty,
+		isInitialEmpty,
+		isLoading,
+		rangeDays,
+		totalItems,
+	] );
 
 	useEffect(
 		() => () => {
@@ -155,7 +209,15 @@ export const FeesReport = ( {
 					</>
 				}
 				action={
-					<Button variant="secondary" onClick={ onReload }>
+					<Button
+						variant="secondary"
+						onClick={ () => {
+							recordEvent( 'wcpay_reports_fees_reload_click', {
+								range_days: rangeDays,
+							} );
+							onReload();
+						} }
+					>
 						{ __( 'Reload report', 'woocommerce-payments' ) }
 					</Button>
 				}

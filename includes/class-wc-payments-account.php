@@ -368,6 +368,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		return [
 			'email'               => $account['email'] ?? '',
+			'businessName'        => $account['business_profile']['name'] ?? '',
+			'accountId'           => $account['account_id'] ?? '',
 			'country'             => $account['country'] ?? Country_Code::UNITED_STATES,
 			'status'              => $account['status'],
 			'created'             => $account['created'] ?? '',

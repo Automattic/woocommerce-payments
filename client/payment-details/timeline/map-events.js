@@ -453,6 +453,29 @@ export const composeFXString = ( event ) => {
 	);
 };
 
+// Human-readable labels for Stripe's fixed refund reason enum. Free-text
+// merchant reasons fall through and are shown as entered.
+const refundReasonLabels = {
+	duplicate: __( 'Duplicate', 'woocommerce-payments' ),
+	fraudulent: __( 'Fraudulent', 'woocommerce-payments' ),
+	requested_by_customer: __(
+		'Requested by customer',
+		'woocommerce-payments'
+	),
+};
+
+const getRefundReason = ( event ) => {
+	if ( ! event.reason ) {
+		return '';
+	}
+	const reason = refundReasonLabels[ event.reason ] ?? event.reason;
+	return sprintf(
+		/* translators: %s is the reason the refund was issued */
+		__( 'Reason: %s', 'woocommerce-payments' ),
+		reason
+	);
+};
+
 // Conditionally adds the ARN details to the timeline in case they're available.
 const getRefundTrackingDetails = ( event ) => {
 	return event.acquirer_reference_number_status === 'available'
@@ -903,6 +926,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					[
 						composeFXString( event ),
 						getRefundTrackingDetails( event ),
+						getRefundReason( event ),
 					]
 				),
 			];

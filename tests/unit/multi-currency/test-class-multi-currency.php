@@ -1003,6 +1003,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$expected = '<div class="widget ">		<form>
 						<select
 				name="currency"
+				class="js-woopayments-currency-switcher"
 				aria-label=""
 				onchange="this.form.submit()"
 			>

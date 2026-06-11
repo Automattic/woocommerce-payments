@@ -1,6 +1,8 @@
 /** @format */
 
 import { renderHook, act } from '@testing-library/react-hooks';
+import { recordEvent } from 'tracks';
+import type { Filter, View, ViewTable } from '@wordpress/dataviews/wp';
 
 const mockUpdateQueryString = jest.fn();
 const mockGetQuery = jest.fn( () => ( {} ) );
@@ -20,13 +22,75 @@ jest.mock( '@woocommerce/data', () => ( {
 	} ),
 } ) );
 
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
+
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
 import { encodeCustomDateFilterValue } from '../date-filter-values';
 
+const renderUseFeesView = () => renderHook( () => useFeesView() );
+
+const updateFeesView = (
+	result: ReturnType< typeof renderUseFeesView >[ 'result' ],
+	nextView: Partial< View >
+) => {
+	act( () => {
+		result.current[ 1 ]( {
+			...result.current[ 0 ],
+			...nextView,
+		} );
+	} );
+};
+
+const buildFilter = (
+	field: string,
+	value: unknown,
+	operator = 'is'
+): Filter =>
+	( {
+		field,
+		operator,
+		value,
+	} as Filter );
+
+const buildPaymentMethodFilter = ( value = 'card' ): Filter =>
+	buildFilter( 'payment_method', value );
+
+const buildTypeFilter = ( value: unknown, operator = 'is' ): Filter =>
+	buildFilter( 'type', value, operator );
+
+const buildDateFilter = ( value: unknown ): Filter =>
+	buildFilter( 'date', value );
+
+const expectRecordedTracksEvent = (
+	eventName: string,
+	properties: unknown
+) => {
+	expect( mockRecordEvent ).toHaveBeenCalledWith( eventName, properties );
+};
+
+const expectNoRecordedTracksEvent = ( eventName: string ) => {
+	expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+		eventName,
+		expect.anything()
+	);
+};
+
+const countRecordedTracksEvents = ( eventName: string ) =>
+	mockRecordEvent.mock.calls.filter(
+		( [ recordedEventName ] ) => recordedEventName === eventName
+	).length;
+
 beforeEach( () => {
 	mockUpdateQueryString.mockClear();
 	mockUpdateUserPreferences.mockClear();
+	mockRecordEvent.mockClear();
 	mockGetQuery.mockReturnValue( {} );
 	mockUserPrefs = {};
 	jest.useRealTimers();
@@ -34,13 +98,26 @@ beforeEach( () => {
 
 describe( 'useFeesView', () => {
 	it( 'returns the default view when URL and user_meta are empty', () => {
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].sort ).toEqual( {
 			field: 'date',
 			direction: 'desc',
 		} );
 		expect( result.current[ 0 ].perPage ).toBe( defaultPerPage );
-		expect( result.current[ 0 ].fields ).toContain( 'date' );
+		expect( result.current[ 0 ].titleField ).toBe( 'date' );
+		expect( result.current[ 0 ].fields ).not.toContain( 'date' );
+	} );
+
+	it( 'keeps formatted currency columns start-aligned by default', () => {
+		const { result } = renderUseFeesView();
+		const view = result.current[ 0 ] as ViewTable;
+
+		expect( view.layout?.styles ).toEqual(
+			expect.objectContaining( {
+				amount: expect.objectContaining( { align: 'start' } ),
+				fees: expect.objectContaining( { align: 'start' } ),
+			} )
+		);
 	} );
 
 	it( 'reads sort and pagination from URL', () => {
@@ -50,7 +127,7 @@ describe( 'useFeesView', () => {
 			paged: '2',
 			per_page: '50',
 		} );
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].sort ).toEqual( {
 			field: 'amount',
 			direction: 'asc',
@@ -64,7 +141,7 @@ describe( 'useFeesView', () => {
 			payment_method_type: 'card',
 			type: 'charge',
 		} );
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].filters ).toEqual(
 			expect.arrayContaining( [
 				{ field: 'payment_method', operator: 'is', value: 'card' },
@@ -81,7 +158,7 @@ describe( 'useFeesView', () => {
 		mockGetQuery.mockReturnValue( {
 			type: [ 'charge', 'refund' ],
 		} );
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
@@ -89,7 +166,7 @@ describe( 'useFeesView', () => {
 		mockGetQuery.mockReturnValue( {
 			type: 'charge,refund',
 		} );
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
@@ -97,7 +174,7 @@ describe( 'useFeesView', () => {
 		mockGetQuery.mockReturnValue( {
 			date_preset: 'month_to_date',
 		} );
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].filters ).toEqual(
 			expect.arrayContaining( [
 				{
@@ -113,7 +190,7 @@ describe( 'useFeesView', () => {
 		mockGetQuery.mockReturnValue( {
 			date_between: [ '2026-03-01', '2026-03-31' ],
 		} );
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].filters ).toEqual(
 			expect.arrayContaining( [
 				{
@@ -128,30 +205,55 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
-	it( 'reads fields from user_meta', () => {
+	it( 'reads fields from user_meta without duplicating the primary date column', () => {
 		mockUserPrefs = {
 			wc_payments_reports_fees_view: {
 				fields: [ 'date', 'transaction_id', 'amount' ],
 				perPage: 100,
 			},
 		};
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
+		expect( result.current[ 0 ].titleField ).toBe( 'date' );
 		expect( result.current[ 0 ].fields ).toEqual( [
-			'date',
 			'transaction_id',
 			'amount',
 		] );
 		expect( result.current[ 0 ].perPage ).toBe( 100 );
 	} );
 
-	it( 'pushes sort changes to URL', () => {
-		const { result } = renderHook( () => useFeesView() );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				sort: { field: 'fees', direction: 'asc' },
-			} );
+	it( 'preserves persisted table layout while forcing formatted currency columns to start-align', () => {
+		mockUserPrefs = {
+			wc_payments_reports_fees_view: {
+				fields: [ 'date', 'transaction_id', 'amount', 'fees' ],
+				perPage: 25,
+				layout: {
+					density: 'balanced',
+					styles: {
+						amount: { align: 'end', width: '120px' },
+						fees: { align: 'end', minWidth: '12ch' },
+						type: { align: 'center' },
+					},
+				},
+			},
+		};
+		const { result } = renderUseFeesView();
+
+		expect( result.current[ 0 ].layout ).toEqual( {
+			density: 'balanced',
+			styles: {
+				amount: { align: 'start', width: '120px' },
+				fees: { align: 'start', minWidth: '12ch' },
+				type: { align: 'center' },
+			},
 		} );
+	} );
+
+	it( 'pushes sort changes to URL', () => {
+		const { result } = renderUseFeesView();
+		updateFeesView( result, {
+			sort: { field: 'fees', direction: 'asc' },
+		} );
+
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			expect.objectContaining( { orderby: 'fees', order: 'asc' } ),
 			'/payments/reports'
@@ -160,13 +262,10 @@ describe( 'useFeesView', () => {
 
 	it( 'debounces search changes before pushing them to the URL', () => {
 		jest.useFakeTimers();
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				search: 'txn_1',
-			} );
+		updateFeesView( result, {
+			search: 'txn_1',
 		} );
 
 		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
@@ -189,14 +288,11 @@ describe( 'useFeesView', () => {
 	it( 'debounces the page reset that accompanies a search change', () => {
 		jest.useFakeTimers();
 		mockGetQuery.mockReturnValue( { paged: '2' } );
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				page: 1,
-				search: 'txn_1',
-			} );
+		updateFeesView( result, {
+			page: 1,
+			search: 'txn_1',
 		} );
 
 		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
@@ -216,29 +312,17 @@ describe( 'useFeesView', () => {
 
 	it( 'keeps filter changes immediate while a search update is pending', () => {
 		jest.useFakeTimers();
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				search: 'txn_1',
-			} );
+		updateFeesView( result, {
+			search: 'txn_1',
 		} );
 
 		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
 
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				search: 'txn_1',
-				filters: [
-					{
-						field: 'payment_method',
-						operator: 'is',
-						value: 'card',
-					},
-				],
-			} );
+		updateFeesView( result, {
+			search: 'txn_1',
+			filters: [ buildPaymentMethodFilter() ],
 		} );
 
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
@@ -256,22 +340,18 @@ describe( 'useFeesView', () => {
 	} );
 
 	it( 'pushes native Date filter changes to URL', () => {
-		const { result } = renderHook( () => useFeesView() );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				filters: [
-					{
-						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'before',
-							value: '2026-03-31',
-						} ),
-					},
-				],
-			} );
+		const { result } = renderUseFeesView();
+		updateFeesView( result, {
+			filters: [
+				buildDateFilter(
+					encodeCustomDateFilterValue( {
+						operator: 'before',
+						value: '2026-03-31',
+					} )
+				),
+			],
 		} );
+
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				date_preset: undefined,
@@ -283,37 +363,191 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
-	it( 'rejects multi-value Type filter changes before writing the URL', () => {
-		const { result } = renderHook( () => useFeesView() );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				filters: [
-					{
-						field: 'type',
-						operator: 'isAny',
-						value: [ 'charge', 'refund' ],
-					},
-				],
+	it.each( [
+		{
+			name: 'additions',
+			query: {},
+			nextValue: 'card',
+			hadPreviousValue: false,
+		},
+		{
+			name: 'changes with previous value context',
+			query: { payment_method_type: 'card' },
+			nextValue: 'link',
+			hadPreviousValue: true,
+		},
+	] )(
+		'records non-date filter $name',
+		( { query, nextValue, hadPreviousValue } ) => {
+			mockGetQuery.mockReturnValue( query );
+			const { result } = renderUseFeesView();
+
+			updateFeesView( result, {
+				filters: [ buildPaymentMethodFilter( nextValue ) ],
 			} );
+
+			expectRecordedTracksEvent( 'wcpay_reports_fees_filter_change', {
+				filter_field: 'payment_method_type',
+				had_previous_value: hadPreviousValue,
+			} );
+		}
+	);
+
+	it( 'does not record date filters as generic filter changes', () => {
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			filters: [
+				buildDateFilter(
+					encodeCustomDateFilterValue( {
+						operator: 'before',
+						value: '2026-03-31',
+					} )
+				),
+			],
 		} );
+
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_filter_change' );
+		// Date telemetry is owned by useDateFilterChipInterceptor; useFeesView
+		// must not emit it directly, or the event would be double-tracked.
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change' );
+	} );
+
+	it( 'records a date filter reset when an applied date filter is removed', () => {
+		mockGetQuery.mockReturnValue( {
+			date_preset: 'month_to_date',
+		} );
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, { filters: [] } );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'reset',
+			range_days: null,
+			is_initial_apply: false,
+		} );
+		expect(
+			countRecordedTracksEvents( 'wcpay_reports_fees_date_filter_change' )
+		).toBe( 1 );
+	} );
+
+	it( 'does not record a date filter reset when a value-less staged date filter is removed', () => {
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			filters: [ buildDateFilter( undefined ) ],
+		} );
+		mockRecordEvent.mockClear();
+
+		updateFeesView( result, { filters: [] } );
+
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change' );
+	} );
+
+	it( 'does not record duplicate filter changes for equivalent structured values', () => {
+		const { result } = renderUseFeesView();
+		const typeFilter = buildTypeFilter( [ 'charge', 'refund' ], 'isAny' );
+
+		updateFeesView( result, {
+			filters: [ typeFilter ],
+		} );
+		mockRecordEvent.mockClear();
+
+		updateFeesView( result, {
+			filters: [ typeFilter ],
+		} );
+
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_filter_change' );
+	} );
+
+	it( 'does not record comma-separated Type filter changes', () => {
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			filters: [ buildTypeFilter( 'charge,refund' ) ],
+		} );
+
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_filter_change' );
+	} );
+
+	it( 'debounces search tracking and records only the final search length', () => {
+		jest.useFakeTimers();
+		const firstSearchTerm = 'txn_secret';
+		const finalSearchTerm = 'txn_secret_123';
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			search: firstSearchTerm,
+		} );
+
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_search' );
+
+		act( () => {
+			jest.advanceTimersByTime( 250 );
+		} );
+
+		updateFeesView( result, {
+			search: finalSearchTerm,
+		} );
+
+		act( () => {
+			jest.advanceTimersByTime( 499 );
+		} );
+
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_search' );
+
+		act( () => {
+			jest.advanceTimersByTime( 1 );
+		} );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_search', {
+			search_length: finalSearchTerm.length,
+		} );
+		expect( countRecordedTracksEvents( 'wcpay_reports_fees_search' ) ).toBe(
+			1
+		);
+		expect( JSON.stringify( mockRecordEvent.mock.calls ) ).not.toContain(
+			firstSearchTerm
+		);
+		expect( JSON.stringify( mockRecordEvent.mock.calls ) ).not.toContain(
+			finalSearchTerm
+		);
+	} );
+
+	it( 'does not record search when clearing the search term', () => {
+		mockGetQuery.mockReturnValue( {
+			search: [ 'txn_1' ],
+		} );
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			search: '',
+		} );
+
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_search' );
+	} );
+
+	it( 'rejects multi-value Type filter changes before writing the URL', () => {
+		const { result } = renderUseFeesView();
+		updateFeesView( result, {
+			filters: [ buildTypeFilter( [ 'charge', 'refund' ], 'isAny' ) ],
+		} );
+
 		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
+		expectNoRecordedTracksEvent( 'wcpay_reports_fees_filter_change' );
 	} );
 
 	it( 're-derives the view after setView pushes URL-only changes', () => {
 		mockUserPrefs = { wc_payments_reports_fees_view: null };
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].page ).toBe( 1 );
 
-		act( () => {
-			// Simulate what `updateQueryString` does to the URL state. The
-			// hook reads `getQuery()` on each memo re-derive, so the next
-			// `setView` call needs to see the updated query.
-			mockGetQuery.mockReturnValue( { paged: '2' } );
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				page: 2,
-			} );
+		// Simulate what `updateQueryString` does to the URL state. The hook
+		// reads `getQuery()` on each memo re-derive, so the next `setView` call
+		// needs to see the updated query.
+		mockGetQuery.mockReturnValue( { paged: '2' } );
+		updateFeesView( result, {
+			page: 2,
 		} );
 
 		// `setView` must bump `navTick` so the view memo re-reads `getQuery()`
@@ -324,7 +558,7 @@ describe( 'useFeesView', () => {
 	} );
 
 	it( 're-derives the view when the URL changes via browser back/forward', () => {
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 		expect( result.current[ 0 ].sort?.field ).toBe( 'date' );
 
 		mockGetQuery.mockReturnValue( {
@@ -345,13 +579,11 @@ describe( 'useFeesView', () => {
 		jest.useFakeTimers();
 		// Mark prefs as loaded so the write-after-load guard doesn't skip.
 		mockUserPrefs = { wc_payments_reports_fees_view: null };
-		const { result } = renderHook( () => useFeesView() );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				fields: [ 'date', 'transaction_id' ],
-				perPage: 100,
-			} );
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			fields: [ 'date', 'transaction_id' ],
+			perPage: 100,
 		} );
 
 		// Persist writes are debounced — advance past the debounce window.
@@ -361,7 +593,7 @@ describe( 'useFeesView', () => {
 
 		expect( mockUpdateUserPreferences ).toHaveBeenCalledWith( {
 			wc_payments_reports_fees_view: expect.objectContaining( {
-				fields: [ 'date', 'transaction_id' ],
+				fields: [ 'transaction_id' ],
 				perPage: 100,
 			} ),
 		} );
@@ -370,21 +602,20 @@ describe( 'useFeesView', () => {
 	it( 'skips updateUserPreferences when only URL-bound state changes', () => {
 		mockUserPrefs = {
 			wc_payments_reports_fees_view: {
-				fields: [ 'date', 'amount' ],
+				fields: [ 'amount' ],
 				perPage: 25,
 				layout: {},
 			},
 		};
-		const { result } = renderHook( () => useFeesView() );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				fields: [ 'date', 'amount' ],
-				perPage: 25,
-				sort: { field: 'fees', direction: 'asc' },
-				page: 3,
-			} );
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			fields: [ 'amount' ],
+			perPage: 25,
+			sort: { field: 'fees', direction: 'asc' },
+			page: 3,
 		} );
+
 		expect( mockUpdateQueryString ).toHaveBeenCalled();
 		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
 	} );
@@ -395,40 +626,30 @@ describe( 'useFeesView', () => {
 		// write the default shape to user_meta on the first interaction; that
 		// would overwrite whatever the user previously stored.
 		mockUserPrefs = {};
-		const { result } = renderHook( () => useFeesView() );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				fields: [ 'date', 'transaction_id' ],
-				perPage: 100,
-			} );
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			fields: [ 'date', 'transaction_id' ],
+			perPage: 100,
 		} );
+
 		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
 	} );
 
 	it( 'debounces persisted-shape changes into a single REST write', () => {
 		jest.useFakeTimers();
 		mockUserPrefs = { wc_payments_reports_fees_view: null };
-		const { result } = renderHook( () => useFeesView() );
+		const { result } = renderUseFeesView();
 
 		// Three rapid view changes that mutate the persisted shape.
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				perPage: 50,
-			} );
+		updateFeesView( result, {
+			perPage: 50,
 		} );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				perPage: 100,
-			} );
+		updateFeesView( result, {
+			perPage: 100,
 		} );
-		act( () => {
-			result.current[ 1 ]( {
-				...result.current[ 0 ],
-				perPage: 25,
-			} );
+		updateFeesView( result, {
+			perPage: 25,
 		} );
 
 		// Before the debounce fires, no REST write yet.

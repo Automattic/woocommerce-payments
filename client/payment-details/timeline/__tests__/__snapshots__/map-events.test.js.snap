@@ -366,6 +366,7 @@ exports[`mapTimelineEvents Multi-Currency events formats full_refund events 1`] 
     "body": [
       "1,00 EUR → 1,20222 USD: 21,64 $ USD",
       "",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of 18,00 € EUR was successfully refunded.",
@@ -400,6 +401,7 @@ exports[`mapTimelineEvents Multi-Currency events formats partial_refund events 1
     "body": [
       "1,00 EUR → 1,2 USD: 6,00 $ USD",
       "Acquirer Reference Number (ARN) 4785767637658864",
+      "",
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of 5,00 € EUR was successfully refunded.",
@@ -1187,6 +1189,7 @@ exports[`mapTimelineEvents single currency events formats full_refund events 1`]
     "body": [
       undefined,
       "Acquirer Reference Number (ARN) 4785767637658864",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of $100.00 USD was successfully refunded.",
@@ -1220,6 +1223,7 @@ exports[`mapTimelineEvents single currency events formats partial_refund events 
   {
     "body": [
       undefined,
+      "",
       "",
     ],
     "date": 2020-04-03T18:58:01.000Z,
