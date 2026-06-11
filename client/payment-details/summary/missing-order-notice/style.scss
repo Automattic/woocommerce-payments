@@ -9,10 +9,12 @@
 	}
 }
 
-.missing-order-notice-modal__partial-refund {
-	// Give the helper link room to breathe below the radio group so it reads
-	// as a distinct note rather than another option.
-	margin-top: 24px;
-	margin-bottom: 0;
-	line-height: 1.5;
+// The confirmation modal resets paragraph margins (`.components-modal__content
+// p { margin: 0 }`), so a plain class can't add room above this helper link.
+// Match that selector's specificity to separate it from the radio group above,
+// otherwise it reads as another reason option.
+.wcpay-confirmation-modal
+	.components-modal__content
+	p.missing-order-notice-modal__partial-refund {
+	margin-top: 1em;
 }
