@@ -253,10 +253,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 	// Inquiries refund inline via the transaction refund modal; disputes open
 	// the accept-dispute modal. The primary action button reflects whichever.
-	const primaryActionLabel = isInquiryStatus
+	const primaryButtonLabel = isInquiryStatus
 		? __( 'Issue refund', 'woocommerce-payments' )
 		: disputeAcceptAction.acceptButtonLabel;
-	const primaryActionTracksEvent = isInquiryStatus
+	const primaryButtonTracksEvent = isInquiryStatus
 		? 'wcpay_dispute_inquiry_refund_modal_view'
 		: disputeAcceptAction.acceptButtonTracksEvent;
 
@@ -412,7 +412,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							data-testid="open-accept-dispute-modal-button"
 							onClick={ () => {
 								recordEvent(
-									primaryActionTracksEvent,
+									primaryButtonTracksEvent,
 									disputeTracksProperties
 								);
 
@@ -424,7 +424,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							} }
 							__next40pxDefaultSize
 						>
-							{ primaryActionLabel }
+							{ primaryButtonLabel }
 						</Button>
 
 						{ ! isDefendable && (
