@@ -647,7 +647,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			/**
-			 * Filters the product object for a cart item.
+			 * Filters the product object for a cart item. This is a WooCommerce core hook.
 			 *
 			 * @since 2.1.0
 			 *
