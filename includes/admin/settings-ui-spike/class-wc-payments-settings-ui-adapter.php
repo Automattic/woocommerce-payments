@@ -71,13 +71,15 @@ class WC_Payments_Settings_UI_Adapter implements SettingsUIPageInterface {
 				'navigationComponent' => 'wcpay/subnav',
 				'wcpayTabs'           => $this->get_tabs( $active_tab ),
 			],
-			'groups'  => array_merge(
-				$this->get_controller_group( $active_tab ),
-				$this->get_general_groups(),
-				$this->get_payment_methods_groups(),
-				$this->get_express_customize_groups(),
-				$this->get_payouts_groups(),
-				$this->get_store_checkout_groups()
+			'groups'  => $this->with_tab_state_field(
+				array_merge(
+					$this->get_general_groups(),
+					$this->get_payment_methods_groups(),
+					$this->get_express_customize_groups(),
+					$this->get_payouts_groups(),
+					$this->get_store_checkout_groups()
+				),
+				$active_tab
 			),
 		];
 	}
@@ -147,32 +149,43 @@ class WC_Payments_Settings_UI_Adapter implements SettingsUIPageInterface {
 	}
 
 	/**
-	 * Always-visible group hosting the spike note and the hidden active-tab
-	 * UI-state field that drives the JS groupVisibility predicates.
+	 * Prepend the hidden active-tab UI-state field (which drives the JS
+	 * groupVisibility predicates) to the first group of every design tab.
 	 *
+	 * The field component listens for tab-change events and must stay mounted,
+	 * but only fields of visible groups are mounted — so one copy lives in
+	 * each tab's first group (all share the same field id, hence the same
+	 * value; exactly one copy is mounted at any time).
+	 *
+	 * @param array  $groups     All schema groups, keyed by group id.
 	 * @param string $active_tab Active tab id from the request.
 	 * @return array
 	 */
-	private function get_controller_group( string $active_tab ): array {
-		return [
-			'wcpay_spike_notice' => [
-				'id'          => 'wcpay_spike_notice',
-				'title'       => __( 'Settings UI SDK spike', 'woocommerce-payments' ),
-				'description' => __( 'This screen is a WOOPMNT-6211 prototype rendering WooPayments settings through the WooCommerce Settings UI SDK. Tabs switch client-side without a page load.', 'woocommerce-payments' ),
-				'actions'     => [],
-				'order'       => 0,
-				'fields'      => [
-					[
-						'id'        => 'wcpay_active_tab',
-						'label'     => '',
-						'type'      => 'text',
-						'component' => 'wcpay/tab-state',
-						'value'     => $active_tab,
-						'save'      => [ 'adapter' => 'none' ],
-					],
-				],
-			],
+	private function with_tab_state_field( array $groups, string $active_tab ): array {
+		$tab_state_field = [
+			'id'        => 'wcpay_active_tab',
+			'label'     => '',
+			'type'      => 'text',
+			'component' => 'wcpay/tab-state',
+			'value'     => $active_tab,
+			'save'      => [ 'adapter' => 'none' ],
 		];
+
+		$first_group_per_tab = [
+			'wcpay_test_mode',       // General.
+			'wcpay_pm_global',       // Payment methods.
+			'wcpay_ec_placement',    // Apple Pay & Google Pay customize.
+			'wcpay_payout_schedule', // Payouts.
+			'wcpay_sc_features',     // Store and checkout.
+		];
+
+		foreach ( $first_group_per_tab as $group_id ) {
+			if ( isset( $groups[ $group_id ] ) ) {
+				array_unshift( $groups[ $group_id ]['fields'], $tab_state_field );
+			}
+		}
+
+		return $groups;
 	}
 
 	/**
