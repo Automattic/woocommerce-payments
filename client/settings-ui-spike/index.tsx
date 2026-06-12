@@ -201,10 +201,56 @@ const SpikeTabState: React.FC< FieldComponentProps > = ( {
 };
 
 /**
+ * Soft tab clicks must be claimed before the SDK's unsaved-changes link
+ * interceptor, which listens on document at capture phase and prompts for any
+ * `a[href]` click while the form is dirty — and tab switching itself marks the
+ * form dirty (the wcpay_active_tab wart). The interceptor skips events whose
+ * default is already prevented, and same-phase document listeners run in
+ * registration order, so registering at module load (before the SDK's
+ * dirty-effect adds its listener) wins deterministically.
+ *
+ * Modifier/middle clicks are left alone so open-in-new-tab still full-loads.
+ */
+document.addEventListener(
+	'click',
+	( event ) => {
+		if (
+			event.defaultPrevented ||
+			event.button !== 0 ||
+			event.metaKey ||
+			event.ctrlKey ||
+			event.shiftKey ||
+			event.altKey
+		) {
+			return;
+		}
+
+		const target = event.target;
+		if ( ! ( target instanceof Element ) ) {
+			return;
+		}
+
+		const tabLink = target.closest( '[data-wcpay-spike-tab]' );
+		if ( ! ( tabLink instanceof HTMLElement ) ) {
+			return;
+		}
+
+		event.preventDefault();
+		window.dispatchEvent(
+			new CustomEvent< string >( TAB_CHANGE_EVENT, {
+				detail: tabLink.dataset.wcpaySpikeTab || '',
+			} )
+		);
+	},
+	true
+);
+
+/**
  * Design: secondary tab bar in the page header. Reuses Core's
  * `wc-settings-ui-shell__tabs` classes so Core owns the styling. Clicks are
- * soft navigations (event → SpikeTabState → groupVisibility); the hrefs stay
- * real so middle-click / open-in-new-tab still work as full loads.
+ * soft navigations (capture listener above → SpikeTabState → groupVisibility);
+ * the hrefs stay real so middle-click / open-in-new-tab still work as full
+ * loads.
  */
 const SpikeSubnav: React.FC< RegionComponentProps > = ( {
 	values,
@@ -234,15 +280,8 @@ const SpikeSubnav: React.FC< RegionComponentProps > = ( {
 							: 'wc-settings-ui-shell__tab'
 					}
 					href={ tab.href }
+					data-wcpay-spike-tab={ tab.id }
 					aria-current={ tab.id === activeTab ? 'page' : undefined }
-					onClick={ ( event ) => {
-						event.preventDefault();
-						window.dispatchEvent(
-							new CustomEvent< string >( TAB_CHANGE_EVENT, {
-								detail: tab.id,
-							} )
-						);
-					} }
 				>
 					{ tab.label }
 				</a>
