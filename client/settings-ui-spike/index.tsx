@@ -14,6 +14,11 @@ import {
 } from '@wordpress/components';
 
 /**
+ * Internal dependencies
+ */
+import './style.scss';
+
+/**
  * WOOPMNT-6211 spike: WooPayments settings rendered through the WooCommerce
  * Settings UI SDK (Modernised WooPayments Settings i1 designs).
  *

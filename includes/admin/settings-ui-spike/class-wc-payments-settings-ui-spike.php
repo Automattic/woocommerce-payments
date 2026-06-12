@@ -65,6 +65,10 @@ class WC_Payments_Settings_UI_Spike {
 		add_filter( 'woocommerce_get_settings_pages', [ __CLASS__, 'register_settings_ui_provider' ] );
 		add_filter( 'admin_body_class', [ __CLASS__, 'add_settings_ui_body_class' ], 40 );
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'register_scripts' ], 5 );
+		// The i1 design is a full page without admin notices. `in_admin_header`
+		// is the last action before `admin_notices` fires; Core uses the same
+		// approach for reactified payment sections.
+		add_action( 'in_admin_header', [ __CLASS__, 'suppress_admin_notices' ], PHP_INT_MAX );
 	}
 
 	/**
@@ -143,11 +147,35 @@ class WC_Payments_Settings_UI_Spike {
 			return $classes;
 		}
 
-		if ( str_contains( $classes, 'woocommerce-settings-ui-page' ) ) {
-			return $classes;
+		if ( ! str_contains( $classes, 'woocommerce-settings-ui-page' ) ) {
+			$classes .= ' woocommerce-settings-ui-page';
 		}
 
-		return "$classes woocommerce-settings-ui-page";
+		// Scopes the spike CSS that hides the legacy settings chrome
+		// (Settings header bar, WC settings tab rows) per the i1 design.
+		if ( ! str_contains( $classes, 'wcpay-settings-ui-spike-page' ) ) {
+			$classes .= ' wcpay-settings-ui-spike-page';
+		}
+
+		return $classes;
+	}
+
+	/**
+	 * Suppress admin notices on the SDK-rendered WooPayments settings screen.
+	 *
+	 * The i1 design renders a clean full page. Mirrors (simplified) what Core's
+	 * `WC_Settings_Payment_Gateways::suppress_admin_notices()` does for
+	 * reactified payment sections, which never include the gateway section.
+	 *
+	 * @return void
+	 */
+	public static function suppress_admin_notices() {
+		if ( ! self::is_sdk_rendering() ) {
+			return;
+		}
+
+		remove_all_actions( 'all_admin_notices' );
+		remove_all_actions( 'admin_notices' );
 	}
 
 	/**
@@ -166,6 +194,14 @@ class WC_Payments_Settings_UI_Spike {
 			'dist/settings-ui-spike',
 			[ 'wc-settings-ui-sdk' ]
 		);
+
+		wp_register_style(
+			self::SCRIPT_HANDLE,
+			plugins_url( 'dist/settings-ui-spike.css', WCPAY_PLUGIN_FILE ),
+			[ 'wp-components' ],
+			WC_Payments::get_file_version( 'dist/settings-ui-spike.css' )
+		);
+		wp_enqueue_style( self::SCRIPT_HANDLE );
 	}
 
 	/**
