@@ -64,41 +64,49 @@ jest.mock( '../use-balance-date-filter', () => {
 	};
 } );
 
-jest.mock( 'wcpay/reports/date-filter', () => ( {
-	__esModule: true,
-	default: ( {
-		label,
-		now,
-		onChange,
-		onClear,
-		value,
-	}: {
-		label?: string;
-		now?: Date;
-		onChange: ( next: unknown ) => void;
-		onClear?: () => void;
-		value?: unknown;
-	} ) => {
-		mockDateFilterProps( { now, value } );
-		return (
-			<>
-				<button type="button">{ label ?? 'Date' }</button>
-				<button
-					type="button"
-					onClick={ () => onChange( mockAppliedDateFilterValue ) }
-				>
-					Apply custom date
-				</button>
-				<button type="button" onClick={ () => onChange( undefined ) }>
-					Clear incompatible date shape
-				</button>
-				<button type="button" onClick={ () => onClear?.() }>
-					Clear Date filter
-				</button>
-			</>
-		);
-	},
-} ) );
+// The date filter lives inside BalanceDataView (the native DataViews filter).
+// Wrap the real component so render assertions still exercise the actual
+// DataViews table, while test-only buttons surface the onDateChange seam the
+// way the mocked DateFilter toolbar used to.
+jest.mock( '../balance-dataview', () => {
+	const actual = jest.requireActual( '../balance-dataview' ) as Record<
+		string,
+		unknown
+	>;
+	const ActualBalanceDataView = actual.BalanceDataView as React.ComponentType<
+		Record< string, unknown >
+	>;
+	return {
+		...actual,
+		BalanceDataView: (
+			props: Record< string, unknown > & {
+				dateValue?: unknown;
+				onDateChange: ( next: unknown ) => void;
+			}
+		) => {
+			mockDateFilterProps( { value: props.dateValue } );
+			return (
+				<>
+					<ActualBalanceDataView { ...props } />
+					<button
+						type="button"
+						onClick={ () =>
+							props.onDateChange( mockAppliedDateFilterValue )
+						}
+					>
+						Apply custom date
+					</button>
+					<button
+						type="button"
+						onClick={ () => props.onDateChange( undefined ) }
+					>
+						Clear Date filter
+					</button>
+				</>
+			);
+		},
+	};
+} );
 
 // Mirror the production helper's contract: `skipSymbol = true` returns the
 // formatted amount followed by the ISO code (no `$`). `formatBalanceAmount`
@@ -308,8 +316,13 @@ const zeroSummary = {
 	ending_balance: { amount: 0 },
 };
 
+// The summary renders through DataViews; the table has no accessible name of
+// its own, so resolve it through the labelled card group — this also keeps
+// the query unambiguous against the (aria-hidden) print-report table.
 const getVisibleBalanceTable = () =>
-	screen.getByRole( 'table', { name: 'Balance summary' } );
+	within(
+		screen.getByRole( 'group', { name: 'Balance summary' } )
+	).getByRole( 'table' );
 
 const expectBalanceText = ( text: string ) =>
 	expect(
@@ -400,47 +413,6 @@ describe( 'BalanceReport', () => {
 		);
 	} );
 
-	it( 'clears the active Date filter from the toolbar Reset button', async () => {
-		const { container } = renderBalanceReport( { onReload: jest.fn() } );
-		const toolbar = container.querySelector(
-			'.wcpay-reports-balance__toolbar'
-		) as HTMLElement;
-
-		expect(
-			within( toolbar ).getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
-		const resetButton = within( toolbar ).getByRole( 'button', {
-			name: 'Reset',
-		} );
-
-		await userEvent.click( resetButton );
-
-		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-			undefined
-		);
-	} );
-
-	it( 'moves focus from the Date filter to the error heading when a refresh fails', () => {
-		// Use mockReturnValue (not Once) so both BalanceActions and
-		// BalanceReport — which each call the hook in production — see the
-		// same state on every render.
-		mockBalanceSummaryState();
-
-		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
-		screen.getByRole( 'button', { name: 'Date' } ).focus();
-
-		mockBalanceSummaryState( {
-			summary: {},
-			error: { code: 'server_error' },
-		} );
-
-		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
-
-		expect(
-			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
-		).toHaveFocus();
-	} );
-
 	it( 'does not move focus to the error heading when focus is outside the report', () => {
 		mockBalanceSummaryState();
 
@@ -480,9 +452,6 @@ describe( 'BalanceReport', () => {
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
 			'Loading balance report'
 		);
-		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 	} );
@@ -504,9 +473,6 @@ describe( 'BalanceReport', () => {
 		expect( alert ).toHaveTextContent(
 			/We couldn't load your balance data\.\s*Try again in a few minutes\./
 		);
-		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 
@@ -566,13 +532,30 @@ describe( 'BalanceReport', () => {
 		).toHaveFocus();
 	} );
 
-	it( 'moves focus to the error heading when loading fails', () => {
+	it( 'moves focus to the error heading when a requested reload fails', async () => {
+		// Full production flow: error → Reload (focus moves to the loading
+		// heading) → the refresh fails again. The loading heading unmounts
+		// with the skeleton, so the pending-reload intent — not the live
+		// focus position — must drive the move to the error heading.
+		mockBalanceSummaryState( {
+			summary: {},
+			error: { code: 'server_error' },
+		} );
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
 		mockBalanceSummaryState( {
 			summary: {},
 			isLoading: true,
 		} );
-		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
-		screen.getByRole( 'button', { name: 'Date' } ).focus();
+		rerenderBalanceReport( rerender, { onReload: jest.fn() } );
+
+		expect(
+			screen.getByRole( 'heading', { name: 'Loading balance report' } )
+		).toHaveFocus();
 
 		mockBalanceSummaryState( {
 			summary: {},
@@ -713,9 +696,6 @@ describe( 'BalanceReport', () => {
 				"Your Balance summary will appear here once there's enough data to display."
 			)
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
-		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 	} );
@@ -735,24 +715,66 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.getByRole( 'heading', { name: 'No balance activity' } )
 		).toBeInTheDocument();
+		expect( screen.queryByRole( 'table' ) ).not.toBeInTheDocument();
+		// With no active filter the chip is gone, but the funnel toggle stays
+		// mounted so the Date filter can be re-added from the empty state.
 		expect(
-			screen.queryByRole( 'table', { name: 'Balance summary' } )
-		).not.toBeInTheDocument();
+			screen.getByRole( 'button', { name: /add filter/i } )
+		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
-		renderBalanceReport( { onReload: jest.fn() } );
+		// Provide an actual date-filter value (the default mock leaves it
+		// undefined) so the active Date chip renders alongside the rows.
+		mockBalanceDateFilterState( {
+			value: {
+				operator: 'between',
+				value: [ '2026-05-01', '2026-05-14' ],
+			},
+		} );
 
-		// "Balance summary" is the table's <caption>, not a separate heading
-		// — assert it via the table's accessible name + visible caption text.
+		const { container } = renderBalanceReport( { onReload: jest.fn() } );
+
+		// "Balance summary" renders as the card heading above the DataViews
+		// table (the bespoke <caption> is gone); the print report repeats the
+		// text in its own table header, so scope the query to the DataViews
+		// container.
 		expect( getVisibleBalanceTable() ).toBeInTheDocument();
+		const dataView = container.querySelector(
+			'.wcpay-reports-balance-dv'
+		) as HTMLElement;
 		expect(
-			within( getVisibleBalanceTable() ).getByText( 'Balance summary' )
+			within( dataView ).getByText( 'Balance summary' )
+		).toBeInTheDocument();
+		// The active Date chip is expanded by default — the mount effect opens
+		// the chips row DataViews keeps collapsed for non-primary filters.
+		// The chip renders as a focusable summary, not a role-queryable
+		// control, so this pins the DataViews 14 class name on purpose (it
+		// pairs with the openFiltersRowWorkaround selector coupling).
+		expect(
+			dataView.querySelector( '.dataviews-filters__summary-chip' )
+		).toBeInTheDocument();
+		// Table semantics preserved for screen readers: the visually-hidden
+		// column headers stay in the accessibility tree as plain text (no
+		// focusable menu buttons), and the card is a labelled group standing
+		// in for the bespoke table's <caption>.
+		expect(
+			within( getVisibleBalanceTable() ).getByRole( 'columnheader', {
+				name: 'Balance row',
+			} )
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'button', { name: 'Date' } )
+			within( getVisibleBalanceTable() ).getByRole( 'columnheader', {
+				name: 'Amount',
+			} )
+		).toBeInTheDocument();
+		expect(
+			within( getVisibleBalanceTable() ).queryByRole( 'button' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'group', { name: 'Balance summary' } )
 		).toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 		expectBalanceText( 'Ending balance - formatted 2024-03-31 UTC' );
@@ -1280,11 +1302,6 @@ describe( 'BalanceReport Tracks', () => {
 			expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith(
 				stableNow
 			);
-			expect( mockDateFilterProps ).toHaveBeenCalledWith(
-				expect.objectContaining( {
-					now: stableNow,
-				} )
-			);
 			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
 			expectRecordedTracksEvent(
 				'wcpay_reports_balance_date_filter_change',
@@ -1300,59 +1317,19 @@ describe( 'BalanceReport Tracks', () => {
 		}
 	);
 
-	it.each( [
-		{
-			source: 'toolbar Reset button',
-			clickReset: async () => {
-				const toolbar = document.querySelector(
-					'.wcpay-reports-balance__toolbar'
-				) as HTMLElement;
-				await userEvent.click(
-					within( toolbar ).getByRole( 'button', { name: 'Reset' } )
-				);
-			},
-		},
-		{
-			source: 'DateFilter chip clear button',
-			clickReset: async () => {
-				await userEvent.click(
-					screen.getByRole( 'button', {
-						name: 'Clear Date filter',
-					} )
-				);
-			},
-		},
-	] )(
-		'records reset date filter changes from the $source',
-		async ( { clickReset } ) => {
-			renderBalanceReport( { onReload: jest.fn() } );
-
-			await clickReset();
-			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-			expectRecordedTracksEvent(
-				'wcpay_reports_balance_date_filter_change',
-				{
-					preset: 'reset',
-					range_days: null,
-					is_initial_apply: false,
-				}
-			);
-			expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
-				undefined
-			);
-		}
-	);
-
-	it( 'does not record reset telemetry when DateFilter clears an incompatible date shape', async () => {
+	it( 'records reset date filter changes when the native date filter is cleared', async () => {
 		renderBalanceReport( { onReload: jest.fn() } );
 
 		await userEvent.click(
-			screen.getByRole( 'button', {
-				name: 'Clear incompatible date shape',
-			} )
+			screen.getByRole( 'button', { name: 'Clear Date filter' } )
 		);
 
-		expect( mockRecordEvent ).not.toHaveBeenCalled();
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expectRecordedTracksEvent( 'wcpay_reports_balance_date_filter_change', {
+			preset: 'reset',
+			range_days: null,
+			is_initial_apply: false,
+		} );
 		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
 			undefined
 		);
