@@ -3,10 +3,6 @@
 	<description>WCPay custom coding standards.</description>
 
 	<rule ref="WCPay.Hooks.DisallowHooksInConstructor">
-		<!-- https://github.com/Automattic/woocommerce-payments/issues/7259 -->
-		<exclude-pattern>*/includes/subscriptions/*</exclude-pattern>
-		<exclude-pattern>*/includes/compat/subscriptions/*</exclude-pattern>
-
 		<!-- https://github.com/Automattic/woocommerce-payments/issues/7260 -->
 		<exclude-pattern>*/includes/class-woopay-tracker.php</exclude-pattern>
 		<exclude-pattern>*/includes/woopay/*</exclude-pattern>

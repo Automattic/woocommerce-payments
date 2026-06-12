@@ -244,4 +244,14 @@ describe( 'getFeesFields field configuration', () => {
 			} )
 		);
 	} );
+
+	it( 'opts gross amount, fees total, and settlement date out of DataViews filtering', () => {
+		const fields = getTestFeesFields();
+
+		[ 'amount', 'fees', 'deposit_date' ].forEach( ( id ) => {
+			expect( fields.find( ( f ) => f.id === id )?.filterBy ).toBe(
+				false
+			);
+		} );
+	} );
 } );
