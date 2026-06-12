@@ -646,15 +646,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-			/**
-			 * Filters the product object for a cart item. This is a WooCommerce core hook.
-			 *
-			 * @since 2.1.0
-			 *
-			 * @param object $product        The cart item product object.
-			 * @param array  $cart_item      The cart item data.
-			 * @param string $cart_item_key  The cart item key.
-			 */
+			// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
 			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
