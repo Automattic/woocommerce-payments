@@ -112,16 +112,15 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		$price = isset( $cart_item['addons_price_before_calc'] ) ? $cart_item['addons_price_before_calc'] : $addon['price'];
 		$value = $addon['value'];
 
-		/**
+		/*
+		 * 'woocommerce_addons_add_cart_price_to_value'
+		 *
 		 * Use this filter to display the price next to each selected add-on option.
 		 * By default, add-on prices show up only next to flat fee add-ons.
 		 *
-		 * @since 8.1.0
-		 *
-		 * @param bool  $add_price_to_value Whether to append the price to the value. Default false.
-		 * @param array $cart_item          The cart item being processed.
+		 * @param boolean
 		 */
-		$add_price_to_value = apply_filters( 'woocommerce_addons_add_cart_price_to_value', false, $cart_item );
+		$add_price_to_value = apply_filters( 'woocommerce_addons_add_cart_price_to_value', false, $cart_item ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle -- WooCommerce Product Add-Ons hook, not defined by WooPayments.
 
 		if ( 0.0 === (float) $addon['price'] ) {
 			$value .= '';
@@ -265,14 +264,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	 */
 	public function order_line_item_meta( array $meta_data, array $addon, \WC_Order_Item_Product $item, array $values ): array {
 
-		/**
-		 * Filters whether the add-on price should be appended to the add-on value in order line items.
-		 *
-		 * @since 8.1.0
-		 *
-		 * @param bool                   $add_price_to_value Whether to append the price to the value. Default false.
-		 * @param \WC_Order_Item_Product $item               The order line item being processed.
-		 */
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce Product Add-Ons hook, not defined by WooPayments.
 		$add_price_to_value = apply_filters( 'woocommerce_addons_add_order_price_to_value', false, $item );
 
 		$value = $addon['value'];

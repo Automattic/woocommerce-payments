@@ -92,15 +92,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 			self::DEFAULT_SETTINGS
 		);
 
-		/**
-		 * Filters the widget title before it is displayed.
-		 *
-		 * @since 2.6.0
-		 *
-		 * @param string $title    The widget title.
-		 * @param array  $instance The settings for the particular instance of the widget.
-		 * @param string $id_base  The widget ID base.
-		 */
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WordPress core hook, not defined by WooPayments.
 		$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 
 		echo $args['before_widget']; // phpcs:ignore WordPress.Security.EscapeOutput
