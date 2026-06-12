@@ -950,7 +950,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Build the REST response for a server-side account update failure.
 	 *
-	 * When the Stripe error identifies a specific request parameter that maps to one of our
+	 * When the server error identifies a specific request field that maps to one of our
 	 * settings fields, the response mirrors the WP REST `rest_invalid_param` envelope so the
 	 * settings UI can render the message inline next to the field. Otherwise, the legacy
 	 * `server_error` shape is returned and the message is shown as a generic notice.
@@ -964,7 +964,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$error_code  = $error->get_error_code();
 		$error_data  = $error->get_error_data();
 		$setting_key = isset( $error_data['param'] )
-			? $this->map_stripe_param_to_setting_key( $error_data['param'] )
+			? $this->map_error_param_to_setting_key( $error_data['param'] )
 			: null;
 
 		if ( null === $setting_key ) {
@@ -993,48 +993,32 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Map a Stripe error `param` to the corresponding WooPayments setting key.
+	 * Map a server error `param` to the corresponding WooPayments setting key.
 	 *
-	 * Stripe returns the offending field as either a bare key (e.g. `support_phone`) or a
-	 * bracketed path (e.g. `business_profile[support_phone]`). We strip the wrapping and
-	 * match against {@see WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING}, but only
-	 * return fields the client renders inline ({@see self::INLINE_ERROR_SETTING_KEYS}) —
-	 * for any other field the inline envelope would suppress the notice without anything
-	 * rendering the message, and it would be lost.
+	 * The server identifies the offending field using the same account field names this
+	 * client sends in the settings update request — the values of
+	 * {@see WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING} — so an exact reverse
+	 * lookup resolves it. Only fields the client renders inline
+	 * ({@see self::INLINE_ERROR_SETTING_KEYS}) are returned — for any other field the
+	 * inline envelope would suppress the notice without anything rendering the message,
+	 * and it would be lost.
 	 *
-	 * @param string|null $param Stripe param value.
+	 * @param string|null $param Field name from the server error response.
 	 *
 	 * @return string|null Matching setting key, or null if no mapping is found.
 	 */
-	private function map_stripe_param_to_setting_key( ?string $param ): ?string {
+	private function map_error_param_to_setting_key( ?string $param ): ?string {
 		if ( null === $param || '' === $param ) {
 			return null;
 		}
 
-		// Extract the last bracketed segment, if any: `business_profile[support_phone]` -> `support_phone`.
-		if ( preg_match( '/\[([^\[\]]+)\]\s*$/', $param, $matches ) ) {
-			$param = $matches[1];
+		$setting_key = array_search( $param, WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING, true );
+
+		if ( false === $setting_key || ! in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true ) ) {
+			return null;
 		}
 
-		// First pass: exact match.
-		foreach ( WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING as $setting_key => $account_key ) {
-			if ( in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true ) && $account_key === $param ) {
-				return $setting_key;
-			}
-		}
-
-		// Second pass: suffix match, e.g. Stripe `support_phone` -> account key `business_support_phone`.
-		// Only returns when exactly one key matches — prevents ambiguous params from routing to the wrong field.
-		$suffix  = '_' . $param;
-		$matches = [];
-		foreach ( WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING as $setting_key => $account_key ) {
-			if ( in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true )
-				&& substr( $account_key, -strlen( $suffix ) ) === $suffix ) {
-				$matches[] = $setting_key;
-			}
-		}
-
-		return 1 === count( $matches ) ? $matches[0] : null;
+		return $setting_key;
 	}
 
 	/**

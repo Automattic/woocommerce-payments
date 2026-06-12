@@ -92,7 +92,11 @@ class API_Exception extends Base_Exception {
 	/**
 	 * Returns the request parameter associated with the error, if the server identified one.
 	 *
-	 * @return string|null Parameter path, for example 'support_phone' or 'business_profile[support_phone]'.
+	 * For account settings updates the server resolves this to the request field name the
+	 * client sent (for example 'business_support_phone'); raw Stripe-shaped error responses
+	 * may carry Stripe's own parameter form (for example 'business_profile[support_phone]').
+	 *
+	 * @return string|null The request parameter, or null when none was identified.
 	 */
 	public function get_param() {
 		return $this->param;

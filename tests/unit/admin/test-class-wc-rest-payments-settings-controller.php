@@ -679,14 +679,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_option( DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION ) );
 	}
 
-	public function test_update_settings_returns_field_targeted_error_when_stripe_param_maps_to_setting() {
+	public function test_update_settings_returns_field_targeted_error_when_error_param_maps_to_setting() {
 		$this->mock_wcpay_account
 			->method( 'update_stripe_account' )
 			->willReturn(
 				new WP_Error(
 					'wcpay_failed_to_update_stripe_account',
 					'Invalid Japanese phone number.',
-					[ 'param' => 'support_phone' ]
+					[ 'param' => 'business_support_phone' ]
 				)
 			);
 
@@ -713,9 +713,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_update_settings_returns_field_targeted_error_for_bracketed_stripe_param() {
-		// Stripe sometimes sends `business_profile[support_phone]`; the bracketed form should
-		// be extracted and mapped to the same inline field as the bare shorthand.
+	public function test_update_settings_falls_back_to_server_error_for_raw_stripe_param_form() {
+		// The server resolves Stripe's raw bracketed params (e.g.
+		// `business_profile[support_phone]`) to the request field name before responding.
+		// If a raw form ever reaches this client unmapped, it must not be guessed at —
+		// the legacy notice keeps the message visible.
 		$this->mock_wcpay_account
 			->method( 'update_stripe_account' )
 			->willReturn(
@@ -733,16 +735,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$data     = $response->get_data();
 
 		$this->assertSame( 400, $response->get_status() );
-		$this->assertSame( 'wcpay_server_error', $data['code'] );
-		$this->assertArrayNotHasKey( 'server_error', $data );
-		$this->assertSame(
-			'Invalid Japanese phone number.',
-			$data['data']['details']['account_business_support_phone']['message']
-		);
-		$this->assertSame(
-			'account_business_support_phone',
-			array_key_first( $data['data']['params'] )
-		);
+		$this->assertSame( 'Invalid Japanese phone number.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
 	}
 
 	public function test_update_settings_falls_back_to_server_error_for_fields_without_inline_ui() {

@@ -2844,6 +2844,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
+				// The server identifies the request field that caused the failure (e.g. on a
+				// rejected account settings update) in `data.param`.
+				$error_param = $response_body['data']['param'] ?? null;
 			} else {
 				$error_code    = 'wcpay_client_error_code_missing';
 				$error_message = __( 'Server error. Please try again.', 'woocommerce-payments' );
