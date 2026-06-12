@@ -3534,7 +3534,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		}
 
 		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => Currency_Code::SWISS_FRANC ] ) ) ); // Match it with note content sanitization process.
+		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
 		$time                     = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );

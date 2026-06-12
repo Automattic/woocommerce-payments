@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
@@ -1489,7 +1488,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_wcpay_intent_currency() {
-		$wcpay_intent_currency = Currency_Code::EURO;
+		$wcpay_intent_currency = 'EUR';
 		$this->order->update_meta_data( '_wcpay_intent_currency', $wcpay_intent_currency );
 		$this->order->save_meta_data();
 		$wcpay_intent_currency_from_service = $this->order_service->get_wcpay_intent_currency_for_order( $this->order->get_id() );

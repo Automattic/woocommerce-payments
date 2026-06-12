@@ -538,7 +538,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
 		$this->assertStringContainsString( 'failed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => Currency_Code::EURO ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_scheduled_subscription_payment_normalizes_unusable_pm_error_by_code() {

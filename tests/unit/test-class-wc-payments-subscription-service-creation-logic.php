@@ -6,7 +6,6 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Currency_Code;
 
 /**
  * Test WCPay subscription creation logic for manual renewals.
@@ -126,7 +125,7 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 						'wc_item_id' => $mock_line_item->get_id(),
 					],
 					'price_data' => [
-						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
+						'currency'            => 'USD',
 						'product'             => $mock_wcpay_product_id,
 						'unit_amount_decimal' => 1000.0,
 						'recurring'           => [
@@ -138,7 +137,7 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 				[
 					'price_data' => [
 						'product'             => $mock_wcpay_product_id,
-						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
+						'currency'            => 'USD',
 						'unit_amount_decimal' => 1000.0,
 						'recurring'           => [
 							'interval'       => 'month',

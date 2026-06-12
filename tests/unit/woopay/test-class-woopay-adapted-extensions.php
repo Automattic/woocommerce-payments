@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Currency_Code;
 use WCPay\WooPay\WooPay_Adapted_Extensions;
 use WCPay\WooPay\WooPay_Scheduler;
 
@@ -149,6 +148,6 @@ class WooPay_Adapted_Extensions_Test extends WCPAY_UnitTestCase {
 	public function test_get_extension_data() {
 		define( 'WOOCOMMERCE_MULTICURRENCY_VERSION', '0.0.0' );
 
-		$this->assertEquals( $this->woopay_adapted_extensions->get_extension_data(), [ 'woocommerce-multicurrency' => [ 'currency' => Currency_Code::UNITED_STATES_DOLLAR ] ] );
+		$this->assertEquals( $this->woopay_adapted_extensions->get_extension_data(), [ 'woocommerce-multicurrency' => [ 'currency' => 'USD' ] ] );
 	}
 }

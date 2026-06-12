@@ -95,7 +95,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $response_data['test_mode'] );
 		$this->assertSame( 'complete', $response_data['status'] );
 		$this->assertSame( Country_Code::GERMANY, $response_data['country'] );
-		$this->assertSame( Currency_Code::EURO, $response_data['store_currencies']['default'] );
+		$this->assertSame( 'EUR', $response_data['store_currencies']['default'] );
 	}
 
 	public function test_get_account_data_without_connected_account_and_enabled_onboarding() {
@@ -120,7 +120,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'NOACCOUNT', $response_data['status'] );
 		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
 		$this->assertContains( $response_data['country'], [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM ] );
-		$this->assertContains( $response_data['store_currencies']['default'], [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING ] );
+		$this->assertContains( $response_data['store_currencies']['default'], [ 'USD', 'GBP' ] );
 	}
 
 	public function test_get_account_data_without_connected_account_and_disabled_onboarding() {
@@ -144,7 +144,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'ONBOARDING_DISABLED', $response_data['status'] );
 		// The default country and currency have changed in WC 5.3, hence multiple options in assertions.
 		$this->assertContains( $response_data['country'], [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM ] );
-		$this->assertContains( $response_data['store_currencies']['default'], [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING ] );
+		$this->assertContains( $response_data['store_currencies']['default'], [ 'USD', 'GBP' ] );
 	}
 
 	public function test_get_account_data_with_card_eligible_present_true() {

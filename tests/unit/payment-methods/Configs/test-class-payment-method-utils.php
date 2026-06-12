@@ -94,12 +94,12 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 
 		// Test with supported currency and country.
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::UNITED_STATES_DOLLAR, 'US' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'USD', 'US' ),
 			'Should be available for USD in US'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::CANADIAN_DOLLAR, 'CA' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'CAD', 'CA' ),
 			'Should be available for CAD in CA'
 		);
 	}
@@ -112,7 +112,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::EURO, 'US' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'EUR', 'US' ),
 			'Should not be available for EUR in US'
 		);
 	}
@@ -125,7 +125,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(
-			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, Currency_Code::UNITED_STATES_DOLLAR, 'GB' ),
+			PaymentMethodUtils::is_available_for( $supported_currencies, $supported_countries, 'USD', 'GB' ),
 			'Should not be available for USD in GB'
 		);
 	}
@@ -136,12 +136,12 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	public function test_is_available_for_with_empty_support_arrays() {
 		// Empty arrays should allow all currencies and countries.
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( [], [], Currency_Code::UNITED_STATES_DOLLAR, 'US' ),
+			PaymentMethodUtils::is_available_for( [], [], 'USD', 'US' ),
 			'Empty arrays should allow all currencies and countries'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_available_for( [], [], Currency_Code::EURO, 'GB' ),
+			PaymentMethodUtils::is_available_for( [], [], 'EUR', 'GB' ),
 			'Empty arrays should allow all currencies and countries'
 		);
 	}
@@ -347,17 +347,17 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	public function test_is_domestic_currency_for_country_with_valid_combinations() {
 		// Test some known valid combinations.
 		$this->assertTrue(
-			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::UNITED_STATES_DOLLAR, 'US' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( 'USD', 'US' ),
 			'USD should be domestic for US'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::EURO, 'DE' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( 'EUR', 'DE' ),
 			'EUR should be domestic for DE'
 		);
 
 		$this->assertTrue(
-			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::POUND_STERLING, 'GB' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( 'GBP', 'GB' ),
 			'GBP should be domestic for GB'
 		);
 	}
@@ -367,18 +367,18 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 */
 	public function test_is_domestic_currency_for_country_with_invalid_combinations() {
 		$this->assertFalse(
-			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::EURO, 'US' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( 'EUR', 'US' ),
 			'EUR should not be domestic for US'
 		);
 
 		$this->assertFalse(
-			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::UNITED_STATES_DOLLAR, 'GB' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( 'USD', 'GB' ),
 			'USD should not be domestic for GB'
 		);
 
 		// Test with invalid country code.
 		$this->assertFalse(
-			PaymentMethodUtils::is_domestic_currency_for_country( Currency_Code::UNITED_STATES_DOLLAR, 'XX' ),
+			PaymentMethodUtils::is_domestic_currency_for_country( 'USD', 'XX' ),
 			'Should return false for invalid country code'
 		);
 	}
