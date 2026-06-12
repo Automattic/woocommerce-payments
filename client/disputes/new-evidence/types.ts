@@ -183,10 +183,11 @@ export interface Recommendation {
 	 */
 	lift?: number;
 	/**
-	 * Hide all other `critical` entries when this one fires, so a no-evidence
-	 * dispute shows one clear message instead of a stack. Used by c15.
+	 * Hide every other matched entry, of any urgency, when this one fires, so a
+	 * no-evidence dispute shows one clear message instead of a stack. Used by
+	 * c15.
 	 */
-	suppressOtherCriticals?: boolean;
+	suppressOthers?: boolean;
 	/**
 	 * Tombstone: kept so the id is never reused as a Tracks join key, but
 	 * dropped from runtime results.

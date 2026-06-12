@@ -111,22 +111,22 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool   $return  Whether to convert the product's price or not. Default is true.
-	 * @param object $product Product object to test.
+	 * @param bool   $should_convert Whether to convert the product's price or not. Default is true.
+	 * @param object $product        Product object to test.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return, $product ): bool {
+	public function should_convert_product_price( bool $should_convert, $product ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $should_convert ) {
+			return $should_convert;
 		}
 
 		$currency = $this->multi_currency->get_selected_currency();
 
 		// Check for cart items to see if they are in the original currency.
 		if ( $currency->get_code() === $product->get_meta( self::NYP_CURRENCY ) ) {
-			$return = false;
+			$should_convert = false;
 		}
 
 		// Check to see if the product is a NYP product.
@@ -134,7 +134,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $should_convert;
 	}
 
 	/**
