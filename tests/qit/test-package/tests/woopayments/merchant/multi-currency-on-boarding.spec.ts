@@ -146,19 +146,9 @@ test.describe(
 			test( 'should display suggested currencies at the beginning of the list', async ( {
 				adminPage,
 			} ) => {
-				// Wait for the first element to be visible before snapshotting
-				// the full list — .all() doesn't auto-wait so we need the
-				// content to be present first.
 				await expect(
-					adminPage.getByTestId( 'recommended-currency' ).first()
-				).toBeVisible();
-				await expect(
-					(
-						await adminPage
-							.getByTestId( 'recommended-currency' )
-							.all()
-					 ).length
-				).toBeGreaterThan( 0 );
+					adminPage.getByTestId( 'recommended-currency' )
+				).not.toHaveCount( 0 );
 			} );
 
 			test( 'selected currencies are enabled after onboarding', async ( {
