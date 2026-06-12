@@ -127,15 +127,15 @@ class WooCommerceBookings extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool       $return Whether to convert the product's price or not. Default is true.
-	 * @param WC_Product $product The product instance being checked.
+	 * @param bool       $should_convert Whether to convert the product's price or not. Default is true.
+	 * @param WC_Product $product        The product instance being checked.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return, WC_Product $product ): bool {
+	public function should_convert_product_price( bool $should_convert, WC_Product $product ): bool {
 		// If it's already false, or the product is not a booking, ignore it.
-		if ( ! $return || $product->get_type() !== 'booking' ) {
-			return $return;
+		if ( ! $should_convert || $product->get_type() !== 'booking' ) {
+			return $should_convert;
 		}
 
 		// Fixes price display on product page and in shop.
@@ -143,7 +143,7 @@ class WooCommerceBookings extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $should_convert;
 	}
 
 	/**
