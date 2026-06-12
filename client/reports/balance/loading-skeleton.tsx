@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { BalanceSummaryTable } from './summary-table';
+import { BalanceDataView } from './balance-dataview';
 import { getVisibleBalanceRows } from './rows';
 import type { ReportsBalanceSummary } from 'wcpay/data/reports/hooks';
 
@@ -54,7 +54,7 @@ export const BalanceLoadingSkeleton = ( {
 
 	return (
 		<div className="wcpay-reports-balance__skeleton">
-			<BalanceSummaryTable
+			<BalanceDataView
 				visibleRows={ visibleRows }
 				summary={ mockSummary }
 				displayPeriod={ {
@@ -62,7 +62,9 @@ export const BalanceLoadingSkeleton = ( {
 					end: mockSummary.period?.end ?? '',
 				} }
 				currency={ currency }
-				ariaHidden
+				dateValue={ undefined }
+				onDateChange={ () => undefined }
+				preview
 			/>
 			<div
 				className="wcpay-reports-balance__skeleton-shimmer"
