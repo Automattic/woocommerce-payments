@@ -22,6 +22,15 @@ import type { DateFilterValue, DateOperator } from './types';
 export type { DateFilterValue, DateOperator } from './types';
 export { parseDateFilterFromQuery, serializeDateFilterToQuery } from './url';
 
+/*
+ * NOTE: the DateFilter component UI below (and its chip / popover / calendar
+ * building blocks) has no remaining runtime consumers — the Balance report
+ * uses the native DataViews date filter, and the Fees report drops its last
+ * usage (PopoverBody) when its native-filters PR lands. The module's
+ * utilities (types.ts, url.ts, presets.ts, formatters.ts) stay: both reports
+ * still build on them. Once the Fees PR is merged, delete the component UI
+ * in a follow-up rather than letting it linger unused.
+ */
 export interface DateFilterProps {
 	value: DateFilterValue | undefined;
 	onChange: ( next: DateFilterValue | undefined ) => void;
