@@ -14,6 +14,7 @@ use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -1119,7 +1120,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_payment_methods_enabled_based_on_currency_limits() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		WC()->session->init();
 		WC()->cart->empty_cart();
@@ -1146,7 +1147,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_payment_methods_disabled_based_on_currency_limits() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		WC()->session->init();
 		WC()->cart->empty_cart();
@@ -1165,7 +1166,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp;
 		global $wp_query;
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
 		$order                = WC_Helper_Order::create_order( 1, 100 );
@@ -1184,14 +1185,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp;
 		global $wp_query;
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		// Total is 30 USD, which is below Affirm minimum.
 		$order                = WC_Helper_Order::create_order( 1, 30 );
 		$order_id             = $order->get_id();
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$affirm_method   = $this->payment_methods['affirm'];
 		$afterpay_method = $this->payment_methods['afterpay_clearpay'];
@@ -1214,9 +1215,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
 		$grabpay_method    = $this->payment_methods['grabpay'];
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
 
-		$account_domestic_currency = 'USD';
+		$account_domestic_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
@@ -1231,7 +1232,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1246,17 +1247,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::AUSTRALIAN_DOLLAR;
 		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'SGD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::SINGAPORE_DOLLAR;
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $grabpay_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $grabpay_method->is_currency_valid( 'SGD' ) );
 
 		// BNPLs can accept only domestic payments.
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
-		$account_domestic_currency                   = 'CAD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+		$account_domestic_currency                   = Currency_Code::CANADIAN_DOLLAR;
 		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
@@ -1276,8 +1277,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$affirm_method     = $this->payment_methods['affirm'];
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_domestic_currency                   = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+		$account_domestic_currency                   = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1293,7 +1294,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order          = WC_Helper_Order::create_order();
 		$order_id       = $order->get_id();
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1307,7 +1308,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$wp->query_vars                              = [];
 	}
 
@@ -1723,7 +1724,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->save();
 
 		$this->mock_wcpay_account
@@ -1742,7 +1743,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->save();
 
 		$this->mock_wcpay_account
@@ -1761,7 +1762,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->set_currency( 'JPY' );
+		$order->set_currency( Currency_Code::JAPANESE_YEN );
 		$order->save();
 
 		$this->mock_wcpay_account
@@ -1780,7 +1781,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'balance_transaction' => [
 						'amount'        => 4450,
 						'fee'           => 50,
-						'currency'      => 'USD',
+						'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
 						'exchange_rate' => 0.9414,
 					],
 				]
@@ -1795,7 +1796,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->set_currency( 'EUR' );
+		$order->set_currency( Currency_Code::EURO );
 		$order->save();
 
 		$this->mock_wcpay_account
@@ -1813,7 +1814,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'balance_transaction' => [
 						'amount'        => 4450,
 						'fee'           => 50,
-						'currency'      => 'USD',
+						'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
 						'exchange_rate' => 0.853,
 					],
 				]
@@ -2040,7 +2041,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
-		$order->set_currency( 'EUR' );
+		$order->set_currency( Currency_Code::EURO );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
@@ -2151,7 +2152,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
-		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		WC_Payments_Utils::set_order_intent_currency( $order, Currency_Code::EURO );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
@@ -3069,7 +3070,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$expected_upe_payment_method = 'card';
 		$order                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3096,7 +3097,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( $legacy_card );
 
 		$order = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3129,7 +3130,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( $legacy_card );
 
 		$order = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3161,7 +3162,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$expected_upe_payment_method = 'card';
 		$order                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3190,7 +3191,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 
 		$order = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 0.45 );
 		$order->save();
 
@@ -3247,7 +3248,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_set_mandate_data_to_payment_intent_if_not_required() {
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3271,7 +3272,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$gateway        = $this->get_gateway( Payment_Method::SEPA );
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3306,7 +3307,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$payment_method = 'woocommerce_payments';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 0 );
 		$order->save();
 		$customer = 'cus_12345';
@@ -3346,7 +3347,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$payment_method = 'woocommerce_payments';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 0 );
 		$order->save();
 		$customer = 'cus_12345';
@@ -3676,7 +3677,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method                              = 'woocommerce_payments';
 		$expected_upe_payment_method_for_pi_creation = 'card';
 		$order                                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3699,7 +3700,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method                              = 'woocommerce_payments_sepa_debit';
 		$expected_upe_payment_method_for_pi_creation = 'sepa_debit';
 		$order                                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3725,7 +3726,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method                              = 'woocommerce_payments_afterpay_clearpay';
 		$expected_upe_payment_method_for_pi_creation = 'afterpay_clearpay';
 		$order                                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->set_billing_city( $address['city'] );
 		$order->set_billing_state( $address['state'] );
