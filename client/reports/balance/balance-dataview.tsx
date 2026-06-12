@@ -12,7 +12,14 @@
  *
  * External dependencies
  */
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { DataViews } from '@wordpress/dataviews/wp';
 import type { View, Field } from '@wordpress/dataviews/wp';
@@ -34,6 +41,12 @@ import type { DateFilterValue } from 'wcpay/reports/date-filter';
 // form (an active filter exists); the "Add filter" menu trigger carries
 // aria-haspopup and is intentionally skipped so a filterless mount never pops
 // the menu.
+//
+// This is a deliberate UX divergence from the Fees report, which accepts
+// DataViews' collapsed default (chip hidden behind the funnel badge until
+// clicked): the Balance date filter is the report's only control and always
+// has an applied value, so hiding it would bury the one thing a merchant can
+// act on. The canonical-rows test pins the open-by-default behaviour.
 // TODO: Replace with a public DataViews API (e.g. a `defaultFiltersOpen` prop
 // or an `isShowingFilter` setter) once one ships upstream.
 const openFiltersRowWorkaround = ( root: HTMLElement | null ): void => {
@@ -94,6 +107,9 @@ export const BalanceDataView = ( {
 	// an operator switch that reset the value). The chip must stay rendered —
 	// with its date input — even though there's no applied value yet, and the
 	// controlled `view` below is otherwise derived solely from `dateValue`.
+	// Unlike Fees (which stages this in useFeesView next to its URL sync),
+	// Balance has no view-state URL sync, so component state is the right
+	// home for it.
 	const [ pendingDateOperator, setPendingDateOperator ] = useState<
 		string | null
 	>( null );
@@ -236,27 +252,35 @@ export const BalanceDataView = ( {
 		};
 	}, [ dateValue, pendingDateOperator ] );
 
-	const onChangeView = ( next: View ) => {
-		const dateFilter = next.filters?.find( ( f ) => f.field === 'date' );
-		if ( dateFilter && dateFilter.value !== undefined ) {
+	// `items`, `fields` and `view` are memoized above; memoizing the handler
+	// too keeps the DataViews prop set referentially stable between renders.
+	const onChangeView = useCallback(
+		( next: View ) => {
+			const dateFilter = next.filters?.find(
+				( f ) => f.field === 'date'
+			);
+			if ( dateFilter && dateFilter.value !== undefined ) {
+				setPendingDateOperator( null );
+				onDateChange( {
+					operator: dateFilter.operator,
+					value: dateFilter.value,
+				} as DateFilterValue );
+				return;
+			}
+			if ( dateFilter ) {
+				// Filter added from the funnel menu, or an operator switch
+				// reset the value — keep the chip mounted while the user
+				// picks a date.
+				setPendingDateOperator( dateFilter.operator );
+				return;
+			}
 			setPendingDateOperator( null );
-			onDateChange( {
-				operator: dateFilter.operator,
-				value: dateFilter.value,
-			} as DateFilterValue );
-			return;
-		}
-		if ( dateFilter ) {
-			// Filter added from the funnel menu, or an operator switch reset
-			// the value — keep the chip mounted while the user picks a date.
-			setPendingDateOperator( dateFilter.operator );
-			return;
-		}
-		setPendingDateOperator( null );
-		if ( dateValue ) {
-			onDateChange( undefined );
-		}
-	};
+			if ( dateValue ) {
+				onDateChange( undefined );
+			}
+		},
+		[ dateValue, onDateChange ]
+	);
 
 	return (
 		<div
