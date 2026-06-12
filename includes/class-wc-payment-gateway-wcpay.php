@@ -1597,6 +1597,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
+			// No intent/charge is created on this path (e.g. a $0 free trial paid with an already-saved card),
+			// so source the card details from the payment method to brand the order title + card meta instead
+			// of a generic "Card". Set BEFORE payment_complete(), which fires the order email. Link keeps its
+			// own title in the block below. WOOPMNT-2882.
+			$zero_amount_token      = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
+			$zero_amount_pm_details = $zero_amount_token instanceof \WC_Payment_Token_WCPay_Link
+				? false
+				: $this->get_payment_method_details_for_zero_amount_order( $payment_information->get_payment_method() );
+			if ( $zero_amount_pm_details ) {
+				$this->set_payment_method_title_for_order( $order, $zero_amount_pm_details['type'], $zero_amount_pm_details );
+				$this->store_card_details_meta_for_order( $order, $zero_amount_pm_details['type'], $zero_amount_pm_details );
+			}
+
 			$order->payment_complete();
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1651,10 +1664,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$token_for_title = $payment_information->get_payment_token();
 				if ( $token_for_title instanceof \WC_Payment_Token_WCPay_Link ) {
 					$order->set_payment_method_title( __( 'Link', 'woocommerce-payments' ) );
-				} else {
+				} elseif ( ! $zero_amount_pm_details ) {
+					// Keep the branded title set above when we sourced the card from the payment method;
+					// otherwise fall back to a generic title. WOOPMNT-2882.
 					$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
 				}
-			} else {
+			} elseif ( ! $zero_amount_pm_details ) {
 				$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
 			}
 			$order->save();
@@ -2030,9 +2045,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 		} else {
-			$payment_method_details = false;
+			// $0 SetupIntent confirmations (free trials, $0 PM changes) have no charge. Source the card
+			// details from the confirmed payment method so the order title + card meta reflect the real
+			// card instead of a generic "Card" — this is the common free-trial path. The Link token check
+			// is preserved for saved-Link payments. WOOPMNT-2882.
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
-			$payment_method_type    = $token ? $this->get_payment_method_type_for_setup_intent( $intent, $token ) : null;
+			$payment_method_details = $this->get_payment_method_details_for_zero_amount_order( $intent ? $intent->get_payment_method_id() : null );
+			$payment_method_type    = $token
+				? $this->get_payment_method_type_for_setup_intent( $intent, $token )
+				: ( $payment_method_details ? $payment_method_details['type'] : null );
+
+			if ( $payment_method_details ) {
+				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
+			}
 		}
 
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
@@ -2197,15 +2222,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent                 = $request->send();
-				$client_secret          = $intent->get_client_secret();
-				$status                 = $intent->get_status();
-				$charge_id              = '';
-				$charge                 = null;
-				$currency               = $order->get_currency();
-				$payment_method_id      = $intent->get_payment_method_id();
-				$payment_method_details = false;
-				$payment_method_type    = $intent->get_payment_method_type();
+				$intent            = $request->send();
+				$client_secret     = $intent->get_client_secret();
+				$status            = $intent->get_status();
+				$charge_id         = '';
+				$charge            = null;
+				$currency          = $order->get_currency();
+				$payment_method_id = $intent->get_payment_method_id();
+				// SetupIntents carry no charge, so source the card details from the confirmed payment method
+				// to brand the order title (and card meta) instead of falling back to a generic "Card". WOOPMNT-2882.
+				$payment_method_details = $this->get_payment_method_details_for_zero_amount_order( $payment_method_id );
+				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : $intent->get_payment_method_type();
 				$error                  = $intent->get_last_setup_error();
 			}
 
@@ -2237,6 +2264,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
@@ -3943,6 +3971,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// directly ensures the order transitions to the correct status and activates subscriptions.
 				// Otherwise, the order would be in a "Pending payment" state and the subscription would be "Pending".
 				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() && ! $is_subscription_payment_method_change ) {
+					// $0 orders (free trials) confirm a SetupIntent with no charge to read the card from.
+					// Source the card details from the confirmed payment method so the order, its synced
+					// subscription, and the completion email show the real card instead of a generic "Card".
+					// Set the title BEFORE payment_complete(), which fires the customer email. Assign into the
+					// method-scoped $payment_method_details (not a local) so the later ! empty( $token ) block
+					// re-applies the SAME branded title rather than overwriting it back to a generic "Card" with
+					// the still-false default — mirroring how the $amount > 0 branch feeds the charge details
+					// into $payment_method_details. WOOPMNT-2882.
+					$payment_method_details = $this->get_payment_method_details_for_zero_amount_order( $intent->get_payment_method_id() );
+					if ( $payment_method_details ) {
+						$this->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
+						$this->store_card_details_meta_for_order( $order, $payment_method_details['type'], $payment_method_details );
+					}
+
 					$order->payment_complete( $intent_id );
 
 					// Add a success note similar to mark_payment_completed().
@@ -4670,8 +4712,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Stores the card brand and last 4 digits on the order from the charge's payment method details,
-	 * so order/email displays and reporting reflect the actual card used. No-op when the details are
-	 * unavailable or the payment method does not carry card information (e.g. redirect methods, Link).
+	 * so order/email displays and reporting reflect the actual card used. Also caches the full payment
+	 * method details for reuse (see below). No-op when the details are unavailable or the payment method
+	 * does not carry card information (e.g. redirect methods, Link).
 	 *
 	 * @param WC_Order    $order                  The order to store the meta on.
 	 * @param string|null $payment_method_type    The Stripe payment method type (e.g. 'card', 'amazon_pay').
@@ -4680,6 +4723,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private function store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details ) {
 		if ( ! is_array( $payment_method_details ) ) {
 			return;
+		}
+
+		// Stripe reports Link as type='card' with card.wallet.type='link'. Link wraps a card but must not
+		// persist the underlying card's brand/last4 as the order's card meta. The positive-payment path
+		// normalizes the type to Payment_Method::LINK before calling; guarding here keeps every caller
+		// consistent — including the $0 SetupIntent paths, where the type stays 'card'. WOOPMNT-2882.
+		if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details ) ) {
+			return;
+		}
+
+		// Cache the full payment method details so a later get_card_info() reuse (e.g. an order-details
+		// render) hits this cache instead of firing a second get_payment_method() lookup. The positive-charge
+		// paths already persist this via the charge in attach_intent_info_to_order(), which runs before this;
+		// only the no-charge $0 paths reach here with it unset. Guarded on absence so we never overwrite the
+		// charge's details, and placed after the Link guard above so a Link payment never caches the
+		// underlying card here. WOOPMNT-2882.
+		if ( null === $this->order_service->get_payment_method_details( $order ) ) {
+			$this->order_service->store_payment_method_details( $order, $payment_method_details );
 		}
 
 		if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
@@ -4698,6 +4759,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
 			}
 			$order->save_meta_data();
+		}
+	}
+
+	/**
+	 * Fetches the card-identifying details for a $0 order confirmation from the confirmed payment method.
+	 * These orders carry no charge to read the card from — whether they confirm a SetupIntent (new card)
+	 * or take the no-intent branch (already-saved card) — so without this the order/subscription/email
+	 * would fall back to a generic "Card". Returns false on any failure so callers keep the generic title.
+	 * See WOOPMNT-2882.
+	 *
+	 * @param string|null $payment_method_id The confirmed payment method ID.
+	 * @return array|false The payment method details (e.g. [ 'type' => 'card', 'card' => [...] ]), or false.
+	 */
+	private function get_payment_method_details_for_zero_amount_order( $payment_method_id ) {
+		if ( empty( $payment_method_id ) ) {
+			return false;
+		}
+
+		// Catch \Exception (not just API_Exception): branding is a display enhancement, so a lookup failure
+		// of any kind must degrade to the generic title rather than break the $0 checkout that calls this
+		// before payment_complete(). See WOOPMNT-2882.
+		try {
+			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+			return ( is_array( $payment_method_details ) && isset( $payment_method_details['type'] ) ) ? $payment_method_details : false;
+		} catch ( \Exception $e ) {
+			Logger::error( 'Could not fetch payment method to brand the $0 order title: ' . $e->getMessage() );
+			return false;
 		}
 	}
 
