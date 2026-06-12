@@ -8,9 +8,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import MegaphoneIcon from './megaphone-icon';
-import builtItIllustration from './illustrations/built-it.png';
-import checkInIllustration from './illustrations/check-in.png';
-import './illustrations/style.scss';
+import builtItIllustration from 'assets/images/illustrations/review-prompt-built-it.svg?asset';
+import checkInIllustration from 'assets/images/illustrations/review-prompt-check-in.svg?asset';
+import './style.scss';
 
 export interface ReviewPromptVariantContent {
 	heading: string;
