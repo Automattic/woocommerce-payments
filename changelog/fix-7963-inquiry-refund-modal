@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Issue refunds for payment inquiries directly from the transaction details page instead of redirecting to the order screen.

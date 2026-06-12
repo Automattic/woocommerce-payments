@@ -43,7 +43,10 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from '../transformers/wc-to-stripe';
-import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
+import {
+	isAddToCartBlocked,
+	isVariationUnavailable,
+} from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
 const fetchNewCartData = async () => {
@@ -278,31 +281,20 @@ jQuery( ( $ ) => {
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
-					const addToCartButton = jQuery(
-						getAddToCartButtonElement()
-					);
-
-					// First check if product can be added to cart.
-					if ( addToCartButton.is( '.disabled' ) ) {
-						if (
-							addToCartButton.is( '.wc-variation-is-unavailable' )
-						) {
-							window.alert(
-								window?.wc_add_to_cart_variation_params
-									?.i18n_unavailable_text ||
-									__(
-										'Sorry, this product is unavailable. Please choose a different combination.',
+					if ( isAddToCartBlocked() ) {
+						window.alert(
+							isVariationUnavailable()
+								? window?.wc_add_to_cart_variation_params
+										?.i18n_unavailable_text ||
+										__(
+											'Sorry, this product is unavailable. Please choose a different combination.',
+											'woocommerce-payments'
+										)
+								: __(
+										'Please select your product options before proceeding.',
 										'woocommerce-payments'
-									)
-							);
-						} else {
-							window.alert(
-								__(
-									'Please select your product options before proceeding.',
-									'woocommerce-payments'
-								)
-							);
-						}
+								  )
+						);
 						return;
 					}
 
@@ -521,20 +513,15 @@ jQuery( ( $ ) => {
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
 				async () => {
-					// if the product cannot be added to cart (because of missing variation selection, etc),
-					// don't try to add it to the cart to get new data - the call will likely fail.
+					// A blocked product (no variation selected, out of stock…) would
+					// fail the cart fetch, so skip the refresh.
 					if (
-						getExpressCheckoutData( 'button_context' ) === 'product'
+						getExpressCheckoutData( 'button_context' ) ===
+							'product' &&
+						isAddToCartBlocked()
 					) {
-						const addToCartButton = jQuery(
-							getAddToCartButtonElement()
-						);
-
-						// First check if product can be added to cart.
-						if ( addToCartButton.is( '.disabled' ) ) {
-							expressCheckoutButtonUi.unblockButton();
-							return;
-						}
+						expressCheckoutButtonUi.unblockButton();
+						return;
 					}
 
 					// any previously added notices can be removed.

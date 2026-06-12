@@ -1126,8 +1126,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function add_emails( $email_classes ) {
 		include_once __DIR__ . '/class-wc-payments-email-failed-renewal-authentication.php';
 		include_once __DIR__ . '/class-wc-payments-email-failed-authentication-retry.php';
-		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
-		$email_classes['WC_Payments_Email_Failed_Authentication_Retry']   = new WC_Payments_Email_Failed_Authentication_Retry();
+		$failed_renewal_authentication = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
+		$failed_renewal_authentication->init_hooks();
+		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = $failed_renewal_authentication;
+
+		$failed_authentication_retry = new WC_Payments_Email_Failed_Authentication_Retry();
+		$failed_authentication_retry->init_hooks();
+		$email_classes['WC_Payments_Email_Failed_Authentication_Retry'] = $failed_authentication_retry;
+
 		return $email_classes;
 	}
 
