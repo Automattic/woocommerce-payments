@@ -52,10 +52,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$constants    = $reflection->getConstants();
 		$option_array = array_filter(
 			$constants,
-			function ( $key ) {
-				return strpos( $key, '_wcpay_feature_' ) === 0;
-			},
-			ARRAY_FILTER_USE_KEY
+			function ( $value ) {
+				return is_string( $value ) && strpos( $value, '_wcpay_feature_' ) === 0;
+			}
 		);
 
 		$this->clear_feature_flag_options( $option_array );
