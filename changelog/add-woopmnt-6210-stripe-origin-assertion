@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add a client-side origin assertion for Stripe.js as defense-in-depth against checkout skimmers that repoint the script handle to a look-alike domain.

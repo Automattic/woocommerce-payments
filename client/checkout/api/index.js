@@ -8,6 +8,12 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
+import {
+	verifyStripeJsOrigin,
+	stripeJsOrigin,
+} from 'wcpay/checkout/utils/verify-stripe-origin';
+
+const STRIPE_ORIGIN_CHECK_MODES = [ 'off', 'report', 'block' ];
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -67,7 +73,55 @@ export default class WCPayAPI {
 				throw new Error( 'Stripe object not found' );
 			}
 		}
+		this.assertStripeJsOrigin();
 		return this.__getStripe( forceAccountRequest );
+	}
+
+	/**
+	 * Resolves the server-settable mode for the Stripe.js origin assertion.
+	 *
+	 * @return {string} One of 'off', 'report', 'block'. Unknown/missing values
+	 *                  fall back to 'block' (fail closed).
+	 */
+	getStripeOriginCheckMode() {
+		const mode = getConfig( 'stripeOriginCheckMode' );
+		return STRIPE_ORIGIN_CHECK_MODES.includes( mode ) ? mode : 'block';
+	}
+
+	/**
+	 * Asserts that the loaded Stripe.js was served from Stripe's own origin.
+	 *
+	 * Defense-in-depth against a compromised site repointing the mutable
+	 * `stripe` script handle at a look-alike skimmer clone. This defends the
+	 * Stripe.js-substitution vector specifically; it is not a general skimmer
+	 * defense and is bypassable by an attacker with full control of the page.
+	 * In 'block' mode a mismatch throws and stops the payment; in 'report' mode
+	 * it only warns; 'off' skips the check.
+	 */
+	assertStripeJsOrigin() {
+		const mode = this.getStripeOriginCheckMode();
+		if ( mode === 'off' ) {
+			return;
+		}
+
+		const result = verifyStripeJsOrigin();
+		if ( result.ok ) {
+			return;
+		}
+
+		// Tier 1 diagnostic. A server-side log over a same-origin endpoint is
+		// the intended pre-merge follow-on; for now surface it where support
+		// can find it with a repro.
+		// eslint-disable-next-line no-console
+		console.warn(
+			`WooPayments: Stripe.js loaded from an unexpected origin (${ result.detectedSrc }). Expected ${ stripeJsOrigin }.`
+		);
+
+		if ( mode === 'block' ) {
+			throw new Error(
+				`Stripe.js loaded from unexpected origin: ${ result.detectedSrc }`
+			);
+		}
 	}
 
 	/**

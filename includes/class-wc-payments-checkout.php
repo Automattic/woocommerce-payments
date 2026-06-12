@@ -211,6 +211,7 @@ class WC_Payments_Checkout {
 			'woopayMerchantId'                  => Jetpack_Options::get_option( 'id' ),
 			'icon'                              => $this->gateway->get_icon_url(),
 			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),
+			'stripeOriginCheckMode'             => WC_Payments_Features::get_stripe_origin_check_mode(),
 		];
 
 		// Provide the admin nonce when previewing in the Customizer so the

@@ -121,6 +121,31 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
+	public function test_get_stripe_origin_check_mode_defaults_to_block() {
+		$this->assertSame( 'block', WC_Payments_Features::get_stripe_origin_check_mode() );
+	}
+
+	/**
+	 * @dataProvider provider_stripe_origin_check_modes
+	 */
+	public function test_get_stripe_origin_check_mode_returns_valid_modes( string $value ) {
+		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_ORIGIN_CHECK_MODE, $value );
+		$this->assertSame( $value, WC_Payments_Features::get_stripe_origin_check_mode() );
+	}
+
+	public function provider_stripe_origin_check_modes(): array {
+		return [
+			'off'    => [ 'off' ],
+			'report' => [ 'report' ],
+			'block'  => [ 'block' ],
+		];
+	}
+
+	public function test_get_stripe_origin_check_mode_falls_back_to_block_for_unknown_value() {
+		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_ORIGIN_CHECK_MODE, 'bogus' );
+		$this->assertSame( 'block', WC_Payments_Features::get_stripe_origin_check_mode() );
+	}
+
 	public function test_is_woopay_eligible_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->assertTrue( WC_Payments_Features::is_woopay_eligible() );

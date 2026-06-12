@@ -34,6 +34,7 @@ class WC_Payments_Features {
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
+	const STRIPE_ORIGIN_CHECK_MODE                           = '_wcpay_stripe_origin_check_mode';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -44,6 +45,22 @@ class WC_Payments_Features {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
 		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Resolves the enforcement mode for the client-side Stripe.js origin assertion.
+	 *
+	 * Defense-in-depth against a compromised site repointing the mutable `stripe`
+	 * script handle at a look-alike skimmer clone. The value is server-settable
+	 * (per store), so enforcement can be flipped — or a false positive unblocked —
+	 * without a plugin release.
+	 *
+	 * @return string One of 'off', 'report', 'block'. Defaults to 'block'.
+	 */
+	public static function get_stripe_origin_check_mode(): string {
+		$mode = get_option( self::STRIPE_ORIGIN_CHECK_MODE, 'block' );
+
+		return in_array( $mode, [ 'off', 'report', 'block' ], true ) ? $mode : 'block';
 	}
 
 	/**
