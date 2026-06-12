@@ -9,6 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -126,7 +127,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account
 			->method( 'get_account_default_currency' )
-			->willReturn( 'USD' );
+			->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -1151,7 +1152,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 0;
-		$currency    = 'USD';
+		$currency    = Currency_Code::UNITED_STATES_DOLLAR;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -2293,7 +2294,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_missing_customer_recovery_for_setup_intent() {
 		$order = $this->create_mock_order( 0 );
-		$order->method( 'get_currency' )->willReturn( 'USD' );
+		$order->method( 'get_currency' )->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->method( 'get_payment_tokens' )->willReturn( [] );
 
 		$this->mock_customer_service

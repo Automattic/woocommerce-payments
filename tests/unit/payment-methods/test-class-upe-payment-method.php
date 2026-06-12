@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Tests\PaymentMethods\Configs\MockPaymentMethodDefinition;
 use WCPAY_UnitTestCase;
 use WC_Payments_Account;
@@ -139,7 +140,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 	public function test_klarna_get_countries_with_eu_country_and_eu_currency() {
 		$this->currency_filter_callback = function () {
-			return 'EUR';
+			return Currency_Code::EURO;
 		};
 		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
 
@@ -169,7 +170,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 	public function test_klarna_get_countries_with_eu_country_and_non_eu_currency() {
 		$this->currency_filter_callback = function () {
-			return 'AUD';
+			return Currency_Code::AUSTRALIAN_DOLLAR;
 		};
 		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
 
