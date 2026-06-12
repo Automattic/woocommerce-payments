@@ -5289,6 +5289,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// A payment confirmed asynchronously (e.g. 3DS/SCA) that saves the payment method lands here.
 		// The order's payment method title must reflect the actual card from the charge, not a generic
 		// "Card" label. This also propagates to the subscription. Regression guard for WOOPMNT-2882.
+		// Scope: this and the two 3DS tests below cover only the save (token-present) sub-path; the no-save
+		// boundary is pinned by test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method.
 		$order = WC_Helper_Order::create_order();
 
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
@@ -5410,6 +5412,149 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$saved = wc_get_order( $order->get_id() );
 		$this->assertSame( '4242', $saved->get_meta( 'last4' ) );
 		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
+	}
+
+	public function test_update_order_status_sets_branded_title_before_status_transition() {
+		// The branded title must be on the order BEFORE the status transition, because that transition
+		// (payment_complete) synchronously fires the customer/renewal email, which renders the title.
+		// If the title is set afterwards, the email falls back to a generic "Card". WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		$intent_id = 'pi_mock_3ds_renewal_email';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		// Capture the title at the order-status transition (the same moment WC fires the email).
+		$title_at_transition = 'NOT_CAPTURED';
+		$capture             = function ( $order_id ) use ( &$title_at_transition ) {
+			$title_at_transition = wc_get_order( $order_id )->get_payment_method_title();
+		};
+		add_action( 'woocommerce_order_status_changed', $capture, 1, 1 );
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+			remove_action( 'woocommerce_order_status_changed', $capture, 1 );
+		}
+
+		// This guards the ordering invariant, not the exact wording: the title must be present and
+		// branded (carry the card network) at the moment the email fires. The verbatim "Visa credit card"
+		// string is pinned once, by test_update_order_status_sets_branded_payment_method_title_from_charge_details,
+		// so a future wording change touches one test instead of weakening this ordering guard.
+		$this->assertNotSame( 'NOT_CAPTURED', $title_at_transition, 'The status transition that fires the email must have run.' );
+		$this->assertStringContainsString( 'Visa', $title_at_transition, 'Title must be branded at the status transition that fires the email.' );
+	}
+
+	public function test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method() {
+		// Companion to the three tests above, which all hard-code should_save_payment_method = 'true' and so
+		// exercise only the token-present sub-path. Branding (title + last4/_card_brand meta) lives entirely
+		// inside update_order_status()'s `! empty( $token )` branch, so the no-save path must leave the card
+		// details untouched. This pins that boundary: if branding ever leaks out of the save branch, this
+		// fails. We assert the meta is absent rather than a specific generic title to stay wording-agnostic.
+		// WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+
+		// No token is created on this path; assert it is never requested rather than relying on a stub.
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$intent_id = 'pi_mock_3ds_no_save';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'false',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'brand'   => 'visa',
+									'last4'   => '4242',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'Title must not be branded when the payment method is not saved.' );
+		$this->assertEmpty( $saved->get_meta( 'last4' ), 'Card last4 meta must not be stored when the payment method is not saved.' );
+		$this->assertEmpty( $saved->get_meta( '_card_brand' ), 'Card brand meta must not be stored when the payment method is not saved.' );
 	}
 
 	public function return_ajax_wp_die_handler() {

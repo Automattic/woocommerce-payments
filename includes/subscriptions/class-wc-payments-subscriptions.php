@@ -87,11 +87,15 @@ class WC_Payments_Subscriptions {
 		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service );
 		self::$event_handler        = new WC_Payments_Subscriptions_Event_Handler( self::$invoice_service, self::$subscription_service );
 
-		new WC_Payments_Subscription_Change_Payment_Method_Handler();
-		new WC_Payments_Subscriptions_Plugin_Notice_Manager();
-		new WC_Payments_Subscriptions_Empty_State_Manager( $account );
-		new WC_Payments_Subscriptions_Onboarding_Handler( $account );
-		new WC_Payments_Subscription_Minimum_Amount_Handler( $api_client );
+		self::$product_service->init_hooks();
+		self::$invoice_service->init_hooks();
+		self::$subscription_service->init_hooks();
+
+		( new WC_Payments_Subscription_Change_Payment_Method_Handler() )->init_hooks();
+		( new WC_Payments_Subscriptions_Plugin_Notice_Manager() )->init_hooks();
+		( new WC_Payments_Subscriptions_Empty_State_Manager( $account ) )->init_hooks();
+		( new WC_Payments_Subscriptions_Onboarding_Handler( $account ) )->init_hooks();
+		( new WC_Payments_Subscription_Minimum_Amount_Handler( $api_client ) )->init_hooks();
 
 		// Only disable bundled subscriptions UI when the full WooCommerce Subscriptions plugin is not active.
 		if ( ! class_exists( 'WC_Subscriptions' ) ) {
@@ -101,6 +105,7 @@ class WC_Payments_Subscriptions {
 		if ( class_exists( 'WCS_Background_Repairer' ) && function_exists( 'wcs_get_orders_with_meta_query' ) ) {
 			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
 			self::$stripe_billing_migrator = new WC_Payments_Subscriptions_Migrator( $api_client, $token_service );
+			self::$stripe_billing_migrator->init_hooks();
 		}
 	}
 

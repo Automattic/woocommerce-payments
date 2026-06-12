@@ -490,14 +490,14 @@ class Analytics {
 	/**
 	 * Generate a case when statement using the provided variables.
 	 *
-	 * @param string $variable The SQL variable we want to check for NULL.
-	 * @param string $then     The THEN clause.
-	 * @param string $else     The ELSE clause.
+	 * @param string $variable    The SQL variable we want to check for NULL.
+	 * @param string $then        The THEN clause.
+	 * @param string $else_clause The ELSE clause.
 	 *
 	 * @return string
 	 */
-	private function generate_case_when( string $variable, string $then, string $else ): string {
-		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else} END";
+	private function generate_case_when( string $variable, string $then, string $else_clause ): string {
+		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else_clause} END";
 	}
 
 	/**
