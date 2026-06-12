@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\PaymentMethods\Configs;
 
+use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
@@ -54,7 +55,7 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	public static function get_supported_currencies(): array {
-		return [ 'USD', 'CAD' ];
+		return [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 	}
 
 	public static function get_supported_countries( ?string $account_country = null ): array {
