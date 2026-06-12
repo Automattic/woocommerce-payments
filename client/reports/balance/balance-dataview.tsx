@@ -42,11 +42,12 @@ import type { DateFilterValue } from 'wcpay/reports/date-filter';
 // aria-haspopup and is intentionally skipped so a filterless mount never pops
 // the menu.
 //
-// This is a deliberate UX divergence from the Fees report, which accepts
-// DataViews' collapsed default (chip hidden behind the funnel badge until
-// clicked): the Balance date filter is the report's only control and always
-// has an applied value, so hiding it would bury the one thing a merchant can
-// act on. The canonical-rows test pins the open-by-default behaviour.
+// This is a deliberate, product-required divergence from the Fees report —
+// do not reconcile the two: Balance keeps its date filter open by default
+// (it's the report's only control and always has an applied range), while
+// Fees ships with no filters applied and accepts DataViews' collapsed
+// default (chip hidden behind the funnel badge until clicked). The
+// canonical-rows test pins the open-by-default behaviour.
 // TODO: Replace with a public DataViews API (e.g. a `defaultFiltersOpen` prop
 // or an `isShowingFilter` setter) once one ships upstream.
 const openFiltersRowWorkaround = ( root: HTMLElement | null ): void => {
@@ -75,8 +76,9 @@ interface BalanceDataViewProps {
 	// placeholder is skipped by assistive tech and keyboard navigation.
 	preview?: boolean;
 	// When provided, render this below the date Filters instead of the rows
-	// card. Keeps the primary Date chip mounted across the loading / error /
-	// empty report states, so a cleared filter can always be re-applied.
+	// card. Keeps the date filter UI (funnel toggle + active chip) mounted
+	// across the loading / error / empty report states, so a cleared filter
+	// can always be re-applied.
 	children?: React.ReactNode;
 }
 
@@ -286,7 +288,7 @@ export const BalanceDataView = ( {
 		<div
 			className="wcpay-reports-balance-dv"
 			ref={ rootRef }
-			{ ...( preview ? { 'aria-hidden': true } : {} ) }
+			aria-hidden={ preview || undefined }
 		>
 			<DataViews
 				data={ items }
