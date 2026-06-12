@@ -1604,7 +1604,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$zero_amount_token      = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
 			$zero_amount_pm_details = $zero_amount_token instanceof \WC_Payment_Token_WCPay_Link
 				? false
-				: $this->get_setup_intent_payment_method_details( $payment_information->get_payment_method() );
+				: $this->get_payment_method_details_for_zero_amount_order( $payment_information->get_payment_method() );
 			if ( $zero_amount_pm_details ) {
 				$this->set_payment_method_title_for_order( $order, $zero_amount_pm_details['type'], $zero_amount_pm_details );
 				$this->store_card_details_meta_for_order( $order, $zero_amount_pm_details['type'], $zero_amount_pm_details );
@@ -2050,7 +2050,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// card instead of a generic "Card" — this is the common free-trial path. The Link token check
 			// is preserved for saved-Link payments. WOOPMNT-2882.
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
-			$payment_method_details = $this->get_setup_intent_payment_method_details( $intent ? $intent->get_payment_method_id() : null );
+			$payment_method_details = $this->get_payment_method_details_for_zero_amount_order( $intent ? $intent->get_payment_method_id() : null );
 			$payment_method_type    = $token
 				? $this->get_payment_method_type_for_setup_intent( $intent, $token )
 				: ( $payment_method_details ? $payment_method_details['type'] : null );
@@ -2231,7 +2231,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_id = $intent->get_payment_method_id();
 				// SetupIntents carry no charge, so source the card details from the confirmed payment method
 				// to brand the order title (and card meta) instead of falling back to a generic "Card". WOOPMNT-2882.
-				$payment_method_details = $this->get_setup_intent_payment_method_details( $payment_method_id );
+				$payment_method_details = $this->get_payment_method_details_for_zero_amount_order( $payment_method_id );
 				$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : $intent->get_payment_method_type();
 				$error                  = $intent->get_last_setup_error();
 			}
@@ -3979,7 +3979,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					// re-applies the SAME branded title rather than overwriting it back to a generic "Card" with
 					// the still-false default — mirroring how the $amount > 0 branch feeds the charge details
 					// into $payment_method_details. WOOPMNT-2882.
-					$payment_method_details = $this->get_setup_intent_payment_method_details( $intent->get_payment_method_id() );
+					$payment_method_details = $this->get_payment_method_details_for_zero_amount_order( $intent->get_payment_method_id() );
 					if ( $payment_method_details ) {
 						$this->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
 						$this->store_card_details_meta_for_order( $order, $payment_method_details['type'], $payment_method_details );
@@ -4752,14 +4752,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Fetches the card-identifying details for a $0 SetupIntent confirmation from the confirmed payment
-	 * method. SetupIntents carry no charge, so without this the order/subscription/email would fall back
-	 * to a generic "Card". Returns false on any failure so callers keep the generic title. See WOOPMNT-2882.
+	 * Fetches the card-identifying details for a $0 order confirmation from the confirmed payment method.
+	 * These orders carry no charge to read the card from — whether they confirm a SetupIntent (new card)
+	 * or take the no-intent branch (already-saved card) — so without this the order/subscription/email
+	 * would fall back to a generic "Card". Returns false on any failure so callers keep the generic title.
+	 * See WOOPMNT-2882.
 	 *
 	 * @param string|null $payment_method_id The confirmed payment method ID.
 	 * @return array|false The payment method details (e.g. [ 'type' => 'card', 'card' => [...] ]), or false.
 	 */
-	private function get_setup_intent_payment_method_details( $payment_method_id ) {
+	private function get_payment_method_details_for_zero_amount_order( $payment_method_id ) {
 		if ( empty( $payment_method_id ) ) {
 			return false;
 		}
