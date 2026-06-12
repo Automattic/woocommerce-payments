@@ -4712,8 +4712,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Stores the card brand and last 4 digits on the order from the charge's payment method details,
-	 * so order/email displays and reporting reflect the actual card used. No-op when the details are
-	 * unavailable or the payment method does not carry card information (e.g. redirect methods, Link).
+	 * so order/email displays and reporting reflect the actual card used. Also caches the full payment
+	 * method details for reuse (see below). No-op when the details are unavailable or the payment method
+	 * does not carry card information (e.g. redirect methods, Link).
 	 *
 	 * @param WC_Order    $order                  The order to store the meta on.
 	 * @param string|null $payment_method_type    The Stripe payment method type (e.g. 'card', 'amazon_pay').
@@ -4730,6 +4731,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// consistent — including the $0 SetupIntent paths, where the type stays 'card'. WOOPMNT-2882.
 		if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details ) ) {
 			return;
+		}
+
+		// Cache the full payment method details so a later get_card_info() reuse (e.g. an order-details
+		// render) hits this cache instead of firing a second get_payment_method() lookup. The positive-charge
+		// paths already persist this via the charge in attach_intent_info_to_order(), which runs before this;
+		// only the no-charge $0 paths reach here with it unset. Guarded on absence so we never overwrite the
+		// charge's details, and placed after the Link guard above so a Link payment never caches the
+		// underlying card here. WOOPMNT-2882.
+		if ( null === $this->order_service->get_payment_method_details( $order ) ) {
+			$this->order_service->store_payment_method_details( $order, $payment_method_details );
 		}
 
 		if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
