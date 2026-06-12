@@ -27,19 +27,6 @@ import type { ReportsBalanceSummary } from 'wcpay/data/reports/hooks';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
 
-// DataViews exposes its building blocks as statics on the component; the
-// public types don't declare them yet, so reach them through a narrow cast.
-const DataViewsComposed = DataViews as unknown as React.ComponentType<
-	Record< string, unknown > & { children?: React.ReactNode }
->;
-const dataViewsStatics = DataViews as unknown as Record<
-	string,
-	React.ComponentType
->;
-const DataViewsFiltersToggled = dataViewsStatics.FiltersToggled;
-const DataViewsFiltersToggle = dataViewsStatics.FiltersToggle;
-const DataViewsLayout = dataViewsStatics.Layout;
-
 // DataViews keeps the chips row collapsed until the funnel is toggled —
 // `isShowingFilter` starts false for non-primary filters and isn't part of the
 // public API. We open it once by clicking the funnel button so the active Date
@@ -277,7 +264,7 @@ export const BalanceDataView = ( {
 			ref={ rootRef }
 			{ ...( preview ? { 'aria-hidden': true } : {} ) }
 		>
-			<DataViewsComposed
+			<DataViews
 				data={ items }
 				view={ view }
 				onChangeView={ onChangeView }
@@ -295,10 +282,10 @@ export const BalanceDataView = ( {
 				   re-adds the Date filter. */ }
 				{ ! preview && (
 					<div className="wcpay-reports-balance-dv__actions">
-						<DataViewsFiltersToggle />
+						<DataViews.FiltersToggle />
 					</div>
 				) }
-				{ ! preview && <DataViewsFiltersToggled /> }
+				{ ! preview && <DataViews.FiltersToggled /> }
 				{ children ?? (
 					<div
 						className="wcpay-reports-balance-dv__card"
@@ -311,10 +298,10 @@ export const BalanceDataView = ( {
 						>
 							{ __( 'Balance summary', 'woocommerce-payments' ) }
 						</div>
-						<DataViewsLayout />
+						<DataViews.Layout />
 					</div>
 				) }
-			</DataViewsComposed>
+			</DataViews>
 		</div>
 	);
 };
