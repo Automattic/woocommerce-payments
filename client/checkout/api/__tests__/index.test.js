@@ -84,7 +84,7 @@ describe( 'WCPayAPI', () => {
 
 		const useAttackerOrigin = () => {
 			clearScripts();
-			addStripeScript( 'https://js.api-stripe.org/v3/?ver=3.0' );
+			addStripeScript( 'https://js.evil.example/v3/?ver=3.0' );
 		};
 
 		beforeEach( () => {
@@ -108,7 +108,7 @@ describe( 'WCPayAPI', () => {
 			const api = new WCPayAPI( {}, request );
 
 			await expect( api.getStripe() ).rejects.toThrow(
-				'https://js.api-stripe.org/v3/?ver=3.0'
+				'https://js.evil.example/v3/?ver=3.0'
 			);
 		} );
 
@@ -121,7 +121,7 @@ describe( 'WCPayAPI', () => {
 
 			expect( stripeInstance ).toBeInstanceOf( window.Stripe );
 			expect( warn ).toHaveBeenCalledWith(
-				expect.stringContaining( 'js.api-stripe.org' )
+				expect.stringContaining( 'js.evil.example' )
 			);
 		} );
 

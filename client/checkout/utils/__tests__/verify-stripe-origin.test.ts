@@ -44,19 +44,19 @@ describe( 'verifyStripeJsOrigin', () => {
 	it( 'rejects a look-alike skimmer origin on the repointed handle', () => {
 		addScript( {
 			id: 'stripe-js',
-			src: 'https://js.api-stripe.org/v3/?ver=3.0',
+			src: 'https://js.evil.example/v3/?ver=3.0',
 		} );
 
 		const result = verifyStripeJsOrigin();
 
 		expect( result.ok ).toBe( false );
-		expect( result.detectedOrigin ).toBe( 'https://js.api-stripe.org' );
+		expect( result.detectedOrigin ).toBe( 'https://js.evil.example' );
 	} );
 
-	it( 'rejects a subdomain-suffix look-alike (js.stripe.com.evil.com)', () => {
+	it( 'rejects a subdomain-suffix look-alike (js.stripe.com.evil.example)', () => {
 		addScript( {
 			id: 'stripe-js',
-			src: 'https://js.stripe.com.evil.com/v3/',
+			src: 'https://js.stripe.com.evil.example/v3/',
 		} );
 
 		expect( verifyStripeJsOrigin().ok ).toBe( false );
@@ -75,12 +75,12 @@ describe( 'verifyStripeJsOrigin', () => {
 		// tag later. The attacker-controlled handle must still be the one read.
 		addScript( {
 			id: 'stripe-js',
-			src: 'https://js.api-stripe.org/v3/?ver=3.0',
+			src: 'https://js.evil.example/v3/?ver=3.0',
 		} );
 		addScript( { src: 'https://js.stripe.com/v3/' } );
 
 		expect( verifyStripeJsOrigin().detectedOrigin ).toBe(
-			'https://js.api-stripe.org'
+			'https://js.evil.example'
 		);
 	} );
 } );
