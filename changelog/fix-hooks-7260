@@ -1,0 +1,1 @@
+Comment: refactor: move hooks out of WooPay class constructors to init_hooks()
