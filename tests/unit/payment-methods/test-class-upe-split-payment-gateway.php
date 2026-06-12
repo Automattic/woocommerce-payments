@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payments_Fraud_Service;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
@@ -218,7 +219,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
-		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( 'USD' );
+		$this->mock_wcpay_account->method( 'get_account_default_currency' )->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$payment_methods = [
 			'link' => [
@@ -1123,8 +1124,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_domestic_currency                   = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+		$account_domestic_currency                   = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1136,7 +1137,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1148,7 +1149,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::AUSTRALIAN_DOLLAR;
 		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = '';
