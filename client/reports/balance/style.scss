@@ -230,8 +230,7 @@ $print-context: '.wcpay-reports-balance-print-context';
 			padding-top: 0;
 			overflow: visible !important;
 
-			> .wcpay-reports-balance__toolbar,
-			> .wcpay-reports-balance__card {
+			> .wcpay-reports-balance-dv {
 				display: none !important;
 			}
 		}
