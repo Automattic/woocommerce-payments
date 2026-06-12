@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 
 /**
@@ -36,7 +37,7 @@ class WC_Helper_Order {
 	}
 
 	public static function woocommerce_currency_usd() {
-		return 'USD';
+		return Currency_Code::UNITED_STATES_DOLLAR;
 	}
 
 	/**
