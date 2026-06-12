@@ -38,14 +38,15 @@ describe( 'BalanceLoadingSkeleton', () => {
 	it( 'omits the interactive date filter from the preview', () => {
 		const { container } = render( <BalanceLoadingSkeleton /> );
 
-		// The preview renders only the rows Layout (the table) — no DataViews
-		// Filters shell, so nothing behind the blur is focusable.
+		// The preview renders only the rows Layout (the table; aria-hidden,
+		// so role queries need `hidden`) — no DataViews Filters shell, and
+		// nothing behind the blur is focusable.
 		expect(
-			container.querySelector( '.dataviews-view-table' )
+			screen.getByRole( 'table', { hidden: true } )
 		).toBeInTheDocument();
 		expect(
-			container.querySelector( '[class*="dataviews-filters"]' )
-		).not.toBeInTheDocument();
+			container.querySelectorAll( 'button, input, select, a' )
+		).toHaveLength( 0 );
 	} );
 
 	it( 'exposes a status heading announcing the loading text', () => {

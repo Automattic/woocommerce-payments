@@ -715,11 +715,8 @@ describe( 'BalanceReport', () => {
 		expect( screen.queryByRole( 'table' ) ).not.toBeInTheDocument();
 		// With no active filter the chip is gone, but the funnel toggle stays
 		// mounted so the Date filter can be re-added from the empty state.
-		const dataView = document.querySelector(
-			'.wcpay-reports-balance-dv'
-		) as HTMLElement;
 		expect(
-			within( dataView ).getByRole( 'button', { name: /add filter/i } )
+			screen.getByRole( 'button', { name: /add filter/i } )
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
@@ -735,14 +732,14 @@ describe( 'BalanceReport', () => {
 			},
 		} );
 
-		renderBalanceReport( { onReload: jest.fn() } );
+		const { container } = renderBalanceReport( { onReload: jest.fn() } );
 
 		// "Balance summary" renders as the card heading above the DataViews
 		// table (the bespoke <caption> is gone); the print report repeats the
 		// text in its own table header, so scope the query to the DataViews
 		// container.
 		expect( getVisibleBalanceTable() ).toBeInTheDocument();
-		const dataView = document.querySelector(
+		const dataView = container.querySelector(
 			'.wcpay-reports-balance-dv'
 		) as HTMLElement;
 		expect(
@@ -750,8 +747,31 @@ describe( 'BalanceReport', () => {
 		).toBeInTheDocument();
 		// The active Date chip is expanded by default — the mount effect opens
 		// the chips row DataViews keeps collapsed for non-primary filters.
+		// The chip renders as a focusable summary, not a role-queryable
+		// control, so this pins the DataViews 14 class name on purpose (it
+		// pairs with the openFiltersRowWorkaround selector coupling).
 		expect(
 			dataView.querySelector( '.dataviews-filters__summary-chip' )
+		).toBeInTheDocument();
+		// Table semantics preserved for screen readers: the visually-hidden
+		// column headers stay in the accessibility tree as plain text (no
+		// focusable menu buttons), and the card is a labelled group standing
+		// in for the bespoke table's <caption>.
+		expect(
+			within( getVisibleBalanceTable() ).getByRole( 'columnheader', {
+				name: 'Balance row',
+			} )
+		).toBeInTheDocument();
+		expect(
+			within( getVisibleBalanceTable() ).getByRole( 'columnheader', {
+				name: 'Amount',
+			} )
+		).toBeInTheDocument();
+		expect(
+			within( getVisibleBalanceTable() ).queryByRole( 'button' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'group', { name: 'Balance summary' } )
 		).toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 		expectBalanceText( 'Ending balance - formatted 2024-03-31 UTC' );
