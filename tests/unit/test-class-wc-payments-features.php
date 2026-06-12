@@ -75,6 +75,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		// Explicitly disable flags that default to ON so they don't appear
 		// in to_array() output unless included in $enabled_flags above.
 		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
 		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '0' );
 
 		$expected = [];
@@ -111,13 +112,13 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}
 
-	public function test_is_dispute_outcome_view_disabled_by_default() {
-		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	public function test_is_dispute_outcome_view_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
-	public function test_is_dispute_outcome_view_can_be_enabled() {
-		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '1' );
-		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	public function test_is_dispute_outcome_view_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
 	public function test_is_woopay_eligible_returns_true() {
