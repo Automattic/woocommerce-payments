@@ -316,10 +316,13 @@ const zeroSummary = {
 	ending_balance: { amount: 0 },
 };
 
-// The summary renders through DataViews; the "Balance summary" caption is a
-// sibling heading div, not the table's accessible name. The print-report table
-// is aria-hidden, so the role query resolves to the visible DataViews table.
-const getVisibleBalanceTable = () => screen.getByRole( 'table' );
+// The summary renders through DataViews; the table has no accessible name of
+// its own, so resolve it through the labelled card group — this also keeps
+// the query unambiguous against the (aria-hidden) print-report table.
+const getVisibleBalanceTable = () =>
+	within(
+		screen.getByRole( 'group', { name: 'Balance summary' } )
+	).getByRole( 'table' );
 
 const expectBalanceText = ( text: string ) =>
 	expect(
