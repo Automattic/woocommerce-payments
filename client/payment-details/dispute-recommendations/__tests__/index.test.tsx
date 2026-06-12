@@ -202,6 +202,52 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 	} );
 
+	describe( 'coaching-card heading by outcome', () => {
+		// keep_doing tips fire on wins too, so the coaching card can show on a
+		// won dispute; "What could help next time" reads like criticism after a
+		// success, so it is reframed (design 2026-06-04).
+		it( 'reframes the heading to "Tips for future disputes" on a won dispute', () => {
+			render(
+				<DisputeRecommendationsCard
+					dispute={ wonPhysicalShippingProvided() }
+				/>
+			);
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /tips for future disputes/i,
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'keeps "What could help next time" on a lost dispute', () => {
+			const dispute = buildDispute( {
+				status: 'lost',
+				reason: 'product_not_received',
+				metadata: { __product_type: 'physical_product' },
+				evidence: { receipt: 'r' }, // dodge c15 so the card renders
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /tips for future disputes/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+	} );
+
 	describe( 'urgency styling', () => {
 		// Target a stable known item per urgency rather than counting matches:
 		// counts shift as the catalog grows; the modifier class is the
@@ -264,7 +310,7 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
-			await expandSection( /what could help next time/i );
+			await expandSection( /tips for future disputes/i );
 
 			expect(
 				screen
@@ -283,8 +329,8 @@ describe( 'DisputeRecommendationsCard', () => {
 			// (three criticals + one tip). With VISIBLE_PER_SECTION = 3, exactly
 			// three render inline and the fourth overflows into the disclosure,
 			// so this stresses the cap rather than passing trivially. (Using
-			// `evidence: {}` would let Cluster 15 suppress down to two entries,
-			// never exercising the cap at all.)
+			// `evidence: {}` would let Cluster 15 suppress down to the single
+			// catch-all, never exercising the cap at all.)
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
@@ -417,7 +463,7 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
-			await expandSection( /what could help next time/i );
+			await expandSection( /tips for future disputes/i );
 
 			expect(
 				screen.queryByRole( 'heading', {
@@ -455,10 +501,9 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 
 		it( 'does not also surface the c12 cover-letter tip when no evidence is submitted', async () => {
-			// c15's `suppressOtherCriticals` only hides criticals, not tips, so
-			// without c12's `requireProvided` guard the cover-letter tip would
-			// render alongside c15's "submit evidence" message and read as
-			// redundant. Verify c12 stays silent on the truly-empty path.
+			// c12's `requireProvided` guard keeps it off the empty path, and
+			// c15's `suppressOthers` would hide it anyway. Verify c12 stays
+			// silent when no evidence is submitted.
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
@@ -475,6 +520,40 @@ describe( 'DisputeRecommendationsCard', () => {
 					name: /include a cover letter with your evidence/i,
 				} )
 			).not.toBeInTheDocument();
+		} );
+
+		it( 'shows only the catch-all and suppresses tips that would otherwise fire', async () => {
+			// fraudulent + physical with no evidence would surface the c8b
+			// shipping-date tip and the c14 prior-history tip; suppressOthers
+			// leaves only the catch-all on the card.
+			const dispute = buildDispute( {
+				status: 'lost',
+				reason: 'fraudulent',
+				metadata: { __product_type: 'physical_product' },
+				evidence: {}, // truly empty → c15 fires, tips suppressed
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			await expandSection( /what could help next time/i );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /submit evidence with your dispute response/i,
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /document the shipping date/i,
+				} )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /mention prior good history with the customer/i,
+				} )
+			).not.toBeInTheDocument();
+			// Exactly one recommendation row remains.
+			expect( screen.getAllByRole( 'article' ) ).toHaveLength( 1 );
 		} );
 	} );
 
