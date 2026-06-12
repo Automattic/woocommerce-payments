@@ -50,19 +50,30 @@ class WC_Payments_Settings_UI_Adapter implements SettingsUIPageInterface {
 				'handler' => WC_Payments_Settings_UI_Spike::SAVE_HANDLER,
 			],
 			'shell'   => [
-				'title'             => __( 'WooPayments settings', 'woocommerce-payments' ),
-				'breadcrumbs'       => [
+				'title'               => __( 'WooPayments settings', 'woocommerce-payments' ),
+				'breadcrumbs'         => [
 					[
 						'label' => __( 'Payments', 'woocommerce-payments' ),
 						'href'  => admin_url( 'admin.php?page=wc-settings&tab=checkout' ),
 					],
 				],
-				// Native SDK tab bar. Design gap: the i1 header also has a
-				// subtitle and an "Active" badge — no shell slots exist for
-				// those (upstream SDK ask, see spike findings).
-				'sectionNavigation' => $this->get_tabs( $active_tab ),
+				// Soft tab navigation: the SDK's native sectionNavigation tab
+				// bar is plain links (full page loads), so the tab bar renders
+				// through a navigation region that switches tabs client-side
+				// via groupVisibility predicates. Design gap: the i1 header
+				// also has a subtitle and an "Active" badge — no shell slots
+				// exist for those (upstream SDK ask, see spike findings).
+				'navigationComponent' => 'wcpay/subnav',
+				'wcpayTabs'           => $this->get_tabs( $active_tab ),
 			],
-			'groups'  => 'general' === $active_tab ? $this->get_general_groups() : $this->get_placeholder_groups( $active_tab ),
+			// All design tabs ship in one schema; JS-registered groupVisibility
+			// predicates toggle them on the hidden wcpay_active_tab value so
+			// switching tabs needs no page load.
+			'groups'  => array_merge(
+				$this->get_controller_group( $active_tab ),
+				$this->get_general_groups(),
+				$this->get_placeholder_groups()
+			),
 		];
 	}
 
@@ -273,22 +284,63 @@ class WC_Payments_Settings_UI_Adapter implements SettingsUIPageInterface {
 	}
 
 	/**
-	 * Placeholder groups for design tabs that are out of the spike's scope.
+	 * Always-visible group hosting the spike note and the hidden active-tab
+	 * UI-state field that drives the JS groupVisibility predicates.
 	 *
-	 * @param string $tab Active tab id.
+	 * The field must live in a group that never hides: hiding it would
+	 * unmount the component that listens for tab-change events.
+	 *
+	 * @param string $active_tab Active tab id from the request.
 	 * @return array
 	 */
-	private function get_placeholder_groups( string $tab ): array {
+	private function get_controller_group( string $active_tab ): array {
 		return [
-			'wcpay_placeholder' => [
-				'id'          => 'wcpay_placeholder',
-				'title'       => ucwords( str_replace( '-', ' ', $tab ) ),
-				'description' => __( 'This tab is not part of the WOOPMNT-6211 spike.', 'woocommerce-payments' ),
+			'wcpay_spike_notice' => [
+				'id'          => 'wcpay_spike_notice',
+				'title'       => __( 'Settings UI SDK spike', 'woocommerce-payments' ),
+				'description' => __( 'This screen is a WOOPMNT-6211 prototype rendering WooPayments settings through the WooCommerce Settings UI SDK. Tabs switch client-side without a page load.', 'woocommerce-payments' ),
 				'actions'     => [],
 				'order'       => 0,
 				'fields'      => [
 					[
-						'id'          => 'wcpay_spike_placeholder_note',
+						'id'        => 'wcpay_active_tab',
+						'label'     => '',
+						'type'      => 'text',
+						'component' => 'wcpay/tab-state',
+						'value'     => $active_tab,
+						'save'      => [ 'adapter' => 'none' ],
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Placeholder groups for design tabs that are out of the spike's scope.
+	 *
+	 * All tabs ship in the schema; visibility is toggled client-side.
+	 *
+	 * @return array
+	 */
+	private function get_placeholder_groups(): array {
+		$tabs = [
+			'wcpay_tab_payment_methods'    => __( 'Payment methods', 'woocommerce-payments' ),
+			'wcpay_tab_payouts'            => __( 'Payouts', 'woocommerce-payments' ),
+			'wcpay_tab_store_and_checkout' => __( 'Store and checkout', 'woocommerce-payments' ),
+		];
+
+		$groups = [];
+		$order  = 10;
+		foreach ( $tabs as $group_id => $title ) {
+			$groups[ $group_id ] = [
+				'id'          => $group_id,
+				'title'       => $title,
+				'description' => __( 'This tab is not part of the WOOPMNT-6211 spike.', 'woocommerce-payments' ),
+				'actions'     => [],
+				'order'       => $order++,
+				'fields'      => [
+					[
+						'id'          => $group_id . '_note',
 						'label'       => '',
 						'type'        => 'info',
 						'description' => __( 'These settings remain available in the classic WooPayments settings screen (with the settings-ui feature flag disabled).', 'woocommerce-payments' ),
@@ -296,7 +348,9 @@ class WC_Payments_Settings_UI_Adapter implements SettingsUIPageInterface {
 						'save'        => [ 'adapter' => 'none' ],
 					],
 				],
-			],
-		];
+			];
+		}
+
+		return $groups;
 	}
 }

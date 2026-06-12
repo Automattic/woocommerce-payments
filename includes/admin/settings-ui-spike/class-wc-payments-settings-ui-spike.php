@@ -184,6 +184,13 @@ class WC_Payments_Settings_UI_Spike {
 		// The SDK page renders its own save button.
 		$GLOBALS['hide_save_button'] = true;
 
+		// WC core's legacy settings script manipulates `.woocommerce-save-button`
+		// directly (jQuery change tracking force-enables the React-rendered
+		// button, fighting the SDK's own dirty-state handling) — same
+		// interference the classic WooPayments screen avoids in
+		// output_payments_settings_screen().
+		wp_dequeue_script( 'woocommerce_settings' );
+
 		printf(
 			'<div id="%1$s" data-wc-settings-ui="1" data-wc-settings-page="%2$s" data-wc-settings-section="%3$s"></div>',
 			esc_attr( 'wc_settings_ui_checkout_' . self::PAGE_ID ),

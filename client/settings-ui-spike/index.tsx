@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import apiFetch from '@wordpress/api-fetch';
+import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import {
 	ExternalLink,
@@ -17,10 +18,19 @@ import {
  * Settings UI SDK (Modernised WooPayments Settings i1 designs).
  *
  * SDK-native on purpose: no custom CSS, no markup beyond what the WordPress
- * components provide. The registered components exist only because
- * the design requires control types the SDK's native field renderers don't
- * offer yet (ToggleControl for booleans, per-option radio descriptions) —
- * each one is an upstream SDK feature ask, tracked in the spike findings.
+ * components provide. The registered components exist only because the design
+ * requires control types the SDK's native field renderers don't offer yet
+ * (ToggleControl for booleans, per-option radio descriptions) — each one is an
+ * upstream SDK feature ask, tracked in the spike findings.
+ *
+ * Soft tab navigation: the schema contains every design tab's groups, and
+ * registered `groupVisibility` predicates toggle them based on the hidden
+ * `wcpay_active_tab` field value, so switching tabs swaps content without a
+ * page load. Navigation regions cannot mutate form state, so the header tab
+ * bar dispatches a DOM event that the hidden field component (which owns
+ * `onChange`) listens for — itself evidence for an upstream ask: the SDK has
+ * no client-side section routing and no dirty-exempt "UI state" values, which
+ * is why switching tabs spuriously enables the Save button.
  *
  * Registration goes through the `window.wcSettingsUI` global set by the
  * `wc-settings-ui-sdk` script (a declared dependency of this bundle).
@@ -46,6 +56,26 @@ interface FieldComponentProps {
 	onChange: ( value: SettingsValue ) => void;
 }
 
+interface SpikeTab {
+	id: string;
+	label: string;
+	href: string;
+	active?: boolean;
+}
+
+interface RegionComponentProps {
+	values: SettingsValues;
+	schema: {
+		shell?: {
+			wcpayTabs?: SpikeTab[];
+		};
+	};
+}
+
+interface VisibilityPredicateArgs {
+	values: SettingsValues;
+}
+
 interface SettingsSaveHandlerArgs {
 	values: SettingsValues;
 	initialValues: SettingsValues;
@@ -57,6 +87,11 @@ interface SettingsSaveHandlerArgs {
 interface SettingsExtensionRegistration {
 	scope: { page: string; section?: string };
 	components?: Record< string, React.ComponentType< FieldComponentProps > >;
+	regions?: Record< string, React.ComponentType< RegionComponentProps > >;
+	groupVisibility?: Record<
+		string,
+		( args: VisibilityPredicateArgs ) => boolean
+	>;
 	saveHandlers?: Record<
 		string,
 		(
@@ -75,10 +110,22 @@ declare global {
 	}
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const TAB_CHANGE_EVENT = 'wcpay:spike-tab-change';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const DEFAULT_TAB = 'general';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const TAB_IDS = [
+	'general',
+	'payment-methods',
+	'payouts',
+	'store-and-checkout',
+];
+
 /**
  * Fields the save handler is allowed to send to /wc/v3/payments/settings.
- * Anything else in the schema (e.g. the VAT toggle, which has no REST backing
- * yet) is rendered but never persisted.
+ * Anything else in the schema (the VAT toggle without REST backing, the
+ * wcpay_active_tab UI state) is rendered but never persisted.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const PERSISTABLE_FIELDS = [
@@ -87,6 +134,122 @@ const PERSISTABLE_FIELDS = [
 	'account_communications_email',
 	'is_debug_log_enabled',
 ];
+
+const getActiveTab = ( values: SettingsValues ): string => {
+	const value = values.wcpay_active_tab;
+	return typeof value === 'string' && TAB_IDS.includes( value )
+		? value
+		: DEFAULT_TAB;
+};
+
+const getTabFromUrl = (): string => {
+	const tab = new URLSearchParams( window.location.search ).get(
+		'wcpay_tab'
+	);
+	return tab && TAB_IDS.includes( tab ) ? tab : DEFAULT_TAB;
+};
+
+const onTab =
+	( tab: string ) =>
+	( { values }: VisibilityPredicateArgs ) =>
+		getActiveTab( values ) === tab;
+
+/**
+ * Hidden form-state carrier for the active design tab. Renders nothing; it
+ * exists because only field components receive state setters — the navigation
+ * region cannot mutate values, so it dispatches a DOM event handled here.
+ */
+const SpikeTabState: React.FC< FieldComponentProps > = ( {
+	value,
+	onChange,
+} ) => {
+	useEffect( () => {
+		const handleTabChange = ( event: Event ) => {
+			const tab = ( event as CustomEvent< string > ).detail;
+			if ( ! TAB_IDS.includes( tab ) || tab === value ) {
+				return;
+			}
+
+			onChange( tab );
+
+			const url = new URL( window.location.href );
+			if ( tab === DEFAULT_TAB ) {
+				url.searchParams.delete( 'wcpay_tab' );
+			} else {
+				url.searchParams.set( 'wcpay_tab', tab );
+			}
+			window.history.pushState( {}, '', url );
+		};
+
+		const handlePopState = () => {
+			const tab = getTabFromUrl();
+			if ( tab !== value ) {
+				onChange( tab );
+			}
+		};
+
+		window.addEventListener( TAB_CHANGE_EVENT, handleTabChange );
+		window.addEventListener( 'popstate', handlePopState );
+
+		return () => {
+			window.removeEventListener( TAB_CHANGE_EVENT, handleTabChange );
+			window.removeEventListener( 'popstate', handlePopState );
+		};
+	}, [ value, onChange ] );
+
+	return null;
+};
+
+/**
+ * Design: secondary tab bar in the page header. Reuses Core's
+ * `wc-settings-ui-shell__tabs` classes so Core owns the styling. Clicks are
+ * soft navigations (event → SpikeTabState → groupVisibility); the hrefs stay
+ * real so middle-click / open-in-new-tab still work as full loads.
+ */
+const SpikeSubnav: React.FC< RegionComponentProps > = ( {
+	values,
+	schema,
+} ) => {
+	const tabs = schema.shell?.wcpayTabs || [];
+	const activeTab = getActiveTab( values );
+
+	if ( tabs.length === 0 ) {
+		return null;
+	}
+
+	return (
+		<nav
+			className="wc-settings-ui-shell__tabs wc-settings-ui-shell__tabs--secondary"
+			aria-label={ __(
+				'WooPayments settings tabs',
+				'woocommerce-payments'
+			) }
+		>
+			{ tabs.map( ( tab ) => (
+				<a
+					key={ tab.id }
+					className={
+						tab.id === activeTab
+							? 'wc-settings-ui-shell__tab is-active'
+							: 'wc-settings-ui-shell__tab'
+					}
+					href={ tab.href }
+					aria-current={ tab.id === activeTab ? 'page' : undefined }
+					onClick={ ( event ) => {
+						event.preventDefault();
+						window.dispatchEvent(
+							new CustomEvent< string >( TAB_CHANGE_EVENT, {
+								detail: tab.id,
+							} )
+						);
+					} }
+				>
+					{ tab.label }
+				</a>
+			) ) }
+		</nav>
+	);
+};
 
 /**
  * Design: boolean settings render as toggles. The SDK's native checkbox
@@ -161,8 +324,22 @@ if ( registry ) {
 	registry.registerSettingsExtension( {
 		scope: { page: 'woocommerce_payments' },
 		components: {
+			'wcpay/tab-state': SpikeTabState,
 			'wcpay/toggle': SpikeToggle,
 			'wcpay/protection-level': SpikeProtectionLevel,
+		},
+		regions: {
+			'wcpay/subnav': SpikeSubnav,
+		},
+		groupVisibility: {
+			wcpay_test_mode: onTab( 'general' ),
+			wcpay_fraud_protection: onTab( 'general' ),
+			wcpay_tax_id: onTab( 'general' ),
+			wcpay_account_notifications: onTab( 'general' ),
+			wcpay_debug_mode: onTab( 'general' ),
+			wcpay_tab_payment_methods: onTab( 'payment-methods' ),
+			wcpay_tab_payouts: onTab( 'payouts' ),
+			wcpay_tab_store_and_checkout: onTab( 'store-and-checkout' ),
 		},
 		saveHandlers: {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
