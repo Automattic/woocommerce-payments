@@ -68,7 +68,9 @@ body.woocommerce-admin-page__payments_reports {
 	position: relative;
 	pointer-events: none;
 
-	.wcpay-reports-balance__card {
+	// The skeleton renders the real DataViews summary (mock data) so the
+	// placeholder matches the loaded layout exactly; blur the whole view.
+	.wcpay-reports-balance-dv {
 		filter: blur( 4px );
 		opacity: 0.6;
 		user-select: none;

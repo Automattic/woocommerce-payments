@@ -135,6 +135,7 @@ export const getFeesFields = ( {
 			label: __( 'Gross amount', 'woocommerce-payments' ),
 			type: 'integer',
 			enableSorting: true,
+			filterBy: false,
 			getValue: ( { item }: { item: ReportsFee } ) => item.amount,
 			render: ( { item }: { item: ReportsFee } ) => (
 				<>
@@ -150,6 +151,7 @@ export const getFeesFields = ( {
 			label: __( 'Fees total', 'woocommerce-payments' ),
 			type: 'integer',
 			enableSorting: true,
+			filterBy: false,
 			getValue: ( { item }: { item: ReportsFee } ) => item.fees,
 			render: ( { item }: { item: ReportsFee } ) => (
 				<>
@@ -164,6 +166,7 @@ export const getFeesFields = ( {
 			id: 'deposit_date',
 			label: __( 'Settlement date', 'woocommerce-payments' ),
 			type: 'datetime',
+			filterBy: false,
 			getValue: ( { item }: { item: ReportsFee } ) =>
 				item.deposit_date ?? '',
 			render: ( { item }: { item: ReportsFee } ) => (
