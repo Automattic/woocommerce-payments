@@ -447,9 +447,20 @@ $print-context: '.wcpay-reports-balance-print-context';
 		table-layout: auto;
 		border-collapse: collapse;
 
-		// A fixed reconciliation summary has no sortable columns.
+		// A fixed reconciliation summary shows no column headers, but screen
+		// readers must keep them for table navigation — clip the header row
+		// visually instead of `display: none` (which would strip it from the
+		// accessibility tree). The header cells are plain text (sorting,
+		// hiding and moving are disabled), so nothing focusable hides here.
 		thead {
-			display: none;
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			margin: -1px;
+			padding: 0;
+			border: 0;
+			overflow: hidden;
+			clip-path: inset( 50% );
 		}
 
 		td {

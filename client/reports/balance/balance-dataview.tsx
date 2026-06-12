@@ -12,7 +12,7 @@
  *
  * External dependencies
  */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { DataViews } from '@wordpress/dataviews/wp';
 import type { View, Field } from '@wordpress/dataviews/wp';
@@ -111,6 +111,10 @@ export const BalanceDataView = ( {
 		string | null
 	>( null );
 	const rootRef = useRef< HTMLDivElement >( null );
+	// DataViews offers no way to name the <table> itself, so the card is a
+	// labelled group: assistive tech announces "Balance summary" on entry,
+	// standing in for the bespoke table's <caption>.
+	const captionId = useId();
 	// Gate the funnel-click workaround to a single run per mount so React
 	// 18 StrictMode's double-invoke in development doesn't fire it twice.
 	const filtersRowOpenedRef = useRef( false );
@@ -149,6 +153,11 @@ export const BalanceDataView = ( {
 				{
 					id: 'label',
 					label: __( 'Balance row', 'woocommerce-payments' ),
+					// With sorting, hiding and moving all disabled, DataViews
+					// renders the column header as plain text instead of a
+					// menu button — required for the visually-hidden <thead>
+					// to stay free of focusable elements.
+					enableHiding: false,
 					enableSorting: false,
 					getValue: ( { item }: { item: BalanceItem } ) => item.label,
 					render: ( { item }: { item: BalanceItem } ) => (
@@ -186,6 +195,7 @@ export const BalanceDataView = ( {
 				{
 					id: 'amount',
 					label: __( 'Amount', 'woocommerce-payments' ),
+					enableHiding: false,
 					enableSorting: false,
 					getValue: ( { item }: { item: BalanceItem } ) =>
 						item.amount,
@@ -232,7 +242,10 @@ export const BalanceDataView = ( {
 			perPage: 100,
 			fields: [ 'label', 'amount' ],
 			filters,
-			layout: {},
+			// Column moving is part of the header menus — disabling it (with
+			// sorting/hiding off on the fields) keeps the visually-hidden
+			// column headers as plain, non-focusable text.
+			layout: { enableMoving: false },
 		};
 	}, [ dateValue, pendingDateOperator ] );
 
@@ -287,8 +300,15 @@ export const BalanceDataView = ( {
 				) }
 				{ ! preview && <DataViewsFiltersToggled /> }
 				{ children ?? (
-					<div className="wcpay-reports-balance-dv__card">
-						<div className="wcpay-reports-balance-dv__caption">
+					<div
+						className="wcpay-reports-balance-dv__card"
+						role="group"
+						aria-labelledby={ captionId }
+					>
+						<div
+							className="wcpay-reports-balance-dv__caption"
+							id={ captionId }
+						>
 							{ __( 'Balance summary', 'woocommerce-payments' ) }
 						</div>
 						<DataViewsLayout />
