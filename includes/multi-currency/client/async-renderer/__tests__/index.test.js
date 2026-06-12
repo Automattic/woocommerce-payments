@@ -1022,7 +1022,10 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	} );
 
 	describe( 'syncCurrencySwitchers', () => {
-		const createSwitcher = ( selected = 'USD', codes = [ 'USD', 'EUR' ] ) => {
+		const createSwitcher = (
+			selected = 'USD',
+			codes = [ 'USD', 'EUR' ]
+		) => {
 			const select = document.createElement( 'select' );
 			select.name = 'currency';
 			select.className = 'js-woopayments-currency-switcher';
