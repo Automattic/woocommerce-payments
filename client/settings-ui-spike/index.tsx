@@ -8,6 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import {
+	Button,
 	ExternalLink,
 	RadioControl,
 	ToggleControl,
@@ -119,12 +120,15 @@ declare global {
 const TAB_CHANGE_EVENT = 'wcpay:spike-tab-change';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const DEFAULT_TAB = 'general';
+// Includes the hidden Apple Pay & Google Pay customize subscreen, which is
+// reachable via its Customize link rather than the tab bar.
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const TAB_IDS = [
 	'general',
 	'payment-methods',
 	'payouts',
 	'store-and-checkout',
+	'express-customize',
 ];
 
 /**
@@ -362,6 +366,118 @@ const SpikeProtectionLevel: React.FC< FieldComponentProps > = ( {
 	);
 };
 
+/**
+ * Renders nothing — carries server-provided values (e.g. the express checkout
+ * location/method arrays) through form state so the save handler can compute
+ * compound REST payloads.
+ */
+const SpikeHidden: React.FC< FieldComponentProps > = () => null;
+
+/**
+ * "Back to Payment methods" affordance for the customize subscreen (the SDK
+ * shell has no per-tab breadcrumbs — upstream ask).
+ */
+const SpikeSubscreenBack: React.FC< FieldComponentProps > = ( { field } ) => (
+	<Button
+		variant="link"
+		onClick={ () =>
+			window.dispatchEvent(
+				new CustomEvent< string >( TAB_CHANGE_EVENT, {
+					detail: 'payment-methods',
+				} )
+			)
+		}
+	>
+		← { field.label }
+	</Button>
+);
+
+/**
+ * Design: payment method rows with a toggle each. Value is the array of
+ * enabled method ids (mapped into enabled_payment_method_ids on save).
+ */
+const SpikePaymentMethodsList: React.FC< FieldComponentProps > = ( {
+	field,
+	value,
+	onChange,
+} ) => {
+	const enabled = Array.isArray( value ) ? ( value as string[] ) : [];
+
+	return (
+		<>
+			{ ( field.options || [] ).map( ( option ) => (
+				<ToggleControl
+					key={ option.value }
+					__nextHasNoMarginBottom={ false }
+					checked={ enabled.includes( option.value ) }
+					label={ option.label }
+					onChange={ ( checked: boolean ) =>
+						onChange(
+							checked
+								? [ ...enabled, option.value ]
+								: enabled.filter(
+										( id ) => id !== option.value
+								  )
+						)
+					}
+				/>
+			) ) }
+		</>
+	);
+};
+
+/**
+ * Design: the Apple Pay / Google Pay row pairs its toggle with a "Customize"
+ * link opening the button customization subscreen (soft navigation).
+ */
+const SpikeExpressCustomizable: React.FC< FieldComponentProps > = ( {
+	field,
+	value,
+	onChange,
+} ) => {
+	const customizeTab = ( field.customAttributes?.customizeTab ||
+		'express-customize' ) as string;
+
+	return (
+		<>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				checked={ !! value }
+				label={ field.label }
+				help={ field.description }
+				onChange={ ( checked: boolean ) => onChange( checked ) }
+			/>
+			<Button
+				variant="link"
+				onClick={ () =>
+					window.dispatchEvent(
+						new CustomEvent< string >( TAB_CHANGE_EVENT, {
+							detail: customizeTab,
+						} )
+					)
+				}
+			>
+				{ __( 'Customize', 'woocommerce-payments' ) }
+			</Button>
+		</>
+	);
+};
+
+/**
+ * Toggle `id` membership in a location method array.
+ */
+const withMethod = (
+	methods: SettingsValue,
+	id: string,
+	present: boolean
+): string[] => {
+	const list = Array.isArray( methods ) ? ( methods as string[] ) : [];
+	if ( present ) {
+		return list.includes( id ) ? list : [ ...list, id ];
+	}
+	return list.filter( ( m ) => m !== id );
+};
+
 const registry = window.wcSettingsUI;
 
 if ( registry ) {
@@ -371,28 +487,55 @@ if ( registry ) {
 			'wcpay/tab-state': SpikeTabState,
 			'wcpay/toggle': SpikeToggle,
 			'wcpay/protection-level': SpikeProtectionLevel,
+			'wcpay/hidden': SpikeHidden,
+			'wcpay/subscreen-back': SpikeSubscreenBack,
+			'wcpay/payment-methods-list': SpikePaymentMethodsList,
+			'wcpay/express-customizable': SpikeExpressCustomizable,
 		},
 		regions: {
 			'wcpay/subnav': SpikeSubnav,
 		},
 		groupVisibility: {
+			// General.
 			wcpay_test_mode: onTab( 'general' ),
 			wcpay_fraud_protection: onTab( 'general' ),
 			wcpay_tax_id: onTab( 'general' ),
 			wcpay_account_notifications: onTab( 'general' ),
 			wcpay_debug_mode: onTab( 'general' ),
-			wcpay_tab_payment_methods: onTab( 'payment-methods' ),
-			wcpay_tab_payouts: onTab( 'payouts' ),
-			wcpay_tab_store_and_checkout: onTab( 'store-and-checkout' ),
+			// Payment methods.
+			wcpay_pm_global: onTab( 'payment-methods' ),
+			wcpay_pm_express: onTab( 'payment-methods' ),
+			// Hidden entirely when the account has no BNPL methods available.
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			wcpay_pm_bnpl: (
+				args: VisibilityPredicateArgs & {
+					schema?: {
+						groups?: Record<
+							string,
+							{ fields: Array< { options?: unknown[] } > }
+						>;
+					};
+				}
+			) =>
+				onTab( 'payment-methods' )( args ) &&
+				( args.schema?.groups?.wcpay_pm_bnpl?.fields?.[ 0 ]?.options
+					?.length || 0 ) > 0,
+			// Apple Pay & Google Pay customize subscreen (hidden tab).
+			wcpay_ec_placement: onTab( 'express-customize' ),
+			wcpay_ec_style: onTab( 'express-customize' ),
+			// Payouts.
+			wcpay_payout_schedule: onTab( 'payouts' ),
+			wcpay_bank_account: onTab( 'payouts' ),
+			// Store and checkout.
+			wcpay_sc_features: onTab( 'store-and-checkout' ),
+			wcpay_sc_multicurrency: onTab( 'store-and-checkout' ),
+			wcpay_sc_statement: onTab( 'store-and-checkout' ),
+			wcpay_sc_support: onTab( 'store-and-checkout' ),
 		},
 		saveHandlers: {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			'wcpay-rest-settings': async ( { changedValues } ) => {
-				const data: Partial<
-					SettingsValues & {
-						advanced_fraud_protection_settings: unknown[];
-					}
-				> = {};
+			'wcpay-rest-settings': async ( { values, changedValues } ) => {
+				const data: Record< string, unknown > = {};
 				for ( const key of PERSISTABLE_FIELDS ) {
 					if ( key in changedValues ) {
 						data[ key ] = changedValues[ key ];
@@ -406,6 +549,48 @@ if ( registry ) {
 				// from the fraud settings store.
 				if ( 'current_protection_level' in data ) {
 					data.advanced_fraud_protection_settings = [];
+				}
+
+				// Method list cards + the Link express toggle combine into
+				// the single enabled_payment_method_ids REST argument.
+				if (
+					'wcpay_pm_list_main' in changedValues ||
+					'wcpay_pm_list_bnpl' in changedValues ||
+					'wcpay_link_enabled' in changedValues
+				) {
+					const main = Array.isArray( values.wcpay_pm_list_main )
+						? ( values.wcpay_pm_list_main as string[] )
+						: [];
+					const bnpl = Array.isArray( values.wcpay_pm_list_bnpl )
+						? ( values.wcpay_pm_list_bnpl as string[] )
+						: [];
+					data.enabled_payment_method_ids = [
+						...main,
+						...bnpl,
+						...( values.wcpay_link_enabled ? [ 'link' ] : [] ),
+					];
+				}
+
+				// Button placement toggles map onto payment_request membership
+				// in the location-centric express checkout method arrays.
+				const locations = [ 'product', 'cart', 'checkout' ] as const;
+				for ( const location of locations ) {
+					const toggleKey = `wcpay_ec_location_${ location }`;
+					if ( toggleKey in changedValues ) {
+						data[ `express_checkout_${ location }_methods` ] =
+							withMethod(
+								values[ `wcpay_ec_methods_${ location }` ],
+								'payment_request',
+								!! values[ toggleKey ]
+							);
+					}
+				}
+
+				// Design's Rectangle/Pill shape maps to the numeric border
+				// radius REST argument.
+				if ( 'wcpay_ec_shape' in changedValues ) {
+					data.payment_request_button_border_radius =
+						values.wcpay_ec_shape === 'pill' ? 24 : 4;
 				}
 
 				if ( Object.keys( data ).length > 0 ) {
