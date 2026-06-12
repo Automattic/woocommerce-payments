@@ -34,6 +34,7 @@ parameters:
         - dev/phpstan-wordpress-constants.php
         - dev/phpstan-wcpay-constants.php
         - dev/phpstan-abilities-stubs.php
+        - dev/phpstan-settings-ui-stubs.php
 
     scanDirectories:
         - vendor/woocommerce/subscriptions-core
