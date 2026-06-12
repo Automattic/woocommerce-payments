@@ -118,3 +118,4 @@ bin/jurassictube/
 
 # Playwright MCP browser-automation artifacts
 .playwright-mcp/
+/docker/woocommerce-dev/

@@ -1058,6 +1058,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Admin Panel Options.
 	 */
 	public function admin_options() {
+		// WOOPMNT-6211 spike: render via the WC Settings UI SDK when active.
+		if ( class_exists( 'WC_Payments_Settings_UI_Spike' ) && WC_Payments_Settings_UI_Spike::maybe_render_sdk_mount() ) {
+			return;
+		}
+
 		// Add notices to the WooPayments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 

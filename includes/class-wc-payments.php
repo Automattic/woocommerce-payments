@@ -793,6 +793,10 @@ class WC_Payments {
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway(), self::get_account_service() );
 			$admin_settings->init_hooks();
 
+			// WOOPMNT-6211 spike: WC Settings UI SDK integration (no-op on WC < 10.9).
+			include_once WCPAY_ABSPATH . 'includes/admin/settings-ui-spike/class-wc-payments-settings-ui-spike.php';
+			WC_Payments_Settings_UI_Spike::init();
+
 			$admin_banner->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
