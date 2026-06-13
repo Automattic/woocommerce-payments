@@ -160,8 +160,13 @@ export const addMulticurrencyWidget = async (
 				.locator( `[data-title="${ widgetName }"]` )
 				.waitFor( { timeout: 5000 } );
 		} else {
+			// Scope to the canvas edit-form title only. A bare heading match also
+			// matches the block-inspector card name, which renders the same text and
+			// trips Playwright strict mode intermittently (race between the two).
 			await page
-				.getByRole( 'heading', { name: widgetName } )
+				.locator( '.wp-block-legacy-widget__edit-form-title', {
+					hasText: widgetName,
+				} )
 				.waitFor( { timeout: 5000 } );
 		}
 		// Give the widgets editor a moment to register the inserted block before saving.
