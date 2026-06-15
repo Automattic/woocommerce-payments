@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: fix: resolve WooCommerce.Commenting phpcs hook comment errors in the Payments files (not user-facing).
+
+

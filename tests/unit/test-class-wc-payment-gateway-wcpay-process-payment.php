@@ -793,7 +793,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				],
 			]
 		);
-		apply_filters( 'rest_request_before_callbacks', [], [], $request );
+		apply_filters( 'rest_request_before_callbacks', [], [], $request ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		// Arrange: Create an order to test with.
 		$order_data = [
