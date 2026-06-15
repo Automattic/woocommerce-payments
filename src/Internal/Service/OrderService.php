@@ -105,6 +105,15 @@ class OrderService {
 			$metadata['payment_context']      = $use_stripe_billing ? 'wcpay_subscription' : 'regular_subscription';
 		}
 
+		/**
+		 * Filters the payment metadata generated from an order before it is sent to the server.
+		 *
+		 * @since 3.9.0
+		 *
+		 * @param array             $metadata     The payment metadata generated from the order.
+		 * @param WC_Order          $order        The order the metadata was generated from.
+		 * @param Payment_Type|null $payment_type Type of the payment (recurring or not).
+		 */
 		return $this->hooks_proxy->apply_filters( 'wcpay_metadata_from_order', $metadata, $order, $payment_type );
 	}
 
