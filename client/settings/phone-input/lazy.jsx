@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { lazy, Suspense } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -36,10 +36,78 @@ const PhoneInputPlaceholder = ( { id, isBlocksCheckout } ) => (
 	</div>
 );
 
+// Rendered when the component's chunk fails to load. Without it, the blocks
+// checkout can get stuck: the save-my-info phone validation only clears once the
+// field reports a valid number, so a field that never mounts leaves "Place Order"
+// blocked behind a hidden error. This degrades to a plain phone field — no
+// country dropdown or libphonenumber formatting — wired to the same callbacks so
+// the shopper can still enter a number and complete checkout. The server
+// validates the value.
+const PlainPhoneInput = ( {
+	value = '',
+	id,
+	onValueChange = () => {},
+	onValidationChange = () => {},
+	inputProps = {},
+	isBlocksCheckout,
+} ) => {
+	const handleChange = ( event ) => {
+		const phone = event.target.value;
+		onValueChange( phone );
+		// Mirror the enhanced input's "hidden until typed" behaviour: only report
+		// validity once the shopper interacts, treating a digit-bearing number as
+		// valid and leaving stricter checks to the server.
+		onValidationChange( phone.replace( /\D/g, '' ).length >= 6 );
+	};
+
+	return (
+		<div
+			className={
+				isBlocksCheckout ? 'wc-block-components-text-input' : ''
+			}
+		>
+			<input
+				type="tel"
+				id={ id }
+				defaultValue={ value }
+				className="phone-input input-text"
+				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
+				aria-label={
+					inputProps.ariaLabel ||
+					__( 'Mobile phone number', 'woocommerce-payments' )
+				}
+				name={ inputProps.name }
+				onChange={ handleChange }
+			/>
+		</div>
+	);
+};
+
+class ChunkErrorBoundary extends Component {
+	constructor( props ) {
+		super( props );
+		this.state = { hasError: false };
+	}
+
+	static getDerivedStateFromError() {
+		return { hasError: true };
+	}
+
+	render() {
+		if ( this.state.hasError ) {
+			return this.props.fallback;
+		}
+
+		return this.props.children;
+	}
+}
+
 const LazyPhoneNumberInput = ( props ) => (
-	<Suspense fallback={ <PhoneInputPlaceholder { ...props } /> }>
-		<PhoneNumberInput { ...props } />
-	</Suspense>
+	<ChunkErrorBoundary fallback={ <PlainPhoneInput { ...props } /> }>
+		<Suspense fallback={ <PhoneInputPlaceholder { ...props } /> }>
+			<PhoneNumberInput { ...props } />
+		</Suspense>
+	</ChunkErrorBoundary>
 );
 
 export default LazyPhoneNumberInput;
