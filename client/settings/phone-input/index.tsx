@@ -6,6 +6,11 @@ import { __ } from '@wordpress/i18n';
 import intlTelInput from 'intl-tel-input';
 import './style.scss';
 
+/**
+ * Internal dependencies
+ */
+import utils from 'iti/utils';
+
 interface PhoneNumberInputProps {
 	value: string;
 	id: string;
@@ -100,11 +105,6 @@ const PhoneNumberInput = ( {
 
 	useEffect( () => {
 		let iti: intlTelInput.Plugin | null = null;
-		// The `intl-tel-input` validation/formatting metadata (`iti/utils`, ~242 KB)
-		// is loaded on demand so it stays out of the entry bundle and off the
-		// critical checkout/settings paint path. The effect may tear down before
-		// the dynamic import resolves, so guard the late init with this flag.
-		let cancelled = false;
 		const currentRef = inputRef.current;
 
 		const handleCountryChange = () => {
@@ -134,41 +134,28 @@ const PhoneNumberInput = ( {
 		}
 
 		if ( currentRef ) {
-			import( 'iti/utils' ).then( ( utils ) => {
-				if ( cancelled ) {
-					return;
-				}
-
-				iti = intlTelInput( currentRef, {
-					customPlaceholder: () => '',
-					separateDialCode: true,
-					hiddenInput: 'full',
-					utilsScript: utils.default,
-					dropdownContainer: document.body,
-					formatOnDisplay: false,
-					...phoneCountries,
-				} );
-				setInputInstance( iti );
-
-				currentRef.addEventListener(
-					'countrychange',
-					handleCountryChange
-				);
-
-				const countryList = currentRef
-					.closest( '.iti' )
-					?.querySelector( '.iti__flag-container' );
-				if ( countryList && onCountryDropdownClick ) {
-					countryList.addEventListener(
-						'click',
-						onCountryDropdownClick
-					);
-				}
+			iti = intlTelInput( currentRef, {
+				customPlaceholder: () => '',
+				separateDialCode: true,
+				hiddenInput: 'full',
+				utilsScript: utils,
+				dropdownContainer: document.body,
+				formatOnDisplay: false,
+				...phoneCountries,
 			} );
+			setInputInstance( iti );
+
+			currentRef.addEventListener( 'countrychange', handleCountryChange );
+
+			const countryList = currentRef
+				.closest( '.iti' )
+				?.querySelector( '.iti__flag-container' );
+			if ( countryList && onCountryDropdownClick ) {
+				countryList.addEventListener( 'click', onCountryDropdownClick );
+			}
 		}
 
 		return () => {
-			cancelled = true;
 			if ( iti ) {
 				iti.destroy();
 

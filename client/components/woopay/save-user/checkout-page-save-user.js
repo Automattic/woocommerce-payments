@@ -15,7 +15,7 @@ import {
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from 'settings/phone-input';
+import PhoneNumberInput from 'settings/phone-input/lazy';
 import { getConfig } from 'utils/checkout';
 import { buildAjaxURL } from 'utils/express-checkout';
 import AdditionalInformation from './additional-information';

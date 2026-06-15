@@ -19,9 +19,9 @@ jest.mock( 'wcpay/data/settings', () => ( {
 	useTestModeOnboarding: jest.fn(),
 } ) );
 
-// The `intl-tel-input` utils are loaded on demand, so the input is enhanced
-// (and the number validated) asynchronously after mount. Wait for the country
-// dropdown to appear before asserting on validation state.
+// The phone input is lazy-loaded behind a Suspense boundary, so it mounts (and
+// the number is validated) asynchronously. Wait for the country dropdown to
+// appear before asserting on validation state.
 const waitForPhoneInputReady = () =>
 	screen.findByRole( 'combobox', { name: /:\s*\+/ } );
 
