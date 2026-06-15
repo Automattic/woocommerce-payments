@@ -2241,7 +2241,15 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		if ( get_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) ) {
-			WC_Payments::get_gateway()->update_is_woopay_enabled( true );
+			$gateway = WC_Payments::get_gateway();
+
+			// WooPay and Link by Stripe are mutually exclusive, so the enable-by-default activation must not
+			// override a merchant who already opted into Link (e.g. in sandbox before going live). See #9404.
+			$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $gateway->get_upe_enabled_payment_method_ids(), true );
+			if ( ! $is_link_enabled ) {
+				$gateway->update_is_woopay_enabled( true );
+			}
+
 			delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 		}
 	}
