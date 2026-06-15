@@ -330,7 +330,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Dispute Outcome View feature should be enabled. Disabled by default.
+	 * Checks whether the Dispute Outcome View feature should be enabled. Enabled by default.
 	 *
 	 * This gates the post-resolution dispute outcome surfaces (won / lost / warning_closed)
 	 * in the payment details page.
@@ -338,7 +338,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_dispute_outcome_view_enabled(): bool {
-		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '0' );
+		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '1' );
 	}
 
 	/**

@@ -302,13 +302,17 @@ export default class WCPayAPI {
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.
+	 * @param {string} fingerprint     User fingerprint for fraud prevention.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	async setupIntent( paymentMethodId ) {
+	async setupIntent( paymentMethodId, fingerprint = '' ) {
 		const response = await this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+			'wcpay-fraud-prevention-token':
+				window.wcpayFraudPreventionToken ?? '',
+			'wcpay-fingerprint': fingerprint,
 		} );
 
 		if ( ! response.success ) {

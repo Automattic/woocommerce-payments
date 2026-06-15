@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Get_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
@@ -82,7 +83,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 						'is_live'          => true,
 						'country'          => Country_Code::GERMANY,
 						'status'           => 'complete',
-						'store_currencies' => [ 'default' => 'EUR' ],
+						'store_currencies' => [ 'default' => Currency_Code::EURO ],
 					]
 				)
 			);

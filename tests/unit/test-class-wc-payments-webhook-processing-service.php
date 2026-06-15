@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -1485,7 +1486,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 		];
 
-		$this->mock_order->method( 'get_currency' )->willReturn( 'USD' );
+		$this->mock_order->method( 'get_currency' )->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->mock_order
 			->expects( $this->once() )
