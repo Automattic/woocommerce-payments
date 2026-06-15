@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useEffect, useId, useMemo, useRef } from 'react';
-import { Button } from '@wordpress/components';
+import { Button, Spinner } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
@@ -233,6 +233,22 @@ export const FeesReport = ( {
 					fields={ fields }
 					paginationInfo={ { totalItems, totalPages } }
 					isLoading={ isLoading }
+					empty={
+						isLoading ? (
+							<div
+								className="wcpay-reports-fees__loading-empty"
+								role="status"
+							>
+								<Spinner />
+								<span className="screen-reader-text">
+									{ __(
+										'Loading fees',
+										'woocommerce-payments'
+									) }
+								</span>
+							</div>
+						) : undefined
+					}
 					defaultLayouts={ { table: {} } }
 					getItemId={ ( item ) => item.transaction_id }
 				>

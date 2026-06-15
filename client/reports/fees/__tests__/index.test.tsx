@@ -549,6 +549,27 @@ describe( 'FeesReport (DataViews)', () => {
 		expect( screen.getByRole( 'button', { name: 'Reset' } ) ).toBeEnabled();
 	} );
 
+	it( 'renders a loading status instead of DataViews No results while refreshing an empty filtered result', () => {
+		mockGetQuery.mockReturnValue( {
+			payment_method_type: 'card',
+		} );
+		mockEmptyFeesReportState();
+		const { rerender } = render( <FeesReport /> );
+
+		expect( screen.getByText( 'No fees to display' ) ).toBeInTheDocument();
+
+		mockEmptyFeesReportState( true );
+		rerender( <FeesReport /> );
+
+		expect( screen.queryByText( 'No results' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'No fees to display' )
+		).not.toBeInTheDocument();
+		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
+			'Loading fees'
+		);
+	} );
+
 	it( 'does not render the export action in the Fees DataViews controls', () => {
 		render( <FeesReport /> );
 		expect(
