@@ -18,16 +18,21 @@ const PhoneNumberInput = lazy( () =>
 	import( /* webpackChunkName: "wcpay-phone-input" */ './' )
 );
 
-// Mirrors the real input's markup so swapping in the loaded component causes no layout shift.
+// Mirrors the real input's markup so swapping in the loaded component causes no
+// layout shift. The `.iti` wrapper matches the one intl-tel-input injects around
+// the input on mount, so the placeholder reserves its `margin-top` and the field
+// doesn't jump once the component's chunk loads.
 const PhoneInputPlaceholder = ( { id, isBlocksCheckout } ) => (
 	<div className={ isBlocksCheckout ? 'wc-block-components-text-input' : '' }>
-		<input
-			type="tel"
-			id={ id }
-			className="phone-input input-text"
-			placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
-			disabled
-		/>
+		<div className="iti">
+			<input
+				type="tel"
+				id={ id }
+				className="phone-input input-text"
+				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
+				disabled
+			/>
+		</div>
 	</div>
 );
 
