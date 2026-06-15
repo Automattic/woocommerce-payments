@@ -1190,6 +1190,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
+		$request->expects( $this->once() )
+			->method( 'set_fingerprint' );
+
 				// Assert: Order has correct charge id meta data.
 		// Assert: Order has correct intention status meta data.
 		// Assert: Order has correct intent ID.
