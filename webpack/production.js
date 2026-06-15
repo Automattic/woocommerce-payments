@@ -7,9 +7,7 @@ module.exports = {
 				// opaque, very long auto-generated ids (e.g.
 				// `vendors-node_modules_wordpress_dataviews_...`). Deriving the
 				// name from the package directory keeps it short and readable
-				// without maintaining a per-dependency list. Packages below
-				// splitChunks' default minSize stay inlined, so this doesn't
-				// fragment the output into many tiny files.
+				// without maintaining a per-dependency list.
 				vendor: {
 					test: /[\\/]node_modules[\\/]/,
 					chunks: 'all',
