@@ -3,23 +3,28 @@ module.exports = {
 	optimization: {
 		splitChunks: {
 			cacheGroups: {
-				// Short, readable names for the big vendor splits instead of
-				// opaque numeric ids (chunks/4183.js). Everything else keeps
-				// the default numeric naming, which stays short.
-				datepicker: {
-					test: /[\\/]node_modules[\\/](react-day-picker|@date-fns|date-fns)[\\/]/,
-					name: 'vendor-datepicker',
+				// Name vendor splits after their npm package instead of the
+				// opaque, very long auto-generated ids (e.g.
+				// `vendors-node_modules_wordpress_dataviews_...`). Deriving the
+				// name from the package directory keeps it short and readable
+				// without maintaining a per-dependency list. Packages below
+				// splitChunks' default minSize stay inlined, so this doesn't
+				// fragment the output into many tiny files.
+				vendor: {
+					test: /[\\/]node_modules[\\/]/,
 					chunks: 'all',
-				},
-				dataviews: {
-					test: /[\\/]node_modules[\\/]@wordpress[\\/]dataviews[\\/]/,
-					name: 'vendor-dataviews',
-					chunks: 'all',
-				},
-				stripe: {
-					test: /[\\/]node_modules[\\/]@stripe[\\/]/,
-					name: 'vendor-stripe',
-					chunks: 'all',
+					name( module ) {
+						const pkg = module.context.match(
+							/[\\/]node_modules[\\/](@[^\\/]+[\\/][^\\/]+|[^\\/]+)/
+						);
+
+						return pkg
+							? 'vendor-' +
+									pkg[ 1 ]
+										.replace( '@', '' )
+										.replace( /[\\/]/g, '-' )
+							: 'vendor';
+					},
 				},
 			},
 		},
