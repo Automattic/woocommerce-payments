@@ -10,18 +10,11 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import { getConfig } from 'utils/checkout';
-
-interface apiResponse {
-	url: Location;
-}
-
-interface wcpayApi {
-	initWooPay: () => Promise< apiResponse >;
-}
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 interface woopayButtonProps {
 	isStatic?: boolean;
-	api: wcpayApi;
+	api: { request: Parameters< typeof initWooPay >[ 0 ] };
 }
 
 const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
@@ -44,8 +37,14 @@ const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
 	}
 
 	const onClick = () => {
+		const promise = initWooPay( api.request );
+
+		if ( ! promise ) {
+			return;
+		}
+
 		setIsLoading( true );
-		api.initWooPay().then( ( response ) => {
+		promise.then( ( response ) => {
 			window.location = response.url;
 			setIsLoading( false );
 		} );
@@ -80,9 +79,9 @@ interface expressPaymentMethod {
 	};
 }
 
-export const woopayPaymentMethod = (
-	api: wcpayApi
-): expressPaymentMethod => ( {
+export const woopayPaymentMethod = ( api: {
+	request: Parameters< typeof initWooPay >[ 0 ];
+} ): expressPaymentMethod => ( {
 	name: 'woopay',
 	content: <WooPay api={ api } />,
 	edit: <WooPay isStatic={ true } api={ api } />,

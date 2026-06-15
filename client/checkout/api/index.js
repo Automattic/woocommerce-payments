@@ -8,9 +8,6 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { getAppearance, getFontRulesFromPage } from 'checkout/upe-styles';
-import { getAppearanceType } from '../utils';
-import { isShortcodeCheckout } from 'wcpay/checkout/woopay/utils';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -27,7 +24,6 @@ export default class WCPayAPI {
 		this.stripe = null;
 		this.stripePlatform = null;
 		this.request = request;
-		this.isWooPayRequesting = false;
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
@@ -306,13 +302,17 @@ export default class WCPayAPI {
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.
+	 * @param {string} fingerprint     User fingerprint for fraud prevention.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	async setupIntent( paymentMethodId ) {
+	async setupIntent( paymentMethodId, fingerprint = '' ) {
 		const response = await this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+			'wcpay-fraud-prevention-token':
+				window.wcpayFraudPreventionToken ?? '',
+			'wcpay-fingerprint': fingerprint,
 		} );
 
 		if ( ! response.success ) {
@@ -336,39 +336,6 @@ export default class WCPayAPI {
 		}
 
 		return setupIntent;
-	}
-
-	initWooPay( userEmail, woopayUserSession ) {
-		if ( ! this.isWooPayRequesting ) {
-			this.isWooPayRequesting = true;
-			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
-			const nonce = getConfig( 'initWooPayNonce' );
-			let appearance = null;
-			let fontRules = null;
-			if ( getConfig( 'isWooPayGlobalThemeSupportEnabled' ) ) {
-				if ( isShortcodeCheckout() ) {
-					const appearanceType = getAppearanceType();
-					appearance = getAppearance( appearanceType, true );
-					fontRules = getFontRulesFromPage();
-				} else {
-					appearance = getConfig( 'woopayAppearance' );
-					fontRules = getConfig( 'woopayFontRules' );
-				}
-			}
-
-			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
-				_wpnonce: nonce,
-				appearance,
-				font_rules: fontRules,
-				email: userEmail,
-				user_session: woopayUserSession,
-				order_id: getConfig( 'order_id' ),
-				key: getConfig( 'key' ),
-				billing_email: getConfig( 'billing_email' ),
-			} ).finally( () => {
-				this.isWooPayRequesting = false;
-			} );
-		}
 	}
 
 	expressCheckoutAddToCart( productData ) {

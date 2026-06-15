@@ -598,6 +598,7 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$woopay_tracker->init_hooks();
 		self::$order_service->init_hooks();
 		self::$order_success_page->init_hooks();
 		self::$action_scheduler_service->init_hooks();
@@ -1855,7 +1856,7 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
+			( new WooPay_Order_Status_Sync( self::$api_client, self::$account ) )->init_hooks();
 		}
 	}
 
@@ -2141,7 +2142,7 @@ class WC_Payments {
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
-			new WooPay_Save_User();
+			( new WooPay_Save_User() )->init_hooks();
 		}
 	}
 
