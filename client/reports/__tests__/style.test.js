@@ -19,9 +19,9 @@ describe( 'Reports styles', () => {
 			'utf8'
 		);
 
-		expect(
-			styles.match( /justify-content: flex-end !important;/g ) ?? []
-		).toHaveLength( 2 );
+		expect( styles ).toMatch(
+			/&__view-actions\s*\{[\s\S]*justify-content: flex-end;/
+		);
 	} );
 
 	it( 'ships Balance loading skeleton fallback styles with the Reports entry stylesheet', () => {

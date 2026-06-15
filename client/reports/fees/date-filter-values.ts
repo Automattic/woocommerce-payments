@@ -19,6 +19,13 @@ const millisecondsPerDay = 86400000;
 const isYmd = ( value: unknown ): value is string =>
 	typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test( value );
 
+const isLegacyLocalDateTime = ( value: unknown ): value is string =>
+	typeof value === 'string' &&
+	/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test( value );
+
+const isDateQueryValue = ( value: unknown ): value is string =>
+	isYmd( value ) || isLegacyLocalDateTime( value );
+
 export interface FeesDateQueryParams {
 	date_between?: string[];
 	date_before?: string;
@@ -96,6 +103,20 @@ export const buildFeesDateQueryFromFilter = (
 	};
 };
 
+const getDateBetweenQueryValue = ( value: unknown ): string[] | undefined => {
+	const [ start, end ] = Array.isArray( value ) ? value : [];
+	if (
+		Array.isArray( value ) &&
+		value.length === 2 &&
+		isDateQueryValue( start ) &&
+		isDateQueryValue( end )
+	) {
+		return [ start, end ];
+	}
+
+	return undefined;
+};
+
 export const parseFeesDateFilterFromQuery = (
 	query: Record< string, unknown >
 ): Filter | undefined => {
@@ -114,9 +135,22 @@ export const parseFeesDateFilterFromQuery = (
 export const buildFeesDateQueryFromUrlQuery = (
 	query: Record< string, unknown >
 ): FeesDateQueryParams => {
-	return buildFeesDateQueryFromFilter(
-		parseFeesDateFilterFromQuery( query )
-	);
+	const params: FeesDateQueryParams = {};
+	const dateBetween = getDateBetweenQueryValue( query.date_between );
+
+	if ( dateBetween ) {
+		params.date_between = dateBetween;
+	}
+
+	if ( isDateQueryValue( query.date_before ) ) {
+		params.date_before = query.date_before;
+	}
+
+	if ( isDateQueryValue( query.date_after ) ) {
+		params.date_after = query.date_after;
+	}
+
+	return params;
 };
 
 export const serializeFeesDateFilterToQuery = (
