@@ -100,6 +100,23 @@ describe( 'buildFeesQuery', () => {
 		expect( result.date_after ).toBeUndefined();
 	} );
 
+	it( 'omits malformed date "between" filters', () => {
+		const result = buildFeesQuery(
+			baseView( {
+				filters: [
+					{
+						field: 'date',
+						operator: 'between',
+						value: [ '2026-03-01', '2026-03-31', '2026-04-01' ],
+					},
+				],
+			} )
+		);
+		expect( result.date_between ).toBeUndefined();
+		expect( result.date_before ).toBeUndefined();
+		expect( result.date_after ).toBeUndefined();
+	} );
+
 	it( 'maps a date "on" filter to a same-day date_between', () => {
 		const result = buildFeesQuery(
 			baseView( {
@@ -113,6 +130,23 @@ describe( 'buildFeesQuery', () => {
 			} )
 		);
 		expect( result.date_between ).toEqual( [ '2026-05-18', '2026-05-18' ] );
+		expect( result.date_before ).toBeUndefined();
+		expect( result.date_after ).toBeUndefined();
+	} );
+
+	it( 'omits scalar date filters with non-string values', () => {
+		const result = buildFeesQuery(
+			baseView( {
+				filters: [
+					{
+						field: 'date',
+						operator: 'before',
+						value: [ '2026-03-31' ],
+					},
+				],
+			} )
+		);
+		expect( result.date_between ).toBeUndefined();
 		expect( result.date_before ).toBeUndefined();
 		expect( result.date_after ).toBeUndefined();
 	} );

@@ -236,7 +236,10 @@ export const FeesReport = ( {
 					defaultLayouts={ { table: {} } }
 					getItemId={ ( item ) => item.transaction_id }
 				>
-					<div className="wcpay-reports-fees__view-actions">
+					<div
+						key="view-actions"
+						className="wcpay-reports-fees__view-actions"
+					>
 						<DataViews.Search
 							label={ __(
 								'Search fees',
@@ -246,9 +249,12 @@ export const FeesReport = ( {
 						<DataViews.FiltersToggle />
 						<DataViews.ViewConfig />
 					</div>
-					<DataViews.FiltersToggled className="dataviews-filters__container" />
-					<DataViews.Layout />
-					<DataViewsFooter />
+					<DataViews.FiltersToggled
+						key="filters-toggled"
+						className="dataviews-filters__container"
+					/>
+					<DataViews.Layout key="layout" />
+					<DataViewsFooter key="footer" />
 				</DataViews>
 				{ isFilteredEmpty && (
 					/* role="status" is implicitly aria-live="polite". Safe here because the

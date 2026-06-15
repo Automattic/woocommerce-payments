@@ -16,8 +16,8 @@ import {
 
 const millisecondsPerDay = 86400000;
 
-const isYmd = ( value: string | undefined ): value is string =>
-	/^\d{4}-\d{2}-\d{2}$/.test( value ?? '' );
+const isYmd = ( value: unknown ): value is string =>
+	typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test( value );
 
 export interface FeesDateQueryParams {
 	date_between?: string[];
@@ -34,14 +34,16 @@ export const getFeesDateFilterValue = (
 
 	if ( filter.operator === 'between' ) {
 		const value = filter.value;
+		const [ start, end ] = Array.isArray( value ) ? value : [];
 		if (
 			Array.isArray( value ) &&
-			isYmd( value[ 0 ] as string | undefined ) &&
-			isYmd( value[ 1 ] as string | undefined )
+			value.length === 2 &&
+			isYmd( start ) &&
+			isYmd( end )
 		) {
 			return {
 				operator: 'between',
-				value: [ value[ 0 ] as string, value[ 1 ] as string ],
+				value: [ start, end ],
 			};
 		}
 		return undefined;
@@ -51,11 +53,11 @@ export const getFeesDateFilterValue = (
 		( filter.operator === 'on' ||
 			filter.operator === 'before' ||
 			filter.operator === 'after' ) &&
-		isYmd( filter.value as string | undefined )
+		isYmd( filter.value )
 	) {
 		return {
 			operator: filter.operator,
-			value: filter.value as string,
+			value: filter.value,
 		};
 	}
 
