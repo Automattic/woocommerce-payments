@@ -21,7 +21,7 @@ describe( 'PhoneNumberInput', () => {
 		};
 	} );
 
-	it( 'should render phone number input', () => {
+	it( 'should render phone number input', async () => {
 		render(
 			<PhoneNumberInput
 				onValueChange={ handlePhoneNumberChangeMock }
@@ -29,12 +29,20 @@ describe( 'PhoneNumberInput', () => {
 				value="123"
 			/>
 		);
+
+		// The `intl-tel-input` utils are loaded on demand, so the country
+		// dropdown is enhanced asynchronously after the input mounts.
+		expect(
+			await screen.findByRole( 'combobox', {
+				name: 'United States: +1',
+			} )
+		).toBeInTheDocument();
 		expect(
 			screen.queryByLabelText( 'Mobile phone number' )
 		).toBeInTheDocument();
 	} );
 
-	it( 'should render the default selected country with code', () => {
+	it( 'should render the default selected country with code', async () => {
 		render(
 			<PhoneNumberInput
 				onValueChange={ handlePhoneNumberChangeMock }
@@ -43,11 +51,13 @@ describe( 'PhoneNumberInput', () => {
 			/>
 		);
 		expect(
-			screen.queryByRole( 'combobox', { name: 'United States: +1' } )
+			await screen.findByRole( 'combobox', {
+				name: 'United States: +1',
+			} )
 		).toBeInTheDocument();
 	} );
 
-	it( 'should call the onValueChange with phone number including country code', () => {
+	it( 'should call the onValueChange with phone number including country code', async () => {
 		render(
 			<PhoneNumberInput
 				onValueChange={ handlePhoneNumberChangeMock }
@@ -55,6 +65,8 @@ describe( 'PhoneNumberInput', () => {
 				value="123"
 			/>
 		);
+
+		await screen.findByRole( 'combobox', { name: 'United States: +1' } );
 
 		expect( handlePhoneNumberChangeMock ).not.toHaveBeenCalled();
 
@@ -64,7 +76,7 @@ describe( 'PhoneNumberInput', () => {
 		expect( handlePhoneNumberChangeMock ).toHaveBeenCalledWith( '+1201' );
 	} );
 
-	it( 'should call the onValidationChange with true if value is valid', () => {
+	it( 'should call the onValidationChange with true if value is valid', async () => {
 		render(
 			<PhoneNumberInput
 				onValueChange={ handlePhoneNumberChangeMock }
@@ -72,6 +84,8 @@ describe( 'PhoneNumberInput', () => {
 				value="123"
 			/>
 		);
+
+		await screen.findByRole( 'combobox', { name: 'United States: +1' } );
 
 		const input = screen.queryByLabelText( 'Mobile phone number' ); // The label text for our input.
 
