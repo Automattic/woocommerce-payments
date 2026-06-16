@@ -447,7 +447,7 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
         ? Your customers will no longer be able to pay in this currency.
       </p>
       <p>
-        The payment methods below currently support Euro:
+        These payment methods will no longer be available at checkout, since none of your remaining currencies support them:
       </p>
       <ul>
         <li>
@@ -466,35 +466,24 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
             </span>
           </span>
         </li>
+      </ul>
+      <p>
+        These payment methods will stay available in your other currencies, but not for payments in Euro:
+      </p>
+      <ul>
         <li>
           <span
             class="woocommerce-payments__payment-method-icon"
           >
             <img
-              alt="Sofort"
+              alt="Amazon Pay"
               class="payment-method__icon"
-              src="assets/images/icon-sofort.svg"
+              src="assets/images/icon-amazon_pay.svg"
             />
             <span
               class="woocommerce-payments__payment-method-icon__label"
             >
-              Sofort
-            </span>
-          </span>
-        </li>
-        <li>
-          <span
-            class="woocommerce-payments__payment-method-icon"
-          >
-            <img
-              alt="SEPA Direct Debit"
-              class="payment-method__icon"
-              src="assets/images/icon-sepa_debit.svg"
-            />
-            <span
-              class="woocommerce-payments__payment-method-icon__label"
-            >
-              SEPA Direct Debit
+              Amazon Pay
             </span>
           </span>
         </li>

@@ -50,6 +50,7 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 					'get_enabled_currencies',
 					'get_available_currencies',
 					'set_enabled_currencies',
+					'is_multi_currency_settings_page',
 				]
 			)
 			->getMock();
@@ -222,6 +223,42 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 			);
 
 		$this->currency_manager->maybe_add_missing_currencies();
+	}
+
+	public function test_it_injects_method_keyed_payment_methods_map() {
+		$this->multi_currency_mock->method( 'is_multi_currency_settings_page' )->willReturn( true );
+		$this->gateway_mock->method( 'wc_payments_get_payment_method_map' )->willReturn( $this->get_mocked_payment_methods_map() );
+		$this->gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
+			[
+				'card',
+				'bancontact',
+				'klarna',
+			]
+		);
+		$this->gateway_mock->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
+
+		ob_start();
+		$this->currency_manager->add_payment_method_currency_dependencies_script();
+		$output = ob_get_clean();
+
+		preg_match( '/window\.multiCurrencyPaymentMethodsMap = (.*);/', $output, $matches );
+		$decoded = json_decode( $matches[1], true );
+
+		// `card` is excluded; `bancontact` keeps its supported currency; the
+		// domestic-only `klarna` resolves to the account's domestic currency.
+		$this->assertEquals(
+			[
+				'bancontact' => [
+					'currencies' => [ 'EUR' ],
+					'title'      => 'bancontact Payment Method',
+				],
+				'klarna'     => [
+					'currencies' => [ 'USD' ],
+					'title'      => 'klarna Payment Method',
+				],
+			],
+			$decoded
+		);
 	}
 
 	private function get_mocked_payment_methods_map() {
