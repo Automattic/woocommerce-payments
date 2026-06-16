@@ -59,7 +59,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 *
 	 * @param Product $product WC Product.
 	 */
-	public static function get_period( $product ) {
+	public static function get_period( $_unused_product ) {
 		return self::$subscription_product_period;
 	}
 
@@ -68,7 +68,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 *
 	 * @param Product $product WC Product.
 	 */
-	public static function get_interval( $product ) {
+	public static function get_interval( $_unused_product ) {
 		return self::$subscription_product_interval;
 	}
 
@@ -78,7 +78,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 * @param Product $product WC Product.
 	 * @return mixed The sign-up fee.
 	 */
-	public static function get_sign_up_fee( $product ) {
+	public static function get_sign_up_fee( $_unused_product ) {
 		return self::$sign_up_fee;
 	}
 
@@ -87,7 +87,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 *
 	 * @param Product $product WC Product.
 	 */
-	public static function get_trial_length( $product ) {
+	public static function get_trial_length( $_unused_product ) {
 		return self::$trial_length;
 	}
 
@@ -96,7 +96,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 *
 	 * @param Product $product WC Product.
 	 */
-	public static function is_subscription( $product ) {
+	public static function is_subscription( $_unused_product ) {
 		return self::$is_subscription;
 	}
 
@@ -105,7 +105,7 @@ class WC_Subscriptions_Product extends WC_Product {
 	 *
 	 * @param Product $product WC Product.
 	 */
-	public static function needs_one_time_shipping( $product ) {
+	public static function needs_one_time_shipping( $_unused_product ) {
 		return self::$one_time_shipping;
 	}
 
