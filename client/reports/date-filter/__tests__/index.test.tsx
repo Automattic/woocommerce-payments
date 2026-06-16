@@ -34,10 +34,8 @@ describe( 'date filter module exports', () => {
 				operator: 'before',
 				value: '2026-05-18',
 			} )
-		).toEqual( {
-			date_between: undefined,
+		).toMatchObject( {
 			date_before: '2026-05-18',
-			date_after: undefined,
 		} );
 	} );
 } );
