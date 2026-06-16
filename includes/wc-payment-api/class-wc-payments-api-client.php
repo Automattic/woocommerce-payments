@@ -2838,6 +2838,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		if ( 400 <= $response_code ) {
 			$error_type   = null;
 			$decline_code = null;
+			$error_param  = null;
 			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
 				throw new Amount_Too_Small_Exception(
 					$response_body['message'],
@@ -2864,6 +2865,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				$error_code    = $response_body_error_code ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
+				$error_param   = $response_body['error']['param'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
 
@@ -2889,6 +2891,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
+				// The server identifies the request field that caused the failure (e.g. on a
+				// rejected account settings update) in `data.param`.
+				$error_param = $response_body['data']['param'] ?? null;
 			} else {
 				$error_code    = 'wcpay_client_error_code_missing';
 				$error_message = __( 'Server error. Please try again.', 'woocommerce-payments' );
@@ -2908,7 +2913,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code );
 			}
 
-			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code, 0, null, $error_param );
 		}
 	}
 

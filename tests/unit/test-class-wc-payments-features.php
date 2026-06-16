@@ -103,6 +103,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
+	public function test_is_mc_cache_optimized_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
+	public function test_is_mc_cache_optimized_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		$this->assertFalse( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
 	public function test_is_dispute_additional_evidence_types_enabled_by_default() {
 		$this->assertTrue( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}

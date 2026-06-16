@@ -35,6 +35,13 @@ class API_Exception extends Base_Exception {
 	private $decline_code = null;
 
 	/**
+	 * The request parameter that triggered the error, when the server identifies one.
+	 *
+	 * @var string|null
+	 */
+	private $param = null;
+
+	/**
 	 * Constructor
 	 *
 	 * @param string     $message    The Exception message to throw.
@@ -44,11 +51,13 @@ class API_Exception extends Base_Exception {
 	 * @param string     $decline_code The decline code if it is a card error.
 	 * @param int        $code       The Exception code.
 	 * @param \Throwable $previous   The previous exception used for the exception chaining.
+	 * @param string     $param      The request parameter that triggered the error, if any.
 	 */
-	public function __construct( $message, $error_code, $http_code, $error_type = null, $decline_code = null, $code = 0, $previous = null ) {
+	public function __construct( $message, $error_code, $http_code, $error_type = null, $decline_code = null, $code = 0, $previous = null, $param = null ) {
 		$this->http_code    = $http_code;
 		$this->error_type   = $error_type;
 		$this->decline_code = $decline_code;
+		$this->param        = $param;
 
 		parent::__construct( $message, $error_code, $code, $previous );
 	}
@@ -78,5 +87,18 @@ class API_Exception extends Base_Exception {
 	 */
 	public function get_decline_code() {
 		return $this->decline_code;
+	}
+
+	/**
+	 * Returns the request parameter associated with the error, if the server identified one.
+	 *
+	 * For account settings updates the server resolves this to the request field name the
+	 * client sent (for example 'business_support_phone'); raw Stripe-shaped error responses
+	 * may carry Stripe's own parameter form (for example 'business_profile[support_phone]').
+	 *
+	 * @return string|null The request parameter, or null when none was identified.
+	 */
+	public function get_param() {
+		return $this->param;
 	}
 }
