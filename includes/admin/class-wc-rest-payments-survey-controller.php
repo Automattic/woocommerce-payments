@@ -106,8 +106,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			[
 				'method'  => 'POST',
 				'headers' => [
-					'Content-Type'    => 'application/json',
-					'X-Forwarded-For' => \WC_Geolocation::get_ip_address(),
+					'Content-Type' => 'application/json',
 				],
 			],
 			[
