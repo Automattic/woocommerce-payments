@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix flaky multi-currency widget E2E setup: scope the post-insert wait to the inserted legacy-widget block so it no longer also matches the block-inspector card and trips Playwright strict mode.
