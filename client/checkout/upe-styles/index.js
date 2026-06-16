@@ -14,9 +14,8 @@ import {
 	getBackgroundColor,
 	maybeConvertRGBAtoRGB,
 	handleAppearanceForFloatingLabel,
+	usesFloatingLabelPattern,
 } from './utils.js';
-
-const PMME_RELATIVE_TEXT_SIZE = 0.875;
 
 export const appearanceSelectors = {
 	default: {
@@ -56,7 +55,6 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
-		pmmeRelativeTextSizeSelector: '.wc_payment_method > label',
 	},
 	blocksCheckout: {
 		appendTarget: '.wc-block-checkout__contact-fields',
@@ -89,8 +87,6 @@ export const appearanceSelectors = {
 		containerSelectors: [
 			'.wp-block-woocommerce-checkout-order-summary-block',
 		],
-		pmmeRelativeTextSizeSelector:
-			'.wc-block-components-radio-control__label-group',
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -654,49 +650,6 @@ export const getFontRulesFromPage = ( scope = document ) => {
 	return fontRules;
 };
 
-/**
- * Ensure the font size of the element is smaller than the font size of target element.
- *
- * @param {string} selector   Selector of the element to be checked.
- * @param {string} fontSize   Pre-computed font size.
- * @param {number} percentage Percentage (0-1) to be used relative to the font size of the target element.
- * @param {Object} scope      The scope of the elements.
- *
- * @return {string} Font size of the element.
- */
-function ensureFontSizeSmallerThan(
-	selector,
-	fontSize,
-	percentage = PMME_RELATIVE_TEXT_SIZE,
-	scope
-) {
-	const fontSizeNumber = parseFloat( fontSize );
-
-	if ( isNaN( fontSizeNumber ) ) {
-		return fontSize;
-	}
-
-	// If the element is not found, return the font size number multiplied by the percentage.
-	const elem = scope.querySelector( selector );
-	if ( ! elem ) {
-		return `${ fontSizeNumber * percentage }px`;
-	}
-
-	const styles = window.getComputedStyle( elem );
-	const targetFontSize = styles.getPropertyValue( 'font-size' );
-	const targetFontSizeNumber = parseFloat( targetFontSize ) * percentage;
-
-	if ( isNaN( targetFontSizeNumber ) ) {
-		return fontSize;
-	}
-
-	if ( fontSizeNumber > targetFontSizeNumber ) {
-		return `${ targetFontSizeNumber }px`;
-	}
-
-	return `${ fontSizeNumber }px`;
-}
-
 // Maps standard element locations to WooPay-specific selector sets that
 // include header, footer, link, and button selectors needed by WooPay.
 const woopayLocationMap = {
@@ -789,18 +742,10 @@ export const getAppearance = (
 		fontSizeBase: paragraphRules.fontSize,
 	};
 
-	if ( selectors.pmmeRelativeTextSizeSelector && globalRules.fontSizeBase ) {
-		globalRules.fontSizeBase = ensureFontSizeSmallerThan(
-			selectors.pmmeRelativeTextSizeSelector,
-			paragraphRules.fontSize,
-			PMME_RELATIVE_TEXT_SIZE,
-			scope
-		);
-	}
-
 	const isFloatingLabel =
-		elementsLocation === 'blocks_checkout' ||
-		selectorLocation === 'woopay_blocks_checkout';
+		( elementsLocation === 'blocks_checkout' ||
+			selectorLocation === 'woopay_blocks_checkout' ) &&
+		usesFloatingLabelPattern( selectors.hiddenValidActiveLabel, scope );
 
 	let appearance = {
 		variables: globalRules,

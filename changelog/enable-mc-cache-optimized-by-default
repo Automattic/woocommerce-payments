@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Enable the multi-currency cache-optimized rendering mode feature by default

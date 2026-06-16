@@ -1,51 +1,41 @@
 /** @format */
 
 /**
- * External dependencies
- */
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-
-/**
  * Internal dependencies
  */
-import DateFilter from '../index';
+import * as dateFilterExports from '../index';
 
-describe( 'DateFilter', () => {
-	it( 'renders the open popover with role="dialog" and an accessible name', async () => {
-		render( <DateFilter value={ undefined } onChange={ jest.fn() } /> );
-
-		await userEvent.click(
-			screen.getByRole( 'button', { name: /^date$/i } )
+describe( 'date filter module exports', () => {
+	it( 'exposes shared URL utilities without the removed custom UI', () => {
+		expect( dateFilterExports ).toHaveProperty(
+			'parseDateFilterFromQuery'
 		);
-
-		const dialog = await screen.findByRole( 'dialog', {
-			name: /date filter/i,
-		} );
-		expect( dialog ).toBeInTheDocument();
+		expect( dateFilterExports ).toHaveProperty(
+			'serializeDateFilterToQuery'
+		);
+		expect( dateFilterExports ).not.toHaveProperty( 'DateFilter' );
+		expect( dateFilterExports ).not.toHaveProperty( 'default' );
 	} );
 
-	it( 'uses onClear for chip clears without calling onChange', async () => {
-		const onChange = jest.fn();
-		const onClear = jest.fn();
+	it( 'parses date filters through the barrel export', () => {
+		expect(
+			dateFilterExports.parseDateFilterFromQuery( {
+				date_between: [ '2026-05-18', '2026-05-18' ],
+			} )
+		).toEqual( {
+			operator: 'on',
+			value: '2026-05-18',
+		} );
+	} );
 
-		render(
-			<DateFilter
-				value={ {
-					operator: 'between',
-					value: [ '2026-04-01', '2026-04-30' ],
-				} }
-				onChange={ onChange }
-				onClear={ onClear }
-			/>
-		);
-
-		await userEvent.click(
-			screen.getByRole( 'button', { name: /clear date filter/i } )
-		);
-
-		expect( onClear ).toHaveBeenCalledTimes( 1 );
-		expect( onChange ).not.toHaveBeenCalled();
+	it( 'serializes date filters through the barrel export', () => {
+		expect(
+			dateFilterExports.serializeDateFilterToQuery( {
+				operator: 'before',
+				value: '2026-05-18',
+			} )
+		).toMatchObject( {
+			date_before: '2026-05-18',
+		} );
 	} );
 } );

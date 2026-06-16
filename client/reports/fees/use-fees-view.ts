@@ -10,8 +10,13 @@ import { recordEvent } from 'tracks';
 /**
  * Internal dependencies
  */
+import { matchPreset } from 'wcpay/reports/date-filter/presets';
 import { useFeesUrlSync } from './use-fees-url-sync';
 import { useFeesUserPrefs } from './use-fees-user-prefs';
+import {
+	getFeesDateFilterRangeDays,
+	getFeesDateFilterValue,
+} from './date-filter-values';
 
 const searchTrackingDebounceMs = 500;
 
@@ -24,9 +29,6 @@ const findFilterByField = (
 	filters: Filter[] | undefined,
 	field: string
 ): Filter | undefined => filters?.find( ( filter ) => filter.field === field );
-
-const hasFilterValue = ( filter: Filter | undefined ): boolean =>
-	filter?.value !== undefined;
 
 const stringifyFilterValue = ( value: unknown ): string | undefined => {
 	try {
@@ -80,7 +82,8 @@ const trackViewChange = (
 	{
 		clearPendingSearchTracking,
 		scheduleSearchTracking,
-	}: SearchTrackingControls
+	}: SearchTrackingControls,
+	now: Date
 ): void => {
 	const previousSearch = previous.search ?? '';
 	const nextSearch = next.search ?? '';
@@ -96,14 +99,22 @@ const trackViewChange = (
 		dateFilterField
 	);
 	const nextDateFilter = findFilterByField( next.filters, dateFilterField );
-	if (
-		hasFilterValue( previousDateFilter ) &&
-		! hasFilterValue( nextDateFilter )
-	) {
+	const previousDateValue = getFeesDateFilterValue( previousDateFilter );
+	const nextDateValue = getFeesDateFilterValue( nextDateFilter );
+	if ( previousDateValue && ! nextDateValue ) {
 		recordEvent( 'wcpay_reports_fees_date_filter_change', {
 			preset: 'reset',
 			range_days: null,
 			is_initial_apply: false,
+		} );
+	} else if (
+		nextDateValue &&
+		! areFilterValuesEqual( previousDateValue, nextDateValue )
+	) {
+		recordEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: matchPreset( nextDateValue, now ),
+			range_days: getFeesDateFilterRangeDays( nextDateFilter ),
+			is_initial_apply: ! previousDateValue,
 		} );
 	}
 
@@ -141,6 +152,7 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 	const searchTrackingTimerRef = useRef< ReturnType<
 		typeof setTimeout
 	> | null >( null );
+	const stableDateFilterNow = useRef( new Date() ).current;
 	const clearPendingSearchTracking = useCallback( () => {
 		if ( searchTrackingTimerRef.current ) {
 			clearTimeout( searchTrackingTimerRef.current );
@@ -188,10 +200,15 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 
 	const setView = useCallback(
 		( next: View ) => {
-			trackViewChange( localView, next, {
-				clearPendingSearchTracking,
-				scheduleSearchTracking,
-			} );
+			trackViewChange(
+				localView,
+				next,
+				{
+					clearPendingSearchTracking,
+					scheduleSearchTracking,
+				},
+				stableDateFilterNow
+			);
 			setLocalView( next );
 			syncViewToUrl( localView, next );
 			persistViewShape( next );
@@ -201,6 +218,7 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 			localView,
 			persistViewShape,
 			scheduleSearchTracking,
+			stableDateFilterNow,
 			syncViewToUrl,
 		]
 	);
