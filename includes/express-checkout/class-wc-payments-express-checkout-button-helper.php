@@ -160,9 +160,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				 *
 				 * @since 2.1.0
 				 *
-				 * @param int          $prepared_total The prepared (Stripe-formatted) order total.
-				 * @param float|string $order_total    The raw order total.
-				 * @param WC_Cart      $cart           The WooCommerce cart object.
+				 * @param int      $prepared_total The prepared (Stripe-formatted) order total.
+				 * @param string   $order_total    The raw cart total, as a numeric string.
+				 * @param WC_Cart  $cart           The WooCommerce cart object.
 				 */
 				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
 				'pending' => false,
@@ -613,7 +613,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 *
 		 * @since 2.1.0
 		 *
-		 * @param array $supported_types The list of supported product types.
+		 * @param string[] $supported_types The list of supported product types.
 		 */
 		return apply_filters(
 			'wcpay_payment_request_supported_types',
