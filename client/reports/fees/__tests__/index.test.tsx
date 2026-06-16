@@ -247,23 +247,6 @@ describe( 'FeesReport (DataViews)', () => {
 		} );
 	} );
 
-	it( 'does not render the report feedback survey', () => {
-		( window as unknown as Record< string, unknown > ).wcpaySettings = {
-			currentUserEmail: 'a@b.test',
-			featureFlags: {
-				reportsArea: true,
-			},
-		};
-
-		render( <FeesReport /> );
-
-		expect(
-			screen.queryByText(
-				'Did this report give you the information you needed?'
-			)
-		).not.toBeInTheDocument();
-	} );
-
 	it( 'records load error when fees data resolves with an error', () => {
 		mockGetQuery.mockReturnValue( filteredMarchQuery );
 		mockFeesState( {

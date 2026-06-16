@@ -10,14 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for Payments survey feedback.
  */
-class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
-
-	/**
-	 * Endpoint namespace.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'wc/v3';
+class WC_REST_Payments_Survey_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.
@@ -39,6 +32,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 * @param WC_Payments_Http_Interface $http_client The HTTP client used to forward the request.
 	 */
 	public function __construct( WC_Payments_Http_Interface $http_client ) {
+		// This endpoint forwards to WPCOM, so it uses the HTTP client instead of the base API client.
 		$this->http_client = $http_client;
 	}
 
@@ -60,6 +54,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'args'                => [
 					'rating'   => [
 						'type'              => 'string',
+						'required'          => true,
 						'enum'              => [
 							'thumbs-up',
 							'thumbs-down',
@@ -69,7 +64,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 					'comments' => [
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
-						'sanitize_callback' => 'wp_filter_nohtml_kses',
+						'sanitize_callback' => 'sanitize_textarea_field',
 					],
 				],
 			]
@@ -84,14 +79,14 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function submit_reports_feedback_survey( WP_REST_Request $request ): WP_REST_Response {
-		$comments = trim( $request->get_param( 'comments' ) ?? '' );
-		$rating   = trim( $request->get_param( 'rating' ) ?? '' );
+		$comments = trim( wp_unslash( $request->get_param( 'comments' ) ?? '' ) );
+		$rating   = trim( wp_unslash( $request->get_param( 'rating' ) ?? '' ) );
 
-		if ( empty( $comments ) && empty( $rating ) ) {
+		if ( empty( $rating ) ) {
 			return new WP_REST_Response(
 				[
 					'success' => false,
-					'err'     => 'No answers provided',
+					'err'     => 'No rating provided',
 				],
 				400
 			);
@@ -133,14 +128,5 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			json_decode( wp_remote_retrieve_body( $wpcom_request ) ),
 			wp_remote_retrieve_response_code( $wpcom_request )
 		);
-	}
-
-	/**
-	 * Verify access.
-	 *
-	 * @return bool
-	 */
-	public function check_permission() {
-		return current_user_can( 'manage_woocommerce' );
 	}
 }

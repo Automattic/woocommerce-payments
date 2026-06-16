@@ -1304,11 +1304,9 @@ class WC_Payments {
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
 		$reports_authorizations_controller->register_routes();
 
-		if ( WC_Payments_Features::is_reports_area_enabled() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-			$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-			$survey_controller->register_routes();
-		}
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();

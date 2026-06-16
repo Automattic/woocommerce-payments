@@ -43,6 +43,30 @@ declare const global: {
 
 const renderSurvey = () => render( <ReportFeedbackSurvey /> );
 
+const renderSurveyWithFocusTarget = () => {
+	const ReportFeedbackSurveyWithFocusTarget =
+		ReportFeedbackSurvey as React.ComponentType< {
+			focusAfterCloseRef: React.RefObject< HTMLElement >;
+		} >;
+
+	const SurveyWithFocusTarget = () => {
+		const focusAfterCloseRef = React.useRef< HTMLDivElement >( null );
+
+		return (
+			<>
+				<div ref={ focusAfterCloseRef } tabIndex={ -1 }>
+					Balance summary
+				</div>
+				<ReportFeedbackSurveyWithFocusTarget
+					focusAfterCloseRef={ focusAfterCloseRef }
+				/>
+			</>
+		);
+	};
+
+	return render( <SurveyWithFocusTarget /> );
+};
+
 describe( 'ReportFeedbackSurvey', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -78,6 +102,9 @@ describe( 'ReportFeedbackSurvey', () => {
 				'What did you use this report for? (optional)'
 			)
 		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'group', { name: 'Report feedback rating' } )
+		).toBeInTheDocument();
 
 		await waitFor( () => {
 			expect( mockRecordEvent ).toHaveBeenCalledWith(
@@ -94,15 +121,26 @@ describe( 'ReportFeedbackSurvey', () => {
 	it( 'expands for both thumbs and does not auto-submit', async () => {
 		renderSurvey();
 
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'This report was helpful' } )
-		);
+		const thumbsUpButton = screen.getByRole( 'button', {
+			name: 'This report was helpful',
+		} );
+		expect( thumbsUpButton ).toHaveAttribute( 'aria-expanded', 'false' );
 
+		await userEvent.click( thumbsUpButton );
+
+		const thumbsUpTextarea = screen.getByLabelText(
+			'What did you use this report for? (optional)'
+		);
+		const expandedRegionId = thumbsUpButton.getAttribute( 'aria-controls' );
+
+		expect( expandedRegionId ).toBeTruthy();
 		expect(
-			screen.getByLabelText(
-				'What did you use this report for? (optional)'
-			)
-		).toBeInTheDocument();
+			document.getElementById( expandedRegionId as string )
+		).toContainElement( thumbsUpTextarea );
+		expect( thumbsUpButton ).toHaveAttribute( 'aria-expanded', 'true' );
+		await waitFor( () => expect( thumbsUpTextarea ).toHaveFocus() );
+
+		expect( thumbsUpTextarea ).toBeInTheDocument();
 		expect( mockRecordEvent ).toHaveBeenCalledWith(
 			'wcpay_reports_feedback_thumbs_up',
 			{ report_type: 'balance' }
@@ -218,6 +256,49 @@ describe( 'ReportFeedbackSurvey', () => {
 		} );
 	} );
 
+	it( 'hides after successful submit even when dismissal persistence fails', async () => {
+		mockUpdateUserPreferences.mockRejectedValueOnce(
+			new Error( 'preference write failed' )
+		);
+		renderSurvey();
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'This report was helpful' } )
+		);
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: 'Send' } )
+			);
+		} );
+
+		await waitFor( () => {
+			expect( mockApiFetch ).toHaveBeenCalledWith( {
+				path: '/wc/v3/payments/survey/reports-feedback',
+				method: 'POST',
+				data: {
+					rating: 'thumbs-up',
+					comments: '',
+				},
+			} );
+		} );
+		await waitFor( () => {
+			expect(
+				screen.queryByText(
+					'Did this report give you the information you needed?'
+				)
+			).not.toBeInTheDocument();
+		} );
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_feedback_submit_error',
+			expect.anything()
+		);
+		expect(
+			screen.queryByText(
+				'Your feedback could not be sent. Please try again.'
+			)
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'submits without text', async () => {
 		renderSurvey();
 
@@ -311,6 +392,35 @@ describe( 'ReportFeedbackSurvey', () => {
 				'Did this report give you the information you needed?'
 			)
 		).not.toBeInTheDocument();
+	} );
+
+	it( 'moves focus to the provided stable target when dismissed', async () => {
+		renderSurveyWithFocusTarget();
+
+		const closeButton = screen.getByRole( 'button', {
+			name: 'Dismiss feedback survey',
+		} );
+
+		await userEvent.click( closeButton );
+
+		expect( screen.getByText( 'Balance summary' ) ).toHaveFocus();
+	} );
+
+	it( 'moves focus to the provided stable target when submitted', async () => {
+		renderSurveyWithFocusTarget();
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'This report was helpful' } )
+		);
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: 'Send' } )
+			);
+		} );
+
+		await waitFor( () => {
+			expect( screen.getByText( 'Balance summary' ) ).toHaveFocus();
+		} );
 	} );
 
 	it( 'renders nothing and records no view event when already dismissed', () => {

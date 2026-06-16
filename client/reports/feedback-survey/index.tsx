@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { Button, Notice, TextareaControl } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { closeSmall } from '@wordpress/icons';
@@ -38,10 +38,20 @@ const isReportsAreaEnabled = () =>
 	typeof wcpaySettings !== 'undefined' &&
 	Boolean( wcpaySettings?.featureFlags?.reportsArea );
 
-const ReportFeedbackSurveyContent = () => {
+interface ReportFeedbackSurveyProps {
+	focusAfterCloseRef?: React.RefObject< HTMLElement >;
+}
+
+const ReportFeedbackSurveyContent = ( {
+	focusAfterCloseRef,
+}: ReportFeedbackSurveyProps ) => {
 	const { dismiss, isDismissed } = useReportFeedbackState();
 	const { isSubmitting, submitFeedback } = useSubmitReportFeedback();
 	const { createSuccessNotice } = useDispatch( 'core/notices' );
+	const expandedRegionId = useId();
+	const containerRef = useRef< HTMLDivElement >( null );
+	const expandedRegionRef = useRef< HTMLDivElement >( null );
+	const hasFocusedExpandedForm = useRef( false );
 	const [ rating, setRating ] = useState< ReportFeedbackRating | null >(
 		null
 	);
@@ -62,9 +72,50 @@ const ReportFeedbackSurveyContent = () => {
 		hasRecordedView.current = true;
 	}, [ isVisible ] );
 
+	useEffect( () => {
+		if ( ! isExpanded ) {
+			hasFocusedExpandedForm.current = false;
+			return;
+		}
+		if ( hasFocusedExpandedForm.current ) {
+			return;
+		}
+
+		expandedRegionRef.current
+			?.querySelector< HTMLTextAreaElement >( 'textarea' )
+			?.focus();
+		hasFocusedExpandedForm.current = true;
+	}, [ isExpanded ] );
+
 	if ( ! isVisible ) {
 		return null;
 	}
+
+	const focusAfterClose = () => {
+		const activeElement = containerRef.current?.ownerDocument.activeElement;
+
+		if (
+			! activeElement ||
+			! containerRef.current?.contains( activeElement )
+		) {
+			return;
+		}
+
+		focusAfterCloseRef?.current?.focus( { preventScroll: true } );
+	};
+
+	const persistDismissal = () => {
+		try {
+			void Promise.resolve( dismiss() ).catch( () => undefined );
+		} catch {
+			// Survey submission/dismissal succeeded locally; a preference write failure should not reopen it.
+		}
+	};
+
+	const hideSurvey = () => {
+		focusAfterClose();
+		setIsHidden( true );
+	};
 
 	const handleRatingSelect = ( selectedRating: ReportFeedbackRating ) => {
 		setRating( selectedRating );
@@ -86,8 +137,8 @@ const ReportFeedbackSurveyContent = () => {
 
 	const handleDismiss = () => {
 		recordReportFeedbackDismiss();
-		dismiss();
-		setIsHidden( true );
+		persistDismissal();
+		hideSurvey();
 	};
 
 	const handleSubmit = async () => {
@@ -102,27 +153,31 @@ const ReportFeedbackSurveyContent = () => {
 
 		try {
 			await submitFeedback( { rating, comments: trimmedComments } );
-			await dismiss();
-			createSuccessNotice( submitSuccessMessage, {
-				id: 'wcpay-reports-feedback-submitted',
-				type: 'snackbar',
-			} );
-			setIsHidden( true );
 		} catch {
 			recordReportFeedbackSubmitError( rating, hasText );
 			setHasSubmitError( true );
+			return;
 		}
+
+		persistDismissal();
+		createSuccessNotice( submitSuccessMessage, {
+			id: 'wcpay-reports-feedback-submitted',
+			type: 'snackbar',
+		} );
+		hideSurvey();
 	};
 
 	return (
-		<div className="wcpay-reports-feedback-survey">
+		<div className="wcpay-reports-feedback-survey" ref={ containerRef }>
 			<div className="wcpay-reports-feedback-survey__header">
 				<div className="wcpay-reports-feedback-survey__header-content">
 					<p className="wcpay-reports-feedback-survey__question">
 						{ feedbackQuestion }
 					</p>
 					<ThumbsControl
+						controlsId={ expandedRegionId }
 						disabled={ isSubmitting }
+						isExpanded={ isExpanded }
 						onSelect={ handleRatingSelect }
 						selectedRating={ rating }
 					/>
@@ -142,7 +197,11 @@ const ReportFeedbackSurveyContent = () => {
 						className="wcpay-reports-feedback-survey__divider"
 						aria-hidden="true"
 					/>
-					<div className="wcpay-reports-feedback-survey__body">
+					<div
+						className="wcpay-reports-feedback-survey__body"
+						id={ expandedRegionId }
+						ref={ expandedRegionRef }
+					>
 						<TextareaControl
 							__nextHasNoMarginBottom
 							label={
@@ -190,12 +249,12 @@ const ReportFeedbackSurveyContent = () => {
 	);
 };
 
-const ReportFeedbackSurvey = () => {
+const ReportFeedbackSurvey = ( props: ReportFeedbackSurveyProps ) => {
 	if ( ! isReportsAreaEnabled() ) {
 		return null;
 	}
 
-	return <ReportFeedbackSurveyContent />;
+	return <ReportFeedbackSurveyContent { ...props } />;
 };
 
 export default ReportFeedbackSurvey;

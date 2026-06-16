@@ -9,10 +9,16 @@ import clsx from 'clsx';
  * Internal dependencies
  */
 import type { ReportFeedbackRating } from './tracks';
-import { thumbsDownAriaLabel, thumbsUpAriaLabel } from './strings';
+import {
+	reportFeedbackRatingAriaLabel,
+	thumbsDownAriaLabel,
+	thumbsUpAriaLabel,
+} from './strings';
 
 interface ThumbsControlProps {
+	controlsId?: string;
 	disabled?: boolean;
+	isExpanded?: boolean;
 	onSelect: ( rating: ReportFeedbackRating ) => void;
 	selectedRating: ReportFeedbackRating | null;
 }
@@ -35,7 +41,9 @@ const options: Array< {
 ];
 
 export const ThumbsControl = ( {
+	controlsId,
 	disabled = false,
+	isExpanded = false,
 	onSelect,
 	selectedRating,
 }: ThumbsControlProps ) => {
@@ -43,7 +51,7 @@ export const ThumbsControl = ( {
 		<div
 			className="wcpay-reports-feedback-survey__thumbs"
 			role="group"
-			aria-label={ thumbsUpAriaLabel + ' / ' + thumbsDownAriaLabel }
+			aria-label={ reportFeedbackRatingAriaLabel }
 		>
 			{ options.map( ( { ariaLabel, icon, rating } ) => {
 				const isSelected = rating === selectedRating;
@@ -51,6 +59,8 @@ export const ThumbsControl = ( {
 				return (
 					<Button
 						key={ rating }
+						aria-controls={ controlsId }
+						aria-expanded={ isExpanded }
 						aria-label={ ariaLabel }
 						aria-pressed={ isSelected }
 						className={ clsx(

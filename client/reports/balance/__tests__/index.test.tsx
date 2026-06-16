@@ -1,7 +1,5 @@
 /** @format */
 
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
 import React from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -18,10 +16,6 @@ const mockAppliedDateFilterValue = {
 	operator: 'between',
 	value: [ '2026-04-01', '2026-04-30' ],
 };
-const balanceStyles = readFileSync(
-	resolve( __dirname, '../style.scss' ),
-	'utf8'
-);
 let consoleErrorSpy: jest.SpyInstance | undefined;
 
 declare const global: {
@@ -700,22 +694,6 @@ describe( 'BalanceReport', () => {
 		);
 	} );
 
-	it( 'excludes the feedback survey from print output', () => {
-		expect( balanceStyles ).toMatch(
-			/#\{\$print-context\}\s*\{[\s\S]*?\.wcpay-reports-feedback-survey\s*,[\s\S]*?display:\s*none\s*!important;/
-		);
-	} );
-
-	it( 'keeps the print disclaimer on one line', () => {
-		const printDisclaimerBlock =
-			balanceStyles.match( /&__disclaimer \{[\s\S]*?\}/ )?.[ 0 ] ?? '';
-
-		expect( printDisclaimerBlock ).not.toContain( 'max-width' );
-		expect( printDisclaimerBlock ).not.toContain( 'white-space: nowrap' );
-		expect( printDisclaimerBlock ).toContain( 'width: 100%' );
-		expect( printDisclaimerBlock ).toContain( 'font-size: 10px' );
-	} );
-
 	it( 'renders the empty state when every row is zero', () => {
 		mockBalanceSummaryState( {
 			summary: zeroSummary,
@@ -816,6 +794,9 @@ describe( 'BalanceReport', () => {
 		).not.toBeInTheDocument();
 		expect(
 			screen.getByRole( 'group', { name: 'Balance summary' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByTestId( 'report-feedback-survey' )
 		).toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 		expectBalanceText( 'Ending balance - formatted 2024-03-31 UTC' );

@@ -194,6 +194,7 @@ export const BalanceReport = ( {
 	const containerRef = useRef< HTMLDivElement >( null );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
+	const feedbackFocusTargetRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
 	const activeRequestKey = hasDateFilterValue
@@ -471,6 +472,7 @@ export const BalanceReport = ( {
 				currency={ currency }
 				dateValue={ value }
 				onDateChange={ onDateFilterChange }
+				focusTargetRef={ feedbackFocusTargetRef }
 			>
 				{ stateContent }
 			</BalanceDataView>
@@ -482,7 +484,11 @@ export const BalanceReport = ( {
 					currency={ currency }
 				/>
 			) }
-			{ hasLoadedReportActivity && <ReportFeedbackSurvey /> }
+			{ hasLoadedReportActivity && (
+				<ReportFeedbackSurvey
+					focusAfterCloseRef={ feedbackFocusTargetRef }
+				/>
+			) }
 		</div>
 	);
 };

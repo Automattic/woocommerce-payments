@@ -30,6 +30,11 @@ export const thumbsDownAriaLabel = __(
 	'woocommerce-payments'
 );
 
+export const reportFeedbackRatingAriaLabel = __(
+	'Report feedback rating',
+	'woocommerce-payments'
+);
+
 export const closeAriaLabel = __(
 	'Dismiss feedback survey',
 	'woocommerce-payments'
