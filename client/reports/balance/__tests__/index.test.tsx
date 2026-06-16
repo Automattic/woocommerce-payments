@@ -701,13 +701,8 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'excludes the feedback survey from print output', () => {
-		const printDisplayNoneBlock =
-			balanceStyles.match(
-				/#\{\$print-context\} \{[\s\S]*?display: none !important;[\s\S]*?\n\t\t\}/
-			)?.[ 0 ] ?? '';
-
-		expect( printDisplayNoneBlock ).toContain(
-			'.wcpay-reports-feedback-survey'
+		expect( balanceStyles ).toMatch(
+			/#\{\$print-context\}\s*\{[\s\S]*?\.wcpay-reports-feedback-survey\s*,[\s\S]*?display:\s*none\s*!important;/
 		);
 	} );
 
