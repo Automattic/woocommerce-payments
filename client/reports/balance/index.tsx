@@ -29,6 +29,7 @@ import {
 	useBalanceDateFilter,
 } from './use-balance-date-filter';
 import { BalanceDataView } from './balance-dataview';
+import ReportFeedbackSurvey from '../feedback-survey';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
 import { BalanceDateFilterNowContext } from './context';
@@ -480,6 +481,7 @@ export const BalanceReport = ( {
 					currency={ currency }
 				/>
 			) }
+			<ReportFeedbackSurvey />
 		</div>
 	);
 };

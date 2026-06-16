@@ -1,0 +1,134 @@
+.wcpay-reports-feedback-survey {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-top: 0;
+	border-radius: 0 0 2px 2px;
+	color: #1e1e1e;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 12px;
+
+	&__header {
+		align-items: center;
+		display: flex;
+		gap: 16px;
+		min-height: 32px;
+	}
+
+	&__question {
+		flex: 1 1 auto;
+		font-size: 13px;
+		line-height: 20px;
+		margin: 0;
+		min-width: 0;
+	}
+
+	&__thumbs {
+		align-items: center;
+		display: flex;
+		flex: 0 0 auto;
+		gap: 4px;
+	}
+
+	&__thumb.components-button {
+		align-items: center;
+		border-radius: 4px;
+		display: inline-flex;
+		height: 32px;
+		justify-content: center;
+		min-width: 32px;
+		padding: 0;
+
+		span {
+			font-size: 17px;
+			line-height: 1;
+		}
+
+		&:focus-visible {
+			outline: 2px solid #007cba;
+			outline-offset: 1px;
+		}
+	}
+
+	&__thumb--selected.components-button {
+		background: #e9eff5;
+	}
+
+	&__close.components-button {
+		align-items: center;
+		display: inline-flex;
+		flex: 0 0 auto;
+		height: 32px;
+		justify-content: center;
+		min-width: 32px;
+		padding: 0;
+	}
+
+	&__divider {
+		border-top: 1px solid #dcdcde;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+
+		.components-base-control,
+		.components-base-control__field {
+			margin-bottom: 0;
+		}
+
+		.components-textarea-control__input {
+			border-color: #757575;
+			border-radius: 2px;
+			min-height: 96px;
+			padding: 10px;
+		}
+	}
+
+	&__disclaimer {
+		color: #757575;
+		font-size: 11px;
+		font-style: italic;
+		line-height: 14px;
+		margin: 0;
+
+		a {
+			color: #007cba;
+		}
+	}
+
+	&__error.components-notice {
+		margin: 0;
+	}
+
+	&__footer {
+		align-items: center;
+		display: flex;
+		gap: 8px;
+		justify-content: flex-end;
+	}
+}
+
+@media ( max-width: 600px ) {
+	.wcpay-reports-feedback-survey {
+		&__header {
+			align-items: flex-start;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		&__question {
+			flex-basis: calc( 100% - 40px );
+		}
+
+		&__thumbs {
+			order: 2;
+		}
+
+		&__close {
+			margin-left: auto;
+		}
+	}
+}
