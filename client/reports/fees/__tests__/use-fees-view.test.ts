@@ -195,6 +195,22 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
+	it( 'collapses same-day date bounds from URL into the native Date filter', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-15', '2026-03-15' ],
+		} );
+		const { result } = renderUseFeesView();
+		expect( result.current[ 0 ].filters ).toEqual(
+			expect.arrayContaining( [
+				{
+					field: 'date',
+					operator: 'on',
+					value: '2026-03-15',
+				},
+			] )
+		);
+	} );
+
 	it( 'ignores legacy datetime date bounds from URL in the native Date filter', () => {
 		mockGetQuery.mockReturnValue( {
 			date_between: [ '2026-03-01 00:00:00', '2026-03-31 23:59:59' ],
@@ -397,6 +413,26 @@ describe( 'useFeesView', () => {
 			range_days: null,
 			is_initial_apply: true,
 		} );
+	} );
+
+	it( 'records date filter changes from an existing URL filter as non-initial applies', () => {
+		mockGetQuery.mockReturnValue( {
+			date_before: '2026-03-31',
+		} );
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			filters: [ buildDateFilter( 'after', '2026-04-01' ) ],
+		} );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'custom',
+			range_days: null,
+			is_initial_apply: false,
+		} );
+		expect(
+			countRecordedTracksEvents( 'wcpay_reports_fees_date_filter_change' )
+		).toBe( 1 );
 	} );
 
 	it( 'records a date filter reset when an applied date filter is removed', () => {

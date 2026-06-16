@@ -33,7 +33,8 @@ jest.mock( '@woocommerce/data', () => ( {
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
-	speak: ( message: string ) => mockSpeak( message ),
+	speak: ( message: string, politeness?: string ) =>
+		mockSpeak( message, politeness ),
 } ) );
 
 jest.mock( 'tracks', () => ( {
@@ -570,6 +571,19 @@ describe( 'FeesReport (DataViews)', () => {
 		);
 	} );
 
+	it( 'announces the loading status when the loading flag flips true', () => {
+		mockFeesState();
+		const { rerender } = render( <FeesReport /> );
+
+		mockFeesState( {
+			feesRows: [],
+			isLoading: true,
+		} );
+		rerender( <FeesReport /> );
+
+		expect( mockSpeak ).toHaveBeenCalledWith( 'Loading fees', 'polite' );
+	} );
+
 	it( 'does not render the export action in the Fees DataViews controls', () => {
 		render( <FeesReport /> );
 		expect(
@@ -588,6 +602,7 @@ describe( 'FeesReport (DataViews)', () => {
 				isLoading: true,
 			} );
 			const { rerender } = render( <FeesReport /> );
+			mockSpeak.mockClear();
 
 			mockFeesState();
 			rerender( <FeesReport /> );
@@ -600,7 +615,8 @@ describe( 'FeesReport (DataViews)', () => {
 			} );
 
 			expect( mockSpeak ).toHaveBeenCalledWith(
-				expect.stringMatching( /loaded/i )
+				expect.stringMatching( /loaded/i ),
+				'polite'
 			);
 		} finally {
 			jest.useRealTimers();

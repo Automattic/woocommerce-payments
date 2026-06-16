@@ -44,13 +44,12 @@ export const getFeesDateFilterValue = (
 
 	if ( filter.operator === 'between' ) {
 		const value = filter.value;
-		const [ start, end ] = Array.isArray( value ) ? value : [];
-		if (
-			Array.isArray( value ) &&
-			value.length === 2 &&
-			isYmd( start ) &&
-			isYmd( end )
-		) {
+		if ( ! Array.isArray( value ) || value.length !== 2 ) {
+			return undefined;
+		}
+
+		const [ start, end ] = value;
+		if ( isYmd( start ) && isYmd( end ) ) {
 			return {
 				operator: 'between',
 				value: [ start, end ],
@@ -107,13 +106,12 @@ export const buildFeesDateQueryFromFilter = (
 };
 
 const getDateBetweenQueryValue = ( value: unknown ): string[] | undefined => {
-	const [ start, end ] = Array.isArray( value ) ? value : [];
-	if (
-		Array.isArray( value ) &&
-		value.length === 2 &&
-		isDateQueryValue( start ) &&
-		isDateQueryValue( end )
-	) {
+	if ( ! Array.isArray( value ) || value.length !== 2 ) {
+		return undefined;
+	}
+
+	const [ start, end ] = value;
+	if ( isDateQueryValue( start ) && isDateQueryValue( end ) ) {
 		return [ start, end ];
 	}
 

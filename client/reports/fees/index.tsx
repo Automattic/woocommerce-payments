@@ -31,6 +31,8 @@ const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
 const getDateRangeDays = ( view: View ): number | null =>
 	getFeesDateFilterRangeDays( findDateFilter( view.filters ) );
 
+// DataViews.Footer is callable in the runtime version used here, but upstream
+// types do not expose a callable compound component shape yet.
 const DataViewsFooter = DataViews.Footer as () => JSX.Element | null;
 
 export const FeesReport = ( {
@@ -73,6 +75,7 @@ export const FeesReport = ( {
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousErrorRef = useRef( hasError );
 	const previousLoadingRef = useRef( isLoading );
+	const previousLoadingAnnouncementRef = useRef( false );
 	useEffect( () => {
 		const reachedErrorTerminal =
 			hasError &&
@@ -92,6 +95,13 @@ export const FeesReport = ( {
 
 		previousErrorRef.current = hasError;
 	}, [ hasError, hasFilters, isLoading, rangeDays ] );
+
+	useEffect( () => {
+		if ( isLoading && ! previousLoadingAnnouncementRef.current ) {
+			speak( __( 'Loading fees', 'woocommerce-payments' ), 'polite' );
+		}
+		previousLoadingAnnouncementRef.current = isLoading;
+	}, [ isLoading ] );
 
 	// Announce "Fees report loaded" to AT users on every loading→ready edge.
 	// Debounced (500ms) and de-duplicated so rapid filter changes — which can
@@ -125,7 +135,7 @@ export const FeesReport = ( {
 					return;
 				}
 				lastSpokenRef.current = message;
-				speak( message );
+				speak( message, 'polite' );
 			}, 500 );
 		}
 		previousLoadingRef.current = isLoading;
