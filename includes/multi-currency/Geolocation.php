@@ -60,8 +60,9 @@ class Geolocation {
 
 		if ( ! $country ) {
 			$default_location = get_option( 'woocommerce_default_country', '' );
-			$location         = wc_format_country_state_string( apply_filters( 'woocommerce_customer_default_location', $default_location ) );
-			$country          = $location['country'];
+			// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+			$location = wc_format_country_state_string( apply_filters( 'woocommerce_customer_default_location', $default_location ) );
+			$country  = $location['country'];
 		}
 
 		return $country;

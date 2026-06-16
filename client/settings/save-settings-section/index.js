@@ -4,14 +4,20 @@
  */
 import React, { useState } from 'react';
 import { Button } from '@wordpress/components';
+import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { useGetSettings, useSettings } from 'wcpay/data/settings';
+import {
+	STORE_NAME as SETTINGS_STORE_NAME,
+	useGetSettings,
+	useSettings,
+} from 'wcpay/data/settings';
 import { recordEvent } from '../../tracks';
 import SettingsSection from '../settings-section';
+import scrollToFirstFieldError from './scroll-to-first-field-error';
 import './style.scss';
 import WooPayDisableFeedback from '../woopay-disable-feedback';
 
@@ -54,6 +60,8 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 		const isSuccess = await saveSettings();
 
 		if ( ! isSuccess ) {
+			const savingError = select( SETTINGS_STORE_NAME )?.getSavingError();
+			scrollToFirstFieldError( savingError?.data?.details );
 			return;
 		}
 
