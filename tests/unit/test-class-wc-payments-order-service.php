@@ -361,16 +361,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString(
 			'[Test]',
-			apply_filters( 'woocommerce_email_subject_new_order', '[Apparel Clothing]: New order #1811', $this->order )
+			apply_filters( 'woocommerce_email_subject_new_order', '[Apparel Clothing]: New order #1811', $this->order ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		);
 		$this->assertStringContainsString(
 			'[Test]',
-			apply_filters( 'woocommerce_email_heading_new_order', 'New order: #1811', $this->order )
+			apply_filters( 'woocommerce_email_heading_new_order', 'New order: #1811', $this->order ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		);
 		// Paid-invoice variant: the dominant path for invoice resends on WooPayments orders.
 		$this->assertStringContainsString(
 			'[Test]',
-			apply_filters( 'woocommerce_email_subject_customer_invoice_paid', 'Invoice for order #1811', $this->order )
+			apply_filters( 'woocommerce_email_subject_customer_invoice_paid', 'Invoice for order #1811', $this->order ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		);
 	}
 
