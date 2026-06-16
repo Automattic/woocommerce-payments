@@ -686,9 +686,9 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		 *
 		 * @param array $frontend_tracks The front-end tracks events.
 		 */
-		$frontent_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
+		$frontend_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
 
-		if ( count( $frontent_tracks ) === 0 ) {
+		if ( count( $frontend_tracks ) === 0 ) {
 			return;
 		}
 
@@ -707,7 +707,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		wp_localize_script(
 			'wcpay-frontend-tracks',
 			'wcPayFrontendTracks',
-			$frontent_tracks
+			$frontend_tracks
 		);
 
 		wp_enqueue_script( 'wcpay-frontend-tracks' );

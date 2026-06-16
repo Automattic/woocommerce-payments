@@ -137,7 +137,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			/**
 			 * Filters the locale used for the express checkout (payment request) button.
 			 *
-			 * Default format is en_US.
+			 * Defaults to the two-letter site locale (e.g. `en`).
 			 *
 			 * @since 2.1.0
 			 *
