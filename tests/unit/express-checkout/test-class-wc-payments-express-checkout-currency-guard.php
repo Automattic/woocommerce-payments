@@ -132,7 +132,7 @@ class WC_Payments_Express_Checkout_Currency_Guard_Test extends WCPAY_UnitTestCas
 			$this->fail( 'Expected RouteException, none thrown.' );
 		} catch ( RouteException $e ) {
 			$this->assertSame(
-				WC_Payments_Express_Checkout_Currency_Guard::MISMATCH_ERROR_CODE,
+				'wcpay_express_checkout_currency_mismatch',
 				$e->getErrorCode()
 			);
 			$this->assertSame( 400, $e->getCode() );
