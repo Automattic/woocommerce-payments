@@ -176,7 +176,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $charge_ids ) {
+			function ( $_unused_id ) use ( $charge_ids ) {
 				$subscription = new WC_Subscription();
 
 				$order1 = WC_Helper_Order::create_order();
@@ -207,7 +207,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_charge_ids_from_search_term_handles_invalid_subscription() {
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) {
+			function ( $_unused_id ) {
 				return false;
 			}
 		);
@@ -230,7 +230,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $charge_ids ) {
+			function ( $_unused_id ) use ( $charge_ids ) {
 				$subscription = new WC_Subscription();
 
 				$order1 = WC_Helper_Order::create_order();
@@ -933,8 +933,8 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_last_refund_from_order_id_returns_correct_refund() {
-		$order    = WC_Helper_Order::create_order();
-		$refund_1 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$order = WC_Helper_Order::create_order();
+		wc_create_refund( [ 'order_id' => $order->get_id() ] );
 		$refund_2 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
 
 		$result = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent a failed exchange-rate lookup from blocking checkout in multi-currency stores

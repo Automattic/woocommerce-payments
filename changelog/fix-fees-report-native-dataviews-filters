@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Replace the legacy Fees report date preset filter with native DataViews filtering.

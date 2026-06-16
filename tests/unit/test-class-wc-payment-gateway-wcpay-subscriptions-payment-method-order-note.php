@@ -319,7 +319,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// Simulate is_changing_payment_method_for_subscription being true.
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -531,7 +531,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// Our filter should produce "Stripe Link (email)" regardless.
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$old_payment_method_title = 'Card';
-		$new_payment_method_title = 'Credit card';
 
 		$link_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'linker@test.com' );
 		$card_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
