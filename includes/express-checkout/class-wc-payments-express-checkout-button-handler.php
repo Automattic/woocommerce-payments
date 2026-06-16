@@ -227,7 +227,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			/**
 			 * Filters the express checkout JS params, allowing some specific configuration to be tweaked by 3pd.
 			 *
-			 * @since 9.5.0
+			 * @since 9.6.0
 			 *
 			 * @param array $params The express checkout JS params.
 			 */
