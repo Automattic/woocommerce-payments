@@ -40,6 +40,10 @@ export const submitErrorMessage = __(
 	'Your feedback could not be sent. Please try again.',
 	'woocommerce-payments'
 );
+export const submitSuccessMessage = __(
+	'Thanks for your feedback!',
+	'woocommerce-payments'
+);
 
 export const privacyDisclaimer = createInterpolateElement(
 	__(

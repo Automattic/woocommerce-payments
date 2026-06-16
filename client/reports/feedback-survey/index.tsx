@@ -3,6 +3,7 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Notice, TextareaControl } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 import { closeSmall } from '@wordpress/icons';
 
 /**
@@ -18,6 +19,7 @@ import {
 	privacyDisclaimer,
 	sendLabel,
 	submitErrorMessage,
+	submitSuccessMessage,
 	thumbsDownLabel,
 	thumbsUpLabel,
 } from './strings';
@@ -39,6 +41,7 @@ const isReportsAreaEnabled = () =>
 const ReportFeedbackSurveyContent = () => {
 	const { dismiss, isDismissed } = useReportFeedbackState();
 	const { isSubmitting, submitFeedback } = useSubmitReportFeedback();
+	const { createSuccessNotice } = useDispatch( 'core/notices' );
 	const [ rating, setRating ] = useState< ReportFeedbackRating | null >(
 		null
 	);
@@ -100,6 +103,10 @@ const ReportFeedbackSurveyContent = () => {
 		try {
 			await submitFeedback( { rating, comments: trimmedComments } );
 			await dismiss();
+			createSuccessNotice( submitSuccessMessage, {
+				id: 'wcpay-reports-feedback-submitted',
+				type: 'snackbar',
+			} );
 			setIsHidden( true );
 		} catch {
 			recordReportFeedbackSubmitError( rating, hasText );

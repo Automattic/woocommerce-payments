@@ -5,6 +5,7 @@ import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
+import { useDispatch } from '@wordpress/data';
 import { useUserPreferences } from '@woocommerce/data';
 import { recordEvent } from 'tracks';
 
@@ -14,11 +15,17 @@ import { recordEvent } from 'tracks';
 import ReportFeedbackSurvey from '..';
 
 jest.mock( '@wordpress/api-fetch' );
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn(),
+} ) );
 jest.mock( '@woocommerce/data', () => ( {
 	useUserPreferences: jest.fn(),
 } ) );
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+const mockUseDispatch = useDispatch as jest.MockedFunction<
+	typeof useDispatch
+>;
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
 >;
@@ -26,6 +33,7 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 	typeof recordEvent
 >;
 const mockUpdateUserPreferences = jest.fn();
+const mockCreateSuccessNotice = jest.fn();
 
 declare const global: {
 	wcpaySettings: {
@@ -52,6 +60,9 @@ describe( 'ReportFeedbackSurvey', () => {
 			wc_payments_reports_feedback_dismissed: undefined,
 		} as any );
 		mockApiFetch.mockResolvedValue( {} );
+		mockUseDispatch.mockReturnValue( {
+			createSuccessNotice: mockCreateSuccessNotice,
+		} as any );
 	} );
 
 	it( 'renders collapsed and records the view event once', async () => {
@@ -156,7 +167,7 @@ describe( 'ReportFeedbackSurvey', () => {
 		).toHaveValue( '' );
 	} );
 
-	it( 'submits text feedback, persists dismissal, and hides on success', async () => {
+	it( 'submits text feedback, persists dismissal, shows success notice, and hides on success', async () => {
 		renderSurvey();
 
 		await userEvent.click(
@@ -191,6 +202,13 @@ describe( 'ReportFeedbackSurvey', () => {
 		expect( mockUpdateUserPreferences ).toHaveBeenCalledWith( {
 			wc_payments_reports_feedback_dismissed: expect.any( Number ),
 		} );
+		expect( mockCreateSuccessNotice ).toHaveBeenCalledWith(
+			'Thanks for your feedback!',
+			{
+				id: 'wcpay-reports-feedback-submitted',
+				type: 'snackbar',
+			}
+		);
 		await waitFor( () => {
 			expect(
 				screen.queryByText(
