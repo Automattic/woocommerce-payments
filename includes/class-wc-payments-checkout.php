@@ -204,6 +204,13 @@ class WC_Payments_Checkout {
 			'isShortcodeCheckout'               => is_checkout() && ! has_block( 'woocommerce/checkout' ),
 			'woopayHost'                        => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'              => wp_create_nonce( 'platform_tracks_nonce' ),
+			/**
+			 * Filters the account ID used for payment intent confirmation.
+			 *
+			 * @since 3.9.0
+			 *
+			 * @param string $account_id The account ID for intent confirmation.
+			 */
 			'accountIdForIntentConfirmation'    => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'                => WCPAY_VERSION_NUMBER,
 			'woopaySignatureNonce'              => wp_create_nonce( 'woopay_signature_nonce' ),
@@ -268,6 +275,8 @@ class WC_Payments_Checkout {
 
 		/**
 		 * Allows filtering of the JS config for the payment fields.
+		 *
+		 * @since 5.2.0
 		 *
 		 * @param array $js_config The JS config for the payment fields.
 		 */
@@ -413,6 +422,11 @@ class WC_Payments_Checkout {
 						if ( ! did_action( '__wcpay_upe_config_localized' ) ) {
 							wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 						}
+						/**
+						 * Fires once the UPE config has been localized, to guard against duplicate localization.
+						 *
+						 * @since 8.5.0
+						 */
 						do_action( '__wcpay_upe_config_localized' );
 					}
 				);
@@ -425,6 +439,11 @@ class WC_Payments_Checkout {
 							if ( ! did_action( '__wcpay_customer_data_localized' ) ) {
 								wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 							}
+							/**
+							 * Fires once the customer data has been localized, to guard against duplicate localization.
+							 *
+							 * @since 8.5.0
+							 */
 							do_action( '__wcpay_customer_data_localized' );
 						}
 					);
@@ -484,6 +503,13 @@ class WC_Payments_Checkout {
 				<?php
 					$this->gateway->display_gateway_html();
 				if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
+					/**
+					 * Filters whether to display the "save payment method" checkbox.
+					 *
+					 * @since 1.3.0
+					 *
+					 * @param bool $display_tokenization Whether tokenization is being displayed.
+					 */
 					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
 					if ( is_user_logged_in() || $force_save_payment ) {
 						$this->gateway->save_payment_method_checkbox( $force_save_payment );
@@ -495,6 +521,13 @@ class WC_Payments_Checkout {
 			</div>
 			<?php
 
+			/**
+			 * Fires after the UPE payment fields have been rendered.
+			 *
+			 * @since 3.4.0
+			 *
+			 * @param string $gateway_id The gateway ID.
+			 */
 			do_action( 'wcpay_payment_fields_upe', $this->gateway->id );
 
 		} catch ( \Exception $e ) {
