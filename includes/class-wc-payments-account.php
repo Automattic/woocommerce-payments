@@ -120,8 +120,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Add admin init hooks.
 		// Our onboarding handling comes first.
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
-		// Restore the test-drive payment methods before activating WooPay, so the latter sees the restored Link state.
-		add_action( 'admin_init', [ $this, 'maybe_restore_test_drive_enabled_payment_methods' ] );
+		// Restore must run before WooPay activation (priority < 10) so the latter sees the restored Link state
+		// and keeps the two mutually exclusive.
+		add_action( 'admin_init', [ $this, 'maybe_restore_test_drive_enabled_payment_methods' ], 9 );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 		// Second, handle redirections based on context.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_after_plugin_activation' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -2245,12 +2246,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( get_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) ) {
 			$gateway = WC_Payments::get_gateway();
 
-			// WooPay and Link by Stripe are mutually exclusive, so the enable-by-default activation must not
-			// override a merchant who already opted into Link (e.g. in sandbox before going live). See #9404.
+			// WooPay and Link by Stripe are mutually exclusive. When a merchant already opted into Link
+			// (e.g. in sandbox before going live), Link wins: the enable-by-default activation keeps WooPay
+			// off rather than overriding that choice. See #9404.
 			$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $gateway->get_upe_enabled_payment_method_ids(), true );
-			if ( ! $is_link_enabled ) {
-				$gateway->update_is_woopay_enabled( true );
-			}
+			$gateway->update_is_woopay_enabled( ! $is_link_enabled );
 
 			delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 		}

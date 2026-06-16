@@ -1521,9 +1521,10 @@ class WC_Payments_Onboarding_Service {
 		// read from the merged list because it can be enabled either from existing settings or from this
 		// same capabilities payload. See #9404.
 		$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $enabled_payment_methods, true );
-		if ( ! empty( $capabilities['woopay'] ) && ! $is_link_enabled ) {
-			$gateway->update_is_woopay_enabled( true );
-		} elseif ( empty( $capabilities['woopay'] ) ) {
+		if ( ! empty( $capabilities['woopay'] ) ) {
+			// Link wins when both would be on, so WooPay is only enabled when Link is not.
+			$gateway->update_is_woopay_enabled( ! $is_link_enabled );
+		} else {
 			$gateway->update_is_woopay_enabled( false );
 		}
 
