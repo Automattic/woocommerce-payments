@@ -52,6 +52,10 @@ jest.mock( 'tracks', () => ( {
 	recordEvent: jest.fn(),
 } ) );
 
+jest.mock( '../../feedback-survey', () => () => (
+	<div data-testid="report-feedback-survey" />
+) );
+
 const mockRecordEvent = recordEvent as jest.MockedFunction<
 	typeof recordEvent
 >;

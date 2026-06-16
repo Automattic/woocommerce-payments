@@ -87,6 +87,24 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 400, $response->get_status() );
 	}
 
+	public function test_whitespace_only_request_returns_400_status_code() {
+		$this->http_client_mock
+			->expects( $this->never() )
+			->method( 'wpcom_json_api_request_as_user' );
+
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/reports-feedback' );
+		$request->set_body_params(
+			[
+				'rating'   => '   ',
+				'comments' => " \t\n ",
+			]
+		);
+
+		$response = $this->controller->submit_reports_feedback_survey( $request );
+
+		$this->assertSame( 400, $response->get_status() );
+	}
+
 	public function test_valid_request_forwards_data_to_wpcom() {
 		$this->http_client_mock
 			->expects( $this->once() )

@@ -43,7 +43,7 @@ export const submitErrorMessage = __(
 
 export const privacyDisclaimer = createInterpolateElement(
 	__(
-		'Your feedback will be only be shared with WooCommerce and treated pursuant to our <a>privacy policy</a>.',
+		'Your feedback will only be shared with WooCommerce and treated pursuant to our <a>privacy policy</a>.',
 		'woocommerce-payments'
 	),
 	{
@@ -52,7 +52,7 @@ export const privacyDisclaimer = createInterpolateElement(
 			<a
 				href="https://automattic.com/privacy/"
 				target="_blank"
-				rel="noreferrer"
+				rel="noopener noreferrer"
 			/>
 		),
 	}

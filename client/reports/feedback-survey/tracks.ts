@@ -39,6 +39,23 @@ export const recordReportFeedbackSubmit = (
 	} );
 };
 
+export const recordReportFeedbackSubmitError = (
+	rating: ReportFeedbackRating,
+	hasText: boolean
+) => {
+	recordEvent( 'wcpay_reports_feedback_submit_error', {
+		report_type: reportFeedbackReportType,
+		sentiment: getSentiment( rating ),
+		has_text: hasText,
+	} );
+};
+
+export const recordReportFeedbackCancel = () => {
+	recordEvent( 'wcpay_reports_feedback_cancel', {
+		report_type: reportFeedbackReportType,
+	} );
+};
+
 export const recordReportFeedbackDismiss = () => {
 	recordEvent( 'wcpay_reports_feedback_dismiss', {
 		report_type: reportFeedbackReportType,

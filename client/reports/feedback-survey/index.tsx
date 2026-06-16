@@ -22,8 +22,10 @@ import {
 	thumbsUpLabel,
 } from './strings';
 import {
+	recordReportFeedbackCancel,
 	recordReportFeedbackDismiss,
 	recordReportFeedbackSubmit,
+	recordReportFeedbackSubmitError,
 	recordReportFeedbackThumbsDown,
 	recordReportFeedbackThumbsUp,
 	recordReportFeedbackView,
@@ -73,6 +75,7 @@ const ReportFeedbackSurveyContent = () => {
 	};
 
 	const handleCancel = () => {
+		recordReportFeedbackCancel();
 		setRating( null );
 		setComments( '' );
 		setHasSubmitError( false );
@@ -90,13 +93,16 @@ const ReportFeedbackSurveyContent = () => {
 		}
 
 		setHasSubmitError( false );
-		recordReportFeedbackSubmit( rating, comments.trim().length > 0 );
+		const trimmedComments = comments.trim();
+		const hasText = trimmedComments.length > 0;
+		recordReportFeedbackSubmit( rating, hasText );
 
 		try {
-			await submitFeedback( { rating, comments } );
+			await submitFeedback( { rating, comments: trimmedComments } );
 			await dismiss();
 			setIsHidden( true );
 		} catch {
+			recordReportFeedbackSubmitError( rating, hasText );
 			setHasSubmitError( true );
 		}
 	};

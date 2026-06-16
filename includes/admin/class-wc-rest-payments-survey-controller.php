@@ -84,8 +84,8 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function submit_reports_feedback_survey( WP_REST_Request $request ): WP_REST_Response {
-		$comments = $request->get_param( 'comments' ) ?? '';
-		$rating   = $request->get_param( 'rating' ) ?? '';
+		$comments = trim( $request->get_param( 'comments' ) ?? '' );
+		$rating   = trim( $request->get_param( 'rating' ) ?? '' );
 
 		if ( empty( $comments ) && empty( $rating ) ) {
 			return new WP_REST_Response(

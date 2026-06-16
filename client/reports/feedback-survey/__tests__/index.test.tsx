@@ -140,6 +140,10 @@ describe( 'ReportFeedbackSurvey', () => {
 			'wcpay_reports_feedback_dismiss',
 			expect.anything()
 		);
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_feedback_cancel',
+			{ report_type: 'balance' }
+		);
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'This report was helpful' } )
@@ -162,7 +166,7 @@ describe( 'ReportFeedbackSurvey', () => {
 		);
 		await userEvent.type(
 			screen.getByLabelText( "What's missing? (optional)" ),
-			'missing export details'
+			'  missing export details  '
 		);
 		await act( async () => {
 			await userEvent.click(
@@ -251,6 +255,10 @@ describe( 'ReportFeedbackSurvey', () => {
 			)
 		).toBeInTheDocument();
 		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_feedback_submit_error',
+			{ report_type: 'balance', sentiment: 'up', has_text: false }
+		);
 
 		await act( async () => {
 			await userEvent.click(
