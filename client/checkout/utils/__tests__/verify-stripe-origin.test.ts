@@ -134,14 +134,21 @@ describe( 'assertStripeJsOrigin', () => {
 			src: 'https://js.evil.example/v3/?ver=3.0',
 		} );
 
-		expect( () => assertStripeJsOrigin() ).toThrow( 'unexpected origin' );
+		expect( () => assertStripeJsOrigin() ).toThrow(
+			/provenance check failed/
+		);
+		// The detected (attacker) URL must not leak into the thrown message;
+		// it lives in the console warning only.
+		expect( () => assertStripeJsOrigin() ).not.toThrow( /evil/ );
 		expect( warn ).toHaveBeenCalledWith(
 			expect.stringContaining( 'js.evil.example' )
 		);
 	} );
 
 	it( 'throws with a clear message when no Stripe.js tag is present', () => {
-		expect( () => assertStripeJsOrigin() ).toThrow( 'no Stripe.js' );
+		expect( () => assertStripeJsOrigin() ).toThrow(
+			/provenance check failed/
+		);
 		expect( warn ).toHaveBeenCalledWith(
 			expect.stringContaining( 'no Stripe.js script tag' )
 		);
@@ -161,7 +168,7 @@ describe( 'assertStripeJsOrigin', () => {
 		} );
 
 		expect( () => assertStripeJsOrigin( { failFast: true } ) ).toThrow(
-			'unexpected origin'
+			/provenance check failed/
 		);
 	} );
 } );

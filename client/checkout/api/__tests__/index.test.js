@@ -96,7 +96,7 @@ describe( 'WCPayAPI', () => {
 			const api = new WCPayAPI( {}, request );
 
 			await expect( api.getStripe() ).rejects.toThrow(
-				'unexpected origin'
+				/provenance check failed/
 			);
 			expect( warn ).toHaveBeenCalledWith(
 				expect.stringContaining( 'js.evil.example' )
@@ -109,14 +109,16 @@ describe( 'WCPayAPI', () => {
 			const api = new WCPayAPI( {}, request );
 
 			await expect( api.getStripe() ).rejects.toThrow(
-				'unexpected origin'
+				/provenance check failed/
 			);
 		} );
 
 		test( 'blocks with a clear message when no Stripe.js tag is present', async () => {
 			const api = new WCPayAPI( {}, request );
 
-			await expect( api.getStripe() ).rejects.toThrow( 'no Stripe.js' );
+			await expect( api.getStripe() ).rejects.toThrow(
+				/provenance check failed/
+			);
 			expect( warn ).toHaveBeenCalledWith(
 				expect.stringContaining( 'no Stripe.js script tag' )
 			);
@@ -155,7 +157,7 @@ describe( 'WCPayAPI', () => {
 			const api = new WCPayAPI( {}, request );
 
 			expect( () => api.createStripe( 'pk_test_123', 'en' ) ).toThrow(
-				'unexpected origin'
+				/provenance check failed/
 			);
 			expect( warn ).toHaveBeenCalledWith(
 				expect.stringContaining( 'js.evil.example' )

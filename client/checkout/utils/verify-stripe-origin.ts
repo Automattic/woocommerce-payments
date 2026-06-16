@@ -73,7 +73,10 @@ export const verifyStripeJsOrigin = (
  * Stripe.js-substitution vector specifically; it is not a general skimmer
  * defense and is bypassable by an attacker with full control of the page.
  *
- * On a mismatch this throws and blocks the payment.
+ * On a mismatch this throws and blocks the payment. The full diagnostics
+ * (including the detected src) go to the console warning only; the thrown
+ * message may be rendered to shoppers by existing checkout error handling, so
+ * it stays generic.
  *
  * @param  options          Options.
  * @param  options.failFast When true (called before `window.Stripe` resolves), a
@@ -105,5 +108,5 @@ export const assertStripeJsOrigin = ( {
 		`WooPayments: blocking checkout — ${ reason }. Expected Stripe.js from ${ STRIPE_JS_ORIGIN }.`
 	);
 
-	throw new Error( `Stripe.js provenance check failed: ${ reason }.` );
+	throw new Error( 'Stripe.js provenance check failed.' );
 };
