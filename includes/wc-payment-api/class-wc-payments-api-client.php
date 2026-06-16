@@ -959,12 +959,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Create a connection token.
 	 *
-	 * @param WP_REST_Request $request request object received.
+	 * @param WP_REST_Request $_unused_request request object received.
 	 *
 	 * @return array
 	 * @throws API_Exception - If request throws.
 	 */
-	public function create_token( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function create_token( $_unused_request ) {
 		return $this->request( [], self::CONN_TOKENS_API, self::POST );
 	}
 
