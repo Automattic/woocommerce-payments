@@ -1097,6 +1097,39 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
 	}
 
+	public function test_maybe_restore_test_drive_enabled_payment_methods_restores_saved_methods() {
+		$_GET['wcpay-connection-success'] = '1';
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'enabled_payment_methods' => [ 'card', 'link' ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->maybe_restore_test_drive_enabled_payment_methods();
+
+		$this->assertContains( 'link', $gateway->get_upe_enabled_payment_method_ids() );
+		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+	}
+
+	public function test_maybe_restore_test_drive_enabled_payment_methods_noop_without_success_param() {
+		unset( $_GET['wcpay-connection-success'] );
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'enabled_payment_methods' => [ 'card', 'link' ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->maybe_restore_test_drive_enabled_payment_methods();
+
+		$this->assertSame( [ 'card' ], $gateway->get_upe_enabled_payment_method_ids() );
+	}
+
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
 		// Arrange.
 		// We need to be in the WP admin dashboard.

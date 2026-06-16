@@ -1028,4 +1028,22 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [] );
 	}
+
+	public function test_maybe_add_test_drive_settings_adds_capabilities_and_keeps_transient() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[
+				'capabilities'            => [ 'link_payments' => [ 'requested' => 'true' ] ],
+				'enabled_payment_methods' => [ 'card', 'link' ],
+			],
+			HOUR_IN_SECONDS
+		);
+
+		$args = $this->onboarding_service->maybe_add_test_drive_settings_to_new_account_request( [ 'account_data' => [] ] );
+
+		$this->assertSame( [ 'link_payments' => [ 'requested' => 'true' ] ], $args['account_data']['capabilities'] );
+		$this->assertNotFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+	}
 }

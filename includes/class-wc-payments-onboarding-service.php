@@ -1444,15 +1444,16 @@ class WC_Payments_Onboarding_Service {
 	 * @return array The request args, possible updated with the test drive account settings, used to create new account.
 	 */
 	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
-		if (
-			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
-			is_array( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
-		) {
+		$test_drive_settings = get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		if ( is_array( $test_drive_settings ) && ! empty( $test_drive_settings['capabilities'] ) ) {
+			// Only the requested capabilities belong in the account creation request. The transient is
+			// left in place so the enabled payment methods can be restored once the live account connects
+			// (WC_Payments_Account::maybe_restore_test_drive_enabled_payment_methods).
 			$args['account_data'] = array_merge(
 				$args['account_data'],
-				get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+				[ 'capabilities' => $test_drive_settings['capabilities'] ]
 			);
-			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
 		return $args;

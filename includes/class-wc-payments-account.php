@@ -120,6 +120,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Add admin init hooks.
 		// Our onboarding handling comes first.
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
+		// Restore the test-drive payment methods before activating WooPay, so the latter sees the restored Link state.
+		add_action( 'admin_init', [ $this, 'maybe_restore_test_drive_enabled_payment_methods' ] );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 		// Second, handle redirections based on context.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_after_plugin_activation' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -2255,6 +2257,35 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Restores the payment methods the merchant had enabled on the test-drive account once the live account connects.
+	 *
+	 * The gateway settings are reset to defaults during the test-drive→live transition, so methods enabled in
+	 * sandbox (e.g. Link) would otherwise be lost. The set is captured before the reset (see save_test_drive_settings)
+	 * and re-applied here. Hooked to run before maybe_activate_woopay so the WooPay/Link mutual-exclusion guard sees
+	 * the restored Link state. See #9404.
+	 */
+	public function maybe_restore_test_drive_enabled_payment_methods() {
+		if ( ! isset( $_GET['wcpay-connection-success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		$test_drive_settings = get_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+		if ( empty( $test_drive_settings['enabled_payment_methods'] ) || ! is_array( $test_drive_settings['enabled_payment_methods'] ) ) {
+			return;
+		}
+
+		$gateway                  = WC_Payments::get_gateway();
+		$restored_payment_methods = array_values(
+			array_unique(
+				array_merge( $gateway->get_upe_enabled_payment_method_ids(), $test_drive_settings['enabled_payment_methods'] )
+			)
+		);
+		$gateway->update_option( 'upe_enabled_payment_method_ids', $restored_payment_methods );
+
+		delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+	}
+
+	/**
 	 * Handle the finalization of an embedded onboarding. This includes updating the cache, setting the gateway mode,
 	 * tracking the event, and redirecting the user to the overview page.
 	 *
@@ -3232,11 +3263,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	private function get_test_drive_settings_for_live_account(): array {
 		$gateway = WC_Payments::get_gateway();
 
+		$enabled_payment_methods = $gateway->get_upe_enabled_payment_method_ids();
+
 		$capabilities = [];
-		foreach ( $gateway->get_upe_enabled_payment_method_ids() as $payment_method_id ) {
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			$capabilities[ $payment_method_id . '_payments' ] = [ 'requested' => 'true' ];
 		}
 
-		return [ 'capabilities' => $capabilities ];
+		// `capabilities` are requested when creating the live account; `enabled_payment_methods` are
+		// re-applied once it connects, because the gateway settings get reset to defaults in between.
+		return [
+			'capabilities'            => $capabilities,
+			'enabled_payment_methods' => $enabled_payment_methods,
+		];
 	}
 }
