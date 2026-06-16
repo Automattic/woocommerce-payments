@@ -73,8 +73,7 @@ export const verifyStripeJsOrigin = (
  * Stripe.js-substitution vector specifically; it is not a general skimmer
  * defense and is bypassable by an attacker with full control of the page.
  *
- * On a mismatch this throws and blocks the payment, and there is no runtime
- * off-switch — disabling it requires a plugin release.
+ * On a mismatch this throws and blocks the payment.
  *
  * @param  options          Options.
  * @param  options.failFast When true (called before `window.Stripe` resolves), a
