@@ -144,51 +144,76 @@ describe( 'FeesExportButton', () => {
 		expect( mockRequestReportExport ).not.toHaveBeenCalled();
 	} );
 
-	it( 'uses date presets for the summary query and CSV export request', async () => {
-		jest.useFakeTimers();
-		jest.setSystemTime( new Date( '2026-05-18T12:00:00.000Z' ) );
+	it( 'uses date_between for the summary query and CSV export request', async () => {
 		const confirm = jest
 			.spyOn( window, 'confirm' )
 			.mockReturnValue( false );
 		mockGetQuery.mockReturnValue( {
-			date_preset: 'month_to_date',
+			date_between: [ '2026-05-01', '2026-05-18' ],
 		} );
 		mockUseReportsFeesSummary.mockReturnValue( {
 			feesSummary: { count: 25000 },
 			isLoading: false,
 		} );
 
-		try {
-			render( <FeesExportButton /> );
+		render( <FeesExportButton /> );
 
-			await userEvent.click(
-				screen.getByRole( 'button', { name: 'Export' } )
-			);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export' } )
+		);
 
-			expect( mockUseReportsFeesSummary ).toHaveBeenCalledWith(
-				expect.objectContaining( {
-					date_between: [ '2026-05-01', '2026-05-18' ],
-				} )
-			);
-			expect( confirm ).not.toHaveBeenCalled();
-			expect( mockGetFeesCSVRequestURL ).toHaveBeenCalledWith(
-				expect.objectContaining( {
-					dateBetween: [ '2026-05-01', '2026-05-18' ],
-				} )
-			);
-			expect( mockRequestReportExport ).toHaveBeenCalledTimes( 1 );
-		} finally {
-			jest.useRealTimers();
-		}
+		expect( mockUseReportsFeesSummary ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				date_between: [ '2026-05-01', '2026-05-18' ],
+			} )
+		);
+		expect( confirm ).not.toHaveBeenCalled();
+		expect( mockGetFeesCSVRequestURL ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				dateBetween: [ '2026-05-01', '2026-05-18' ],
+			} )
+		);
+		expect( mockRequestReportExport ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'preserves legacy datetime date filters for the summary query and CSV export request', async () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+		} );
+		mockGetReportsFeesSummary.mockReturnValue( {
+			count: 12,
+		} );
+
+		render( <FeesExportButton /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export' } )
+		);
+
+		expect( mockUseReportsFeesSummary ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				date_between: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+			} )
+		);
+		expect( mockGetReportsFeesSummary ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				dateBetween: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+			} )
+		);
+		expect( mockGetFeesCSVRequestURL ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				dateBetween: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+			} )
+		);
 	} );
 
 	it( 'uses the click-time query for both the export request and exported row count', async () => {
 		mockGetQuery
 			.mockReturnValueOnce( {
-				date_preset: 'last_month',
+				date_before: '2026-04-30',
 			} )
 			.mockReturnValueOnce( {
-				date_preset: 'month_to_date',
+				date_between: [ '2026-05-01', '2026-05-18' ],
 			} );
 		mockUseReportsFeesSummary.mockReturnValue( {
 			feesSummary: { count: 8 },

@@ -184,7 +184,7 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return ! empty( $this->parent_order ) ? $this->parent_order->get_shipping_methods() : [];
 	}
 
-	public function get_related_orders( $type ) {
+	public function get_related_orders( $_unused_type ) {
 		return $this->related_orders;
 	}
 
@@ -234,7 +234,7 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		$this->currency = $currency;
 	}
 
-	public function add_order_note( $note = '' ) {
+	public function add_order_note( $_unused_note = '' ) {
 		// do nothing.
 	}
 

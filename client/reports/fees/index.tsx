@@ -3,8 +3,8 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Button } from '@wordpress/components';
+import React, { useEffect, useId, useMemo, useRef } from 'react';
+import { Button, Spinner } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
@@ -17,9 +17,7 @@ import { recordEvent } from 'tracks';
 import { useFeesView } from './use-fees-view';
 import { useFeesData } from './use-fees-data';
 import { getFeesFields } from './fields';
-import { CustomDateFilterPopover } from './custom-date-filter-popover';
-import { useDateFilterChipInterceptor } from './use-date-filter-chip-interceptor';
-import { resolveFeesDateFilterValue } from './date-filter-values';
+import { getFeesDateFilterRangeDays } from './date-filter-values';
 import { ReportState } from '../report-state';
 import './style.scss';
 
@@ -27,35 +25,20 @@ interface FeesReportProps {
 	onReload?: () => void;
 }
 
-const customDatePopoverId = 'wcpay-fees-date-filter-popover';
-const millisecondsPerDay = 86400000;
-
 const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
 	filters.find( ( filter ) => filter.field === 'date' );
 
-const getDateRangeDays = ( view: View ): number | null => {
-	const dateFilter = resolveFeesDateFilterValue(
-		findDateFilter( view.filters )?.value
-	);
-	if ( ! dateFilter || dateFilter.operator !== 'between' ) {
-		return null;
-	}
+const getDateRangeDays = ( view: View ): number | null =>
+	getFeesDateFilterRangeDays( findDateFilter( view.filters ) );
 
-	const start = new Date( dateFilter.value[ 0 ] ).getTime();
-	const end = new Date( dateFilter.value[ 1 ] ).getTime();
-	return Math.round( ( end - start ) / millisecondsPerDay );
-};
+// DataViews.Footer is callable in the runtime version used here, but upstream
+// types do not expose a callable compound component shape yet.
+const DataViewsFooter = DataViews.Footer as () => JSX.Element | null;
 
 export const FeesReport = ( {
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	const [ view, setView ] = useFeesView();
-	// Stable reference date so date-filter telemetry presets are matched
-	// against a single `now` for the lifetime of the report, even across a
-	// day boundary.
-	const stableDateFilterNow = useRef( new Date() ).current;
-	const [ dataViewsContainer, setDataViewsContainer ] =
-		useState< HTMLDivElement | null >( null );
 	const initialEmptyHeadingId = useId();
 	const initialEmptyDescriptionId = useId();
 	const filteredEmptyHeadingId = useId();
@@ -64,36 +47,19 @@ export const FeesReport = ( {
 		rows,
 		totalItems,
 		totalPages,
-		dateElements,
 		methodElements,
 		typeElements,
 		isLoading,
 		error,
 	} = useFeesData( view );
 
-	const {
-		anchor: customDateAnchor,
-		isPopoverOpen: isCustomDatePopoverOpen,
-		initialValue: customDateInitialValue,
-		onPopoverChange: changeCustomDateFilter,
-		onPopoverClose: closeCustomDatePopover,
-		captureHandlers: dateFilterCaptureHandlers,
-	} = useDateFilterChipInterceptor( {
-		container: dataViewsContainer,
-		view,
-		setView,
-		popoverId: customDatePopoverId,
-		now: stableDateFilterNow,
-	} );
-
 	const fields = useMemo(
 		() =>
 			getFeesFields( {
-				dateElements,
 				methodElements,
 				typeElements,
 			} ),
-		[ dateElements, methodElements, typeElements ]
+		[ methodElements, typeElements ]
 	);
 	const hasError = Object.keys( error ).length > 0;
 	const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
@@ -109,6 +75,7 @@ export const FeesReport = ( {
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousErrorRef = useRef( hasError );
 	const previousLoadingRef = useRef( isLoading );
+	const previousLoadingAnnouncementRef = useRef( false );
 	useEffect( () => {
 		const reachedErrorTerminal =
 			hasError &&
@@ -128,6 +95,13 @@ export const FeesReport = ( {
 
 		previousErrorRef.current = hasError;
 	}, [ hasError, hasFilters, isLoading, rangeDays ] );
+
+	useEffect( () => {
+		if ( isLoading && ! previousLoadingAnnouncementRef.current ) {
+			speak( __( 'Loading fees', 'woocommerce-payments' ), 'polite' );
+		}
+		previousLoadingAnnouncementRef.current = isLoading;
+	}, [ isLoading ] );
 
 	// Announce "Fees report loaded" to AT users on every loading→ready edge.
 	// Debounced (500ms) and de-duplicated so rapid filter changes — which can
@@ -161,7 +135,7 @@ export const FeesReport = ( {
 					return;
 				}
 				lastSpokenRef.current = message;
-				speak( message );
+				speak( message, 'polite' );
 			}, 500 );
 		}
 		previousLoadingRef.current = isLoading;
@@ -260,9 +234,7 @@ export const FeesReport = ( {
 						? 'wcpay-reports-fees__main wcpay-reports-fees__main--filtered-empty'
 						: 'wcpay-reports-fees__main'
 				}
-				ref={ setDataViewsContainer }
 				tabIndex={ -1 }
-				{ ...dateFilterCaptureHandlers }
 			>
 				<DataViews
 					data={ rows }
@@ -271,11 +243,39 @@ export const FeesReport = ( {
 					fields={ fields }
 					paginationInfo={ { totalItems, totalPages } }
 					isLoading={ isLoading }
+					empty={
+						isLoading ? (
+							<div
+								className="wcpay-reports-fees__loading-empty"
+								aria-hidden="true"
+							>
+								<Spinner />
+							</div>
+						) : undefined
+					}
 					defaultLayouts={ { table: {} } }
-					search
-					searchLabel={ __( 'Search fees', 'woocommerce-payments' ) }
 					getItemId={ ( item ) => item.transaction_id }
-				/>
+				>
+					<div
+						key="view-actions"
+						className="wcpay-reports-fees__view-actions"
+					>
+						<DataViews.Search
+							label={ __(
+								'Search fees',
+								'woocommerce-payments'
+							) }
+						/>
+						<DataViews.FiltersToggle />
+						<DataViews.ViewConfig />
+					</div>
+					<DataViews.FiltersToggled
+						key="filters-toggled"
+						className="dataviews-filters__container"
+					/>
+					<DataViews.Layout key="layout" />
+					<DataViewsFooter key="footer" />
+				</DataViews>
 				{ isFilteredEmpty && (
 					/* role="status" is implicitly aria-live="polite". Safe here because the
 					   empty states do not shift focus — keep this in sync if you add focus
@@ -294,16 +294,6 @@ export const FeesReport = ( {
 						descriptionId={ filteredEmptyDescriptionId }
 						headingId={ filteredEmptyHeadingId }
 						role="status"
-					/>
-				) }
-				{ isCustomDatePopoverOpen && (
-					<CustomDateFilterPopover
-						anchor={ customDateAnchor }
-						fallbackFocus={ dataViewsContainer }
-						id={ customDatePopoverId }
-						initialValue={ customDateInitialValue }
-						onChange={ changeCustomDateFilter }
-						onClose={ closeCustomDatePopover }
 					/>
 				) }
 			</div>

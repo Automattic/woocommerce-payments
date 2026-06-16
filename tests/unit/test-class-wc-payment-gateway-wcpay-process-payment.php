@@ -230,10 +230,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_success() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = Intent_Status::SUCCEEDED;
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -452,8 +449,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_requires_capture() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
 		$status      = Intent_Status::REQUIRES_CAPTURE;
 		$order_id    = 123;
@@ -562,7 +557,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC(), 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC(), 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
@@ -750,7 +745,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$order = wc_create_order( $order_data );
 
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
 
 		// Assert: Order status was updated.
 		$this->assertEquals( 'pending', $order->get_status() );
@@ -923,8 +918,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_requires_action() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
 		$status      = Intent_Status::REQUIRES_ACTION;
 		$secret      = 'cs_mock';
@@ -1033,11 +1026,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_requires_action_offine_payment() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
 		$status      = Intent_Status::REQUIRES_ACTION;
-		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -1503,7 +1493,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
 
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_does_not_update_new_payment_method() {
@@ -1954,7 +1944,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Add a payment method to the user.
-		$token = WC_Helper_Token::create_token( $subscription_payment_method_id, $order->get_user_id() );
+		WC_Helper_Token::create_token( $subscription_payment_method_id, $order->get_user_id() );
 
 		// Arrange: Make the payment method selected in WooPay to be the same one the user has stored.
 		$intent = WC_Helper_Intention::create_intention( [ 'payment_method_id' => $subscription_payment_method_id ] );
@@ -2005,7 +1995,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Add a payment method to the user.
-		$token = WC_Helper_Token::create_token( 'pm_existing_mock', $order->get_user_id() );
+		WC_Helper_Token::create_token( 'pm_existing_mock', $order->get_user_id() );
 
 		// Arrange: Make the payment method selected in WooPay to be different from the onethe user has stored.
 		$intent = WC_Helper_Intention::create_intention( [ 'payment_method_id' => 'pm_new_mock' ] );
@@ -2143,7 +2133,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_order_contains_subscription( $value ) {
 		WC_Subscriptions::set_wcs_order_contains_subscription(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);

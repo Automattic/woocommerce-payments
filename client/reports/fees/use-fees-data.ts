@@ -13,10 +13,7 @@ import { useReportsFees, useReportsFeesSummary } from 'wcpay/data/reports';
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
 import { formatStringValue } from 'wcpay/utils';
 import { displayMethod, displayType } from './strings';
-import {
-	buildFeesDateQueryFromFilterValue,
-	buildFeesDateFilterElements,
-} from './date-filter-values';
+import { buildFeesDateQueryFromFilter } from './date-filter-values';
 
 // Default fee-bearing transaction types, mirroring DEFAULT_FEE_BEARING_TYPES in
 // the PHP controller. The summary endpoint exposes `sources` (payment methods
@@ -103,9 +100,7 @@ export const buildFeesQuery = ( view: View ): FeesQuery => {
 
 	Object.assign(
 		query,
-		buildFeesDateQueryFromFilterValue(
-			findFilter( view.filters, 'date' )?.value
-		)
+		buildFeesDateQueryFromFilter( findFilter( view.filters, 'date' ) )
 	);
 
 	const methodFilter = findFilter( view.filters, 'payment_method' );
@@ -132,7 +127,6 @@ interface UseFeesDataResult {
 	rows: ReportsFee[];
 	totalItems: number;
 	totalPages: number;
-	dateElements: Array< { value: string; label: string } >;
 	methodElements: Array< { value: string; label: string } >;
 	typeElements: Array< { value: string; label: string } >;
 	isLoading: boolean;
@@ -223,19 +217,10 @@ export const useFeesData = ( view: View ): UseFeesDataResult => {
 		() => buildTypeElements( [ ...feeBearingTypes ] ),
 		[]
 	);
-	const activeDateValue = view.filters?.find(
-		( filter ) => filter.field === 'date'
-	)?.value;
-	const dateElements = useMemo(
-		() => buildFeesDateFilterElements( activeDateValue ),
-		[ activeDateValue ]
-	);
-
 	return {
 		rows: feesRows,
 		totalItems,
 		totalPages,
-		dateElements,
 		methodElements,
 		typeElements,
 		isLoading: isLoading || isSummaryLoading,

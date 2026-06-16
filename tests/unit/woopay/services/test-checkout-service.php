@@ -78,7 +78,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		// Simulate behavior that current request is platform payment.
 		$class = new class() extends Checkout_Service
 		{
-			public function is_platform_payment_method( Payment_Information $payment_information ) {
+			public function is_platform_payment_method( Payment_Information $_unused_payment_information ) {
 				return true;
 			}
 		};
@@ -107,7 +107,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 
 		$class = new class() extends Checkout_Service
 		{
-			public function is_platform_payment_method( Payment_Information $payment_information ) {
+			public function is_platform_payment_method( Payment_Information $_unused_payment_information ) {
 				return true;
 			}
 		};

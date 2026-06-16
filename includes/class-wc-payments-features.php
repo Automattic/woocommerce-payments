@@ -395,12 +395,12 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the multi-currency cache-optimized rendering mode is enabled.
+	 * Checks whether the multi-currency cache-optimized rendering mode is enabled. Enabled by default.
 	 *
 	 * @return bool
 	 */
 	public static function is_mc_cache_optimized_enabled(): bool {
-		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '1' );
 	}
 
 	/**
