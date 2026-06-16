@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { Button } from '@wordpress/components';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -46,21 +47,19 @@ export const ThumbsControl = ( {
 		>
 			{ options.map( ( { ariaLabel, icon, rating } ) => {
 				const isSelected = rating === selectedRating;
-				const className = [
-					'wcpay-reports-feedback-survey__thumb',
-					isSelected
-						? 'wcpay-reports-feedback-survey__thumb--selected'
-						: '',
-				]
-					.filter( Boolean )
-					.join( ' ' );
 
 				return (
 					<Button
 						key={ rating }
 						aria-label={ ariaLabel }
 						aria-pressed={ isSelected }
-						className={ className }
+						className={ clsx(
+							'wcpay-reports-feedback-survey__thumb',
+							{
+								'wcpay-reports-feedback-survey__thumb--selected':
+									isSelected,
+							}
+						) }
 						disabled={ disabled }
 						onClick={ () => onSelect( rating ) }
 					>

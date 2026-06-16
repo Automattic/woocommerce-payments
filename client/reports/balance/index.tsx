@@ -220,8 +220,9 @@ export const BalanceReport = ( {
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
-	const printScopeActive =
+	const hasLoadedReportActivity =
 		hasDateFilterValue && ! isLoading && ! hasError && hasActivity;
+	const printScopeActive = hasLoadedReportActivity;
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
@@ -481,7 +482,7 @@ export const BalanceReport = ( {
 					currency={ currency }
 				/>
 			) }
-			<ReportFeedbackSurvey />
+			{ hasLoadedReportActivity && <ReportFeedbackSurvey /> }
 		</div>
 	);
 };

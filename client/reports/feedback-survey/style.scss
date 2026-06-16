@@ -6,28 +6,40 @@
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+	align-items: center;
 	padding: 12px;
 
 	&__header {
 		align-items: center;
 		display: flex;
-		gap: 16px;
 		min-height: 32px;
+		width: 100%;
+	}
+
+	&__header-content {
+		align-items: center;
+		box-sizing: border-box;
+		display: flex;
+		flex: 1 1 auto;
+		gap: 16px;
+		justify-content: center;
+		min-width: 0;
+		padding-left: 24px;
 	}
 
 	&__question {
-		flex: 1 1 auto;
+		flex: 0 1 337px;
 		font-size: 13px;
 		line-height: 20px;
 		margin: 0;
 		min-width: 0;
+		text-align: center;
 	}
 
 	&__thumbs {
 		align-items: center;
 		display: flex;
 		flex: 0 0 auto;
-		gap: 4px;
 	}
 
 	&__thumb.components-button {
@@ -36,6 +48,7 @@
 		display: inline-flex;
 		height: 32px;
 		justify-content: center;
+		min-height: 32px;
 		min-width: 32px;
 		padding: 0;
 
@@ -57,39 +70,46 @@
 	&__close.components-button {
 		align-items: center;
 		display: inline-flex;
-		flex: 0 0 auto;
-		height: 32px;
+		flex: 0 0 24px;
+		height: 24px;
 		justify-content: center;
-		min-width: 32px;
+		min-height: 24px;
+		min-width: 24px;
 		padding: 0;
+		width: 24px;
 	}
 
 	&__divider {
 		border-top: 1px solid #dcdcde;
+		width: 100%;
 	}
 
 	&__body {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+		max-width: 513px;
+		width: 100%;
 
 		.components-base-control,
 		.components-base-control__field {
 			margin-bottom: 0;
+			width: 100%;
 		}
 
 		.components-textarea-control__input {
 			border-color: #757575;
 			border-radius: 2px;
+			box-sizing: border-box;
 			min-height: 96px;
 			padding: 10px;
+			width: 100%;
 		}
 	}
 
 	&__disclaimer {
 		color: #757575;
 		font-size: 11px;
-		font-style: italic;
 		line-height: 14px;
 		margin: 0;
 
@@ -107,23 +127,24 @@
 		display: flex;
 		gap: 8px;
 		justify-content: flex-end;
+		width: 100%;
 	}
 }
 
 @media ( max-width: 600px ) {
 	.wcpay-reports-feedback-survey {
 		&__header {
-			align-items: flex-start;
-			flex-wrap: wrap;
+			align-items: center;
+		}
+
+		&__header-content {
+			flex-direction: column;
 			gap: 8px;
+			padding-left: 24px;
 		}
 
 		&__question {
-			flex-basis: calc( 100% - 40px );
-		}
-
-		&__thumbs {
-			order: 2;
+			flex-basis: auto;
 		}
 
 		&__close {

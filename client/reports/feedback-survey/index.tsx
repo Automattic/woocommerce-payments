@@ -110,14 +110,16 @@ const ReportFeedbackSurveyContent = () => {
 	return (
 		<div className="wcpay-reports-feedback-survey">
 			<div className="wcpay-reports-feedback-survey__header">
-				<p className="wcpay-reports-feedback-survey__question">
-					{ feedbackQuestion }
-				</p>
-				<ThumbsControl
-					disabled={ isSubmitting }
-					onSelect={ handleRatingSelect }
-					selectedRating={ rating }
-				/>
+				<div className="wcpay-reports-feedback-survey__header-content">
+					<p className="wcpay-reports-feedback-survey__question">
+						{ feedbackQuestion }
+					</p>
+					<ThumbsControl
+						disabled={ isSubmitting }
+						onSelect={ handleRatingSelect }
+						selectedRating={ rating }
+					/>
+				</div>
 				<Button
 					className="wcpay-reports-feedback-survey__close"
 					disabled={ isSubmitting }

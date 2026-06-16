@@ -1,5 +1,7 @@
 /** @format */
 
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import React from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -16,6 +18,10 @@ const mockAppliedDateFilterValue = {
 	operator: 'between',
 	value: [ '2026-04-01', '2026-04-30' ],
 };
+const balanceStyles = readFileSync(
+	resolve( __dirname, '../style.scss' ),
+	'utf8'
+);
 let consoleErrorSpy: jest.SpyInstance | undefined;
 
 declare const global: {
@@ -458,6 +464,9 @@ describe( 'BalanceReport', () => {
 		);
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the error state with a reload action', async () => {
@@ -479,6 +488,9 @@ describe( 'BalanceReport', () => {
 		);
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Reload report' } )
@@ -502,6 +514,9 @@ describe( 'BalanceReport', () => {
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Export' } )
@@ -685,6 +700,27 @@ describe( 'BalanceReport', () => {
 		);
 	} );
 
+	it( 'excludes the feedback survey from print output', () => {
+		const printDisplayNoneBlock =
+			balanceStyles.match(
+				/#\{\$print-context\} \{[\s\S]*?display: none !important;[\s\S]*?\n\t\t\}/
+			)?.[ 0 ] ?? '';
+
+		expect( printDisplayNoneBlock ).toContain(
+			'.wcpay-reports-feedback-survey'
+		);
+	} );
+
+	it( 'keeps the print disclaimer on one line', () => {
+		const printDisclaimerBlock =
+			balanceStyles.match( /&__disclaimer \{[\s\S]*?\}/ )?.[ 0 ] ?? '';
+
+		expect( printDisclaimerBlock ).not.toContain( 'max-width' );
+		expect( printDisclaimerBlock ).not.toContain( 'white-space: nowrap' );
+		expect( printDisclaimerBlock ).toContain( 'width: 100%' );
+		expect( printDisclaimerBlock ).toContain( 'font-size: 10px' );
+	} );
+
 	it( 'renders the empty state when every row is zero', () => {
 		mockBalanceSummaryState( {
 			summary: zeroSummary,
@@ -702,6 +738,9 @@ describe( 'BalanceReport', () => {
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the empty state without requesting data when the Date filter is inactive', () => {
@@ -727,6 +766,9 @@ describe( 'BalanceReport', () => {
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
