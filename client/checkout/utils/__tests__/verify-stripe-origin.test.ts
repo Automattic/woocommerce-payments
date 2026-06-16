@@ -74,6 +74,28 @@ describe( 'verifyStripeJsOrigin', () => {
 		} );
 	} );
 
+	it( 'fails closed when the tag has no src', () => {
+		addScript( { id: 'stripe-js' } ); // id present, no src
+
+		expect( verifyStripeJsOrigin() ).toEqual( {
+			ok: false,
+			detectedSrc: null,
+			detectedOrigin: null,
+		} );
+	} );
+
+	it( 'fails closed when the src cannot be parsed as a URL', () => {
+		const fakeDoc = {
+			querySelector: () => ( { src: 'https://' } ),
+		} as unknown as Document;
+
+		expect( verifyStripeJsOrigin( fakeDoc ) ).toEqual( {
+			ok: false,
+			detectedSrc: 'https://',
+			detectedOrigin: null,
+		} );
+	} );
+
 	it( 'reads the repointed #stripe-js handle even when a legit tag also exists', () => {
 		// The handle tag is enqueued early; the bundled loader appends a real
 		// tag later. The attacker-controlled handle must still be the one read.
