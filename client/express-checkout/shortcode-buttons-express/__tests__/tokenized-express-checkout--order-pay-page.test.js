@@ -19,12 +19,27 @@ jest.mock( 'lodash', () => ( {
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
 
+// A normal, non-compromised page has the legitimate Stripe.js handle tag
+// present, so the origin assertion in createStripe() passes silently.
+const addStripeScript = () => {
+	const script = document.createElement( 'script' );
+	script.id = 'stripe-js';
+	script.src = 'https://js.stripe.com/v3/?ver=3.0';
+	document.head.appendChild( script );
+};
+
+const clearScripts = () =>
+	document.head
+		.querySelectorAll( 'script' )
+		.forEach( ( script ) => script.remove() );
+
 describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () => {
 	let stripeElementMock, stripeInstance;
 	const requestListener = jest.fn().mockReturnValue( null );
 
 	beforeEach( () => {
 		requestListener.mockClear();
+		addStripeScript();
 		server.events.on( 'request:start', requestListener );
 		server.use(
 			rest.get( '/wc/store/v1/order/:id', ( req, res, ctx ) => {
@@ -260,6 +275,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 
 	afterEach( () => {
 		delete global.Stripe;
+		clearScripts();
 		server.events.removeListener( 'request:start', requestListener );
 		server.resetHandlers();
 	} );
