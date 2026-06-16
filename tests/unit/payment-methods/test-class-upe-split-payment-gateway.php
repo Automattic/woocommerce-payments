@@ -338,7 +338,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			WC_Helper_Site_Currency::$mock_site_currency = '';
 		}
 
-		foreach ( $this->mock_payment_gateways as $id => $mock_gateway ) {
+		foreach ( $this->mock_payment_gateways as $_unused_id => $mock_gateway ) {
 			$mock_gateway->expects( $this->any() )
 				->method( 'wc_payments_get_payment_gateway_by_id' )
 				->will(

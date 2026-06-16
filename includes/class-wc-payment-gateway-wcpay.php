@@ -2646,6 +2646,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Given the charge data, checks if there was an exchange and adds it to the given order as metadata
 	 *
+	 * The Stripe exchange rate feeds the Multi-Currency reporting layer only (Analytics order-stats revenue
+	 * figures and the rate copied onto refund rows) — never the charge, refund, payout, or tax amounts. When
+	 * it is absent, Analytics falls back to the order-time _wcpay_multi_currency_order_exchange_rate, so a
+	 * fetch failure must not block checkout: it is swallowed and logged, at the cost of slightly less precise
+	 * reported revenue. This runs on the payment-completion path; see WOOPMNT-6209.
+	 *
 	 * @param WC_Order $order The order to update.
 	 * @param string   $charge_id ID of the charge to attach data from.
 	 */
@@ -2666,17 +2672,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $currency_order !== $currency_account ) {
-			// We check that the currency used in the order is different than the one set in the WC Payments account
-			// to avoid requesting the charge if not needed.
-			$request = Get_Charge::create( $charge_id );
-			$request->set_hook_args( $charge_id );
-			$charge = $request->send();
+			try {
+				// We check that the currency used in the order is different than the one set in the WC Payments account
+				// to avoid requesting the charge if not needed.
+				$request = Get_Charge::create( $charge_id );
+				$request->set_hook_args( $charge_id );
+				$charge = $request->send();
 
-			$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
-			if ( isset( $exchange_rate ) ) {
-				$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
-				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
-				$order->save_meta_data();
+				$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
+				if ( isset( $exchange_rate ) ) {
+					$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
+					$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
+					$order->save_meta_data();
+				}
+			} catch ( Exception $e ) {
+				// Log the error and don't block checkout — the exchange-rate meta is analytics-only.
+				Logger::log( 'Error attaching the Stripe exchange rate to the order ' . $order->get_id() . ': ' . $e->getMessage() );
 			}
 		}
 	}

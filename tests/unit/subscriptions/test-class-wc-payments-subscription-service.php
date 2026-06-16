@@ -256,7 +256,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->payment_tokens = [ uniqid( 'pm_' ) ];
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -302,7 +302,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -412,7 +412,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $subscription ) {
+			function ( $_unused_id ) use ( $subscription ) {
 				return $subscription;
 			}
 		);
@@ -626,7 +626,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->save();
 
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $subscription ) {
+			function ( $_unused_subscription ) {
 				return true;
 			}
 		);
