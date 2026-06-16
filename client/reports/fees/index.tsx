@@ -247,15 +247,9 @@ export const FeesReport = ( {
 						isLoading ? (
 							<div
 								className="wcpay-reports-fees__loading-empty"
-								role="status"
+								aria-hidden="true"
 							>
 								<Spinner />
-								<span className="screen-reader-text">
-									{ __(
-										'Loading fees',
-										'woocommerce-payments'
-									) }
-								</span>
 							</div>
 						) : undefined
 					}

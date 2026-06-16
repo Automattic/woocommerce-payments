@@ -555,7 +555,7 @@ describe( 'FeesReport (DataViews)', () => {
 			payment_method_type: 'card',
 		} );
 		mockEmptyFeesReportState();
-		const { rerender } = render( <FeesReport /> );
+		const { container, rerender } = render( <FeesReport /> );
 
 		expect( screen.getByText( 'No fees to display' ) ).toBeInTheDocument();
 
@@ -566,9 +566,13 @@ describe( 'FeesReport (DataViews)', () => {
 		expect(
 			screen.queryByText( 'No fees to display' )
 		).not.toBeInTheDocument();
-		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
-			'Loading fees'
-		);
+		expect(
+			container.querySelector(
+				'.wcpay-reports-fees__loading-empty .components-spinner'
+			)
+		).toBeInTheDocument();
+		expect( screen.queryByText( 'Loading fees' ) ).not.toBeInTheDocument();
+		expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'announces the loading status when the loading flag flips true', () => {
