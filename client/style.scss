@@ -11,6 +11,16 @@
 }
 
 .woocommerce-payments-page {
+	// `@wordpress/components` Card ships with no margin, so this is the only
+	// thing spacing stacked cards apart across every WooPayments admin screen
+	// (the overview, payment details, disputes, etc.). It must live in this
+	// always-loaded global stylesheet rather than a route-specific one — when
+	// it sat in payment-details, route code splitting kept it out of the
+	// overview chunk and the cards collapsed flush against each other.
+	.components-card {
+		margin-bottom: 24px;
+	}
+
 	.components-card__body {
 		> *:first-child {
 			margin-top: 0;
