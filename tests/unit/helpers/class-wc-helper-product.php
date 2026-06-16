@@ -220,7 +220,7 @@ class WC_Helper_Product {
 	 * @return array
 	 */
 	public static function create_attribute( $raw_name = 'size', $terms = [ 'small' ] ) {
-		global $wpdb, $wc_product_attributes;
+		global $wc_product_attributes;
 
 		// Make sure caches are clean.
 		delete_transient( 'wc_attribute_taxonomies' );

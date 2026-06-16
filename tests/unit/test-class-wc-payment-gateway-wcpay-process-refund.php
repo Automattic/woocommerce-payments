@@ -176,7 +176,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->save();
 		$amount = 5000;
 
-		$refund = wc_create_refund(
+		wc_create_refund(
 			[
 				'order_id' => $order->get_id(),
 				'amount'   => $amount / 100,
@@ -228,7 +228,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		$refund = wc_create_refund(
+		wc_create_refund(
 			[
 				'order_id' => $order->get_id(),
 				'amount'   => $amount,

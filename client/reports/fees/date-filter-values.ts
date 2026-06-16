@@ -3,96 +3,31 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import type { Option } from '@wordpress/dataviews/wp';
+import type { Filter } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies
  */
-import { formatDateFilterChipLabel } from 'wcpay/reports/date-filter/formatters';
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
-import { resolvePreset } from 'wcpay/reports/date-filter/presets';
+import {
+	parseDateFilterFromQuery,
+	serializeDateFilterToQuery,
+} from 'wcpay/reports/date-filter/url';
 
-const customDatePrefix = 'custom:';
+const millisecondsPerDay = 86400000;
 
-const feesDatePresets = [
-	'last_month',
-	'month_to_date',
-	'year_to_date',
-] as const;
+const isYmd = ( value: unknown ): value is string =>
+	typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test( value );
 
-type FeesDatePreset = ( typeof feesDatePresets )[ number ];
-
-const isFeesDatePreset = ( value: unknown ): value is FeesDatePreset =>
+// Fees export follows the Transactions export path, whose request URLs contain
+// timezone-expanded datetime bounds. Preserve those generated legacy values for
+// export compatibility; native DataViews filters still parse only date-only YMD.
+const isLegacyLocalDateTime = ( value: unknown ): value is string =>
 	typeof value === 'string' &&
-	feesDatePresets.includes( value as FeesDatePreset );
+	/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test( value );
 
-const getFeesDatePresetElements = (): Option< string >[] => [
-	{ value: 'last_month', label: __( 'Last month', 'woocommerce-payments' ) },
-	{
-		value: 'month_to_date',
-		label: __( 'Month to date', 'woocommerce-payments' ),
-	},
-	{
-		value: 'year_to_date',
-		label: __( 'Year to date', 'woocommerce-payments' ),
-	},
-];
-
-const isYmd = ( value: string | undefined ): value is string =>
-	/^\d{4}-\d{2}-\d{2}$/.test( value ?? '' );
-
-export const encodeCustomDateFilterValue = (
-	value: DateFilterValue
-): string => {
-	if ( value.operator === 'between' ) {
-		return `${ customDatePrefix }between:${ value.value[ 0 ] }:${ value.value[ 1 ] }`;
-	}
-	return `${ customDatePrefix }${ value.operator }:${ value.value }`;
-};
-
-const decodeCustomDateFilterValue = (
-	value: unknown
-): DateFilterValue | undefined => {
-	if ( typeof value !== 'string' || ! value.startsWith( customDatePrefix ) ) {
-		return undefined;
-	}
-
-	const [ operator, first, second ] = value
-		.slice( customDatePrefix.length )
-		.split( ':' );
-
-	if ( operator === 'between' && isYmd( first ) && isYmd( second ) ) {
-		return {
-			operator: 'between',
-			value: [ first, second ],
-		};
-	}
-
-	if (
-		( operator === 'on' ||
-			operator === 'before' ||
-			operator === 'after' ) &&
-		isYmd( first )
-	) {
-		return {
-			operator,
-			value: first,
-		};
-	}
-
-	return undefined;
-};
-
-export const resolveFeesDateFilterValue = (
-	value: unknown,
-	now: Date = new Date()
-): DateFilterValue | undefined => {
-	if ( isFeesDatePreset( value ) ) {
-		return resolvePreset( value, 'between', now );
-	}
-	return decodeCustomDateFilterValue( value );
-};
+const isDateQueryValue = ( value: unknown ): value is string =>
+	isYmd( value ) || isLegacyLocalDateTime( value );
 
 export interface FeesDateQueryParams {
 	date_between?: string[];
@@ -100,11 +35,48 @@ export interface FeesDateQueryParams {
 	date_after?: string;
 }
 
-export const buildFeesDateQueryFromFilterValue = (
-	value: unknown,
-	now: Date = new Date()
+export const getFeesDateFilterValue = (
+	filter: Pick< Filter, 'operator' | 'value' > | undefined
+): DateFilterValue | undefined => {
+	if ( ! filter ) {
+		return undefined;
+	}
+
+	if ( filter.operator === 'between' ) {
+		const value = filter.value;
+		if ( ! Array.isArray( value ) || value.length !== 2 ) {
+			return undefined;
+		}
+
+		const [ start, end ] = value;
+		if ( isYmd( start ) && isYmd( end ) ) {
+			return {
+				operator: 'between',
+				value: [ start, end ],
+			};
+		}
+		return undefined;
+	}
+
+	if (
+		( filter.operator === 'on' ||
+			filter.operator === 'before' ||
+			filter.operator === 'after' ) &&
+		isYmd( filter.value )
+	) {
+		return {
+			operator: filter.operator,
+			value: filter.value,
+		};
+	}
+
+	return undefined;
+};
+
+export const buildFeesDateQueryFromFilter = (
+	filter: Pick< Filter, 'operator' | 'value' > | undefined
 ): FeesDateQueryParams => {
-	const dateFilter = resolveFeesDateFilterValue( value, now );
+	const dateFilter = getFeesDateFilterValue( filter );
 
 	if ( ! dateFilter ) {
 		return {};
@@ -133,130 +105,73 @@ export const buildFeesDateQueryFromFilterValue = (
 	};
 };
 
-export const parseFeesDateFilterValueFromQuery = (
-	query: Record< string, unknown >
-): string | undefined => {
-	if ( isFeesDatePreset( query.date_preset ) ) {
-		return query.date_preset;
+const getDateBetweenQueryValue = ( value: unknown ): string[] | undefined => {
+	if ( ! Array.isArray( value ) || value.length !== 2 ) {
+		return undefined;
 	}
 
-	const between = query.date_between;
-	if (
-		Array.isArray( between ) &&
-		isYmd( between[ 0 ] as string | undefined ) &&
-		isYmd( between[ 1 ] as string | undefined )
-	) {
-		const value: DateFilterValue =
-			between[ 0 ] === between[ 1 ]
-				? { operator: 'on', value: between[ 0 ] as string }
-				: {
-						operator: 'between',
-						value: [
-							between[ 0 ] as string,
-							between[ 1 ] as string,
-						],
-				  };
-		return encodeCustomDateFilterValue( value );
-	}
-
-	if ( isYmd( query.date_before as string | undefined ) ) {
-		return encodeCustomDateFilterValue( {
-			operator: 'before',
-			value: query.date_before as string,
-		} );
-	}
-
-	if ( isYmd( query.date_after as string | undefined ) ) {
-		return encodeCustomDateFilterValue( {
-			operator: 'after',
-			value: query.date_after as string,
-		} );
+	const [ start, end ] = value;
+	if ( isDateQueryValue( start ) && isDateQueryValue( end ) ) {
+		return [ start, end ];
 	}
 
 	return undefined;
 };
 
-export const buildFeesDateQueryFromUrlQuery = (
-	query: Record< string, unknown >,
-	now: Date = new Date()
-): FeesDateQueryParams => {
-	const normalizedQuery = buildFeesDateQueryFromFilterValue(
-		parseFeesDateFilterValueFromQuery( query ),
-		now
-	);
-
-	if (
-		normalizedQuery.date_between ||
-		normalizedQuery.date_before ||
-		normalizedQuery.date_after
-	) {
-		return normalizedQuery;
+export const parseFeesDateFilterFromQuery = (
+	query: Record< string, unknown >
+): Filter | undefined => {
+	const value = parseDateFilterFromQuery( query );
+	if ( ! value ) {
+		return undefined;
 	}
 
 	return {
-		date_between:
-			Array.isArray( query.date_between ) &&
-			query.date_between.every(
-				( value ) => typeof value === 'string' && value !== ''
-			)
-				? ( query.date_between as string[] )
-				: undefined,
-		date_before:
-			typeof query.date_before === 'string' && query.date_before !== ''
-				? query.date_before
-				: undefined,
-		date_after:
-			typeof query.date_after === 'string' && query.date_after !== ''
-				? query.date_after
-				: undefined,
+		field: 'date',
+		operator: value.operator,
+		value: value.value,
 	};
 };
 
-export const serializeFeesDateFilterValueToQuery = (
-	value: unknown
-): Record< string, unknown > => {
-	const params: Record< string, unknown > = {
-		date_preset: undefined,
-		date_between: undefined,
-		date_before: undefined,
-		date_after: undefined,
-	};
+export const buildFeesDateQueryFromUrlQuery = (
+	query: Record< string, unknown >
+): FeesDateQueryParams => {
+	const params: FeesDateQueryParams = {};
+	const dateBetween = getDateBetweenQueryValue( query.date_between );
 
-	if ( isFeesDatePreset( value ) ) {
-		params.date_preset = value;
-		return params;
+	if ( dateBetween ) {
+		params.date_between = dateBetween;
 	}
 
-	const customValue = decodeCustomDateFilterValue( value );
-	if ( ! customValue ) {
-		return params;
+	if ( isDateQueryValue( query.date_before ) ) {
+		params.date_before = query.date_before;
 	}
 
-	if ( customValue.operator === 'on' ) {
-		params.date_between = [ customValue.value, customValue.value ];
-	} else if ( customValue.operator === 'between' ) {
-		params.date_between = customValue.value;
-	} else if ( customValue.operator === 'before' ) {
-		params.date_before = customValue.value;
-	} else if ( customValue.operator === 'after' ) {
-		params.date_after = customValue.value;
+	if ( isDateQueryValue( query.date_after ) ) {
+		params.date_after = query.date_after;
 	}
 
 	return params;
 };
 
-export const buildFeesDateFilterElements = (
-	activeValue: unknown
-): Option< string >[] => {
-	const elements = [ ...getFeesDatePresetElements() ];
+export const serializeFeesDateFilterToQuery = (
+	filter: Pick< Filter, 'operator' | 'value' > | undefined
+): Record< string, unknown > => {
+	return {
+		date_preset: undefined,
+		...serializeDateFilterToQuery( getFeesDateFilterValue( filter ) ),
+	};
+};
 
-	const customValue = decodeCustomDateFilterValue( activeValue );
-	if ( customValue && typeof activeValue === 'string' ) {
-		elements.push( {
-			value: activeValue,
-			label: formatDateFilterChipLabel( customValue ),
-		} );
+export const getFeesDateFilterRangeDays = (
+	filter: Pick< Filter, 'operator' | 'value' > | undefined
+): number | null => {
+	const dateFilter = getFeesDateFilterValue( filter );
+	if ( ! dateFilter || dateFilter.operator !== 'between' ) {
+		return null;
 	}
 
-	return elements;
+	const start = new Date( dateFilter.value[ 0 ] ).getTime();
+	const end = new Date( dateFilter.value[ 1 ] ).getTime();
+	return Math.round( ( end - start ) / millisecondsPerDay );
 };

@@ -208,7 +208,9 @@ export function* saveSettings() {
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
 
-		if ( error.server_error ) {
+		// Surface the raw server error as a second notice only when we can't show it
+		// inline next to a specific field (i.e. the response has no per-field details).
+		if ( error.server_error && ! error.data?.details ) {
 			yield dispatch( 'core/notices' ).createErrorNotice(
 				error.server_error
 			);

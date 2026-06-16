@@ -66,8 +66,8 @@ jest.mock( '../use-balance-date-filter', () => {
 
 // The date filter lives inside BalanceDataView (the native DataViews filter).
 // Wrap the real component so render assertions still exercise the actual
-// DataViews table, while test-only buttons surface the onDateChange seam the
-// way the mocked DateFilter toolbar used to.
+// DataViews table, while test-only buttons surface the onDateChange seam for
+// focused report-level assertions.
 jest.mock( '../balance-dataview', () => {
 	const actual = jest.requireActual( '../balance-dataview' ) as Record<
 		string,
