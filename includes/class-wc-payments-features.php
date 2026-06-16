@@ -83,6 +83,13 @@ class WC_Payments_Features {
 			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
 		}
 
+		/**
+		 * Allows filtering of whether WCPay Subscriptions is enabled.
+		 *
+		 * @since 3.9.0
+		 *
+		 * @param bool $enabled Whether WCPay Subscriptions is enabled.
+		 */
 		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
