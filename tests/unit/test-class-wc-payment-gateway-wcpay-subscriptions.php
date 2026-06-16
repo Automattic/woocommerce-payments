@@ -212,7 +212,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param string $message The die message.
 	 */
-	public function ajax_wp_die_handler( $message ) {
+	public function ajax_wp_die_handler( $_unused_message ) {
 		// Do nothing - prevents wp_die from terminating the test.
 	}
 
@@ -491,7 +491,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$mock_subscription = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -516,7 +516,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$mock_subscription = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -1255,17 +1255,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$subscription    = WC_Helper_Order::create_order( self::USER_ID );
 		$non_wcpay_token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID, 'not_woocommerce_payments' );
 
-		$updated             = $this->wcpay_gateway->update_subscription_token( false, $subscription, $non_wcpay_token );
-		$subscription_tokens = $subscription->get_payment_tokens();
+		$updated = $this->wcpay_gateway->update_subscription_token( false, $subscription, $non_wcpay_token );
 
 		$this->assertSame( $updated, false );
 	}
 
 	public function test_ajax_get_user_payment_tokens_success() {
-		$tokens = [
-			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
-			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
-		];
+		WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID );
+		WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID );
 
 		// Set up the AJAX request.
 		$_POST['user_id']  = self::USER_ID;
@@ -1351,7 +1348,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $_unused_order ) use ( $subscriptions ) {
 				return $subscriptions;
 			}
 		);
@@ -1359,7 +1356,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_is_subscription( $return_value ) {
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) use ( $return_value ) {
+			function ( $_unused_order ) use ( $return_value ) {
 				return $return_value;
 			}
 		);
@@ -1367,7 +1364,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
