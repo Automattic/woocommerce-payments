@@ -616,7 +616,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
+		/**
+		 * Fires to set the gateway for the UPE payment fields.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param string $payment_type_id The selected Stripe payment type ID.
+		 */
 		do_action( 'wc_payments_set_gateway', $this->get_selected_stripe_payment_type_id() );
+		/**
+		 * Fires to render the UPE payment fields on the checkout page.
+		 *
+		 * @since 5.0.0
+		 */
 		do_action( 'wc_payments_add_upe_payment_fields' );
 	}
 
@@ -1058,7 +1070,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Admin Panel Options.
 	 */
 	public function admin_options() {
-		// Add notices to the WooPayments settings page.
+		/**
+		 * Fires so notices can be added to the WooPayments settings page.
+		 *
+		 * @since 2.1.0
+		 */
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
 		$this->output_payments_settings_screen();
@@ -1131,7 +1147,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
 				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto; vertical-align: middle; position: relative; bottom: 1px;" <?php echo $force_checked ? 'checked' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?> />
 				<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
-					<?php echo esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) ); ?>
+					<?php
+					/**
+					 * Filters the text shown next to the "save payment method" checkbox at checkout.
+					 *
+					 * @since 1.3.0
+					 *
+					 * @param string $text The save-to-account checkbox label text.
+					 */
+					echo esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) );
+					?>
 				</label>
 			</p>
 		</div>
@@ -1182,6 +1207,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 			// Check if session exists and we're currently not processing a WooPay request before instantiating `Fraud_Prevention_Service`.
+			/**
+			 * Filters whether the current request is a WooPay Store API request.
+			 *
+			 * @since 7.2.0
+			 *
+			 * @param bool $is_woopay_store_api_request Whether this is a WooPay Store API request.
+			 */
 			if ( WC()->session && ! apply_filters( 'wcpay_is_woopay_store_api_request', false ) ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -1264,6 +1296,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// We set this variable to be used in following checks.
 			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
 
+			/**
+			 * Fires when an order fails during payment processing.
+			 *
+			 * @since 5.8.0
+			 *
+			 * @param WC_Order  $order The order that failed.
+			 * @param Exception $e     The exception thrown during payment processing.
+			 */
 			do_action( 'woocommerce_payments_order_failed', $order, $e );
 
 			/**
@@ -1355,6 +1395,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
 			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
 			wc_add_notice( wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) ), 'error' );
+			/**
+			 * Fires after a payment error so the result can be updated.
+			 *
+			 * @since 10.4.0
+			 *
+			 * @param Exception $e     The exception thrown during payment processing.
+			 * @param WC_Order  $order The order being processed.
+			 */
 			do_action( 'wcpay_update_payment_result_on_error', $e, $order );
 
 			return [
@@ -1381,6 +1429,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $this->woopay_util->should_save_platform_customer() ) {
+			/**
+			 * Fires when the customer opts to save their account with WooPay.
+			 *
+			 * @since 5.9.0
+			 */
 			do_action( 'woocommerce_payments_save_user_in_woopay' );
 			$payment_information->must_save_payment_method_to_platform();
 		}
@@ -1595,7 +1648,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
-		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+		/**
+		 * Filters whether the order payment can be confirmed without a payment intent.
+		 *
+		 * In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param bool $confirm_without_payment_intent Whether to confirm without a payment intent.
+		 */
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
 			// No intent/charge is created on this path (e.g. a $0 free trial paid with an already-saved card),
 			// so source the card details from the payment method to brand the order title + card meta instead
@@ -1657,6 +1718,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$order->add_order_note( $note );
 
+				/**
+				 * Fires after the payment method for a subscription order has changed.
+				 *
+				 * @since 3.2.0
+				 *
+				 * @param WC_Order         $order         The subscription order.
+				 * @param WC_Payment_Token $payment_token The new payment token.
+				 */
 				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_token );
 			}
 
@@ -1809,7 +1878,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method = $intent->get_payment_method_id() ?? $payment_method;
 
 			if ( Intent_Status::REQUIRES_ACTION === $status && $payment_information->is_merchant_initiated() ) {
-				// Allow 3rd-party to trigger some action if needed.
+				/**
+				 * Allow 3rd-party to trigger some action if needed when a payment requires action.
+				 *
+				 * @since 2.6.0
+				 *
+				 * @param WC_Order $order          The order being processed.
+				 * @param string   $intent_id      The payment intent ID.
+				 * @param string   $payment_method The payment method ID.
+				 * @param string   $customer_id    The Stripe customer ID.
+				 * @param string   $charge_id      The charge ID.
+				 * @param string   $currency       The order currency.
+				 */
 				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $customer_id, $charge_id, $currency );
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 			}
@@ -1838,6 +1918,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				if ( $this->woopay_util->should_save_platform_customer() ) {
 					$save_user_in_woopay = true;
+					/**
+					 * Filters the payment metadata generated from an order before it is sent to the server.
+					 *
+					 * @since 3.9.0
+					 *
+					 * @param array    $metadata The payment metadata generated from the order.
+					 * @param WC_Order $order    The order the metadata was generated from.
+					 */
 					$metadata_from_order = apply_filters(
 						'wcpay_metadata_from_order',
 						[
@@ -1847,6 +1935,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 					$metadata            = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
 
+					/**
+					 * Fires when the customer opts to save their account with WooPay.
+					 *
+					 * @since 5.9.0
+					 */
 					do_action( 'woocommerce_payments_save_user_in_woopay' );
 				}
 
@@ -2514,7 +2607,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $express_checkout_type ) {
 			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
 			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
-			$suffix         = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+			/**
+			 * Filters the suffix appended to the express checkout payment method title.
+			 *
+			 * @since 3.8.0
+			 *
+			 * @param string $suffix The payment method title suffix.
+			 */
+			$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
 			if ( ! empty( $suffix ) ) {
 				$suffix = " ($suffix)";
 			}
@@ -4179,9 +4279,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method = $setup_intent->get_payment_method_id();
 			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
 
+			/**
+			 * Filters the URL to redirect to after a payment method is added.
+			 *
+			 * @since 2.3.0
+			 *
+			 * @param string $url The redirect URL.
+			 */
+			$redirect_url = apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) );
+
 			return [
 				'result'   => 'success',
-				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
+				'redirect' => $redirect_url,
 			];
 		} catch ( Exception $e ) {
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error', [ 'icon' => 'error' ] );
@@ -4571,12 +4680,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$available_methods[] = $definition_class::get_id();
 		}
 
-		$available_methods = array_values(
-			apply_filters(
-				'wcpay_upe_available_payment_methods',
-				$available_methods
-			)
-		);
+		/**
+		 * Filters the list of available UPE payment methods.
+		 *
+		 * @since 2.5.0
+		 *
+		 * @param array $available_methods Available UPE payment method IDs.
+		 */
+		$available_methods = apply_filters( 'wcpay_upe_available_payment_methods', $available_methods );
+		$available_methods = array_values( $available_methods );
 
 		$methods_with_fees = array_keys( $this->account->get_fees() );
 

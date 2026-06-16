@@ -93,6 +93,8 @@ class Mode {
 		/**
 		 * Allows WooPayments to enter dev (aka sandbox) mode.
 		 *
+		 * @since 0.8.2
+		 *
 		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
 		 * @param bool $dev_mode Whether to enter WooPayments in dev mode.
 		 */
@@ -114,6 +116,8 @@ class Mode {
 		/**
 		 * Allows WooPayments to use test mode onboarding.
 		 *
+		 * @since 8.1.0
+		 *
 		 * @param bool $test_mode_onboarding Whether to use test mode onboarding.
 		 */
 		$this->test_mode_onboarding = (bool) apply_filters( 'wcpay_test_mode_onboarding', $test_mode_onboarding );
@@ -131,6 +135,8 @@ class Mode {
 
 		/**
 		 * Allows WooPayments to process payments in test mode.
+		 *
+		 * @since 4.2.0
 		 *
 		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
 		 * @param bool $test_mode Whether to process payments in test mode.

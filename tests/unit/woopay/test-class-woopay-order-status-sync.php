@@ -49,6 +49,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		$this->account_mock      = $this->createMock( WC_Payments_Account::class );
 		$this->api_client_mock   = $this->createMock( WC_Payments_API_Client::class );
 		$this->webhook_sync_mock = new WCPay\WooPay\WooPay_Order_Status_Sync( $this->api_client_mock, $this->account_mock );
+		$this->webhook_sync_mock->init_hooks();
 
 		// Mock the main class's cache service.
 		$this->cache      = WC_Payments::get_database_cache();
