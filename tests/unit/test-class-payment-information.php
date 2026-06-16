@@ -37,7 +37,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.' );
 
-		$payment_information = new Payment_Information( '' );
+		new Payment_Information( '' );
 	}
 
 	public function test_is_merchant_initiated_defaults_to_false() {
