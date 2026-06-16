@@ -19,6 +19,9 @@ const millisecondsPerDay = 86400000;
 const isYmd = ( value: unknown ): value is string =>
 	typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test( value );
 
+// Fees export follows the Transactions export path, whose request URLs contain
+// timezone-expanded datetime bounds. Preserve those generated legacy values for
+// export compatibility; native DataViews filters still parse only date-only YMD.
 const isLegacyLocalDateTime = ( value: unknown ): value is string =>
 	typeof value === 'string' &&
 	/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test( value );

@@ -195,6 +195,14 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
+	it( 'ignores legacy datetime date bounds from URL in the native Date filter', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01 00:00:00', '2026-03-31 23:59:59' ],
+		} );
+		const { result } = renderUseFeesView();
+		expect( result.current[ 0 ].filters ).toEqual( [] );
+	} );
+
 	it( 'reads fields from user_meta without duplicating the primary date column', () => {
 		mockUserPrefs = {
 			wc_payments_reports_fees_view: {

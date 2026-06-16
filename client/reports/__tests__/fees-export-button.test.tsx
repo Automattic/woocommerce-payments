@@ -176,6 +176,37 @@ describe( 'FeesExportButton', () => {
 		expect( mockRequestReportExport ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'preserves legacy datetime date filters for the summary query and CSV export request', async () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+		} );
+		mockGetReportsFeesSummary.mockReturnValue( {
+			count: 12,
+		} );
+
+		render( <FeesExportButton /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export' } )
+		);
+
+		expect( mockUseReportsFeesSummary ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				date_between: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+			} )
+		);
+		expect( mockGetReportsFeesSummary ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				dateBetween: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+			} )
+		);
+		expect( mockGetFeesCSVRequestURL ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				dateBetween: [ '2026-06-01 21:00:00', '2026-06-16 20:59:59' ],
+			} )
+		);
+	} );
+
 	it( 'uses the click-time query for both the export request and exported row count', async () => {
 		mockGetQuery
 			.mockReturnValueOnce( {
