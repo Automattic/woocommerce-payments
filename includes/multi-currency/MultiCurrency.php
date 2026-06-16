@@ -567,7 +567,21 @@ class MultiCurrency {
 
 		the_widget(
 			spl_object_hash( $currency_switcher_widget ),
+			/**
+			 * Filters the instance settings passed to the currency switcher theme widget.
+			 *
+			 * @since 3.0.0
+			 *
+			 * @param array $instance The widget instance settings.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_instance', $instance ),
+			/**
+			 * Filters the args passed to the currency switcher theme widget.
+			 *
+			 * @since 3.0.0
+			 *
+			 * @param array $args The widget display args.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_args', $args )
 		);
 		return ob_get_clean();
@@ -874,6 +888,13 @@ class MultiCurrency {
 	 * @return mixed The configured value.
 	 */
 	public function get_apply_charm_only_to_products() {
+		/**
+		 * Filters whether charm pricing should only be applied to products.
+		 *
+		 * @since 2.6.0
+		 *
+		 * @param bool $apply_only_to_products Whether to apply charm pricing only to products. Default true.
+		 */
 		return apply_filters( self::FILTER_PREFIX . 'apply_charm_only_to_products', true );
 	}
 
@@ -1030,7 +1051,21 @@ class MultiCurrency {
 		$message = sprintf(
 		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name, %4 Link to switch currency */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a href="%4$s">Use %3$s instead.</a>', 'woocommerce-payments' ),
+			/**
+			 * Filters the country name shown in the currency switch notice.
+			 *
+			 * @since 3.1.0
+			 *
+			 * @param string $country_name The geolocated country name.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] ),
+			/**
+			 * Filters the currency name shown in the currency switch notice.
+			 *
+			 * @since 3.1.0
+			 *
+			 * @param string $currency_name The current currency name.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $current_currency->get_name() ),
 			esc_html( $currencies[ $store_currency ] ),
 			esc_url( '?currency=' . $store_currency )
