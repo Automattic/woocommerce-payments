@@ -444,7 +444,10 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
         <strong>
           Euro (EUR €)
         </strong>
-        ? Your customers will no longer be able to pay in this currency and use payment methods listed below.
+        ? Your customers will no longer be able to pay in this currency.
+      </p>
+      <p>
+        The payment methods below currently support Euro:
       </p>
       <ul>
         <li>

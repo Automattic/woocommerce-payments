@@ -14,9 +14,8 @@ import CurrencyDeleteIllustration from 'multi-currency/components/currency-delet
 import { paymentMethodsMap } from 'multi-currency/interface/assets';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
-	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
-		false
-	);
+	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] =
+		useState( false );
 
 	const currencyDependentPaymentMethods =
 		window.multiCurrencyPaymentMethodsMap;
@@ -85,8 +84,7 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 							mixedString: sprintf(
 								__(
 									'Are you sure you want to remove {{strong}}%s (%s){{/strong}}? ' +
-										'Your customers will no longer be able to pay in this currency and ' +
-										'use payment methods listed below.',
+										'Your customers will no longer be able to pay in this currency.',
 									'woocommerce-payments'
 								),
 								label,
@@ -98,6 +96,16 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 								strong: <strong />,
 							},
 						} ) }
+					</p>
+					<p>
+						{ sprintf(
+							/* translators: %s: Name of the currency being removed */
+							__(
+								'The payment methods below currently support %s:',
+								'woocommerce-payments'
+							),
+							label
+						) }
 					</p>
 					<ul>
 						{ dependentPaymentMethods.map( ( paymentMethod ) => (

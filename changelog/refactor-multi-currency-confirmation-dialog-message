@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Clarify the currency removal confirmation so it no longer implies supported payment methods will be disabled
