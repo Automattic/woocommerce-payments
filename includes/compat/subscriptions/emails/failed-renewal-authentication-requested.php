@@ -39,16 +39,16 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); /* phpcs:ignore
 do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 /**
-* Shows order meta data.
-*/
+ * Shows order meta data.
+ */
 do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 /**
-* Shows customer details, and email address.
-*/
+ * Shows customer details, and email address.
+ */
 do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 /**
-* Output the email footer.
-*/
+ * Output the email footer.
+ */
 do_action( 'woocommerce_email_footer', $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
