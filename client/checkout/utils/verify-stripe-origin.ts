@@ -77,10 +77,10 @@ export const verifyStripeJsOrigin = (
  * to disable it without a plugin release; a server-settable off-switch is a
  * planned follow-up before this is relied on fleet-wide.
  *
- * @param options          Options.
- * @param options.failFast When true (called before `window.Stripe` resolves), a
- *                         missing tag is treated as "still loading" and ignored;
- *                         only a present, wrong-origin tag throws.
+ * @param  options          Options.
+ * @param  options.failFast When true (called before `window.Stripe` resolves), a
+ *                          missing tag is treated as "still loading" and ignored;
+ *                          only a present, wrong-origin tag throws.
  * @throws {Error} When the loaded Stripe.js origin is not Stripe's.
  */
 export const assertStripeJsOrigin = ( {
