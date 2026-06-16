@@ -12,6 +12,43 @@ import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
 import { goToCheckout } from '../../../utils/shopper-navigation';
+import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
+
+const checkoutWithBancontact = async (
+	page: Page,
+	ctpEnabled: boolean
+): Promise< string > => {
+	await shopper.addToCartFromShopPage( page );
+	await goToCheckout( page );
+	await shopper.fillBillingAddress(
+		page,
+		config.addresses[ 'upe-customer' ].billing.be
+	);
+	await shopper.expectFraudPreventionToken( page, ctpEnabled );
+	await page.getByText( 'Bancontact' ).click();
+
+	const bancontactRadio = page.locator(
+		'#payment_method_woocommerce_payments_bancontact'
+	);
+	await bancontactRadio.scrollIntoViewIfNeeded();
+	await bancontactRadio.check( { force: true } );
+	await expect( bancontactRadio ).toBeChecked( { timeout: 10_000 } );
+
+	await shopper.focusPlaceOrderButton( page );
+	await shopper.placeOrder( page );
+	await page
+		.getByRole( 'link', { name: 'Authorize Test Payment' } )
+		.click();
+	await expect( page.getByText( 'Order received' ).first() ).toBeVisible();
+
+	const orderId = page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ];
+	if ( ! orderId ) {
+		throw new Error(
+			`Expected an order-received URL with an order ID, got: ${ page.url() }`
+		);
+	}
+	return orderId;
+};
 
 test.describe(
 	'Local payment method checkout with card testing',
@@ -100,40 +137,16 @@ test.describe(
 					} );
 
 					test( 'should successfully place order with Bancontact', async () => {
-						await shopper.addToCartFromShopPage( shopperPage );
-						await goToCheckout( shopperPage );
-						await shopper.fillBillingAddress(
-							shopperPage,
-							config.addresses[ 'upe-customer' ].billing.be
-						);
-						await shopper.expectFraudPreventionToken(
-							shopperPage,
-							ctpEnabled
-						);
-						await shopperPage.getByText( 'Bancontact' ).click();
-
-						const bancontactRadio = shopperPage.locator(
-							'#payment_method_woocommerce_payments_bancontact'
-						);
-						await bancontactRadio.scrollIntoViewIfNeeded();
-						await bancontactRadio.check( { force: true } );
-						await expect( bancontactRadio ).toBeChecked( {
-							timeout: 10_000,
-						} );
-
-						await shopper.focusPlaceOrderButton( shopperPage );
-						await shopper.placeOrder( shopperPage );
-						await shopperPage
-							.getByRole( 'link', {
-								name: 'Authorize Test Payment',
-							} )
-							.click();
-						await expect(
-							shopperPage.getByText( 'Order received' ).first()
-						).toBeVisible();
+						await checkoutWithBancontact( shopperPage, ctpEnabled );
 					} );
 				}
 			);
 		}
+
+		test( 'merchant can see and refund a Bancontact order', async () => {
+			const orderId = await checkoutWithBancontact( shopperPage, false );
+
+			await verifyOrderAndRefund( merchantPage, orderId );
+		} );
 	}
 );
