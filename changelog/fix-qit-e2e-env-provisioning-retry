@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Retry transient QIT E2E environment-provisioning failures (corrupt downloads, network blips) so CI flakes no longer fail the run
