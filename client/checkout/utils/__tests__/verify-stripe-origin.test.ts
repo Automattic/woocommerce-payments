@@ -1,0 +1,167 @@
+/**
+ * Internal dependencies
+ */
+import {
+	verifyStripeJsOrigin,
+	assertStripeJsOrigin,
+	STRIPE_JS_ORIGIN,
+} from '../verify-stripe-origin';
+
+const addScript = ( attrs: Record< string, string > ): void => {
+	const script = document.createElement( 'script' );
+	Object.entries( attrs ).forEach( ( [ key, value ] ) =>
+		script.setAttribute( key, value )
+	);
+	document.head.appendChild( script );
+};
+
+describe( 'verifyStripeJsOrigin', () => {
+	afterEach( () => {
+		document.head
+			.querySelectorAll( 'script' )
+			.forEach( ( script ) => script.remove() );
+	} );
+
+	it( 'accepts the canonical WordPress handle tag', () => {
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.stripe.com/v3/?ver=3.0',
+		} );
+
+		expect( verifyStripeJsOrigin() ).toEqual( {
+			ok: true,
+			detectedSrc: 'https://js.stripe.com/v3/?ver=3.0',
+			detectedOrigin: STRIPE_JS_ORIGIN,
+		} );
+	} );
+
+	it.each( [
+		'https://js.stripe.com/v3/',
+		'https://js.stripe.com/v3/stripe.js',
+		'https://js.stripe.com/basil/stripe.js',
+	] )( 'accepts a legitimate js.stripe.com path: %s', ( src ) => {
+		addScript( { src } );
+
+		expect( verifyStripeJsOrigin().ok ).toBe( true );
+	} );
+
+	it( 'rejects a look-alike skimmer origin on the repointed handle', () => {
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.evil.example/v3/?ver=3.0',
+		} );
+
+		const result = verifyStripeJsOrigin();
+
+		expect( result.ok ).toBe( false );
+		expect( result.detectedOrigin ).toBe( 'https://js.evil.example' );
+	} );
+
+	it( 'rejects a subdomain-suffix look-alike (js.stripe.com.evil.example)', () => {
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.stripe.com.evil.example/v3/',
+		} );
+
+		expect( verifyStripeJsOrigin().ok ).toBe( false );
+	} );
+
+	it( 'treats a missing tag as a mismatch', () => {
+		expect( verifyStripeJsOrigin() ).toEqual( {
+			ok: false,
+			detectedSrc: null,
+			detectedOrigin: null,
+		} );
+	} );
+
+	it( 'reads the repointed #stripe-js handle even when a legit tag also exists', () => {
+		// The handle tag is enqueued early; the bundled loader appends a real
+		// tag later. The attacker-controlled handle must still be the one read.
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.evil.example/v3/?ver=3.0',
+		} );
+		addScript( { src: 'https://js.stripe.com/v3/' } );
+
+		expect( verifyStripeJsOrigin().detectedOrigin ).toBe(
+			'https://js.evil.example'
+		);
+	} );
+
+	it( 'prefers the #stripe-js handle even when a legit tag appears earlier in the DOM', () => {
+		// Reverse DOM order: a legitimate tag is inserted before the repointed
+		// handle. querySelector on a selector list returns the first match in
+		// document order, so the handle must be looked up explicitly to win.
+		addScript( { src: 'https://js.stripe.com/v3/' } );
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.evil.example/v3/?ver=3.0',
+		} );
+
+		const result = verifyStripeJsOrigin();
+
+		expect( result.ok ).toBe( false );
+		expect( result.detectedOrigin ).toBe( 'https://js.evil.example' );
+	} );
+} );
+
+describe( 'assertStripeJsOrigin', () => {
+	let warn: jest.SpyInstance;
+
+	beforeEach( () => {
+		warn = jest.spyOn( console, 'warn' ).mockImplementation( () => {
+			// Silence the expected warning.
+		} );
+	} );
+
+	afterEach( () => {
+		jest.restoreAllMocks();
+		document.head
+			.querySelectorAll( 'script' )
+			.forEach( ( script ) => script.remove() );
+	} );
+
+	it( 'resolves silently when Stripe.js comes from the legitimate origin', () => {
+		addScript( { id: 'stripe-js', src: 'https://js.stripe.com/v3/' } );
+
+		expect( () => assertStripeJsOrigin() ).not.toThrow();
+		expect( warn ).not.toHaveBeenCalled();
+	} );
+
+	it( 'throws and warns when the origin is wrong', () => {
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.evil.example/v3/?ver=3.0',
+		} );
+
+		expect( () => assertStripeJsOrigin() ).toThrow( 'unexpected origin' );
+		expect( warn ).toHaveBeenCalledWith(
+			expect.stringContaining( 'js.evil.example' )
+		);
+	} );
+
+	it( 'throws with a clear message when no Stripe.js tag is present', () => {
+		expect( () => assertStripeJsOrigin() ).toThrow( 'no Stripe.js' );
+		expect( warn ).toHaveBeenCalledWith(
+			expect.stringContaining( 'no Stripe.js script tag' )
+		);
+	} );
+
+	it( 'in fail-fast mode, ignores a missing tag (still loading)', () => {
+		expect( () =>
+			assertStripeJsOrigin( { failFast: true } )
+		).not.toThrow();
+		expect( warn ).not.toHaveBeenCalled();
+	} );
+
+	it( 'in fail-fast mode, still throws on a present, wrong-origin tag', () => {
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.evil.example/v3/?ver=3.0',
+		} );
+
+		expect( () => assertStripeJsOrigin( { failFast: true } ) ).toThrow(
+			'unexpected origin'
+		);
+	} );
+} );
