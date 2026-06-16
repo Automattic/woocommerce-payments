@@ -534,10 +534,28 @@ jQuery( ( $ ) => {
 			if ( Array.isArray( enabledMethodsFromCart ) ) {
 				enabledMethodsOverride = enabledMethodsFromCart;
 			} else if ( needsMethodsReevaluation ) {
-				enabledMethodsOverride = [ 'payment_request' ];
+				// Cart re-fetch failed or lacked our extension, so we can't
+				// confirm which methods the resolved currency supports. Keep
+				// payment_request only if the merchant had it enabled — never
+				// turn on a method that was off in the localized config.
+				const localizedMethods =
+					getExpressCheckoutData( 'enabled_methods' ) ?? [];
+				enabledMethodsOverride = localizedMethods.includes(
+					'payment_request'
+				)
+					? [ 'payment_request' ]
+					: [];
 			}
 
-			if ( ! isCartEligible ) {
+			// With no determinable method for the resolved currency (re-fetch
+			// failed and payment_request isn't available), there's nothing safe
+			// to offer — hide ECE rather than guess at a method.
+			const cannotDetermineMethods =
+				needsMethodsReevaluation &&
+				Array.isArray( enabledMethodsOverride ) &&
+				enabledMethodsOverride.length === 0;
+
+			if ( ! isCartEligible || cannotDetermineMethods ) {
 				expressCheckoutButtonUi.hideContainer();
 				expressCheckoutButtonUi.getButtonSeparator().hide();
 			} else if ( cachedCartData ) {
