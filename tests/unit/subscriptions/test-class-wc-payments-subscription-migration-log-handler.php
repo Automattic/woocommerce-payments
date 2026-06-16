@@ -100,7 +100,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$this->assertStringContainsString( $old_date, basename( $log_files_after_rename[0] ) );
 
 		// Trigger WC's log cleanup - our handler runs at priority 5 to rename files before WC deletes them.
-		do_action( 'woocommerce_cleanup_logs' );
+		do_action( 'woocommerce_cleanup_logs' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 
 		// Verify migration file still exists and has been renamed to today's date.
 		$migration_file_found = false;
@@ -154,7 +154,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$this->assertFileExists( $new_file_path, 'New log file should exist before cleanup.' );
 
 		// Trigger WC's log cleanup - our handler merges and renames files.
-		do_action( 'woocommerce_cleanup_logs' );
+		do_action( 'woocommerce_cleanup_logs' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 
 		// Old file should be gone (merged into new file).
 		$this->assertFileDoesNotExist( $old_file_path, 'Old log file should be deleted after merge.' );
@@ -228,7 +228,7 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		$this->assertEquals( 1, $results[ $this->test_log_source ] );
 
 		// Trigger WC's log cleanup.
-		do_action( 'woocommerce_cleanup_logs' );
+		do_action( 'woocommerce_cleanup_logs' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
