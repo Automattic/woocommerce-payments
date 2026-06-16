@@ -793,7 +793,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				],
 			]
 		);
-		apply_filters( 'rest_request_before_callbacks', [], [], $request );
+		apply_filters( 'rest_request_before_callbacks', [], [], $request ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		// Arrange: Create an order to test with.
 		$order_data = [
@@ -1199,6 +1199,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
+
+		$request->expects( $this->once() )
+			->method( 'set_fingerprint' );
 
 				// Assert: Order has correct charge id meta data.
 		// Assert: Order has correct intention status meta data.

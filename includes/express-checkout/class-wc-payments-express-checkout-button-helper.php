@@ -72,7 +72,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$discounts = 0;
 		$currency  = get_woocommerce_currency();
 
-		// Default show only subtotal instead of itemization.
+		/**
+		 * Filters whether to hide itemization and show only the subtotal in Express Checkout.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param bool $hide_itemization Whether to hide itemized display items.
+		 */
 		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', ! $itemized_display_items ) ) {
 			foreach ( WC()->cart->get_cart() as $cart_item ) {
 				$amount         = $cart_item['line_subtotal'];
@@ -149,6 +155,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			'displayItems' => $items,
 			'total'        => [
 				'label'   => $this->get_total_label(),
+				/**
+				 * Filters the calculated total for the Express Checkout request.
+				 *
+				 * @since 2.1.0
+				 *
+				 * @param int      $prepared_total The prepared (Stripe-formatted) order total.
+				 * @param string   $order_total    The raw cart total, as a numeric string.
+				 * @param WC_Cart  $cart           The WooCommerce cart object.
+				 */
 				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			],
@@ -173,6 +188,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function get_total_label() {
 		// Get statement descriptor from API/cached account data.
 		$statement_descriptor = $this->account->get_statement_descriptor();
+		/**
+		 * Filters the suffix appended to the Express Checkout total label.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string $suffix The total label suffix.
+		 */
 		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 	}
 
@@ -586,6 +608,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return  array
 	 */
 	public function supported_product_types() {
+		/**
+		 * Filters the product types supported by Express Checkout.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string[] $supported_types The list of supported product types.
+		 */
 		return apply_filters(
 			'wcpay_payment_request_supported_types',
 			[
@@ -617,6 +646,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
 			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
@@ -723,6 +753,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		$data['displayItems'] = $items;
 		$data['total']        = [
+			/**
+			 * Filters the label shown for the order total in the Express Checkout request.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param string $total_label The order total label.
+			 */
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 			'pending' => true,
@@ -733,6 +770,14 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 		$data['product_type']   = $product->get_type();
 
+		/**
+		 * Filters the product data sent to the Express Checkout request.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param array      $data    The product data for the Express Checkout request.
+		 * @param WC_Product $product The product object.
+		 */
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
 
@@ -797,6 +842,14 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 		}
 
+		/**
+		 * Filters whether the current product is supported for Express Checkout.
+		 *
+		 * @since 3.4.0
+		 *
+		 * @param bool            $is_supported Whether the product is supported.
+		 * @param WC_Product|null $product      The product object, or null.
+		 */
 		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
 	}
 
