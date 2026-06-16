@@ -366,13 +366,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
-		$user                = wp_get_current_user();
-		$intent_status       = Intent_Status::PROCESSING;
-		$intent_metadata     = [ 'order_id' => (string) $order_id ];
-		$charge_id           = 'ch_mock';
-		$customer_id         = 'cus_mock';
-		$intent_id           = 'pi_mock';
-		$payment_method_id   = 'pm_mock';
+		wp_get_current_user();
+		$intent_status     = Intent_Status::PROCESSING;
+		$intent_metadata   = [ 'order_id' => (string) $order_id ];
+		$charge_id         = 'ch_mock';
+		$customer_id       = 'cus_mock';
+		$intent_id         = 'pi_mock';
+		$payment_method_id = 'pm_mock';
 
 		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
 		$order->update_meta_data( '_intent_id', $intent_id );
@@ -420,13 +420,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
-		$user                = wp_get_current_user();
-		$intent_status       = Intent_Status::SUCCEEDED;
-		$intent_metadata     = [ 'order_id' => (string) $order_id ];
-		$charge_id           = 'ch_mock';
-		$customer_id         = 'cus_mock';
-		$intent_id           = 'pi_mock';
-		$payment_method_id   = 'pm_mock';
+		wp_get_current_user();
+		$intent_status     = Intent_Status::SUCCEEDED;
+		$intent_metadata   = [ 'order_id' => (string) $order_id ];
+		$charge_id         = 'ch_mock';
+		$customer_id       = 'cus_mock';
+		$intent_id         = 'pi_mock';
+		$payment_method_id = 'pm_mock';
 
 		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
 		$order->update_meta_data( '_intent_id', $intent_id );
@@ -1081,7 +1081,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -1501,7 +1501,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -1596,7 +1596,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -1822,6 +1822,34 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->card_gateway->attach_exchange_info_to_order( $order, $charge_id );
 		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_swallows_charge_lookup_failure() {
+		// The Stripe exchange rate is analytics-only enrichment (the _wcpay_multi_currency_order_exchange_rate
+		// meta is the reporting fallback), so a Get_Charge failure must not propagate and break the
+		// payment-completion flow that calls this. WOOPMNT-6209.
+		$charge_id = 'ch_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new \Exception( 'server unavailable' ) );
+
+		// Must not throw — a failed exchange-rate lookup cannot block checkout.
+		$this->card_gateway->attach_exchange_info_to_order( $order, $charge_id );
+
+		// And no exchange-rate meta is written on failure.
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
 	}
 
 	public function test_save_payment_method_checkbox_displayed() {
@@ -2269,7 +2297,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
-		$charge = $this->create_charge_object();
+		$this->create_charge_object();
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
@@ -2675,7 +2703,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			[ 'is_changing_payment_method_for_subscription' => true ]
 		);
 
-		do_action( 'shutdown' );
+		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		$this->assertSame( 'cus_existing', $customer_id );
 	}
@@ -2700,7 +2728,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$manage->setAccessible( true );
 		$manage->invoke( $this->card_gateway, $order, [] );
 
-		do_action( 'shutdown' );
+		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
 	public function test_add_payment_method_no_intent() {
@@ -3160,8 +3188,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
-		$expected_upe_payment_method = 'card';
-		$order                       = WC_Helper_Order::create_order();
+		$order = WC_Helper_Order::create_order();
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
@@ -3413,7 +3440,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -4494,7 +4521,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' );
 
 		// Act: process payment.
-		$response = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
@@ -4625,7 +4652,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_updating_subscription_for_non_3ds_cards_removes_hook() {
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -4664,7 +4691,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_updating_subscription_for_3ds_cards_sets_delayed_update_payment_method_all() {
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -5715,7 +5742,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return [ $this, 'ajax_wp_die_handler' ];
 	}
 
-	public function ajax_wp_die_handler( $message ) {
+	public function ajax_wp_die_handler( $_unused_message ) {
 		// Do nothing - prevents wp_die from terminating the test.
 	}
 
