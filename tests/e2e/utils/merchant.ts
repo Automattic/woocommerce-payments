@@ -160,7 +160,12 @@ export const addMulticurrencyWidget = async (
 				.locator( `[data-title="${ widgetName }"]` )
 				.waitFor( { timeout: 5000 } );
 		} else {
+			// Scope the heading to the inserted block by its (locale-independent)
+			// block type. A bare heading match also matches the block-inspector
+			// card name, which renders the same text and trips Playwright strict
+			// mode intermittently (race between the two).
 			await page
+				.locator( '[data-type="core/legacy-widget"]' )
 				.getByRole( 'heading', { name: widgetName } )
 				.waitFor( { timeout: 5000 } );
 		}
