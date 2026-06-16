@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { Component, lazy, Suspense } from 'react';
+import React, { Component, lazy, Suspense, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -18,11 +18,16 @@ const PhoneNumberInput = lazy( () =>
 	import( /* webpackChunkName: "wcpay-phone-input" */ './' )
 );
 
+// Degraded validity check for the fallback field: a digit-bearing number passes;
+// the authoritative check stays on the server. Kept at module scope so it's a
+// stable reference for the effect below.
+const isPlainNumberValid = ( phone ) => phone.replace( /\D/g, '' ).length >= 6;
+
 // Mirrors the real input's markup so swapping in the loaded component causes no
 // layout shift. The `.iti` wrapper matches the one intl-tel-input injects around
 // the input on mount, so the placeholder reserves its `margin-top` and the field
 // doesn't jump once the component's chunk loads.
-const PhoneInputPlaceholder = ( { id, isBlocksCheckout } ) => (
+const PhoneInputPlaceholder = ( { id, inputProps = {}, isBlocksCheckout } ) => (
 	<div className={ isBlocksCheckout ? 'wc-block-components-text-input' : '' }>
 		<div className="iti">
 			<input
@@ -30,6 +35,11 @@ const PhoneInputPlaceholder = ( { id, isBlocksCheckout } ) => (
 				id={ id }
 				className="phone-input input-text"
 				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
+				aria-label={
+					inputProps.ariaLabel ||
+					__( 'Mobile phone number', 'woocommerce-payments' )
+				}
+				name={ inputProps.name }
 				disabled
 			/>
 		</div>
@@ -41,24 +51,28 @@ const PhoneInputPlaceholder = ( { id, isBlocksCheckout } ) => (
 // field reports a valid number, so a field that never mounts leaves "Place Order"
 // blocked behind a hidden error. This degrades to a plain phone field — no
 // country dropdown or libphonenumber formatting — wired to the same callbacks so
-// the shopper can still enter a number and complete checkout. The server
-// validates the value.
+// the shopper can still enter a number and complete checkout. Passthrough props
+// (e.g. the `onClick` that marks the field as touched) are forwarded so it behaves
+// like the real input.
 const PlainPhoneInput = ( {
 	value = '',
 	id,
 	onValueChange = () => {},
 	onValidationChange = () => {},
+	// Destructured out so they aren't spread onto the DOM input.
+	onCountryDropdownClick,
 	inputProps = {},
 	isBlocksCheckout,
+	...rest
 } ) => {
-	const handleChange = ( event ) => {
-		const phone = event.target.value;
-		onValueChange( phone );
-		// Mirror the enhanced input's "hidden until typed" behaviour: only report
-		// validity once the shopper interacts, treating a digit-bearing number as
-		// valid and leaving stricter checks to the server.
-		onValidationChange( phone.replace( /\D/g, '' ).length >= 6 );
-	};
+	// Validate any prefilled value (e.g. ticking "save my info" seeds the number
+	// from the billing field) so a valid number clears the checkout-blocking error
+	// without the shopper having to retype it.
+	useEffect( () => {
+		if ( value ) {
+			onValidationChange( isPlainNumberValid( value ) );
+		}
+	}, [ value, onValidationChange ] );
 
 	return (
 		<div
@@ -69,7 +83,7 @@ const PlainPhoneInput = ( {
 			<input
 				type="tel"
 				id={ id }
-				defaultValue={ value }
+				value={ value }
 				className="phone-input input-text"
 				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
 				aria-label={
@@ -77,7 +91,8 @@ const PlainPhoneInput = ( {
 					__( 'Mobile phone number', 'woocommerce-payments' )
 				}
 				name={ inputProps.name }
-				onChange={ handleChange }
+				onChange={ ( event ) => onValueChange( event.target.value ) }
+				{ ...rest }
 			/>
 		</div>
 	);
