@@ -596,6 +596,7 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$woopay_tracker->init_hooks();
 		self::$order_service->init_hooks();
 		self::$order_success_page->init_hooks();
 		self::$action_scheduler_service->init_hooks();
@@ -1140,6 +1141,13 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
+		/**
+		 * Allows replacing the API client class used for WooPayments API requests.
+		 *
+		 * @since 2.5.0
+		 *
+		 * @param string $api_client_class The fully-qualified API client class name. Must extend WC_Payments_API_Client.
+		 */
 		$api_client_class = apply_filters( 'wc_payments_api_client', WC_Payments_API_Client::class );
 		if ( ! class_exists( $api_client_class ) || ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
 			$api_client_class = WC_Payments_API_Client::class;
@@ -1658,6 +1666,11 @@ class WC_Payments {
 	 */
 	public static function install_actions() {
 		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
+			/**
+			 * Fires after WooPayments has been updated to a newer version.
+			 *
+			 * @since 2.1.0
+			 */
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
@@ -1782,6 +1795,13 @@ class WC_Payments {
 	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
 	 */
 	public static function is_network_saved_cards_enabled() {
+		/**
+		 * Allows forcing WooPayments to use network-wide saved payment methods across a multisite network.
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param bool $enabled Whether the site should only use network-wide saved payment methods.
+		 */
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
 
@@ -1841,7 +1861,7 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
+			( new WooPay_Order_Status_Sync( self::$api_client, self::$account ) )->init_hooks();
 		}
 	}
 
@@ -2114,7 +2134,7 @@ class WC_Payments {
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
-			new WooPay_Save_User();
+			( new WooPay_Save_User() )->init_hooks();
 		}
 	}
 
@@ -2166,8 +2186,11 @@ class WC_Payments {
 		/**
 		 * Used for unit tests only, as requests have dependencies, which are not publicly available in live mode.
 		 *
-		 * @param Request $request    Null, but if the filter returns a request, it will be used.
-		 * @param string  $class_name The name of the request class.
+		 * @since 5.6.0
+		 *
+		 * @param Request|null $request    Null by default; if a filter returns a request, it will be used.
+		 * @param string       $class_name The name of the request class.
+		 * @param mixed        $id         The item ID, if the request needs it.
 		 */
 		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
 		if ( $request instanceof Request ) {
@@ -2315,6 +2338,13 @@ class WC_Payments {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 
+		/**
+		 * Allows replacing the HTTP client used for WooPayments API requests.
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param WC_Payments_Http_Interface|null $http_class The HTTP client instance, or null to use the default.
+		 */
 		$http_class = apply_filters( 'wc_payments_http', null );
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {

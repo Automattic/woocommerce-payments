@@ -13,6 +13,7 @@ use WC_Order;
 use WC_Order_Item_Product;
 use WC_Order_Item_Fee;
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WCPay\Internal\Service\Level3Service;
@@ -198,7 +199,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 		$mock_order
 			->method( 'get_currency' )
-			->will( $this->returnValue( 'USD' ) );
+			->will( $this->returnValue( Currency_Code::UNITED_STATES_DOLLAR ) );
 
 		$mock_order
 			->method( 'get_shipping_total' )

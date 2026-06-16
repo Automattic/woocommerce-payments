@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Currency_Code;
 use WCPay\Database_Cache;
 use WCPay\Onboarding_Experiment;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -2968,6 +2969,37 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->wcpay_account->get_stripe_account_id() );
 	}
 
+	public function test_get_account_status_data_includes_business_name_and_account_id() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details(
+			[
+				'account_id'       => 'acct_wcpay_123',
+				'is_live'          => true,
+				'status'           => 'complete',
+				'payments_enabled' => true,
+				'business_profile' => [
+					'name' => 'Aperture Science LLC',
+				],
+			]
+		);
+
+		$account_status_data = $this->wcpay_account->get_account_status_data();
+
+		$this->assertSame( 'Aperture Science LLC', $account_status_data['businessName'] );
+		$this->assertSame( 'acct_wcpay_123', $account_status_data['accountId'] );
+	}
+
+	public function test_get_account_status_data_returns_only_error_for_missing_account() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details( [] );
+
+		$this->assertSame( [ 'error' => true ], $this->wcpay_account->get_account_status_data() );
+	}
+
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_test_account_in_dev_mode() {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
@@ -3477,7 +3509,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 					],
 				]
 			);
@@ -3513,7 +3545,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'CHF',
+						'currency'            => Currency_Code::SWISS_FRANC,
 					],
 				]
 			);
@@ -3860,7 +3892,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn( $payment_method_capability_map );
 		$mock_gateway->method( 'find_duplicates' )->willReturn( [ 'card' => [ 'woocommerce_payments', 'some_other_gateway' ] ] );
 		$mock_gateway->method( 'get_option' )->willReturnCallback(
-			function ( $key, $default = null ) {
+			function ( $key, $default_value = null ) {
 				$options = [
 					'express_checkout_in_payment_methods'  => 'yes',
 					'manual_capture'                       => 'no',
@@ -3875,7 +3907,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'express_checkout_cart_methods'        => [ 'payment_request', 'woopay' ],
 					'express_checkout_checkout_methods'    => [],
 				];
-				return $options[ $key ] ?? $default;
+				return $options[ $key ] ?? $default_value;
 			}
 		);
 		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );

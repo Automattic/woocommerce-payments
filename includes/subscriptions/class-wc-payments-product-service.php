@@ -96,7 +96,12 @@ class WC_Payments_Product_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		/**
 		 * When a store is in staging mode, we don't want any product handling to be sent to the server.
 		 *

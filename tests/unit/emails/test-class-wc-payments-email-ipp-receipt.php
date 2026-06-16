@@ -28,6 +28,7 @@ class WC_Payments_Email_IPP_Receipt_Test extends WCPAY_UnitTestCase {
 		}
 
 		$this->email = new WC_Payments_Email_IPP_Receipt();
+		$this->email->init_hooks();
 	}
 
 	/**

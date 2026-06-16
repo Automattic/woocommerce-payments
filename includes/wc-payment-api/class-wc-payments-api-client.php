@@ -521,6 +521,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$response = wp_remote_get(
 			$url,
 			[
+				/**
+				 * Allows filtering of the headers sent with a WooPayments API request.
+				 *
+				 * @since 0.8.2
+				 *
+				 * @param array $headers The request headers.
+				 */
 				'headers'    => apply_filters(
 					'wcpay_api_request_headers',
 					[
@@ -1148,6 +1155,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		bool $collect_payout_requirements = false,
 		?string $referral_code = null
 	): array {
+		/**
+		 * Allows filtering of the arguments sent when fetching onboarding data.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param array $request_args The onboarding request arguments.
+		 */
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1188,6 +1202,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		array $actioned_notes = [],
 		?string $referral_code = null
 	): array {
+		/**
+		 * Allows filtering of the arguments sent when fetching onboarding data.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param array $request_args The onboarding request arguments.
+		 */
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -2616,6 +2637,15 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
+		/**
+		 * Allows filtering of the parameters sent with a WooPayments API request.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param array  $params The request parameters.
+		 * @param string $api    The API endpoint being requested.
+		 * @param string $method The HTTP method used for the request.
+		 */
 		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
 
 		// Honor a caller-supplied idempotency key (e.g. from an agent-driven
@@ -2666,6 +2696,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			}
 		}
 
+		/**
+		 * Allows filtering of the headers sent with a WooPayments API request.
+		 *
+		 * @since 0.8.2
+		 *
+		 * @param array $headers The request headers.
+		 */
 		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
 		$retries        = 0;
@@ -2700,6 +2737,16 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			try {
 				$response = $this->http_client->remote_request( $request_args, $body, $is_site_specific, $use_user_token );
 
+				/**
+				 * Allows filtering of the raw response returned from a WooPayments API request.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param array|WP_Error $response The HTTP response (or error) from the request.
+				 * @param string         $method   The HTTP method used for the request.
+				 * @param string         $url      The request URL.
+				 * @param string         $api      The API endpoint being requested.
+				 */
 				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
 				$response_code = wp_remote_retrieve_response_code( $response );
 
