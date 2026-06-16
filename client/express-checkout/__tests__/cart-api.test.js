@@ -8,7 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import ExpressCheckoutCartApi from '../cart-api';
 import {
-	setElementCurrency,
+	rememberElementCurrency,
 	__resetElementCurrencyForTests,
 } from '../utils/element-currency-cache';
 
@@ -246,7 +246,7 @@ describe( 'ExpressCheckoutCartApi', () => {
 			headers: new Headers(),
 			json: () => Promise.resolve( {} ),
 		} );
-		setElementCurrency( 'eur' );
+		rememberElementCurrency( 'eur' );
 
 		const api = new ExpressCheckoutCartApi();
 		await api.placeOrder( { payment_method: 'woocommerce_payments' } );

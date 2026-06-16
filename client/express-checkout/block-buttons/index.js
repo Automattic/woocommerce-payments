@@ -33,12 +33,13 @@ const LazyAmazonPayPreview = lazy( () =>
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
 
-// Prefer the cart-currency-filtered list so amazon_pay doesn't get
-// registered on currencies the merchant's account doesn't support.
 const getEnabledMethodsForCart = ( cart ) => {
-	const fromCart = cart?.extensions?.wcpay?.express_checkout_methods;
-	if ( Array.isArray( fromCart ) ) {
-		return fromCart;
+	// Preferring the list provided from the API response than the list that was used when initializing the page.
+	// The list provided when initializing the page could get stale,
+	// especially when plugins like "WooCommerce Price Based on Country" are used.
+	const methods = cart?.extensions?.wcpay?.express_checkout_methods;
+	if ( Array.isArray( methods ) ) {
+		return methods;
 	}
 
 	return getExpressCheckoutData( 'enabled_methods' ) ?? [];

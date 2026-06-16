@@ -14,7 +14,7 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
 } from '../../utils';
-import { setElementCurrency } from '../../utils/element-currency-cache';
+import { rememberElementCurrency } from '../../utils/element-currency-cache';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import { getSetupFutureUsageForCart } from '../../utils/subscriptions';
 import '../express-checkout-element.scss';
@@ -36,8 +36,6 @@ const ExpressCheckoutContainer = ( props ) => {
 		[]
 	);
 
-	// Prefer the cart's filtered list. Server-localized methods don't
-	// reflect the resolved currency.
 	const enabledMethodsFromCart = useSelect(
 		( s ) =>
 			s( WC_STORE_CART )?.getCartData()?.extensions?.wcpay
@@ -59,7 +57,6 @@ const ExpressCheckoutContainer = ( props ) => {
 	}, [ enabledMethods ] );
 
 	const elementCurrency = billing.currency.code.toLowerCase();
-	setElementCurrency( elementCurrency );
 
 	const options = {
 		mode: 'payment',
@@ -80,7 +77,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			} ),
 			cartData
 		),
-		currency: elementCurrency,
+		currency: rememberElementCurrency( elementCurrency ),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};

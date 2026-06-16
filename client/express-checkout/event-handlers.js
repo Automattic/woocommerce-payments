@@ -88,7 +88,7 @@ const getElementsUpdateOptionsForCart = ( cartData ) => ( {
 export const shippingAddressChangeHandler = async (
 	event,
 	elements,
-	showError
+	errorHandler
 ) => {
 	lastSelectedAddress = event.address;
 
@@ -103,7 +103,7 @@ export const shippingAddressChangeHandler = async (
 		} );
 
 		if ( cartCurrencyDriftedFromElement( cartData ) ) {
-			showError?.( getCurrencyMismatchMessage( cartData ) );
+			errorHandler?.( getCurrencyMismatchMessage( cartData ) );
 			event.reject();
 
 			return;
@@ -136,7 +136,7 @@ export const shippingRateChangeHandler = async (
 	event,
 	elements,
 	currentCartData = null,
-	showError
+	onError
 ) => {
 	// Use the most recent cart data from a previous address/rate change,
 	// falling back to the caller-provided data. This ensures we have
@@ -158,7 +158,7 @@ export const shippingRateChangeHandler = async (
 		} );
 
 		if ( cartCurrencyDriftedFromElement( cartData ) ) {
-			showError?.( getCurrencyMismatchMessage( cartData ) );
+			onError?.( getCurrencyMismatchMessage( cartData ) );
 			event.reject();
 
 			return;

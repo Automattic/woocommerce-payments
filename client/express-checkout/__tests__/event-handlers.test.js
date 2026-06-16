@@ -8,7 +8,7 @@ import {
 	setCartApiHandler,
 } from '../event-handlers';
 import {
-	setElementCurrency,
+	rememberElementCurrency,
 	__resetElementCurrencyForTests,
 } from '../utils/element-currency-cache';
 
@@ -346,7 +346,7 @@ describe( 'Express checkout event handlers', () => {
 		} );
 
 		it( 'rejects the address and surfaces a message when the cart currency drifts from the element currency', async () => {
-			setElementCurrency( 'usd' );
+			rememberElementCurrency( 'usd' );
 			const showError = jest.fn();
 
 			// A country-based multi-currency plugin flipped the cart to EUR
@@ -375,7 +375,7 @@ describe( 'Express checkout event handlers', () => {
 		} );
 
 		it( 'proceeds normally when the element currency matches the cart currency', async () => {
-			setElementCurrency( 'usd' );
+			rememberElementCurrency( 'usd' );
 
 			cartApiUpdateCustomerMock.mockResolvedValue( {
 				items: [],
@@ -436,7 +436,7 @@ describe( 'Express checkout event handlers', () => {
 		} );
 
 		it( 'rejects the rate change and surfaces a message when the cart currency drifts from the element currency', async () => {
-			setElementCurrency( 'usd' );
+			rememberElementCurrency( 'usd' );
 			const showError = jest.fn();
 
 			cartApiSelectShippingRateMock.mockResolvedValue( {

@@ -25,7 +25,7 @@ import {
 } from '../utils';
 import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
 import { getResolvedCurrency } from '../utils/resolved-currency-cache';
-import { setElementCurrency } from '../utils/element-currency-cache';
+import { rememberElementCurrency } from '../utils/element-currency-cache';
 import { getSetupFutureUsageForCart } from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
@@ -248,13 +248,11 @@ jQuery( ( $ ) => {
 				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
 			].filter( Boolean );
 
-			setElementCurrency( creationOptions.currency );
-
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
 				mode: 'payment',
 				amount: creationOptions.total,
-				currency: creationOptions.currency,
+				currency: rememberElementCurrency( creationOptions.currency ),
 				...( useConfirmationToken
 					? { paymentMethodTypes }
 					: { paymentMethodCreation: 'manual' } ),

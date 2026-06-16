@@ -5,8 +5,10 @@
 // wallet sheet) after the Element has already booted.
 let elementCurrency = null;
 
-export const setElementCurrency = ( currency ) => {
-	elementCurrency = currency || null;
+// Returns the stored value so the caller can cache and pass it in one go,
+// e.g. `currency: rememberElementCurrency( currency )`.
+export const rememberElementCurrency = ( currency ) => {
+	return ( elementCurrency = currency || null );
 };
 
 export const getElementCurrency = () => elementCurrency;
