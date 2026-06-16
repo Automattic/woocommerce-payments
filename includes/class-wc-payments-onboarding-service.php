@@ -1449,7 +1449,7 @@ class WC_Payments_Onboarding_Service {
 		if ( is_array( $test_drive_settings ) && ! empty( $test_drive_settings['capabilities'] ) ) {
 			// Only the requested capabilities belong in the account creation request. The transient is
 			// left in place so the enabled payment methods can be restored once the live account connects
-			// (WC_Payments_Account::maybe_restore_test_drive_enabled_payment_methods).
+			// (WC_Payments_Account::restore_test_drive_enabled_payment_methods).
 			$args['account_data'] = array_merge(
 				$args['account_data'],
 				[ 'capabilities' => $test_drive_settings['capabilities'] ]

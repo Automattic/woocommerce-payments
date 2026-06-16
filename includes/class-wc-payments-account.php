@@ -120,9 +120,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Add admin init hooks.
 		// Our onboarding handling comes first.
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
-		// Restore must run before WooPay activation (priority < 10) so the latter sees the restored Link state
-		// and keeps the two mutually exclusive.
-		add_action( 'admin_init', [ $this, 'maybe_restore_test_drive_enabled_payment_methods' ], 9 );
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 		// Second, handle redirections based on context.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_after_plugin_activation' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -2261,14 +2258,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 *
 	 * The gateway settings are reset to defaults during the test-drive→live transition, so methods enabled in
 	 * sandbox (e.g. Link) would otherwise be lost. The set is captured before the reset (see save_test_drive_settings)
-	 * and re-applied here. Hooked to run before maybe_activate_woopay so the WooPay/Link mutual-exclusion guard sees
-	 * the restored Link state. See #9404.
+	 * and re-applied here. Called from the connection finalization (server side) rather than an admin page load,
+	 * because the embedded onboarding never lands on the success page where an admin_init hook would fire. Since Link
+	 * and WooPay are mutually exclusive, a restored Link also forces WooPay off so Link wins. See #9404.
 	 */
-	public function maybe_restore_test_drive_enabled_payment_methods() {
-		if ( ! isset( $_GET['wcpay-connection-success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
+	public function restore_test_drive_enabled_payment_methods() {
 		$test_drive_settings = get_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		if ( empty( $test_drive_settings['enabled_payment_methods'] ) || ! is_array( $test_drive_settings['enabled_payment_methods'] ) ) {
 			return;
@@ -2281,6 +2275,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			)
 		);
 		$gateway->update_option( 'upe_enabled_payment_method_ids', $restored_payment_methods );
+
+		if ( in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $restored_payment_methods, true ) ) {
+			$gateway->update_is_woopay_enabled( false );
+		}
 
 		delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
@@ -2302,6 +2300,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway = WC_Payments::get_gateway();
 		$gateway->update_option( 'enabled', 'yes' );
 		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
+
+		// Re-enable the payment methods carried over from a test-drive account (reset to defaults in between).
+		$this->restore_test_drive_enabled_payment_methods();
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
@@ -2382,6 +2383,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( ! empty( $capabilities ) ) {
 			$this->onboarding_service->update_enabled_payment_methods_ids( $gateway, $capabilities );
 		}
+
+		// Re-enable the payment methods carried over from a test-drive account (reset to defaults in between).
+		$this->restore_test_drive_enabled_payment_methods();
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
