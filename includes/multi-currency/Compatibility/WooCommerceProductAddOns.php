@@ -120,7 +120,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		 *
 		 * @param boolean
 		 */
-		$add_price_to_value = apply_filters( 'woocommerce_addons_add_cart_price_to_value', false, $cart_item );
+		$add_price_to_value = apply_filters( 'woocommerce_addons_add_cart_price_to_value', false, $cart_item ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle -- WooCommerce Product Add-Ons hook, not defined by WooPayments.
 
 		if ( 0.0 === (float) $addon['price'] ) {
 			$value .= '';
@@ -264,6 +264,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	 */
 	public function order_line_item_meta( array $meta_data, array $addon, \WC_Order_Item_Product $item, array $values ): array {
 
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce Product Add-Ons hook, not defined by WooPayments.
 		$add_price_to_value = apply_filters( 'woocommerce_addons_add_order_price_to_value', false, $item );
 
 		$value = $addon['value'];

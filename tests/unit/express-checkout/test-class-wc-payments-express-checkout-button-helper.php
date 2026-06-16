@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -695,14 +696,14 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * @return string
 	 */
 	public function return_eur_currency() {
-		return 'EUR';
+		return Currency_Code::EURO;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function return_usd_currency() {
-		return 'USD';
+		return Currency_Code::UNITED_STATES_DOLLAR;
 	}
 
 	/**

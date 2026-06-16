@@ -571,7 +571,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency();
 
 		// Simulate an active session (e.g. after add-to-cart) by setting the session cookie.
-		$cookie_name             = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
+		$cookie_name             = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 		$_COOKIE[ $cookie_name ] = 'test-session-id';
 
 		try {

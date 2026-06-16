@@ -28,11 +28,25 @@ beforeAll( () => {
 import { BalanceLoadingSkeleton } from '../loading-skeleton';
 
 describe( 'BalanceLoadingSkeleton', () => {
-	it( 'renders a balance card marked aria-hidden so screen reader users skip it', () => {
+	it( 'renders the DataViews summary marked aria-hidden so screen reader users skip it', () => {
 		const { container } = render( <BalanceLoadingSkeleton /> );
 
-		const card = container.querySelector( '.wcpay-reports-balance__card' );
-		expect( card ).toHaveAttribute( 'aria-hidden', 'true' );
+		const view = container.querySelector( '.wcpay-reports-balance-dv' );
+		expect( view ).toHaveAttribute( 'aria-hidden', 'true' );
+	} );
+
+	it( 'omits the interactive date filter from the preview', () => {
+		const { container } = render( <BalanceLoadingSkeleton /> );
+
+		// The preview renders only the rows Layout (the table; aria-hidden,
+		// so role queries need `hidden`) — no DataViews Filters shell, and
+		// nothing behind the blur is focusable.
+		expect(
+			screen.getByRole( 'table', { hidden: true } )
+		).toBeInTheDocument();
+		expect(
+			container.querySelectorAll( 'button, input, select, a' )
+		).toHaveLength( 0 );
 	} );
 
 	it( 'exposes a status heading announcing the loading text', () => {

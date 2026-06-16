@@ -32,7 +32,7 @@ const matchesCount = (
 /**
  * Returns the catalog entries that apply to this dispute (AND across `when`
  * clauses). Catalog is injected so tests can pass fixtures. After matching, a
- * `suppressOtherCriticals` entry drops all other `critical` entries (c15).
+ * `suppressOthers` entry becomes the only recommendation returned (c15).
  */
 export const getRecommendations = (
 	context: RecommendationContext,
@@ -83,14 +83,11 @@ export const getRecommendations = (
 		return true;
 	} );
 
-	// Drop other criticals when a matching entry asks; the suppressor stays.
-	const suppressor = matched.find(
-		( entry ) => entry.suppressOtherCriticals
-	);
+	// When a matching entry asks, it becomes the only recommendation shown:
+	// a no-evidence dispute surfaces one clear message, not a stack.
+	const suppressor = matched.find( ( entry ) => entry.suppressOthers );
 	if ( suppressor ) {
-		return matched.filter(
-			( entry ) => entry === suppressor || entry.urgency !== 'critical'
-		);
+		return [ suppressor ];
 	}
 
 	return matched;

@@ -70,7 +70,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->request->set_payment_method( 'pm_1' );
 		$this->request->set_customer( 'cus_1' );
 		$this->request->set_metadata( [ 'order_number' => 1 ] );
-		$request = $this->request->apply_filters( 'wcpay_create_and_confirm_intent_request', $this->payment_information );
+		$request = $this->request->apply_filters( 'wcpay_create_and_confirm_intent_request', $this->payment_information ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
 	}
 
@@ -88,7 +88,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->request->set_payment_method( 'pm_1' );
 		$this->request->set_customer( 'cus_1' );
 		$this->request->set_metadata( [ 'order_number' => 1 ] );
-		$request = $this->request->apply_filters( 'test_create_intention_request_will_use_stripe_platform_on_checkout_page', $this->payment_information );
+		$request = $this->request->apply_filters( 'test_create_intention_request_will_use_stripe_platform_on_checkout_page', $this->payment_information ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
 		$this->assertTrue( $request->get_param( 'is_platform_payment_method' ) );
 		remove_filter( 'test_create_intention_request_will_use_stripe_platform_on_checkout_page', [ $class, 'create_intention_request' ], 1 );
@@ -99,7 +99,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$request->set_customer( 'cus_1' );
 		$request->set_metadata( [ 'order_number' => 1 ] );
 		$request->set_payment_method( $this->payment_information->get_payment_method() );
-		$request = $request->apply_filters( 'wcpay_create_and_confirm_setup_intention_request', $this->payment_information, false, false );
+		$request = $request->apply_filters( 'wcpay_create_and_confirm_setup_intention_request', $this->payment_information, false, false ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Setup_Intention::class, $request );
 	}
 	public function test_create_and_confirm_setup_intention_request_will_create_request_for_woopay() {
@@ -115,7 +115,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$request->set_customer( 'cus_1' );
 		$request->set_metadata( [ 'order_number' => 1 ] );
 		$request->set_payment_method( $this->payment_information->get_payment_method() );
-		$request = $request->apply_filters( 'test_create_and_confirm_setup_intention_request_will_create_request_for_woopay', $this->payment_information, true, true );
+		$request = $request->apply_filters( 'test_create_and_confirm_setup_intention_request_will_create_request_for_woopay', $this->payment_information, true, true ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Setup_Intention::class, $request );
 		$this->assertTrue( $request->get_param( 'is_platform_payment_method' ) );
 		$this->assertTrue( $request->get_param( 'save_payment_method_to_platform' ) );

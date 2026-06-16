@@ -164,6 +164,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires before a WooPayments webhook event is processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
@@ -231,6 +239,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires after a WooPayments webhook event has been processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
