@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Exceptions\API_Exception;
@@ -400,7 +401,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_currency_rates() {
-		$currency_from = 'USD';
+		$currency_from = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->mock_http_client
 			->expects( $this->once() )
@@ -1052,7 +1053,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 									'status'    => 'active',
 									'fee'       => [
 										'amount'   => 100,
-										'currency' => 'USD',
+										'currency' => Currency_Code::UNITED_STATES_DOLLAR,
 									],
 								],
 							],
