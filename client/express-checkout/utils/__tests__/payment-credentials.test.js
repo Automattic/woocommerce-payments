@@ -30,7 +30,10 @@ describe( 'createPaymentCredential', () => {
 			expect( stripeMock.createConfirmationToken ).toHaveBeenCalledWith( {
 				elements: elementsMock,
 			} );
-			expect( result ).toBe( 'ctoken_123' );
+			expect( result ).toEqual( {
+				id: 'ctoken_123',
+				type: 'confirmation_token',
+			} );
 		} );
 
 		test( 'throws on Stripe error', async () => {
@@ -60,7 +63,10 @@ describe( 'createPaymentCredential', () => {
 			expect( stripeMock.createPaymentMethod ).toHaveBeenCalledWith( {
 				elements: elementsMock,
 			} );
-			expect( result ).toBe( 'pm_456' );
+			expect( result ).toEqual( {
+				id: 'pm_456',
+				type: 'payment_method',
+			} );
 		} );
 
 		test( 'throws on Stripe error', async () => {

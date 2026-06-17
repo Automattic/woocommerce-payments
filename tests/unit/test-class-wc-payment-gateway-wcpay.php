@@ -3477,6 +3477,51 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $afterpay->is_available() );
 	}
 
+	public function test_express_checkout_gateway_available_when_not_in_upe_enabled_payment_method_ids() {
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+		$this->card_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$google_pay = $this->get_gateway( Payment_Method::GOOGLE_PAY );
+		// Express checkout methods are never part of the UPE enabled list - they have their own settings.
+		$google_pay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+		$this->prepare_gateway_for_availability_testing( $google_pay );
+		// The "Apple Pay / Google Pay" toggle maps to the split gateway being enabled.
+		$this->mock_payment_request_enabled( true );
+		// Dev mode bypasses the WC version requirement of the feature flag.
+		WC_Payments::mode()->dev();
+
+		$this->assertTrue( $google_pay->is_available() );
+	}
+
+	public function test_express_checkout_gateway_not_available_when_setting_is_disabled() {
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+		$this->card_gateway->update_option( 'express_checkout_in_payment_methods', 'no' );
+
+		$google_pay = $this->get_gateway( Payment_Method::GOOGLE_PAY );
+		$google_pay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+		$this->prepare_gateway_for_availability_testing( $google_pay );
+		WC_Payments::mode()->dev();
+
+		$this->assertFalse( $google_pay->is_available() );
+	}
+
+	public function test_express_checkout_gateway_not_available_when_its_own_method_toggle_is_disabled() {
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+		$this->card_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$google_pay = $this->get_gateway( Payment_Method::GOOGLE_PAY );
+		$google_pay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+		$this->prepare_gateway_for_availability_testing( $google_pay );
+		// The in-payment-methods setting is on, but the merchant left "Apple Pay / Google Pay" off.
+		$this->mock_payment_request_enabled( false );
+		WC_Payments::mode()->dev();
+
+		$this->assertFalse( $google_pay->is_available() );
+	}
+
 	public function test_gateway_disabled_when_payment_method_capability_not_active() {
 		$this->card_gateway->update_option( 'enabled', 'yes' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
@@ -4755,6 +4800,30 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$created->setTimestamp( $this->mock_charge_created );
 
 		return new WC_Payments_API_Charge( $this->mock_charge_id, 1500, $created );
+	}
+
+	/**
+	 * Mocks the Google/Apple Pay split gateways in the payment gateway map so
+	 * is_payment_request_enabled() reflects the desired "Apple Pay / Google Pay" toggle.
+	 * The map is restored in tearDown via $original_payment_gateway_map.
+	 *
+	 * @param bool $enabled Whether payment request should be reported as enabled.
+	 */
+	private function mock_payment_request_enabled( bool $enabled ) {
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->method( 'is_enabled' )->willReturn( $enabled );
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->method( 'is_enabled' )->willReturn( $enabled );
+
+		$this->set_payment_gateway_map(
+			array_merge(
+				$this->get_payment_gateway_map(),
+				[
+					Payment_Method::GOOGLE_PAY => $google_pay_gateway,
+					Payment_Method::APPLE_PAY  => $apple_pay_gateway,
+				]
+			)
+		);
 	}
 
 	private function prepare_gateway_for_availability_testing( $gateway ) {

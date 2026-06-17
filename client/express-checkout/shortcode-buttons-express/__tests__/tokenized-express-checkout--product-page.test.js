@@ -166,6 +166,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			appearance: expect.anything(),
 			locale: 'it',
 			paymentMethodTypes: [ 'card' ],
+			setupFutureUsage: null,
 		} );
 		expect( stripeInstance.elements ).not.toHaveBeenCalledWith(
 			expect.objectContaining( {
@@ -200,6 +201,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			appearance: expect.anything(),
 			locale: 'it',
 			paymentMethodTypes: [ 'card' ],
+			setupFutureUsage: null,
 		} );
 		expect( stripeInstance.elements ).not.toHaveBeenCalledWith(
 			expect.objectContaining( {

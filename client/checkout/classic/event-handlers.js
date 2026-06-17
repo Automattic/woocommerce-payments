@@ -66,15 +66,37 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
+	// Dynamically load and initialize express payment methods (Apple Pay, Google Pay)
+	// in the payment methods list, only when the feature is enabled.
+	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
+		const expressModule = import(
+			/* webpackChunkName: "shortcode-buttons-dynamic" */
+			'wcpay/express-checkout/shortcode-buttons-dynamic'
+		);
+
+		expressModule.then( ( { initExpressPaymentMethods } ) => {
+			initExpressPaymentMethods( api );
+		} );
+
+		$( document.body ).on( 'updated_checkout', () => {
+			swapDarkIcons();
+			maybeMountStripePaymentElement( 'shortcode_checkout' );
+			injectPaymentMethodLogos();
+			expressModule.then( ( { initExpressPaymentMethods } ) => {
+				initExpressPaymentMethods( api );
+			} );
+		} );
+	} else {
+		$( document.body ).on( 'updated_checkout', () => {
+			swapDarkIcons();
+			maybeMountStripePaymentElement( 'shortcode_checkout' );
+			injectPaymentMethodLogos();
+		} );
+	}
+
 	blockUI( $forms );
 	showAuthenticationModalIfRequired( api ).finally( () => {
 		unblockUI( $forms );
-	} );
-
-	$( document.body ).on( 'updated_checkout', () => {
-		swapDarkIcons();
-		maybeMountStripePaymentElement( 'shortcode_checkout' );
-		injectPaymentMethodLogos();
 	} );
 
 	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
@@ -407,6 +429,14 @@ jQuery( function ( $ ) {
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+		// Skip express checkout methods — they handle their own payment flow
+		// via the Custom Place Order Button API.
+		const paymentMethodConfig = getUPEConfig( 'paymentMethodsConfig' )?.[
+			paymentMethodType
+		];
+		if ( paymentMethodConfig?.isExpressCheckout ) {
+			return;
+		}
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			return processPayment( api, $form, paymentMethodType );
 		}

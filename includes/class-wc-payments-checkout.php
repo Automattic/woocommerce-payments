@@ -228,15 +228,19 @@ class WC_Payments_Checkout {
 
 		$payment_fields = $js_config;
 
-		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$payment_fields['isCheckout']               = is_checkout();
-		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
-		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
-		$payment_fields['currency']                 = get_woocommerce_currency();
-		$payment_fields['stylesCacheVersion']       = WC_Payments_Styles_Cache::get_styles_cache_version();
-		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-		$payment_fields['cartTotal']                = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+		$payment_fields['gatewayId']            = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$payment_fields['isCheckout']           = is_checkout();
+		$payment_fields['paymentMethodsConfig'] = $this->get_enabled_payment_method_config();
+		// Unlike `paymentMethodsConfig` (which only contains the express checkout methods
+		// when the "in payment methods" setting is enabled), this is always available -
+		// the frontend needs the methods' titles/descriptions/icons in both modes.
+		$payment_fields['expressCheckoutMethodsConfig'] = $this->get_express_checkout_methods_config();
+		$payment_fields['testMode']                     = WC_Payments::mode()->is_test();
+		$payment_fields['cartContainsSubscription']     = $this->gateway->is_subscription_item_in_cart();
+		$payment_fields['currency']                     = get_woocommerce_currency();
+		$payment_fields['stylesCacheVersion']           = WC_Payments_Styles_Cache::get_styles_cache_version();
+		$cart_total                                     = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+		$payment_fields['cartTotal']                    = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -556,6 +560,27 @@ class WC_Payments_Checkout {
 	}
 
 	/**
+	 * Gets the config for the express checkout payment methods (Apple Pay, Google Pay, Amazon Pay),
+	 * regardless of whether the "express checkout in payment methods" setting is enabled.
+	 *
+	 * @return array
+	 */
+	private function get_express_checkout_methods_config() {
+		$settings        = [];
+		$account_country = $this->account->get_account_country();
+
+		$express_checkout_methods = [ Payment_Method::APPLE_PAY, Payment_Method::GOOGLE_PAY, Payment_Method::AMAZON_PAY ];
+		foreach ( $express_checkout_methods as $payment_method_id ) {
+			$config = $this->get_config_for_payment_method( $payment_method_id, $account_country );
+			if ( [] !== $config ) {
+				$settings[ $payment_method_id ] = $config;
+			}
+		}
+
+		return $settings;
+	}
+
+	/**
 	 * Gets the config for a payment method.
 	 *
 	 * @param string $payment_method_id The payment method ID.
@@ -597,6 +622,11 @@ class WC_Payments_Checkout {
 
 		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
 		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+
+		if ( $payment_method->is_express_checkout() ) {
+			$config['stripePaymentMethodType'] = $payment_method->get_stripe_payment_method_type();
+			$config['description']             = $payment_method->get_description( $account_country );
+		}
 
 		return $config;
 	}

@@ -20,6 +20,9 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	displayLoginConfirmation,
+	shouldUseConfirmationTokens,
+	buildPaymentMethodTypes,
+	buildStripeElementsOptions,
 } from '../utils';
 import { getSetupFutureUsageForCart } from '../utils/subscriptions';
 import {
@@ -219,9 +222,7 @@ jQuery( ( $ ) => {
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
-			const useConfirmationToken =
-				getExpressCheckoutData( 'flags' )
-					?.isEceUsingConfirmationTokens ?? true;
+			const useConfirmationTokens = shouldUseConfirmationTokens();
 			const isManualCaptureEnabled =
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 			const hasSubscription =
@@ -229,33 +230,22 @@ jQuery( ( $ ) => {
 			const {
 				setupFutureUsage = hasSubscription ? 'off_session' : null,
 			} = creationOptions;
-
-			// Build the payment method types array based on enabled methods.
-			// This array is sent to the server to ensure PaymentIntent uses matching types.
-			const enabledMethods =
-				getExpressCheckoutData( 'enabled_methods' ) ?? [];
-			const paymentMethodTypes = [
-				enabledMethods.includes( 'payment_request' ) && 'card',
-				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
-			].filter( Boolean );
+			const paymentMethodTypes = buildPaymentMethodTypes();
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
-			elements = stripe.elements( {
-				mode: 'payment',
-				amount: creationOptions.total,
-				currency: creationOptions.currency,
-				...( useConfirmationToken
-					? { paymentMethodTypes }
-					: { paymentMethodCreation: 'manual' } ),
-				...( useConfirmationToken && isManualCaptureEnabled
-					? { captureMethod: 'manual' }
-					: {} ),
-				...( useConfirmationToken && setupFutureUsage
-					? { setupFutureUsage }
-					: {} ),
-				appearance: getExpressCheckoutButtonAppearance(),
-				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
-			} );
+			elements = stripe.elements(
+				buildStripeElementsOptions( {
+					amount: creationOptions.total,
+					currency: creationOptions.currency,
+					useConfirmationTokens,
+					paymentMethodTypes,
+					captureMethod: isManualCaptureEnabled
+						? 'manual'
+						: undefined,
+					setupFutureUsage,
+					appearance: getExpressCheckoutButtonAppearance(),
+				} )
+			);
 
 			const eceButton = elements.create(
 				'expressCheckout',
@@ -544,11 +534,8 @@ jQuery( ( $ ) => {
 						// since the "total" is part of the initialization of the Stripe elements (and not part of the ECE button),
 						// if the totals change, we might need to update it on the element itself.
 						const newTotal = getTotalAmount();
-						const useConfirmationToken =
-							getExpressCheckoutData( 'flags' )
-								?.isEceUsingConfirmationTokens ?? true;
 						const elementsUpdateOptions = {
-							...( useConfirmationToken
+							...( shouldUseConfirmationTokens()
 								? {
 										setupFutureUsage:
 											getSetupFutureUsageForCart(

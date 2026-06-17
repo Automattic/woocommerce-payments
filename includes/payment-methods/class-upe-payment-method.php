@@ -162,6 +162,18 @@ class UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns the Stripe PaymentMethod type for PaymentIntent payment_method_types[].
+	 *
+	 * @return string|null The Stripe payment method type, or null if no definition is available.
+	 */
+	public function get_stripe_payment_method_type() {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_stripe_payment_method_type();
+		}
+		return null;
+	}
+
+	/**
 	 * Returns payment method title
 	 *
 	 * @param string|null $account_country Country of merchants account.

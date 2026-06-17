@@ -140,9 +140,9 @@ export const onConfirmHandler = async (
 
 	const useConfirmationTokens = shouldUseConfirmationTokens();
 
-	let credentialId;
+	let credential;
 	try {
-		credentialId = await createPaymentCredential(
+		credential = await createPaymentCredential(
 			stripe,
 			elements,
 			useConfirmationTokens
@@ -158,7 +158,7 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				credentialId,
+				credential.id,
 				useConfirmationTokens,
 				paymentMethodTypes
 			),

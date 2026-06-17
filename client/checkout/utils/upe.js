@@ -13,8 +13,10 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 	const reusablePaymentMethods = Object.keys( paymentMethodsConfig ).filter(
 		( method ) =>
-			// Stripe link doesn't need the "terms" - adding this property causes a warning in the console.
-			method !== 'link' && paymentMethodsConfig[ method ].isReusable
+			// Stripe link and express checkout methods don't need "terms" - adding them causes warnings in the console.
+			method !== 'link' &&
+			! paymentMethodsConfig[ method ].isExpressCheckout &&
+			paymentMethodsConfig[ method ].isReusable
 	);
 
 	return reusablePaymentMethods.reduce( ( obj, method ) => {

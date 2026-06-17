@@ -44,5 +44,27 @@ describe( 'Shared UPE checkout utils', () => {
 				terms.never
 			);
 		} );
+
+		it( 'should exclude express checkout methods from terms', () => {
+			const methodsWithExpressCheckout = {
+				...paymentMethods,
+				apple_pay: {
+					isReusable: true,
+					isExpressCheckout: true,
+				},
+				google_pay: {
+					isReusable: true,
+					isExpressCheckout: true,
+				},
+				amazon_pay: {
+					isReusable: true,
+					isExpressCheckout: true,
+				},
+			};
+
+			expect( getTerms( methodsWithExpressCheckout, 'always' ) ).toEqual(
+				terms.always
+			);
+		} );
 	} );
 } );

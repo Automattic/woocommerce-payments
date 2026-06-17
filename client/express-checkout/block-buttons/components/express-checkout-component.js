@@ -11,10 +11,8 @@ import {
 	shippingRateChangeHandler,
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
-import {
-	PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-	WC_STORE_CART,
-} from 'wcpay/checkout/constants';
+import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from '../constants';
+import { WC_STORE_CART } from 'wcpay/checkout/constants';
 import {
 	getPaymentMethodsOverride,
 	adjustButtonHeights,

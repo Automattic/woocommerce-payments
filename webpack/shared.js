@@ -28,6 +28,8 @@ module.exports = {
 			checkout: './client/checkout/classic/event-handlers.js',
 			'express-checkout':
 				'./client/express-checkout/shortcode-buttons-express/index.js',
+			'blocks-express-checkout':
+				'./client/express-checkout/block-buttons/index.js',
 			'subscription-edit-page':
 				'./client/subscription-edit-page/index.tsx',
 			tos: './client/tos/index.tsx',

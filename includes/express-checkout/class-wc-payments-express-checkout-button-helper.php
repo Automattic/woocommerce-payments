@@ -321,12 +321,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function can_use_amazon_pay() {
-		// When express checkout methods are displayed in the payment methods list,
-		// Amazon Pay should not appear as a separate express button.
-		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
-			return false;
-		}
-
 		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
 			return false;
 		}

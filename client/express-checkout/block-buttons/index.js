@@ -1,151 +1,71 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { lazy, Suspense } from 'react';
+// Handled as an external dependency: see '/webpack.config.js:83'
+import {
+	registerPaymentMethod,
+	registerExpressPaymentMethod,
+	// eslint-disable-next-line import/no-unresolved
+} from '@woocommerce/blocks-registry';
 
 /**
  * Internal dependencies
  */
-import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
-import { getConfig } from 'wcpay/utils/checkout';
-import ExpressCheckoutContainer from './components/express-checkout-container';
-import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
-import { getExpressCheckoutData } from '../utils';
-import '../compatibility/wc-order-attribution';
-import '../compatibility/wc-subscriptions';
+import { getUPEConfig } from 'utils/checkout';
+import WCPayAPI from 'wcpay/checkout/api';
+import request from 'wcpay/checkout/utils/request';
+import { isLinkEnabled } from 'wcpay/checkout/utils/upe';
+import {
+	makeExpressCheckoutElement,
+	makeDynamicPlaceOrderButton,
+} from './payment-methods';
 
-const LazyApplePayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/apple-pay-preview'
-	)
-);
-const LazyGooglePayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/google-pay-preview'
-	)
-);
-const LazyAmazonPayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/amazon-pay-preview'
-	)
-);
+const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
-const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
-
-const ApplePayPreview = ( props ) => (
-	<Suspense fallback={ <PreviewFallback /> }>
-		<LazyApplePayPreview { ...props } />
-	</Suspense>
+const api = new WCPayAPI(
+	{
+		publishableKey: getUPEConfig( 'publishableKey' ),
+		accountId: getUPEConfig( 'accountId' ),
+		forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
+		locale: getUPEConfig( 'locale' ),
+		isStripeLinkEnabled,
+	},
+	request
 );
 
-const GooglePayPreview = ( props ) => (
-	<Suspense fallback={ <PreviewFallback /> }>
-		<LazyGooglePayPreview { ...props } />
-	</Suspense>
-);
+if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
+	// `paymentMethodsConfig` is the server's source of truth for which methods belong in
+	// the payment methods list - the same gating the shortcode checkout rows use. The
+	// `isPaymentRequestEnabled`/`isAmazonPayEnabled` flags describe the standalone express
+	// buttons instead (e.g. Amazon Pay's flag carries the wallet-sheet tax restriction,
+	// which doesn't apply when the checkout form computes the totals).
+	if ( enabledPaymentMethodsConfig?.apple_pay ) {
+		registerPaymentMethod( makeDynamicPlaceOrderButton( api, 'applePay' ) );
+	}
+	if ( enabledPaymentMethodsConfig?.google_pay ) {
+		registerPaymentMethod(
+			makeDynamicPlaceOrderButton( api, 'googlePay' )
+		);
+	}
+	if ( enabledPaymentMethodsConfig?.amazon_pay ) {
+		registerPaymentMethod(
+			makeDynamicPlaceOrderButton( api, 'amazonPay' )
+		);
+	}
+} else {
+	if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+		registerExpressPaymentMethod(
+			makeExpressCheckoutElement( api, 'applePay' )
+		);
+		registerExpressPaymentMethod(
+			makeExpressCheckoutElement( api, 'googlePay' )
+		);
+	}
 
-const AmazonPayPreview = ( props ) => (
-	<Suspense fallback={ <PreviewFallback /> }>
-		<LazyAmazonPayPreview { ...props } />
-	</Suspense>
-);
-
-export const expressCheckoutElementApplePay = ( api ) => ( {
-	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
-	title: 'WooPayments - Apple Pay',
-	description: __(
-		"An easy, secure way to pay that's accepted on millions of stores.",
-		'woocommerce-payments'
-	),
-	gatewayId: 'woocommerce_payments',
-	content: (
-		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
-	),
-	edit: <ApplePayPreview />,
-	supports: {
-		features: getConfig( 'features' ),
-		style: [ 'height', 'borderRadius' ],
-	},
-	canMakePayment: ( { cart } ) => {
-		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
-			return false;
-		}
-
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
-		if ( ! enabledMethods.includes( 'payment_request' ) ) {
-			return false;
-		}
-
-		return checkPaymentMethodIsAvailable( 'applePay', cart, api );
-	},
-} );
-
-export const expressCheckoutElementGooglePay = ( api ) => ( {
-	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
-	title: 'WooPayments - Google Pay',
-	description: __(
-		'Simplify checkout with fewer steps to pay.',
-		'woocommerce-payments'
-	),
-	gatewayId: 'woocommerce_payments',
-	content: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="googlePay"
-		/>
-	),
-	edit: <GooglePayPreview />,
-	supports: {
-		features: getConfig( 'features' ),
-		style: [ 'height', 'borderRadius' ],
-	},
-	canMakePayment: ( { cart } ) => {
-		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
-			return false;
-		}
-
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
-		if ( ! enabledMethods.includes( 'payment_request' ) ) {
-			return false;
-		}
-
-		return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
-	},
-} );
-
-export const expressCheckoutElementAmazonPay = ( api ) => ( {
-	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_amazonPay',
-	title: 'WooPayments - Amazon Pay',
-	description: __( 'Pay with your Amazon account.', 'woocommerce-payments' ),
-	gatewayId: 'woocommerce_payments',
-	content: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="amazonPay"
-		/>
-	),
-	edit: <AmazonPayPreview />,
-	supports: {
-		features: getConfig( 'features' ),
-		style: [ 'height', 'borderRadius' ],
-	},
-	canMakePayment: ( { cart } ) => {
-		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
-			return false;
-		}
-
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
-		if ( ! enabledMethods.includes( 'amazon_pay' ) ) {
-			return false;
-		}
-
-		return checkPaymentMethodIsAvailable( 'amazonPay', cart, api );
-	},
-} );
+	if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
+		registerExpressPaymentMethod(
+			makeExpressCheckoutElement( api, 'amazonPay' )
+		);
+	}
+}

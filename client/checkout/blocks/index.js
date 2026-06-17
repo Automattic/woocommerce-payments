@@ -20,12 +20,6 @@ import { SavedTokenHandler } from './saved-token-handler';
 import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
-import {
-	expressCheckoutElementApplePay,
-	expressCheckoutElementGooglePay,
-	expressCheckoutElementAmazonPay,
-} from 'wcpay/express-checkout/block-buttons';
-
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
@@ -50,7 +44,14 @@ const api = new WCPayAPI(
 );
 
 Object.entries( enabledPaymentMethodsConfig )
-	.filter( ( [ upeName ] ) => upeName !== 'link' )
+	.filter(
+		( [ upeName ] ) =>
+			// `link` is not rendered via `registerPaymentMethod`, but via the `card` method.
+			// Google Pay/Apple Pay/Amazon Pay are rendered via the Dynamic Place Order button flag, and have some special logic.
+			! [ 'apple_pay', 'google_pay', 'amazon_pay', 'link' ].includes(
+				upeName
+			)
+	)
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		// Label component renders the payment method title using the standard
 		// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
@@ -134,22 +135,6 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-// When express checkout methods are displayed in the payment methods list,
-// don't register them as separate express payment buttons.
-if (
-	getUPEConfig( 'isPaymentRequestEnabled' ) &&
-	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
-) {
-	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
-	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
-}
-
-if (
-	getUPEConfig( 'isAmazonPayEnabled' ) &&
-	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
-) {
-	registerExpressPaymentMethod( expressCheckoutElementAmazonPay( api ) );
-}
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();

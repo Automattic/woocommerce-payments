@@ -576,8 +576,10 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_credit_card_testing_instructions_by_country( string $country, string $expected_card ) {
 		$cc_payment_method = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
+		// The payment fields config reads the account country in multiple places
+		// (per-method config, express checkout methods config, testing instructions).
 		$this->mock_wcpay_account
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_account_country' )
 			->willReturn( $country );
 

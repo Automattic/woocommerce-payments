@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+feat: implement dynamic "place order" button compatibility for express checkout methods

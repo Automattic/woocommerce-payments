@@ -83,6 +83,7 @@ export interface WCPayExpressCheckoutParams {
 		locale: string;
 		publishableKey: string;
 	};
+	store_name: string;
 	total_label: string;
 	wc_ajax_url: string;
 
