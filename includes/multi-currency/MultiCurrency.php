@@ -1385,6 +1385,13 @@ class MultiCurrency {
 				continue;
 			}
 
+			// Validate the cache recommendation dismissal flag to only accept known values.
+			// This method can be called outside the REST route, which enforces the enum.
+			if ( self::CACHE_RECOMMENDATION_DISMISSED_OPTION === $key
+				&& ! in_array( $value, [ 'yes', 'no' ], true ) ) {
+				continue;
+			}
+
 			update_option( $key, $value );
 		}
 	}

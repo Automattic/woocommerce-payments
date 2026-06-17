@@ -1693,6 +1693,16 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION ) );
 	}
 
+	public function test_update_settings_ignores_invalid_cache_recommendation_dismissed() {
+		$this->init_multi_currency();
+
+		$this->multi_currency->update_settings(
+			[ MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION => 'maybe' ]
+		);
+
+		$this->assertFalse( get_option( MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION ) );
+	}
+
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
 			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );
