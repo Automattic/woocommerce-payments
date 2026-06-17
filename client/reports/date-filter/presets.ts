@@ -53,6 +53,9 @@ const rangePresetLabels = (): Record< RangePreset, string > => ( {
 	year_to_date: __( 'Year to date', 'woocommerce-payments' ),
 } );
 
+export const getRangePresetLabel = ( preset: RangePreset ): string =>
+	rangePresetLabels()[ preset ];
+
 /**
  * Return the preset chip list for the given operator. `between` operates on
  * date ranges; `on`/`before`/`after` operate on a single anchor date.
@@ -145,6 +148,8 @@ const singleDatePresets: SingleDatePreset[] = [
 ];
 
 const rangePresets: RangePreset[] = [
+	// Keep these keys stable: they are emitted in analytics even when labels use
+	// "Previous month" / "Previous year" for merchant-facing copy.
 	'last_month',
 	'month_to_date',
 	'last_year',

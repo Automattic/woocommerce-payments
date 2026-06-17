@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import type { DateFilterValue } from './types';
 import type { RangePreset } from './presets';
-import { matchPreset, resolvePreset } from './presets';
+import { getRangePresetLabel, matchPreset, resolvePreset } from './presets';
 
 const injectedDateRangePresetClass = 'wcpay-reports-date-range-preset';
 const injectedDateRangePresetInsertClass =
@@ -21,29 +21,26 @@ const dateRangePresetButtonClass = `components-button is-tertiary is-small datav
 // eslint-disable-next-line @wordpress/i18n-text-domain
 const customDatePresetLabel = __( 'Custom' );
 
-const dataViewsDateRangePresets = [
-	{
-		preset: 'last_month',
-		label: __( 'Previous month', 'woocommerce-payments' ),
-	},
-	{
-		preset: 'last_year',
-		label: __( 'Previous year', 'woocommerce-payments' ),
-	},
-] as const;
-const dataViewsDateRangePresetKeys = dataViewsDateRangePresets.map(
-	( { preset } ) => preset
+type ReportDateRangePreset = Extract< RangePreset, 'last_month' | 'last_year' >;
+const dataViewsDateRangePresetKeys: ReportDateRangePreset[] = [
+	'last_month',
+	'last_year',
+];
+const dataViewsDateRangePresets = dataViewsDateRangePresetKeys.map(
+	( preset ) => ( {
+		preset,
+		label: getRangePresetLabel( preset ),
+	} )
 );
-
-type ReportDateRangePreset = Extract<
-	RangePreset,
-	( typeof dataViewsDateRangePresets )[ number ][ 'preset' ]
->;
 
 type DateRangePresetInsertionPoint = {
 	popover: HTMLElement;
 	parent: HTMLElement;
 	before: Element;
+};
+
+type SyncPortalNodeOptions = {
+	force?: boolean;
 };
 
 // DataViews does not expose a public preset-extension API. These selectors are
@@ -210,49 +207,70 @@ export const DataViewsDateRangePresetPortal = ( {
 	);
 	const applyDatePresetRef = useRef( applyDatePreset );
 	applyDatePresetRef.current = applyDatePreset;
+	const selectedPresetRef = useRef( selectedPreset );
+	selectedPresetRef.current = selectedPreset;
 
-	const syncPortalNode = useCallback( () => {
-		const ownerDocument = rootRef.current?.ownerDocument ?? document;
-		const insertionPoint =
-			getDateRangePresetInsertionPoint( ownerDocument );
+	const syncPortalNode = useCallback(
+		( { force = false }: SyncPortalNodeOptions = {} ) => {
+			const ownerDocument = rootRef.current?.ownerDocument ?? document;
+			const insertionPoint =
+				getDateRangePresetInsertionPoint( ownerDocument );
+			const currentSelectedPreset = selectedPresetRef.current;
 
-		if ( ! insertionPoint ) {
+			if ( ! insertionPoint ) {
+				portalNodeRef.current?.remove();
+				portalNodeRef.current = null;
+				return;
+			}
+
+			if (
+				portalNodeRef.current?.parentElement ===
+					insertionPoint.parent &&
+				portalNodeRef.current.nextElementSibling ===
+					insertionPoint.before
+			) {
+				if ( ! force ) {
+					return;
+				}
+				syncNativeDatePresetState(
+					insertionPoint.popover,
+					currentSelectedPreset
+				);
+				syncDateRangePresetButtons(
+					portalNodeRef.current,
+					currentSelectedPreset,
+					( preset ) => applyDatePresetRef.current( preset )
+				);
+				return;
+			}
+
+			syncNativeDatePresetState(
+				insertionPoint.popover,
+				currentSelectedPreset
+			);
 			portalNodeRef.current?.remove();
-			portalNodeRef.current = null;
-			return;
-		}
 
-		syncNativeDatePresetState( insertionPoint.popover, selectedPreset );
+			const nextPortalNode = ownerDocument.createElement( 'div' );
+			nextPortalNode.className = injectedDateRangePresetInsertClass;
+			nextPortalNode.style.display = 'contents';
+			insertionPoint.parent.insertBefore(
+				nextPortalNode,
+				insertionPoint.before
+			);
 
-		if (
-			portalNodeRef.current?.parentElement === insertionPoint.parent &&
-			portalNodeRef.current.nextElementSibling === insertionPoint.before
-		) {
+			portalNodeRef.current = nextPortalNode;
 			syncDateRangePresetButtons(
-				portalNodeRef.current,
-				selectedPreset,
+				nextPortalNode,
+				currentSelectedPreset,
 				( preset ) => applyDatePresetRef.current( preset )
 			);
-			return;
-		}
+		},
+		[ rootRef ]
+	);
 
-		portalNodeRef.current?.remove();
-
-		const nextPortalNode = ownerDocument.createElement( 'div' );
-		nextPortalNode.className = injectedDateRangePresetInsertClass;
-		nextPortalNode.style.display = 'contents';
-		insertionPoint.parent.insertBefore(
-			nextPortalNode,
-			insertionPoint.before
-		);
-
-		portalNodeRef.current = nextPortalNode;
-		syncDateRangePresetButtons(
-			nextPortalNode,
-			selectedPreset,
-			( preset ) => applyDatePresetRef.current( preset )
-		);
-	}, [ rootRef, selectedPreset ] );
+	useEffect( () => {
+		syncPortalNode( { force: true } );
+	}, [ selectedPreset, syncPortalNode ] );
 
 	useEffect( () => {
 		const ownerDocument = rootRef.current?.ownerDocument ?? document;

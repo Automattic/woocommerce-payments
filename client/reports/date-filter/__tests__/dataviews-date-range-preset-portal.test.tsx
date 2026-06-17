@@ -278,6 +278,73 @@ describe( 'DataViewsDateRangePresetPortal', () => {
 		}
 	} );
 
+	it( 'updates selected preset state without rebuilding mutation observers', async () => {
+		const originalMutationObserver = globalThis.MutationObserver;
+		const observe = jest.fn();
+		const disconnect = jest.fn();
+		const MockMutationObserver = jest.fn().mockImplementation( () => ( {
+			observe,
+			disconnect,
+			takeRecords: jest.fn(),
+		} ) );
+		globalThis.MutationObserver =
+			MockMutationObserver as unknown as typeof MutationObserver;
+
+		appendDatePresetPopover();
+
+		try {
+			const { rerender, unmount } = render( <PortalHarness /> );
+
+			expect(
+				document.querySelector(
+					'[data-wcpay-date-range-preset="last_year"]'
+				)
+			).toHaveAttribute( 'aria-pressed', 'true' );
+			expect(
+				document.querySelector(
+					'[data-wcpay-date-range-preset="last_month"]'
+				)
+			).toHaveAttribute( 'aria-pressed', 'false' );
+			const observerCountAfterInitialRender =
+				MockMutationObserver.mock.calls.length;
+			const disconnectCountAfterInitialRender =
+				disconnect.mock.calls.length;
+
+			act( () => {
+				rerender(
+					<PortalHarness
+						dateValue={ {
+							operator: 'between',
+							value: [ '2026-04-01', '2026-04-30' ],
+						} }
+					/>
+				);
+			} );
+
+			expect(
+				document.querySelector(
+					'[data-wcpay-date-range-preset="last_month"]'
+				)
+			).toHaveAttribute( 'aria-pressed', 'true' );
+			expect(
+				document.querySelector(
+					'[data-wcpay-date-range-preset="last_year"]'
+				)
+			).toHaveAttribute( 'aria-pressed', 'false' );
+
+			expect( MockMutationObserver ).toHaveBeenCalledTimes(
+				observerCountAfterInitialRender
+			);
+			expect( disconnect ).toHaveBeenCalledTimes(
+				disconnectCountAfterInitialRender
+			);
+
+			unmount();
+		} finally {
+			globalThis.MutationObserver = originalMutationObserver;
+		}
+	} );
+
 	it( 'coalesces observer callbacks before syncing presets for a newly mounted fallback container', () => {
 		const originalMutationObserver = globalThis.MutationObserver;
 		const observe = jest.fn();
