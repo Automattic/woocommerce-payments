@@ -71,7 +71,10 @@ interface BalanceDataViewProps {
 	displayPeriod: ReportsPeriodRange;
 	currency: string;
 	dateValue: DateFilterValue | undefined;
-	onDateChange: ( next: DateFilterValue | undefined ) => void;
+	onDateChange: (
+		next: DateFilterValue | undefined,
+		referenceDate?: Date
+	) => void;
 	focusTargetRef?: React.RefObject< HTMLDivElement >;
 	dateFilterNow?: Date;
 	// Render as a non-interactive preview (the loading skeleton): hide the
@@ -130,9 +133,9 @@ export const BalanceDataView = ( {
 	// 18 StrictMode's double-invoke in development doesn't fire it twice.
 	const filtersRowOpenedRef = useRef( false );
 	const onDatePresetChange = useCallback(
-		( nextValue: DateFilterValue ) => {
+		( nextValue: DateFilterValue, referenceDate?: Date ) => {
 			setPendingDateOperator( null );
-			onDateChange( nextValue );
+			onDateChange( nextValue, referenceDate );
 		},
 		[ onDateChange ]
 	);

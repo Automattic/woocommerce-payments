@@ -177,7 +177,7 @@ export const DataViewsDateRangePresetPortal = ( {
 	rootRef: React.RefObject< HTMLElement | null >;
 	dateValue: DateFilterValue | undefined;
 	dateFilterNow?: Date;
-	onDateChange: ( next: DateFilterValue ) => void;
+	onDateChange: ( next: DateFilterValue, referenceDate: Date ) => void;
 } ): null => {
 	const portalNodeRef = useRef< HTMLDivElement | null >( null );
 	const [ selectedDateFilterNow, setSelectedDateFilterNow ] = useState(
@@ -197,7 +197,7 @@ export const DataViewsDateRangePresetPortal = ( {
 			);
 			if ( nextValue ) {
 				setSelectedDateFilterNow( currentDateFilterNow );
-				onDateChange( nextValue );
+				onDateChange( nextValue, currentDateFilterNow );
 			}
 		},
 		[ onDateChange ]

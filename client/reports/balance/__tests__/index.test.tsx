@@ -16,6 +16,10 @@ const mockAppliedDateFilterValue = {
 	operator: 'between',
 	value: [ '2026-04-01', '2026-04-30' ],
 };
+const mockClickTimeAppliedDateFilterValue = {
+	operator: 'between',
+	value: [ '2026-05-01', '2026-05-31' ],
+};
 let consoleErrorSpy: jest.SpyInstance | undefined;
 
 declare const global: {
@@ -85,7 +89,7 @@ jest.mock( '../balance-dataview', () => {
 		BalanceDataView: (
 			props: Record< string, unknown > & {
 				dateValue?: unknown;
-				onDateChange: ( next: unknown ) => void;
+				onDateChange: ( next: unknown, referenceDate?: Date ) => void;
 			}
 		) => {
 			mockDateFilterProps( { value: props.dateValue } );
@@ -99,6 +103,17 @@ jest.mock( '../balance-dataview', () => {
 						}
 					>
 						Apply custom date
+					</button>
+					<button
+						type="button"
+						onClick={ () =>
+							props.onDateChange(
+								mockClickTimeAppliedDateFilterValue,
+								new Date( '2026-06-15T12:00:00.000Z' )
+							)
+						}
+					>
+						Apply click-time date
 					</button>
 					<button
 						type="button"
@@ -1356,6 +1371,31 @@ describe( 'BalanceReport Tracks', () => {
 			);
 		}
 	);
+
+	it( 'records date preset changes against the provided reference date', async () => {
+		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+		mockBalanceDateFilterState( {
+			hasDateFilterValue: false,
+		} );
+
+		renderBalanceReportWithDateFilterNow( stableNow, {
+			onReload: jest.fn(),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Apply click-time date' } )
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expectRecordedTracksEvent( 'wcpay_reports_balance_date_filter_change', {
+			preset: 'last_month',
+			range_days: 31,
+			is_initial_apply: true,
+		} );
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			mockClickTimeAppliedDateFilterValue
+		);
+	} );
 
 	it.each( [
 		{

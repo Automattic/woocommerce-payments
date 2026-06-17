@@ -103,12 +103,19 @@ export const FeesReport = ( {
 		[ view.filters ]
 	);
 	const onDatePresetChange = useCallback(
-		( nextValue: DateFilterValue ) => {
-			setView( {
-				...view,
-				page: 1,
-				filters: replaceDateFilter( view.filters, nextValue ),
-			} );
+		( nextValue: DateFilterValue, referenceDate?: Date ) => {
+			setView(
+				{
+					...view,
+					page: 1,
+					filters: replaceDateFilter( view.filters, nextValue ),
+				},
+				referenceDate
+					? {
+							dateFilterNow: referenceDate,
+					  }
+					: undefined
+			);
 		},
 		[ setView, view ]
 	);

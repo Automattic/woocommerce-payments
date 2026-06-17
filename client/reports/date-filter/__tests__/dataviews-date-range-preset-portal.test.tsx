@@ -54,7 +54,7 @@ const PortalHarness = ( {
 	onDateChange = jest.fn(),
 }: {
 	dateValue?: DateFilterValue;
-	onDateChange?: ( value: DateFilterValue ) => void;
+	onDateChange?: ( value: DateFilterValue, referenceDate?: Date ) => void;
 } ) => {
 	const rootRef = useRef< HTMLDivElement | null >( null );
 
@@ -150,10 +150,13 @@ describe( 'DataViewsDateRangePresetPortal', () => {
 			previousMonthButton.click();
 		} );
 
-		expect( onDateChange ).toHaveBeenCalledWith( {
-			operator: 'between',
-			value: [ '2026-05-01', '2026-05-31' ],
-		} );
+		expect( onDateChange ).toHaveBeenCalledWith(
+			{
+				operator: 'between',
+				value: [ '2026-05-01', '2026-05-31' ],
+			},
+			new Date( '2026-06-15T12:00:00.000Z' )
+		);
 	} );
 
 	it( 'observes the WordPress admin content container when present', () => {
