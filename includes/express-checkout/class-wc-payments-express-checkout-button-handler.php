@@ -215,6 +215,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return array Parameters for Express Checkout.
 	 */
 	public function get_express_checkout_params() {
+		$button_context = $this->express_checkout_helper->get_button_context();
+
 		/**
 		 * Allowing some specific configuration to be tweaked by 3pd.
 		 *
@@ -248,13 +250,18 @@ class WC_Payments_Express_Checkout_Button_Handler {
 					'is_manual_capture'  => 'yes' === $this->gateway->get_option( 'manual_capture' ),
 					'button'             => $this->get_button_settings(),
 					'login_confirmation' => $this->get_login_confirmation_settings(),
-					'button_context'     => $this->express_checkout_helper->get_button_context(),
+					'button_context'     => $button_context,
 					'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 					'product'            => $this->express_checkout_helper->get_product_data(),
 					'store_name'         => get_bloginfo( 'name' ),
 					'enabled_methods'    => $this->express_checkout_helper->get_enabled_express_checkout_methods_for_context(),
 				]
 			),
+			[
+				'custom_checkout_fields' => 'checkout' === $button_context
+					? WC_Payments_Express_Checkout_Custom_Fields_Handler::get_custom_checkout_fields()
+					: [],
+			],
 			[
 				// placing these outside of the filter to prevent modification of the values.
 				'stripe' => [

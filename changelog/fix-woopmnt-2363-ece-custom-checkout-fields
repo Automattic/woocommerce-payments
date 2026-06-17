@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Support registered classic checkout custom fields in Express Checkout Store API orders.

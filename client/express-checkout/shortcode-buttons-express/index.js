@@ -11,6 +11,7 @@ import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
 import WCPayAPI from '../../checkout/api';
 import './express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
+import '../compatibility/classic-checkout-custom-fields';
 import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';

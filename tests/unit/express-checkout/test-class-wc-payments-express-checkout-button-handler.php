@@ -149,6 +149,71 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( get_bloginfo( 'name' ), $params['store_name'] );
 	}
 
+	public function test_get_express_checkout_params_includes_custom_checkout_fields_on_checkout_page() {
+		$add_custom_checkout_field = function ( $fields ) {
+			$fields['billing']['woopmnt_2363_required_field'] = [
+				'label'    => 'WOOPMNT 2363 Required Field',
+				'required' => true,
+				'type'     => 'text',
+			];
+
+			return $fields;
+		};
+
+		add_filter( 'woocommerce_checkout_fields', $add_custom_checkout_field );
+		WC()->checkout()->checkout_fields = null;
+
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'checkout' );
+
+		$this->mock_ece_button_helper
+			->method( 'get_common_button_settings' )
+			->willReturn( [] );
+
+		try {
+			$params = $this->system_under_test->get_express_checkout_params();
+		} finally {
+			remove_filter( 'woocommerce_checkout_fields', $add_custom_checkout_field );
+			WC()->checkout()->checkout_fields = null;
+		}
+
+		$this->assertArrayHasKey( 'woopmnt_2363_required_field', $params['custom_checkout_fields'] );
+		$this->assertTrue( $params['custom_checkout_fields']['woopmnt_2363_required_field']['required'] );
+	}
+
+	public function test_get_express_checkout_params_omits_custom_checkout_fields_outside_checkout_page() {
+		$add_custom_checkout_field = function ( $fields ) {
+			$fields['billing']['woopmnt_2363_required_field'] = [
+				'label'    => 'WOOPMNT 2363 Required Field',
+				'required' => true,
+				'type'     => 'text',
+			];
+
+			return $fields;
+		};
+
+		add_filter( 'woocommerce_checkout_fields', $add_custom_checkout_field );
+		WC()->checkout()->checkout_fields = null;
+
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'cart' );
+
+		$this->mock_ece_button_helper
+			->method( 'get_common_button_settings' )
+			->willReturn( [] );
+
+		try {
+			$params = $this->system_under_test->get_express_checkout_params();
+		} finally {
+			remove_filter( 'woocommerce_checkout_fields', $add_custom_checkout_field );
+			WC()->checkout()->checkout_fields = null;
+		}
+
+		$this->assertSame( [], $params['custom_checkout_fields'] );
+	}
+
 	public function test_payment_fields_js_config_on_cart_page_with_cart_disabled() {
 		$this->mock_ece_button_helper
 			->method( 'get_button_context' )
