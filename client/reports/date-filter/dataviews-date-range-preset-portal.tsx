@@ -183,13 +183,16 @@ export const DataViewsDateRangePresetPortal = ( {
 	onDateChange: ( next: DateFilterValue, referenceDate: Date ) => void;
 } ): null => {
 	const portalNodeRef = useRef< HTMLDivElement | null >( null );
-	const [ selectedDateFilterNow, setSelectedDateFilterNow ] = useState(
-		() => dateFilterNow ?? new Date()
-	);
-	const selectedPreset = getSelectedDateRangePreset(
-		dateValue,
-		selectedDateFilterNow
-	);
+	const stableDateFilterNowRef = useRef< Date | null >( null );
+	if ( ! stableDateFilterNowRef.current ) {
+		stableDateFilterNowRef.current = dateFilterNow ?? new Date();
+	}
+	const [ clickedDateFilterNow, setClickedDateFilterNow ] =
+		useState< Date | null >( null );
+	const selectedPreset =
+		( clickedDateFilterNow &&
+			getSelectedDateRangePreset( dateValue, clickedDateFilterNow ) ) ||
+		getSelectedDateRangePreset( dateValue, stableDateFilterNowRef.current );
 	const applyDatePreset = useCallback(
 		( preset: ReportDateRangePreset ) => {
 			const currentDateFilterNow = new Date();
@@ -199,7 +202,7 @@ export const DataViewsDateRangePresetPortal = ( {
 				currentDateFilterNow
 			);
 			if ( nextValue ) {
-				setSelectedDateFilterNow( currentDateFilterNow );
+				setClickedDateFilterNow( currentDateFilterNow );
 				onDateChange( nextValue, currentDateFilterNow );
 			}
 		},

@@ -345,6 +345,63 @@ describe( 'DataViewsDateRangePresetPortal', () => {
 		}
 	} );
 
+	it( 'falls back to the stable report clock when matching native date changes after a preset click', async () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+		const onDateChange = jest.fn();
+		appendDatePresetPopover();
+
+		const { rerender } = render(
+			<PortalHarness
+				dateValue={ {
+					operator: 'between',
+					value: [ '2026-04-01', '2026-04-30' ],
+				} }
+				onDateChange={ onDateChange }
+			/>
+		);
+
+		const previousMonthButton = await waitFor( () => {
+			const button = document.querySelector< HTMLButtonElement >(
+				'[data-wcpay-date-range-preset="last_month"]'
+			);
+			expect( button ).not.toBeNull();
+			return button as HTMLButtonElement;
+		} );
+
+		act( () => {
+			previousMonthButton.click();
+		} );
+
+		act( () => {
+			rerender(
+				<PortalHarness
+					dateValue={ {
+						operator: 'between',
+						value: [ '2026-05-01', '2026-05-31' ],
+					} }
+					onDateChange={ onDateChange }
+				/>
+			);
+		} );
+
+		expect( previousMonthButton ).toHaveAttribute( 'aria-pressed', 'true' );
+
+		act( () => {
+			rerender(
+				<PortalHarness
+					dateValue={ {
+						operator: 'between',
+						value: [ '2026-04-01', '2026-04-30' ],
+					} }
+					onDateChange={ onDateChange }
+				/>
+			);
+		} );
+
+		expect( previousMonthButton ).toHaveAttribute( 'aria-pressed', 'true' );
+	} );
+
 	it( 'coalesces observer callbacks before syncing presets for a newly mounted fallback container', () => {
 		const originalMutationObserver = globalThis.MutationObserver;
 		const observe = jest.fn();
