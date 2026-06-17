@@ -1077,6 +1077,9 @@ class WC_Payments {
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',
 				'wc_payments_review_prompt_maybe_later',
+
+				// Reports feedback user preferences.
+				'wc_payments_reports_feedback_dismissed',
 			]
 		);
 	}
@@ -1300,6 +1303,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
 		$reports_authorizations_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();

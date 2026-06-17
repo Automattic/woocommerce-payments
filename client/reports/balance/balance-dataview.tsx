@@ -71,6 +71,7 @@ interface BalanceDataViewProps {
 	currency: string;
 	dateValue: DateFilterValue | undefined;
 	onDateChange: ( next: DateFilterValue | undefined ) => void;
+	focusTargetRef?: React.RefObject< HTMLDivElement >;
 	// Render as a non-interactive preview (the loading skeleton): hide the
 	// native date Filters and mark the whole view aria-hidden so the blurred
 	// placeholder is skipped by assistive tech and keyboard navigation.
@@ -102,6 +103,7 @@ export const BalanceDataView = ( {
 	currency,
 	dateValue,
 	onDateChange,
+	focusTargetRef,
 	preview = false,
 	children,
 }: BalanceDataViewProps ): JSX.Element => {
@@ -317,6 +319,8 @@ export const BalanceDataView = ( {
 						className="wcpay-reports-balance-dv__card"
 						role="group"
 						aria-labelledby={ captionId }
+						ref={ focusTargetRef }
+						tabIndex={ focusTargetRef ? -1 : undefined }
 					>
 						<div
 							className="wcpay-reports-balance-dv__caption"

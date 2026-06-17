@@ -38,6 +38,7 @@ const DataViewsFooter = DataViews.Footer as () => JSX.Element | null;
 export const FeesReport = ( {
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
+	// The report feedback survey is intentionally Balance-only.
 	const [ view, setView ] = useFeesView();
 	const initialEmptyHeadingId = useId();
 	const initialEmptyDescriptionId = useId();
