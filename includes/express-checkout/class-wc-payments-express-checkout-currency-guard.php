@@ -105,6 +105,6 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 		}
 
 		$nonce = (string) $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
-		return (bool) wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' );
+		return (bool) wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION );
 	}
 }

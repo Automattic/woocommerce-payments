@@ -229,7 +229,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 					'nonce'              => [
 						'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
 						// needed to communicate via the Store API.
-						'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
+						'tokenized_cart_nonce'         => wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ),
 						'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
 						'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
 					],

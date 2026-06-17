@@ -34,15 +34,20 @@ const LazyAmazonPayPreview = lazy( () =>
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
 
 const getEnabledMethodsForCart = ( cart ) => {
-	// Preferring the list provided from the API response than the list that was used when initializing the page.
-	// The list provided when initializing the page could get stale,
-	// especially when plugins like "WooCommerce Price Based on Country" are used.
-	const methods = cart?.extensions?.wcpay?.express_checkout_methods;
-	if ( Array.isArray( methods ) ) {
-		return methods;
+	// The localized list is location-gated (a merchant can disable a method on a
+	// specific location), so it stays authoritative for what's allowed here.
+	const localized = getExpressCheckoutData( 'enabled_methods' ) ?? [];
+
+	// The cart response is currency-gated but not location-gated. Prefer it over
+	// the localized list — which can go stale when plugins like "WooCommerce
+	// Price Based on Country" flip the currency after page load — but intersect
+	// so a method disabled at this location can't surface again.
+	const fromCart = cart?.extensions?.wcpay?.express_checkout_methods;
+	if ( Array.isArray( fromCart ) ) {
+		return fromCart.filter( ( method ) => localized.includes( method ) );
 	}
 
-	return getExpressCheckoutData( 'enabled_methods' ) ?? [];
+	return localized;
 };
 
 const ApplePayPreview = ( props ) => (

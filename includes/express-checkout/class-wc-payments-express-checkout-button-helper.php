@@ -16,6 +16,13 @@ use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
  */
 class WC_Payments_Express_Checkout_Button_Helper {
 	/**
+	 * Nonce action securing the tokenized cart Store API requests. Created
+	 * client-side and verified on each tokenized-cart entry point, so it lives
+	 * here as the single source of truth shared across those call sites.
+	 */
+	const TOKENIZED_CART_NONCE_ACTION = 'woopayments_tokenized_cart_nonce';
+
+	/**
 	 * WC_Payment_Gateway_WCPay instance.
 	 *
 	 * @var WC_Payment_Gateway_WCPay

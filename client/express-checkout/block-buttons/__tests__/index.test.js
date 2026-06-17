@@ -243,6 +243,27 @@ describe( 'Express checkout blocks registration', () => {
 					mockApi
 				);
 			} );
+
+			it( 'does not resurrect a method the localized list gated out at this location', () => {
+				// The cart extension is currency-gated but not location-gated, so
+				// it may list a method the merchant disabled here. Intersecting
+				// with the localized list keeps that method suppressed.
+				global.wcpayExpressCheckoutParams = {
+					enabled_methods: [ 'payment_request' ],
+				};
+
+				const result = expressCheckoutElementAmazonPay(
+					mockApi
+				).canMakePayment( {
+					cart: cartWithMethods( [
+						'payment_request',
+						'amazon_pay',
+					] ),
+				} );
+
+				expect( result ).toBe( false );
+				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
+			} );
 		} );
 	} );
 } );
