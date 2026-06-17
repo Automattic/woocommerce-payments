@@ -22,6 +22,7 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	displayLoginConfirmation,
+	filterCartMethodsByLocation,
 } from '../utils';
 import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
 import { getResolvedCurrency } from '../utils/resolved-currency-cache';
@@ -532,7 +533,11 @@ jQuery( ( $ ) => {
 				cachedCartData?.extensions?.wcpay?.express_checkout_methods;
 			let enabledMethodsOverride;
 			if ( Array.isArray( enabledMethodsFromCart ) ) {
-				enabledMethodsOverride = enabledMethodsFromCart;
+				// The cart list is currency-fresh but location-blind; re-apply
+				// location gating so a method disabled on this page can't surface.
+				enabledMethodsOverride = filterCartMethodsByLocation(
+					enabledMethodsFromCart
+				);
 			} else if ( needsMethodsReevaluation ) {
 				// Cart re-fetch failed or lacked our extension, so we can't
 				// confirm which methods the resolved currency supports. Keep

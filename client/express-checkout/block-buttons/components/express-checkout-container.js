@@ -13,6 +13,7 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
+	filterCartMethodsByLocation,
 } from '../../utils';
 import { rememberElementCurrency } from '../../utils/element-currency-cache';
 import { transformPrice } from '../../transformers/wc-to-stripe';
@@ -43,7 +44,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		[]
 	);
 	const enabledMethods = Array.isArray( enabledMethodsFromCart )
-		? enabledMethodsFromCart
+		? filterCartMethodsByLocation( enabledMethodsFromCart )
 		: getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.

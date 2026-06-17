@@ -11,7 +11,7 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
-import { getExpressCheckoutData } from '../utils';
+import { getExpressCheckoutData, filterCartMethodsByLocation } from '../utils';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
 
@@ -36,17 +36,7 @@ const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
 const getEnabledMethodsForCart = ( cart ) => {
 	const fromCart = cart?.extensions?.wcpay?.express_checkout_methods;
 	if ( Array.isArray( fromCart ) ) {
-		// The cart response is currency-fresh but location-blind: it recovers a
-		// method that became currency-valid after a plugin like "WooCommerce
-		// Price Based on Country" flipped the currency post-load, but it doesn't
-		// know which page we're on. Intersect with the location-only allow-list
-		// so a method the merchant disabled here can't surface. We deliberately
-		// don't fall back to `enabled_methods`, whose currency gating is stale.
-		const locationAllowed =
-			getExpressCheckoutData( 'methods_enabled_at_location' ) ?? [];
-		return fromCart.filter( ( method ) =>
-			locationAllowed.includes( method )
-		);
+		return filterCartMethodsByLocation( fromCart );
 	}
 
 	return getExpressCheckoutData( 'enabled_methods' ) ?? [];
