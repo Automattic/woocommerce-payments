@@ -47,9 +47,9 @@ const singleDatePresetLabels = (): Record< SingleDatePreset, string > => ( {
 } );
 
 const rangePresetLabels = (): Record< RangePreset, string > => ( {
-	last_month: __( 'Last month', 'woocommerce-payments' ),
+	last_month: __( 'Previous month', 'woocommerce-payments' ),
 	month_to_date: __( 'Month to date', 'woocommerce-payments' ),
-	last_year: __( 'Last year', 'woocommerce-payments' ),
+	last_year: __( 'Previous year', 'woocommerce-payments' ),
 	year_to_date: __( 'Year to date', 'woocommerce-payments' ),
 } );
 

@@ -73,6 +73,8 @@ const PortalHarness = ( {
 
 afterEach( () => {
 	document.body.innerHTML = '';
+	jest.useRealTimers();
+	jest.restoreAllMocks();
 } );
 
 describe( 'DataViewsDateRangePresetPortal', () => {
@@ -82,12 +84,76 @@ describe( 'DataViewsDateRangePresetPortal', () => {
 		render( <PortalHarness /> );
 
 		await waitFor( () =>
-			expect( customButton ).toHaveAttribute( 'aria-disabled', 'true' )
+			expect( customButton ).toHaveAttribute( 'aria-pressed', 'false' )
 		);
-		expect( customButton ).toHaveAttribute( 'aria-pressed', 'false' );
-		expect( customButton ).toHaveClass(
+		expect( customButton ).not.toHaveAttribute( 'aria-disabled' );
+		expect( customButton ).not.toHaveClass(
 			'wcpay-reports-date-range-preset--custom-disabled'
 		);
+	} );
+
+	it( 'sets injected preset button labels before inserting them into the DOM', async () => {
+		appendDatePresetPopover();
+		const originalAppendChild = HTMLDivElement.prototype.appendChild;
+		const insertedPresetLabels: Array< string | null > = [];
+		jest.spyOn(
+			HTMLDivElement.prototype,
+			'appendChild'
+		).mockImplementation( function (
+			this: HTMLDivElement,
+			child: Node
+		): Node {
+			if (
+				child instanceof HTMLButtonElement &&
+				child.dataset.wcpayDateRangePreset
+			) {
+				insertedPresetLabels.push( child.textContent );
+			}
+			return originalAppendChild.call( this, child );
+		} );
+
+		render( <PortalHarness /> );
+
+		await waitFor( () =>
+			expect( insertedPresetLabels ).toEqual( [
+				'woocommerce-payments:Previous month',
+				'woocommerce-payments:Previous year',
+			] )
+		);
+	} );
+
+	it( 'resolves clicked presets against the current clock', async () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+		const onDateChange = jest.fn();
+		appendDatePresetPopover();
+
+		render(
+			<PortalHarness
+				dateValue={ {
+					operator: 'between',
+					value: [ '2026-04-01', '2026-04-30' ],
+				} }
+				onDateChange={ onDateChange }
+			/>
+		);
+
+		const previousMonthButton = await waitFor( () => {
+			const button = document.querySelector< HTMLButtonElement >(
+				'[data-wcpay-date-range-preset="last_month"]'
+			);
+			expect( button ).not.toBeNull();
+			return button as HTMLButtonElement;
+		} );
+
+		act( () => {
+			previousMonthButton.click();
+		} );
+
+		expect( onDateChange ).toHaveBeenCalledWith( {
+			operator: 'between',
+			value: [ '2026-05-01', '2026-05-31' ],
+		} );
 	} );
 
 	it( 'observes the WordPress admin content container when present', () => {
@@ -169,11 +235,18 @@ describe( 'DataViewsDateRangePresetPortal', () => {
 		}
 	} );
 
-	it( 'syncs presets when the WordPress popover fallback container is added after mount', () => {
+	it( 'coalesces observer callbacks before syncing presets for a newly mounted fallback container', () => {
 		const originalMutationObserver = globalThis.MutationObserver;
 		const observe = jest.fn();
 		const disconnect = jest.fn();
 		let mutationCallback: MutationCallback | undefined;
+		const animationFrameCallbacks: FrameRequestCallback[] = [];
+		jest.spyOn( window, 'requestAnimationFrame' ).mockImplementation(
+			( callback: FrameRequestCallback ) => {
+				animationFrameCallbacks.push( callback );
+				return animationFrameCallbacks.length;
+			}
+		);
 		const MockMutationObserver = jest
 			.fn()
 			.mockImplementation( ( callback: MutationCallback ) => {
@@ -204,14 +277,22 @@ describe( 'DataViewsDateRangePresetPortal', () => {
 
 			act( () => {
 				mutationCallback?.( [], {} as MutationObserver );
+				mutationCallback?.( [], {} as MutationObserver );
+			} );
+
+			expect( window.requestAnimationFrame ).toHaveBeenCalledTimes( 1 );
+			expect( customButton ).toHaveAttribute( 'aria-pressed', 'true' );
+
+			act( () => {
+				animationFrameCallbacks[ 0 ]( 0 );
 			} );
 
 			expect( observe ).toHaveBeenCalledWith( popoverFallbackContainer, {
 				childList: true,
 				subtree: true,
 			} );
-			expect( customButton ).toHaveAttribute( 'aria-disabled', 'true' );
 			expect( customButton ).toHaveAttribute( 'aria-pressed', 'false' );
+			expect( customButton ).not.toHaveAttribute( 'aria-disabled' );
 
 			unmount();
 			expect( disconnect ).toHaveBeenCalled();

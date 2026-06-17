@@ -33,7 +33,8 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
 
-const renderUseFeesView = () => renderHook( () => useFeesView() );
+const renderUseFeesView = ( now?: Date ) =>
+	renderHook( () => useFeesView( now ) );
 
 const updateFeesView = (
 	result: ReturnType< typeof renderUseFeesView >[ 'result' ],
@@ -433,6 +434,26 @@ describe( 'useFeesView', () => {
 		expect(
 			countRecordedTracksEvents( 'wcpay_reports_fees_date_filter_change' )
 		).toBe( 1 );
+	} );
+
+	it( 'records date preset changes against the injected stable date', () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+		const { result } = renderUseFeesView(
+			new Date( '2026-05-15T12:00:00.000Z' )
+		);
+
+		updateFeesView( result, {
+			filters: [
+				buildDateFilter( 'between', [ '2026-04-01', '2026-04-30' ] ),
+			],
+		} );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'last_month',
+			range_days: 29,
+			is_initial_apply: true,
+		} );
 	} );
 
 	it( 'records a date filter reset when an applied date filter is removed', () => {

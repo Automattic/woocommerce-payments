@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,8 +16,6 @@ import { matchPreset, resolvePreset } from './presets';
 const injectedDateRangePresetClass = 'wcpay-reports-date-range-preset';
 const injectedDateRangePresetInsertClass =
 	'wcpay-reports-date-range-preset-insert';
-const forcedCustomDatePresetDisabledClass =
-	'wcpay-reports-date-range-preset--custom-disabled';
 const dateRangePresetButtonClass = `components-button is-tertiary is-small dataviews-controls__date-preset ${ injectedDateRangePresetClass }`;
 // DataViews owns this native label and translates it with the default domain.
 // eslint-disable-next-line @wordpress/i18n-text-domain
@@ -33,6 +31,9 @@ const dataViewsDateRangePresets = [
 		label: __( 'Previous year', 'woocommerce-payments' ),
 	},
 ] as const;
+const dataViewsDateRangePresetKeys = dataViewsDateRangePresets.map(
+	( { preset } ) => preset
+);
 
 type ReportDateRangePreset = Extract<
 	RangePreset,
@@ -44,6 +45,10 @@ type DateRangePresetInsertionPoint = {
 	before: Element;
 };
 
+// DataViews does not expose a public preset-extension API. These selectors are
+// private DataViews markup verified against the `@wordpress/dataviews` version
+// bundled with this branch; if upstream renames them, the injected presets will
+// silently stop rendering while the native date filter continues to work.
 const getDateRangePresetInsertionPoint = (
 	ownerDocument: Document
 ): DateRangePresetInsertionPoint | null => {
@@ -83,6 +88,11 @@ const getDateRangePresetPopoverFallbackContainer = (
 		'.components-popover__fallback-container'
 	);
 
+const isDataViewsDateRangePreset = (
+	preset: string
+): preset is ReportDateRangePreset =>
+	dataViewsDateRangePresetKeys.includes( preset as ReportDateRangePreset );
+
 const getSelectedDateRangePreset = (
 	dateValue: DateFilterValue | undefined,
 	now: Date
@@ -92,10 +102,10 @@ const getSelectedDateRangePreset = (
 	}
 
 	const preset = matchPreset( dateValue, now );
-	return preset === 'last_month' || preset === 'last_year' ? preset : null;
+	return isDataViewsDateRangePreset( preset ) ? preset : null;
 };
 
-const syncNativeDatePresetPressedState = (
+const syncNativeDatePresetState = (
 	ownerDocument: Document,
 	selectedPreset: ReportDateRangePreset | null
 ): void => {
@@ -106,11 +116,6 @@ const syncNativeDatePresetPressedState = (
 	const buttons = Array.from( nativePresetButtons );
 	const customPresetButton = buttons.find(
 		( button ) => button.textContent?.trim() === customDatePresetLabel
-	);
-	const hasNativePresetSelected = buttons.some(
-		( button ) =>
-			button !== customPresetButton &&
-			button.getAttribute( 'aria-pressed' ) === 'true'
 	);
 
 	for ( const button of buttons ) {
@@ -128,35 +133,7 @@ const syncNativeDatePresetPressedState = (
 		return;
 	}
 
-	if ( selectedPreset ) {
-		if ( customPresetButton.getAttribute( 'aria-disabled' ) !== 'true' ) {
-			customPresetButton.setAttribute( 'aria-disabled', 'true' );
-		}
-		if (
-			! customPresetButton.classList.contains(
-				forcedCustomDatePresetDisabledClass
-			)
-		) {
-			customPresetButton.classList.add(
-				forcedCustomDatePresetDisabledClass
-			);
-		}
-		return;
-	}
-
-	if (
-		customPresetButton.classList.contains(
-			forcedCustomDatePresetDisabledClass
-		)
-	) {
-		customPresetButton.classList.remove(
-			forcedCustomDatePresetDisabledClass
-		);
-
-		if ( ! hasNativePresetSelected ) {
-			customPresetButton.removeAttribute( 'aria-disabled' );
-		}
-	}
+	customPresetButton.removeAttribute( 'aria-disabled' );
 };
 
 const syncDateRangePresetButtons = (
@@ -172,6 +149,7 @@ const syncDateRangePresetButtons = (
 			button.type = 'button';
 			button.className = dateRangePresetButtonClass;
 			button.dataset.wcpayDateRangePreset = preset;
+			button.textContent = label;
 			button.onclick = () => onPresetClick( preset );
 			portalNode.appendChild( button );
 		}
@@ -202,23 +180,27 @@ export const DataViewsDateRangePresetPortal = ( {
 	onDateChange: ( next: DateFilterValue ) => void;
 } ): null => {
 	const portalNodeRef = useRef< HTMLDivElement | null >( null );
-	const stableDateFilterNow = useRef( dateFilterNow ?? new Date() ).current;
+	const [ selectedDateFilterNow, setSelectedDateFilterNow ] = useState(
+		() => dateFilterNow ?? new Date()
+	);
 	const selectedPreset = getSelectedDateRangePreset(
 		dateValue,
-		stableDateFilterNow
+		selectedDateFilterNow
 	);
 	const applyDatePreset = useCallback(
 		( preset: ReportDateRangePreset ) => {
+			const currentDateFilterNow = new Date();
 			const nextValue = resolvePreset(
 				preset,
 				'between',
-				stableDateFilterNow
+				currentDateFilterNow
 			);
 			if ( nextValue ) {
+				setSelectedDateFilterNow( currentDateFilterNow );
 				onDateChange( nextValue );
 			}
 		},
-		[ onDateChange, stableDateFilterNow ]
+		[ onDateChange ]
 	);
 	const applyDatePresetRef = useRef( applyDatePreset );
 	applyDatePresetRef.current = applyDatePreset;
@@ -229,7 +211,7 @@ export const DataViewsDateRangePresetPortal = ( {
 			getDateRangePresetInsertionPoint( ownerDocument );
 
 		if ( ! insertionPoint ) {
-			syncNativeDatePresetPressedState( ownerDocument, selectedPreset );
+			syncNativeDatePresetState( ownerDocument, selectedPreset );
 			if (
 				portalNodeRef.current &&
 				! portalNodeRef.current.isConnected
@@ -239,7 +221,7 @@ export const DataViewsDateRangePresetPortal = ( {
 			return;
 		}
 
-		syncNativeDatePresetPressedState( ownerDocument, selectedPreset );
+		syncNativeDatePresetState( ownerDocument, selectedPreset );
 
 		if (
 			portalNodeRef.current?.parentElement === insertionPoint.parent &&
@@ -273,7 +255,9 @@ export const DataViewsDateRangePresetPortal = ( {
 
 	useEffect( () => {
 		const ownerDocument = rootRef.current?.ownerDocument ?? document;
+		const ownerWindow = ownerDocument.defaultView ?? window;
 		syncPortalNode();
+		let syncAnimationFrame: number | null = null;
 
 		const observedTargets = new Set< HTMLElement >();
 
@@ -301,8 +285,14 @@ export const DataViewsDateRangePresetPortal = ( {
 		}
 
 		const observer = new MutationObserver( () => {
-			syncPortalNode();
-			observePopoverFallbackContainer( observer );
+			if ( syncAnimationFrame !== null ) {
+				return;
+			}
+			syncAnimationFrame = ownerWindow.requestAnimationFrame( () => {
+				syncAnimationFrame = null;
+				syncPortalNode();
+				observePopoverFallbackContainer( observer );
+			} );
 		} );
 
 		observePopoverFallbackContainer( observer );
@@ -320,12 +310,18 @@ export const DataViewsDateRangePresetPortal = ( {
 
 		if ( ! observedTargets.size ) {
 			return () => {
+				if ( syncAnimationFrame !== null ) {
+					ownerWindow.cancelAnimationFrame( syncAnimationFrame );
+				}
 				portalNodeRef.current?.remove();
 				portalNodeRef.current = null;
 			};
 		}
 
 		return () => {
+			if ( syncAnimationFrame !== null ) {
+				ownerWindow.cancelAnimationFrame( syncAnimationFrame );
+			}
 			observer.disconnect();
 			portalNodeRef.current?.remove();
 			portalNodeRef.current = null;

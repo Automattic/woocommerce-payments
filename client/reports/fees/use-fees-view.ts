@@ -144,7 +144,9 @@ const trackViewChange = (
  * with the URL (sort, page, search, filters) and `user_meta` (fields, layout,
  * perPage). Returns the current view and a setter.
  */
-export const useFeesView = (): [ View, ( next: View ) => void ] => {
+export const useFeesView = (
+	dateFilterNow?: Date
+): [ View, ( next: View ) => void ] => {
 	const { persisted, hasLoadedPersisted, persistViewShape } =
 		useFeesUserPrefs();
 	const { derivedView, syncViewToUrl, urlVersion } =
@@ -152,7 +154,7 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 	const searchTrackingTimerRef = useRef< ReturnType<
 		typeof setTimeout
 	> | null >( null );
-	const stableDateFilterNow = useRef( new Date() ).current;
+	const stableDateFilterNow = useRef( dateFilterNow ?? new Date() ).current;
 	const clearPendingSearchTracking = useCallback( () => {
 		if ( searchTrackingTimerRef.current ) {
 			clearTimeout( searchTrackingTimerRef.current );

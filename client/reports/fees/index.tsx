@@ -67,9 +67,9 @@ export const FeesReport = ( {
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	// The report feedback survey is intentionally Balance-only.
-	const [ view, setView ] = useFeesView();
 	const rootRef = useRef< HTMLDivElement >( null );
 	const stableDateFilterNow = useRef( new Date() ).current;
+	const [ view, setView ] = useFeesView( stableDateFilterNow );
 	const initialEmptyHeadingId = useId();
 	const initialEmptyDescriptionId = useId();
 	const filteredEmptyHeadingId = useId();
