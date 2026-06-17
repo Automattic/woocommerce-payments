@@ -100,8 +100,13 @@ jobs:
               -- --project=${{ inputs.playwright-project }}
           }
 
+          # Capture each attempt's output so we can both stream it live (tee) and
+          # inspect it for the transient signatures. One reusable file, cleaned up on
+          # any exit path; tee truncates it fresh each attempt.
+          log="$(mktemp)"
+          trap 'rm -f "$log"' EXIT
+
           while true; do
-            log="$(mktemp)"
             set +e
             run_qit 2>&1 | tee "$log"
             code=${PIPESTATUS[0]}
