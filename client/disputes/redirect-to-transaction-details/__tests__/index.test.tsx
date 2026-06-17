@@ -18,7 +18,6 @@ jest.mock( 'wcpay/data/disputes', () => ( {
 
 const mockHistoryReplace = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
-	...jest.requireActual( '@woocommerce/navigation' ),
 	getHistory: () => ( {
 		replace: mockHistoryReplace,
 	} ),
@@ -80,6 +79,35 @@ describe( 'RedirectToTransactionDetails', () => {
 				id: 'dp_1',
 				payment_intent: 'pi_1',
 				charge: {},
+			} as unknown as Dispute,
+			isLoading: false,
+		} );
+
+		renderRedirect();
+
+		expect( mockHistoryReplace ).toHaveBeenCalledWith( disputesListUrl );
+	} );
+
+	it( 'falls back to the disputes list when the payment intent is missing', () => {
+		mockUseDispute.mockReturnValue( {
+			dispute: {
+				id: 'dp_1',
+				charge: { balance_transaction: 'txn_1' },
+			} as unknown as Dispute,
+			isLoading: false,
+		} );
+
+		renderRedirect();
+
+		expect( mockHistoryReplace ).toHaveBeenCalledWith( disputesListUrl );
+	} );
+
+	it( 'falls back to the disputes list when the balance transaction is an expanded object', () => {
+		mockUseDispute.mockReturnValue( {
+			dispute: {
+				id: 'dp_1',
+				payment_intent: 'pi_1',
+				charge: { balance_transaction: { id: 'txn_1' } },
 			} as unknown as Dispute,
 			isLoading: false,
 		} );

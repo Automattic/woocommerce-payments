@@ -3,12 +3,12 @@
  */
 import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
+import { Spinner, Flex, FlexItem } from '@wordpress/components';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
  */
-import { Spinner, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
 import { useDispute } from 'wcpay/data/disputes';
 import { getAdminUrl } from 'wcpay/utils';
@@ -27,14 +27,19 @@ import './style.scss';
  * screen or a broken transaction URL.
  */
 const getDisputeRedirectUrl = ( dispute?: Dispute ): string => {
-	const balanceTransaction = dispute?.charge?.balance_transaction;
+	// `balance_transaction` is a transaction id string at runtime; only build the
+	// deep link when it actually is one, so an unexpected shape (e.g. an expanded
+	// object) fails safe to the disputes list rather than a broken transaction URL.
+	const balanceTransaction = dispute?.charge?.balance_transaction as unknown;
+	const transactionId =
+		typeof balanceTransaction === 'string' ? balanceTransaction : undefined;
 
-	if ( dispute?.payment_intent && balanceTransaction ) {
+	if ( dispute?.payment_intent && transactionId ) {
 		return getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/transactions/details',
 			id: dispute.payment_intent,
-			transaction_id: balanceTransaction,
+			transaction_id: transactionId,
 			type: 'dispute',
 		} );
 	}
@@ -76,12 +81,7 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 							) }
 						</b>
 					</div>
-					<div>
-						{ __(
-							'Redirecting to payment details…',
-							'woocommerce-payments'
-						) }
-					</div>
+					<div>{ __( 'Redirecting…', 'woocommerce-payments' ) }</div>
 				</FlexItem>
 			</Flex>
 		</Page>
