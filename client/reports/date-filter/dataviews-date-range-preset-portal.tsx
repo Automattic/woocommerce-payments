@@ -41,6 +41,7 @@ type ReportDateRangePreset = Extract<
 >;
 
 type DateRangePresetInsertionPoint = {
+	popover: HTMLElement;
 	parent: HTMLElement;
 	before: Element;
 };
@@ -57,21 +58,27 @@ const getDateRangePresetInsertionPoint = (
 	);
 
 	for ( const popover of Array.from( popovers ) ) {
+		const rangeInputs = popover.querySelector< HTMLElement >(
+			'.dataviews-controls__date-range-inputs'
+		);
+		if ( ! rangeInputs ) {
+			continue;
+		}
+
 		const firstNativePreset = popover.querySelector< HTMLElement >(
 			`.dataviews-controls__date-preset:not(.${ injectedDateRangePresetClass })`
 		);
 		if ( firstNativePreset?.parentElement ) {
 			return {
+				popover,
 				parent: firstNativePreset.parentElement,
 				before: firstNativePreset,
 			};
 		}
 
-		const rangeInputs = popover.querySelector< HTMLElement >(
-			'.dataviews-controls__date-range-inputs'
-		);
 		if ( rangeInputs?.parentElement ) {
 			return {
+				popover,
 				parent: rangeInputs.parentElement,
 				before: rangeInputs,
 			};
@@ -106,13 +113,12 @@ const getSelectedDateRangePreset = (
 };
 
 const syncNativeDatePresetState = (
-	ownerDocument: Document,
+	popover: HTMLElement,
 	selectedPreset: ReportDateRangePreset | null
 ): void => {
-	const nativePresetButtons =
-		ownerDocument.querySelectorAll< HTMLButtonElement >(
-			`.dataviews-filters__summary-popover .dataviews-controls__date-preset:not(.${ injectedDateRangePresetClass })`
-		);
+	const nativePresetButtons = popover.querySelectorAll< HTMLButtonElement >(
+		`.dataviews-controls__date-preset:not(.${ injectedDateRangePresetClass })`
+	);
 	const buttons = Array.from( nativePresetButtons );
 	const customPresetButton = buttons.find(
 		( button ) => button.textContent?.trim() === customDatePresetLabel
@@ -211,17 +217,12 @@ export const DataViewsDateRangePresetPortal = ( {
 			getDateRangePresetInsertionPoint( ownerDocument );
 
 		if ( ! insertionPoint ) {
-			syncNativeDatePresetState( ownerDocument, selectedPreset );
-			if (
-				portalNodeRef.current &&
-				! portalNodeRef.current.isConnected
-			) {
-				portalNodeRef.current = null;
-			}
+			portalNodeRef.current?.remove();
+			portalNodeRef.current = null;
 			return;
 		}
 
-		syncNativeDatePresetState( ownerDocument, selectedPreset );
+		syncNativeDatePresetState( insertionPoint.popover, selectedPreset );
 
 		if (
 			portalNodeRef.current?.parentElement === insertionPoint.parent &&

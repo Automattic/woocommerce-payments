@@ -44,9 +44,28 @@ const appendDatePresetPopover = ( parent = document.body ) => {
 	appendNativePresetButton( presets, 'default:Month to date' );
 	const customButton = appendNativePresetButton( presets, 'default:Custom' );
 
+	const rangeInputs = document.createElement( 'div' );
+	rangeInputs.className = 'dataviews-controls__date-range-inputs';
+	popover.appendChild( rangeInputs );
+
 	parent.appendChild( popover );
 
 	return { customButton };
+};
+
+const appendSingleDatePresetPopover = ( parent = document.body ) => {
+	const popover = document.createElement( 'div' );
+	popover.className = 'dataviews-filters__summary-popover';
+
+	const presets = document.createElement( 'div' );
+	popover.appendChild( presets );
+
+	const todayButton = appendNativePresetButton( presets, 'default:Today' );
+	const customButton = appendNativePresetButton( presets, 'default:Custom' );
+
+	parent.appendChild( popover );
+
+	return { customButton, todayButton };
 };
 
 const PortalHarness = ( {
@@ -157,6 +176,27 @@ describe( 'DataViewsDateRangePresetPortal', () => {
 			},
 			new Date( '2026-06-15T12:00:00.000Z' )
 		);
+	} );
+
+	it( 'does not inject range presets into single-date popovers', async () => {
+		const { customButton, todayButton } = appendSingleDatePresetPopover();
+
+		render( <PortalHarness /> );
+
+		await waitFor( () => {
+			expect(
+				document.querySelector(
+					'[data-wcpay-date-range-preset="last_month"]'
+				)
+			).toBeNull();
+		} );
+		expect(
+			document.querySelector(
+				'[data-wcpay-date-range-preset="last_year"]'
+			)
+		).toBeNull();
+		expect( todayButton ).toHaveAttribute( 'aria-pressed', 'true' );
+		expect( customButton ).toHaveAttribute( 'aria-pressed', 'true' );
 	} );
 
 	it( 'observes the WordPress admin content container when present', () => {
