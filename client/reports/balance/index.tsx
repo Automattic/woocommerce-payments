@@ -473,6 +473,7 @@ export const BalanceReport = ( {
 				dateValue={ value }
 				onDateChange={ onDateFilterChange }
 				focusTargetRef={ feedbackFocusTargetRef }
+				dateFilterNow={ stableDateFilterNow }
 			>
 				{ stateContent }
 			</BalanceDataView>

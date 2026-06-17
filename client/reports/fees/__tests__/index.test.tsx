@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from 'tracks';
 
@@ -188,6 +188,40 @@ const expectRecordedTracksEvent = (
 	properties: unknown
 ) => {
 	expect( mockRecordEvent ).toHaveBeenCalledWith( eventName, properties );
+};
+
+const toYmd = ( date: Date ): string =>
+	`${ date.getFullYear() }-${ String( date.getMonth() + 1 ).padStart(
+		2,
+		'0'
+	) }-${ String( date.getDate() ).padStart( 2, '0' ) }`;
+
+const getPreviousMonthRange = (): [ string, string ] => {
+	const now = new Date();
+	const start = new Date( now.getFullYear(), now.getMonth() - 1, 1 );
+	const end = new Date( now.getFullYear(), now.getMonth(), 0 );
+	return [ toYmd( start ), toYmd( end ) ];
+};
+
+const getPreviousYearRange = (): [ string, string ] => {
+	const now = new Date();
+	const start = new Date( now.getFullYear() - 1, 0, 1 );
+	const end = new Date( now.getFullYear() - 1, 11, 31 );
+	return [ toYmd( start ), toYmd( end ) ];
+};
+
+const openFeesDateRangePopover = async () => {
+	await userEvent.click(
+		screen.getByRole( 'button', {
+			name: 'Filter',
+		} )
+	);
+	await userEvent.click(
+		await screen.findByRole( 'button', {
+			name: /Date between \(inc\):/,
+		} )
+	);
+	return screen.findByRole( 'dialog' );
 };
 
 beforeEach( () => {
@@ -443,6 +477,90 @@ describe( 'FeesReport (DataViews)', () => {
 			} )
 		).not.toBeInTheDocument();
 	} );
+
+	it.each( [
+		{
+			label: 'Previous month',
+			expectedDateBetween: getPreviousMonthRange,
+		},
+		{
+			label: 'Previous year',
+			expectedDateBetween: getPreviousYearRange,
+		},
+	] )(
+		'applies the $label preset from the between date filter as a complete calendar range',
+		async ( { label, expectedDateBetween } ) => {
+			mockGetQuery.mockReturnValue( {
+				date_between: [ '2026-05-01', '2026-05-14' ],
+			} );
+
+			render( <FeesReport /> );
+			const filterPopover = await openFeesDateRangePopover();
+			const presetButtons = within( filterPopover )
+				.getAllByRole( 'button' )
+				.map( ( button ) => button.textContent );
+
+			expect( presetButtons.indexOf( 'Previous month' ) ).toBeLessThan(
+				presetButtons.indexOf( 'Last 7 days' )
+			);
+			expect( presetButtons.indexOf( 'Previous year' ) ).toBeLessThan(
+				presetButtons.indexOf( 'Last 7 days' )
+			);
+
+			await userEvent.click(
+				within( filterPopover ).getByRole( 'button', {
+					name: label,
+				} )
+			);
+
+			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					date_preset: undefined,
+					date_between: expectedDateBetween(),
+					date_before: undefined,
+					date_after: undefined,
+				} ),
+				'/payments/reports'
+			);
+		}
+	);
+
+	it.each( [
+		{
+			label: 'Previous month',
+			value: getPreviousMonthRange,
+		},
+		{
+			label: 'Previous year',
+			value: getPreviousYearRange,
+		},
+	] )(
+		'shows the $label preset as selected instead of Custom when the between date filter matches it',
+		async ( { label, value } ) => {
+			mockGetQuery.mockReturnValue( {
+				date_between: value(),
+			} );
+
+			render( <FeesReport /> );
+			const filterPopover = await openFeesDateRangePopover();
+
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: label,
+				} )
+			).toHaveAttribute( 'aria-pressed', 'true' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).toHaveAttribute( 'aria-pressed', 'false' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).toHaveAttribute( 'aria-disabled', 'true' );
+		}
+	);
 
 	it( 'clears search, report filters, and the date filter from the report reset button', async () => {
 		mockGetQuery.mockReturnValue( {
