@@ -2264,7 +2264,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function restore_test_drive_enabled_payment_methods() {
 		$test_drive_settings = get_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
-		if ( empty( $test_drive_settings['enabled_payment_methods'] ) || ! is_array( $test_drive_settings['enabled_payment_methods'] ) ) {
+		if ( ! is_array( $test_drive_settings )
+			|| empty( $test_drive_settings['enabled_payment_methods'] )
+			|| ! is_array( $test_drive_settings['enabled_payment_methods'] ) ) {
 			return;
 		}
 
@@ -2275,6 +2277,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			)
 		);
 		$gateway->update_option( 'upe_enabled_payment_method_ids', $restored_payment_methods );
+
+		// Mirror the cross-gateway sync in update_enabled_payment_methods_ids: enable each restored method's
+		// split gateway and keep their duplicated option in step, otherwise the methods stay disabled at checkout.
+		foreach ( $restored_payment_methods as $payment_method_id ) {
+			$payment_gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( $payment_gateway ) {
+				$payment_gateway->enable();
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $restored_payment_methods );
+			}
+		}
 
 		if ( in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $restored_payment_methods, true ) ) {
 			$gateway->update_is_woopay_enabled( false );
