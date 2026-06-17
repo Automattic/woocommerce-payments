@@ -29,6 +29,7 @@ import {
 	useBalanceDateFilter,
 } from './use-balance-date-filter';
 import { BalanceDataView } from './balance-dataview';
+import ReportFeedbackSurvey from '../feedback-survey';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
 import { BalanceDateFilterNowContext } from './context';
@@ -193,6 +194,7 @@ export const BalanceReport = ( {
 	const containerRef = useRef< HTMLDivElement >( null );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
+	const feedbackFocusTargetRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
 	const activeRequestKey = hasDateFilterValue
@@ -219,8 +221,9 @@ export const BalanceReport = ( {
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
-	const printScopeActive =
+	const hasLoadedReportActivity =
 		hasDateFilterValue && ! isLoading && ! hasError && hasActivity;
+	const printScopeActive = hasLoadedReportActivity;
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
@@ -469,6 +472,7 @@ export const BalanceReport = ( {
 				currency={ currency }
 				dateValue={ value }
 				onDateChange={ onDateFilterChange }
+				focusTargetRef={ feedbackFocusTargetRef }
 			>
 				{ stateContent }
 			</BalanceDataView>
@@ -478,6 +482,11 @@ export const BalanceReport = ( {
 					summary={ summary }
 					displayPeriod={ displayPeriod }
 					currency={ currency }
+				/>
+			) }
+			{ hasLoadedReportActivity && (
+				<ReportFeedbackSurvey
+					focusAfterCloseRef={ feedbackFocusTargetRef }
 				/>
 			) }
 		</div>

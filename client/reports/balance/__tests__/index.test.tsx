@@ -52,6 +52,10 @@ jest.mock( 'tracks', () => ( {
 	recordEvent: jest.fn(),
 } ) );
 
+jest.mock( '../../feedback-survey', () => () => (
+	<div data-testid="report-feedback-survey" />
+) );
+
 const mockRecordEvent = recordEvent as jest.MockedFunction<
 	typeof recordEvent
 >;
@@ -454,6 +458,9 @@ describe( 'BalanceReport', () => {
 		);
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the error state with a reload action', async () => {
@@ -475,6 +482,9 @@ describe( 'BalanceReport', () => {
 		);
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Reload report' } )
@@ -498,6 +508,9 @@ describe( 'BalanceReport', () => {
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Export' } )
@@ -698,6 +711,9 @@ describe( 'BalanceReport', () => {
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the empty state without requesting data when the Date filter is inactive', () => {
@@ -723,6 +739,9 @@ describe( 'BalanceReport', () => {
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );
 		expectActionButtonUnavailable( 'Print' );
+		expect(
+			screen.queryByTestId( 'report-feedback-survey' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
@@ -775,6 +794,9 @@ describe( 'BalanceReport', () => {
 		).not.toBeInTheDocument();
 		expect(
 			screen.getByRole( 'group', { name: 'Balance summary' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByTestId( 'report-feedback-survey' )
 		).toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 		expectBalanceText( 'Ending balance - formatted 2024-03-31 UTC' );
