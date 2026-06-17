@@ -188,11 +188,15 @@ describe( 'Express checkout blocks registration', () => {
 
 		describe( 'when the cart Store API extension carries a method list', () => {
 			beforeEach( () => {
-				// The localized list claims amazon_pay is available, but the
-				// cart's currency-filtered list excludes it (e.g. visitor's
-				// EUR cart on a US account where amazon_pay only supports USD).
+				// Both methods are enabled at this location. `enabled_methods`
+				// stands in for the stale, currency-gated localized list — the
+				// cart response is what's authoritative for currency.
 				global.wcpayExpressCheckoutParams = {
 					enabled_methods: [ 'payment_request', 'amazon_pay' ],
+					methods_enabled_at_location: [
+						'payment_request',
+						'amazon_pay',
+					],
 				};
 				checkPaymentMethodIsAvailable.mockResolvedValue( true );
 			} );
@@ -244,13 +248,12 @@ describe( 'Express checkout blocks registration', () => {
 				);
 			} );
 
-			it( 'does not resurrect a method the localized list gated out at this location', () => {
+			it( 'does not resurrect a method the merchant disabled at this location', () => {
 				// The cart extension is currency-gated but not location-gated, so
-				// it may list a method the merchant disabled here. Intersecting
-				// with the localized list keeps that method suppressed.
-				global.wcpayExpressCheckoutParams = {
-					enabled_methods: [ 'payment_request' ],
-				};
+				// it may list a method disabled here. Intersecting with the
+				// location-only allow-list keeps that method suppressed.
+				global.wcpayExpressCheckoutParams.methods_enabled_at_location =
+					[ 'payment_request' ];
 
 				const result = expressCheckoutElementAmazonPay(
 					mockApi
@@ -263,6 +266,29 @@ describe( 'Express checkout blocks registration', () => {
 
 				expect( result ).toBe( false );
 				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
+			} );
+
+			it( 'recovers a method the stale localized currency gating dropped', () => {
+				// US merchant, amazon_pay enabled at this location. Page loaded
+				// under a EUR cart, so the localized list dropped amazon_pay on
+				// currency grounds. A plugin then flipped the cart to USD and the
+				// cart response now includes it — it must come back.
+				global.wcpayExpressCheckoutParams.enabled_methods = [
+					'payment_request',
+				];
+
+				expressCheckoutElementAmazonPay( mockApi ).canMakePayment( {
+					cart: cartWithMethods( [
+						'payment_request',
+						'amazon_pay',
+					] ),
+				} );
+
+				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
+					'amazonPay',
+					expect.any( Object ),
+					mockApi
+				);
 			} );
 		} );
 	} );

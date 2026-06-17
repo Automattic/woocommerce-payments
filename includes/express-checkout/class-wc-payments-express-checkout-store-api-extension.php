@@ -71,10 +71,10 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 	/**
 	 * Returns the ECE method list filtered against the cart's resolved currency.
 	 *
-	 * Location gating (`is_express_checkout_method_enabled_at`) is intentionally
-	 * skipped here, since the cart endpoint isn't location-bound. The client
-	 * intersects this list with its localized `enabled_methods` (which is
-	 * location-filtered) to get the final set.
+	 * Location gating is intentionally skipped here, since the cart endpoint
+	 * isn't location-bound. The client intersects this list with the localized
+	 * `methods_enabled_at_location` (the raw, currency-independent location
+	 * settings) to get the final set.
 	 *
 	 * @return array{express_checkout_methods: string[]}
 	 */

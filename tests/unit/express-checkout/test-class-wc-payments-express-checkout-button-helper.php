@@ -638,6 +638,42 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertEmpty( $enabled_methods );
 	}
 
+	public function test_get_methods_enabled_at_current_location_returns_raw_location_settings() {
+		// Unlike get_enabled_express_checkout_methods_for_context(), this reads
+		// the location settings verbatim — no currency or availability gating.
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'payment_request', 'amazon_pay' ] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request' ] );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$this->assertSame(
+			[ 'payment_request', 'amazon_pay' ],
+			$helper->get_methods_enabled_at_current_location()
+		);
+	}
+
+	public function test_get_methods_enabled_at_current_location_returns_empty_without_context() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$this->assertSame( [], $helper->get_methods_enabled_at_current_location() );
+	}
+
 	public function test_get_enabled_express_checkout_methods_for_context_excludes_amazon_pay_when_currency_not_supported() {
 		add_filter(
 			'pre_option__wcpay_feature_amazon_pay',
