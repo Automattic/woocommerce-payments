@@ -7,6 +7,10 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import ExpressCheckoutCartApi from '../cart-api';
+import {
+	rememberElementCurrency,
+	__resetElementCurrencyForTests,
+} from '../utils/element-currency-cache';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -24,6 +28,7 @@ global.wcpayExpressCheckoutParams.checkout.currency_code = 'USD';
 describe( 'ExpressCheckoutCartApi', () => {
 	afterEach( () => {
 		jest.resetAllMocks();
+		__resetElementCurrencyForTests();
 	} );
 
 	it( 'should allow to create an anonymous cart for a specific class instance, without affecting other instances', async () => {
@@ -232,6 +237,41 @@ describe( 'ExpressCheckoutCartApi', () => {
 		const callArgs = apiFetch.mock.calls[ 0 ][ 0 ];
 		expect( callArgs.headers ).not.toHaveProperty(
 			'X-WooPayments-Tokenized-Cart-Session-Nonce'
+		);
+	} );
+
+	it( 'placeOrder forwards the cached element currency on the X-WooPayments-Payment-Currency header', async () => {
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => Promise.resolve( {} ),
+		} );
+		rememberElementCurrency( 'eur' );
+
+		const api = new ExpressCheckoutCartApi();
+		await api.placeOrder( { payment_method: 'woocommerce_payments' } );
+
+		const callArgs = apiFetch.mock.calls[ 0 ][ 0 ];
+
+		expect( callArgs.headers[ 'X-WooPayments-Payment-Currency' ] ).toBe(
+			'eur'
+		);
+	} );
+
+	it( 'placeOrder omits the X-WooPayments-Payment-Currency header when no element currency was cached', async () => {
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => Promise.resolve( {} ),
+		} );
+
+		const api = new ExpressCheckoutCartApi();
+		await api.placeOrder( { payment_method: 'woocommerce_payments' } );
+
+		const callArgs = apiFetch.mock.calls[ 0 ][ 0 ];
+
+		expect( callArgs.headers ).not.toHaveProperty(
+			'X-WooPayments-Payment-Currency'
 		);
 	} );
 
