@@ -490,11 +490,21 @@ describe( 'FeesReport (DataViews)', () => {
 	] )(
 		'applies the $label preset from the between date filter as a complete calendar range',
 		async ( { label, expectedDateBetween } ) => {
-			mockGetQuery.mockReturnValue( {
-				date_between: [ '2026-05-01', '2026-05-14' ],
-			} );
+			let expectedDateRange: [ string, string ] = [ '', '' ];
 
-			render( <FeesReport /> );
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( new Date( '2026-05-15T12:00:00.000Z' ) );
+				expectedDateRange = expectedDateBetween();
+				mockGetQuery.mockReturnValue( {
+					date_between: [ '2026-05-01', '2026-05-14' ],
+				} );
+
+				render( <FeesReport /> );
+			} finally {
+				jest.useRealTimers();
+			}
+
 			const filterPopover = await openFeesDateRangePopover();
 			const presetButtons = within( filterPopover )
 				.getAllByRole( 'button' )
@@ -516,7 +526,7 @@ describe( 'FeesReport (DataViews)', () => {
 			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 				expect.objectContaining( {
 					date_preset: undefined,
-					date_between: expectedDateBetween(),
+					date_between: expectedDateRange,
 					date_before: undefined,
 					date_after: undefined,
 				} ),
@@ -537,11 +547,21 @@ describe( 'FeesReport (DataViews)', () => {
 	] )(
 		'shows the $label preset as selected instead of Custom when the between date filter matches it',
 		async ( { label, value } ) => {
-			mockGetQuery.mockReturnValue( {
-				date_between: value(),
-			} );
+			let dateRange: [ string, string ];
 
-			render( <FeesReport /> );
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( new Date( '2026-05-15T12:00:00.000Z' ) );
+				dateRange = value();
+				mockGetQuery.mockReturnValue( {
+					date_between: dateRange,
+				} );
+
+				render( <FeesReport /> );
+			} finally {
+				jest.useRealTimers();
+			}
+
 			const filterPopover = await openFeesDateRangePopover();
 
 			expect(

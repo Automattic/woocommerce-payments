@@ -19,7 +19,9 @@ const injectedDateRangePresetInsertClass =
 const forcedCustomDatePresetDisabledClass =
 	'wcpay-reports-date-range-preset--custom-disabled';
 const dateRangePresetButtonClass = `components-button is-tertiary is-small dataviews-controls__date-preset ${ injectedDateRangePresetClass }`;
-const customDatePresetLabel = __( 'Custom', 'woocommerce-payments' );
+// DataViews owns this native label and translates it with the default domain.
+// eslint-disable-next-line @wordpress/i18n-text-domain
+const customDatePresetLabel = __( 'Custom' );
 
 const dataViewsDateRangePresets = [
 	{
@@ -73,6 +75,13 @@ const getDateRangePresetInsertionPoint = (
 
 	return null;
 };
+
+const getDateRangePresetPopoverFallbackContainer = (
+	ownerDocument: Document
+): HTMLElement | null =>
+	ownerDocument.querySelector< HTMLElement >(
+		'.components-popover__fallback-container'
+	);
 
 const getSelectedDateRangePreset = (
 	dateValue: DateFilterValue | undefined,
@@ -266,11 +275,55 @@ export const DataViewsDateRangePresetPortal = ( {
 		const ownerDocument = rootRef.current?.ownerDocument ?? document;
 		syncPortalNode();
 
-		const observer = new MutationObserver( syncPortalNode );
-		observer.observe( ownerDocument.body, {
-			childList: true,
-			subtree: true,
+		const observedTargets = new Set< HTMLElement >();
+
+		function observeTarget(
+			observer: MutationObserver,
+			target: HTMLElement | null,
+			options: MutationObserverInit
+		) {
+			if ( ! target || observedTargets.has( target ) ) {
+				return;
+			}
+			observer.observe( target, options );
+			observedTargets.add( target );
+		}
+
+		function observePopoverFallbackContainer( observer: MutationObserver ) {
+			observeTarget(
+				observer,
+				getDateRangePresetPopoverFallbackContainer( ownerDocument ),
+				{
+					childList: true,
+					subtree: true,
+				}
+			);
+		}
+
+		const observer = new MutationObserver( () => {
+			syncPortalNode();
+			observePopoverFallbackContainer( observer );
 		} );
+
+		observePopoverFallbackContainer( observer );
+		observeTarget(
+			observer,
+			ownerDocument.getElementById( 'wpbody-content' ),
+			{
+				childList: true,
+				subtree: true,
+			}
+		);
+		observeTarget( observer, ownerDocument.body, {
+			childList: true,
+		} );
+
+		if ( ! observedTargets.size ) {
+			return () => {
+				portalNodeRef.current?.remove();
+				portalNodeRef.current = null;
+			};
+		}
 
 		return () => {
 			observer.disconnect();
