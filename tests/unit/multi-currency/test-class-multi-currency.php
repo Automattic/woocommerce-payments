@@ -6,6 +6,7 @@
  */
 
 use WCPay\MultiCurrency\Utils;
+use WCPay\MultiCurrency\CachingEnvironment;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
@@ -148,6 +149,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
 		delete_option( 'wcpay_multi_currency_rendering_mode' );
+		delete_option( 'wcpay_multi_currency_cache_autodetect_done' );
+		delete_option( 'wcpay_multi_currency_cache_recommendation_dismissed' );
 		delete_option( 'wcpay_multi_currency_store_currency' );
 
 		parent::tear_down();
@@ -1554,6 +1557,142 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_option( 'woocommerce_currency_pos', $original_currency_pos );
 	}
 
+	public function test_maybe_auto_enable_sets_cache_mode_when_unset_and_caching_detected() {
+		delete_option( MultiCurrency::RENDERING_MODE_OPTION );
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->method( 'is_page_caching_active' )->willReturn( true );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
+
+		$this->assertSame( 'cache', get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
+		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+	}
+
+	public function test_maybe_auto_enable_leaves_mode_unset_when_no_caching_detected() {
+		delete_option( MultiCurrency::RENDERING_MODE_OPTION );
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->method( 'is_page_caching_active' )->willReturn( false );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
+
+		$this->assertFalse( get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
+		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+	}
+
+	public function test_maybe_auto_enable_never_overrides_existing_mode() {
+		update_option( MultiCurrency::RENDERING_MODE_OPTION, 'speed' );
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->method( 'is_page_caching_active' )->willReturn( true );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
+
+		$this->assertSame( 'speed', get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
+		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+	}
+
+	public function test_maybe_auto_enable_is_noop_when_already_run() {
+		update_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION, 'yes' );
+		delete_option( MultiCurrency::RENDERING_MODE_OPTION );
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->expects( $this->never() )->method( 'is_page_caching_active' );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
+
+		$this->assertFalse( get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
+	}
+
+	public function test_maybe_auto_enable_is_noop_when_feature_disabled() {
+		delete_option( MultiCurrency::RENDERING_MODE_OPTION );
+		update_option( '_wcpay_feature_mc_cache_optimized', '0' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->expects( $this->never() )->method( 'is_page_caching_active' );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
+
+		$this->assertFalse( get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
+		// Detection is intentionally not marked done so it can run once the feature is enabled later.
+		$this->assertFalse( get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+	}
+
+	public function test_get_settings_recommends_cache_mode_when_on_speed_and_caching_detected() {
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( MultiCurrency::RENDERING_MODE_OPTION, 'speed' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->method( 'is_page_caching_active' )->willReturn( true );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$settings = $this->multi_currency->get_settings();
+
+		$this->assertTrue( $settings['should_recommend_cache_mode'] );
+		$this->assertFalse( $settings['cache_recommendation_dismissed'] );
+	}
+
+	public function test_get_settings_does_not_recommend_when_dismissed() {
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( MultiCurrency::RENDERING_MODE_OPTION, 'speed' );
+		update_option( MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION, 'yes' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->method( 'is_page_caching_active' )->willReturn( true );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$settings = $this->multi_currency->get_settings();
+
+		$this->assertFalse( $settings['should_recommend_cache_mode'] );
+		$this->assertTrue( $settings['cache_recommendation_dismissed'] );
+	}
+
+	public function test_get_settings_does_not_recommend_when_already_on_cache_mode() {
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( MultiCurrency::RENDERING_MODE_OPTION, 'cache' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->method( 'is_page_caching_active' )->willReturn( true );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$settings = $this->multi_currency->get_settings();
+
+		$this->assertFalse( $settings['should_recommend_cache_mode'] );
+	}
+
+	public function test_get_settings_does_not_recommend_when_no_caching_detected() {
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( MultiCurrency::RENDERING_MODE_OPTION, 'speed' );
+
+		$mock_ce = $this->createMock( CachingEnvironment::class );
+		$mock_ce->method( 'is_page_caching_active' )->willReturn( false );
+		$this->init_multi_currency( null, true, null, null, $mock_ce );
+
+		$settings = $this->multi_currency->get_settings();
+
+		$this->assertFalse( $settings['should_recommend_cache_mode'] );
+	}
+
+	public function test_update_settings_persists_cache_recommendation_dismissed() {
+		$this->init_multi_currency();
+
+		$this->multi_currency->update_settings(
+			[ MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION => 'yes' ]
+		);
+
+		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION ) );
+	}
+
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
 			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );
@@ -1566,7 +1705,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_cache = null ) {
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_cache = null, $mock_caching_environment = null ) {
 		$this->mock_api_client = $this->createMock( MultiCurrencyApiClientInterface::class );
 
 		$this->mock_account = $mock_account ?? $this->createMock( MultiCurrencyAccountInterface::class );
@@ -1587,7 +1726,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$this->mock_account,
 			$this->localization_service,
 			$mock_cache ?? $this->mock_cache,
-			$this->mock_utils
+			$this->mock_utils,
+			$mock_caching_environment
 		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();

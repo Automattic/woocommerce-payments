@@ -177,6 +177,11 @@ class RestController extends \WP_REST_Controller {
 						'required' => false,
 						'enum'     => [ 'speed', 'cache' ],
 					],
+					'wcpay_multi_currency_cache_recommendation_dismissed' => [
+						'type'     => 'string',
+						'required' => false,
+						'enum'     => [ 'yes', 'no' ],
+					],
 				],
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],

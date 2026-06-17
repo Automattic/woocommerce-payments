@@ -413,6 +413,20 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $response );
 	}
 
+	public function test_update_settings_persists_cache_recommendation_dismissed() {
+		// Assert: the dismissal flag posted to the endpoint is persisted through MultiCurrency.
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/update-settings' );
+		$request->set_body_params(
+			[
+				'wcpay_multi_currency_cache_recommendation_dismissed' => 'yes',
+			]
+		);
+
+		$this->controller->update_settings( $request );
+
+		$this->assertSame( 'yes', get_option( 'wcpay_multi_currency_cache_recommendation_dismissed' ) );
+	}
+
 	private function get_mock_available_currencies() {
 		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		if ( empty( $this->mock_available_currencies ) ) {
