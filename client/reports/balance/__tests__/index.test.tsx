@@ -6,6 +6,8 @@ import userEvent from '@testing-library/user-event';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import { recordEvent } from 'tracks';
 
+import { expectPresetButtonBefore } from '../../test-helpers';
+
 const mockCreateNotice = jest.fn();
 const mockSpeak = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
@@ -15,6 +17,10 @@ const mockDateFilterProps = jest.fn();
 const mockAppliedDateFilterValue = {
 	operator: 'between',
 	value: [ '2026-04-01', '2026-04-30' ],
+};
+const mockClickTimeAppliedDateFilterValue = {
+	operator: 'between',
+	value: [ '2026-05-01', '2026-05-31' ],
 };
 let consoleErrorSpy: jest.SpyInstance | undefined;
 
@@ -85,7 +91,7 @@ jest.mock( '../balance-dataview', () => {
 		BalanceDataView: (
 			props: Record< string, unknown > & {
 				dateValue?: unknown;
-				onDateChange: ( next: unknown ) => void;
+				onDateChange: ( next: unknown, referenceDate?: Date ) => void;
 			}
 		) => {
 			mockDateFilterProps( { value: props.dateValue } );
@@ -99,6 +105,17 @@ jest.mock( '../balance-dataview', () => {
 						}
 					>
 						Apply custom date
+					</button>
+					<button
+						type="button"
+						onClick={ () =>
+							props.onDateChange(
+								mockClickTimeAppliedDateFilterValue,
+								new Date( '2026-06-15T12:00:00.000Z' )
+							)
+						}
+					>
+						Apply click-time date
 					</button>
 					<button
 						type="button"
@@ -1336,6 +1353,308 @@ describe( 'BalanceReport Tracks', () => {
 			expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
 				mockAppliedDateFilterValue
 			);
+		}
+	);
+
+	it( 'records date preset changes against the provided reference date', async () => {
+		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+		mockBalanceDateFilterState( {
+			hasDateFilterValue: false,
+		} );
+
+		renderBalanceReportWithDateFilterNow( stableNow, {
+			onReload: jest.fn(),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Apply click-time date' } )
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expectRecordedTracksEvent( 'wcpay_reports_balance_date_filter_change', {
+			preset: 'last_month',
+			range_days: 31,
+			is_initial_apply: true,
+		} );
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			mockClickTimeAppliedDateFilterValue
+		);
+	} );
+
+	it.each( [
+		{
+			label: 'Previous month',
+			expectedValue: {
+				operator: 'between',
+				value: [ '2026-04-01', '2026-04-30' ],
+			},
+			expectedTracking: {
+				preset: 'last_month',
+				range_days: 30,
+				is_initial_apply: false,
+			},
+		},
+		{
+			label: 'Previous year',
+			expectedValue: {
+				operator: 'between',
+				value: [ '2025-01-01', '2025-12-31' ],
+			},
+			expectedTracking: {
+				preset: 'last_year',
+				range_days: 365,
+				is_initial_apply: false,
+			},
+		},
+	] )(
+		'applies the $label preset from the between date filter as a complete calendar range',
+		async ( { label, expectedValue, expectedTracking } ) => {
+			mockBalanceDateFilterState( {
+				value: {
+					operator: 'between',
+					value: [ '2026-05-01', '2026-05-14' ],
+				},
+			} );
+
+			renderBalanceReportWithDateFilterNow(
+				new Date( '2026-05-15T12:00:00.000Z' ),
+				{ onReload: jest.fn() }
+			);
+
+			expect(
+				screen.queryByRole( 'button', { name: label } )
+			).not.toBeInTheDocument();
+
+			await act( async () => {
+				await userEvent.click(
+					screen.getByRole( 'button', {
+						name: /Date between \(inc\):/,
+					} )
+				);
+			} );
+			const filterPopover = await screen.findByRole( 'dialog' );
+			const presetButton = await within( filterPopover ).findByRole(
+				'button',
+				{
+					name: label,
+				}
+			);
+
+			expectPresetButtonBefore(
+				filterPopover,
+				'Previous month',
+				'Last 7 days'
+			);
+			expectPresetButtonBefore(
+				filterPopover,
+				'Previous year',
+				'Last 7 days'
+			);
+
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( new Date( '2026-05-15T12:00:00.000Z' ) );
+				act( () => {
+					presetButton.click();
+				} );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+				expectedValue
+			);
+			expectRecordedTracksEvent(
+				'wcpay_reports_balance_date_filter_change',
+				expectedTracking
+			);
+		}
+	);
+
+	it.each( [
+		{
+			label: 'Previous month',
+			value: {
+				operator: 'between',
+				value: [ '2026-04-01', '2026-04-30' ],
+			},
+		},
+		{
+			label: 'Previous year',
+			value: {
+				operator: 'between',
+				value: [ '2025-01-01', '2025-12-31' ],
+			},
+		},
+	] )(
+		'shows the $label preset as selected instead of Custom when the between date filter matches it',
+		async ( { label, value } ) => {
+			mockBalanceDateFilterState( { value } );
+
+			renderBalanceReportWithDateFilterNow(
+				new Date( '2026-05-15T12:00:00.000Z' ),
+				{ onReload: jest.fn() }
+			);
+
+			await act( async () => {
+				await userEvent.click(
+					screen.getByRole( 'button', {
+						name: /Date between \(inc\):/,
+					} )
+				);
+			} );
+			const filterPopover = await screen.findByRole( 'dialog' );
+			const presetButton = await within( filterPopover ).findByRole(
+				'button',
+				{
+					name: label,
+				}
+			);
+
+			expect( presetButton ).toHaveAttribute( 'aria-pressed', 'true' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).toHaveAttribute( 'aria-pressed', 'false' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).not.toHaveAttribute( 'aria-disabled' );
+		}
+	);
+
+	it( 'does not mark Custom disabled as the selected range changes', async () => {
+		const now = new Date( '2026-05-15T12:00:00.000Z' );
+		const onReload = jest.fn();
+		mockBalanceDateFilterState( {
+			value: {
+				operator: 'between',
+				value: [ '2025-01-01', '2025-12-31' ],
+			},
+		} );
+
+		const { rerender } = renderBalanceReportWithDateFilterNow( now, {
+			onReload,
+		} );
+
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', {
+					name: /Date between \(inc\):/,
+				} )
+			);
+		} );
+		let filterPopover = await screen.findByRole( 'dialog' );
+		expect(
+			within( filterPopover ).getByRole( 'button', {
+				name: 'Custom',
+			} )
+		).not.toHaveAttribute( 'aria-disabled' );
+
+		mockBalanceDateFilterState( {
+			value: {
+				operator: 'between',
+				value: [ '2026-05-01', '2026-05-14' ],
+			},
+		} );
+		rerender(
+			<BalanceDateFilterNowContext.Provider value={ now }>
+				<BalanceReport onReload={ onReload } />
+			</BalanceDateFilterNowContext.Provider>
+		);
+		filterPopover = await screen.findByRole( 'dialog' );
+
+		expect(
+			within( filterPopover ).getByRole( 'button', {
+				name: 'Custom',
+			} )
+		).not.toHaveAttribute( 'aria-disabled' );
+	} );
+
+	it.each( [
+		{
+			nativeLabel: 'Month to date',
+			customLabel: 'Previous month',
+			customValue: {
+				operator: 'between',
+				value: [ '2026-04-01', '2026-04-30' ],
+			},
+		},
+		{
+			nativeLabel: 'Last year',
+			customLabel: 'Previous year',
+			customValue: {
+				operator: 'between',
+				value: [ '2025-01-01', '2025-12-31' ],
+			},
+		},
+	] )(
+		'unselects the native $nativeLabel preset when $customLabel is selected',
+		async ( { nativeLabel, customLabel, customValue } ) => {
+			const now = new Date( '2026-05-15T12:00:00.000Z' );
+			const onReload = jest.fn();
+			mockBalanceDateFilterState( {
+				value: {
+					operator: 'between',
+					value: [ '2026-05-01', '2026-05-14' ],
+				},
+			} );
+
+			const { rerender } = renderBalanceReportWithDateFilterNow( now, {
+				onReload,
+			} );
+
+			await act( async () => {
+				await userEvent.click(
+					screen.getByRole( 'button', {
+						name: /Date between \(inc\):/,
+					} )
+				);
+			} );
+			const filterPopover = await screen.findByRole( 'dialog' );
+			const nativePreset = within( filterPopover ).getByRole( 'button', {
+				name: nativeLabel,
+			} );
+			const customPreset = await within( filterPopover ).findByRole(
+				'button',
+				{
+					name: customLabel,
+				}
+			);
+
+			await userEvent.click( nativePreset );
+			expect( nativePreset ).toHaveAttribute( 'aria-pressed', 'true' );
+
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( now );
+				act( () => {
+					customPreset.click();
+				} );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			mockBalanceDateFilterState( { value: customValue } );
+			rerender(
+				<BalanceDateFilterNowContext.Provider value={ now }>
+					<BalanceReport onReload={ onReload } />
+				</BalanceDateFilterNowContext.Provider>
+			);
+
+			const rerenderedPopover = await screen.findByRole( 'dialog' );
+			expect(
+				await within( rerenderedPopover ).findByRole( 'button', {
+					name: customLabel,
+				} )
+			).toHaveAttribute( 'aria-pressed', 'true' );
+			expect(
+				within( rerenderedPopover ).getByRole( 'button', {
+					name: nativeLabel,
+				} )
+			).toHaveAttribute( 'aria-pressed', 'false' );
 		}
 	);
 

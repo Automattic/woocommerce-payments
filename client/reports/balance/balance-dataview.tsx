@@ -33,6 +33,7 @@ import { getRowLabel } from './utils';
 import type { ReportsBalanceSummary } from 'wcpay/data/reports/hooks';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
+import { DataViewsDateRangePresetPortal } from 'wcpay/reports/date-filter/dataviews-date-range-preset-portal';
 
 // DataViews keeps the chips row collapsed until the funnel is toggled —
 // `isShowingFilter` starts false for non-primary filters and isn't part of the
@@ -70,8 +71,12 @@ interface BalanceDataViewProps {
 	displayPeriod: ReportsPeriodRange;
 	currency: string;
 	dateValue: DateFilterValue | undefined;
-	onDateChange: ( next: DateFilterValue | undefined ) => void;
+	onDateChange: (
+		next: DateFilterValue | undefined,
+		referenceDate?: Date
+	) => void;
 	focusTargetRef?: React.RefObject< HTMLDivElement >;
+	dateFilterNow?: Date;
 	// Render as a non-interactive preview (the loading skeleton): hide the
 	// native date Filters and mark the whole view aria-hidden so the blurred
 	// placeholder is skipped by assistive tech and keyboard navigation.
@@ -104,6 +109,7 @@ export const BalanceDataView = ( {
 	dateValue,
 	onDateChange,
 	focusTargetRef,
+	dateFilterNow,
 	preview = false,
 	children,
 }: BalanceDataViewProps ): JSX.Element => {
@@ -122,9 +128,17 @@ export const BalanceDataView = ( {
 	// labelled group: assistive tech announces "Balance summary" on entry,
 	// standing in for the bespoke table's <caption>.
 	const captionId = useId();
+	const stableDateFilterNow = useRef( dateFilterNow ?? new Date() ).current;
 	// Gate the funnel-click workaround to a single run per mount so React
 	// 18 StrictMode's double-invoke in development doesn't fire it twice.
 	const filtersRowOpenedRef = useRef( false );
+	const onDatePresetChange = useCallback(
+		( nextValue: DateFilterValue, referenceDate?: Date ) => {
+			setPendingDateOperator( null );
+			onDateChange( nextValue, referenceDate );
+		},
+		[ onDateChange ]
+	);
 
 	useEffect( () => {
 		if ( preview || filtersRowOpenedRef.current ) {
@@ -171,7 +185,7 @@ export const BalanceDataView = ( {
 						<span
 							className={ `wcpay-reports-balance-dv__label wcpay-reports-balance-dv__label--depth-${ item.depth }` }
 						>
-							{ item.label }
+							<span>{ item.label }</span>
 							{ typeof item.count === 'number' && (
 								<>
 									{ /* The badge is decorative; screen readers
@@ -292,6 +306,14 @@ export const BalanceDataView = ( {
 			ref={ rootRef }
 			aria-hidden={ preview || undefined }
 		>
+			{ ! preview && (
+				<DataViewsDateRangePresetPortal
+					rootRef={ rootRef }
+					dateValue={ dateValue }
+					dateFilterNow={ stableDateFilterNow }
+					onDateChange={ onDatePresetChange }
+				/>
+			) }
 			<DataViews
 				data={ items }
 				view={ view }

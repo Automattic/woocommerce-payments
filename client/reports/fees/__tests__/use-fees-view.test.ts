@@ -33,17 +33,26 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
 
-const renderUseFeesView = () => renderHook( () => useFeesView() );
+type SetFeesViewOptions = {
+	dateFilterNow?: Date;
+};
+
+const renderUseFeesView = ( now?: Date ) =>
+	renderHook( () => useFeesView( now ) );
 
 const updateFeesView = (
 	result: ReturnType< typeof renderUseFeesView >[ 'result' ],
-	nextView: Partial< View >
+	nextView: Partial< View >,
+	options?: SetFeesViewOptions
 ) => {
 	act( () => {
-		result.current[ 1 ]( {
-			...result.current[ 0 ],
-			...nextView,
-		} );
+		result.current[ 1 ](
+			{
+				...result.current[ 0 ],
+				...nextView,
+			},
+			options
+		);
 	} );
 };
 
@@ -433,6 +442,53 @@ describe( 'useFeesView', () => {
 		expect(
 			countRecordedTracksEvents( 'wcpay_reports_fees_date_filter_change' )
 		).toBe( 1 );
+	} );
+
+	it( 'records date preset changes against the injected stable date', () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+		const { result } = renderUseFeesView(
+			new Date( '2026-05-15T12:00:00.000Z' )
+		);
+
+		updateFeesView( result, {
+			filters: [
+				buildDateFilter( 'between', [ '2026-04-01', '2026-04-30' ] ),
+			],
+		} );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'last_month',
+			range_days: 29,
+			is_initial_apply: true,
+		} );
+	} );
+
+	it( 'records date preset changes against an override reference date', () => {
+		const { result } = renderUseFeesView(
+			new Date( '2026-05-15T12:00:00.000Z' )
+		);
+
+		updateFeesView(
+			result,
+			{
+				filters: [
+					buildDateFilter( 'between', [
+						'2026-05-01',
+						'2026-05-31',
+					] ),
+				],
+			},
+			{
+				dateFilterNow: new Date( '2026-06-15T12:00:00.000Z' ),
+			}
+		);
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'last_month',
+			range_days: 30,
+			is_initial_apply: true,
+		} );
 	} );
 
 	it( 'records a date filter reset when an applied date filter is removed', () => {

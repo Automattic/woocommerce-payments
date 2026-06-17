@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useId, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { Button, Spinner } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
@@ -17,8 +17,13 @@ import { recordEvent } from 'tracks';
 import { useFeesView } from './use-fees-view';
 import { useFeesData } from './use-fees-data';
 import { getFeesFields } from './fields';
-import { getFeesDateFilterRangeDays } from './date-filter-values';
+import {
+	getFeesDateFilterRangeDays,
+	getFeesDateFilterValue,
+} from './date-filter-values';
 import { ReportState } from '../report-state';
+import type { DateFilterValue } from 'wcpay/reports/date-filter';
+import { DataViewsDateRangePresetPortal } from 'wcpay/reports/date-filter/dataviews-date-range-preset-portal';
 import './style.scss';
 
 interface FeesReportProps {
@@ -31,6 +36,29 @@ const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
 const getDateRangeDays = ( view: View ): number | null =>
 	getFeesDateFilterRangeDays( findDateFilter( view.filters ) );
 
+const replaceDateFilter = (
+	filters: Filter[] | undefined,
+	dateValue: DateFilterValue
+): Filter[] => {
+	const nextDateFilter: Filter = {
+		field: 'date',
+		operator: dateValue.operator,
+		value: dateValue.value,
+	};
+	const existingFilters = filters ?? [];
+	const dateFilterIndex = existingFilters.findIndex(
+		( filter ) => filter.field === 'date'
+	);
+
+	if ( dateFilterIndex === -1 ) {
+		return [ nextDateFilter, ...existingFilters ];
+	}
+
+	return existingFilters.map( ( filter, index ) =>
+		index === dateFilterIndex ? nextDateFilter : filter
+	);
+};
+
 // DataViews.Footer is callable in the runtime version used here, but upstream
 // types do not expose a callable compound component shape yet.
 const DataViewsFooter = DataViews.Footer as () => JSX.Element | null;
@@ -39,7 +67,9 @@ export const FeesReport = ( {
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	// The report feedback survey is intentionally Balance-only.
-	const [ view, setView ] = useFeesView();
+	const rootRef = useRef< HTMLDivElement >( null );
+	const stableDateFilterNow = useRef( new Date() ).current;
+	const [ view, setView ] = useFeesView( stableDateFilterNow );
 	const initialEmptyHeadingId = useId();
 	const initialEmptyDescriptionId = useId();
 	const filteredEmptyHeadingId = useId();
@@ -68,6 +98,27 @@ export const FeesReport = ( {
 	const isInitialEmpty = hasNoRows && ! hasFilters;
 	const isFilteredEmpty = hasNoRows && hasFilters;
 	const rangeDays = useMemo( () => getDateRangeDays( view ), [ view ] );
+	const dateFilterValue = useMemo(
+		() => getFeesDateFilterValue( findDateFilter( view.filters ) ),
+		[ view.filters ]
+	);
+	const onDatePresetChange = useCallback(
+		( nextValue: DateFilterValue, referenceDate?: Date ) => {
+			setView(
+				{
+					...view,
+					page: 1,
+					filters: replaceDateFilter( view.filters, nextValue ),
+				},
+				referenceDate
+					? {
+							dateFilterNow: referenceDate,
+					  }
+					: undefined
+			);
+		},
+		[ setView, view ]
+	);
 
 	// Move focus to the error region and announce when an error surfaces, so
 	// keyboard/AT users notice the table disappearing. `role="alert"` on the
@@ -230,6 +281,7 @@ export const FeesReport = ( {
 	return (
 		<div className="wcpay-reports-fees">
 			<div
+				ref={ rootRef }
 				className={
 					isFilteredEmpty
 						? 'wcpay-reports-fees__main wcpay-reports-fees__main--filtered-empty'
@@ -237,6 +289,12 @@ export const FeesReport = ( {
 				}
 				tabIndex={ -1 }
 			>
+				<DataViewsDateRangePresetPortal
+					rootRef={ rootRef }
+					dateValue={ dateFilterValue }
+					dateFilterNow={ stableDateFilterNow }
+					onDateChange={ onDatePresetChange }
+				/>
 				<DataViews
 					data={ rows }
 					view={ view }
