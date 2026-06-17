@@ -418,6 +418,9 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', self::ROUTE . '/update-settings' );
 		$request->set_body_params(
 			[
+				// Include the route's required params so the request mirrors the real endpoint contract.
+				'wcpay_multi_currency_enable_auto_currency'           => 'no',
+				'wcpay_multi_currency_enable_storefront_switcher'     => 'no',
 				'wcpay_multi_currency_cache_recommendation_dismissed' => 'yes',
 			]
 		);
