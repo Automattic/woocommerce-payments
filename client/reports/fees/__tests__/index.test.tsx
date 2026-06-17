@@ -8,7 +8,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from 'tracks';
 
-import { expectPresetButtonBefore } from '../../__tests__/test-helpers';
+import { expectPresetButtonBefore } from '../../test-helpers';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();

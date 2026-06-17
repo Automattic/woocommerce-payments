@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import { recordEvent } from 'tracks';
 
-import { expectPresetButtonBefore } from '../../__tests__/test-helpers';
+import { expectPresetButtonBefore } from '../../test-helpers';
 
 const mockCreateNotice = jest.fn();
 const mockSpeak = jest.fn();
