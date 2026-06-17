@@ -163,7 +163,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		// header added as additional layer of security.
 		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
 			return $response;
 		}
 
@@ -509,7 +509,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		// Verify the nonce from the 'X-WooPayments-Tokenized-Cart-Nonce' header using superglobals.
 		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE'] ?? '' ) );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
 			return false;
 		}
 

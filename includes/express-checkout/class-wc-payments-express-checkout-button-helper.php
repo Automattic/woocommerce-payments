@@ -16,6 +16,13 @@ use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
  */
 class WC_Payments_Express_Checkout_Button_Helper {
 	/**
+	 * Nonce action securing the tokenized cart Store API requests. Created
+	 * client-side and verified on each tokenized-cart entry point, so it lives
+	 * here as the single source of truth shared across those call sites.
+	 */
+	const TOKENIZED_CART_NONCE_ACTION = 'woopayments_tokenized_cart_nonce';
+
+	/**
 	 * WC_Payment_Gateway_WCPay instance.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -260,18 +267,22 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
-		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
-		if ( 'pay_for_order' === $location ) {
-			$location = 'checkout';
-		}
+		return in_array( $method_id, $this->get_methods_enabled_at( $location ), true );
+	}
 
-		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
-
-		if ( $enabled_methods && is_array( $enabled_methods ) ) {
-			return in_array( $method_id, $enabled_methods, true );
-		}
-
-		return false;
+	/**
+	 * Returns the methods the merchant enabled at the current page's location,
+	 * straight from the location settings — without the currency or availability
+	 * gating that `get_enabled_express_checkout_methods_for_context()` applies.
+	 *
+	 * The Store API cart response is currency-fresh but location-blind, so the
+	 * client intersects it with this list to keep location gating intact when a
+	 * method's currency availability changes after page load.
+	 *
+	 * @return string[] Method ids (e.g. ['payment_request', 'amazon_pay']).
+	 */
+	public function get_methods_enabled_at_current_location() {
+		return $this->get_methods_enabled_at( $this->get_button_context() );
 	}
 
 	/**
@@ -851,6 +862,23 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 * @param WC_Product|null $product      The product object, or null.
 		 */
 		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
+	}
+
+	/**
+	 * Reads the raw location settings for a page location.
+	 *
+	 * @param string $location Location (product, cart, checkout, pay_for_order).
+	 * @return string[] Method ids enabled at that location.
+	 */
+	private function get_methods_enabled_at( $location ) {
+		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
+		if ( 'pay_for_order' === $location ) {
+			$location = 'checkout';
+		}
+
+		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
+
+		return is_array( $enabled_methods ) ? $enabled_methods : [];
 	}
 
 	/**

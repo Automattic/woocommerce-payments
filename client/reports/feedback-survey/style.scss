@@ -1,0 +1,154 @@
+.wcpay-reports-feedback-survey {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 0 0 2px 2px;
+	color: #1e1e1e;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: center;
+	padding: 12px;
+
+	&__header {
+		align-items: center;
+		display: flex;
+		min-height: 32px;
+		width: 100%;
+	}
+
+	&__header-content {
+		align-items: center;
+		box-sizing: border-box;
+		display: flex;
+		flex: 1 1 auto;
+		gap: 16px;
+		justify-content: center;
+		min-width: 0;
+		padding-left: 24px;
+	}
+
+	&__question {
+		flex: 0 1 337px;
+		font-size: 13px;
+		line-height: 20px;
+		margin: 0;
+		min-width: 0;
+		text-align: center;
+	}
+
+	&__thumbs {
+		align-items: center;
+		display: flex;
+		flex: 0 0 auto;
+	}
+
+	&__thumb.components-button {
+		align-items: center;
+		border-radius: 4px;
+		display: inline-flex;
+		height: 32px;
+		justify-content: center;
+		min-height: 32px;
+		min-width: 32px;
+		padding: 0;
+
+		span {
+			font-size: 17px;
+			line-height: 1;
+		}
+
+		&:focus-visible {
+			outline: 2px solid #007cba;
+			outline-offset: 1px;
+		}
+	}
+
+	&__thumb--selected.components-button {
+		background: #e9eff5;
+	}
+
+	&__close.components-button {
+		align-items: center;
+		display: inline-flex;
+		flex: 0 0 24px;
+		height: 24px;
+		justify-content: center;
+		min-height: 24px;
+		min-width: 24px;
+		padding: 0;
+		width: 24px;
+	}
+
+	&__divider {
+		border-top: 1px solid #dcdcde;
+		width: 100%;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		max-width: 513px;
+		width: 100%;
+
+		.components-base-control,
+		.components-base-control__field {
+			margin-bottom: 0;
+			width: 100%;
+		}
+
+		.components-textarea-control__input {
+			border-color: #757575;
+			border-radius: 2px;
+			box-sizing: border-box;
+			min-height: 96px;
+			padding: 10px;
+			width: 100%;
+		}
+	}
+
+	&__disclaimer {
+		color: #757575;
+		font-size: 11px;
+		line-height: 14px;
+		margin: 0;
+
+		a {
+			color: #007cba;
+		}
+	}
+
+	&__error.components-notice {
+		margin: 0;
+	}
+
+	&__footer {
+		align-items: center;
+		display: flex;
+		gap: 8px;
+		justify-content: flex-end;
+		width: 100%;
+	}
+}
+
+@media ( max-width: 600px ) {
+	.wcpay-reports-feedback-survey {
+		&__header {
+			align-items: center;
+		}
+
+		&__header-content {
+			flex-direction: column;
+			gap: 8px;
+			padding-left: 24px;
+		}
+
+		&__question {
+			flex-basis: auto;
+		}
+
+		&__close {
+			margin-left: auto;
+		}
+	}
+}
