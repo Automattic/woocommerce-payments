@@ -3,9 +3,14 @@
  */
 import {
 	shippingAddressChangeHandler,
+	shippingRateChangeHandler,
 	onConfirmHandler,
 	setCartApiHandler,
 } from '../event-handlers';
+import {
+	rememberElementCurrency,
+	__resetElementCurrencyForTests,
+} from '../utils/element-currency-cache';
 
 describe( 'Express checkout event handlers', () => {
 	let cartApiUpdateCustomerMock;
@@ -59,6 +64,7 @@ describe( 'Express checkout event handlers', () => {
 
 		afterEach( () => {
 			jest.clearAllMocks();
+			__resetElementCurrencyForTests();
 		} );
 
 		it( 'should handle successful response', async () => {
@@ -337,6 +343,119 @@ describe( 'Express checkout event handlers', () => {
 			expect( elements.update ).not.toHaveBeenCalled();
 			expect( event.resolve ).not.toHaveBeenCalled();
 			expect( event.reject ).toHaveBeenCalled();
+		} );
+
+		it( 'rejects the address and surfaces a message when the cart currency drifts from the element currency', async () => {
+			rememberElementCurrency( 'usd' );
+			const showError = jest.fn();
+
+			// A country-based multi-currency plugin flipped the cart to EUR
+			// after the wallet sheet opened in USD.
+			cartApiUpdateCustomerMock.mockResolvedValue( {
+				items: [],
+				shipping_rates: [],
+				totals: {
+					total_price: 1000,
+					currency_minor_unit: 2,
+					currency_code: 'EUR',
+				},
+			} );
+
+			await shippingAddressChangeHandler( event, elements, showError );
+
+			expect( event.reject ).toHaveBeenCalled();
+			expect( event.resolve ).not.toHaveBeenCalled();
+			expect( elements.update ).not.toHaveBeenCalled();
+			expect( showError ).toHaveBeenCalledWith(
+				expect.stringContaining( 'USD' )
+			);
+			expect( showError ).toHaveBeenCalledWith(
+				expect.stringContaining( 'EUR' )
+			);
+		} );
+
+		it( 'proceeds normally when the element currency matches the cart currency', async () => {
+			rememberElementCurrency( 'usd' );
+
+			cartApiUpdateCustomerMock.mockResolvedValue( {
+				items: [],
+				shipping_rates: [
+					{
+						package_id: 0,
+						name: 'Shipment 1',
+						destination: {},
+						items: [],
+						shipping_rates: [
+							{
+								rate_id: 'flat_rate:14',
+								name: 'Standard Shipping',
+								description: '',
+								delivery_time: '',
+								price: '1000',
+								taxes: '0',
+								meta_data: [],
+								selected: true,
+								currency_minor_unit: 2,
+								currency_code: 'USD',
+							},
+						],
+					},
+				],
+				totals: {
+					total_price: 1000,
+					currency_minor_unit: 2,
+					currency_code: 'USD',
+				},
+			} );
+
+			await shippingAddressChangeHandler( event, elements );
+
+			expect( event.reject ).not.toHaveBeenCalled();
+			expect( event.resolve ).toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'shippingRateChangeHandler', () => {
+		let event;
+		let elements;
+
+		beforeEach( () => {
+			event = {
+				shippingRate: { id: 'flat_rate:14' },
+				resolve: jest.fn(),
+				reject: jest.fn(),
+			};
+			elements = {
+				update: jest.fn( () => Promise.resolve() ),
+			};
+		} );
+
+		afterEach( () => {
+			jest.clearAllMocks();
+			__resetElementCurrencyForTests();
+		} );
+
+		it( 'rejects the rate change and surfaces a message when the cart currency drifts from the element currency', async () => {
+			rememberElementCurrency( 'usd' );
+			const showError = jest.fn();
+
+			cartApiSelectShippingRateMock.mockResolvedValue( {
+				items: [],
+				totals: {
+					total_price: 1000,
+					currency_minor_unit: 2,
+					currency_code: 'EUR',
+				},
+			} );
+
+			await shippingRateChangeHandler( event, elements, null, showError );
+
+			expect( event.reject ).toHaveBeenCalled();
+			expect( event.resolve ).not.toHaveBeenCalled();
+			expect( elements.update ).not.toHaveBeenCalled();
+			expect( showError ).toHaveBeenCalledWith(
+				expect.stringContaining( 'EUR' )
+			);
 		} );
 	} );
 

@@ -473,6 +473,8 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-ajax-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-store-api-extension.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-currency-guard.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -691,6 +693,25 @@ class WC_Payments {
 		// customer's selected currency at priorities 11-12). This ensures can_use_amazon_pay() checks
 		// availability against the correct presentment currency, not the store's default currency.
 		add_action( 'init', [ __CLASS__, 'maybe_display_express_checkout_buttons' ], 15 );
+
+		// Surfaces the currency-filtered ECE method list on the cart response
+		// so the JS can re-evaluate paymentMethodTypes after currency resolves.
+		// `woocommerce_blocks_loaded` fires on plugins_loaded@10 (via
+		// `woocommerce_loaded`), before this method runs at plugins_loaded@11,
+		// so register immediately when it has already fired.
+		if ( did_action( 'woocommerce_blocks_loaded' ) ) {
+			self::register_express_checkout_store_api_extension();
+		} else {
+			add_action(
+				'woocommerce_blocks_loaded',
+				[ __CLASS__, 'register_express_checkout_store_api_extension' ]
+			);
+		}
+
+		// Rejects order placement if the cart's currency drifted away from
+		// the one the Element booted with — e.g. a multi-currency plugin
+		// flipped the cart on shipping address change inside the wallet sheet.
+		WC_Payments_Express_Checkout_Currency_Guard::register();
 
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
@@ -1967,6 +1988,19 @@ class WC_Payments {
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $woopay_button_handler, $express_checkout_element_button_handler, $express_checkout_ajax_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
+	}
+
+	/**
+	 * Bootstraps the Store API cart extension on `woocommerce_blocks_loaded`.
+	 *
+	 * @return void
+	 */
+	public static function register_express_checkout_store_api_extension() {
+		$extension = new WC_Payments_Express_Checkout_Store_API_Extension(
+			self::get_express_checkout_helper(),
+			self::get_gateway()
+		);
+		$extension->init();
 	}
 
 	/**
