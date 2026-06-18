@@ -16,9 +16,10 @@ const addScript = ( attrs: Record< string, string > ): void => {
 
 describe( 'verifyStripeJsOrigin', () => {
 	afterEach( () => {
+		// Remove scripts and any non-script element planted with the handle id.
 		document.head
-			.querySelectorAll( 'script' )
-			.forEach( ( script ) => script.remove() );
+			.querySelectorAll( 'script, #stripe-js' )
+			.forEach( ( el ) => el.remove() );
 	} );
 
 	it( 'accepts the canonical WordPress handle tag', () => {
@@ -114,6 +115,24 @@ describe( 'verifyStripeJsOrigin', () => {
 		// handle. querySelector on a selector list returns the first match in
 		// document order, so the handle must be looked up explicitly to win.
 		addScript( { src: 'https://js.stripe.com/v3/' } );
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.evil.example/v3/?ver=3.0',
+		} );
+
+		const result = verifyStripeJsOrigin();
+
+		expect( result.ok ).toBe( false );
+		expect( result.detectedOrigin ).toBe( 'https://js.evil.example' );
+	} );
+
+	it( 'ignores a non-script element sharing the stripe-js id', () => {
+		// A planted <div id="stripe-js"> (inserted first) must not divert the
+		// lookup: the tag-qualified `script#stripe-js` selector skips it and
+		// still reads the real repointed handle.
+		const div = document.createElement( 'div' );
+		div.id = 'stripe-js';
+		document.head.appendChild( div );
 		addScript( {
 			id: 'stripe-js',
 			src: 'https://js.evil.example/v3/?ver=3.0',
