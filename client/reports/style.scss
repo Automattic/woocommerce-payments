@@ -164,24 +164,20 @@ body.woocommerce-admin-page__payments_reports {
 		padding-top: 0;
 	}
 
-	.dataviews__view-actions {
+	&__view-actions {
 		position: absolute;
 		top: 0;
 		right: 0;
 		left: 180px;
 		z-index: 1;
-		width: auto;
-		max-width: none;
-		min-height: 48px;
+		display: flex;
 		align-items: center;
-		justify-content: flex-end !important;
-		padding: 0;
+		justify-content: flex-end;
+		gap: 8px;
+		min-height: 48px;
+		padding: 8px 0;
 		background: transparent;
 		box-sizing: border-box;
-	}
-
-	.dataviews__search {
-		justify-content: flex-end !important;
 	}
 
 	.dataviews-search.components-search-control:not( :focus-within ) {
@@ -233,12 +229,11 @@ body.woocommerce-admin-page__payments_reports {
 	}
 
 	.wcpay-reports-fees {
-		.dataviews__view-actions {
+		&__view-actions {
 			position: static;
 			width: 100%;
 			max-width: none;
 			min-height: 48px;
-			justify-content: flex-end;
 			padding: $gap-small $gap-large;
 			border-bottom: 1px solid $gray-200;
 			background: #fff;

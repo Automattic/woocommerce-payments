@@ -55,13 +55,14 @@ const ExpressCheckoutComponent = ( {
 		paymentMethodTypes,
 	} );
 	const onShippingAddressChange = ( event ) =>
-		shippingAddressChangeHandler( event, elements );
+		shippingAddressChangeHandler( event, elements, setExpressPaymentError );
 
 	const onShippingRateChange = ( event ) =>
 		shippingRateChangeHandler(
 			event,
 			elements,
-			select( WC_STORE_CART )?.getCartData()
+			select( WC_STORE_CART )?.getCartData(),
+			setExpressPaymentError
 		);
 
 	const onElementsReady = ( event ) => {

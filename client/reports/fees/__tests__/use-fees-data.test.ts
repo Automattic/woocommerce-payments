@@ -13,7 +13,6 @@ jest.mock( 'wcpay/data/reports', () => ( {
 } ) );
 
 import { buildFeesQuery, useFeesData } from '../use-fees-data';
-import { encodeCustomDateFilterValue } from '../date-filter-values';
 
 const baseView = ( overrides: Partial< View > = {} ): View =>
 	( {
@@ -90,16 +89,30 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'between',
-							value: [ '2026-03-01', '2026-03-31' ],
-						} ),
+						operator: 'between',
+						value: [ '2026-03-01', '2026-03-31' ],
 					},
 				],
 			} )
 		);
 		expect( result.date_between ).toEqual( [ '2026-03-01', '2026-03-31' ] );
+		expect( result.date_before ).toBeUndefined();
+		expect( result.date_after ).toBeUndefined();
+	} );
+
+	it( 'omits malformed date "between" filters', () => {
+		const result = buildFeesQuery(
+			baseView( {
+				filters: [
+					{
+						field: 'date',
+						operator: 'between',
+						value: [ '2026-03-01', '2026-03-31', '2026-04-01' ],
+					},
+				],
+			} )
+		);
+		expect( result.date_between ).toBeUndefined();
 		expect( result.date_before ).toBeUndefined();
 		expect( result.date_after ).toBeUndefined();
 	} );
@@ -110,16 +123,30 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'on',
-							value: '2026-05-18',
-						} ),
+						operator: 'on',
+						value: '2026-05-18',
 					},
 				],
 			} )
 		);
 		expect( result.date_between ).toEqual( [ '2026-05-18', '2026-05-18' ] );
+		expect( result.date_before ).toBeUndefined();
+		expect( result.date_after ).toBeUndefined();
+	} );
+
+	it( 'omits scalar date filters with non-string values', () => {
+		const result = buildFeesQuery(
+			baseView( {
+				filters: [
+					{
+						field: 'date',
+						operator: 'before',
+						value: [ '2026-03-31' ],
+					},
+				],
+			} )
+		);
+		expect( result.date_between ).toBeUndefined();
 		expect( result.date_before ).toBeUndefined();
 		expect( result.date_after ).toBeUndefined();
 	} );
@@ -130,11 +157,8 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'before',
-							value: '2026-03-31',
-						} ),
+						operator: 'before',
+						value: '2026-03-31',
 					},
 				],
 			} )
@@ -149,11 +173,8 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{
 						field: 'date',
-						operator: 'is',
-						value: encodeCustomDateFilterValue( {
-							operator: 'after',
-							value: '2026-01-01',
-						} ),
+						operator: 'after',
+						value: '2026-01-01',
 					},
 				],
 			} )

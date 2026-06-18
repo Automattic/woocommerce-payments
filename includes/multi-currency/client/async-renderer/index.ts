@@ -67,6 +67,19 @@ interface JQueryObject {
 	off( events: string, handler: () => void ): JQueryObject;
 }
 
+declare global {
+	interface Window {
+		wcpayAsyncCurrency?: { ready: Promise< string > };
+	}
+}
+
+const whenDomReady = (): Promise< void > =>
+	document.readyState === 'loading'
+		? new Promise( ( resolve ) =>
+				document.addEventListener( 'DOMContentLoaded', () => resolve() )
+		  )
+		: Promise.resolve();
+
 /**
  * Async price renderer for cache-optimized multi-currency mode.
  *
@@ -702,9 +715,13 @@ export { WCPayAsyncPriceRenderer };
 if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
 	const renderer = new WCPayAsyncPriceRenderer();
 
-	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', () => renderer.init() );
-	} else {
-		renderer.init();
-	}
+	// ECE awaits this before calling stripe.elements so it doesn't
+	// race the REST fetch.
+	window.wcpayAsyncCurrency = {
+		ready: whenDomReady()
+			.then( () => renderer.init() )
+			.then( () =>
+				( renderer.config?.selected_currency ?? '' ).toLowerCase()
+			),
+	};
 }
