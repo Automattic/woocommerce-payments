@@ -35,6 +35,9 @@ export const verifyStripeJsOrigin = (
 ): StripeOriginResult => {
 	const tag =
 		doc.querySelector< HTMLScriptElement >( '#stripe-js' ) ??
+		// Fallback presence check: the `src^=` filter already pins the origin, so
+		// a match here is always ok — it just confirms Stripe.js is present when
+		// no `#stripe-js` handle exists (a total absence still fails closed below).
 		doc.querySelector< HTMLScriptElement >(
 			'script[src^="https://js.stripe.com/"]'
 		);
@@ -60,8 +63,9 @@ export const verifyStripeJsOrigin = (
  * Assert the loaded Stripe.js came from Stripe's origin; throw (and warn) if not.
  *
  * Defense-in-depth against a compromised site repointing the `stripe` handle at
- * a skimmer clone. It targets the Stripe.js-substitution vector only and is
- * bypassable by an attacker with full control of the page.
+ * a skimmer clone. It checks the loaded tag's origin, not the `window.Stripe`
+ * identity, so it catches the Stripe.js-substitution vector but not an attacker
+ * who proxies the real Stripe object; bypassable with full control of the page.
  *
  * The thrown message stays generic — checkout error handling may show it to
  * shoppers — while full diagnostics (the detected src) go to the console warning.
