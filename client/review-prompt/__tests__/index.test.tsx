@@ -134,11 +134,11 @@ describe( 'ReviewPrompt', () => {
 		expect( screen.getByText( 'Maybe later' ) ).toBeInTheDocument();
 	} );
 
-	it( 'records payments_review_prompt_shown event on view', () => {
+	it( 'records wcpay_review_prompt_shown event on view', () => {
 		render( <ReviewPrompt /> );
 
 		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_shown',
+			'wcpay_review_prompt_shown',
 			expect.objectContaining( {
 				prompt_id: 'review_prompt_settings_001',
 				extension: 'woopayments',
@@ -196,7 +196,7 @@ describe( 'ReviewPrompt', () => {
 		render( <ReviewPrompt /> );
 
 		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_shown',
+			'wcpay_review_prompt_shown',
 			expect.objectContaining( {
 				experiment: 'woopayments_review_prompt_design_v1',
 				variant: 'treatment_revised',
@@ -268,22 +268,14 @@ describe( 'ReviewPrompt', () => {
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
-			// Should record action event
+			// Should record the action event, carrying the destination on
+			// the write_review click.
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_prompt_action',
+				'wcpay_review_prompt_action',
 				expect.objectContaining( {
 					action: 'write_review',
 					destination: 'marketplace',
 					time_to_click_ms: expect.any( Number ),
-				} )
-			);
-
-			// Should record destination selected event
-			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_destination_selected',
-				expect.objectContaining( {
-					action: 'write_review',
-					destination: 'marketplace',
 				} )
 			);
 		} );
@@ -307,7 +299,7 @@ describe( 'ReviewPrompt', () => {
 		fireEvent.click( maybeLaterButton );
 
 		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_action',
+			'wcpay_review_prompt_action',
 			expect.objectContaining( {
 				action: 'maybe_later',
 				time_to_click_ms: expect.any( Number ),
@@ -333,7 +325,7 @@ describe( 'ReviewPrompt', () => {
 		fireEvent.click( dismissButton );
 
 		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_action',
+			'wcpay_review_prompt_action',
 			expect.objectContaining( {
 				action: 'dismiss_x',
 				time_to_click_ms: expect.any( Number ),
@@ -367,7 +359,7 @@ describe( 'ReviewPrompt', () => {
 
 		await waitFor( () => {
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_prompt_action',
+				'wcpay_review_prompt_action',
 				expect.objectContaining( {
 					time_to_click_ms: 5000,
 				} )
@@ -387,7 +379,7 @@ describe( 'ReviewPrompt', () => {
 
 		await waitFor( () => {
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_destination_selected',
+				'wcpay_review_prompt_action',
 				expect.objectContaining( {
 					destination: 'marketplace',
 				} )
@@ -405,7 +397,7 @@ describe( 'ReviewPrompt', () => {
 
 		await waitFor( () => {
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_destination_selected',
+				'wcpay_review_prompt_action',
 				expect.objectContaining( {
 					destination: 'marketplace',
 				} )

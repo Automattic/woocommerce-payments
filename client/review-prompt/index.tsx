@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
 import Spotlight from 'components/spotlight';
 import { useReviewPromptState } from './hooks';
 import { recordEvent } from 'wcpay/tracks';
+import { MerchantEvent } from 'wcpay/tracks/event';
 import { getVariantContent } from './variants';
 
 const marketplaceReviewBaseUrl =
@@ -44,7 +45,7 @@ const getMarketplaceReviewUrl = ( variant: string ): string => {
  * Helper to record an event with base properties and optional additional properties.
  */
 const recordPromptEvent = (
-	eventName: string,
+	eventName: MerchantEvent,
 	baseProperties: Record< string, unknown >,
 	additionalProperties?: Record< string, unknown >
 ) => {
@@ -93,7 +94,7 @@ const ReviewPrompt: React.FC = () => {
 		const timestamp = Date.now();
 		setViewTimestamp( timestamp );
 		recordPromptEvent(
-			'payments_review_prompt_shown',
+			'wcpay_review_prompt_shown',
 			getBaseEventProperties()
 		);
 	}, [] );
@@ -112,12 +113,7 @@ const ReviewPrompt: React.FC = () => {
 		};
 
 		recordPromptEvent(
-			'payments_review_prompt_action',
-			baseProps,
-			eventProps
-		);
-		recordPromptEvent(
-			'payments_review_destination_selected',
+			'wcpay_review_prompt_action',
 			baseProps,
 			eventProps
 		);
@@ -137,7 +133,7 @@ const ReviewPrompt: React.FC = () => {
 
 	const handleSecondaryClick = useCallback( () => {
 		recordPromptEvent(
-			'payments_review_prompt_action',
+			'wcpay_review_prompt_action',
 			getBaseEventProperties(),
 			{
 				action: 'maybe_later',
@@ -150,7 +146,7 @@ const ReviewPrompt: React.FC = () => {
 
 	const handleDismiss = useCallback( () => {
 		recordPromptEvent(
-			'payments_review_prompt_action',
+			'wcpay_review_prompt_action',
 			getBaseEventProperties(),
 			{
 				action: 'dismiss_x',
