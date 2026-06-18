@@ -98,6 +98,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
+		delete_option( 'wcpay_multi_currency_cache_recommendation_dismissed' );
 		parent::tear_down();
 	}
 
