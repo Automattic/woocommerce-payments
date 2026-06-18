@@ -167,14 +167,14 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * The running_override_selected_currency_filters property is used here to avoid infinite loops.
 	 *
-	 * @param mixed $return Default is false, but could be three letter currency code.
+	 * @param mixed $selected_currency Default is false, but could be three letter currency code.
 	 *
 	 * @return mixed Three letter currency code or false if not.
 	 */
-	public function override_selected_currency( $return ) {
+	public function override_selected_currency( $selected_currency ) {
 		// If it's not false, or we are already running filters, exit.
-		if ( $return || $this->running_override_selected_currency_filters ) {
-			return $return;
+		if ( $selected_currency || $this->running_override_selected_currency_filters ) {
+			return $selected_currency;
 		}
 
 		// If we have a subscription in $current_my_account_subscription, we want to use the currency from that subscription.
@@ -193,27 +193,27 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				$subscription      = $this->get_subscription( $cart_item[ $subscription_type ]['subscription_id'] );
 
 				$this->running_override_selected_currency_filters = false;
-				return $subscription ? $subscription->get_currency() : $return;
+				return $subscription ? $subscription->get_currency() : $selected_currency;
 			}
 		}
 
 		// This instance is for when the customer lands on the product page to choose a new subscription tier.
 		$switch_subscription = $this->get_subscription_from_superglobal_switch_id();
-		return $switch_subscription ? $switch_subscription->get_currency() : $return;
+		return $switch_subscription ? $switch_subscription->get_currency() : $selected_currency;
 	}
 
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool   $return  Whether to convert the product's price or not. Default is true.
-	 * @param object $product Product object to test.
+	 * @param bool   $should_convert Whether to convert the product's price or not. Default is true.
+	 * @param object $product        Product object to test.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return, $product ): bool {
+	public function should_convert_product_price( bool $should_convert, $product ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $should_convert ) {
+			return $should_convert;
 		}
 
 		$calls = [
@@ -228,7 +228,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			// When WCPay Subs programmatically sets up the cart, we need to return the
 			// converted price so the user lands at the checkout with the correct price.
 			if ( $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Renewal->setup_cart' ] ) ) {
-				return $return;
+				return $should_convert;
 			}
 
 			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
@@ -248,21 +248,21 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $should_convert;
 	}
 
 	/**
 	 * Checks to see if the coupon's amount should be converted.
 	 *
-	 * @param bool   $return Whether to convert the coupon's price or not. Default is true.
-	 * @param object $coupon Coupon object to test.
+	 * @param bool   $should_convert Whether to convert the coupon's price or not. Default is true.
+	 * @param object $coupon         Coupon object to test.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_coupon_amount( bool $return, $coupon ): bool {
+	public function should_convert_coupon_amount( bool $should_convert, $coupon ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $should_convert ) {
+			return $should_convert;
 		}
 
 		// We do not need to convert percentage coupons.
@@ -287,20 +287,20 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $should_convert;
 	}
 
 	/**
 	 * Checks to see if currency switching should be disabled.
 	 *
-	 * @param bool $return Whether widgets should be hidden or not. Default is false.
+	 * @param bool $should_disable Whether widgets should be hidden or not. Default is false.
 	 *
 	 * @return bool
 	 */
-	public function should_disable_currency_switching( bool $return ): bool {
+	public function should_disable_currency_switching( bool $should_disable ): bool {
 		// If it's already true, return it.
-		if ( $return ) {
-			return $return;
+		if ( $should_disable ) {
+			return $should_disable;
 		}
 
 		if ( $this->get_subscription_type_from_cart( 'renewal' )
@@ -310,7 +310,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return true;
 		}
 
-		return $return;
+		return $should_disable;
 	}
 
 	/**

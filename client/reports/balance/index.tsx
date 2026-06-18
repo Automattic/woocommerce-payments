@@ -14,7 +14,7 @@ import { recordEvent } from 'tracks';
  * Internal dependencies
  */
 import { useReportsBalanceSummary } from 'wcpay/data/reports';
-import DateFilter, { type DateFilterValue } from 'wcpay/reports/date-filter';
+import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import { matchPreset } from 'wcpay/reports/date-filter/presets';
 import { ReportState } from '../report-state';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
@@ -28,12 +28,14 @@ import {
 	getPeriodForDateFilter,
 	useBalanceDateFilter,
 } from './use-balance-date-filter';
-import { BalanceSummaryTable } from './summary-table';
+import { BalanceDataView } from './balance-dataview';
+import ReportFeedbackSurvey from '../feedback-survey';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
 import { BalanceDateFilterNowContext } from './context';
 import {
 	getRangeDays,
+	getBalanceReportIdentity,
 	getRowLabel,
 	hasBalanceActivity,
 	hasKeys,
@@ -92,57 +94,76 @@ const BalancePrintReport = ( {
 	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
 	displayPeriod: ReportsPeriodRange;
 	currency: string;
-} ): JSX.Element => (
-	<section className="wcpay-reports-balance-print" aria-hidden="true">
-		<header className="wcpay-reports-balance-print__header">
-			<img
-				className="wcpay-reports-balance-print__logo"
-				src={ WooPaymentsLogo }
-				alt={ __( 'WooPayments', 'woocommerce-payments' ) }
-			/>
-			<div className="wcpay-reports-balance-print__business">
-				{ woopaymentsBusinessDetails.map( ( line ) => (
-					<p key={ line }>{ line }</p>
-				) ) }
-			</div>
-		</header>
-		<table className="wcpay-reports-balance-print__table">
-			<thead>
-				<tr>
-					<th scope="colgroup" colSpan={ 2 }>
-						{ __( 'Balance summary', 'woocommerce-payments' ) }
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				{ visibleRows.map( ( row ) => {
-					const amount = getDisplayedAmount(
-						row,
-						row.getAmount( summary )
-					);
+} ): JSX.Element => {
+	const reportIdentity = getBalanceReportIdentity();
+	const businessLines = [
+		reportIdentity.businessName,
+		reportIdentity.accountId,
+		...woopaymentsBusinessDetails,
+	].filter( ( line ): line is string => line !== '' );
 
-					return (
-						<tr
-							key={ row.key }
-							className={ getPrintRowClassName( row ) }
+	return (
+		<section className="wcpay-reports-balance-print" aria-hidden="true">
+			<header className="wcpay-reports-balance-print__header">
+				<img
+					className="wcpay-reports-balance-print__logo"
+					src={ WooPaymentsLogo }
+					alt={ __( 'WooPayments', 'woocommerce-payments' ) }
+				/>
+				<div
+					className="wcpay-reports-balance-print__business"
+					data-testid="balance-report-business"
+				>
+					{ businessLines.map( ( line, index ) => (
+						<p
+							key={ `${ line }-${ index }` }
+							data-testid="balance-report-business-line"
 						>
-							<th scope="row">
-								{ getRowLabel( row, displayPeriod ) }
-							</th>
-							<td>{ formatBalanceAmount( amount, currency ) }</td>
-						</tr>
-					);
-				} ) }
-			</tbody>
-		</table>
-		<p className="wcpay-reports-balance-print__disclaimer">
-			{ __(
-				'This report is provided for informational reconciliation purposes only. It is not an IRS form, tax statement, bank statement, legal document, or formal financial statement.',
-				'woocommerce-payments'
-			) }
-		</p>
-	</section>
-);
+							{ line }
+						</p>
+					) ) }
+				</div>
+			</header>
+			<table className="wcpay-reports-balance-print__table">
+				<thead>
+					<tr>
+						<th scope="colgroup" colSpan={ 2 }>
+							{ __( 'Balance summary', 'woocommerce-payments' ) }
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{ visibleRows.map( ( row ) => {
+						const amount = getDisplayedAmount(
+							row,
+							row.getAmount( summary )
+						);
+
+						return (
+							<tr
+								key={ row.key }
+								className={ getPrintRowClassName( row ) }
+							>
+								<th scope="row">
+									{ getRowLabel( row, displayPeriod ) }
+								</th>
+								<td>
+									{ formatBalanceAmount( amount, currency ) }
+								</td>
+							</tr>
+						);
+					} ) }
+				</tbody>
+			</table>
+			<p className="wcpay-reports-balance-print__disclaimer">
+				{ __(
+					'This report is provided for informational reconciliation purposes only. It is not an IRS form, tax statement, bank statement, legal document, or formal financial statement.',
+					'woocommerce-payments'
+				) }
+			</p>
+		</section>
+	);
+};
 
 export const BalanceReport = ( {
 	onReload = () => undefined,
@@ -173,7 +194,7 @@ export const BalanceReport = ( {
 	const containerRef = useRef< HTMLDivElement >( null );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
-	const toolbarRef = useRef< HTMLDivElement >( null );
+	const feedbackFocusTargetRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
 	const activeRequestKey = hasDateFilterValue
@@ -200,8 +221,9 @@ export const BalanceReport = ( {
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
-	const printScopeActive =
+	const hasLoadedReportActivity =
 		hasDateFilterValue && ! isLoading && ! hasError && hasActivity;
+	const printScopeActive = hasLoadedReportActivity;
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
@@ -209,50 +231,32 @@ export const BalanceReport = ( {
 	const currency = summary.currency ?? '';
 	const recordDateFilterChange = (
 		next: DateFilterValue,
-		isInitialApply: boolean
+		isInitialApply: boolean,
+		referenceDate = stableDateFilterNow
 	) => {
-		const nextPeriod = getPeriodForDateFilter( next, stableDateFilterNow );
+		const nextPeriod = getPeriodForDateFilter( next, referenceDate );
 		recordEvent( 'wcpay_reports_balance_date_filter_change', {
-			preset: matchPreset( next, stableDateFilterNow ),
+			preset: matchPreset( next, referenceDate ),
 			range_days: getRangeDays( nextPeriod.start, nextPeriod.end ),
 			is_initial_apply: isInitialApply,
 		} );
 	};
-	const onDateFilterChange = ( next: DateFilterValue | undefined ) => {
+	const onDateFilterChange = (
+		next: DateFilterValue | undefined,
+		referenceDate?: Date
+	) => {
 		if ( next ) {
-			recordDateFilterChange( next, ! hasDateFilterValue );
+			recordDateFilterChange( next, ! hasDateFilterValue, referenceDate );
+		} else {
+			// Clearing the native DataViews date filter is the Reset action.
+			recordEvent( 'wcpay_reports_balance_date_filter_change', {
+				preset: 'reset',
+				range_days: null,
+				is_initial_apply: false,
+			} );
 		}
 		setValue( next );
 	};
-	const resetDateFilter = () => {
-		toolbarRef.current
-			?.querySelector< HTMLButtonElement >(
-				'.wcpay-date-filter__chip-trigger'
-			)
-			?.focus();
-		recordEvent( 'wcpay_reports_balance_date_filter_change', {
-			preset: 'reset',
-			range_days: null,
-			is_initial_apply: false,
-		} );
-		setValue( undefined );
-	};
-
-	const toolbar = (
-		<div className="wcpay-reports-balance__toolbar" ref={ toolbarRef }>
-			<DateFilter
-				value={ value }
-				onChange={ onDateFilterChange }
-				onClear={ resetDateFilter }
-				now={ stableDateFilterNow }
-			/>
-			{ hasDateFilterValue && (
-				<Button variant="tertiary" onClick={ resetDateFilter }>
-					{ __( 'Reset', 'woocommerce-payments' ) }
-				</Button>
-			) }
-		</div>
-	);
 
 	useEffect( () => {
 		if ( isLoading && activeRequestKey ) {
@@ -299,13 +303,19 @@ export const BalanceReport = ( {
 	] );
 
 	useEffect( () => {
+		// Focus the error heading when the failure interrupts the user inside
+		// the report. `reloadRequestedRef` covers the Reload → loading → fail
+		// path: the focused loading heading unmounts with the skeleton, so by
+		// the time this effect runs focus has already fallen back to <body>
+		// and the containment check alone would miss it.
 		if (
 			hasError &&
 			! previousErrorRef.current &&
-			( containerRef.current?.contains(
-				containerRef.current.ownerDocument.activeElement
-			) ??
-				false )
+			( reloadRequestedRef.current ||
+				( containerRef.current?.contains(
+					containerRef.current.ownerDocument.activeElement
+				) ??
+					false ) )
 		) {
 			errorHeadingRef.current?.focus();
 		}
@@ -316,9 +326,7 @@ export const BalanceReport = ( {
 		// `isLoading=true` after invalidateResolution, but the loading
 		// skeleton still renders because `isLoading` wins in the content
 		// branch — so gate on `isLoading` alone here. The ref is consumed
-		// only at the terminal state (success or error below) so we can also
-		// restore focus to the toolbar on
-		// Reload → success.
+		// at the terminal states (success below or the error branch above).
 		if ( reloadRequestedRef.current && isLoading ) {
 			loadingHeadingRef.current?.focus();
 		}
@@ -332,14 +340,7 @@ export const BalanceReport = ( {
 		}
 
 		if ( completedActiveRequest ) {
-			if ( reloadRequestedRef.current ) {
-				toolbarRef.current
-					?.querySelector< HTMLButtonElement >(
-						'.wcpay-date-filter__chip-trigger'
-					)
-					?.focus();
-				reloadRequestedRef.current = false;
-			}
+			reloadRequestedRef.current = false;
 
 			const message = __(
 				'Balance report loaded.',
@@ -400,19 +401,24 @@ export const BalanceReport = ( {
 		[]
 	);
 
-	let content: JSX.Element;
+	// The state content renders inside BalanceDataView, below the always
+	// mounted native date filter — so a cleared filter leaves an empty Date
+	// chip that can be re-applied from any state, matching the original
+	// persistent toolbar. `undefined` means loaded: BalanceDataView renders
+	// its own rows card.
+	let stateContent: JSX.Element | undefined;
 
 	if ( ! hasDateFilterValue ) {
-		content = <BalanceEmptyState />;
+		stateContent = <BalanceEmptyState />;
 	} else if ( isLoading ) {
-		content = (
+		stateContent = (
 			<BalanceLoadingSkeleton
 				headingRef={ loadingHeadingRef }
 				headingTabIndex={ -1 }
 			/>
 		);
 	} else if ( hasError ) {
-		content = (
+		stateContent = (
 			<ReportState
 				title={ __( 'Balance unavailable', 'woocommerce-payments' ) }
 				description={
@@ -458,30 +464,36 @@ export const BalanceReport = ( {
 			/>
 		);
 	} else if ( ! hasActivity ) {
-		content = <BalanceEmptyState />;
-	} else {
-		content = (
-			<>
-				<BalanceSummaryTable
-					visibleRows={ visibleRows }
-					summary={ summary }
-					displayPeriod={ displayPeriod }
-					currency={ currency }
-				/>
+		stateContent = <BalanceEmptyState />;
+	}
+
+	return (
+		<div className="wcpay-reports-balance" ref={ containerRef }>
+			<BalanceDataView
+				visibleRows={ visibleRows }
+				summary={ summary }
+				displayPeriod={ displayPeriod }
+				currency={ currency }
+				dateValue={ value }
+				onDateChange={ onDateFilterChange }
+				focusTargetRef={ feedbackFocusTargetRef }
+				dateFilterNow={ stableDateFilterNow }
+			>
+				{ stateContent }
+			</BalanceDataView>
+			{ printScopeActive && (
 				<BalancePrintReport
 					visibleRows={ visibleRows }
 					summary={ summary }
 					displayPeriod={ displayPeriod }
 					currency={ currency }
 				/>
-			</>
-		);
-	}
-
-	return (
-		<div className="wcpay-reports-balance" ref={ containerRef }>
-			{ toolbar }
-			{ content }
+			) }
+			{ hasLoadedReportActivity && (
+				<ReportFeedbackSurvey
+					focusAfterCloseRef={ feedbackFocusTargetRef }
+				/>
+			) }
 		</div>
 	);
 };

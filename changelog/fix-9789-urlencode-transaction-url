@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Encode the path query arg before passing it to add_query_arg() when composing transaction details URLs.

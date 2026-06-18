@@ -65,7 +65,12 @@ class WC_Payments_Email_Failed_Authentication_Retry extends WC_Email_Failed_Orde
 
 		// We want all the parent's methods, with none of its properties, so call its parent's constructor, rather than my parent constructor.
 		WC_Email::__construct();
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		// Add email preview filters.
 		add_filter( 'woocommerce_email_preview_dummy_order', [ $this, 'get_preview_order' ], 10, 1 );
 		add_filter( 'woocommerce_email_preview_dummy_retry', [ $this, 'get_preview_retry' ], 10, 1 );

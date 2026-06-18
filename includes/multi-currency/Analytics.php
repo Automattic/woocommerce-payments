@@ -234,6 +234,13 @@ class Analytics {
 			return $clauses;
 		}
 
+		/**
+		 * Filters whether the Multi-Currency SELECT clauses modification should be disabled.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param bool $disable Whether to disable the SELECT clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
 			return $clauses;
 		}
@@ -281,6 +288,13 @@ class Analytics {
 			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate';
 		}
 
+		/**
+		 * Filters the SELECT clauses after the Multi-Currency columns have been added.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param string[] $new_clauses The SELECT clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_clauses', $new_clauses );
 	}
 
@@ -295,6 +309,13 @@ class Analytics {
 	public function filter_join_clauses( array $clauses, $context ): array {
 		global $wpdb;
 
+		/**
+		 * Filters whether the Multi-Currency JOIN clauses modification should be disabled.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param bool $disable Whether to disable the JOIN clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_join_clauses', false ) ) {
 			return $clauses;
 		}
@@ -332,6 +353,13 @@ class Analytics {
 			$clauses[] = "LEFT JOIN {$meta_table} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.{$id_field} AND {$stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
+		/**
+		 * Filters the JOIN clauses after the Multi-Currency currency JOINs have been added.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param string[] $clauses The JOIN clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_join_clauses', $clauses );
 	}
 
@@ -343,6 +371,13 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_where_clauses( array $clauses ): array {
+		/**
+		 * Filters whether the Multi-Currency WHERE clauses modification should be disabled.
+		 *
+		 * @since 4.5.1
+		 *
+		 * @param bool $disable Whether to disable the WHERE clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_where_clauses', false ) ) {
 			return $clauses;
 		}
@@ -371,6 +406,13 @@ class Analytics {
 			$clauses[]  = $wpdb->prepare( $expression, $currency_args['currency'] ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
+		/**
+		 * Filters the WHERE clauses after Multi-Currency customer currency filtering has been applied.
+		 *
+		 * @since 4.5.1
+		 *
+		 * @param string[] $clauses The WHERE clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
 	}
 
@@ -382,6 +424,13 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_select_orders_clauses( array $clauses ): array {
+		/**
+		 * Filters whether the Multi-Currency SELECT orders clauses modification should be disabled.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param bool $disable Whether to disable the SELECT orders clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_orders_clauses', false ) ) {
 			return $clauses;
 		}
@@ -410,6 +459,13 @@ class Analytics {
 			}
 		}
 
+		/**
+		 * Filters the SELECT orders clauses after Multi-Currency conversions have been applied.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param string[] $clauses The SELECT orders clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_orders_clauses', $clauses );
 	}
 
@@ -490,14 +546,14 @@ class Analytics {
 	/**
 	 * Generate a case when statement using the provided variables.
 	 *
-	 * @param string $variable The SQL variable we want to check for NULL.
-	 * @param string $then     The THEN clause.
-	 * @param string $else     The ELSE clause.
+	 * @param string $variable    The SQL variable we want to check for NULL.
+	 * @param string $then        The THEN clause.
+	 * @param string $else_clause The ELSE clause.
 	 *
 	 * @return string
 	 */
-	private function generate_case_when( string $variable, string $then, string $else ): string {
-		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else} END";
+	private function generate_case_when( string $variable, string $then, string $else_clause ): string {
+		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else_clause} END";
 	}
 
 	/**

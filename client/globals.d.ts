@@ -51,6 +51,8 @@ declare global {
 		isAccountValid: boolean;
 		accountStatus: Partial< {
 			email?: string;
+			businessName?: string;
+			accountId?: string;
 			created: string;
 			isLive?: boolean;
 			testDrive?: boolean;

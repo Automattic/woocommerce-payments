@@ -220,7 +220,7 @@ class WC_Helper_Product {
 	 * @return array
 	 */
 	public static function create_attribute( $raw_name = 'size', $terms = [ 'small' ] ) {
-		global $wpdb, $wc_product_attributes;
+		global $wc_product_attributes;
 
 		// Make sure caches are clean.
 		delete_transient( 'wc_attribute_taxonomies' );
@@ -255,8 +255,8 @@ class WC_Helper_Product {
 			// Register as taxonomy.
 			register_taxonomy(
 				$taxonomy_name,
-				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy_name, [ 'product' ] ),
-				apply_filters(
+				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy_name, [ 'product' ] ), // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+				apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 					'woocommerce_taxonomy_args_' . $taxonomy_name,
 					[
 						'labels'       => [

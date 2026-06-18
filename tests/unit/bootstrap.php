@@ -56,7 +56,7 @@ function _manually_load_plugin() {
 	// via update_option().
 	add_filter(
 		'default_option__wcpay_feature_subscriptions',
-		function ( $default ) {
+		function ( $default_value ) {
 			return '1';
 		},
 		10,
@@ -95,6 +95,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';

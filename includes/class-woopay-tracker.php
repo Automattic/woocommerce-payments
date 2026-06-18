@@ -58,7 +58,12 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	public function __construct( $http ) {
 
 		$this->http = $http;
+	}
 
+	/**
+	 * Register hooks.
+	 */
+	public function init_hooks() {
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_get_identity', [ $this, 'ajax_tracks_id' ] );
