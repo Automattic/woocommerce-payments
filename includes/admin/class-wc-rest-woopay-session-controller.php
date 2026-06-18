@@ -87,6 +87,13 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 * @return bool True if the request signature is valid.
 	 */
 	private function has_valid_request_signature(): bool {
+		/**
+		 * Filters whether the current request is signed with the store's blog token.
+		 *
+		 * @since 5.9.0
+		 *
+		 * @param bool $is_signed Whether the request signature was verified against the blog token.
+		 */
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
 	}
 
