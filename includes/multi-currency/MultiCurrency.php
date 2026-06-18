@@ -773,7 +773,7 @@ class MultiCurrency {
 	 */
 	public function get_selected_currency(): Currency {
 		$multi_currency_code = $this->compatibility->override_selected_currency();
-		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
+		$currency_code       = $multi_currency_code ? $multi_currency_code : (string) $this->get_stored_currency_code();
 
 		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
 	}
