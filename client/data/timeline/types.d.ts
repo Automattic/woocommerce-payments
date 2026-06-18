@@ -151,6 +151,9 @@ export interface TimelineItem {
 	currency?: string;
 	deposit?: TimelineDeposit;
 	dispute_id?: string;
+	// MOCKUP (EFW #304): fields carried by the synthetic early_fraud_warning event.
+	actionable?: boolean;
+	fraud_type?: string;
 	evidence_due_by?: number;
 	failure_reason?: string;
 	failure_transaction_id?: string;

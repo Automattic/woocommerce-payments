@@ -111,6 +111,12 @@ class Order_Fraud_And_Risk_Meta_Box {
 
 		$this->maybe_print_risk_level_block( $risk_level );
 
+		// MOCKUP (EFW #304): preview the Early Fraud Warning block. Remove when
+		// the real EFW data path lands. EFW is orthogonal to the Radar outcome
+		// below — an ALLOW'd charge can still get an EFW — so it prints as its
+		// own additive block here, not as a fraud-outcome switch case.
+		$this->maybe_print_early_fraud_warning_block( $order );
+
 		echo '<div class="wcpay-fraud-risk-action">';
 
 		switch ( $meta_box_type ) {
@@ -243,6 +249,128 @@ class Order_Fraud_And_Risk_Meta_Box {
 		echo '<div class="wcpay-fraud-risk-level__bar"></div>';
 		echo '<p>' . esc_html( $descriptions[ $risk_level ] ) . '</p>';
 		echo '</div>';
+	}
+
+	/**
+	 * MOCKUP (EFW #304): prints a preview of the Early Fraud Warning block.
+	 *
+	 * Fabricates an EFW scenario so the UI can be previewed before the real
+	 * server-side EFW pipeline exists. Force a scenario with the `efw_mock`
+	 * query param (`actionable`, `actionable_stolen`, `actionable_unauthorized`,
+	 * `resolved`, `none`); otherwise it's derived deterministically from the
+	 * order ID so each order is stable but the store shows variety.
+	 *
+	 * Remove this method (and its caller) when the real EFW feature lands.
+	 *
+	 * @param \WC_Order $order The order we are working with.
+	 *
+	 * @return void
+	 */
+	private function maybe_print_early_fraud_warning_block( $order ) {
+		// Never let the mock alter test output (the metabox tests assert exact
+		// echoed markup); only render it on real page loads.
+		if ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
+			return;
+		}
+
+		$scenario = $this->resolve_mock_early_fraud_warning_scenario( $order );
+
+		if ( null === $scenario ) {
+			return;
+		}
+
+		$fraud_type_labels = [
+			'card_never_received'         => __( 'Card never received', 'woocommerce-payments' ),
+			'fraudulent_card_application' => __( 'Fraudulent card application', 'woocommerce-payments' ),
+			'made_with_counterfeit_card'  => __( 'Made with counterfeit card', 'woocommerce-payments' ),
+			'made_with_lost_card'         => __( 'Made with lost card', 'woocommerce-payments' ),
+			'made_with_stolen_card'       => __( 'Made with stolen card', 'woocommerce-payments' ),
+			'misc'                        => __( 'Other', 'woocommerce-payments' ),
+			'unauthorized_use_of_card'    => __( 'Unauthorized use of card', 'woocommerce-payments' ),
+		];
+
+		$actionable      = $scenario['actionable'];
+		$fraud_type      = $scenario['fraud_type'];
+		$fraud_type_text = $fraud_type_labels[ $fraud_type ] ?? '';
+
+		$icon = $actionable
+			? [
+				'url' => plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ),
+				'alt' => __( 'Orange shield outline', 'woocommerce-payments' ),
+			]
+			: [
+				'url' => plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ),
+				'alt' => __( 'Green check mark', 'woocommerce-payments' ),
+			];
+
+		$modifier = $actionable ? 'actionable' : 'resolved';
+		$title    = $actionable
+			? __( 'Early fraud warning', 'woocommerce-payments' )
+			: __( 'Early fraud warning resolved', 'woocommerce-payments' );
+
+		$description = $actionable
+			? __( 'The card issuer flagged this payment as likely fraudulent. About 80% of early fraud warnings become disputes if no action is taken. Refunding now can prevent a dispute.', 'woocommerce-payments' )
+			: __( 'This payment was refunded or disputed, so the warning is no longer actionable.', 'woocommerce-payments' );
+
+		echo '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--' . esc_attr( $modifier ) . '">';
+		echo '<p class="wcpay-fraud-risk-efw__title"><img src="' . esc_url( $icon['url'] ) . '" alt="' . esc_attr( $icon['alt'] ) . '"> ' . esc_html( $title ) . '</p>';
+
+		if ( '' !== $fraud_type_text ) {
+			echo '<p class="wcpay-fraud-risk-efw__reason">' . sprintf(
+				/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
+				esc_html__( 'Reported reason: %s', 'woocommerce-payments' ),
+				esc_html( $fraud_type_text )
+			) . '</p>';
+		}
+
+		echo '<p>' . esc_html( $description ) . '</p>';
+
+		if ( $actionable ) {
+			// MOCKUP (EFW #304): the real CTA would launch the refund flow; this
+			// anchors to the order items panel on this page, where Refund lives.
+			echo '<p><a href="#woocommerce-order-items">' . esc_html__( 'Refund to avoid a dispute', 'woocommerce-payments' ) . '</a></p>';
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * MOCKUP (EFW #304): resolves which mock EFW scenario to render for an order.
+	 *
+	 * @param \WC_Order $order The order we are working with.
+	 *
+	 * @return array|null Scenario as [ 'actionable' => bool, 'fraud_type' => string ], or null for "no EFW".
+	 */
+	private function resolve_mock_early_fraud_warning_scenario( $order ) {
+		$scenarios = [
+			'none'                    => null,
+			'actionable_stolen'       => [
+				'actionable' => true,
+				'fraud_type' => 'made_with_stolen_card',
+			],
+			'actionable_unauthorized' => [
+				'actionable' => true,
+				'fraud_type' => 'unauthorized_use_of_card',
+			],
+			'resolved'                => [
+				'actionable' => false,
+				'fraud_type' => 'made_with_stolen_card',
+			],
+		];
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only mock display toggle, no state change.
+		$requested = isset( $_GET['efw_mock'] ) ? sanitize_text_field( wp_unslash( $_GET['efw_mock'] ) ) : '';
+		if ( 'actionable' === $requested ) {
+			$requested = 'actionable_stolen';
+		}
+		if ( '' !== $requested && array_key_exists( $requested, $scenarios ) ) {
+			return $scenarios[ $requested ];
+		}
+
+		$pool = [ 'actionable_stolen', 'actionable_unauthorized', 'resolved', 'none' ];
+		$pick = $pool[ crc32( (string) $order->get_id() ) % count( $pool ) ];
+
+		return $scenarios[ $pick ];
 	}
 
 	/**

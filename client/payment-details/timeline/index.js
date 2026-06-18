@@ -11,6 +11,8 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
  */
 import { useTimeline } from 'wcpay/data/timeline';
 import mapTimelineEvents from './map-events';
+// MOCKUP (EFW #304): remove with the rest of the EFW mock when the real feature lands.
+import { injectMockEfwEvent } from './efw-mock';
 import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
@@ -19,7 +21,11 @@ const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
 	const { timeline, timelineError, isLoading } =
 		useTimeline( paymentIntentId );
 
-	const items = mapTimelineEvents( timeline, bankName );
+	const items = mapTimelineEvents(
+		// MOCKUP (EFW #304): splice in a synthetic early-fraud-warning event.
+		injectMockEfwEvent( timeline, paymentIntentId ),
+		bankName
+	);
 
 	return (
 		<Card size="large">

@@ -29,6 +29,8 @@ import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
 import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+// MOCKUP (EFW #304): fraud-type labels for the mocked early-fraud-warning event.
+import { EFW_FRAUD_TYPE_LABELS } from './efw-mock';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
@@ -1242,6 +1244,88 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					]
 				),
 			];
+		// MOCKUP (EFW #304): renders the synthetic early-fraud-warning event
+		// injected by ./efw-mock. Replace with real server-driven data when the
+		// EFW feature ships.
+		case 'early_fraud_warning': {
+			const fraudTypeLabel =
+				EFW_FRAUD_TYPE_LABELS[ event.fraud_type ] ?? null;
+			const reportedReason = fraudTypeLabel
+				? sprintf(
+						/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
+						__( 'Reported reason: %s', 'woocommerce-payments' ),
+						fraudTypeLabel
+				  )
+				: null;
+
+			if ( ! event.actionable ) {
+				return [
+					getStatusChangeTimelineItem(
+						event,
+						__(
+							'Early fraud warning resolved',
+							'woocommerce-payments'
+						)
+					),
+					getMainTimelineItem(
+						event,
+						__(
+							'This early fraud warning is no longer actionable.',
+							'woocommerce-payments'
+						),
+						<NoticeOutlineIcon />,
+						[
+							__(
+								'The payment was refunded or disputed, so no further action is needed to avoid a dispute.',
+								'woocommerce-payments'
+							),
+							reportedReason,
+						].filter( Boolean )
+					),
+				];
+			}
+
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Early fraud warning', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					__(
+						'Payment received an early fraud warning',
+						'woocommerce-payments'
+					),
+					<NoticeOutlineIcon className="is-warning" />,
+					[
+						__(
+							// eslint-disable-next-line max-len
+							'The card issuer flagged this payment as likely fraudulent. About 80% of early fraud warnings become disputes if no action is taken.',
+							'woocommerce-payments'
+						),
+						reportedReason,
+						createInterpolateElement(
+							__(
+								'Refunding this payment now can prevent a dispute. <link>Refund this payment</link>',
+								'woocommerce-payments'
+							),
+							{
+								link: (
+									<Link
+										// MOCKUP (EFW #304): the real CTA would deep-link to
+										// this order's refund flow; the timeline doesn't carry
+										// the order ID, so this stands in with the orders list.
+										href={ getAdminUrl( {
+											page: 'wc-orders',
+										} ) }
+									/>
+								),
+							}
+						),
+					].filter( Boolean )
+				),
+			];
+		}
 		case 'fraud_outcome_manual_approve':
 			return getManualFraudOutcomeTimelineItem( event, 'allow' );
 		case 'fraud_outcome_manual_block':
