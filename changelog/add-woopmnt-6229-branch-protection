@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Scope WooPayments repo access with branch protection: add CODEOWNERS and a branch-protection-change Slack alert workflow. CI/governance only, not user-facing. Refs WOOPMNT-6229.
+
+
