@@ -70,18 +70,60 @@ jobs:
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
-          qit run:e2e woocommerce-payments \
-            --zip=woocommerce-payments.zip \
-            --config tests/qit/qit.json \
-            --woo=${{ inputs.woocommerce-version }} \
-            --wp=${{ inputs.wordpress-version }} \
-            --php=${{ inputs.php-version }} \
-            --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
-            --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
-            --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
-            --wait \
-            --print-report-url \
-            -- --project=${{ inputs.playwright-project }}
+          # QIT provisions the env (downloads WP/WooCommerce/…) before any test; that
+          # step flakes on corrupt downloads or network blips and sinks the cell even
+          # though our code is fine (WOOPMNT-6200). A finished run writes results to the
+          # dirs below; a provisioning flake leaves them empty — so retry only when
+          # nothing was produced, never a run that already has a verdict.
+          max_attempts=3
+          attempt=1
+          # Same paths the "Upload test results" step collects.
+          results_dirs=( "tests/qit/test-package/test-results" "qit-results" )
+
+          run_qit() {
+            qit run:e2e woocommerce-payments \
+              --zip=woocommerce-payments.zip \
+              --config tests/qit/qit.json \
+              --woo=${{ inputs.woocommerce-version }} \
+              --wp=${{ inputs.wordpress-version }} \
+              --php=${{ inputs.php-version }} \
+              --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
+              --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
+              --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
+              --wait \
+              --print-report-url \
+              -- --project=${{ inputs.playwright-project }}
+          }
+
+          # True once tests actually ran (pass or fail).
+          produced_results() {
+            local d
+            for d in "${results_dirs[@]}"; do
+              [ -d "$d" ] && [ -n "$(find "$d" -type f -print -quit 2>/dev/null)" ] && return 0
+            done
+            return 1
+          }
+
+          while true; do
+            # Reset so the check reflects THIS attempt.
+            rm -rf "${results_dirs[@]}"
+
+            set +e
+            run_qit
+            code=$?
+            set -e
+
+            [ "$code" -eq 0 ] && exit 0
+
+            if [ "$attempt" -ge "$max_attempts" ] || produced_results; then
+              # Real failure or out of attempts — surface as-is.
+              exit "$code"
+            fi
+
+            echo "::warning::QIT failed before producing any test results (attempt ${attempt}/${max_attempts}) — environment provisioning likely flaked; retrying after backoff."
+            sleep "$(( attempt * 15 ))"
+            attempt="$(( attempt + 1 ))"
+          done
 
       - name: Upload test results
         if: always()
