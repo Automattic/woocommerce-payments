@@ -4,7 +4,6 @@
 import {
 	verifyStripeJsOrigin,
 	assertStripeJsOrigin,
-	STRIPE_JS_ORIGIN,
 } from '../verify-stripe-origin';
 
 const addScript = ( attrs: Record< string, string > ): void => {
@@ -31,7 +30,7 @@ describe( 'verifyStripeJsOrigin', () => {
 		expect( verifyStripeJsOrigin() ).toEqual( {
 			ok: true,
 			detectedSrc: 'https://js.stripe.com/v3/?ver=3.0',
-			detectedOrigin: STRIPE_JS_ORIGIN,
+			detectedOrigin: 'https://js.stripe.com',
 		} );
 	} );
 
