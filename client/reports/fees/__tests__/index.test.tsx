@@ -4,9 +4,11 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from 'tracks';
+
+import { expectPresetButtonBefore } from '../../test-helpers';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -106,6 +108,9 @@ const filteredMarchQuery = {
 	date_between: [ '2026-03-01', '2026-03-31' ],
 	payment_method_type: 'card',
 };
+const fixedDateFilterNow = new Date( '2026-05-15T12:00:00.000Z' );
+const previousMonthRange: [ string, string ] = [ '2026-04-01', '2026-04-30' ];
+const previousYearRange: [ string, string ] = [ '2025-01-01', '2025-12-31' ];
 
 type FeesRow = typeof baseRow;
 
@@ -188,6 +193,20 @@ const expectRecordedTracksEvent = (
 	properties: unknown
 ) => {
 	expect( mockRecordEvent ).toHaveBeenCalledWith( eventName, properties );
+};
+
+const openFeesDateRangePopover = async () => {
+	await userEvent.click(
+		screen.getByRole( 'button', {
+			name: 'Filter',
+		} )
+	);
+	await userEvent.click(
+		await screen.findByRole( 'button', {
+			name: /Date between \(inc\):/,
+		} )
+	);
+	return screen.findByRole( 'dialog' );
 };
 
 beforeEach( () => {
@@ -443,6 +462,117 @@ describe( 'FeesReport (DataViews)', () => {
 			} )
 		).not.toBeInTheDocument();
 	} );
+
+	it.each( [
+		{
+			label: 'Previous month',
+			expectedDateBetween: previousMonthRange,
+		},
+		{
+			label: 'Previous year',
+			expectedDateBetween: previousYearRange,
+		},
+	] )(
+		'applies the $label preset from the between date filter as a complete calendar range',
+		async ( { label, expectedDateBetween } ) => {
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( fixedDateFilterNow );
+				mockGetQuery.mockReturnValue( {
+					date_between: [ '2026-05-01', '2026-05-14' ],
+				} );
+
+				render( <FeesReport /> );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			const filterPopover = await openFeesDateRangePopover();
+			const presetButton = await within( filterPopover ).findByRole(
+				'button',
+				{
+					name: label,
+				}
+			);
+
+			expectPresetButtonBefore(
+				filterPopover,
+				'Previous month',
+				'Last 7 days'
+			);
+			expectPresetButtonBefore(
+				filterPopover,
+				'Previous year',
+				'Last 7 days'
+			);
+
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( fixedDateFilterNow );
+				act( () => {
+					presetButton.click();
+				} );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					date_preset: undefined,
+					date_between: expectedDateBetween,
+					date_before: undefined,
+					date_after: undefined,
+				} ),
+				'/payments/reports'
+			);
+		}
+	);
+
+	it.each( [
+		{
+			label: 'Previous month',
+			value: previousMonthRange,
+		},
+		{
+			label: 'Previous year',
+			value: previousYearRange,
+		},
+	] )(
+		'shows the $label preset as selected instead of Custom when the between date filter matches it',
+		async ( { label, value } ) => {
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( fixedDateFilterNow );
+				mockGetQuery.mockReturnValue( {
+					date_between: value,
+				} );
+
+				render( <FeesReport /> );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			const filterPopover = await openFeesDateRangePopover();
+			const presetButton = await within( filterPopover ).findByRole(
+				'button',
+				{
+					name: label,
+				}
+			);
+
+			expect( presetButton ).toHaveAttribute( 'aria-pressed', 'true' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).toHaveAttribute( 'aria-pressed', 'false' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).not.toHaveAttribute( 'aria-disabled' );
+		}
+	);
 
 	it( 'clears search, report filters, and the date filter from the report reset button', async () => {
 		mockGetQuery.mockReturnValue( {
