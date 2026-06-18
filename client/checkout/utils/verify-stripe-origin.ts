@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Stripe's canonical origin. Stripe.js is only ever served from here
  * (https://docs.stripe.com/js/including); any other origin is unsupported.
  */
@@ -100,5 +105,7 @@ export const assertStripeJsOrigin = ( {
 		`WooPayments: blocking checkout — ${ reason }. Expected Stripe.js from ${ STRIPE_JS_ORIGIN }.`
 	);
 
-	throw new Error( 'Stripe.js provenance check failed.' );
+	throw new Error(
+		__( 'Stripe.js provenance check failed.', 'woocommerce-payments' )
+	);
 };
