@@ -12,10 +12,33 @@ import { useReviewPromptState } from './hooks';
 import { recordEvent } from 'wcpay/tracks';
 import { getVariantContent } from './variants';
 
-const wordpressOrgReviewUrl =
-	'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post';
-const marketplaceReviewUrl =
-	'https://woocommerce.com/products/woocommerce-payments/?review';
+const marketplaceReviewBaseUrl =
+	'https://woocommerce.com/products/woopayments/';
+
+/**
+ * Build the Marketplace review URL for the given variant.
+ *
+ * All merchants are routed to the woocommerce.com Marketplace. WooPayments is a
+ * wordpress.org-sourced product there, so a review can be left without a prior
+ * purchase, and — unlike wordpress.org — the destination is instrumented, so
+ * submissions can be attributed back to this prompt and the assigned design
+ * variant. The `review` param opens the review modal on arrival; the `utm_*`
+ * params carry attribution for the destination-side funnel, following the
+ * standard UTM vocabulary used across WooCommerce and woocommerce.com. The
+ * assigned design variant rides in `utm_content` — the canonical UTM slot for
+ * distinguishing variations within a single campaign.
+ */
+const getMarketplaceReviewUrl = ( variant: string ): string => {
+	const params = new URLSearchParams( {
+		review: '',
+		utm_source: 'woopayments',
+		utm_medium: 'in_app_review_prompt',
+		utm_campaign: 'review_prompt_settings_001',
+		utm_content: variant,
+	} );
+
+	return `${ marketplaceReviewBaseUrl }?${ params.toString() }`;
+};
 
 /**
  * Helper to record an event with base properties and optional additional properties.
@@ -76,15 +99,15 @@ const ReviewPrompt: React.FC = () => {
 	}, [] );
 
 	const handlePrimaryClick = useCallback( async () => {
-		// Determine destination based on connection state
-		const isLive = window.wcpayReviewPromptSettings?.isLive;
-		const destination = isLive ? 'wordpress_org' : 'marketplace';
-		const reviewUrl = isLive ? wordpressOrgReviewUrl : marketplaceReviewUrl;
+		// All merchants are routed to the woocommerce.com Marketplace,
+		// regardless of connection (live/test) state.
+		const variant = window.wcpayReviewPromptSettings?.variant || 'control';
+		const reviewUrl = getMarketplaceReviewUrl( variant );
 
 		const baseProps = getBaseEventProperties();
 		const eventProps = {
 			action: 'write_review',
-			destination,
+			destination: 'marketplace',
 			...getTimeToClickProps( viewTimestamp ),
 		};
 

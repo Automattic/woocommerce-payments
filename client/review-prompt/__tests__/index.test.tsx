@@ -204,33 +204,58 @@ describe( 'ReviewPrompt', () => {
 		);
 	} );
 
-	it( 'opens WordPress.org review URL when "Leave review" is clicked in live mode', async () => {
-		global.wcpayReviewPromptSettings.isLive = true;
+	it( 'opens the Marketplace review URL with attribution when "Leave review" is clicked', async () => {
+		global.wcpayReviewPromptSettings.variant = 'treatment_illustration';
 
 		render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
+		fireEvent.click( screen.getByText( 'Leave review' ) );
+
+		await waitFor( () => {
+			expect( mockWindowOpen ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		const [ openedUrl, target ] = mockWindowOpen.mock.calls[ 0 ];
+		const url = new URL( openedUrl );
+
+		expect( url.origin + url.pathname ).toBe(
+			'https://woocommerce.com/products/woopayments/'
+		);
+		expect( url.searchParams.has( 'review' ) ).toBe( true );
+		expect( url.searchParams.get( 'utm_content' ) ).toBe(
+			'treatment_illustration'
+		);
+		expect( url.searchParams.get( 'utm_source' ) ).toBe( 'woopayments' );
+		expect( target ).toBe( '_blank' );
+	} );
+
+	it( 'routes to the Marketplace regardless of connection (live/test) state', async () => {
+		// Live mode.
+		global.wcpayReviewPromptSettings.isLive = true;
+		const { unmount } = render( <ReviewPrompt /> );
+		fireEvent.click( screen.getByText( 'Leave review' ) );
 
 		await waitFor( () => {
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
+				expect.stringContaining(
+					'https://woocommerce.com/products/woopayments/'
+				),
 				'_blank'
 			);
 		} );
-	} );
 
-	it( 'opens marketplace review URL when "Leave review" is clicked in test mode', async () => {
+		// Test mode resolves to the same destination.
+		unmount();
+		jest.clearAllMocks();
 		global.wcpayReviewPromptSettings.isLive = false;
-
 		render( <ReviewPrompt /> );
-
-		const writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
+		fireEvent.click( screen.getByText( 'Leave review' ) );
 
 		await waitFor( () => {
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://woocommerce.com/products/woocommerce-payments/?review',
+				expect.stringContaining(
+					'https://woocommerce.com/products/woopayments/'
+				),
 				'_blank'
 			);
 		} );
@@ -248,7 +273,7 @@ describe( 'ReviewPrompt', () => {
 				'payments_review_prompt_action',
 				expect.objectContaining( {
 					action: 'write_review',
-					destination: 'wordpress_org',
+					destination: 'marketplace',
 					time_to_click_ms: expect.any( Number ),
 				} )
 			);
@@ -258,7 +283,7 @@ describe( 'ReviewPrompt', () => {
 				'payments_review_destination_selected',
 				expect.objectContaining( {
 					action: 'write_review',
-					destination: 'wordpress_org',
+					destination: 'marketplace',
 				} )
 			);
 		} );
@@ -352,7 +377,7 @@ describe( 'ReviewPrompt', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'uses correct destination based on connection state', async () => {
+	it( 'records the Marketplace destination in both live and test mode', async () => {
 		// Test live mode
 		global.wcpayReviewPromptSettings.isLive = true;
 		const { unmount } = render( <ReviewPrompt /> );
@@ -364,7 +389,7 @@ describe( 'ReviewPrompt', () => {
 			expect( recordEvent ).toHaveBeenCalledWith(
 				'payments_review_destination_selected',
 				expect.objectContaining( {
-					destination: 'wordpress_org',
+					destination: 'marketplace',
 				} )
 			);
 		} );
@@ -402,13 +427,15 @@ describe( 'ReviewPrompt', () => {
 		await waitFor( () => {
 			// Should have tried to open in new window
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
+				expect.stringContaining(
+					'https://woocommerce.com/products/woopayments/'
+				),
 				'_blank'
 			);
 
 			// Should fall back to navigating current window
-			expect( window.location.href ).toBe(
-				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post'
+			expect( window.location.href ).toContain(
+				'https://woocommerce.com/products/woopayments/'
 			);
 		} );
 	} );
