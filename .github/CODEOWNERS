@@ -1,0 +1,4 @@
+# Changes to this repository require review from a designated Code Owner
+# before they can land on a protected branch.
+# Refs WOOPMNT-6229
+* @Automattic/chronos @Automattic/gamma @Automattic/moltres @rtio
