@@ -11,6 +11,22 @@
 }
 
 .woocommerce-payments-page {
+	// Global card styling for every WooPayments admin screen (overview,
+	// payment details, disputes, etc.): `@wordpress/components` Card ships with
+	// no margin and a small default header, so these rules are the only thing
+	// giving stacked cards their gap and their larger title. They must live in
+	// this always-loaded global stylesheet rather than a route-specific one —
+	// while they sat in payment-details, route code splitting kept them out of
+	// the overview chunk, so its cards collapsed flush and lost their header
+	// size.
+	.components-card {
+		margin-bottom: 24px;
+	}
+
+	.components-card__header {
+		font-size: 20px;
+	}
+
 	.components-card__body {
 		> *:first-child {
 			margin-top: 0;
