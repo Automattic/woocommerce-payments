@@ -53,15 +53,20 @@ const getDisputeRedirectUrl = ( dispute?: Dispute ): string => {
 const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	query: { id: disputeId },
 } ) => {
-	const { dispute, isLoading } = useDispute( disputeId );
+	const { dispute, error, isLoading } = useDispute( disputeId );
 
 	useEffect( () => {
-		if ( isLoading ) {
+		// Wait until the dispute query has settled before redirecting. isLoading
+		// (isResolving) is false on the first render, before resolution starts, so
+		// gating on !isLoading alone would bounce to the disputes list before the
+		// dispute loads — sending valid disputes to the list instead of their
+		// transaction details. A settled query has either a dispute or an error.
+		if ( isLoading || ( ! dispute && ! error ) ) {
 			return;
 		}
 
 		getHistory().replace( getDisputeRedirectUrl( dispute ) );
-	}, [ dispute, isLoading ] );
+	}, [ dispute, error, isLoading ] );
 
 	return (
 		<Page>

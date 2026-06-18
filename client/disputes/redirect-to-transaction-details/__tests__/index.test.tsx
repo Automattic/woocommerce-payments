@@ -11,6 +11,7 @@ import RedirectToTransactionDetails from '..';
 import { useDispute } from 'wcpay/data/disputes';
 import { getAdminUrl } from 'wcpay/utils';
 import type { Dispute } from 'wcpay/types/disputes';
+import type { ApiError } from 'wcpay/types/errors';
 
 jest.mock( 'wcpay/data/disputes', () => ( {
 	useDispute: jest.fn(),
@@ -65,6 +66,7 @@ describe( 'RedirectToTransactionDetails', () => {
 	it( 'falls back to the disputes list when the dispute cannot be retrieved', () => {
 		mockUseDispute.mockReturnValue( {
 			dispute: undefined,
+			error: { code: 'rest_dispute_not_found' } as unknown as ApiError,
 			isLoading: false,
 		} );
 
@@ -121,6 +123,21 @@ describe( 'RedirectToTransactionDetails', () => {
 		mockUseDispute.mockReturnValue( {
 			dispute: undefined,
 			isLoading: true,
+		} );
+
+		renderRedirect();
+
+		expect( mockHistoryReplace ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not redirect until the dispute query settles', () => {
+		// isResolving is false on the first render before resolution starts. The
+		// shim must not redirect on this unsettled state (no dispute, no error),
+		// or a valid dispute would be bounced to the list before it loads.
+		mockUseDispute.mockReturnValue( {
+			dispute: undefined,
+			error: undefined,
+			isLoading: false,
 		} );
 
 		renderRedirect();
