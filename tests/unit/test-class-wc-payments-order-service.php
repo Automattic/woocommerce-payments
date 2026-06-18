@@ -143,7 +143,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_note = version_compare( constant( 'WC_VERSION' ), '10.4', '>=' ) ? $expected_note_new : $expected_note_old;
 		$this->assertStringContainsString( $expected_note, $notes[1]->content );
 		$this->assertStringContainsString( 'successfully charged</strong> using WooPayments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -204,6 +204,177 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A successful payment processed while the order was in test mode should produce a
+	 * persistent order note that flags the test mode and clarifies no funds were collected.
+	 */
+	public function test_mark_payment_completed_adds_test_mode_note_when_order_in_test_mode() {
+		// Arrange: Mark the order as having been paid in test mode (as the gateway does at process time).
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention();
+
+		// Act: Mark the payment/order complete.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: The most recent note flags test mode and that no real funds were collected.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'test mode', $notes[0]->content );
+		$this->assertStringContainsString( 'No real funds were collected', $notes[0]->content );
+		// Assert: The transaction link is preserved.
+		$this->assertStringContainsString( 'pi_mock', $notes[0]->content );
+		// Assert: It does NOT use the standard "successfully charged" wording.
+		$this->assertStringNotContainsString( 'successfully charged', $notes[0]->content );
+	}
+
+	/**
+	 * A successful payment processed while the order was in production (live) mode should keep
+	 * the standard success note unchanged. Guards against "TEST" leaking onto real orders.
+	 */
+	public function test_mark_payment_completed_keeps_standard_note_in_production_mode() {
+		// Arrange: Mark the order as paid in production mode.
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$this->order->save();
+		$intent = WC_Helper_Intention::create_intention();
+
+		// Act.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: Standard wording, no test-mode flag.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'successfully charged</strong> using WooPayments', $notes[0]->content );
+		$this->assertStringNotContainsString( 'test mode', $notes[0]->content );
+		$this->assertStringNotContainsString( 'No real funds were collected', $notes[0]->content );
+	}
+
+	/**
+	 * The email subject filter callback prepends a test-mode marker for orders paid in test mode.
+	 */
+	public function test_email_subject_gets_test_marker_for_test_mode_order() {
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$this->order->save();
+
+		$subject = $this->order_service->maybe_add_test_mode_to_email_subject( '[Apparel Clothing]: New order #1811', $this->order );
+
+		$this->assertStringContainsString( '[Test]', $subject );
+		$this->assertStringContainsString( 'New order #1811', $subject );
+	}
+
+	/**
+	 * The email subject filter callback leaves production-mode order subjects untouched.
+	 */
+	public function test_email_subject_unchanged_for_production_order() {
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$this->order->save();
+		$original = '[Apparel Clothing]: New order #1811';
+
+		$this->assertSame( $original, $this->order_service->maybe_add_test_mode_to_email_subject( $original, $this->order ) );
+	}
+
+	/**
+	 * The email heading filter callback prepends a test-mode marker for orders paid in test mode.
+	 */
+	public function test_email_heading_gets_test_marker_for_test_mode_order() {
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$this->order->save();
+
+		$heading = $this->order_service->maybe_add_test_mode_to_email_heading( 'New order: #1811', $this->order );
+
+		$this->assertStringContainsString( '[Test]', $heading );
+		$this->assertStringContainsString( 'New order: #1811', $heading );
+	}
+
+	/**
+	 * The email heading filter callback leaves production-mode order headings untouched.
+	 */
+	public function test_email_heading_unchanged_for_production_order() {
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$this->order->save();
+		$original = 'New order: #1811';
+
+		$this->assertSame( $original, $this->order_service->maybe_add_test_mode_to_email_heading( $original, $this->order ) );
+	}
+
+	/**
+	 * Orders with no stored mode (legacy or non-WooPayments orders) must not be flagged as test.
+	 */
+	public function test_email_subject_unchanged_when_mode_meta_absent() {
+		$original = '[Apparel Clothing]: New order #1811';
+
+		$this->assertSame( $original, $this->order_service->maybe_add_test_mode_to_email_subject( $original, $this->order ) );
+	}
+
+	/**
+	 * Orders with no stored mode (legacy or non-WooPayments orders) must not have their heading flagged.
+	 */
+	public function test_email_heading_unchanged_when_mode_meta_absent() {
+		$original = 'New order: #1811';
+
+		$this->assertSame( $original, $this->order_service->maybe_add_test_mode_to_email_heading( $original, $this->order ) );
+	}
+
+	/**
+	 * The callbacks must be a no-op (no fatal) when the second argument is not a WC_Order.
+	 */
+	public function test_email_marker_callbacks_ignore_non_order_argument() {
+		$this->assertSame( 'subject', $this->order_service->maybe_add_test_mode_to_email_subject( 'subject', null ) );
+		$this->assertSame( 'heading', $this->order_service->maybe_add_test_mode_to_email_heading( 'heading', 'not-an-order' ) );
+	}
+
+	/**
+	 * init_hooks must register the subject and heading filters for every order email in
+	 * TEST_MODE_INDICATOR_EMAIL_IDS, including the paid-invoice variant.
+	 */
+	public function test_init_hooks_registers_test_mode_email_filters() {
+		$this->order_service->init_hooks();
+
+		foreach ( WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS as $email_id ) {
+			$this->assertNotFalse(
+				has_filter( "woocommerce_email_subject_{$email_id}", [ $this->order_service, 'maybe_add_test_mode_to_email_subject' ] ),
+				"Missing subject filter for {$email_id}"
+			);
+			$this->assertNotFalse(
+				has_filter( "woocommerce_email_heading_{$email_id}", [ $this->order_service, 'maybe_add_test_mode_to_email_heading' ] ),
+				"Missing heading filter for {$email_id}"
+			);
+		}
+
+		// Paid invoices route through the *_paid filter variant (WC_Email_Customer_Invoice swaps
+		// the suffix for processing/completed orders), so it must be covered explicitly.
+		$this->assertContains( 'customer_invoice_paid', WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS );
+
+		// The admin failure/cancellation notifications carry the marker too: a test-mode decline
+		// reaches process_payment (which persists the mode) before failing, so the order keeps its
+		// test-mode meta and the email would otherwise read as a real failed/cancelled payment.
+		$this->assertContains( 'failed_order', WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS );
+		$this->assertContains( 'cancelled_order', WC_Payments_Order_Service::TEST_MODE_INDICATOR_EMAIL_IDS );
+	}
+
+	/**
+	 * The marker must apply end-to-end through WordPress' filter system (not only via a direct
+	 * callback call), which guards against an accepted_args regression that would null $order and
+	 * silently drop the marker on every real email.
+	 */
+	public function test_test_mode_marker_applied_through_registered_filters() {
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$this->order->save();
+		$this->order_service->init_hooks();
+
+		$this->assertStringContainsString(
+			'[Test]',
+			apply_filters( 'woocommerce_email_subject_new_order', '[Apparel Clothing]: New order #1811', $this->order ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		);
+		$this->assertStringContainsString(
+			'[Test]',
+			apply_filters( 'woocommerce_email_heading_new_order', 'New order: #1811', $this->order ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		);
+		// Paid-invoice variant: the dominant path for invoice resends on WooPayments orders.
+		$this->assertStringContainsString(
+			'[Test]',
+			apply_filters( 'woocommerce_email_subject_customer_invoice_paid', 'Invoice for order #1811', $this->order ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		);
+	}
+
+	/**
 	 * Tests if the order is marked with the capture completed correctly.
 	 * Public method update_order_status_from_intent calls private method mark_payment_capture_completed.
 	 *
@@ -240,7 +411,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			: 'On hold to Processing';
 		$this->assertStringContainsString( $expected_note, $notes[1]->content );
 		$this->assertStringContainsString( 'successfully captured</strong> using WooPayments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -353,7 +524,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 		$this->assertStringContainsString( 'authorized</strong> using WooPayments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -441,7 +612,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 		$this->assertStringContainsString( 'held for review</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock&status_is=review&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&status_is=review&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -669,7 +840,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Failed', $notes[1]->content );
 		$this->assertStringContainsString( 'failed</strong> using WooPayments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 		$this->assertStringContainsString( 'This is the test failed message.', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -731,7 +902,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'failed</strong> to complete using WooPayments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -772,7 +943,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'failed</strong> to complete using WooPayments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -810,7 +981,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-failed'], $notes[1]->content );
 		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -922,7 +1093,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'blocked</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -1617,7 +1788,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
 		$this->assertStringContainsString( 'successfully captured</strong> using WooPayments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $order->get_id() ) );

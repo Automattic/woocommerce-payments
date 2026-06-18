@@ -8,7 +8,10 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
  * Internal dependencies
  */
 import AccountBalances from '..';
-import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
+import {
+	useAllDepositsOverviews,
+	useInstantDeposit,
+} from 'wcpay/data/deposits';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
@@ -56,7 +59,7 @@ const mockWcPaySettings = {
 	instantDepositsPreviouslyEligible: false,
 };
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
 } ) );

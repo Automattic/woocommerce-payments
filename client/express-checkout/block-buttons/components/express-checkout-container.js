@@ -3,7 +3,7 @@
  */
 import { useMemo } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
-import { select } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
 
 /**
@@ -13,8 +13,11 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
+	filterCartMethodsByLocation,
 } from '../../utils';
+import { rememberElementCurrency } from '../../utils/element-currency-cache';
 import { transformPrice } from '../../transformers/wc-to-stripe';
+import { getSetupFutureUsageForCart } from '../../utils/subscriptions';
 import '../express-checkout-element.scss';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
@@ -29,10 +32,20 @@ const ExpressCheckoutContainer = ( props ) => {
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
 		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-	const hasSubscription =
-		getExpressCheckoutData( 'has_subscription' ) ?? false;
+	const cartData = useSelect(
+		( selectCart ) => selectCart( WC_STORE_CART )?.getCartData(),
+		[]
+	);
 
-	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
+	const enabledMethodsFromCart = useSelect(
+		( s ) =>
+			s( WC_STORE_CART )?.getCartData()?.extensions?.wcpay
+				?.express_checkout_methods,
+		[]
+	);
+	const enabledMethods = Array.isArray( enabledMethodsFromCart )
+		? filterCartMethodsByLocation( enabledMethodsFromCart )
+		: getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.
 	const paymentMethodTypes = useMemo( () => {
@@ -44,6 +57,8 @@ const ExpressCheckoutContainer = ( props ) => {
 		].filter( Boolean );
 	}, [ enabledMethods ] );
 
+	const elementCurrency = billing.currency.code.toLowerCase();
+
 	const options = {
 		mode: 'payment',
 		...( useConfirmationToken
@@ -52,8 +67,8 @@ const ExpressCheckoutContainer = ( props ) => {
 		...( useConfirmationToken && isManualCaptureEnabled
 			? { captureMethod: 'manual' }
 			: {} ),
-		...( useConfirmationToken && hasSubscription
-			? { setupFutureUsage: 'off_session' }
+		...( useConfirmationToken
+			? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
 			: {} ),
 		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 		amount: applyFilters(
@@ -61,9 +76,9 @@ const ExpressCheckoutContainer = ( props ) => {
 			transformPrice( billing.cartTotal.value, {
 				currency_minor_unit: billing.currency.minorUnit ?? 0,
 			} ),
-			select( WC_STORE_CART )?.getCartData()
+			cartData
 		),
-		currency: billing.currency.code.toLowerCase(),
+		currency: rememberElementCurrency( elementCurrency ),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};

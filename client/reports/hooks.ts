@@ -9,30 +9,49 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
+import { store as reportsStore } from 'wcpay/data/reports';
 import type { ReportsPeriodRange } from './period-selector';
 import type { ReportsTab } from './types';
 
-// Shell placeholder — replaced once real selectors land. Until then, reload
-// no-ops on unregistered resolvers (invalidateResolution is safe in that case).
-const reportsPlaceholderSelectors: Record< ReportsTab, string > = {
-	balance: 'getReportsBalanceSummary',
-	fees: 'getReportsFees',
-};
-
 interface WCPayResolutionDispatch {
 	invalidateResolution: ( selectorName: string, args: unknown[] ) => void;
+	invalidateResolutionForStoreSelector: ( selectorName: string ) => void;
 }
 
 export function useReportsTabReload(
 	tab: ReportsTab,
-	period: ReportsPeriodRange
-): () => void {
-	const { invalidateResolution } = useDispatch(
-		WCPAY_STORE_NAME
-	) as unknown as WCPayResolutionDispatch;
+	period: ReportsPeriodRange,
+	currency: string
+): ( periodOverride?: ReportsPeriodRange ) => void {
+	const { invalidateResolution, invalidateResolutionForStoreSelector } =
+		useDispatch( reportsStore ) as unknown as WCPayResolutionDispatch;
+	const normalizedCurrency = currency.toLowerCase();
 
-	return useCallback( () => {
-		invalidateResolution( reportsPlaceholderSelectors[ tab ], [ period ] );
-	}, [ invalidateResolution, period, tab ] );
+	return useCallback(
+		( periodOverride?: ReportsPeriodRange ) => {
+			if ( tab === 'fees' ) {
+				// Invalidate all cached resolutions for the fees selector so
+				// every in-flight or cached query is re-fetched on reload.
+				invalidateResolutionForStoreSelector( 'getReportsFees' );
+				invalidateResolutionForStoreSelector( 'getReportsFeesSummary' );
+			} else {
+				const balancePeriod = periodOverride ?? period;
+
+				invalidateResolution( 'getReportsBalanceSummary', [
+					{
+						dateStart: balancePeriod.start,
+						dateEnd: balancePeriod.end,
+						currency: normalizedCurrency,
+					},
+				] );
+			}
+		},
+		[
+			invalidateResolution,
+			invalidateResolutionForStoreSelector,
+			normalizedCurrency,
+			period,
+			tab,
+		]
+	);
 }

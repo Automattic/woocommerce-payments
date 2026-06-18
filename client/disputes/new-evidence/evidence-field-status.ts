@@ -12,6 +12,7 @@ import { evidenceMatrix } from './evidence-matrix';
 import { DISPUTE_HIGH_IMPACT_FIELDS } from './constants/high-impact-fields';
 import { DISPUTE_TOPICAL_FIELDS } from './constants/topical-fields';
 import { FALLBACK_EVIDENCE_FIELD_LABELS } from './constants/fallback-field-labels';
+import { hasMeaningfulValue } from './utils';
 
 // Stripe evidence key the WooPayments wizard writes the auto-generated
 // cover letter into; surfaced universally in the Outcome View even though
@@ -63,21 +64,6 @@ const resolveFieldLabel = (
 	findMatrixLabel( reason, productType, key ) ??
 	FALLBACK_EVIDENCE_FIELD_LABELS[ key ] ??
 	key;
-
-const hasMeaningfulValue = ( value: unknown ): boolean => {
-	if ( value === undefined || value === null ) {
-		return false;
-	}
-	if ( typeof value === 'string' ) {
-		return value.trim().length > 0;
-	}
-	if ( typeof value === 'object' ) {
-		return Object.values( value as Record< string, unknown > ).some(
-			hasMeaningfulValue
-		);
-	}
-	return Boolean( value );
-};
 
 const isFieldProvided = (
 	evidence: Record< string, unknown >,

@@ -6,6 +6,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
@@ -15,29 +16,31 @@ import { ReportsHeader } from './header';
 import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
-import type { ReportsTab, ReportsTabStatus } from './types';
+import { BalanceDateFilterNowContext } from './balance/context';
+import type { ReportsTab } from './types';
 import './style.scss';
 
 interface ReportsPageProps {
-	tabStatus?: ReportsTabStatus;
 	now?: Date;
 }
 
-export const ReportsPage: React.FC< ReportsPageProps > = ( {
-	tabStatus = 'empty',
-	now,
-} ) => {
+export const ReportsPage: React.FC< ReportsPageProps > = ( { now } ) => {
 	const [ activeTab, setActiveTab ] = useState( () =>
 		normalizeReportsTab( getQuery().tab )
 	);
 	const [ tabPanelKey, setTabPanelKey ] = useState( 0 );
+	const dateFilterNow = useRef( now ?? new Date() ).current;
 	const tabPanelWrapperRef = useRef< HTMLDivElement >( null );
 	const previousActiveTabRef = useRef< ReportsTab >( activeTab );
 	const period = useMemo(
-		() => getLastFullCalendarMonthUTC( now ?? new Date() ),
-		[ now ]
+		() => getLastFullCalendarMonthUTC( dateFilterNow ),
+		[ dateFilterNow ]
 	);
-	const reload = useReportsTabReload( activeTab, period );
+	const reload = useReportsTabReload(
+		activeTab,
+		period,
+		wcpaySettings.accountDefaultCurrency || ''
+	);
 
 	useEffect( () => {
 		const syncActiveTabFromUrl = () => {
@@ -51,6 +54,15 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 		return () => {
 			window.removeEventListener( 'popstate', syncActiveTabFromUrl );
 		};
+	}, [] );
+
+	useEffect( () => {
+		recordEvent( 'page_view', {
+			path: 'payments_reports',
+			tab: activeTab,
+		} );
+		// Mount-only — subsequent tab switches use wcpay_reports_tab_change.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
 	useEffect( () => {
@@ -72,6 +84,11 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 			return;
 		}
 
+		recordEvent( 'wcpay_reports_tab_change', {
+			from_tab: activeTab,
+			to_tab: nextTab,
+		} );
+
 		setActiveTab( nextTab );
 		updateQueryString(
 			{
@@ -83,27 +100,28 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 
 	return (
 		<Page className="wcpay-reports-page">
-			<ReportsHeader />
-			<div ref={ tabPanelWrapperRef }>
-				<TabPanel
-					key={ tabPanelKey }
-					className="wcpay-reports-tab-panel"
-					activeClass="active-tab"
-					onSelect={ onTabSelected }
-					initialTabName={ activeTab }
-					tabs={ reportsTabs }
-				>
-					{ ( tab ) => (
-						<div className="wcpay-reports-content">
-							<ReportsTabPanel
-								tab={ tab.name as ReportsTab }
-								status={ tabStatus }
-								onReload={ reload }
-							/>
-						</div>
-					) }
-				</TabPanel>
-			</div>
+			<BalanceDateFilterNowContext.Provider value={ dateFilterNow }>
+				<ReportsHeader activeTab={ activeTab } />
+				<div ref={ tabPanelWrapperRef }>
+					<TabPanel
+						key={ tabPanelKey }
+						className="wcpay-reports-tab-panel"
+						activeClass="active-tab"
+						onSelect={ onTabSelected }
+						initialTabName={ activeTab }
+						tabs={ reportsTabs }
+					>
+						{ ( tab ) => (
+							<div className="wcpay-reports-content">
+								<ReportsTabPanel
+									tab={ tab.name as ReportsTab }
+									onReload={ reload }
+								/>
+							</div>
+						) }
+					</TabPanel>
+				</div>
+			</BalanceDateFilterNowContext.Provider>
 		</Page>
 	);
 };

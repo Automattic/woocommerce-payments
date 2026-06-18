@@ -5,7 +5,7 @@
 /**
  * Internal dependencies
  */
-import { Dispute } from 'wcpay/types/disputes';
+import { Dispute, DisputeReason, ProductType } from 'wcpay/types/disputes';
 import { Charge } from 'wcpay/types/charges';
 
 export interface ExtendedDispute
@@ -130,4 +130,74 @@ export interface EvidenceFieldStatus {
 	key: string;
 	label: string;
 	state: EvidenceFieldState;
+}
+
+/**
+ * Gates which catalog entries fire. The card's two sections are driven by
+ * urgency, not outcome.
+ */
+export type RecommendationOutcome = 'could_help' | 'keep_doing';
+
+/**
+ * Drives the leading icon and which card section the entry renders under:
+ *   - `critical` (amber `caution`): "fix this next time".
+ *   - `tip`      (amber `caution`): softer suggestion.
+ *   - `positive` (green `published`): reinforcement.
+ * No red: recommendations coach, they don't flag errors.
+ */
+export type RecommendationUrgency = 'critical' | 'positive' | 'tip';
+
+/**
+ * Count predicate over evidence keys: how many must satisfy the condition
+ * (provided or missing), bounded by `min`/`max` (inclusive). See
+ * `matchesCount()` for the default rules.
+ */
+export interface FieldCountPredicate {
+	keys: string[];
+	min?: number;
+	max?: number;
+}
+
+/**
+ * Conditions under which a catalog entry fires. AND across clauses.
+ * Absent clauses don't constrain.
+ */
+export interface RecommendationWhen {
+	outcome: RecommendationOutcome;
+	reasonIn: DisputeReason[];
+	productTypeIn?: ProductType[];
+	requireProvided?: FieldCountPredicate;
+	requireMissing?: FieldCountPredicate;
+}
+
+export interface Recommendation {
+	id: string;
+	title: string;
+	body: string;
+	urgency: RecommendationUrgency;
+	when: RecommendationWhen;
+	/**
+	 * Q6 win-rate lift in percentage points, when known. Reserved for
+	 * future lift-based capping in the UI consumer (#11703): the matcher
+	 * does not read or sort by it today.
+	 */
+	lift?: number;
+	/**
+	 * Hide every other matched entry, of any urgency, when this one fires, so a
+	 * no-evidence dispute shows one clear message instead of a stack. Used by
+	 * c15.
+	 */
+	suppressOthers?: boolean;
+	/**
+	 * Tombstone: kept so the id is never reused as a Tracks join key, but
+	 * dropped from runtime results.
+	 */
+	retired?: boolean;
+}
+
+export interface RecommendationContext {
+	reason: string;
+	productType: string;
+	outcome: RecommendationOutcome;
+	evidence: Record< string, unknown >;
 }

@@ -167,19 +167,47 @@ module.exports = {
 		new ProvidePlugin( {
 			process: 'process/browser.js',
 		} ),
-		new MiniCssExtractPlugin( { filename: '[name].css' } ),
+		new MiniCssExtractPlugin( {
+			filename: '[name].css',
+			// Shared component stylesheets (chip, clickable-cell, etc.) are
+			// imported by multiple async route chunks in different orders.
+			// The styles themselves have no cross-component ordering dependency,
+			// so the warning is a false positive. Revisit if a genuine
+			// order-sensitive conflict is ever introduced.
+			ignoreOrder: true,
+		} ),
 		new WebpackRTLPlugin( {
 			filenameSuffix: '-rtl.css',
 		} ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					// Force-bundle DataViews from the package's plugin/theme
+					// entrypoint (`@wordpress/dataviews/wp`) instead of
+					// externalizing to wp.dataviews. The host WP version can
+					// differ from the API contract this report expects.
+					//
+					// NOTE: force-bundling also pulls in DataViews'
+					// transitive @wordpress/private-apis dependency plus a
+					// non-deduped @wordpress/data — the bundled copy runs
+					// as a separate Redux store registry from the host
+					// `wp.data`, so the two don't share state. Smoke-tested
+					// safe today; revisit when WooPayments can rely on the
+					// host DataViews version.
+					return null;
+				}
+
 				switch ( request ) {
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					return null;
+				}
+
 				switch ( request ) {
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';

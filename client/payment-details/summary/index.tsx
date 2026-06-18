@@ -6,7 +6,7 @@
 import { __ } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
@@ -52,7 +52,7 @@ import {
 	isAwaitingResponse,
 	isRefundable,
 } from 'wcpay/disputes/utils';
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
@@ -64,7 +64,10 @@ import { PaymentIntent } from '../../types/payment-intents';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
-import DisputeOutcomeView from '../dispute-outcome';
+import DisputeRecommendationsCard from '../dispute-recommendations';
+import { getDisputeRecommendations } from '../dispute-recommendations/utils';
+import { recordOutcomeViewOnce } from '../dispute-outcome/tracks';
+import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import {
@@ -94,13 +97,11 @@ const isTapToPay = ( model: string ) => {
 	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
-const isOutcomeViewStatus = ( status: string ): boolean =>
-	status === 'won' || status === 'lost' || status === 'warning_closed';
-
 const renderDisputeDetails = (
 	dispute: NonNullable< Charge[ 'dispute' ] >,
 	charge: Charge,
-	bankName: string | null
+	bankName: string | null,
+	onIssueRefund: () => void
 ) => {
 	if ( isAwaitingResponse( dispute.status ) ) {
 		return (
@@ -108,18 +109,11 @@ const renderDisputeDetails = (
 				dispute={ dispute }
 				customer={ charge.billing_details }
 				chargeCreated={ charge.created }
-				orderUrl={ charge.order?.url }
 				paymentMethod={ charge.payment_method_details?.type }
 				bankName={ bankName }
+				onIssueRefund={ onIssueRefund }
 			/>
 		);
-	}
-
-	if (
-		wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
-		isOutcomeViewStatus( dispute.status )
-	) {
-		return <DisputeOutcomeView dispute={ dispute } />;
 	}
 
 	return (
@@ -757,13 +751,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 			{ charge.dispute && (
 				<ErrorBoundary>
-					{ renderDisputeDetails( charge.dispute, charge, bankName ) }
+					{ renderDisputeDetails(
+						charge.dispute,
+						charge,
+						bankName,
+						() => setIsRefundModalOpen( true )
+					) }
 				</ErrorBoundary>
 			) }
 			{ isRefundModalOpen && (
 				<RefundModal
 					charge={ charge }
 					formattedAmount={ formattedAmount }
+					orderUrl={ charge.order?.url }
 					onModalClose={ () => {
 						setIsRefundModalOpen( false );
 						recordEvent(
@@ -852,10 +852,63 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 	props
-) => (
-	<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-		<PaymentDetailsSummary { ...props } />
-	</WCPaySettingsContext.Provider>
-);
+) => {
+	const dispute = props.charge?.dispute;
+	// Gate on won/lost specifically: DisputeRecommendationsCard has no entries
+	// for warning_* inquiries (warning_closed is the one that reaches here, since
+	// the Outcome View admits it). AND suppress when the merchant accepted the
+	// dispute: accepting is a deliberate non-engagement, so coaching them to
+	// "submit evidence next time" misreads the choice. Per RiskOps review.
+	const showRecommendationsCard =
+		!! dispute &&
+		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+		( dispute.status === 'won' || dispute.status === 'lost' ) &&
+		dispute.metadata?.__closed_by_merchant !== '1';
+
+	// Outcome View Tracks: gating mirrors the original DisputeOutcomeView
+	// path (won/lost/warning_closed + flag) so the signal stays stable
+	// across the component refactor. Dedup is in `recordOutcomeViewOnce`.
+	const isOutcomeViewStatus =
+		dispute?.status === 'won' ||
+		dispute?.status === 'lost' ||
+		dispute?.status === 'warning_closed';
+	const shouldRecordOutcomeView =
+		!! dispute &&
+		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+		isOutcomeViewStatus;
+	// COUPLED with dispute-recommendations/index.tsx: the card filters its
+	// catalog by this same productType. Keep both call sites in lockstep.
+	const productType = dispute
+		? resolveProductType(
+				dispute.metadata,
+				dispute.order?.suggested_product_type,
+				wcpaySettings?.featureFlags
+					?.isDisputeAdditionalEvidenceTypesEnabled ?? false
+		  )
+		: '';
+
+	// Mirror the card: true only when the card actually renders entries.
+	const hasRecommendations =
+		showRecommendationsCard &&
+		dispute !== undefined &&
+		getDisputeRecommendations( dispute, productType ).length > 0;
+
+	useEffect( () => {
+		if ( shouldRecordOutcomeView && dispute ) {
+			recordOutcomeViewOnce( dispute, productType, hasRecommendations );
+		}
+	}, [ shouldRecordOutcomeView, dispute, productType, hasRecommendations ] );
+
+	return (
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<PaymentDetailsSummary { ...props } />
+			{ showRecommendationsCard && dispute && (
+				<ErrorBoundary>
+					<DisputeRecommendationsCard dispute={ dispute } />
+				</ErrorBoundary>
+			) }
+		</WCPaySettingsContext.Provider>
+	);
+};
 
 export default PaymentDetailsSummaryWrapper;

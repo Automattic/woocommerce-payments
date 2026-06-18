@@ -136,22 +136,22 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * For other tokens, returns the default title.
 	 *
 	 * @param WC_Payment_Token|null $token   The payment token.
-	 * @param string                $default The default title to return if token cannot be processed.
+	 * @param string                $default_title The default title to return if token cannot be processed.
 	 * @return string The payment method title with identifying details.
 	 */
-	private function get_payment_method_title_from_token( $token, $default ) {
+	private function get_payment_method_title_from_token( $token, $default_title ) {
 		if ( ! $token ) {
-			return $default;
+			return $default_title;
 		}
 
 		if ( $token instanceof WC_Payment_Token_CC ) {
 			$last4 = $token->get_last4();
 			// Avoid duplication if the title already contains the last4.
-			if ( ! empty( $last4 ) && false === strpos( $default, $last4 ) ) {
-				// Use the specific card brand (e.g. "Visa") when available instead of $default,
+			if ( ! empty( $last4 ) && false === strpos( $default_title, $last4 ) ) {
+				// Use the specific card brand (e.g. "Visa") when available instead of $default_title,
 				// which may refer to a different payment method type (e.g. "Link" from a previous subscription payment).
 				$card_type = $token->get_card_type();
-				$title     = ! empty( $card_type ) ? wc_get_credit_card_type_label( $card_type ) : $default;
+				$title     = ! empty( $card_type ) ? wc_get_credit_card_type_label( $card_type ) : $default_title;
 				// translators: 1: payment method likely credit card, 2: last 4 digit.
 				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $title, $last4 );
 			}
@@ -160,23 +160,23 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( $token instanceof WC_Payment_Token_WCPay_Amazon_Pay ) {
 			$email = $token->get_email();
 			// Avoid duplication if the title already contains the email.
-			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
+			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
 				// translators: 1: payment method (Amazon Pay), 2: redacted customer email.
-				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default, $email );
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default_title, $email );
 			}
 		}
 
 		if ( $token instanceof WC_Payment_Token_WCPay_Link ) {
 			$email = $token->get_redacted_email();
 			// Avoid duplication if the title already contains the email.
-			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
-				// Link uses the card gateway, so $default is "Card". Use "Stripe Link" instead.
+			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
+				// Link uses the card gateway, so $default_title is "Card". Use "Stripe Link" instead.
 				// translators: 1: payment method (Stripe Link), 2: redacted customer email.
 				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $email );
 			}
 		}
 
-		return $default;
+		return $default_title;
 	}
 
 	/**
@@ -409,37 +409,105 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT(), null, null, '', $this->get_payment_method_to_use_for_intent(), $customer_id );
 			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( API_Exception $e ) {
-			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
+			Logger::error( 'Error processing subscription renewal (payment method: ' . ( $token ? $token->get_token() : 'none' ) . '): ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
 
 			if ( ! empty( $payment_information ) ) {
-				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
-				if ( $e instanceof API_Merchant_Exception ) {
-					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				$formatted_amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+					$renewal_order
+				);
+
+				if ( $this->is_unusable_saved_payment_method_error( $e ) ) {
+					// Replace the raw, technical Stripe error with a clear, actionable note. The saved payment method
+					// is rendered with get_display_name() (correct per token type) and wrapped in <strong> so it reads
+					// as the method/identifier rather than blending into the prose; the raw pm_ id is kept in the log
+					// above for debugging. States covered are described on is_unusable_saved_payment_method_error().
+					// TRAPLAT-3995.
+					$payment_method_name = $token ? $token->get_display_name() : '';
+					$note                = '' !== $payment_method_name
+						? sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1$s: the failed payment amount, %2$s: the saved payment method, e.g. "Visa ending in 4242 (expires 01/26)" */
+								__( 'A payment of %1$s <strong>failed</strong>: the saved payment method <strong>%2$s</strong> can no longer be used. A new payment method is required.', 'woocommerce-payments' ),
+								[ 'strong' => '<strong>' ]
+							),
+							$formatted_amount,
+							esc_html( $payment_method_name )
+						)
+						: sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1$s: the failed payment amount */
+								__( 'A payment of %1$s <strong>failed</strong>: the saved payment method can no longer be used. A new payment method is required.', 'woocommerce-payments' ),
+								[ 'strong' => '<strong>' ]
+							),
+							$formatted_amount
+						);
+				} else {
+					$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+					if ( $e instanceof API_Merchant_Exception ) {
+						$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+					}
+
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount, %2: error message  */
+							__(
+								'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+								'woocommerce-payments'
+							),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						$formatted_amount,
+						$error_details
+					);
 				}
 
-				$note = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed payment amount, %2: error message  */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
-						),
-						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
-					),
-					WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
-						$renewal_order
-					),
-					$error_details
-				);
 				$renewal_order->add_order_note( $note );
 			}
 		}
+	}
+
+	/**
+	 * Determines whether an exception thrown while charging a renewal indicates that the saved
+	 * payment method can no longer be used: it was removed/detached from its customer, its
+	 * customer was deleted (leaving a dangling reference on the payment method), or it no longer
+	 * exists on the account. Stripe reports these states with different error codes and messages
+	 * and at different stages of intention creation, so this checks the known codes first and
+	 * falls back to the known messages — which also keeps detection working when the platform
+	 * has not yet shipped the clearer error code.
+	 *
+	 * @param API_Exception $e The exception thrown while processing the renewal payment.
+	 * @return bool True when the saved payment method is no longer usable for the renewal.
+	 */
+	private function is_unusable_saved_payment_method_error( API_Exception $e ): bool {
+		// Reliable, payment-method-specific code the platform returns once it ships the clearer error.
+		if ( 'payment_method_no_longer_available' === $e->get_error_code() ) {
+			return true;
+		}
+
+		// Fallback for states without a payment-method-specific code: the charge-confirmation failure carries
+		// only a generic `invalid_request_error` code, and this also keeps detection working before the platform
+		// ships `payment_method_no_longer_available`. Matching is intentionally case-insensitive (stripos).
+		$message = $e->getMessage();
+		foreach (
+			[
+				'must save this PaymentMethod to a customer',
+				'No such PaymentMethod',
+				'detached from a Customer',
+				'may not be used again',
+			] as $known_message
+		) {
+			if ( false !== stripos( $message, $known_message ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -1058,8 +1126,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function add_emails( $email_classes ) {
 		include_once __DIR__ . '/class-wc-payments-email-failed-renewal-authentication.php';
 		include_once __DIR__ . '/class-wc-payments-email-failed-authentication-retry.php';
-		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
-		$email_classes['WC_Payments_Email_Failed_Authentication_Retry']   = new WC_Payments_Email_Failed_Authentication_Retry();
+		$failed_renewal_authentication = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
+		$failed_renewal_authentication->init_hooks();
+		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = $failed_renewal_authentication;
+
+		$failed_authentication_retry = new WC_Payments_Email_Failed_Authentication_Retry();
+		$failed_authentication_retry->init_hooks();
+		$email_classes['WC_Payments_Email_Failed_Authentication_Retry'] = $failed_authentication_retry;
+
 		return $email_classes;
 	}
 

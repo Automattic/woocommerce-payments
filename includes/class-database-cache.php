@@ -453,7 +453,12 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
-				$ttl = 12 * HOUR_IN_SECONDS;
+				if ( $cache_contents['errored'] ) {
+					// Retry quickly after a transient failure so address autocomplete recovers promptly.
+					$ttl = 2 * MINUTE_IN_SECONDS;
+				} else {
+					$ttl = 12 * HOUR_IN_SECONDS;
+				}
 				break;
 			default:
 				// Default to 24h.
@@ -461,6 +466,15 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 		}
 
+		/**
+		 * Allows filtering of the time-to-live (in seconds) for a WooPayments database cache entry.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param int    $ttl            The cache TTL in seconds.
+		 * @param string $key            The cache key.
+		 * @param mixed  $cache_contents The contents being cached.
+		 */
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );
 	}
 

@@ -14,7 +14,7 @@ import {
 	useAccountCommunicationsEmail,
 	useGetSavingError,
 	useSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import { isEmail } from 'wcpay/utils/email-validation';
 
 interface NotificationsEmailInputProps {
@@ -128,6 +128,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 				value={ accountCommunicationsEmail }
 				onChange={ setAccountCommunicationsEmail }
 				onBlur={ () => setHasBlurred( true ) }
+				id="account-communications-email-input"
 				data-testid={ 'notifications-email-input' }
 				type="email"
 				required

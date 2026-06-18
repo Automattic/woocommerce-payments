@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\PaymentMethods\Configs;
 
+use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
@@ -55,7 +56,7 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 	}
 
 	public static function get_supported_currencies(): array {
-		return [ 'USD', 'EUR' ];
+		return [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::EURO ];
 	}
 
 	public static function get_capabilities(): array {

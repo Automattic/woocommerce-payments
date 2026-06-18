@@ -14,7 +14,7 @@ import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
-import { FraudOutcomeTransaction } from '../../data';
+import { FraudOutcomeTransaction } from 'wcpay/data/transactions';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 export interface Column extends TableCardColumn {

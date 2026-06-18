@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
 
 /**
@@ -15,6 +15,7 @@ import {
 	createPaymentCredential,
 	shouldUseConfirmationTokens,
 } from './utils';
+import { getElementCurrency } from './utils/element-currency-cache';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
@@ -29,6 +30,7 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+import { getSetupFutureUsageForCart } from './utils/subscriptions';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
@@ -36,7 +38,58 @@ let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
 
-export const shippingAddressChangeHandler = async ( event, elements ) => {
+// An open Apple Pay / Google Pay sheet is locked to the currency it opened
+// with. A country-based multi-currency plugin (e.g. Price Based on Country)
+// can flip the cart's currency from the address chosen inside the sheet — we
+// can't follow that on a live sheet, so the amounts would render in the wrong
+// currency and the order would be rejected at placement by the server-side
+// currency guard. Detect the drift up front and reject the address instead.
+const cartCurrencyDriftedFromElement = ( cartData ) => {
+	const elementCurrency = getElementCurrency();
+	const cartCurrency = cartData?.totals?.currency_code?.toLowerCase();
+
+	return Boolean(
+		elementCurrency && cartCurrency && elementCurrency !== cartCurrency
+	);
+};
+
+// `event.reject()` only surfaces the wallet's generic "address unsupported"
+// message, so callers also pass their context's error surface (the shortcode
+// notice or the block's `setExpressPaymentError`) to explain the real reason.
+const getCurrencyMismatchMessage = ( cartData ) =>
+	sprintf(
+		/* translators: 1: currency the express payment started in, 2: currency required by the selected address */
+		__(
+			'This express payment started in %1$s and cannot switch to %2$s ' +
+				'for the address you selected. Choose a different shipping ' +
+				'address, or use the regular checkout to pay in %2$s.',
+			'woocommerce-payments'
+		),
+		getElementCurrency().toUpperCase(),
+		cartData.totals.currency_code.toUpperCase()
+	);
+
+const getElementsUpdateOptionsForCart = ( cartData ) => ( {
+	// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+	amount: applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice(
+			parseInt( cartData.totals.total_price, 10 ) -
+				parseInt( cartData.totals.total_refund || 0, 10 ),
+			cartData.totals
+		),
+		cartData
+	),
+	...( shouldUseConfirmationTokens()
+		? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+		: {} ),
+} );
+
+export const shippingAddressChangeHandler = async (
+	event,
+	elements,
+	errorHandler
+) => {
 	lastSelectedAddress = event.address;
 
 	try {
@@ -49,6 +102,13 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			),
 		} );
 
+		if ( cartCurrencyDriftedFromElement( cartData ) ) {
+			errorHandler?.( getCurrencyMismatchMessage( cartData ) );
+			event.reject();
+
+			return;
+		}
+
 		const shippingRates = transformCartDataForShippingRates( cartData );
 
 		// when no shipping options are returned, the API still returns a 200 status code.
@@ -59,18 +119,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		await elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 
 		lastCartData = cartData;
 
@@ -86,7 +135,8 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 export const shippingRateChangeHandler = async (
 	event,
 	elements,
-	currentCartData = null
+	currentCartData = null,
+	onError
 ) => {
 	// Use the most recent cart data from a previous address/rate change,
 	// falling back to the caller-provided data. This ensures we have
@@ -107,20 +157,16 @@ export const shippingRateChangeHandler = async (
 			rate_id: event.shippingRate.id,
 		} );
 
+		if ( cartCurrencyDriftedFromElement( cartData ) ) {
+			onError?.( getCurrencyMismatchMessage( cartData ) );
+			event.reject();
+
+			return;
+		}
+
 		lastCartData = cartData;
 
-		await elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );

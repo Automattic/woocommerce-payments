@@ -14,6 +14,7 @@ use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -365,13 +366,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
-		$user                = wp_get_current_user();
-		$intent_status       = Intent_Status::PROCESSING;
-		$intent_metadata     = [ 'order_id' => (string) $order_id ];
-		$charge_id           = 'ch_mock';
-		$customer_id         = 'cus_mock';
-		$intent_id           = 'pi_mock';
-		$payment_method_id   = 'pm_mock';
+		wp_get_current_user();
+		$intent_status     = Intent_Status::PROCESSING;
+		$intent_metadata   = [ 'order_id' => (string) $order_id ];
+		$charge_id         = 'ch_mock';
+		$customer_id       = 'cus_mock';
+		$intent_id         = 'pi_mock';
+		$payment_method_id = 'pm_mock';
 
 		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
 		$order->update_meta_data( '_intent_id', $intent_id );
@@ -419,13 +420,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order_id            = $order->get_id();
 		$save_payment_method = false;
-		$user                = wp_get_current_user();
-		$intent_status       = Intent_Status::SUCCEEDED;
-		$intent_metadata     = [ 'order_id' => (string) $order_id ];
-		$charge_id           = 'ch_mock';
-		$customer_id         = 'cus_mock';
-		$intent_id           = 'pi_mock';
-		$payment_method_id   = 'pm_mock';
+		wp_get_current_user();
+		$intent_status     = Intent_Status::SUCCEEDED;
+		$intent_metadata   = [ 'order_id' => (string) $order_id ];
+		$charge_id         = 'ch_mock';
+		$customer_id       = 'cus_mock';
+		$intent_id         = 'pi_mock';
+		$payment_method_id = 'pm_mock';
 
 		// Supply the order with the intent id so that it can be retrieved during the redirect payment processing.
 		$order->update_meta_data( '_intent_id', $intent_id );
@@ -1080,7 +1081,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -1119,7 +1120,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_payment_methods_enabled_based_on_currency_limits() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		WC()->session->init();
 		WC()->cart->empty_cart();
@@ -1146,7 +1147,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_payment_methods_disabled_based_on_currency_limits() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		WC()->session->init();
 		WC()->cart->empty_cart();
@@ -1165,7 +1166,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp;
 		global $wp_query;
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
 		$order                = WC_Helper_Order::create_order( 1, 100 );
@@ -1184,14 +1185,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp;
 		global $wp_query;
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		// Total is 30 USD, which is below Affirm minimum.
 		$order                = WC_Helper_Order::create_order( 1, 30 );
 		$order_id             = $order->get_id();
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$affirm_method   = $this->payment_methods['affirm'];
 		$afterpay_method = $this->payment_methods['afterpay_clearpay'];
@@ -1214,9 +1215,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
 		$grabpay_method    = $this->payment_methods['grabpay'];
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
 
-		$account_domestic_currency = 'USD';
+		$account_domestic_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
@@ -1231,7 +1232,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1246,17 +1247,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::AUSTRALIAN_DOLLAR;
 		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'SGD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::SINGAPORE_DOLLAR;
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $grabpay_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $grabpay_method->is_currency_valid( 'SGD' ) );
 
 		// BNPLs can accept only domestic payments.
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
-		$account_domestic_currency                   = 'CAD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
+		$account_domestic_currency                   = Currency_Code::CANADIAN_DOLLAR;
 		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
@@ -1276,8 +1277,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$affirm_method     = $this->payment_methods['affirm'];
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$account_domestic_currency                   = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::EURO;
+		$account_domestic_currency                   = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1293,7 +1294,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order          = WC_Helper_Order::create_order();
 		$order_id       = $order->get_id();
 		$wp->query_vars = [ 'order-pay' => strval( $order_id ) ];
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
@@ -1307,7 +1308,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
-		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$wp->query_vars                              = [];
 	}
 
@@ -1500,7 +1501,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -1595,7 +1596,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -1723,7 +1724,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->save();
 
 		$this->mock_wcpay_account
@@ -1742,7 +1743,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->save();
 
 		$this->mock_wcpay_account
@@ -1761,7 +1762,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->set_currency( 'JPY' );
+		$order->set_currency( Currency_Code::JAPANESE_YEN );
 		$order->save();
 
 		$this->mock_wcpay_account
@@ -1780,7 +1781,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'balance_transaction' => [
 						'amount'        => 4450,
 						'fee'           => 50,
-						'currency'      => 'USD',
+						'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
 						'exchange_rate' => 0.9414,
 					],
 				]
@@ -1791,6 +1792,42 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_attach_exchange_info_to_order_with_different_order_currency() {
+		$charge_id = 'ch_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( Currency_Code::EURO );
+		$order->save();
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				[
+					'id'                  => 'ch_123456',
+					'amount'              => 4500,
+					'balance_transaction' => [
+						'amount'        => 4450,
+						'fee'           => 50,
+						'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
+						'exchange_rate' => 0.853,
+					],
+				]
+			);
+
+		$this->card_gateway->attach_exchange_info_to_order( $order, $charge_id );
+		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_swallows_charge_lookup_failure() {
+		// The Stripe exchange rate is analytics-only enrichment (the _wcpay_multi_currency_order_exchange_rate
+		// meta is the reporting fallback), so a Get_Charge failure must not propagate and break the
+		// payment-completion flow that calls this. WOOPMNT-6209.
 		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
@@ -1806,21 +1843,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn(
-				[
-					'id'                  => 'ch_123456',
-					'amount'              => 4500,
-					'balance_transaction' => [
-						'amount'        => 4450,
-						'fee'           => 50,
-						'currency'      => 'USD',
-						'exchange_rate' => 0.853,
-					],
-				]
-			);
+			->willThrowException( new \Exception( 'server unavailable' ) );
 
+		// Must not throw — a failed exchange-rate lookup cannot block checkout.
 		$this->card_gateway->attach_exchange_info_to_order( $order, $charge_id );
-		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+
+		// And no exchange-rate meta is written on failure.
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
 	}
 
 	public function test_save_payment_method_checkbox_displayed() {
@@ -2040,7 +2069,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
-		$order->set_currency( 'EUR' );
+		$order->set_currency( Currency_Code::EURO );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
@@ -2151,7 +2180,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
-		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		WC_Payments_Utils::set_order_intent_currency( $order, Currency_Code::EURO );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
@@ -2268,7 +2297,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intention_status', Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 
-		$charge = $this->create_charge_object();
+		$this->create_charge_object();
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
@@ -2650,6 +2679,58 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'seti_mock_123', $result->get_id() );
 	}
 
+	public function test_manage_customer_details_for_order_skips_customer_update_when_changing_subscription_payment_method() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_existing' );
+
+		// The subscription's billing details may be stale, so a payment-method swap must not push
+		// them onto the backend customer where they could overwrite more recent data.
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
+
+		// Isolate the deferred-update hook so do_action() only fires what the method registers.
+		remove_all_actions( 'shutdown' );
+
+		$manage = new ReflectionMethod( $this->card_gateway, 'manage_customer_details_for_order' );
+		$manage->setAccessible( true );
+		[ , $customer_id ] = $manage->invoke(
+			$this->card_gateway,
+			$order,
+			[ 'is_changing_payment_method_for_subscription' => true ]
+		);
+
+		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+
+		$this->assertSame( 'cus_existing', $customer_id );
+	}
+
+	public function test_manage_customer_details_for_order_updates_existing_customer_on_shutdown() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_existing' );
+
+		// A regular payment must still refresh the backend customer with the order's data,
+		// so the skip above stays narrowly scoped to the payment-method-change flow.
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->willReturn( 'cus_existing' );
+
+		remove_all_actions( 'shutdown' );
+
+		$manage = new ReflectionMethod( $this->card_gateway, 'manage_customer_details_for_order' );
+		$manage->setAccessible( true );
+		$manage->invoke( $this->card_gateway, $order, [] );
+
+		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+	}
+
 	public function test_add_payment_method_no_intent() {
 		$result = $this->card_gateway->add_payment_method();
 		$this->assertEquals( 'error', $result['result'] );
@@ -3017,7 +3098,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$expected_upe_payment_method = 'card';
 		$order                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3044,7 +3125,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( $legacy_card );
 
 		$order = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3077,7 +3158,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( $legacy_card );
 
 		$order = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3107,9 +3188,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
-		$expected_upe_payment_method = 'card';
-		$order                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->add_payment_token( $token );
 		$order->save();
@@ -3138,7 +3218,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 
 		$order = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 0.45 );
 		$order->save();
 
@@ -3195,7 +3275,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_set_mandate_data_to_payment_intent_if_not_required() {
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3219,7 +3299,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$gateway        = $this->get_gateway( Payment_Method::SEPA );
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3254,7 +3334,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$payment_method = 'woocommerce_payments';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 0 );
 		$order->save();
 		$customer = 'cus_12345';
@@ -3294,7 +3374,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$payment_method = 'woocommerce_payments';
 		$order          = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 0 );
 		$order->save();
 		$customer = 'cus_12345';
@@ -3360,7 +3440,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -3624,7 +3704,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method                              = 'woocommerce_payments';
 		$expected_upe_payment_method_for_pi_creation = 'card';
 		$order                                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3647,7 +3727,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method                              = 'woocommerce_payments_sepa_debit';
 		$expected_upe_payment_method_for_pi_creation = 'sepa_debit';
 		$order                                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->save();
 
@@ -3673,7 +3753,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method                              = 'woocommerce_payments_afterpay_clearpay';
 		$expected_upe_payment_method_for_pi_creation = 'afterpay_clearpay';
 		$order                                       = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->set_total( 100 );
 		$order->set_billing_city( $address['city'] );
 		$order->set_billing_state( $address['state'] );
@@ -4441,7 +4521,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' );
 
 		// Act: process payment.
-		$response = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
@@ -4572,7 +4652,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_updating_subscription_for_non_3ds_cards_removes_hook() {
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -4611,7 +4691,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_updating_subscription_for_3ds_cards_sets_delayed_update_payment_method_all() {
 		$_GET['change_payment_method'] = 10;
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -5233,11 +5313,436 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_order_stock_reduced', true ) );
 	}
 
+	public function test_update_order_status_sets_branded_payment_method_title_from_charge_details() {
+		// A payment confirmed asynchronously (e.g. 3DS/SCA) that saves the payment method lands here.
+		// The order's payment method title must reflect the actual card from the charge, not a generic
+		// "Card" label. This also propagates to the subscription. Regression guard for WOOPMNT-2882.
+		// Scope: this and the two 3DS tests below cover only the save (token-present) sub-path; the no-save
+		// boundary is pinned by test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method.
+		$order = WC_Helper_Order::create_order();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		$intent_id = 'pi_mock_3ds_renewal';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						// Declare the charge explicitly so the asserted title is traceable to its inputs
+						// (network + funding) rather than relying on WC_Helper_Intention::create_charge() defaults.
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$this->assertSame( 'Visa credit card', wc_get_order( $order->get_id() )->get_payment_method_title() );
+	}
+
+	public function test_update_order_status_stores_card_last4_and_brand_meta_from_charge_details() {
+		// The asynchronous (3DS/SCA) confirmation path must record the same last4/brand order meta as the
+		// synchronous path, so order/email displays and reporting reflect the actual card. WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		$intent_id = 'pi_mock_3ds_renewal_meta';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'brand'   => 'visa',
+									'last4'   => '4242',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( '4242', $saved->get_meta( 'last4' ) );
+		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
+	}
+
+	public function test_update_order_status_sets_branded_title_before_status_transition() {
+		// The branded title must be on the order BEFORE the status transition, because that transition
+		// (payment_complete) synchronously fires the customer/renewal email, which renders the title.
+		// If the title is set afterwards, the email falls back to a generic "Card". WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		$intent_id = 'pi_mock_3ds_renewal_email';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		// Capture the title at the order-status transition (the same moment WC fires the email).
+		$title_at_transition = 'NOT_CAPTURED';
+		$capture             = function ( $order_id ) use ( &$title_at_transition ) {
+			$title_at_transition = wc_get_order( $order_id )->get_payment_method_title();
+		};
+		add_action( 'woocommerce_order_status_changed', $capture, 1, 1 );
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+			remove_action( 'woocommerce_order_status_changed', $capture, 1 );
+		}
+
+		// This guards the ordering invariant, not the exact wording: the title must be present and
+		// branded (carry the card network) at the moment the email fires. The verbatim "Visa credit card"
+		// string is pinned once, by test_update_order_status_sets_branded_payment_method_title_from_charge_details,
+		// so a future wording change touches one test instead of weakening this ordering guard.
+		$this->assertNotSame( 'NOT_CAPTURED', $title_at_transition, 'The status transition that fires the email must have run.' );
+		$this->assertStringContainsString( 'Visa', $title_at_transition, 'Title must be branded at the status transition that fires the email.' );
+	}
+
+	public function test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method() {
+		// Companion to the three tests above, which all hard-code should_save_payment_method = 'true' and so
+		// exercise only the token-present sub-path. Branding (title + last4/_card_brand meta) lives entirely
+		// inside update_order_status()'s `! empty( $token )` branch, so the no-save path must leave the card
+		// details untouched. This pins that boundary: if branding ever leaks out of the save branch, this
+		// fails. We assert the meta is absent rather than a specific generic title to stay wording-agnostic.
+		// WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+
+		// No token is created on this path; assert it is never requested rather than relying on a stub.
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$intent_id = 'pi_mock_3ds_no_save';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'false',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'                     => $intent_id,
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [] ],
+						'charge'                 => [
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'brand'   => 'visa',
+									'last4'   => '4242',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'Title must not be branded when the payment method is not saved.' );
+		$this->assertEmpty( $saved->get_meta( 'last4' ), 'Card last4 meta must not be stored when the payment method is not saved.' );
+		$this->assertEmpty( $saved->get_meta( '_card_brand' ), 'Card brand meta must not be stored when the payment method is not saved.' );
+	}
+
+	public function test_update_order_status_keeps_branded_title_on_zero_amount_setup_intent_when_saving() {
+		// A $0 free-trial signup whose SetupIntent required frontend authentication lands in
+		// update_order_status()'s $0 (SetupIntent) branch. That branch has no charge, so it sources the card
+		// from the confirmed payment method and brands the title BEFORE the email fires. Because the order
+		// saves the payment method (recurring), the later `! empty( $token )` block re-applies the title from
+		// the method-scoped $payment_method_details. Regression guard: those details must carry the real card,
+		// or that re-apply overwrites the saved order / synced subscription title back to a generic "Card"
+		// after the email. WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0 ); // $0 free trial routes to the SetupIntent branch.
+		$order->save();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		// The $0 SetupIntent carries no charge; the card is sourced from the confirmed payment method.
+		$this->mock_api_client
+			->method( 'get_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn(
+				[
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'brand'   => 'visa',
+						'last4'   => '4242',
+						'funding' => 'credit',
+					],
+				]
+			);
+
+		$intent_id = 'seti_mock_free_trial';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'                => $intent_id,
+						'status'            => Intent_Status::SUCCEEDED,
+						'payment_method_id' => 'pm_mock',
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( 'Visa credit card', $saved->get_payment_method_title(), 'The saved title must stay branded after the token-save block re-applies it.' );
+		$this->assertSame( '4242', $saved->get_meta( 'last4' ) );
+		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
+	}
+
+	public function test_update_order_status_does_not_store_card_meta_for_link_on_zero_amount_setup_intent() {
+		// Stripe reports Link as type='card' with card.wallet.type='link'. On the $0 SetupIntent path the
+		// payment method type stays 'card' (it is not normalized to Link before storing meta), so without a
+		// guard the underlying card's brand/last4 would be persisted as the order's card meta. Regression
+		// guard: a $0 free trial paid with Link must not store last4/_card_brand. WOOPMNT-2882.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 0 ); // $0 free trial routes to the SetupIntent branch.
+		$order->save();
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		// Link-as-card shape: a card wrapped by Link. The card sub-details carry brand/last4, but the wallet
+		// type marks it as Link, so the card meta must not be persisted.
+		$this->mock_api_client
+			->method( 'get_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn(
+				[
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'brand'   => 'visa',
+						'last4'   => '4242',
+						'funding' => 'credit',
+						'wallet'  => [ 'type' => 'link' ],
+					],
+				]
+			);
+
+		$intent_id = 'seti_mock_link_free_trial';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'true',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'                => $intent_id,
+						'status'            => Intent_Status::SUCCEEDED,
+						'payment_method_id' => 'pm_mock',
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $saved->get_meta( 'last4' ), 'Link must not persist the underlying card last4.' );
+		$this->assertEmpty( $saved->get_meta( '_card_brand' ), 'Link must not persist the underlying card brand.' );
+		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'A Link payment must not be titled as a branded card.' );
+	}
+
 	public function return_ajax_wp_die_handler() {
 		return [ $this, 'ajax_wp_die_handler' ];
 	}
 
-	public function ajax_wp_die_handler( $message ) {
+	public function ajax_wp_die_handler( $_unused_message ) {
 		// Do nothing - prevents wp_die from terminating the test.
 	}
 

@@ -17,6 +17,8 @@ import RestAPI from './rest-api';
  */
 export const dataHasLoaded = async ( page: Page ) => {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
+	// Wait for any lazy-loaded route chunk to finish mounting.
+	await expect( page.locator( '.wcpay-route-loading' ) ).toHaveCount( 0 );
 };
 
 export const tableDataHasLoaded = async ( page: Page ) => {
@@ -158,7 +160,12 @@ export const addMulticurrencyWidget = async (
 				.locator( `[data-title="${ widgetName }"]` )
 				.waitFor( { timeout: 5000 } );
 		} else {
+			// Scope the heading to the inserted block by its (locale-independent)
+			// block type. A bare heading match also matches the block-inspector
+			// card name, which renders the same text and trips Playwright strict
+			// mode intermittently (race between the two).
 			await page
+				.locator( '[data-type="core/legacy-widget"]' )
 				.getByRole( 'heading', { name: widgetName } )
 				.waitFor( { timeout: 5000 } );
 		}

@@ -368,6 +368,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		return [
 			'email'               => $account['email'] ?? '',
+			'businessName'        => $account['business_profile']['name'] ?? '',
+			'accountId'           => $account['account_id'] ?? '',
 			'country'             => $account['country'] ?? Country_Code::UNITED_STATES,
 			'status'              => $account['status'],
 			'created'             => $account['created'] ?? '',
@@ -2564,7 +2566,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to update Stripe account ' . $e );
 
-			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage() );
+			$error_data = [];
+			if ( $e instanceof API_Exception && null !== $e->get_param() ) {
+				$error_data['param'] = $e->get_param();
+			}
+
+			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage(), $error_data );
 		}
 	}
 

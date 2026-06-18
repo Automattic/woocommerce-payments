@@ -300,7 +300,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
 		$this->mock_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
 		$this->mock_gateway->method( 'get_option' )->willReturnCallback(
-			function ( $key, $default = null ) {
+			function ( $key, $default_value = null ) {
 				$map = [
 					'current_protection_level'       => 'standard',
 					'manual_capture'                 => 'no',
@@ -312,7 +312,7 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 				if ( strpos( $key, 'express_checkout_' ) === 0 ) {
 					return [];
 				}
-				return $default;
+				return $default_value;
 			}
 		);
 	}

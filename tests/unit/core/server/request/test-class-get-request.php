@@ -69,7 +69,7 @@ class Get_Request_Test extends WCPAY_UnitTestCase {
 			}
 		);
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->apply_filters( 'test_exception_will_throw_if_invalid_api_route_is_set_when_filter_is_applied' );
+		$request->apply_filters( 'test_exception_will_throw_if_invalid_api_route_is_set_when_filter_is_applied' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
 	/**

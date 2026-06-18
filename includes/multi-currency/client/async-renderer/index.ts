@@ -67,6 +67,19 @@ interface JQueryObject {
 	off( events: string, handler: () => void ): JQueryObject;
 }
 
+declare global {
+	interface Window {
+		wcpayAsyncCurrency?: { ready: Promise< string > };
+	}
+}
+
+const whenDomReady = (): Promise< void > =>
+	document.readyState === 'loading'
+		? new Promise( ( resolve ) =>
+				document.addEventListener( 'DOMContentLoaded', () => resolve() )
+		  )
+		: Promise.resolve();
+
 /**
  * Async price renderer for cache-optimized multi-currency mode.
  *
@@ -115,6 +128,7 @@ class WCPayAsyncPriceRenderer {
 			clearTimeout( timeoutId! );
 
 			this.convertAllPrices();
+			this.syncCurrencySwitchers();
 			this.observeDynamicContent();
 			this.listenToWooCommerceEvents();
 		} catch ( error ) {
@@ -515,6 +529,35 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
+	 * Sync every currency switcher to the selected (localized) currency.
+	 *
+	 * In cache-optimized mode the switcher's selected <option> is baked into the
+	 * cached HTML as the store default (no server-side session), so realign it
+	 * client-side to match the converted prices. Assigning select.value does not
+	 * fire a change event, so onchange="this.form.submit()" never runs: no
+	 * session is created and caching is preserved.
+	 */
+	syncCurrencySwitchers(): void {
+		const selectedCode = this.config?.selected_currency;
+		if ( ! selectedCode ) {
+			return;
+		}
+
+		const selects = document.querySelectorAll< HTMLSelectElement >(
+			'select.js-woopayments-currency-switcher'
+		);
+
+		selects.forEach( ( select ) => {
+			const hasOption = Array.from( select.options ).some(
+				( option ) => option.value === selectedCode
+			);
+			if ( hasOption && select.value !== selectedCode ) {
+				select.value = selectedCode;
+			}
+		} );
+	}
+
+	/**
 	 * Set up a MutationObserver to convert prices in dynamically added content.
 	 */
 	observeDynamicContent(): void {
@@ -672,9 +715,13 @@ export { WCPayAsyncPriceRenderer };
 if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
 	const renderer = new WCPayAsyncPriceRenderer();
 
-	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', () => renderer.init() );
-	} else {
-		renderer.init();
-	}
+	// ECE awaits this before calling stripe.elements so it doesn't
+	// race the REST fetch.
+	window.wcpayAsyncCurrency = {
+		ready: whenDomReady()
+			.then( () => renderer.init() )
+			.then( () =>
+				( renderer.config?.selected_currency ?? '' ).toLowerCase()
+			),
+	};
 }

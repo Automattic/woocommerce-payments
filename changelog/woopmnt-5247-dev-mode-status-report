@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Add Dev Mode row to WooPayments system status report showing whether dev mode is active and which condition(s) triggered it

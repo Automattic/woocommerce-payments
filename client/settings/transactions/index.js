@@ -14,19 +14,19 @@ import {
 } from '@wordpress/components';
 import CardBody from '../card-body';
 import {
+	store as settingsStore,
 	useAccountStatementDescriptor,
 	useAccountStatementDescriptorKanji,
 	useAccountStatementDescriptorKana,
 	useGetSavingError,
 	useSavedCards,
-} from '../../data';
+} from 'wcpay/data/settings';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';
 import SupportEmailInput from 'wcpay/settings/support-email-input';
 import React, { useEffect, useState } from 'react';
 import { select } from '@wordpress/data';
-import { STORE_NAME } from 'wcpay/data/constants';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANJI = 17;
@@ -50,7 +50,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 
 	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
 	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
-	const settings = select( STORE_NAME ).getSettings();
+	const settings = select( settingsStore ).getSettings();
 
 	useEffect( () => {
 		if ( setTransactionInputsValid ) {
@@ -113,6 +113,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
+						id="account-statement-descriptor-input"
 						data-testid={ 'store-name-bank-statement' }
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize

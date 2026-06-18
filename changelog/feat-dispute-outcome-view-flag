@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Add _wcpay_feature_dispute_outcome_view flag and scaffolding for the dispute outcome view.
