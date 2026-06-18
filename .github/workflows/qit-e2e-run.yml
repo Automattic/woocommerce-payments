@@ -70,20 +70,11 @@ jobs:
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
-          # QIT provisions its environment (downloading WordPress, WooCommerce, etc.)
-          # before any test runs. Those downloads fail transiently now and then — a
-          # corrupt WC nightly ZIP or a wp.org/Docker network blip — which sinks the
-          # whole cell even though our code is fine (WOOPMNT-6200), then a plain re-run
-          # goes green.
-          #
-          # Distinguish "provisioning flaked" from "tests ran and failed" by what the
-          # run produced, not by matching error text (which drifts as QIT changes its
-          # messages). The test package's run phase (`npx playwright test`) writes CTRF/
-          # blob/allure results into the dirs we upload below; a failure during
-          # provisioning never reaches that phase, so they stay empty — that is the
-          # "No files were found" we saw in WOOPMNT-6200. So we retry only when nothing
-          # was produced, and never re-run a suite that already has a verdict — real
-          # regressions (and exhausted attempts) fail fast with the original exit code.
+          # QIT provisions the env (downloads WP/WooCommerce/…) before any test; that
+          # step flakes on corrupt downloads or network blips and sinks the cell even
+          # though our code is fine (WOOPMNT-6200). A finished run writes results to the
+          # dirs below; a provisioning flake leaves them empty — so retry only when
+          # nothing was produced, never a run that already has a verdict.
           max_attempts=3
           attempt=1
           # Same paths the "Upload test results" step collects.
@@ -104,7 +95,7 @@ jobs:
               -- --project=${{ inputs.playwright-project }}
           }
 
-          # True once the run phase has executed — i.e. tests actually ran (pass or fail).
+          # True once tests actually ran (pass or fail).
           produced_results() {
             local d
             for d in "${results_dirs[@]}"; do
@@ -114,7 +105,7 @@ jobs:
           }
 
           while true; do
-            # Clear any prior attempt's leftovers so the check reflects THIS attempt.
+            # Reset so the check reflects THIS attempt.
             rm -rf "${results_dirs[@]}"
 
             set +e
@@ -125,7 +116,7 @@ jobs:
             [ "$code" -eq 0 ] && exit 0
 
             if [ "$attempt" -ge "$max_attempts" ] || produced_results; then
-              # Tests ran and failed (real), or out of attempts — surface code unchanged.
+              # Real failure or out of attempts — surface as-is.
               exit "$code"
             fi
 
