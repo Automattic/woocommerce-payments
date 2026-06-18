@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Align checkout card fields with themes that restyle the block checkout: respect static label patterns, stop shrinking the Payment Element base font size, and match the WooPay dial code size to the phone input.

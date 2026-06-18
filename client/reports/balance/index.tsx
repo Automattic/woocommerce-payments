@@ -29,6 +29,7 @@ import {
 	useBalanceDateFilter,
 } from './use-balance-date-filter';
 import { BalanceDataView } from './balance-dataview';
+import ReportFeedbackSurvey from '../feedback-survey';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
 import { BalanceDateFilterNowContext } from './context';
@@ -193,6 +194,7 @@ export const BalanceReport = ( {
 	const containerRef = useRef< HTMLDivElement >( null );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
+	const feedbackFocusTargetRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
 	const activeRequestKey = hasDateFilterValue
@@ -219,8 +221,9 @@ export const BalanceReport = ( {
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
-	const printScopeActive =
+	const hasLoadedReportActivity =
 		hasDateFilterValue && ! isLoading && ! hasError && hasActivity;
+	const printScopeActive = hasLoadedReportActivity;
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
@@ -228,18 +231,22 @@ export const BalanceReport = ( {
 	const currency = summary.currency ?? '';
 	const recordDateFilterChange = (
 		next: DateFilterValue,
-		isInitialApply: boolean
+		isInitialApply: boolean,
+		referenceDate = stableDateFilterNow
 	) => {
-		const nextPeriod = getPeriodForDateFilter( next, stableDateFilterNow );
+		const nextPeriod = getPeriodForDateFilter( next, referenceDate );
 		recordEvent( 'wcpay_reports_balance_date_filter_change', {
-			preset: matchPreset( next, stableDateFilterNow ),
+			preset: matchPreset( next, referenceDate ),
 			range_days: getRangeDays( nextPeriod.start, nextPeriod.end ),
 			is_initial_apply: isInitialApply,
 		} );
 	};
-	const onDateFilterChange = ( next: DateFilterValue | undefined ) => {
+	const onDateFilterChange = (
+		next: DateFilterValue | undefined,
+		referenceDate?: Date
+	) => {
 		if ( next ) {
-			recordDateFilterChange( next, ! hasDateFilterValue );
+			recordDateFilterChange( next, ! hasDateFilterValue, referenceDate );
 		} else {
 			// Clearing the native DataViews date filter is the Reset action.
 			recordEvent( 'wcpay_reports_balance_date_filter_change', {
@@ -469,6 +476,8 @@ export const BalanceReport = ( {
 				currency={ currency }
 				dateValue={ value }
 				onDateChange={ onDateFilterChange }
+				focusTargetRef={ feedbackFocusTargetRef }
+				dateFilterNow={ stableDateFilterNow }
 			>
 				{ stateContent }
 			</BalanceDataView>
@@ -478,6 +487,11 @@ export const BalanceReport = ( {
 					summary={ summary }
 					displayPeriod={ displayPeriod }
 					currency={ currency }
+				/>
+			) }
+			{ hasLoadedReportActivity && (
+				<ReportFeedbackSurvey
+					focusAfterCloseRef={ feedbackFocusTargetRef }
 				/>
 			) }
 		</div>
