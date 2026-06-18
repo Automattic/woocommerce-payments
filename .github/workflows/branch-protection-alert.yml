@@ -17,8 +17,6 @@ jobs:
     # absence doesn't surface as a misleading failed run.
     if: github.repository == 'Automattic/woocommerce-payments'
     runs-on: ubuntu-latest
-    env:
-      SINK_URL: ${{ secrets.BRANCH_PROTECTION_AUDIT_SINK_URL }}
     steps:
       - name: Check out scripts
         uses: actions/checkout@v4
@@ -26,10 +24,9 @@ jobs:
           sparse-checkout: .github/scripts
           sparse-checkout-cone-mode: false
 
-      - name: Build payloads
+      - name: Build Slack payload
         run: |
           .github/scripts/branch-protection-event.sh --slack "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/slack.json"
-          .github/scripts/branch-protection-event.sh "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/audit.json"
 
       - name: Slack ping
         uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
@@ -37,17 +34,6 @@ jobs:
           webhook: ${{ secrets.BRANCH_PROTECTION_ALERT_SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload-file-path: ${{ runner.temp }}/slack.json
-
-      - name: Mirror to internal audit sink (long-term retention)
-        # Inert until Systems provisions the ingestion endpoint + secret.
-        # Best-effort: a sink outage must not fail this job (Slack detection
-        # already ran) or it would falsely trip the outage alarm below.
-        if: env.SINK_URL != ''
-        run: |
-          curl -sS --fail-with-body -X POST "$SINK_URL" \
-            -H 'Content-Type: application/json' \
-            --data @"$RUNNER_TEMP/audit.json" \
-            || echo "::warning::Branch-protection audit-sink POST failed; long-term retention mirror missed this event (Slack detection unaffected)."
 
   outage:
     name: Flag detection outage

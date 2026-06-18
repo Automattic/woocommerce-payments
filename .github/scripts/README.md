@@ -53,7 +53,8 @@ or change values. Refs WOOPMNT-6229.
 **Usage:**
 
 ```bash
-# Canonical flat audit JSON (default) — for the long-term retention sink
+# Canonical flat audit JSON (default) — the structured event shape, for
+# downstream logging/retention consumers
 .github/scripts/branch-protection-event.sh "$GITHUB_EVENT_PATH"
 
 # Slack Block Kit JSON — for the #payments-engineering alert
