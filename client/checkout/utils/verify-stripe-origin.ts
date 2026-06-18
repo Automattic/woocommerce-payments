@@ -1,7 +1,6 @@
 /**
- * Stripe's canonical origin. Stripe.js must always be served from here
- * (https://docs.stripe.com/js/including); any other origin is, by Stripe's own
- * rule, never a supported configuration.
+ * Stripe's canonical origin. Stripe.js is only ever served from here
+ * (https://docs.stripe.com/js/including); any other origin is unsupported.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention -- Module-level constant.
 export const STRIPE_JS_ORIGIN = 'https://js.stripe.com';
@@ -16,25 +15,18 @@ export interface StripeOriginResult {
 }
 
 /**
- * Inspect the document for the Stripe.js <script> tag and verify it was served
- * from Stripe's own origin.
+ * Inspect the loaded Stripe.js <script> tag and check it came from Stripe's
+ * origin.
  *
- * WooPayments registers Stripe.js as a WordPress script handle whose URL is
- * mutable by any code on the site (a `script_loader_src` filter, or a
- * deregister/re-register). On a compromised store that handle can be repointed
- * at a look-alike skimmer clone, so the card Elements iframe renders from the
- * attacker's origin. This assertion reads the loaded tag and lets the caller
- * react before `new Stripe()` builds that iframe.
+ * WooPayments enqueues Stripe.js as a WordPress handle whose URL any site code
+ * can repoint (e.g. via `script_loader_src`); on a compromised store that lets
+ * a skimmer clone render the card iframe from its own origin. We read the tag
+ * before `new Stripe()` so the caller can block first.
  *
- * The `#stripe-js` id is the WordPress handle's fingerprint (WP appends `-js`
- * to the `stripe` handle), so a repointed handle is read by id regardless of
- * its current src. It is looked up explicitly (not via a selector list) so it
- * always takes precedence: `querySelector` on a comma-separated selector
- * returns the first match in document order, so a legitimate js.stripe.com tag
- * inserted earlier in the DOM could otherwise mask a repointed handle. Only
- * when no handle tag exists do we fall back to any legitimately-loaded
- * js.stripe.com tag (Stripe ships `/v3/`, `/v3/stripe.js`, and named release
- * trains; the origin, not the path, is what we assert).
+ * The `#stripe-js` handle is matched by id first and explicitly, so a repointed
+ * handle always wins over a legitimate js.stripe.com tag elsewhere in the DOM.
+ * Only without a handle tag do we fall back to any js.stripe.com tag — the
+ * origin is asserted, not the path.
  *
  * @param doc Document to inspect. Injectable for tests.
  */
@@ -59,29 +51,24 @@ export const verifyStripeJsOrigin = (
 			detectedOrigin: origin,
 		};
 	} catch {
-		// Unparseable src: treat as a mismatch rather than trusting it.
+		// Unparseable src: treat as a mismatch.
 		return { ok: false, detectedSrc: tag.src, detectedOrigin: null };
 	}
 };
 
 /**
- * Asserts that the loaded Stripe.js was served from Stripe's own origin,
- * throwing (and warning) when it was not.
+ * Assert the loaded Stripe.js came from Stripe's origin; throw (and warn) if not.
  *
- * Defense-in-depth against a compromised site repointing the mutable `stripe`
- * script handle at a look-alike skimmer clone. This defends the
- * Stripe.js-substitution vector specifically; it is not a general skimmer
- * defense and is bypassable by an attacker with full control of the page.
+ * Defense-in-depth against a compromised site repointing the `stripe` handle at
+ * a skimmer clone. It targets the Stripe.js-substitution vector only and is
+ * bypassable by an attacker with full control of the page.
  *
- * On a mismatch this throws and blocks the payment. The full diagnostics
- * (including the detected src) go to the console warning only; the thrown
- * message may be rendered to shoppers by existing checkout error handling, so
- * it stays generic.
+ * The thrown message stays generic — checkout error handling may show it to
+ * shoppers — while full diagnostics (the detected src) go to the console warning.
  *
  * @param  options          Options.
- * @param  options.failFast When true (called before `window.Stripe` resolves), a
- *                          missing tag is treated as "still loading" and ignored;
- *                          only a present, wrong-origin tag throws.
+ * @param  options.failFast Before `window.Stripe` resolves: ignore a missing tag
+ *                          ("still loading"); only a present wrong-origin tag throws.
  * @throws {Error} When the loaded Stripe.js origin is not Stripe's.
  */
 export const assertStripeJsOrigin = ( {
@@ -92,8 +79,8 @@ export const assertStripeJsOrigin = ( {
 		return;
 	}
 
-	// Before window.Stripe resolves, "no tag yet" is normal page-load timing,
-	// not a mismatch. Only fail fast on a present, wrong-origin tag.
+	// A missing tag before window.Stripe resolves is normal load timing, not a
+	// mismatch; only a present, wrong-origin tag fails fast.
 	if ( failFast && result.detectedSrc === null ) {
 		return;
 	}

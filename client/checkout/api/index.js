@@ -28,9 +28,8 @@ export default class WCPayAPI {
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
-		// Single choke point for `new Stripe()`. Asserting here covers every
-		// caller — including confirmIntent's WooPay path, which builds its own
-		// instance directly rather than going through getStripe().
+		// Single choke point for `new Stripe()` — covers every caller, including
+		// confirmIntent's WooPay path that bypasses getStripe().
 		assertStripeJsOrigin();
 
 		const options = { locale };
@@ -61,10 +60,8 @@ export default class WCPayAPI {
 	}
 
 	async getStripe( forceAccountRequest = false ) {
-		// Fail fast: if the Stripe.js tag is already present but repointed to a
-		// wrong origin, block now instead of waiting for a window.Stripe that
-		// may never arrive (the look-alike script can be blocked or offline).
-		// The authoritative check runs in createStripe() once we instantiate.
+		// Fail fast: a present, wrong-origin tag blocks now rather than waiting on
+		// a window.Stripe that may never load. createStripe() is authoritative.
 		assertStripeJsOrigin( { failFast: true } );
 
 		const maxWaitTime = 600 * 1000; // 600 seconds
@@ -132,10 +129,8 @@ export default class WCPayAPI {
 	async loadStripeForExpressCheckout() {
 		// Force Stripe to be loaded with the connected account.
 		try {
-			// `await` is required: getStripe() is async (it can reject via the
-			// origin assertion or the window.Stripe timeout), and without it the
-			// rejection escapes this try/catch as a rejected promise instead of
-			// being converted to `{ error }`.
+			// `await` so getStripe()'s async rejection (origin assertion or
+			// window.Stripe timeout) is caught here and returned as `{ error }`.
 			return await this.getStripe( true );
 		} catch ( error ) {
 			// In order to avoid showing console error publicly to users,

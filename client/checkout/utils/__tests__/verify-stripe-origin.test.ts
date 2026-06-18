@@ -159,8 +159,7 @@ describe( 'assertStripeJsOrigin', () => {
 		expect( () => assertStripeJsOrigin() ).toThrow(
 			/provenance check failed/
 		);
-		// The detected (attacker) URL must not leak into the thrown message;
-		// it lives in the console warning only.
+		// The attacker URL must not leak into the thrown message (console-only).
 		expect( () => assertStripeJsOrigin() ).not.toThrow( /evil/ );
 		expect( warn ).toHaveBeenCalledWith(
 			expect.stringContaining( 'js.evil.example' )

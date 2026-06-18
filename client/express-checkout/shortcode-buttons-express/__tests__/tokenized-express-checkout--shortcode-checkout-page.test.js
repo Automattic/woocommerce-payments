@@ -22,8 +22,7 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 	default: jest.fn(),
 } ) );
 
-// A normal, non-compromised page has the legitimate Stripe.js handle tag
-// present, so the origin assertion in createStripe() passes silently.
+// A non-compromised page has the legit Stripe.js tag, so the assertion passes.
 const addStripeScript = () => {
 	const script = document.createElement( 'script' );
 	script.id = 'stripe-js';
