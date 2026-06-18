@@ -72,9 +72,19 @@ class AsyncPriceRenderer {
 	 * @return string The wrapped price markup.
 	 */
 	public function wrap_price_with_skeleton( $price_html, $price, $args, $unformatted_price, $original_price ) {
-		// The async renderer only runs on non-session pages (catalog/product).
-		// Cart/checkout have active sessions and use server-side FrontendPrices.
-		// Default to 'product' since catalog pages only call wc_price for products.
+		/**
+		 * Filters the price type used by the async renderer.
+		 *
+		 * The async renderer only runs on non-session pages (catalog/product);
+		 * cart/checkout have active sessions and use server-side FrontendPrices.
+		 * Defaults to 'product' since catalog pages only call wc_price for products.
+		 *
+		 * @since 10.6.0
+		 *
+		 * @param string $price_type The price type. Defaults to 'product'.
+		 * @param float  $price      The price being rendered.
+		 * @param array  $args       Arguments passed to wc_price.
+		 */
 		$price_type = apply_filters( 'wcpay_multi_currency_async_price_type', 'product', $price, $args );
 
 		// We use $unformatted_price (the raw float before number_format) rather

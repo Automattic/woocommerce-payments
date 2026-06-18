@@ -677,8 +677,8 @@ class WC_Payments_Order_Service {
 		$this->complete_order_processing( $order, $intent_status );
 		// When the order is already in 'failed' status, WC core won't fire notification hooks (status didn't change). Manually trigger them so the merchant is notified on every terminal payment failure.
 		if ( Order_Status::FAILED === $order_status_before_update ) {
-			do_action( 'woocommerce_order_status_pending_to_failed_notification', $order->get_id(), $order );
-			do_action( 'woocommerce_order_status_failed_notification', $order->get_id(), $order );
+			do_action( 'woocommerce_order_status_pending_to_failed_notification', $order->get_id(), $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+			do_action( 'woocommerce_order_status_failed_notification', $order->get_id(), $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		}
 	}
 
