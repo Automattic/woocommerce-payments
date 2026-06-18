@@ -492,7 +492,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
       />
     </div>
     <div
-      class="components-surface components-card woocommerce-table wcpay-loans-list emotion-34 emotion-35"
+      class="components-surface components-card woocommerce-table wcpay-loans-list has-menu emotion-34 emotion-35"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -514,6 +514,35 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
           <div
             class="woocommerce-table__actions"
           />
+          <div
+            class="woocommerce-ellipsis-menu"
+          >
+            <div
+              class="components-dropdown"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-ellipsis-menu__toggle"
+                title="Choose which values to display"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-ellipsis"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M7 12a2 2 0 11-4.001-.001A2 2 0 017 12zm12-2a2 2 0 10.001 4.001A2 2 0 0019 10zm-7 0a2 2 0 10.001 4.001A2 2 0 0012 10z"
+                    />
+                  </g>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
         <div
           class="components-card__body components-card-body emotion-42 emotion-35"
