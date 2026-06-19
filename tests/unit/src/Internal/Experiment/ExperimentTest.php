@@ -106,22 +106,35 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 			->willReturn( $granted ? 'yes' : 'no' );
 	}
 
-	public function test_returns_control_without_consent() {
-		$this->set_consent( false );
-		$captured   = null;
-		$experiment = $this->build_experiment( 'treatment_a', 'store_123', $captured );
-
-		$this->assertSame( 'control', $experiment->get_variant() );
-		$this->assertNull( $captured, 'abtest must not be constructed without consent' );
+	/**
+	 * Data provider for test_returns_control_for_fallback_cases.
+	 *
+	 * @return array
+	 */
+	public function provider_control_fallback_cases() {
+		return [
+			'without consent'      => [ false, 'store_123', 'treatment_a', null ],
+			'empty assignment key' => [ true, '', 'treatment_a', null ],
+			'unknown variant'      => [ true, 'store_123', 'renamed_arm_typo', 'store_123' ],
+			'non-string variation' => [ true, 'store_123', null, 'store_123' ],
+		];
 	}
 
-	public function test_returns_control_with_empty_assignment_key() {
-		$this->set_consent( true );
+	/**
+	 * @dataProvider provider_control_fallback_cases
+	 *
+	 * @param bool        $has_consent       Whether tracking consent is granted.
+	 * @param string      $assignment_key    The assignment key returned by the experiment.
+	 * @param mixed       $abtest_variation  The value returned by ExPlat.
+	 * @param string|null $expected_anon_id  Expected anon_id passed to ExPlat; null when no call is expected.
+	 */
+	public function test_returns_control_for_fallback_cases( bool $has_consent, string $assignment_key, $abtest_variation, ?string $expected_anon_id ) {
+		$this->set_consent( $has_consent );
 		$captured   = null;
-		$experiment = $this->build_experiment( 'treatment_a', '', $captured );
+		$experiment = $this->build_experiment( $abtest_variation, $assignment_key, $captured );
 
 		$this->assertSame( 'control', $experiment->get_variant() );
-		$this->assertNull( $captured, 'abtest must not be constructed without an assignment key' );
+		$this->assertSame( $expected_anon_id, $captured );
 	}
 
 	public function test_returns_assigned_variant_and_passes_assignment_key() {
@@ -131,22 +144,6 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'treatment_a', $experiment->get_variant() );
 		$this->assertSame( 'store_123', $captured );
-	}
-
-	public function test_returns_control_for_unknown_variant() {
-		$this->set_consent( true );
-		$captured   = null;
-		$experiment = $this->build_experiment( 'renamed_arm_typo', 'store_123', $captured );
-
-		$this->assertSame( 'control', $experiment->get_variant() );
-	}
-
-	public function test_returns_control_for_non_string_variation() {
-		$this->set_consent( true );
-		$captured   = null;
-		$experiment = $this->build_experiment( null, 'store_123', $captured );
-
-		$this->assertSame( 'control', $experiment->get_variant() );
 	}
 
 	public function test_memoizes_variant_per_instance() {

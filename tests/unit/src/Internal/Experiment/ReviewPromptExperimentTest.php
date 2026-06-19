@@ -80,32 +80,46 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_get_variant_returns_control_when_jetpack_options_missing() {
-		$this->mock_legacy_proxy
-			->method( 'call_function' )
-			->willReturnMap(
-				[
-					[ 'class_exists', '\Jetpack_Options', false ],
-					[ 'get_option', 'woocommerce_allow_tracking', 'yes' ],
-				]
-			);
-
-		$this->assertSame( Experiment::VARIANT_CONTROL, $this->sut->get_variant() );
+	/**
+	 * Data provider for test_get_variant_returns_control_when_assignment_key_unavailable.
+	 *
+	 * @return array
+	 */
+	public function provider_invalid_assignment_keys() {
+		return [
+			'Jetpack_Options missing' => [ false, null ],
+			'empty blog ID'           => [ true, false ],
+			'non-numeric blog ID'     => [ true, 'not-a-blog-id' ],
+		];
 	}
 
-	public function test_get_variant_returns_control_when_blog_id_empty() {
+	/**
+	 * @dataProvider provider_invalid_assignment_keys
+	 *
+	 * @param bool  $jetpack_options_exists Whether Jetpack_Options exists.
+	 * @param mixed $blog_id                Blog ID returned by Jetpack_Options.
+	 */
+	public function test_get_variant_returns_control_when_assignment_key_unavailable( bool $jetpack_options_exists, $blog_id ) {
 		$this->mock_legacy_proxy
 			->method( 'call_function' )
 			->willReturnMap(
 				[
-					[ 'class_exists', '\Jetpack_Options', true ],
+					[ 'class_exists', '\Jetpack_Options', $jetpack_options_exists ],
 					[ 'get_option', 'woocommerce_allow_tracking', 'yes' ],
 				]
 			);
-		$this->mock_legacy_proxy
-			->method( 'call_static' )
-			->with( '\Jetpack_Options', 'get_option', 'id' )
-			->willReturn( false );
+
+		if ( $jetpack_options_exists ) {
+			$this->mock_legacy_proxy
+				->expects( $this->once() )
+				->method( 'call_static' )
+				->with( '\Jetpack_Options', 'get_option', 'id' )
+				->willReturn( $blog_id );
+		} else {
+			$this->mock_legacy_proxy
+				->expects( $this->never() )
+				->method( 'call_static' );
+		}
 
 		$this->assertSame( Experiment::VARIANT_CONTROL, $this->sut->get_variant() );
 	}

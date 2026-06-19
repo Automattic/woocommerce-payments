@@ -152,42 +152,32 @@ describe( 'ReviewPrompt', () => {
 		);
 	} );
 
-	it( 'renders treatment_illustration copy for that variant', () => {
-		global.wcpayReviewPromptSettings.variant = 'treatment_illustration';
+	it.each( [
+		[
+			'treatment_illustration',
+			'treatment_illustration',
+			'We built it. You use it. What do you think?',
+			'Leave a quick review and help shape what WooPayments does next.',
+		],
+		[
+			'treatment_revised',
+			'treatment_revised',
+			'Quick check-in?',
+			'Your review helps us improve WooPayments and build a better experience for every store owner.',
+		],
+		[
+			'unknown variant fallback',
+			'mystery_variant',
+			'Enjoying WooPayments so far?',
+			'Your feedback shapes our roadmap and supports the WooCommerce community. We are all ears!',
+		],
+	] )( 'renders %s copy', ( label, variant, heading, description ) => {
+		global.wcpayReviewPromptSettings.variant = variant;
 
 		render( <ReviewPrompt /> );
 
-		expect(
-			screen.getByText( 'We built it. You use it. What do you think?' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText(
-				'Leave a quick review and help shape what WooPayments does next.'
-			)
-		).toBeInTheDocument();
-	} );
-
-	it( 'renders treatment_revised copy for that variant', () => {
-		global.wcpayReviewPromptSettings.variant = 'treatment_revised';
-
-		render( <ReviewPrompt /> );
-
-		expect( screen.getByText( 'Quick check-in?' ) ).toBeInTheDocument();
-		expect(
-			screen.getByText(
-				'Your review helps us improve WooPayments and build a better experience for every store owner.'
-			)
-		).toBeInTheDocument();
-	} );
-
-	it( 'falls back to control copy for an unknown variant', () => {
-		global.wcpayReviewPromptSettings.variant = 'mystery_variant';
-
-		render( <ReviewPrompt /> );
-
-		expect(
-			screen.getByText( 'Enjoying WooPayments so far?' )
-		).toBeInTheDocument();
+		expect( screen.getByText( heading ) ).toBeInTheDocument();
+		expect( screen.getByText( description ) ).toBeInTheDocument();
 	} );
 
 	it( 'includes the variant in event props for treatments', () => {
@@ -229,35 +219,32 @@ describe( 'ReviewPrompt', () => {
 		expect( target ).toBe( '_blank' );
 	} );
 
-	it( 'routes to the Marketplace regardless of connection (live/test) state', async () => {
-		global.wcpayReviewPromptSettings.isLive = true;
-		const { unmount } = render( <ReviewPrompt /> );
-		fireEvent.click( screen.getByText( 'Leave review' ) );
+	it.each( [
+		[ 'live', true ],
+		[ 'test', false ],
+	] )(
+		'routes to and records Marketplace destination in %s mode',
+		async ( mode, isLive ) => {
+			global.wcpayReviewPromptSettings.isLive = isLive;
+			render( <ReviewPrompt /> );
+			fireEvent.click( screen.getByText( 'Leave review' ) );
 
-		await waitFor( () => {
-			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				expect.stringContaining(
-					'https://woocommerce.com/products/woopayments/'
-				),
-				'_blank'
-			);
-		} );
-
-		unmount();
-		jest.clearAllMocks();
-		global.wcpayReviewPromptSettings.isLive = false;
-		render( <ReviewPrompt /> );
-		fireEvent.click( screen.getByText( 'Leave review' ) );
-
-		await waitFor( () => {
-			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				expect.stringContaining(
-					'https://woocommerce.com/products/woopayments/'
-				),
-				'_blank'
-			);
-		} );
-	} );
+			await waitFor( () => {
+				expect( mockWindowOpen ).toHaveBeenCalledWith(
+					expect.stringContaining(
+						'https://woocommerce.com/products/woopayments/'
+					),
+					'_blank'
+				);
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_review_prompt_action',
+					expect.objectContaining( {
+						destination: 'marketplace',
+					} )
+				);
+			} );
+		}
+	);
 
 	it( 'records correct telemetry events when "Leave review" is clicked', async () => {
 		render( <ReviewPrompt /> );
@@ -277,63 +264,42 @@ describe( 'ReviewPrompt', () => {
 		} );
 	} );
 
-	it( 'hides prompt after "Leave review" is clicked', async () => {
+	it.each( [
+		[
+			'Maybe later',
+			() => screen.getByText( 'Maybe later' ),
+			'maybe_later',
+		],
+		[
+			'dismiss (X)',
+			() => screen.getByLabelText( 'Dismiss' ),
+			'dismiss_x',
+		],
+	] )(
+		'records correct event when %s is clicked',
+		( label, getButton, action ) => {
+			render( <ReviewPrompt /> );
+
+			fireEvent.click( getButton() );
+
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_review_prompt_action',
+				expect.objectContaining( {
+					action,
+					time_to_click_ms: expect.any( Number ),
+				} )
+			);
+		}
+	);
+
+	it.each( [
+		[ 'Leave review', () => screen.getByText( 'Leave review' ) ],
+		[ 'Maybe later', () => screen.getByText( 'Maybe later' ) ],
+		[ 'dismiss (X)', () => screen.getByLabelText( 'Dismiss' ) ],
+	] )( 'hides prompt after %s is clicked', async ( label, getButton ) => {
 		const { container } = render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
-
-		await waitFor( () => {
-			expect( container.firstChild ).toBeNull();
-		} );
-	} );
-
-	it( 'records correct event when "Maybe later" is clicked', () => {
-		render( <ReviewPrompt /> );
-
-		const maybeLaterButton = screen.getByText( 'Maybe later' );
-		fireEvent.click( maybeLaterButton );
-
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_review_prompt_action',
-			expect.objectContaining( {
-				action: 'maybe_later',
-				time_to_click_ms: expect.any( Number ),
-			} )
-		);
-	} );
-
-	it( 'hides prompt after "Maybe later" is clicked', async () => {
-		const { container } = render( <ReviewPrompt /> );
-
-		const maybeLaterButton = screen.getByText( 'Maybe later' );
-		fireEvent.click( maybeLaterButton );
-
-		await waitFor( () => {
-			expect( container.firstChild ).toBeNull();
-		} );
-	} );
-
-	it( 'records correct event when dismiss (X) is clicked', () => {
-		render( <ReviewPrompt /> );
-
-		const dismissButton = screen.getByLabelText( 'Dismiss' );
-		fireEvent.click( dismissButton );
-
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_review_prompt_action',
-			expect.objectContaining( {
-				action: 'dismiss_x',
-				time_to_click_ms: expect.any( Number ),
-			} )
-		);
-	} );
-
-	it( 'hides prompt after dismiss (X) is clicked', async () => {
-		const { container } = render( <ReviewPrompt /> );
-
-		const dismissButton = screen.getByLabelText( 'Dismiss' );
-		fireEvent.click( dismissButton );
+		fireEvent.click( getButton() );
 
 		await waitFor( () => {
 			expect( container.firstChild ).toBeNull();
@@ -362,40 +328,6 @@ describe( 'ReviewPrompt', () => {
 		} );
 
 		jest.useRealTimers();
-	} );
-
-	it( 'records the Marketplace destination in both live and test mode', async () => {
-		global.wcpayReviewPromptSettings.isLive = true;
-		const { unmount } = render( <ReviewPrompt /> );
-
-		let writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
-
-		await waitFor( () => {
-			expect( recordEvent ).toHaveBeenCalledWith(
-				'wcpay_review_prompt_action',
-				expect.objectContaining( {
-					destination: 'marketplace',
-				} )
-			);
-		} );
-
-		unmount();
-		jest.clearAllMocks();
-		global.wcpayReviewPromptSettings.isLive = false;
-		render( <ReviewPrompt /> );
-
-		writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
-
-		await waitFor( () => {
-			expect( recordEvent ).toHaveBeenCalledWith(
-				'wcpay_review_prompt_action',
-				expect.objectContaining( {
-					destination: 'marketplace',
-				} )
-			);
-		} );
 	} );
 
 	it( 'falls back to window.location when window.open fails', async () => {
