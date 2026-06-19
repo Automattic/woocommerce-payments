@@ -1444,15 +1444,16 @@ class WC_Payments_Onboarding_Service {
 	 * @return array The request args, possible updated with the test drive account settings, used to create new account.
 	 */
 	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
-		if (
-			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
-			is_array( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
-		) {
+		$test_drive_settings = get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		if ( is_array( $test_drive_settings ) && ! empty( $test_drive_settings['capabilities'] ) ) {
+			// Only the requested capabilities belong in the account creation request. The transient is
+			// left in place so the enabled payment methods can be restored once the live account connects
+			// (WC_Payments_Account::restore_test_drive_enabled_payment_methods).
 			$args['account_data'] = array_merge(
 				$args['account_data'],
-				get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+				[ 'capabilities' => $test_drive_settings['capabilities'] ]
 			);
-			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
 		return $args;
@@ -1514,9 +1515,15 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// Update gateway option with the WooPay capability.
+		// WooPay and Link by Stripe are mutually exclusive, so an account that can auto-enable WooPay
+		// must not do so while Link is enabled: that would leave both active with neither toggle
+		// editable, and silently discard a payment method the merchant deliberately turned on. Link is
+		// read from the merged list because it can be enabled either from existing settings or from this
+		// same capabilities payload. See #9404.
+		$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $enabled_payment_methods, true );
 		if ( ! empty( $capabilities['woopay'] ) ) {
-			$gateway->update_is_woopay_enabled( true );
+			// Link wins when both would be on, so WooPay is only enabled when Link is not.
+			$gateway->update_is_woopay_enabled( ! $is_link_enabled );
 		} else {
 			$gateway->update_is_woopay_enabled( false );
 		}
