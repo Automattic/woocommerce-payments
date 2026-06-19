@@ -305,8 +305,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_determine_current_user_is_request_woopay_false() {
 		$_SERVER['HTTP_USER_AGENT'] = 'NotWooPay';
 
-		$guest_user  = 0;
-		$woopay_user = self::factory()->user->create_and_get();
+		$guest_user = 0;
+		self::factory()->user->create_and_get();
 
 		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), 0 );
 	}
@@ -314,8 +314,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_determine_current_user_is_store_api_request_false() {
 		$_SERVER['REQUEST_URI'] = '/another/store/url';
 
-		$guest_user  = 0;
-		$woopay_user = self::factory()->user->create_and_get();
+		$guest_user = 0;
+		self::factory()->user->create_and_get();
 
 		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), 0 );
 	}

@@ -99,10 +99,11 @@ const getFeesSummaryCount = (
 /**
  * Triggers a Fees CSV export for the current URL-synced filter state.
  *
- * Reads filter state from `getQuery()` so the export honours the same
- * filters as the on-screen Fees table, then delegates the async
- * POST → poll → download flow to `useReportExport` (shared with
- * Transactions, Payouts, and Disputes).
+ * Reads filter state from `getQuery()` so the export can preserve
+ * transaction-style datetime bounds in legacy/generated export URLs while the
+ * on-screen DataViews table remains date-only. Delegates the async
+ * POST → poll → download flow to `useReportExport` (shared with Transactions,
+ * Payouts, and Disputes).
  */
 export const FeesExportButton: React.FC = () => {
 	const { requestReportExport, isExportInProgress } = useReportExport();

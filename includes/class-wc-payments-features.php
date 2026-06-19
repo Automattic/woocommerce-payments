@@ -83,6 +83,13 @@ class WC_Payments_Features {
 			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
 		}
 
+		/**
+		 * Allows filtering of whether WCPay Subscriptions is enabled.
+		 *
+		 * @since 3.9.0
+		 *
+		 * @param bool $enabled Whether WCPay Subscriptions is enabled.
+		 */
 		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
@@ -330,7 +337,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Dispute Outcome View feature should be enabled. Disabled by default.
+	 * Checks whether the Dispute Outcome View feature should be enabled. Enabled by default.
 	 *
 	 * This gates the post-resolution dispute outcome surfaces (won / lost / warning_closed)
 	 * in the payment details page.
@@ -338,7 +345,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_dispute_outcome_view_enabled(): bool {
-		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '0' );
+		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '1' );
 	}
 
 	/**
@@ -388,12 +395,12 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the multi-currency cache-optimized rendering mode is enabled.
+	 * Checks whether the multi-currency cache-optimized rendering mode is enabled. Enabled by default.
 	 *
 	 * @return bool
 	 */
 	public static function is_mc_cache_optimized_enabled(): bool {
-		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '1' );
 	}
 
 	/**

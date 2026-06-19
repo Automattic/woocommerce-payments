@@ -9,6 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -126,7 +127,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account
 			->method( 'get_account_default_currency' )
-			->willReturn( 'USD' );
+			->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -229,10 +230,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_success() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = Intent_Status::SUCCEEDED;
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -334,6 +332,55 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * The branded payment method title must be set BEFORE update_order_status_from_intent(), because that
+	 * call transitions the order status, which synchronously fires the customer/renewal email. The email
+	 * renders get_payment_method_title(), so if the title is set afterwards the email shows a generic "Card".
+	 * Regression guard for WOOPMNT-2882 (card brand missing from order/renewal emails on the sync path).
+	 */
+	public function test_process_payment_for_order_sets_title_before_status_transition() {
+		$order_id = 124;
+
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order->method( 'get_id' )->willReturn( $order_id );
+		$mock_order->method( 'get_total' )->willReturn( 12.23 );
+		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_mock' );
+
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )->method( 'format_response' )->willReturn( $intent );
+
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+		$charge_request->method( 'format_response' )->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+
+		// Record the relative order of the title write (on the order) vs the status transition.
+		$calls = [];
+		$mock_order->method( 'set_payment_method_title' )->willReturnCallback(
+			function () use ( &$calls ) {
+				$calls[] = 'title';
+			}
+		);
+		$this->mock_order_service->method( 'update_order_status_from_intent' )->willReturnCallback(
+			function () use ( &$calls ) {
+				$calls[] = 'status';
+			}
+		);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		$title_pos  = array_search( 'title', $calls, true );
+		$status_pos = array_search( 'status', $calls, true );
+		$this->assertNotFalse( $title_pos, 'set_payment_method_title should be called' );
+		$this->assertNotFalse( $status_pos, 'update_order_status_from_intent should be called' );
+		$this->assertLessThan( $status_pos, $title_pos, 'Payment method title must be set before the status transition that fires the email.' );
+	}
+
+	/**
 	 * Test processing payment with the status 'succeeded'.
 	 */
 	public function test_intent_status_success_logged_out_user() {
@@ -402,8 +449,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_requires_capture() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
 		$status      = Intent_Status::REQUIRES_CAPTURE;
 		$order_id    = 123;
@@ -512,7 +557,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC(), 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC(), 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
@@ -700,7 +745,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$order = wc_create_order( $order_data );
 
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
 
 		// Assert: Order status was updated.
 		$this->assertEquals( 'pending', $order->get_status() );
@@ -743,7 +788,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				],
 			]
 		);
-		apply_filters( 'rest_request_before_callbacks', [], [], $request );
+		apply_filters( 'rest_request_before_callbacks', [], [], $request ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		// Arrange: Create an order to test with.
 		$order_data = [
@@ -873,8 +918,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_requires_action() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
 		$status      = Intent_Status::REQUIRES_ACTION;
 		$secret      = 'cs_mock';
@@ -983,11 +1026,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_intent_status_requires_action_offine_payment() {
 		// Arrange: Reusable data.
-		$intent_id   = 'pi_mock';
-		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
 		$status      = Intent_Status::REQUIRES_ACTION;
-		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -1102,7 +1142,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 0;
-		$currency    = 'USD';
+		$currency    = Currency_Code::UNITED_STATES_DOLLAR;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -1149,6 +1189,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
+
+		$request->expects( $this->once() )
+			->method( 'set_fingerprint' );
 
 				// Assert: Order has correct charge id meta data.
 		// Assert: Order has correct intention status meta data.
@@ -1207,6 +1250,202 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_process_payment_for_order_brands_zero_amount_setup_intent_from_payment_method() {
+		// $0 free-trial confirmation (new card): the SetupIntent has no charge, so the card brand/last4
+		// must be sourced from the confirmed payment method and written to the order. WOOPMNT-2882.
+		$order_id = 125;
+
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order->method( 'get_id' )->willReturn( $order_id );
+		$mock_order->method( 'get_total' )->willReturn( 0 );
+		$mock_order->method( 'get_currency' )->willReturn( 'USD' );
+		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+		$mock_order->method( 'get_payment_tokens' )->willReturn( [] );
+		$mock_order->method( 'get_meta' )->willReturn( '' );
+
+		$this->mock_customer_service->method( 'create_customer_for_user' )->willReturn( 'cus_mock' );
+		$this->mock_token_service->method( 'add_payment_method_to_user' )->willReturn( WC_Helper_Token::create_token( 'pm_mock' ) );
+
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		$intent  = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'             => 'seti_mock',
+				'status'         => Intent_Status::SUCCEEDED,
+				'client_secret'  => 'cs_mock',
+				'payment_method' => 'pm_mock',
+			]
+		);
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )->method( 'format_response' )->willReturn( $intent );
+
+		// The payment-method lookup that supplies brand/last4 for the no-charge ($0) case.
+		$this->mock_api_client->method( 'get_payment_method' )->with( 'pm_mock' )->willReturn(
+			[
+				'type' => 'card',
+				'card' => [
+					'network' => 'visa',
+					'funding' => 'credit',
+					'brand'   => 'visa',
+					'last4'   => '4242',
+				],
+			]
+		);
+
+		// Capture the card meta written to the order.
+		$meta = [];
+		$mock_order->method( 'add_meta_data' )->willReturnCallback(
+			function ( $key, $value ) use ( &$meta ) {
+				$meta[ $key ] = $value;
+			}
+		);
+
+		// Capture the title set on the order. Asserting it alongside the meta guards against a regression
+		// that breaks title branding while leaving the card meta intact (the two are set independently).
+		$title = null;
+		$mock_order->method( 'set_payment_method_title' )->willReturnCallback(
+			function ( $value ) use ( &$title ) {
+				$title = $value;
+			}
+		);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information->must_save_payment_method_to_store();
+
+		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		$this->assertSame( 'Visa credit card', $title, 'The order title must be branded from the payment method for a $0 setup intent.' );
+		$this->assertSame( '4242', $meta['last4'] ?? null, 'last4 must be sourced from the payment method for a $0 setup intent.' );
+		$this->assertSame( 'visa', $meta['_card_brand'] ?? null );
+	}
+
+	public function test_process_payment_for_order_completes_zero_amount_setup_intent_when_payment_method_lookup_fails() {
+		// Branding the $0 title is a display enhancement and runs BEFORE payment_complete(). A lookup failure
+		// of any kind must degrade to the generic title rather than break the free-trial checkout. Regression
+		// guard: get_payment_method() throwing must not bubble up; the order still completes with no card meta
+		// and the generic (unbranded) title. WOOPMNT-2882.
+		$order_id = 126;
+
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order->method( 'get_id' )->willReturn( $order_id );
+		$mock_order->method( 'get_total' )->willReturn( 0 );
+		$mock_order->method( 'get_currency' )->willReturn( 'USD' );
+		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+		$mock_order->method( 'get_payment_tokens' )->willReturn( [] );
+		$mock_order->method( 'get_meta' )->willReturn( '' );
+
+		$this->mock_customer_service->method( 'create_customer_for_user' )->willReturn( 'cus_mock' );
+		$this->mock_token_service->method( 'add_payment_method_to_user' )->willReturn( WC_Helper_Token::create_token( 'pm_mock' ) );
+
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		$intent  = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'             => 'seti_mock',
+				'status'         => Intent_Status::SUCCEEDED,
+				'client_secret'  => 'cs_mock',
+				'payment_method' => 'pm_mock',
+			]
+		);
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )->method( 'format_response' )->willReturn( $intent );
+
+		// The branding lookup fails — a generic exception (not just API_Exception) must be swallowed.
+		$this->mock_api_client->method( 'get_payment_method' )->with( 'pm_mock' )->willThrowException( new \Exception( 'lookup boom' ) );
+
+		// Capture any card meta / title that would be written — neither should be on the failure path.
+		$meta = [];
+		$mock_order->method( 'add_meta_data' )->willReturnCallback(
+			function ( $key, $value ) use ( &$meta ) {
+				$meta[ $key ] = $value;
+			}
+		);
+		$title = null;
+		$mock_order->method( 'set_payment_method_title' )->willReturnCallback(
+			function ( $value ) use ( &$title ) {
+				$title = $value;
+			}
+		);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information->must_save_payment_method_to_store();
+
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		$this->assertSame( 'success', $result['result'], 'The $0 checkout must complete even when the branding lookup fails.' );
+		$this->assertArrayNotHasKey( 'last4', $meta, 'No card meta must be stored when the branding lookup fails.' );
+		$this->assertArrayNotHasKey( '_card_brand', $meta );
+		$this->assertNotSame( 'Visa credit card', $title, 'The title must degrade to the generic title, not the branded card, when the lookup fails.' );
+	}
+
+	public function test_process_payment_for_order_brands_zero_amount_saved_card_on_no_intent_path() {
+		// $0 free-trial paid with an already-saved card: no charge and no SetupIntent are created (the
+		// wcpay_confirm_without_payment_intent branch), so the card brand/last4 and the title must be sourced
+		// from the saved payment method instead of falling back to "Credit / Debit Cards". WOOPMNT-2882.
+		$user_id = self::factory()->user->create();
+		wp_set_current_user( $user_id );
+
+		// A saved (non-Link) card token selected at checkout drives the no-intent path.
+		$token = WC_Helper_Token::create_token( 'pm_mock', $user_id );
+
+		$_POST['payment_method'] = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] = (string) $token->get_id();
+
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order->method( 'get_id' )->willReturn( 127 );
+		$mock_order->method( 'get_total' )->willReturn( 0 );
+		$mock_order->method( 'get_currency' )->willReturn( 'USD' );
+		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+		$mock_order->method( 'get_user_id' )->willReturn( $user_id );
+		$mock_order->method( 'get_payment_tokens' )->willReturn( [] );
+		$mock_order->method( 'get_meta' )->willReturn( '' );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_mock' );
+		$this->mock_customer_service->method( 'create_customer_for_user' )->willReturn( 'cus_mock' );
+
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// No charge and no SetupIntent on this path — the card is read from the saved payment method.
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+		$this->mock_api_client->method( 'get_payment_method' )->with( 'pm_mock' )->willReturn(
+			[
+				'type' => 'card',
+				'card' => [
+					'network' => 'visa',
+					'funding' => 'credit',
+					'brand'   => 'visa',
+					'last4'   => '4242',
+				],
+			]
+		);
+
+		$meta = [];
+		$mock_order->method( 'add_meta_data' )->willReturnCallback(
+			function ( $key, $value ) use ( &$meta ) {
+				$meta[ $key ] = $value;
+			}
+		);
+		$title = null;
+		$mock_order->method( 'set_payment_method_title' )->willReturnCallback(
+			function ( $value ) use ( &$title ) {
+				$title = $value;
+			}
+		);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$this->assertTrue( $payment_information->is_using_saved_payment_method(), 'Test setup: the payment must use the saved token to exercise the no-intent path.' );
+
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertSame( 'Visa credit card', $title, 'The saved-card no-intent path must brand the title from the payment method.' );
+		$this->assertSame( '4242', $meta['last4'] ?? null );
+		$this->assertSame( 'visa', $meta['_card_brand'] ?? null );
+	}
+
 	public function test_saved_card_at_checkout() {
 		$order = WC_Helper_Order::create_order();
 
@@ -1254,7 +1493,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
 
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_does_not_update_new_payment_method() {
@@ -1705,7 +1944,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Add a payment method to the user.
-		$token = WC_Helper_Token::create_token( $subscription_payment_method_id, $order->get_user_id() );
+		WC_Helper_Token::create_token( $subscription_payment_method_id, $order->get_user_id() );
 
 		// Arrange: Make the payment method selected in WooPay to be the same one the user has stored.
 		$intent = WC_Helper_Intention::create_intention( [ 'payment_method_id' => $subscription_payment_method_id ] );
@@ -1756,7 +1995,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Add a payment method to the user.
-		$token = WC_Helper_Token::create_token( 'pm_existing_mock', $order->get_user_id() );
+		WC_Helper_Token::create_token( 'pm_existing_mock', $order->get_user_id() );
 
 		// Arrange: Make the payment method selected in WooPay to be different from the onethe user has stored.
 		$intent = WC_Helper_Intention::create_intention( [ 'payment_method_id' => 'pm_new_mock' ] );
@@ -1894,7 +2133,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_order_contains_subscription( $value ) {
 		WC_Subscriptions::set_wcs_order_contains_subscription(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
@@ -2048,7 +2287,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_missing_customer_recovery_for_setup_intent() {
 		$order = $this->create_mock_order( 0 );
-		$order->method( 'get_currency' )->willReturn( 'USD' );
+		$order->method( 'get_currency' )->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 		$order->method( 'get_payment_tokens' )->willReturn( [] );
 
 		$this->mock_customer_service

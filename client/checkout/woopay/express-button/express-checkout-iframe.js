@@ -17,6 +17,7 @@ import {
 } from '../utils';
 import { getTracksIdentity } from 'tracks';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 const getEmailValue = async ( emailSelector ) => {
 	const isPayForOrder = window.wcpayConfig?.pay_for_order === 'true';
@@ -230,10 +231,17 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				api.initWooPay(
+				const promise = initWooPay(
+					api.request,
 					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
+				);
+
+				if ( ! promise ) {
+					break;
+				}
+
+				promise.then( ( response ) => {
 					// Do nothing if the iframe has been closed.
 					if ( ! document.querySelector( '.woopay-otp-iframe' ) ) {
 						return;

@@ -43,7 +43,7 @@ $stage_copy = [
 
 $content = $stage_copy[ $stage ] ?? $stage_copy[7];
 
-do_action( 'woocommerce_email_header', $content['heading'], $email ); ?>
+do_action( 'woocommerce_email_header', $content['heading'], $email ); /* phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments. */ ?>
 
 <p><?php echo esc_html( $content['body'] ); ?></p>
 
@@ -57,4 +57,4 @@ do_action( 'woocommerce_email_header', $content['heading'], $email ); ?>
 	<?php echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) ); ?>
 <?php endif; ?>
 
-<?php do_action( 'woocommerce_email_footer', $email ); ?>
+<?php do_action( 'woocommerce_email_footer', $email ); /* phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments. */ ?>

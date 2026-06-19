@@ -393,9 +393,11 @@ export async function mountStripePaymentElement(
  * @return {Promise} A promise that resolves when the setup intent is confirmed and appended to the form.
  */
 export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
-	return api.setupIntent( id ).then( function ( confirmedSetupIntent ) {
-		appendSetupIntentToForm( $form, confirmedSetupIntent );
-	} );
+	return api
+		.setupIntent( id, fingerprint ?? '' )
+		.then( function ( confirmedSetupIntent ) {
+			appendSetupIntentToForm( $form, confirmedSetupIntent );
+		} );
 };
 
 /**

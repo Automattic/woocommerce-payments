@@ -128,7 +128,12 @@ class WC_Payments_Subscription_Service {
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		/**
 		 * When a store is in staging mode, we don't want any subscription updates or purchases to be sent to the server.
 		 *
@@ -815,6 +820,13 @@ class WC_Payments_Subscription_Service {
 			$data['billing_cycle_anchor'] = $subscription->get_time( 'next_payment' );
 		}
 
+		/**
+		 * Filters the subscription data prepared for creating a WCPay subscription.
+		 *
+		 * @since 3.2.0
+		 *
+		 * @param array $data The prepared subscription data.
+		 */
 		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
 	}
 

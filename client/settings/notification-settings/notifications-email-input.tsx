@@ -128,6 +128,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 				value={ accountCommunicationsEmail }
 				onChange={ setAccountCommunicationsEmail }
 				onBlur={ () => setHasBlurred( true ) }
+				id="account-communications-email-input"
 				data-testid={ 'notifications-email-input' }
 				type="email"
 				required

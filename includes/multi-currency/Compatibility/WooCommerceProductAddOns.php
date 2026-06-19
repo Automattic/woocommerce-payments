@@ -46,15 +46,15 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool   $return  Whether to convert the product's price or not. Default is true.
-	 * @param object $product Product object to test.
+	 * @param bool   $should_convert Whether to convert the product's price or not. Default is true.
+	 * @param object $product        Product object to test.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return, $product ): bool {
+	public function should_convert_product_price( bool $should_convert, $product ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $should_convert ) {
+			return $should_convert;
 		}
 
 		// Check for cart items to see if they have already been converted.
@@ -62,7 +62,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 			return false;
 		}
 
-		return $return;
+		return $should_convert;
 	}
 
 	/**
@@ -120,7 +120,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		 *
 		 * @param boolean
 		 */
-		$add_price_to_value = apply_filters( 'woocommerce_addons_add_cart_price_to_value', false, $cart_item );
+		$add_price_to_value = apply_filters( 'woocommerce_addons_add_cart_price_to_value', false, $cart_item ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle -- WooCommerce Product Add-Ons hook, not defined by WooPayments.
 
 		if ( 0.0 === (float) $addon['price'] ) {
 			$value .= '';
@@ -264,6 +264,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	 */
 	public function order_line_item_meta( array $meta_data, array $addon, \WC_Order_Item_Product $item, array $values ): array {
 
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce Product Add-Ons hook, not defined by WooPayments.
 		$add_price_to_value = apply_filters( 'woocommerce_addons_add_order_price_to_value', false, $item );
 
 		$value = $addon['value'];

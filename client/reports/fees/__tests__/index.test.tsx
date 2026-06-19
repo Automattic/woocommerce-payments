@@ -4,9 +4,11 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from 'tracks';
+
+import { expectPresetButtonBefore } from '../../test-helpers';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -33,7 +35,8 @@ jest.mock( '@woocommerce/data', () => ( {
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
-	speak: ( message: string ) => mockSpeak( message ),
+	speak: ( message: string, politeness?: string ) =>
+		mockSpeak( message, politeness ),
 } ) );
 
 jest.mock( 'tracks', () => ( {
@@ -105,6 +108,9 @@ const filteredMarchQuery = {
 	date_between: [ '2026-03-01', '2026-03-31' ],
 	payment_method_type: 'card',
 };
+const fixedDateFilterNow = new Date( '2026-05-15T12:00:00.000Z' );
+const previousMonthRange: [ string, string ] = [ '2026-04-01', '2026-04-30' ];
+const previousYearRange: [ string, string ] = [ '2025-01-01', '2025-12-31' ];
 
 type FeesRow = typeof baseRow;
 
@@ -187,6 +193,20 @@ const expectRecordedTracksEvent = (
 	properties: unknown
 ) => {
 	expect( mockRecordEvent ).toHaveBeenCalledWith( eventName, properties );
+};
+
+const openFeesDateRangePopover = async () => {
+	await userEvent.click(
+		screen.getByRole( 'button', {
+			name: 'Filter',
+		} )
+	);
+	await userEvent.click(
+		await screen.findByRole( 'button', {
+			name: /Date between \(inc\):/,
+		} )
+	);
+	return screen.findByRole( 'dialog' );
 };
 
 beforeEach( () => {
@@ -409,156 +429,150 @@ describe( 'FeesReport (DataViews)', () => {
 		);
 	} );
 
-	it( 'renders the Date filter chip', () => {
+	it( 'renders native DataViews filtering controls without a default Date chip', () => {
 		render( <FeesReport /> );
+
 		expect(
-			screen.getByRole( 'button', { name: /^date$/i } )
+			screen.queryByRole( 'button', { name: /^filter$/i } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: /^date$/i } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: /^add filter$/i } )
 		).toBeInTheDocument();
 	} );
 
-	it( 'marks the Date filter chip as a dialog trigger while closed', () => {
+	it( 'opens the native Date filter from Add filter', async () => {
 		render( <FeesReport /> );
 
-		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^date$/i,
-		} );
-
-		expect( dateFilterChip ).toHaveAttribute( 'aria-haspopup', 'dialog' );
-		expect( dateFilterChip ).toHaveAttribute( 'aria-expanded', 'false' );
-		expect( dateFilterChip ).not.toHaveAttribute( 'aria-controls' );
-	} );
-
-	it( 'restores Date chip ARIA attributes when DataViews mutates them', async () => {
-		render( <FeesReport /> );
-
-		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^date$/i,
-		} );
-
-		expect( dateFilterChip ).toHaveAttribute( 'aria-haspopup', 'dialog' );
-		expect( dateFilterChip ).toHaveAttribute( 'aria-expanded', 'false' );
-
-		// Simulate DataViews' internal Dropdown re-render overwriting the
-		// chip's ARIA attributes (it owns `aria-expanded` and doesn't know
-		// about `aria-haspopup`/`aria-controls`). Our MutationObserver
-		// should restore them.
-		dateFilterChip.removeAttribute( 'aria-haspopup' );
-		dateFilterChip.setAttribute( 'aria-expanded', 'true' );
-
-		await waitFor( () => {
-			expect( dateFilterChip ).toHaveAttribute(
-				'aria-haspopup',
-				'dialog'
-			);
-			expect( dateFilterChip ).toHaveAttribute(
-				'aria-expanded',
-				'false'
-			);
-		} );
-	} );
-
-	it( 'restores aria-controls on the Date chip when DataViews strips it while the popover is open', async () => {
-		render( <FeesReport /> );
-
-		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^date$/i,
-		} );
-
-		await userEvent.click( dateFilterChip );
-		expect(
-			await screen.findByRole( 'dialog', {
-				name: 'Custom date filter',
-			} )
-		).toBeInTheDocument();
-		expect( dateFilterChip ).toHaveAttribute(
-			'aria-controls',
-			'wcpay-fees-date-filter-popover'
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /^add filter$/i } )
+		);
+		await userEvent.click(
+			await screen.findByRole( 'menuitem', { name: /^date$/i } )
 		);
 
-		// Simulate DataViews stripping `aria-controls` on a re-render; the
-		// MutationObserver should restore it.
-		dateFilterChip.removeAttribute( 'aria-controls' );
-
-		await waitFor( () => {
-			expect( dateFilterChip ).toHaveAttribute(
-				'aria-controls',
-				'wcpay-fees-date-filter-popover'
-			);
-		} );
-	} );
-
-	it( 'opens the custom date popover directly from the Date filter chip', async () => {
-		render( <FeesReport /> );
-
-		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^date$/i,
-		} );
-		await userEvent.click( dateFilterChip );
-
 		expect(
-			await screen.findByRole( 'dialog', {
+			await screen.findByRole( 'button', { name: /^date$/i } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'dialog', {
 				name: 'Custom date filter',
 			} )
-		).toBeInTheDocument();
-		expect( dateFilterChip ).toHaveAttribute( 'aria-expanded', 'true' );
-		expect( dateFilterChip ).toHaveAttribute(
-			'aria-controls',
-			'wcpay-fees-date-filter-popover'
-		);
-		await waitFor( () =>
-			expect(
-				screen.queryByRole( 'option', { name: 'Custom date…' } )
-			).not.toBeInTheDocument()
-		);
-	} );
-
-	it( 'opens the custom date popover by chip position, not chip text', async () => {
-		render( <FeesReport /> );
-
-		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^date$/i,
-		} );
-		dateFilterChip.textContent = 'Localized label with different grammar';
-
-		await userEvent.click( dateFilterChip );
-
-		expect(
-			await screen.findByRole( 'dialog', {
-				name: 'Custom date filter',
-			} )
-		).toBeInTheDocument();
-	} );
-
-	it( 'toggles the custom date popover closed from the Date filter chip', async () => {
-		render( <FeesReport /> );
-
-		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^date$/i,
-		} );
-		await userEvent.click( dateFilterChip );
-		expect(
-			await screen.findByRole( 'dialog', {
-				name: 'Custom date filter',
-			} )
-		).toBeInTheDocument();
-
-		await userEvent.click( dateFilterChip );
-
-		await waitFor( () =>
-			expect(
-				screen.queryByRole( 'dialog', {
-					name: 'Custom date filter',
-				} )
-			).not.toBeInTheDocument()
-		);
-	} );
-
-	it( 'does not expose the internal date-filter anchor text', () => {
-		render( <FeesReport /> );
-		expect(
-			screen.queryByText( '_wcpay_date_filter_anchor' )
 		).not.toBeInTheDocument();
 	} );
+
+	it.each( [
+		{
+			label: 'Previous month',
+			expectedDateBetween: previousMonthRange,
+		},
+		{
+			label: 'Previous year',
+			expectedDateBetween: previousYearRange,
+		},
+	] )(
+		'applies the $label preset from the between date filter as a complete calendar range',
+		async ( { label, expectedDateBetween } ) => {
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( fixedDateFilterNow );
+				mockGetQuery.mockReturnValue( {
+					date_between: [ '2026-05-01', '2026-05-14' ],
+				} );
+
+				render( <FeesReport /> );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			const filterPopover = await openFeesDateRangePopover();
+			const presetButton = await within( filterPopover ).findByRole(
+				'button',
+				{
+					name: label,
+				}
+			);
+
+			expectPresetButtonBefore(
+				filterPopover,
+				'Previous month',
+				'Last 7 days'
+			);
+			expectPresetButtonBefore(
+				filterPopover,
+				'Previous year',
+				'Last 7 days'
+			);
+
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( fixedDateFilterNow );
+				act( () => {
+					presetButton.click();
+				} );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					date_preset: undefined,
+					date_between: expectedDateBetween,
+					date_before: undefined,
+					date_after: undefined,
+				} ),
+				'/payments/reports'
+			);
+		}
+	);
+
+	it.each( [
+		{
+			label: 'Previous month',
+			value: previousMonthRange,
+		},
+		{
+			label: 'Previous year',
+			value: previousYearRange,
+		},
+	] )(
+		'shows the $label preset as selected instead of Custom when the between date filter matches it',
+		async ( { label, value } ) => {
+			jest.useFakeTimers();
+			try {
+				jest.setSystemTime( fixedDateFilterNow );
+				mockGetQuery.mockReturnValue( {
+					date_between: value,
+				} );
+
+				render( <FeesReport /> );
+			} finally {
+				jest.useRealTimers();
+			}
+
+			const filterPopover = await openFeesDateRangePopover();
+			const presetButton = await within( filterPopover ).findByRole(
+				'button',
+				{
+					name: label,
+				}
+			);
+
+			expect( presetButton ).toHaveAttribute( 'aria-pressed', 'true' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).toHaveAttribute( 'aria-pressed', 'false' );
+			expect(
+				within( filterPopover ).getByRole( 'button', {
+					name: 'Custom',
+				} )
+			).not.toHaveAttribute( 'aria-disabled' );
+		}
+	);
 
 	it( 'clears search, report filters, and the date filter from the report reset button', async () => {
 		mockGetQuery.mockReturnValue( {
@@ -569,6 +583,9 @@ describe( 'FeesReport (DataViews)', () => {
 		} );
 
 		render( <FeesReport /> );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Filter' } )
+		);
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Reset' } )
 		);
@@ -644,7 +661,7 @@ describe( 'FeesReport (DataViews)', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders the filtered empty state when filters are active', () => {
+	it( 'renders the filtered empty state when filters are active', async () => {
 		mockGetQuery.mockReturnValue( {
 			payment_method_type: 'card',
 		} );
@@ -657,7 +674,48 @@ describe( 'FeesReport (DataViews)', () => {
 		expect(
 			screen.getByText( 'Fees will appear here.' )
 		).toBeInTheDocument();
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Filter' } )
+		);
 		expect( screen.getByRole( 'button', { name: 'Reset' } ) ).toBeEnabled();
+	} );
+
+	it( 'renders a loading status instead of DataViews No results while refreshing an empty filtered result', () => {
+		mockGetQuery.mockReturnValue( {
+			payment_method_type: 'card',
+		} );
+		mockEmptyFeesReportState();
+		const { container, rerender } = render( <FeesReport /> );
+
+		expect( screen.getByText( 'No fees to display' ) ).toBeInTheDocument();
+
+		mockEmptyFeesReportState( true );
+		rerender( <FeesReport /> );
+
+		expect( screen.queryByText( 'No results' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'No fees to display' )
+		).not.toBeInTheDocument();
+		expect(
+			container.querySelector(
+				'.wcpay-reports-fees__loading-empty .components-spinner'
+			)
+		).toBeInTheDocument();
+		expect( screen.queryByText( 'Loading fees' ) ).not.toBeInTheDocument();
+		expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'announces the loading status when the loading flag flips true', () => {
+		mockFeesState();
+		const { rerender } = render( <FeesReport /> );
+
+		mockFeesState( {
+			feesRows: [],
+			isLoading: true,
+		} );
+		rerender( <FeesReport /> );
+
+		expect( mockSpeak ).toHaveBeenCalledWith( 'Loading fees', 'polite' );
 	} );
 
 	it( 'does not render the export action in the Fees DataViews controls', () => {
@@ -678,6 +736,7 @@ describe( 'FeesReport (DataViews)', () => {
 				isLoading: true,
 			} );
 			const { rerender } = render( <FeesReport /> );
+			mockSpeak.mockClear();
 
 			mockFeesState();
 			rerender( <FeesReport /> );
@@ -690,7 +749,8 @@ describe( 'FeesReport (DataViews)', () => {
 			} );
 
 			expect( mockSpeak ).toHaveBeenCalledWith(
-				expect.stringMatching( /loaded/i )
+				expect.stringMatching( /loaded/i ),
+				'polite'
 			);
 		} finally {
 			jest.useRealTimers();

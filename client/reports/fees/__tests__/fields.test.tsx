@@ -81,10 +81,6 @@ const baseRow: ReportsFee = {
 
 const getTestFeesFields = () =>
 	getFeesFields( {
-		dateElements: [
-			{ value: 'last_month', label: 'Last month' },
-			{ value: '__custom_date__', label: 'Custom date...' },
-		],
 		methodElements: [ { value: 'card', label: 'Card' } ],
 		typeElements: [ { value: 'charge', label: 'Charge' } ],
 	} );
@@ -213,19 +209,14 @@ describe( 'getFeesFields field configuration', () => {
 		} );
 	} );
 
-	it( 'configures Date as the primary native DataViews filter', () => {
+	it( 'configures Date as a native DataViews date filter', () => {
 		const field = getTestFeesFields().find( ( f ) => f.id === 'date' );
 		expect( field?.label ).toBe( 'Date' );
 		expect( field?.header ).toBe( 'Date & time' );
-		expect( field?.elements ).toEqual(
-			expect.arrayContaining( [
-				{ value: 'last_month', label: 'Last month' },
-				{ value: '__custom_date__', label: 'Custom date...' },
-			] )
-		);
+		expect( field?.type ).toBe( 'date' );
+		expect( field?.elements ).toBeUndefined();
 		expect( field?.filterBy ).toEqual( {
-			isPrimary: true,
-			operators: [ 'is' ],
+			operators: [ 'on', 'before', 'after', 'between' ],
 		} );
 	} );
 
@@ -243,5 +234,15 @@ describe( 'getFeesFields field configuration', () => {
 				filterBy: { operators: [ 'is' ] },
 			} )
 		);
+	} );
+
+	it( 'opts gross amount, fees total, and settlement date out of DataViews filtering', () => {
+		const fields = getTestFeesFields();
+
+		[ 'amount', 'fees', 'deposit_date' ].forEach( ( id ) => {
+			expect( fields.find( ( f ) => f.id === id )?.filterBy ).toBe(
+				false
+			);
+		} );
 	} );
 } );
