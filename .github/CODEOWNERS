@@ -1,4 +1,5 @@
 # Changes to this repository require review from a designated Code Owner
-# before they can land on a protected branch.
+# before they can land on a protected branch. The PCI Guardians team is the
+# trained, in-scope reviewer group; any one member's review satisfies the gate.
 # Refs WOOPMNT-6229
-* @Automattic/chronos @Automattic/gamma @Automattic/moltres @rtio
+* @Automattic/pci-guardians
