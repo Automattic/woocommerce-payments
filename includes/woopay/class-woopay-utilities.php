@@ -90,6 +90,13 @@ class WooPay_Utilities {
 	 * @return bool
 	 */
 	public function is_woopay_email_input_enabled() {
+		/**
+		 * Filters whether the WooPay email input hooks should be enabled.
+		 *
+		 * @since 6.9.0
+		 *
+		 * @param bool $enabled Whether the WooPay email input behaviour is enabled.
+		 */
 		return apply_filters( 'wcpay_is_woopay_email_input_enabled', true );
 	}
 
@@ -269,7 +276,18 @@ class WooPay_Utilities {
 		if ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) {
 			// Using WooPay production: Use the blog token secret from the store blog.
 			return Jetpack_Options::get_option( 'blog_token' );
-		} elseif ( apply_filters( 'wcpay_woopay_use_blog_token', false ) ) {
+		}
+
+		/**
+		 * Filters whether to use the store's blog token secret when connecting to a custom WooPay URL.
+		 *
+		 * @since 8.0.0
+		 *
+		 * @param bool $use_blog_token Whether to use the store's blog token secret.
+		 */
+		$use_store_blog_token = apply_filters( 'wcpay_woopay_use_blog_token', false );
+
+		if ( $use_store_blog_token ) {
 			// Requested to use the blog token secret from the store blog.
 			return Jetpack_Options::get_option( 'blog_token' );
 		} elseif ( defined( 'DEV_BLOG_TOKEN_SECRET' ) ) {
