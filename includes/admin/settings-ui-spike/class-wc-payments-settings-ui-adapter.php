@@ -60,6 +60,14 @@ class WC_Payments_Settings_UI_Adapter implements SettingsUIPageInterface {
 			],
 			'shell'   => [
 				'title'               => __( 'WooPayments settings', 'woocommerce-payments' ),
+				// Native shell header fields (WC settings UI subtitle + badges).
+				'subtitle'            => __( 'Manage your WooPayments settings, including payment methods and payouts.', 'woocommerce-payments' ),
+				'badges'              => [
+					[
+						'label'  => __( 'Active', 'woocommerce-payments' ),
+						'intent' => 'success',
+					],
+				],
 				'breadcrumbs'         => [
 					[
 						'label' => __( 'Payments', 'woocommerce-payments' ),
