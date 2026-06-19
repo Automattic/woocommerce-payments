@@ -288,12 +288,15 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_test_to_live_notice_script() {
-		if ( ! $this->should_show_test_to_live_notice() ) {
+		// Screen gate first: the eligibility check runs an order query, so skip it
+		// entirely on admin screens where the notice can never render rather than
+		// paying that cost on every admin page load.
+		$screen = get_current_screen();
+		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->should_show_test_to_live_notice() ) {
 			return;
 		}
 
@@ -489,12 +492,15 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_one_and_done_notice_script() {
-		if ( ! $this->should_show_one_and_done_notice() ) {
+		// Screen gate first: the eligibility check runs order queries, so skip it
+		// entirely on admin screens where the notice can never render rather than
+		// paying that cost on every admin page load.
+		$screen = get_current_screen();
+		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->should_show_one_and_done_notice() ) {
 			return;
 		}
 
@@ -755,10 +761,14 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
+		// Existence-only check: `orderby => 'none'` lets the LIMIT 1 short-circuit
+		// instead of sorting every matching order (a filesort over millions of rows
+		// on large stores). Same hotspot as WOOPMNT-6240's one-and-done query.
 		$orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
 				'limit'          => 1,
+				'orderby'        => 'none',
 				'return'         => 'ids',
 				'status'         => [ 'wc-completed', 'wc-processing' ],
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
@@ -1102,14 +1112,17 @@ class WC_Payments_Admin_Banner {
 	 * - That single order's date_created is at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD
 	 *   days in the past.
 	 *
-	 * Strategy: two narrow indexed queries against post_meta rather than one wide
-	 * unindexed scan.
+	 * Strategy: two narrow queries capped to the smallest row count that answers
+	 * the question, both unsorted (`orderby => 'none'`) so the LIMIT short-circuits
+	 * instead of forcing a filesort over every matching order — the latter is what
+	 * made this check take 60s+ on large stores (see WOOPMNT-6240).
 	 *
 	 *   Q1 — WooPayments live orders capped at 2: filtered server-side by
 	 *        `_payment_method` + `_wcpay_mode` (same shape `compute_test_to_live_notice_eligibility()`
 	 *        already uses). Test-mode WCPay orders are excluded by construction, so
 	 *        the previous saturation false-negative ("19 old test-mode orders + 1
-	 *        live → silently excluded") can no longer occur.
+	 *        live → silently excluded") can no longer occur. Unsorted: the cap only
+	 *        distinguishes 0 / 1 / ≥2, and the exactly-1 case has a single row.
 	 *   Q2 — non-WooPayments orders capped at 1: filtered server-side by
 	 *        `_payment_method IN [other registered gateways]`. Caveat: this misses
 	 *        orders paid via since-uninstalled gateways. Acceptable for the cohort —
@@ -1149,12 +1162,19 @@ class WC_Payments_Admin_Banner {
 		}
 
 		// Q1 — WooPayments live-mode orders, capped at 2.
+		//
+		// `orderby => 'none'` is deliberate: an ORDER BY forces the engine to
+		// locate and sort every matching row before applying LIMIT 2, which is a
+		// filesort over millions of orders on large stores (60s+ on
+		// woocommerce.com). Without it the query stops after the first 2 matches.
+		// We don't need ordering — the 2-row cap only distinguishes 0 / 1 / ≥2,
+		// and in the exactly-1 case there's a single row whose date we read below,
+		// so ordering is irrelevant.
 		$wcpay_live_orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
 				'limit'          => 2,
-				'orderby'        => 'date',
-				'order'          => 'ASC',
+				'orderby'        => 'none',
 				'status'         => [ 'wc-completed', 'wc-processing' ],
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
@@ -1187,6 +1207,7 @@ class WC_Payments_Admin_Banner {
 				[
 					'payment_method' => $other_gateway_ids,
 					'limit'          => 1,
+					'orderby'        => 'none',
 					'return'         => 'ids',
 					'status'         => [ 'wc-completed', 'wc-processing' ],
 				]
