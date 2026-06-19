@@ -8,6 +8,7 @@
 namespace WCPay\Tests\Internal\Experiment;
 
 use WCPAY_UnitTestCase;
+use WCPay\Experimental_Abtest;
 use WCPay\Internal\Experiment\Experiment;
 use WCPay\Internal\Experiment\ReviewPromptExperiment;
 use WCPay\Internal\Proxy\LegacyProxy;
@@ -56,6 +57,31 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 		$method->setAccessible( true );
 
 		$this->assertSame( 'woopayments_store_123456', $method->invoke( $this->sut ) );
+	}
+
+	public function test_variants_match_the_explat_registration() {
+		// The variant strings are a live experiment contract: renaming an arm
+		// mid-experiment re-randomizes assignment, so pin them as literals.
+		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'variants' );
+		$method->setAccessible( true );
+
+		$this->assertSame(
+			[ 'control', 'treatment_illustration', 'treatment_revised' ],
+			$method->invoke( $this->sut )
+		);
+	}
+
+	public function test_create_abtest_builds_an_explat_client() {
+		// ReviewPromptExperiment relies on the base class's default factory
+		// rather than overriding it, so confirm the concrete class yields a
+		// real ExPlat client (the base test double stubs this seam out).
+		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'create_abtest' );
+		$method->setAccessible( true );
+
+		$this->assertInstanceOf(
+			Experimental_Abtest::class,
+			$method->invoke( $this->sut, 'woopayments_store_123456' )
+		);
 	}
 
 	public function test_get_variant_returns_control_when_jetpack_options_missing() {
