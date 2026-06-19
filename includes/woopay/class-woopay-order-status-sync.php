@@ -204,7 +204,7 @@ class WooPay_Order_Status_Sync {
 	public static function send_webhook( $order_id, $previous_status, $next_status ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_meta( 'is_woopay' ) ) {
-			do_action( self::WCPAY_WEBHOOK_WOOPAY_ORDER_STATUS_CHANGED, $order_id, $next_status );
+			do_action( self::WCPAY_WEBHOOK_WOOPAY_ORDER_STATUS_CHANGED, $order_id, $next_status ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Dynamic hook name resolved from a class constant.
 		}
 	}
 
