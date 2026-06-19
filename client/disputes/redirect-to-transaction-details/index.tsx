@@ -3,36 +3,87 @@
  */
 import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
+import { Spinner, Flex, FlexItem } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
  */
-import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
 import { useDispute } from 'wcpay/data/disputes';
 import { getAdminUrl } from 'wcpay/utils';
+import type { Dispute } from 'wcpay/types/disputes';
 
 import './style.scss';
-import warning from 'wcpay/components/icons/warning';
+
+/**
+ * Resolves where the legacy `/payments/disputes/details` link should land.
+ *
+ * Prefers the dispute's transaction details screen. Falls back to the disputes
+ * list — which always loads — when the dispute can't be retrieved or is missing
+ * the ids needed to build the transaction details deep link (both can be absent
+ * around dispute creation, before the balance transaction exists). This keeps
+ * the dispute notification "view dispute" CTA from dead-ending on an error
+ * screen or a broken transaction URL. `fellBack` lets the caller explain the
+ * redirect so the merchant isn't dropped onto the list with no context.
+ */
+const resolveDisputeRedirect = (
+	dispute?: Dispute
+): { url: string; fellBack: boolean } => {
+	// `balance_transaction` is a transaction id string at runtime; only build the
+	// deep link when it actually is one, so an unexpected shape (e.g. an expanded
+	// object) fails safe to the disputes list rather than a broken transaction URL.
+	const balanceTransaction = dispute?.charge?.balance_transaction as unknown;
+	const transactionId =
+		typeof balanceTransaction === 'string' ? balanceTransaction : undefined;
+
+	if ( dispute?.payment_intent && transactionId ) {
+		return {
+			url: getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: dispute.payment_intent,
+				transaction_id: transactionId,
+				type: 'dispute',
+			} ),
+			fellBack: false,
+		};
+	}
+
+	return {
+		url: getAdminUrl( { page: 'wc-admin', path: '/payments/disputes' } ),
+		fellBack: true,
+	};
+};
 
 const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	query: { id: disputeId },
 } ) => {
-	const { dispute, error, isLoading } = useDispute( disputeId );
+	const { dispute, isLoading } = useDispute( disputeId );
+	const { createInfoNotice } = useDispatch( 'core/notices' );
 
 	useEffect( () => {
-		if ( ! isLoading && dispute?.charge ) {
-			const transactionDetailsUrl = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/transactions/details',
-				id: dispute.payment_intent,
-				transaction_id: dispute.charge.balance_transaction,
-				type: 'dispute',
-			} );
-			getHistory().replace( transactionDetailsUrl );
+		// `isLoading` is derived from `hasFinishedResolution`, so it stays true
+		// until the dispute query settles — only redirect once it has.
+		if ( isLoading ) {
+			return;
 		}
-	}, [ dispute, isLoading ] );
+
+		const { url, fellBack } = resolveDisputeRedirect( dispute );
+
+		if ( fellBack ) {
+			createInfoNotice(
+				__(
+					"We couldn't open that dispute directly. Find it in your disputes list below.",
+					'woocommerce-payments'
+				),
+				{ type: 'snackbar' }
+			);
+		}
+
+		getHistory().replace( url );
+	}, [ dispute, isLoading, createInfoNotice ] );
 
 	return (
 		<Page>
@@ -40,51 +91,20 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 				direction="column"
 				className="wcpay-dispute-detail-legacy-redirect"
 			>
-				{ error ? (
-					<>
-						<FlexItem>
-							<Icon icon={ warning } type="warning" size={ 32 } />
-						</FlexItem>
-						<FlexItem>
-							<div>
-								<b>
-									{ __(
-										'Error retrieving dispute',
-										'woocommerce-payments'
-									) }
-								</b>
-							</div>
-							<div>
-								{ __(
-									'Please check your network and try again.',
-									'woocommerce-payments'
-								) }
-							</div>
-						</FlexItem>
-					</>
-				) : (
-					<>
-						<FlexItem>
-							<Spinner />
-						</FlexItem>
-						<FlexItem>
-							<div>
-								<b>
-									{ __(
-										'One moment please',
-										'woocommerce-payments'
-									) }
-								</b>
-							</div>
-							<div>
-								{ __(
-									'Redirecting to payment details…',
-									'woocommerce-payments'
-								) }
-							</div>
-						</FlexItem>
-					</>
-				) }
+				<FlexItem>
+					<Spinner />
+				</FlexItem>
+				<FlexItem>
+					<div>
+						<b>
+							{ __(
+								'One moment please',
+								'woocommerce-payments'
+							) }
+						</b>
+					</div>
+					<div>{ __( 'Redirecting…', 'woocommerce-payments' ) }</div>
+				</FlexItem>
 			</Flex>
 		</Page>
 	);
