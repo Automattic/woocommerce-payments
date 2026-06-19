@@ -25,9 +25,8 @@ section() {
 	echo ""
 }
 
-# Docker Hub and wordpress.org fail transiently on CI runners (registry timeouts,
-# short wordpress.org outages); retry before giving up. Warnings go to stderr so
-# they survive stdout redirects (redirect_output, > /dev/null).
+# Docker Hub / wordpress.org flake transiently on CI (registry timeouts, brief
+# outages); retry. Warnings go to stderr so they survive redirect_output / > /dev/null.
 retry() {
 	local max_attempts=3
 	local delay=10
