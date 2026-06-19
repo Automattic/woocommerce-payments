@@ -226,8 +226,15 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return bool
 	 */
 	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
-		// Allow merchants to disable all shopper tracking via filter.
-		// The filter defaults to the WooCommerce global tracking setting.
+		/**
+		 * Filters whether shopper tracking is enabled.
+		 *
+		 * Allows merchants to disable all shopper tracking. Defaults to the WooCommerce global tracking setting.
+		 *
+		 * @since 10.4.0
+		 *
+		 * @param bool $enabled Whether shopper tracking is enabled.
+		 */
 		if ( ! apply_filters( 'wcpay_shopper_tracking_enabled', 'no' !== get_option( 'woocommerce_allow_tracking', '' ) ) ) {
 			return false;
 		}
@@ -308,6 +315,14 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
+		/**
+		 * Filters the properties recorded with a Tracks event.
+		 *
+		 * @since 8.6.0
+		 *
+		 * @param array  $properties The event properties.
+		 * @param string $event_name The Tracks event name.
+		 */
 		$properties = apply_filters( 'wcpay_tracks_event_properties', $properties, $event_name );
 
 		if ( isset( $properties['record_event_data'] ) ) {
@@ -664,9 +679,16 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return void
 	 */
 	public function add_frontend_tracks_scripts() {
-		$frontent_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
+		/**
+		 * Filters the front-end tracks events to register.
+		 *
+		 * @since 8.2.0
+		 *
+		 * @param array $frontend_tracks The front-end tracks events.
+		 */
+		$frontend_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
 
-		if ( count( $frontent_tracks ) === 0 ) {
+		if ( count( $frontend_tracks ) === 0 ) {
 			return;
 		}
 
@@ -685,7 +707,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		wp_localize_script(
 			'wcpay-frontend-tracks',
 			'wcPayFrontendTracks',
-			$frontent_tracks
+			$frontend_tracks
 		);
 
 		wp_enqueue_script( 'wcpay-frontend-tracks' );

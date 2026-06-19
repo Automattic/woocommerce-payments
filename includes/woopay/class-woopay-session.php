@@ -854,6 +854,13 @@ class WooPay_Session {
 	 * @return bool True if the request signature is valid.
 	 */
 	public static function has_valid_request_signature() {
+		/**
+		 * Filters whether the current request is signed with the store's blog token.
+		 *
+		 * @since 5.9.0
+		 *
+		 * @param bool $is_signed Whether the request signature was verified against the blog token.
+		 */
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
 	}
 
