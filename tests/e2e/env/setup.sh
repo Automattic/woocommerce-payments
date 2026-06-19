@@ -752,10 +752,13 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	info "Installing latest release..."
 	cd "$E2E_ROOT"/deps
 
-	LATEST_RELEASE_ASSET_ID=$(curl --retry 3 -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/latest | jq -r '.assets[0].id')
+	# --fail + --retry-all-errors: retry transient HTTP errors (GH 5xx / rate-limit) instead of saving an error body as the zip.
+	LATEST_RELEASE_ASSET_ID=$(curl --retry 3 --retry-all-errors --fail -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/latest | jq -r '.assets[0].id')
 
 	curl -LJ \
 		--retry 3 \
+		--retry-all-errors \
+		--fail \
 		-H "Authorization: token $E2E_GH_TOKEN" \
 		-H "Accept: application/octet-stream" \
 		--output woocommerce-subscriptions.zip \
