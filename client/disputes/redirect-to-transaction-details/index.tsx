@@ -4,6 +4,7 @@
 import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Spinner, Flex, FlexItem } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -24,9 +25,12 @@ import './style.scss';
  * the ids needed to build the transaction details deep link (both can be absent
  * around dispute creation, before the balance transaction exists). This keeps
  * the dispute notification "view dispute" CTA from dead-ending on an error
- * screen or a broken transaction URL.
+ * screen or a broken transaction URL. `fellBack` lets the caller explain the
+ * redirect so the merchant isn't dropped onto the list with no context.
  */
-const getDisputeRedirectUrl = ( dispute?: Dispute ): string => {
+const resolveDisputeRedirect = (
+	dispute?: Dispute
+): { url: string; fellBack: boolean } => {
 	// `balance_transaction` is a transaction id string at runtime; only build the
 	// deep link when it actually is one, so an unexpected shape (e.g. an expanded
 	// object) fails safe to the disputes list rather than a broken transaction URL.
@@ -35,38 +39,51 @@ const getDisputeRedirectUrl = ( dispute?: Dispute ): string => {
 		typeof balanceTransaction === 'string' ? balanceTransaction : undefined;
 
 	if ( dispute?.payment_intent && transactionId ) {
-		return getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/transactions/details',
-			id: dispute.payment_intent,
-			transaction_id: transactionId,
-			type: 'dispute',
-		} );
+		return {
+			url: getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: dispute.payment_intent,
+				transaction_id: transactionId,
+				type: 'dispute',
+			} ),
+			fellBack: false,
+		};
 	}
 
-	return getAdminUrl( {
-		page: 'wc-admin',
-		path: '/payments/disputes',
-	} );
+	return {
+		url: getAdminUrl( { page: 'wc-admin', path: '/payments/disputes' } ),
+		fellBack: true,
+	};
 };
 
 const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 	query: { id: disputeId },
 } ) => {
-	const { dispute, error, isLoading } = useDispute( disputeId );
+	const { dispute, isLoading } = useDispute( disputeId );
+	const { createInfoNotice } = useDispatch( 'core/notices' );
 
 	useEffect( () => {
-		// Wait until the dispute query has settled before redirecting. isLoading
-		// (isResolving) is false on the first render, before resolution starts, so
-		// gating on !isLoading alone would bounce to the disputes list before the
-		// dispute loads — sending valid disputes to the list instead of their
-		// transaction details. A settled query has either a dispute or an error.
-		if ( isLoading || ( ! dispute && ! error ) ) {
+		// `isLoading` is derived from `hasFinishedResolution`, so it stays true
+		// until the dispute query settles — only redirect once it has.
+		if ( isLoading ) {
 			return;
 		}
 
-		getHistory().replace( getDisputeRedirectUrl( dispute ) );
-	}, [ dispute, error, isLoading ] );
+		const { url, fellBack } = resolveDisputeRedirect( dispute );
+
+		if ( fellBack ) {
+			createInfoNotice(
+				__(
+					"We couldn't open that dispute directly. Find it in your disputes list below.",
+					'woocommerce-payments'
+				),
+				{ type: 'snackbar' }
+			);
+		}
+
+		getHistory().replace( url );
+	}, [ dispute, isLoading, createInfoNotice ] );
 
 	return (
 		<Page>

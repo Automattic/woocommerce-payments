@@ -11,7 +11,6 @@ import RedirectToTransactionDetails from '..';
 import { useDispute } from 'wcpay/data/disputes';
 import { getAdminUrl } from 'wcpay/utils';
 import type { Dispute } from 'wcpay/types/disputes';
-import type { ApiError } from 'wcpay/types/errors';
 
 jest.mock( 'wcpay/data/disputes', () => ( {
 	useDispute: jest.fn(),
@@ -22,6 +21,25 @@ jest.mock( '@woocommerce/navigation', () => ( {
 	getHistory: () => ( {
 		replace: mockHistoryReplace,
 	} ),
+} ) );
+
+const mockCreateInfoNotice = jest.fn();
+jest.mock( '@wordpress/data', () => ( {
+	createReduxStore: jest.fn( ( name ) => name ),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
+	select: jest.fn(),
+	dispatch: jest.fn(),
+	useSelect: jest.fn(),
+	useDispatch: jest.fn( ( storeName ) =>
+		storeName === 'core/notices'
+			? { createInfoNotice: mockCreateInfoNotice }
+			: {}
+	),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+	createRegistryControl: jest.fn(),
+	registerStore: jest.fn(),
 } ) );
 
 const mockUseDispute = useDispute as jest.MockedFunction< typeof useDispute >;
@@ -61,18 +79,22 @@ describe( 'RedirectToTransactionDetails', () => {
 		expect( mockHistoryReplace ).toHaveBeenCalledWith(
 			transactionDetailsUrl
 		);
+		expect( mockCreateInfoNotice ).not.toHaveBeenCalled();
 	} );
 
-	it( 'falls back to the disputes list when the dispute cannot be retrieved', () => {
+	it( 'falls back to the disputes list (with a notice) when the dispute cannot be retrieved', () => {
 		mockUseDispute.mockReturnValue( {
 			dispute: undefined,
-			error: { code: 'rest_dispute_not_found' } as unknown as ApiError,
 			isLoading: false,
 		} );
 
 		renderRedirect();
 
 		expect( mockHistoryReplace ).toHaveBeenCalledWith( disputesListUrl );
+		expect( mockCreateInfoNotice ).toHaveBeenCalledWith(
+			expect.stringContaining( "couldn't open that dispute" ),
+			{ type: 'snackbar' }
+		);
 	} );
 
 	it( 'falls back to the disputes list when the balance transaction is missing', () => {
@@ -123,21 +145,6 @@ describe( 'RedirectToTransactionDetails', () => {
 		mockUseDispute.mockReturnValue( {
 			dispute: undefined,
 			isLoading: true,
-		} );
-
-		renderRedirect();
-
-		expect( mockHistoryReplace ).not.toHaveBeenCalled();
-	} );
-
-	it( 'does not redirect until the dispute query settles', () => {
-		// isResolving is false on the first render before resolution starts. The
-		// shim must not redirect on this unsettled state (no dispute, no error),
-		// or a valid dispute would be bounced to the list before it loads.
-		mockUseDispute.mockReturnValue( {
-			dispute: undefined,
-			error: undefined,
-			isLoading: false,
 		} );
 
 		renderRedirect();
