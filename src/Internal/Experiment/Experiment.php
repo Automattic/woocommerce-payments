@@ -13,10 +13,8 @@ use WCPay\Internal\Proxy\LegacyProxy;
 /**
  * Base class for ExPlat experiments.
  *
- * Owns the plumbing every experiment needs: tracking-consent gating,
- * the ExPlat call via Experimental_Abtest (which caches in a transient
- * and never throws), and collapsing unknown variations to control.
- * Subclasses declare only what is unique to their experiment.
+ * Handles consent gating, ExPlat lookup, fallback-to-control behavior, and
+ * per-request memoization. Subclasses define only experiment-specific details.
  */
 abstract class Experiment {
 	/**
@@ -34,9 +32,7 @@ abstract class Experiment {
 	protected $legacy_proxy;
 
 	/**
-	 * Memoized variant for the current request, so repeated calls don't
-	 * re-hit ExPlat (Experimental_Abtest is constructed per call and its
-	 * in-memory cache would otherwise always be cold).
+	 * Memoized variant for the current request.
 	 *
 	 * @var string|null
 	 */
@@ -75,11 +71,9 @@ abstract class Experiment {
 	abstract protected function variants(): array;
 
 	/**
-	 * Resolve the variant for the current request. Memoized per instance.
-	 * Never throws (assuming subclass hooks don't throw).
+	 * Resolve the variant for the current request.
 	 *
-	 * @return string One of variants(); control on no consent, no
-	 *                assignment key, ExPlat failure, or unknown variant.
+	 * @return string One of variants(); control when assignment is unavailable or invalid.
 	 */
 	public function get_variant(): string {
 		if ( null !== $this->memoized_variant ) {
@@ -101,8 +95,7 @@ abstract class Experiment {
 	}
 
 	/**
-	 * Build the ExPlat client. Consent is passed as true because
-	 * has_consent() already gated above. Overridable in tests.
+	 * Build the ExPlat client. Overridable in tests.
 	 *
 	 * @param string $anon_id The assignment key.
 	 * @return Experimental_Abtest

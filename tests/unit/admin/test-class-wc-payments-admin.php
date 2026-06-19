@@ -787,7 +787,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 * Test that the review prompt enqueue localizes experiment data.
 	 */
 	public function test_enqueue_review_prompt_localizes_experiment_data() {
-		// Arrange: same page setup as the "should show" case.
 		$_REQUEST['page'] = 'wc-settings';
 		$_REQUEST['tab']  = 'checkout';
 
@@ -796,14 +795,12 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_account->method( 'is_review_prompt_eligible' )->willReturn( true );
 		wp_set_current_user( 1 );
 
-		// The handle must exist for wp_localize_script to attach data.
 		wp_register_script( 'WCPAY_REVIEW_PROMPT', 'http://example.org/review-prompt.js', [], '1.0', true );
 
 		// Act.
 		$this->payments_admin->enqueue_wc_payments_review_prompt();
 
-		// Assert: in the test env there is no tracking consent, so the
-		// variant deterministically resolves to control.
+		// No tracking consent in the test env, so the variant resolves to control.
 		$data = wp_scripts()->get_data( 'WCPAY_REVIEW_PROMPT', 'data' );
 		$this->assertStringContainsString( '"variant":"control"', $data );
 		$this->assertStringContainsString( '"experiment":"woopayments_review_prompt_design_v1"', $data );

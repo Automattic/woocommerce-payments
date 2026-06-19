@@ -17,17 +17,7 @@ const marketplaceReviewBaseUrl =
 	'https://woocommerce.com/products/woopayments/';
 
 /**
- * Build the Marketplace review URL for the given variant.
- *
- * All merchants are routed to the woocommerce.com Marketplace. WooPayments is a
- * wordpress.org-sourced product there, so a review can be left without a prior
- * purchase, and — unlike wordpress.org — the destination is instrumented, so
- * submissions can be attributed back to this prompt and the assigned design
- * variant. The `review` param opens the review modal on arrival; the `utm_*`
- * params carry attribution for the destination-side funnel, following the
- * standard UTM vocabulary used across WooCommerce and woocommerce.com. The
- * assigned design variant rides in `utm_content` — the canonical UTM slot for
- * distinguishing variations within a single campaign.
+ * Build the Marketplace review URL with UTM attribution for the assigned variant.
  */
 const getMarketplaceReviewUrl = ( variant: string ): string => {
 	const params = new URLSearchParams( {
@@ -41,9 +31,6 @@ const getMarketplaceReviewUrl = ( variant: string ): string => {
 	return `${ marketplaceReviewBaseUrl }?${ params.toString() }`;
 };
 
-/**
- * Helper to record an event with base properties and optional additional properties.
- */
 const recordPromptEvent = (
 	eventName: MerchantEvent,
 	baseProperties: Record< string, unknown >,
@@ -52,9 +39,6 @@ const recordPromptEvent = (
 	recordEvent( eventName, { ...baseProperties, ...additionalProperties } );
 };
 
-/**
- * Helper to calculate time-to-click properties.
- */
 const getTimeToClickProps = (
 	viewTimestamp: number | null
 ): Record< string, number > => {
@@ -63,8 +47,7 @@ const getTimeToClickProps = (
 };
 
 /**
- * Helper to get base event properties per PRO2-35 telemetry requirements.
- * Eligibility is always true when this script loads (checked server-side).
+ * Base prompt telemetry props. The script only loads after server-side eligibility passes.
  */
 const getBaseEventProperties = () => {
 	return {
@@ -100,8 +83,6 @@ const ReviewPrompt: React.FC = () => {
 	}, [] );
 
 	const handlePrimaryClick = useCallback( async () => {
-		// All merchants are routed to the woocommerce.com Marketplace,
-		// regardless of connection (live/test) state.
 		const variant = window.wcpayReviewPromptSettings?.variant || 'control';
 		const reviewUrl = getMarketplaceReviewUrl( variant );
 

@@ -10,9 +10,8 @@ namespace WCPay\Internal\Experiment;
 /**
  * A/B/C experiment for the in-app review prompt designs (WOOPMNT-6080).
  *
- * Assignment is per-store (Jetpack blog ID) so every admin of a store
- * sees the same design. Variant strings must match the ExPlat
- * registration exactly.
+ * Assignment is per-store (Jetpack blog ID), and variant strings must match
+ * the ExPlat registration exactly.
  */
 final class ReviewPromptExperiment extends Experiment {
 	/**
@@ -23,14 +22,14 @@ final class ReviewPromptExperiment extends Experiment {
 	public const EXPERIMENT_NAME = 'woopayments_review_prompt_design_v1';
 
 	/**
-	 * Variant B: full-width illustration + "We built it. You use it." copy.
+	 * Variant B.
 	 *
 	 * @var string
 	 */
 	public const VARIANT_TREATMENT_ILLUSTRATION = 'treatment_illustration';
 
 	/**
-	 * Variant C: revised illustration + "Quick check-in?" copy.
+	 * Variant C.
 	 *
 	 * @var string
 	 */

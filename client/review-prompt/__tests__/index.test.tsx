@@ -230,7 +230,6 @@ describe( 'ReviewPrompt', () => {
 	} );
 
 	it( 'routes to the Marketplace regardless of connection (live/test) state', async () => {
-		// Live mode.
 		global.wcpayReviewPromptSettings.isLive = true;
 		const { unmount } = render( <ReviewPrompt /> );
 		fireEvent.click( screen.getByText( 'Leave review' ) );
@@ -244,7 +243,6 @@ describe( 'ReviewPrompt', () => {
 			);
 		} );
 
-		// Test mode resolves to the same destination.
 		unmount();
 		jest.clearAllMocks();
 		global.wcpayReviewPromptSettings.isLive = false;
@@ -268,8 +266,6 @@ describe( 'ReviewPrompt', () => {
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
-			// Should record the action event, carrying the destination on
-			// the write_review click.
 			expect( recordEvent ).toHaveBeenCalledWith(
 				'wcpay_review_prompt_action',
 				expect.objectContaining( {
@@ -351,7 +347,6 @@ describe( 'ReviewPrompt', () => {
 
 		render( <ReviewPrompt /> );
 
-		// Advance time by 5 seconds
 		jest.advanceTimersByTime( 5000 );
 
 		const writeReviewButton = screen.getByText( 'Leave review' );
@@ -370,7 +365,6 @@ describe( 'ReviewPrompt', () => {
 	} );
 
 	it( 'records the Marketplace destination in both live and test mode', async () => {
-		// Test live mode
 		global.wcpayReviewPromptSettings.isLive = true;
 		const { unmount } = render( <ReviewPrompt /> );
 
@@ -386,7 +380,6 @@ describe( 'ReviewPrompt', () => {
 			);
 		} );
 
-		// Unmount, reset, and test test mode with a fresh render
 		unmount();
 		jest.clearAllMocks();
 		global.wcpayReviewPromptSettings.isLive = false;
@@ -406,7 +399,6 @@ describe( 'ReviewPrompt', () => {
 	} );
 
 	it( 'falls back to window.location when window.open fails', async () => {
-		// Mock window.open to return null (popup blocked)
 		mockWindowOpen.mockReturnValueOnce( null );
 
 		global.wcpayReviewPromptSettings.isLive = true;
@@ -417,7 +409,6 @@ describe( 'ReviewPrompt', () => {
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
-			// Should have tried to open in new window
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
 				expect.stringContaining(
 					'https://woocommerce.com/products/woopayments/'
@@ -425,7 +416,6 @@ describe( 'ReviewPrompt', () => {
 				'_blank'
 			);
 
-			// Should fall back to navigating current window
 			expect( window.location.href ).toContain(
 				'https://woocommerce.com/products/woopayments/'
 			);

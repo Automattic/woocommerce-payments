@@ -51,8 +51,7 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 			->with( '\Jetpack_Options', 'get_option', 'id' )
 			->willReturn( 123456 );
 
-		// The key format is a live experiment contract: changing it
-		// mid-experiment re-randomizes every store's assignment.
+		// The key format is a live experiment contract.
 		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'assignment_key' );
 		$method->setAccessible( true );
 
@@ -60,8 +59,7 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_variants_match_the_explat_registration() {
-		// The variant strings are a live experiment contract: renaming an arm
-		// mid-experiment re-randomizes assignment, so pin them as literals.
+		// The variant strings are a live experiment contract.
 		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'variants' );
 		$method->setAccessible( true );
 
@@ -72,9 +70,7 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_create_abtest_builds_an_explat_client() {
-		// ReviewPromptExperiment relies on the base class's default factory
-		// rather than overriding it, so confirm the concrete class yields a
-		// real ExPlat client (the base test double stubs this seam out).
+		// Confirm the concrete class uses the base factory.
 		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'create_abtest' );
 		$method->setAccessible( true );
 

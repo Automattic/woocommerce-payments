@@ -29,9 +29,7 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Build a concrete Experiment whose abtest returns a fixed variation,
-	 * capturing the anon_id it was constructed with and counting how many
-	 * times the abtest is built.
+	 * Build an experiment test double with a fixed ExPlat response.
 	 *
 	 * @param mixed       $abtest_variation  What the stubbed abtest returns (string|null|array).
 	 * @param string      $assignment_key    What assignment_key() returns.
@@ -46,28 +44,28 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 
 		return new class( $this->mock_legacy_proxy, $mock_abtest, $assignment_key, $captured_anon_id, $abtest_calls ) extends Experiment {
 			/**
-			 * Stubbed Experimental_Abtest.
+			 * Stubbed abtest client.
 			 *
 			 * @var Experimental_Abtest
 			 */
 			private $abtest;
 
 			/**
-			 * Assignment key to return from assignment_key().
+			 * Assignment key.
 			 *
 			 * @var string
 			 */
 			private $key;
 
 			/**
-			 * Reference to the caller's capture variable.
+			 * Captured anon_id.
 			 *
 			 * @var string|null
 			 */
 			private $captured;
 
 			/**
-			 * Reference to the caller's call counter.
+			 * Abtest factory call count.
 			 *
 			 * @var int
 			 */
