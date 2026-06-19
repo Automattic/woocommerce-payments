@@ -1216,8 +1216,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 */
 			if ( WC()->session && ! apply_filters( 'wcpay_is_woopay_store_api_request', false ) ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
 					throw new Fraud_Prevention_Enabled_Exception(
 						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
 						'fraud_prevention_enabled'
@@ -2288,7 +2288,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( "Begin processing UPE redirect payment for order {$order_id} for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			list( $user, $_unused_customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			$payment_needed = 0 < $order->get_total();
 
@@ -2302,7 +2302,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status                 = $intent->get_status();
 				$charge                 = $intent->get_charge();
 				$charge_id              = $charge ? $charge->get_id() : null;
-				$currency               = $intent->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
@@ -2321,7 +2320,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status            = $intent->get_status();
 				$charge_id         = '';
 				$charge            = null;
-				$currency          = $order->get_currency();
 				$payment_method_id = $intent->get_payment_method_id();
 				// SetupIntents carry no charge, so source the card details from the confirmed payment method
 				// to brand the order title (and card meta) instead of falling back to a generic "Card". WOOPMNT-2882.
@@ -4414,8 +4412,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( WC()->session ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
 					throw new Fraud_Prevention_Enabled_Exception(
 						__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
 						'fraud_prevention_enabled'
