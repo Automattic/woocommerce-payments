@@ -192,7 +192,8 @@ class WC_Payments_Settings_UI_Spike {
 		WC_Payments::register_script_with_dependencies(
 			self::SCRIPT_HANDLE,
 			'dist/settings-ui-spike',
-			[ 'wc-settings-ui-sdk' ]
+			// Renamed from wc-settings-ui-sdk in woocommerce/woocommerce#65719.
+			[ 'wc-settings-ui' ]
 		);
 
 		wp_register_style(
