@@ -95,7 +95,7 @@ class WC_Payments_Utils {
 
 			// Check if the current token is in the map.
 			if ( isset( $element_map[ $token ] ) ) {
-				$map_matched = preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
+				preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
 				if ( ! $map_matches ) {
 					// Should not happen with the properly formatted html as map value. Return the whole string escaped.
 					return esc_html( $text );
