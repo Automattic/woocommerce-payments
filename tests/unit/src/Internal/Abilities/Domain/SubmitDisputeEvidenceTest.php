@@ -43,6 +43,43 @@ class SubmitDisputeEvidenceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
 
+	public function test_execute_returns_error_when_metadata_key_too_long(): void {
+		$result = SubmitDisputeEvidence::execute(
+			[
+				'dispute_id' => 'du_1',
+				'metadata'   => [ str_repeat( 'k', 41 ) => 'value' ],
+			]
+		);
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wcpay_invalid_metadata_key', $result->get_error_code() );
+	}
+
+	public function test_execute_returns_error_when_metadata_value_too_long(): void {
+		$result = SubmitDisputeEvidence::execute(
+			[
+				'dispute_id' => 'du_1',
+				'metadata'   => [ 'key' => str_repeat( 'v', 501 ) ],
+			]
+		);
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wcpay_invalid_metadata_value', $result->get_error_code() );
+	}
+
+	public function test_execute_returns_error_when_too_many_metadata_keys(): void {
+		$metadata = [];
+		for ( $i = 0; $i < 11; $i++ ) {
+			$metadata[ 'key' . $i ] = 'value';
+		}
+		$result = SubmitDisputeEvidence::execute(
+			[
+				'dispute_id' => 'du_1',
+				'metadata'   => $metadata,
+			]
+		);
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wcpay_too_many_metadata_keys', $result->get_error_code() );
+	}
+
 	public function test_execute_delegates_to_dispute_service(): void {
 		$evidence     = [ 'customer_communication' => 'file_1' ];
 		$metadata     = [ 'k' => 'v' ];

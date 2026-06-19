@@ -231,9 +231,9 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Conditionally process the Apple Pay domain verification after settings are updated.
 	 *
 	 * @param array $prev_settings Settings before update.
-	 * @param array $settings      Settings after update.
+	 * @param array $_unused_settings      Settings after update.
 	 */
-	public function verify_domain_on_updated_settings( $prev_settings, $settings ) {
+	public function verify_domain_on_updated_settings( $prev_settings, $_unused_settings ) {
 		// If Apple Pay wasn't enabled, then might need to verify now.
 		if ( ! $this->was_enabled( $prev_settings ) ) {
 			$this->verify_domain_if_configured();
@@ -244,9 +244,9 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Conditionally process the Apple Pay domain verification after main gateway settings are updated.
 	 *
 	 * @param array $prev_settings Settings before update.
-	 * @param array $settings      Settings after update.
+	 * @param array $_unused_settings      Settings after update.
 	 */
-	public function verify_domain_on_updated_main_gateway_settings( $prev_settings, $settings ) {
+	public function verify_domain_on_updated_main_gateway_settings( $prev_settings, $_unused_settings ) {
 		$was_main_gateway_enabled = 'yes' === ( $prev_settings['enabled'] ?? 'no' );
 
 		// If main gateway wasn't enabled before, might need to verify now.

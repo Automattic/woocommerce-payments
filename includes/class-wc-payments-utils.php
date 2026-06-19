@@ -95,7 +95,7 @@ class WC_Payments_Utils {
 
 			// Check if the current token is in the map.
 			if ( isset( $element_map[ $token ] ) ) {
-				$map_matched = preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
+				preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
 				if ( ! $map_matches ) {
 					// Should not happen with the properly formatted html as map value. Return the whole string escaped.
 					return esc_html( $text );
@@ -831,6 +831,13 @@ class WC_Payments_Utils {
 	 * @return array<string, string> Map of error code/type to translated message.
 	 */
 	public static function get_localized_messages() {
+		/**
+		 * Filters the localized, customer-facing Stripe error messages.
+		 *
+		 * @since 10.7.0
+		 *
+		 * @param array<string, string> $messages Map of Stripe error code/type to translated message.
+		 */
 		return apply_filters(
 			'wcpay_localized_messages',
 			[
@@ -1096,6 +1103,13 @@ class WC_Payments_Utils {
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
+		/**
+		 * Filters whether the new onboarding flow should be disabled.
+		 *
+		 * @since 8.1.0
+		 *
+		 * @param bool $disabled Whether the new onboarding flow is disabled.
+		 */
 		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}

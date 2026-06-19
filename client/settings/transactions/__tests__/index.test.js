@@ -24,6 +24,12 @@ import { select } from '@wordpress/data';
 jest.mock( '@wordpress/data', () => ( {
 	select: jest.fn(),
 } ) );
+
+// Render the phone input synchronously here so the page-level tests don't trip
+// over its Suspense boundary resolving after the test finishes.
+jest.mock( 'wcpay/settings/phone-input/lazy', () =>
+	jest.requireActual( 'wcpay/settings/phone-input' )
+);
 const settingsMock = {
 	account_country: 'US',
 };
