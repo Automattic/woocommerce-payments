@@ -116,7 +116,7 @@ class UploadDisputeEvidenceFile extends AbstractWCPayAbility implements AbilityD
 			$input = [];
 		}
 
-		$file_name     = ( isset( $input['file_name'] ) && is_string( $input['file_name'] ) ) ? $input['file_name'] : '';
+		$file_name     = ( isset( $input['file_name'] ) && is_string( $input['file_name'] ) ) ? sanitize_file_name( $input['file_name'] ) : '';
 		$file_type     = ( isset( $input['file_type'] ) && is_string( $input['file_type'] ) ) ? $input['file_type'] : '';
 		$file_contents = ( isset( $input['file_contents'] ) && is_string( $input['file_contents'] ) ) ? $input['file_contents'] : '';
 

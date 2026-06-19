@@ -23,7 +23,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * Initializa WC Blocks regitered integrations.
 	 */
 	public function init() {
-		do_action( 'woocommerce_blocks_checkout_block_registration', $this );
+		do_action( 'woocommerce_blocks_checkout_block_registration', $this ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce Blocks hook, not defined by WooPayments.
 	}
 
 	/**

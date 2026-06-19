@@ -1069,6 +1069,81 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
 	}
 
+	public function test_maybe_activate_woopay_does_not_enable_when_link_is_enabled() {
+		$_GET['wcpay-connection-success'] = '1';
+		set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card', 'link' ] );
+
+		$this->wcpay_account->maybe_activate_woopay();
+
+		$this->assertSame( 'no', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_maybe_activate_woopay_enables_when_link_not_enabled() {
+		$_GET['wcpay-connection-success'] = '1';
+		set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->maybe_activate_woopay();
+
+		$this->assertSame( 'yes', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_restores_link_and_forces_woopay_off() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'enabled_payment_methods' => [ 'card', 'link' ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		// WooPay starting on simulates a live default; Link wins, so it must end off.
+		$gateway->update_option( 'platform_checkout', 'yes' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertContains( 'link', $gateway->get_upe_enabled_payment_method_ids() );
+		$this->assertSame( 'no', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_noop_when_transient_has_no_methods() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'capabilities' => [ 'woopay_payments' => [ 'requested' => 'true' ] ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertSame( [ 'card' ], $gateway->get_upe_enabled_payment_method_ids() );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_noop_when_no_transient() {
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'yes' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertSame( [ 'card' ], $gateway->get_upe_enabled_payment_method_ids() );
+		$this->assertSame( 'yes', $gateway->get_option( 'platform_checkout' ) );
+	}
+
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
 		// Arrange.
 		// We need to be in the WP admin dashboard.

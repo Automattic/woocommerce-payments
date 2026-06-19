@@ -341,6 +341,14 @@ class WC_Payments_Order_Success_Page {
 			'8.5.0',
 			'wc_payments_thank_you_page_lpm_payment_method_logo_url'
 		);
+		/**
+		 * Filters the payment method logo URL shown on the thank you page for local payment methods.
+		 *
+		 * @since 8.5.0
+		 *
+		 * @param string $method_logo_url   The payment method logo URL.
+		 * @param string $payment_method_id The payment method ID.
+		 */
 		$method_logo_url = apply_filters(
 			'wc_payments_thank_you_page_lpm_payment_method_logo_url',
 			$method_logo_url,
@@ -407,8 +415,8 @@ class WC_Payments_Order_Success_Page {
 	public function replace_order_received_text_for_failed_orders( $text ) {
 		global $wp;
 
-		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) );
-		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment, WordPress.Security.NonceVerification.Recommended -- WooCommerce core hook, not defined by WooPayments.
 
 		$order = false;
 		if ( $order_id > 0 ) {
@@ -518,14 +526,14 @@ class WC_Payments_Order_Success_Page {
 		global $wp;
 
 		$order_id  = $wp->query_vars['order-received'];
-		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) );
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$order     = wc_get_order( $order_id );
 
 		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
 			return $value;
 		}
 
-		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order );
+		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$date_created              = $order->get_date_created();
 
 		// We do not need to verify the email address if we are within the grace period immediately following order creation.
