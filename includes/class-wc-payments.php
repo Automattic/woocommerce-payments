@@ -2110,10 +2110,10 @@ class WC_Payments {
 	 * @param string $field The checkout field being filtered.
 	 * @param string $key The field key.
 	 * @param mixed  $args Field arguments.
-	 * @param string $value Field value.
+	 * @param string $_unused_value Field value.
 	 * @return string
 	 */
-	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) {
+	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $_unused_value ) {
 		$class = $args['class'][0];
 		if ( false === strpos( $class, 'woopay-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';

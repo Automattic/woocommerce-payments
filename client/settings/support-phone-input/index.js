@@ -13,7 +13,7 @@ import {
 	useGetSavingError,
 	useTestModeOnboarding,
 } from 'wcpay/data/settings';
-import PhoneNumberInput from 'wcpay/settings/phone-input';
+import PhoneNumberInput from 'wcpay/settings/phone-input/lazy';
 import InlineNotice from 'wcpay/components/inline-notice';
 import './styles.scss';
 
