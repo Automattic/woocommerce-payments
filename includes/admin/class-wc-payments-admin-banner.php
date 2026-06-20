@@ -288,11 +288,8 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_test_to_live_notice_script() {
-		// Screen gate first: the eligibility check runs an order query, so skip it
-		// entirely on admin screens where the notice can never render rather than
-		// paying that cost on every admin page load.
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		// Screen gate before the eligibility check, which runs an order query.
+		if ( ! $this->is_banner_screen() ) {
 			return;
 		}
 
@@ -492,11 +489,8 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_one_and_done_notice_script() {
-		// Screen gate first: the eligibility check runs order queries, so skip it
-		// entirely on admin screens where the notice can never render rather than
-		// paying that cost on every admin page load.
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		// Screen gate before the eligibility check, which runs order queries.
+		if ( ! $this->is_banner_screen() ) {
 			return;
 		}
 
@@ -791,8 +785,7 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_post_kyc_activation_notice_script(): void {
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->is_banner_screen() ) {
 			return;
 		}
 
@@ -1271,6 +1264,19 @@ class WC_Payments_Admin_Banner {
 		}
 
 		return $this->is_one_and_done_notice_eligible_to_be_shown();
+	}
+
+	/**
+	 * Whether the current admin screen can host one of this class's banners.
+	 *
+	 * The banner eligibility checks run order queries, so every enqueue callback
+	 * gates on this first to avoid that cost on screens where no notice renders.
+	 *
+	 * @return bool
+	 */
+	private function is_banner_screen(): bool {
+		$screen = get_current_screen();
+		return ! $screen || in_array( $screen->id, wc_get_screen_ids(), true ) || wc_admin_is_registered_page();
 	}
 
 	/**
