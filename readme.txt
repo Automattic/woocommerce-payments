@@ -87,6 +87,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.9.0-test-2 - unreleased =
+* Fix - Security hardening for dispute evidence abilities and fraud prevention token handling
+
 = 10.9.0 - 2026-06-24 =
 * Add - Add a Balance reconciliation report to the WooPayments Reports area (behind a feature flag)
 * Add - Add a CSV Export button to the Fees report
