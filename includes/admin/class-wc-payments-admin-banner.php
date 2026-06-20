@@ -755,9 +755,8 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
-		// Existence-only check: `orderby => 'none'` lets the LIMIT 1 short-circuit
-		// instead of sorting every matching order (a filesort over millions of rows
-		// on large stores). Same hotspot as WOOPMNT-6240's one-and-done query.
+		// Existence-only check: `orderby => 'none'` keeps the LIMIT from forcing a
+		// filesort over every matching order on large stores (WOOPMNT-6240).
 		$orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
@@ -1107,15 +1106,13 @@ class WC_Payments_Admin_Banner {
 	 *
 	 * Strategy: two narrow queries capped to the smallest row count that answers
 	 * the question, both unsorted (`orderby => 'none'`) so the LIMIT short-circuits
-	 * instead of forcing a filesort over every matching order — the latter is what
-	 * made this check take 60s+ on large stores (see WOOPMNT-6240).
+	 * instead of forcing a filesort over every matching order (WOOPMNT-6240).
 	 *
 	 *   Q1 — WooPayments live orders capped at 2: filtered server-side by
 	 *        `_payment_method` + `_wcpay_mode` (same shape `compute_test_to_live_notice_eligibility()`
 	 *        already uses). Test-mode WCPay orders are excluded by construction, so
 	 *        the previous saturation false-negative ("19 old test-mode orders + 1
-	 *        live → silently excluded") can no longer occur. Unsorted: the cap only
-	 *        distinguishes 0 / 1 / ≥2, and the exactly-1 case has a single row.
+	 *        live → silently excluded") can no longer occur.
 	 *   Q2 — non-WooPayments orders capped at 1: filtered server-side by
 	 *        `_payment_method IN [other registered gateways]`. Caveat: this misses
 	 *        orders paid via since-uninstalled gateways. Acceptable for the cohort —
@@ -1154,15 +1151,10 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
-		// Q1 — WooPayments live-mode orders, capped at 2.
-		//
-		// `orderby => 'none'` is deliberate: an ORDER BY forces the engine to
-		// locate and sort every matching row before applying LIMIT 2, which is a
-		// filesort over millions of orders on large stores (60s+ on
-		// woocommerce.com). Without it the query stops after the first 2 matches.
-		// We don't need ordering — the 2-row cap only distinguishes 0 / 1 / ≥2,
-		// and in the exactly-1 case there's a single row whose date we read below,
-		// so ordering is irrelevant.
+		// Q1 — WooPayments live-mode orders, capped at 2. The 2-row cap only
+		// distinguishes 0 / 1 / ≥2, so `orderby => 'none'` is intentional: it
+		// avoids the ORDER BY filesort that made this slow on large stores
+		// (WOOPMNT-6240). The exactly-1 case reads the single row's date below.
 		$wcpay_live_orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
