@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * the dismissible recommendation notice. This migration force-stores the "already run" flag so the
  * auto-detection only ever applies to fresh installations.
  *
- * @since 10.9.0
+ * @since 11.0.0
  */
 class Multi_Currency_Cache_Autodetect_Existing_Install {
 
@@ -28,13 +28,15 @@ class Multi_Currency_Cache_Autodetect_Existing_Install {
 	 *
 	 * @var string
 	 */
-	const VERSION = '10.9.0';
+	const VERSION_SINCE = '11.0.0';
 
 	/**
 	 * Option flag marking that the one-time caching auto-detection has run.
 	 *
-	 * Mirrors MultiCurrency::CACHE_AUTODETECT_DONE_OPTION; kept as a literal so the migration stays
-	 * self-contained during the upgrade routine. A unit test guards against the two drifting apart.
+	 * Same value as MultiCurrency::CACHE_AUTODETECT_DONE_OPTION, intentionally duplicated as a
+	 * literal rather than referencing the live constant: a migration is a frozen historical step
+	 * and must keep writing the same option name even if MultiCurrency later renames or removes it.
+	 * test_option_name_matches_multi_currency_constant() fails if the two ever drift apart.
 	 *
 	 * @var string
 	 */
@@ -51,7 +53,7 @@ class Multi_Currency_Cache_Autodetect_Existing_Install {
 		// Fresh installs have no previous version — let auto-detection run for them. Installs already
 		// on this version (or newer) have nothing to migrate. Only existing installs upgrading from an
 		// earlier version are marked as already-detected so their rendering mode is left untouched.
-		if ( empty( $previous_version ) || version_compare( self::VERSION, $previous_version, '<=' ) ) {
+		if ( empty( $previous_version ) || version_compare( self::VERSION_SINCE, $previous_version, '<=' ) ) {
 			return;
 		}
 

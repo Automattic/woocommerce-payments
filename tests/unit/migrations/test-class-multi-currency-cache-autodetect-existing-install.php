@@ -54,7 +54,7 @@ class Multi_Currency_Cache_Autodetect_Existing_Install_Test extends WCPAY_UnitTe
 	}
 
 	public function test_does_nothing_when_already_on_this_version() {
-		update_option( self::VERSION_OPTION, '10.9.0' );
+		update_option( self::VERSION_OPTION, '11.0.0' );
 
 		$this->migration->maybe_migrate();
 
@@ -62,7 +62,7 @@ class Multi_Currency_Cache_Autodetect_Existing_Install_Test extends WCPAY_UnitTe
 	}
 
 	public function test_does_nothing_when_on_a_newer_version() {
-		update_option( self::VERSION_OPTION, '10.10.0' );
+		update_option( self::VERSION_OPTION, '11.1.0' );
 
 		$this->migration->maybe_migrate();
 

@@ -71,7 +71,7 @@ class CachingEnvironment {
 		/**
 		 * Filters whether the site is considered to run full-page caching.
 		 *
-		 * @since 10.9.0
+		 * @since 11.0.0
 		 *
 		 * @param bool $is_active Whether full-page caching was detected.
 		 */
