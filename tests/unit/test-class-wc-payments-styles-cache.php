@@ -242,7 +242,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_get_styles_cache_version_recomputes_after_invalidation() {
 		// Populate the cache.
 		delete_option( 'wcpay_styles_cache_version' );
-		$first_version = WC_Payments_Styles_Cache::get_styles_cache_version();
+		WC_Payments_Styles_Cache::get_styles_cache_version();
 
 		// Invalidate.
 		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
