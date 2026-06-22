@@ -30,6 +30,7 @@ describe( 'woopayPaymentMethod', () => {
 		);
 		Object.defineProperty( window, 'location', {
 			writable: true,
+			value: { href: '' },
 		} );
 		initWooPay.mockReset();
 	} );
@@ -106,6 +107,6 @@ describe( 'woopayPaymentMethod', () => {
 			await initCheckoutPromise;
 		} );
 		expect( buyNowButton ).not.toBeDisabled();
-		expect( window.location ).toEqual( 'https://example.org/' );
+		expect( window.location.href ).toEqual( 'https://example.org/' );
 	} );
 } );
