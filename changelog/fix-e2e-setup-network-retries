@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Retry transient network operations (Docker image pulls, wordpress.org plugin/theme installs) in the E2E environment setup script.
+Comment: Retry transient network operations (Docker image pulls, wordpress.org plugin/theme installs, GitHub release downloads) in the E2E environment setup script. CI/test-infra only, not user-facing.
