@@ -164,6 +164,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires before a WooPayments webhook event is processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
@@ -231,6 +239,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires after a WooPayments webhook event has been processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
@@ -390,11 +406,11 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent canceled event.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $_unused_event_body The event that triggered the webhook.
 	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_canceled( $event_body ) {
+	private function process_webhook_payment_intent_canceled( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
@@ -403,11 +419,11 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent amount capturable updated event.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $_unused_event_body The event that triggered the webhook.
 	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
+	private function process_webhook_payment_intent_amount_capturable_updated( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
@@ -501,18 +517,46 @@ class WC_Payments_Webhook_Processing_Service {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
 		}
 
-		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+		// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+		// Prefer the server-driven fee_breakdown_v1 envelope carried on the
+		// forwarded webhook body when present. Its totals are authoritative
+		// (post-refund, tax-adjusted) so we can always write correct meta
+		// without the prior truthy-check skipping $0 values.
+		$fee_breakdown_v1 = $charges_data[0]['fee_breakdown_v1'] ?? null;
+		if ( is_array( $fee_breakdown_v1 ) && isset( $fee_breakdown_v1['totals']['fee']['amount'], $fee_breakdown_v1['totals']['fee']['currency'] ) ) {
+			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount(
+				(int) $fee_breakdown_v1['totals']['fee']['amount'],
+				$fee_breakdown_v1['totals']['fee']['currency']
+			);
+			if ( isset( $fee_breakdown_v1['totals']['net']['amount'], $fee_breakdown_v1['totals']['net']['currency'] ) ) {
+				$meta_data_to_update['_wcpay_net'] = WC_Payments_Utils::interpret_stripe_amount(
+					(int) $fee_breakdown_v1['totals']['net']['amount'],
+					$fee_breakdown_v1['totals']['net']['currency']
+				);
+			}
+		} else {
+			$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
 
-		if ( $application_fee_amount ) {
-			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
-			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
+			if ( $application_fee_amount ) {
+				$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+				$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
 
-			$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
-			$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
+				$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+				$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
+			}
 		}
 
+		// Keys we always write when present in the envelope — including
+		// legitimate $0 values — because their truthiness is semantically
+		// meaningful for the order page "Transaction Fee" row and net.
+		$authoritative_keys = [ '_wcpay_transaction_fee', '_wcpay_net' ];
 		foreach ( $meta_data_to_update as $key => $value ) {
-			// Override existing meta data with incoming values, if present.
+			if ( in_array( $key, $authoritative_keys, true ) ) {
+				if ( null !== $value ) {
+					$order->update_meta_data( $key, $value );
+				}
+				continue;
+			}
 			if ( $value ) {
 				$order->update_meta_data( $key, $value );
 			}

@@ -45,6 +45,11 @@ test.describe( 'Successful purchase', () => {
 				);
 			} );
 
+			// Reload after each test to prevent state leaking between tests.
+			test.afterEach( async () => {
+				await shopperPage.reload();
+			} );
+
 			test( 'using a basic card', { tag: '@critical' }, async () => {
 				await shopper.fillCardDetails( shopperPage );
 				await shopper.placeOrder( shopperPage );

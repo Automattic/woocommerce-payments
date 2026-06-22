@@ -19,11 +19,17 @@ jobs:
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: "Load version constants"
+        id: vc
+        uses: ./.github/actions/load-version-constants
       - name: "Generate matrix"
         id: generate_matrix
+        env:
+          GUTENBERG_FOR_WP_MIN: ${{ steps.vc.outputs.gutenberg_for_wp_min }}
         run: |
           WC_VERSIONS=$( echo "[\"$WC_MIN_SUPPORTED_VERSION\", \"latest\", \"beta\"]" )
-          MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_MIN_SUPPORTED_VERSION\",\"wordpress\":\"$WP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"$PHP_MIN_SUPPORTED_VERSION\"}]" )
+          MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_MIN_SUPPORTED_VERSION\",\"wordpress\":\"$WP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"$GUTENBERG_FOR_WP_MIN\",\"php\":\"$PHP_MIN_SUPPORTED_VERSION\"}]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
 
   woocommerce-compatibility:
@@ -40,14 +46,14 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-wc-compat-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/composer/
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
           tools: composer
@@ -81,14 +87,14 @@ jobs:
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
           tools:       composer

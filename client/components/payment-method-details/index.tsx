@@ -19,6 +19,11 @@ interface Payment {
 	[ key: string ]: any;
 }
 
+const shouldDisplayNetworkOverBrand = ( network?: string ) =>
+	[ 'cartes_bancaires', 'cb', 'eftpos', 'eftpos_au' ].includes(
+		network ?? ''
+	);
+
 /**
  *
  * @param payment Payment charge object
@@ -63,12 +68,37 @@ const formatDetails = ( payment: Payment ): ReactNode => {
 					{ paymentMethod.iban_last4 }
 				</Fragment>
 			);
+		case 'amazon_pay':
+			return paymentMethod.funding?.card?.last4 ? (
+				<Fragment>
+					&nbsp;&bull;&bull;&bull;&bull;&nbsp;
+					{ paymentMethod.funding.card.last4 }
+				</Fragment>
+			) : (
+				<Fragment />
+			);
 		default:
 			return <Fragment />;
 	}
 };
 
 const WalletIcon = ( { payment }: PaymentMethodDetailsProps ) => {
+	// Amazon Pay is itself the wallet — no card.wallet wrapper.
+	if ( payment?.type === 'amazon_pay' ) {
+		const amazonPayMethod = paymentMethodsMap.amazon_pay;
+		if ( ! amazonPayMethod ) return null;
+		const { icon: AmazonPayIcon, label: amazonPayLabel } = amazonPayMethod;
+		return (
+			<HoverTooltip
+				isVisible={ false }
+				content={ amazonPayLabel }
+				className="payment-method-details__brand-tooltip"
+			>
+				<AmazonPayIcon />
+			</HoverTooltip>
+		);
+	}
+
 	const wallet = payment[ payment.type ]?.wallet;
 	if ( ! wallet ) return null;
 
@@ -103,25 +133,37 @@ const PaymentMethodDetails = ( { payment }: PaymentMethodDetailsProps ) => {
 	const details = formatDetails( payment );
 
 	const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
-	const brand =
-		paymentMethod?.brand || paymentMethod?.network || payment?.type;
+	const fundingCardBrand = paymentMethod?.funding?.card?.brand?.toLowerCase();
+	const brand = shouldDisplayNetworkOverBrand( paymentMethod?.network )
+		? paymentMethod.network
+		: paymentMethod?.brand ||
+		  paymentMethod?.network ||
+		  fundingCardBrand ||
+		  payment?.type;
+
+	// When the wallet icon already identifies the payment method (Amazon Pay
+	// paid with a non-card instrument), the brand sprite would just duplicate it.
+	const isAmazonPayWithoutFundingCard =
+		payment?.type === 'amazon_pay' && ! fundingCardBrand;
 
 	return (
 		<span className="payment-method-details">
 			<WalletIcon payment={ payment } />
-			<HoverTooltip
-				isVisible={ false }
-				content={ getTransactionPaymentMethodTitle( brand ) }
-				className="payment-method-details__brand-tooltip"
-			>
-				<span
-					className={
-						`payment-method__brand payment-method__brand--${ brand } ` +
-						`account-country--${ accountCountry.toLowerCase() }`
-					}
-					aria-label={ getTransactionPaymentMethodTitle( brand ) }
-				/>
-			</HoverTooltip>
+			{ ! isAmazonPayWithoutFundingCard && (
+				<HoverTooltip
+					isVisible={ false }
+					content={ getTransactionPaymentMethodTitle( brand ) }
+					className="payment-method-details__brand-tooltip"
+				>
+					<span
+						className={
+							`payment-method__brand payment-method__brand--${ brand } ` +
+							`account-country--${ accountCountry.toLowerCase() }`
+						}
+						aria-label={ getTransactionPaymentMethodTitle( brand ) }
+					/>
+				</HoverTooltip>
+			) }
 			{ details }
 		</span>
 	);

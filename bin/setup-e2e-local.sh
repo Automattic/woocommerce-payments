@@ -68,7 +68,37 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 LOCAL_ENV_PATH="$PROJECT_ROOT/tests/e2e/config/local.env"
-DEV_CONTAINER="wcpay_wp_default"
+
+resolve_dev_container() {
+    local container_id=""
+    local container_name=""
+    local worktree_id=""
+    local candidate=""
+
+    container_id=$(cd "$PROJECT_ROOT" && docker compose ps -q wordpress 2>/dev/null || true)
+    if [[ -n "$container_id" ]]; then
+        container_name=$(docker inspect --format '{{.Name}}' "$container_id" 2>/dev/null | sed 's#^/##')
+        if [[ -n "$container_name" ]]; then
+            echo "$container_name"
+            return
+        fi
+    fi
+
+    worktree_id=$(grep '^WORKTREE_ID=' "$PROJECT_ROOT/.env" 2>/dev/null | cut -d= -f2)
+    if [[ -n "$worktree_id" ]]; then
+        candidate="wcpay_wp_${worktree_id}"
+        if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${candidate}$"; then
+            echo "$candidate"
+            return
+        fi
+    fi
+
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^wcpay_wp_default$'; then
+        echo "wcpay_wp_default"
+    fi
+}
+
+DEV_CONTAINER="$(resolve_dev_container)"
 
 echo ""
 echo "================================================"
@@ -143,7 +173,7 @@ fi
 if [[ -z "$STRIPE_ACCOUNT_ID" && "$MODE" == "local" ]]; then
     info "Looking for Stripe Account ID from dev Docker..."
 
-    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${DEV_CONTAINER}$"; then
+    if [[ -n "$DEV_CONTAINER" ]]; then
         # Get the serialized account data and extract account_id via PHP
         ACCOUNT_DATA=$(docker exec -u www-data "$DEV_CONTAINER" bash -c \
             "cd /var/www/html && wp option get wcpay_account_data 2>/dev/null" 2>/dev/null || true)
@@ -159,7 +189,7 @@ if [[ -z "$STRIPE_ACCOUNT_ID" && "$MODE" == "local" ]]; then
             warn "Could not extract Stripe Account ID from dev Docker"
         fi
     else
-        warn "Dev Docker container ($DEV_CONTAINER) is not running"
+        warn "Could not find a running dev Docker WordPress container for this checkout"
     fi
 
     if [[ -z "$STRIPE_ACCOUNT_ID" && -n "$STRIPE_SECRET_KEY" ]]; then
@@ -308,7 +338,7 @@ else
     info "  wp eval '\\\$t = Jetpack_Options::get_option(\"user_tokens\"); echo reset(\\\$t);'"
 
     # Try to extract from dev Docker
-    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${DEV_CONTAINER}$"; then
+    if [[ -n "$DEV_CONTAINER" ]]; then
         info "Attempting to extract from dev Docker..."
         JP_SITE_ID=$(docker exec -u www-data "$DEV_CONTAINER" bash -c \
             "cd /var/www/html && wp eval 'echo Jetpack_Options::get_option(\"id\");' 2>/dev/null" 2>/dev/null || true)
@@ -320,6 +350,8 @@ else
         [[ -n "$JP_SITE_ID" ]] && success "Jetpack Site ID: $JP_SITE_ID"
         [[ -n "$JP_BLOG_TOKEN" ]] && success "Jetpack Blog Token: ${JP_BLOG_TOKEN:0:20}..."
         [[ -n "$JP_USER_TOKEN" ]] && success "Jetpack User Token: ${JP_USER_TOKEN:0:20}..."
+    else
+        warn "Could not find a running dev Docker WordPress container for this checkout"
     fi
 
     [[ -z "$JP_SITE_ID" ]] && read -p "Enter Jetpack Site ID: " JP_SITE_ID
@@ -385,7 +417,7 @@ if [[ "$MODE" == "local" && -n "$SERVER_PATH" ]]; then
         fi
     else
         warn "Server code (server/, missioncontrol/) not found in $SERVER_PATH"
-        warn "Run 'npm run pull' in the transact-platform-server repo first."
+        warn "E2E setup will try a one-shot 'npm run pull -- -s' in its clone if sandbox access is configured."
     fi
 fi
 

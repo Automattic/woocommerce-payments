@@ -20,6 +20,7 @@ import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 import { CardSkeleton } from './components/card-skeleton';
 import { ApmSkeleton } from './components/apm-skeleton';
+import SkeletonContext from './components/skeleton-context';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -51,6 +52,7 @@ const PaymentProcessor = ( {
 	testingInstructions,
 	eventRegistration: { onPaymentSetup, onCheckoutSuccess, onCheckoutFail },
 	emitResponse,
+	components: { Skeleton: CoreSkeleton } = {},
 	paymentMethodId,
 	upeMethods,
 	errorMessage,
@@ -187,7 +189,8 @@ const PaymentProcessor = ( {
 							meta: {
 								paymentMethodData: {
 									payment_method: gatewayId,
-									'wcpay-payment-method': PAYMENT_METHOD_ERROR,
+									'wcpay-payment-method':
+										PAYMENT_METHOD_ERROR,
 									'wcpay-payment-method-error-code':
 										result.error.code,
 									'wcpay-payment-method-error-decline-code':
@@ -196,7 +199,8 @@ const PaymentProcessor = ( {
 										result.error.message,
 									'wcpay-payment-method-error-type':
 										result.error.type,
-									'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+									'wcpay-fraud-prevention-token':
+										getFraudPreventionToken(),
 									'wcpay-fingerprint': fingerprint,
 								},
 							},
@@ -209,7 +213,8 @@ const PaymentProcessor = ( {
 							paymentMethodData: {
 								payment_method: gatewayId,
 								'wcpay-payment-method': result.paymentMethod.id,
-								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+								'wcpay-fraud-prevention-token':
+									getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
 							},
 						},
@@ -248,7 +253,7 @@ const PaymentProcessor = ( {
 	};
 
 	return (
-		<>
+		<SkeletonContext.Provider value={ CoreSkeleton }>
 			{ isTestMode && (
 				<p
 					className={ clsx( 'content', {
@@ -292,7 +297,7 @@ const PaymentProcessor = ( {
 					className="wcpay-payment-element"
 				/>
 			</div>
-		</>
+		</SkeletonContext.Provider>
 	);
 };
 

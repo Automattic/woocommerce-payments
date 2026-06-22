@@ -1,0 +1,325 @@
+/** @format */
+
+body.woocommerce-admin-page__payments_reports {
+	background: #fff;
+
+	// Scope these WC layout overrides to the Reports section only so the
+	// Balance / Fees tabs flush against the left edge of the content area
+	// while still leaving room at the bottom for the WC footer.
+	.woocommerce-layout__primary {
+		margin: 10px 0 128px 24px;
+	}
+
+	// The right-rail activity panel competes with the wider report tables
+	// and is not part of the reconciliation flow — hide it here.
+	.woocommerce-layout__activity-panel {
+		display: none;
+	}
+}
+
+.wcpay-reports-page {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-height: calc( 100vh - 32px );
+	background: #fff;
+
+	.components-tab-panel__tabs {
+		box-shadow: inset 0 -1px 0 #ccc;
+		padding-right: 320px;
+		box-sizing: border-box;
+
+		.components-tab-panel__tabs-item {
+			&.active-tab {
+				box-shadow: inset 0 -4px 0 0 var( --wp-admin-theme-color );
+			}
+
+			&:focus-visible {
+				outline: 2px solid var( --wp-admin-theme-color );
+				outline-offset: -2px;
+			}
+		}
+	}
+}
+
+@media ( forced-colors: active ) {
+	.wcpay-reports-page {
+		.components-tab-panel__tabs {
+			.components-tab-panel__tabs-item {
+				&.active-tab {
+					border-bottom: 4px solid ButtonText;
+					box-shadow: none;
+				}
+
+				&:focus-visible {
+					outline-color: ButtonText;
+				}
+			}
+		}
+	}
+}
+
+.wcpay-reports-tab-panel {
+	position: relative;
+}
+
+.wcpay-reports-balance__skeleton {
+	position: relative;
+	pointer-events: none;
+
+	// The skeleton renders the real DataViews summary (mock data) so the
+	// placeholder matches the loaded layout exactly; blur the whole view.
+	.wcpay-reports-balance-dv {
+		filter: blur( 4px );
+		opacity: 0.6;
+		user-select: none;
+	}
+
+	&-shimmer {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		border-radius: 8px;
+		background: linear-gradient(
+			90deg,
+			rgba( 255, 255, 255, 0 ) 0%,
+			rgba( 255, 255, 255, 0.6 ) 50%,
+			rgba( 255, 255, 255, 0 ) 100%
+		);
+		background-size: 200% 100%;
+		animation: wcpay-reports-balance-skeleton-shimmer 1.6s ease-in-out
+			infinite;
+	}
+
+	&-status {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate( -50%, -50% );
+		padding: 8px 16px;
+		border-radius: 4px;
+		background: rgba( 255, 255, 255, 0.92 );
+		color: $gray-900;
+		font-size: 13px;
+		font-weight: 500;
+		box-shadow: 0 1px 2px rgba( 0, 0, 0, 0.08 );
+
+		h2 {
+			margin: 0;
+			font-size: inherit;
+			font-weight: inherit;
+			line-height: 20px;
+		}
+	}
+}
+
+@keyframes wcpay-reports-balance-skeleton-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.wcpay-reports-balance__skeleton-shimmer {
+		animation: none;
+	}
+}
+
+.wcpay-reports-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 4px;
+
+	&__intro {
+		flex: 1;
+	}
+
+	&__actions {
+		flex-shrink: 0;
+	}
+
+	p {
+		max-width: 660px;
+		margin: 0;
+		color: $gray-700;
+		font-size: 13px;
+		line-height: 20px;
+	}
+}
+
+.wcpay-reports-fees {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+
+	.dataviews-wrapper {
+		padding-top: 0;
+	}
+
+	&__view-actions {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 180px;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 8px;
+		min-height: 48px;
+		padding: 8px 0;
+		background: transparent;
+		box-sizing: border-box;
+	}
+
+	.dataviews-search.components-search-control:not( :focus-within ) {
+		--wp-components-color-background: #fff;
+
+		.components-input-control__backdrop {
+			border-color: $gray-600;
+		}
+	}
+
+	// Override DataViews' default 48px horizontal edge padding so Fees
+	// filters and table edges align flush with the report surface while
+	// the filter row keeps its 16px vertical padding.
+	.dataviews-filters__container {
+		padding: $gap 0;
+	}
+
+	.dataviews-no-results,
+	.dataviews-loading {
+		padding-right: $gap-large;
+		padding-left: $gap-large;
+	}
+
+	.dataviews-view-table tr {
+		td:first-child,
+		th:first-child {
+			padding-left: 0;
+		}
+
+		td:last-child,
+		th:last-child {
+			padding-right: 0;
+		}
+	}
+
+	&__main--filtered-empty {
+		.dataviews-view-table,
+		.dataviews-no-results {
+			display: none;
+		}
+	}
+}
+
+@media screen and ( max-width: 960px ) {
+	.wcpay-reports-page {
+		.components-tab-panel__tabs {
+			padding-right: 0;
+		}
+	}
+
+	.wcpay-reports-fees {
+		&__view-actions {
+			position: static;
+			width: 100%;
+			max-width: none;
+			min-height: 48px;
+			padding: $gap-small $gap-large;
+			border-bottom: 1px solid $gray-200;
+			background: #fff;
+		}
+	}
+}
+
+.wcpay-reports-state {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	max-width: 660px;
+
+	h2,
+	p {
+		margin: 0;
+	}
+
+	h2 {
+		color: $studio-gray-100;
+		font-size: 15px;
+		font-weight: 500;
+		line-height: 20px;
+	}
+
+	p {
+		color: $gray-700;
+		font-size: 13px;
+		line-height: 20px;
+	}
+
+	&--illustrated {
+		align-items: center;
+		justify-content: center;
+		gap: $gap-large;
+		width: 100%;
+		max-width: none;
+		padding: 80px 0 8px;
+		text-align: center;
+
+		.wcpay-reports-state__icon {
+			display: flex;
+			width: 48px;
+			height: 48px;
+			align-items: center;
+			justify-content: center;
+			color: $gray-200;
+
+			svg,
+			path {
+				fill: currentColor;
+			}
+		}
+
+		.wcpay-reports-state__copy {
+			display: flex;
+			flex-direction: column;
+			gap: $gap-smaller;
+			width: 288px;
+			max-width: 544px;
+			align-items: center;
+			overflow-wrap: anywhere;
+		}
+
+		h2,
+		p {
+			width: 100%;
+		}
+
+		h2 {
+			color: $gray-900;
+			font-size: 13px;
+			font-weight: 500;
+		}
+
+		&.wcpay-reports-state--fees-error,
+		&.wcpay-reports-state--balance-error {
+			.wcpay-reports-state__copy p span {
+				display: block;
+			}
+
+			.components-button {
+				height: 32px;
+				min-height: 32px;
+			}
+		}
+	}
+}

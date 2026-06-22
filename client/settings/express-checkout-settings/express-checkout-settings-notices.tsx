@@ -14,7 +14,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	useAmazonPayEnabledSettings,
 	useGetAvailablePaymentMethodIds,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
 type ExpressCheckoutMethod = 'woopay' | 'google/apple' | 'amazon_pay';
 
@@ -58,9 +58,9 @@ const formatButtonList = ( buttonNames: string[] ) => {
 	);
 };
 
-const ExpressCheckoutSettingsNotices: React.FC< ExpressCheckoutSettingsNoticesProps > = ( {
-	currentMethod,
-} ) => {
+const ExpressCheckoutSettingsNotices: React.FC<
+	ExpressCheckoutSettingsNoticesProps
+> = ( { currentMethod } ) => {
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 	const [ isAmazonPayEnabled ] = useAmazonPayEnabledSettings();

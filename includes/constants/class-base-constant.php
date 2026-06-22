@@ -91,12 +91,12 @@ abstract class Base_Constant implements \JsonSerializable {
 	 * Used to created enum from constant names like CLASS::ConstantName().
 	 *
 	 * @param string $name Name of property or function.
-	 * @param array  $arguments Arguments of static call.
+	 * @param array  $_unused_arguments Arguments of static call.
 	 *
 	 * @return static
 	 * @throws \InvalidArgumentException
 	 */
-	public static function __callStatic( $name, $arguments ) {
+	public static function __callStatic( $name, $_unused_arguments ) {
 		if ( ! isset( static::$object_cache[ $name ] ) ) {
 			// Instantiating constants by class name using the 'new static($name)' approach is integral to this method's functionality.
 			static::$object_cache[ $name ] = new static( $name );

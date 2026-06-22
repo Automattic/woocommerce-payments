@@ -15,23 +15,19 @@ import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
 	useExpressCheckoutInPaymentMethodsEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
 const PaymentRequestSettings = ( { section } ) => {
-	const [
-		isPaymentRequestEnabled,
-		updateIsPaymentRequestEnabled,
-	] = usePaymentRequestEnabledSettings();
+	const [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ] =
+		usePaymentRequestEnabledSettings();
 
 	const [
 		isExpressCheckoutInPaymentMethodsEnabled,
 		updateIsExpressCheckoutInPaymentMethodsEnabled,
 	] = useExpressCheckoutInPaymentMethodsEnabledSettings();
 
-	const [
-		paymentRequestLocations,
-		updatePaymentRequestLocations,
-	] = usePaymentRequestLocations();
+	const [ paymentRequestLocations, updatePaymentRequestLocations ] =
+		usePaymentRequestLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		updatePaymentRequestLocations( location, isChecked );

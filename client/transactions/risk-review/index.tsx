@@ -27,7 +27,7 @@ import {
 	FraudOutcomeTransaction,
 	useFraudOutcomeTransactions,
 	useFraudOutcomeTransactionsSummary,
-} from 'data/index';
+} from 'wcpay/data/transactions';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import {
@@ -39,7 +39,7 @@ import './style.scss';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
-import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
+import { getFraudOutcomeTransactionsExport } from 'wcpay/data/transactions/resolvers';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 export const RiskReviewList = (): JSX.Element => {
@@ -47,19 +47,19 @@ export const RiskReviewList = (): JSX.Element => {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const query = getQuery();
 	const columns = getRiskReviewListColumns();
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		Column
-	>( 'wc_payments_transactions_risk_review_hidden_columns', columns );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_transactions_risk_review_hidden_columns',
+			columns
+		);
 
 	const { transactions, isLoading } = useFraudOutcomeTransactions(
 		'review',
 		query
 	);
 
-	const {
-		transactionsSummary,
-		isLoading: isSummaryLoading,
-	} = useFraudOutcomeTransactionsSummary( 'review', query );
+	const { transactionsSummary, isLoading: isSummaryLoading } =
+		useFraudOutcomeTransactionsSummary( 'review', query );
 
 	const rows = transactions.map( ( transaction ) =>
 		getRiskReviewListColumnsStructure( transaction, columnsToDisplay )
@@ -72,7 +72,7 @@ export const RiskReviewList = (): JSX.Element => {
 	const isTransactionsSummaryLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		isSummaryLoading === false;
 	const totalRows = transactionsSummary.count || 0;
 
 	if ( isTransactionsSummaryLoaded ) {

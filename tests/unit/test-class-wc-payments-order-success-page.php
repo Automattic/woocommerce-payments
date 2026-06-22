@@ -24,6 +24,7 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->payments_order_success_page = new WC_Payments_Order_Success_Page();
+		$this->payments_order_success_page->init_hooks();
 	}
 
 	public function tear_down() {
@@ -266,5 +267,50 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
 
 		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_show_express_checkout_payment_method_name_amazon_pay_with_last4() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( 'last4', '4242' );
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'Amazon Pay' );
+		$payment_method->method( 'get_icon' )->willReturn( 'amazon-pay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'amazon-pay.svg' );
+
+		$original_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $original_map, [ 'amazon_pay' => $payment_method ] ) );
+
+		$result = $this->payments_order_success_page->show_express_checkout_payment_method_name( $order, 'amazon_pay' );
+
+		$this->set_payment_method_map( $original_map );
+
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
+		$this->assertStringContainsString( 'amazon', strtolower( $result ) );
+		$this->assertStringContainsString( '•••', $result );
+		$this->assertStringContainsString( '4242', $result );
+	}
+
+	public function test_show_express_checkout_payment_method_name_amazon_pay_without_last4() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'Amazon Pay' );
+		$payment_method->method( 'get_icon' )->willReturn( 'amazon-pay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'amazon-pay.svg' );
+
+		$original_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $original_map, [ 'amazon_pay' => $payment_method ] ) );
+
+		$result = $this->payments_order_success_page->show_express_checkout_payment_method_name( $order, 'amazon_pay' );
+
+		$this->set_payment_method_map( $original_map );
+
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
+		$this->assertStringNotContainsString( '•••', $result );
 	}
 }

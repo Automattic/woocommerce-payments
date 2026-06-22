@@ -17,6 +17,8 @@ import RestAPI from './rest-api';
  */
 export const dataHasLoaded = async ( page: Page ) => {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
+	// Wait for any lazy-loaded route chunk to finish mounting.
+	await expect( page.locator( '.wcpay-route-loading' ) ).toHaveCount( 0 );
 };
 
 export const tableDataHasLoaded = async ( page: Page ) => {
@@ -70,7 +72,6 @@ const expectSnackbarWithText = async (
 		.first();
 
 	await expect( snackbar ).toBeVisible( { timeout } );
-	await page.waitForTimeout( 2000 );
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
@@ -153,6 +154,22 @@ export const addMulticurrencyWidget = async (
 			.locator( 'button.components-button[role="option"]' )
 			.first()
 			.click();
+		// Wait for the newly inserted widget/block to render before clicking Update.
+		if ( blocksVersion ) {
+			await page
+				.locator( `[data-title="${ widgetName }"]` )
+				.waitFor( { timeout: 5000 } );
+		} else {
+			// Scope the heading to the inserted block by its (locale-independent)
+			// block type. A bare heading match also matches the block-inspector
+			// card name, which renders the same text and trips Playwright strict
+			// mode intermittently (race between the two).
+			await page
+				.locator( '[data-type="core/legacy-widget"]' )
+				.getByRole( 'heading', { name: widgetName } )
+				.waitFor( { timeout: 5000 } );
+		}
+		// Give the widgets editor a moment to register the inserted block before saving.
 		await page.waitForTimeout( 2000 );
 		await expect(
 			page.getByRole( 'button', { name: 'Update' } )

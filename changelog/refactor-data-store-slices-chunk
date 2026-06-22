@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: JS data store from monolith to chunks

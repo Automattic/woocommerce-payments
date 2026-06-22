@@ -65,7 +65,7 @@ export const usePersistedColumnVisibility = <
 
 	// If returned value is undefined or empty string, use default visibility value.
 	const userPrefHiddenColumns =
-		( ( userPrefs as unknown ) as UserPreferences )[ columnPrefsKey ] ?? '';
+		( userPrefs as unknown as UserPreferences )[ columnPrefsKey ] ?? '';
 
 	// When the user changes the column visibility, update the user's preference for hidden columns.
 	const onColumnsChange = ( shownColumns: string[] ) => {

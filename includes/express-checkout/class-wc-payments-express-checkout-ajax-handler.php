@@ -49,15 +49,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			);
 		}
 
-		add_action(
-			'woocommerce_store_api_checkout_update_order_from_request',
-			[
-				$this,
-				'tokenized_cart_set_payment_method_type',
-			],
-			10,
-			2
-		);
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
@@ -94,7 +85,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		$product_type = $product->get_type();
 
-		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity );
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 
 		if ( ! $is_add_to_cart_valid ) {
 			// Some extensions error messages needs to be
@@ -156,63 +147,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Updates the checkout order based on the request, to set the Apple Pay/Google Pay payment method title.
-	 *
-	 * @param \WC_Order        $order The order to be updated.
-	 * @param \WP_REST_Request $request Store API request to update the order.
-	 */
-	public function tokenized_cart_set_payment_method_type( \WC_Order $order, \WP_REST_Request $request ) {
-		if ( ! isset( $request['payment_method'] ) || 'woocommerce_payments' !== $request['payment_method'] ) {
-			return;
-		}
-
-		if ( empty( $request['payment_data'] ) ) {
-			return;
-		}
-
-		$payment_data = [];
-		foreach ( $request['payment_data'] as $data ) {
-			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
-		}
-
-		if ( empty( $payment_data['express_payment_type'] ) ) {
-			return;
-		}
-
-		$express_payment_type = wc_clean( wp_unslash( $payment_data['express_payment_type'] ) );
-
-		$payment_method_title = $this->get_payment_method_title_from_definition( $express_payment_type );
-		// fallback, just in case.
-		if ( ! $payment_method_title ) {
-			$payment_method_title = 'Payment Request';
-		}
-
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
-
-		$order->set_payment_method_title( $payment_method_title . $suffix );
-		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_payment_type );
-	}
-
-	/**
-	 * Get the payment method title from the definition.
-	 *
-	 * @param string $payment_method_id The payment method ID (e.g., 'apple_pay', 'google_pay').
-	 * @return string|null The payment method title or null if not found.
-	 */
-	private function get_payment_method_title_from_definition( $payment_method_id ) {
-		$payment_method = WC_Payments::get_payment_method_by_id( $payment_method_id );
-
-		if ( $payment_method && method_exists( $payment_method, 'get_title' ) ) {
-			return $payment_method->get_title();
-		}
-
-		return null;
-	}
-
-	/**
 	 * Google Pay/Apple Pay parameters for address data might need some massaging for some of the countries.
 	 * Ensuring that the Store API doesn't throw a `rest_invalid_param` error message for some of those scenarios.
 	 *
@@ -229,7 +163,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		// header added as additional layer of security.
 		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
 			return $response;
 		}
 
@@ -244,6 +178,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
 			$shipping_address = $request['shipping_address'];
 			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
+			$shipping_address = $this->transform_ece_address_lines_data( $shipping_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -254,6 +189,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
 			$billing_address = $request['billing_address'];
 			$billing_address = $this->transform_ece_address_state_data( $billing_address );
+			$billing_address = $this->transform_ece_address_lines_data( $billing_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -302,35 +238,29 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return $address;
 		}
 
-		// Due to a bug in Apple Pay, the "Region" part of a Hong Kong address is delivered in
-		// `shipping_postcode`, so we need some special case handling for that. According to
-		// our sources at Apple Pay people will sometimes use the district or even sub-district
-		// for this value. As such we check against all regions, districts, and sub-districts
-		// with both English and Mandarin spelling.
-		//
-		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
-		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
-		// algorithm becomes:
-		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
-		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
-		// 3. Fall back to the value supplied in the state. This will likely cause a validation error, in
-		// which case a merchant can reach out to us so we can either: 1) add whatever the customer used
-		// as a state to our list of valid states; or 2) let them know the customer must spell the state
-		// in some way that matches our list of valid states.
+		// Due to bugs in Apple Pay/Google Pay, the "Region" part of a Hong Kong address is delivered
+		// inconsistently: it may arrive in the `state` field, in the `postcode` field, or be dropped
+		// entirely — in which case only the district (e.g. "Tai Po") survives in the `city` field.
+		// People also sometimes supply a district or even sub-district rather than the region itself.
+		// To recover a valid WooCommerce region we map every Hong Kong region, district and
+		// sub-district (English + 中文) to its parent WC state key, then resolve from whichever field
+		// carries a recognizable value, in order of reliability: state, then postcode, then city.
 		//
 		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
 		// the address bug. More info on that in pc4etw-bY-p2.
 		if ( Country_Code::HONG_KONG === $country ) {
 			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
 
-			$state = $address['state'] ?? '';
-			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $state ) ) ) {
-				$postcode = $address['postcode'] ?? '';
-				if ( strtolower( $postcode ) === 'hongkong' ) {
-					$postcode = 'hong kong';
+			foreach ( [ $address['state'] ?? '', $address['postcode'] ?? '', $address['city'] ?? '' ] as $candidate ) {
+				$candidate = strtolower( trim( (string) $candidate ) );
+				// Some clients drop the space from "Hong Kong".
+				if ( 'hongkong' === $candidate ) {
+					$candidate = 'hong kong';
 				}
-				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $postcode ) ) ) {
-					$address['state'] = $postcode;
+				$region = \WCPay\Constants\Express_Checkout_Hong_Kong_States::get_region_for_district( $candidate );
+				if ( '' !== $region ) {
+					$address['state'] = $region;
+					break;
 				}
 			}
 		}
@@ -340,6 +270,41 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( ! empty( $state ) ) {
 			$address['state'] = $this->get_normalized_state( $state, $country );
 		}
+
+		return $address;
+	}
+
+	/**
+	 * Consolidates the address lines so `address_1` is always populated when any line is.
+	 *
+	 * Specifically fixes Amazon Pay on EU Stripe accounts, which can return an empty `line1` with
+	 * the street value in `line2` (e.g. `{ line1: "", line2: "Meininger Strasse 58" }`). WC
+	 * requires `address_1`, so without this the Store API rejects the order. Safe to run on all
+	 * addresses: if `address_1` is already set, this is a no-op.
+	 *
+	 * @param array $address The address to normalize.
+	 *
+	 * @return array
+	 */
+	private function transform_ece_address_lines_data( $address ) {
+		$lines = array_values(
+			array_filter(
+				[
+					trim( (string) ( $address['address_1'] ?? '' ) ),
+					trim( (string) ( $address['address_2'] ?? '' ) ),
+				],
+				function ( $line ) {
+					return '' !== $line;
+				}
+			)
+		);
+
+		if ( empty( $lines ) ) {
+			return $address;
+		}
+
+		$address['address_1'] = $lines[0];
+		$address['address_2'] = $lines[1] ?? '';
 
 		return $address;
 	}
@@ -544,7 +509,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		// Verify the nonce from the 'X-WooPayments-Tokenized-Cart-Nonce' header using superglobals.
 		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE'] ?? '' ) );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
 			return false;
 		}
 

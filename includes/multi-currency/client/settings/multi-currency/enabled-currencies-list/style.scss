@@ -22,6 +22,15 @@
 	}
 }
 
+.wcpay-multi-currency__enabled-currencies-list-body {
+	// Drop the card body padding so each row's own `7px 24px` owns the spacing
+	// and lines the currency name up with the "Name" column header. Doubling the
+	// class raises specificity enough to beat the Gutenberg default.
+	&#{&} {
+		padding: 0;
+	}
+}
+
 .enabled-currencies-list {
 	margin: 0;
 

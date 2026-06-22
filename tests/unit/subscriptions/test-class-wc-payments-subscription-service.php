@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Mode;
 use WCPay\Core\Mode;
 use WCPay\Exceptions\Subscription_Mode_Mismatch_Exception;
@@ -255,7 +256,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->payment_tokens = [ uniqid( 'pm_' ) ];
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -301,7 +302,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -411,7 +412,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $subscription ) {
+			function ( $_unused_id ) use ( $subscription ) {
 				return $subscription;
 			}
 		);
@@ -625,7 +626,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->save();
 
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $subscription ) {
+			function ( $_unused_subscription ) {
 				return true;
 			}
 		);
@@ -773,7 +774,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 			'unit_amount_decimal' => 1033.33,
 		];
 
-		$actual = WC_Payments_Subscription_Service::format_item_price_data( 'USD', '', 10.3333 );
+		$actual = WC_Payments_Subscription_Service::format_item_price_data( Currency_Code::UNITED_STATES_DOLLAR, '', 10.3333 );
 
 		$this->assertEquals( $expected, $actual );
 	}

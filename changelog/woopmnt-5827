@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Harden public multi-currency config REST endpoint with permission callback

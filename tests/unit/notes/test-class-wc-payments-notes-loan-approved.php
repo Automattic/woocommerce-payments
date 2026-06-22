@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
+
 require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
 
 /**
@@ -26,7 +28,7 @@ class WC_Payments_Notes_Loan_Approved_Test extends WCPAY_UnitTestCase {
 				'details' => [
 					'advance_amount'      => 1234567,
 					'advance_paid_out_at' => time(),
-					'currency'            => 'USD',
+					'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 				],
 			]
 		);

@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 
 interface CaptureAuthorizationButtonProps {
 	orderId: number;
@@ -20,9 +20,9 @@ interface CaptureAuthorizationButtonProps {
 	onClick?: () => void;
 }
 
-const CaptureAuthorizationButton: React.FC< React.PropsWithChildren<
-	CaptureAuthorizationButtonProps
-> > = ( {
+const CaptureAuthorizationButton: React.FC<
+	React.PropsWithChildren< CaptureAuthorizationButtonProps >
+> = ( {
 	orderId,
 	children,
 	paymentIntentId,
@@ -30,11 +30,8 @@ const CaptureAuthorizationButton: React.FC< React.PropsWithChildren<
 	buttonIsSmall = true,
 	onClick = () => undefined,
 } ) => {
-	const {
-		isLoading,
-		isRequesting,
-		doCaptureAuthorization,
-	} = useAuthorization( paymentIntentId, orderId );
+	const { isLoading, isRequesting, doCaptureAuthorization } =
+		useAuthorization( paymentIntentId, orderId );
 
 	// Use local state to prevent the button to be in 'busy' state when it loads
 	const [ isCaptureRequested, setIsCaptureRequested ] = useState( false );

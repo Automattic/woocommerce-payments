@@ -14,7 +14,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import PaymentMethod from './payment-method';
 import methodsConfiguration from '../../payment-methods-map';
@@ -30,9 +30,8 @@ const PaymentMethodsList = ( { methodIds } ) => {
 		( methodId ) => methodsConfiguration[ methodId ]
 	);
 
-	const [ activationModalParams, handleActivationModalOpen ] = useState(
-		null
-	);
+	const [ activationModalParams, handleActivationModalOpen ] =
+		useState( null );
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 

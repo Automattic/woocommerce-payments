@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Rename reserved keyword parameter name $object in the WooPay tracker test helper

@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 /**
  * External dependencies
  */
@@ -9,7 +10,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 
 export interface Document {
 	document_id: string;
@@ -45,9 +46,8 @@ export const useDocuments = ( {
 }: Query ): Documents =>
 	useSelect(
 		( select ) => {
-			const { getDocuments, getDocumentsError, isResolving } = select(
-				STORE_NAME
-			);
+			const { getDocuments, getDocumentsError, isResolving } =
+				select( STORE_NAME );
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )

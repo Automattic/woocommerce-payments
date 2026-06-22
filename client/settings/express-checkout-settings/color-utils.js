@@ -1,8 +1,8 @@
 /**
  * Darkens a hex colour by a percentage (matching WooPay's PHP darken_color).
  *
- * @param {string} hex   A hex colour string (e.g. "#ffffff").
- * @param {number} pct   Percentage to darken (0–100).
+ * @param {string} hex A hex colour string (e.g. "#ffffff").
+ * @param {number} pct Percentage to darken (0–100).
  * @return {string} The darkened hex colour.
  */
 export const darkenColor = ( hex, pct ) => {
@@ -19,8 +19,8 @@ export const darkenColor = ( hex, pct ) => {
 /**
  * Lightens a hex colour by a percentage (matching WooPay's PHP lighten_color).
  *
- * @param {string} hex   A hex colour string (e.g. "#000000").
- * @param {number} pct   Percentage to lighten (0–100).
+ * @param {string} hex A hex colour string (e.g. "#000000").
+ * @param {number} pct Percentage to lighten (0–100).
  * @return {string} The lightened hex colour.
  */
 export const lightenColor = ( hex, pct ) => {
@@ -62,7 +62,7 @@ export const isDarkColor = ( hex ) => {
  * Matches WooPay's PHP logic: lighten 6 % for dark (night) backgrounds,
  * darken 6 % for light (day) backgrounds.
  *
- * @param {string|undefined} bg  A hex colour string, or undefined.
+ * @param {string|undefined} bg A hex colour string, or undefined.
  * @return {string|undefined} The derived border colour, or undefined.
  */
 export const getCardBorderColor = ( bg ) => {

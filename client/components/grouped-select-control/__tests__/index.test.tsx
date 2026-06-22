@@ -30,7 +30,7 @@ describe( 'Grouped Select Control', () => {
 	];
 
 	const renderControl = (
-		props?: Partial< GroupedSelectControlProps< typeof options[ 1 ] > >
+		props?: Partial< GroupedSelectControlProps< ( typeof options )[ 1 ] > >
 	) =>
 		render(
 			<GroupedSelectControl

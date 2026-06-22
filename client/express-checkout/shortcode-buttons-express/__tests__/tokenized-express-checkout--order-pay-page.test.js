@@ -15,8 +15,22 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 jest.mock( 'lodash', () => ( {
+	...jest.requireActual( 'lodash' ),
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
+
+// A non-compromised page has the legit Stripe.js tag, so the assertion passes.
+const addStripeScript = () => {
+	const script = document.createElement( 'script' );
+	script.id = 'stripe-js';
+	script.src = 'https://js.stripe.com/v3/?ver=3.0';
+	document.head.appendChild( script );
+};
+
+const clearScripts = () =>
+	document.head
+		.querySelectorAll( 'script' )
+		.forEach( ( script ) => script.remove() );
 
 describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () => {
 	let stripeElementMock, stripeInstance;
@@ -24,6 +38,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 
 	beforeEach( () => {
 		requestListener.mockClear();
+		addStripeScript();
 		server.events.on( 'request:start', requestListener );
 		server.use(
 			rest.get( '/wc/store/v1/order/:id', ( req, res, ctx ) => {
@@ -259,6 +274,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 
 	afterEach( () => {
 		delete global.Stripe;
+		clearScripts();
 		server.events.removeListener( 'request:start', requestListener );
 		server.resetHandlers();
 	} );

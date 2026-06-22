@@ -68,6 +68,21 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 				'{order_number}' => '',
 			];
 
+			/**
+			 * Please don't move. The call to the parent constructor here is intentional. It allows this class to merge
+			 * its placeholders with the parent's and prefix the settings with its own identifier.
+			 * Moving this call to the top of the constructor will cause the placeholders to stop working and
+			 * lose the woocommerce_payments_ prefix in the settings.
+			 *
+			 * @see WC_Email::__construct()
+			 */
+			parent::__construct();
+		}
+
+		/**
+		 * Register the hooks for this email.
+		 */
+		public function init_hooks() {
 			// Content hooks.
 			add_action( 'woocommerce_payments_email_ipp_receipt_store_details', [ $this, 'store_details' ], 10, 2 );
 			add_action( 'woocommerce_payments_email_ipp_receipt_compliance_details', [ $this, 'compliance_details' ], 10, 2 );
@@ -79,16 +94,6 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			add_filter( 'woocommerce_email_preview_dummy_order', [ $this, 'get_preview_order' ], 10, 1 );
 			add_filter( 'woocommerce_email_preview_dummy_address', [ $this, 'get_preview_address' ], 10, 1 );
 			add_filter( 'woocommerce_email_preview_placeholders', [ $this, 'get_preview_placeholders' ], 10, 1 );
-
-			/**
-			 * Please don't move. The call to the parent constructor here is intentional. It allows this class to merge
-			 * its placeholders with the parent's and prefix the settings with its own identifier.
-			 * Moving this call to the top of the constructor will cause the placeholders to stop working and
-			 * lose the woocommerce_payments_ prefix in the settings.
-			 *
-			 * @see: WC_Email::_construct()
-			*/
-			parent::__construct();
 		}
 
 		/**
@@ -338,11 +343,13 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 */
 		public function compliance_details( array $charge, bool $plain_text ) {
 			// Ensure we have all required data for preview.
-			$charge = $this->get_preview_charge( $charge );
+			$charge                 = $this->get_preview_charge( $charge );
+			$payment_method_details = $charge['payment_method_details']['card_present'] ?? [];
 
 			$template_data = [
-				'payment_method_details' => $charge['payment_method_details']['card_present'] ?? [],
-				'receipt'                => $charge['payment_method_details']['card_present']['receipt'] ?? [],
+				'payment_method_details'      => $payment_method_details,
+				'payment_method_display_name' => WC_Payments_Utils::get_terminal_card_display_name( $payment_method_details ),
+				'receipt'                     => $payment_method_details['receipt'] ?? [],
 			];
 
 			if ( $plain_text ) {
@@ -374,4 +381,6 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 
 endif;
 
-return new WC_Payments_Email_IPP_Receipt();
+$email = new WC_Payments_Email_IPP_Receipt();
+$email->init_hooks();
+return $email;

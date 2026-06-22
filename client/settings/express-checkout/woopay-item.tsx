@@ -15,7 +15,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 import { WooIcon } from 'wcpay/payment-methods-icons';
@@ -25,10 +25,8 @@ import PaymentMethodItem from 'wcpay/components/payment-method-item';
 const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	const [
-		isWooPayEnabled,
-		updateIsWooPayEnabled,
-	] = useWooPayEnabledSettings();
+	const [ isWooPayEnabled, updateIsWooPayEnabled ] =
+		useWooPayEnabledSettings();
 
 	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
 

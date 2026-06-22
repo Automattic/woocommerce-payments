@@ -37,26 +37,6 @@
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8434 is closed. -->
 		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped" />
 		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
-
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
-		<exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable" />
-
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8437 is clsoed. -->
-		<exclude name="WooCommerce.Commenting.CommentHooks.MissingHookComment" />
-		<exclude name="WooCommerce.Commenting.CommentHooks.MissingSinceComment" />
-		<exclude name="WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle" />
-
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8438 is closed. -->
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.boolFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.elseFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.arrayFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.classFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.matchFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.returnFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.functionFound" />
 	</rule>
 
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
@@ -69,6 +49,29 @@
 		<exclude-pattern>templates/emails/</exclude-pattern>
 		<exclude-pattern>includes/in-person-payments/templates/</exclude-pattern>
 		<exclude-pattern>includes/compat/subscriptions/emails</exclude-pattern>
+	</rule>
+
+	<!--
+		The UnusedVariable sniff is enabled repo-wide. The paths below stay excluded
+		because they are out of scope for https://github.com/Automattic/woocommerce-payments/issues/8436
+		(POC config classes) or were not enumerated in its sub-issues (#8653 / #8654 / #8655).
+		Remaining cleanup is tracked by #8436; remove a pattern once its files are fixed.
+	-->
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable">
+		<!-- POC payment-method definition classes; not part of #8436. -->
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+
+		<!-- includes/ + src/ files not listed in https://github.com/Automattic/woocommerce-payments/issues/8654; tracked by #8436. -->
+		<exclude-pattern>includes/admin/class-wc-rest-payments-pm-promotions-controller.php</exclude-pattern>
+		<exclude-pattern>includes/admin/class-wc-rest-payments-settings-controller.php</exclude-pattern>
+		<exclude-pattern>includes/class-wc-payment-token-wcpay-amazon-pay.php</exclude-pattern>
+		<exclude-pattern>includes/class-wc-payments-account.php</exclude-pattern>
+		<exclude-pattern>includes/class-wc-payments-payment-request-session-handler.php</exclude-pattern>
+		<exclude-pattern>includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php</exclude-pattern>
+		<exclude-pattern>includes/subscriptions/class-wc-payments-invoice-service.php</exclude-pattern>
+		<exclude-pattern>includes/subscriptions/class-wc-payments-subscriptions-disabler.php</exclude-pattern>
+		<exclude-pattern>includes/woopay/class-woopay-session.php</exclude-pattern>
+		<exclude-pattern>src/Internal/Abilities/Domain/</exclude-pattern>
 	</rule>
 
 	<!-- Disallow long array syntax -->

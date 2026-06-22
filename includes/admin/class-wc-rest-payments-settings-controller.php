@@ -28,6 +28,23 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	protected $rest_base = 'payments/settings';
 
 	/**
+	 * Settings fields whose server errors the client renders inline, next to the field.
+	 *
+	 * Server errors are returned in the `rest_invalid_param` envelope only for these keys;
+	 * all other fields keep the legacy `server_error` shape, which the client shows as a
+	 * notice. Keep in sync with the components reading `savingError.data.details` in
+	 * `client/settings/`.
+	 *
+	 * @var string[]
+	 */
+	const INLINE_ERROR_SETTING_KEYS = [
+		'account_statement_descriptor',
+		'account_business_support_email',
+		'account_business_support_phone',
+		'account_communications_email',
+	];
+
+	/**
 	 * Instance of WC_Payment_Gateway_WCPay.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -619,7 +636,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$update_account_result = $this->update_account( $request );
 
 		if ( is_wp_error( $update_account_result ) ) {
-			return new WP_REST_Response( [ 'server_error' => $update_account_result->get_error_message() ], 400 );
+			return $this->build_server_error_response( $update_account_result );
 		}
 
 		// Sync the store setup with the Transact Platform.
@@ -913,7 +930,95 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			delete_option( 'wcpay_next_deposit_notice_dismissed' );
 		}
 
-		return $this->wcpay_gateway->update_account_settings( $updated_fields );
+		$result = $this->wcpay_gateway->update_account_settings( $updated_fields );
+
+		if ( is_wp_error( $result ) || empty( $result ) || ! is_array( $result ) ) {
+			return $result;
+		}
+
+		foreach ( $result as $account_key => $value ) {
+			$this->wcpay_gateway->update_cached_account_data( $account_key, $value );
+		}
+
+		if ( array_key_exists( 'statement_descriptor', $result ) ) {
+			delete_option( \WCPay\Internal\Service\DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Build the REST response for a server-side account update failure.
+	 *
+	 * When the server error identifies a specific request field that maps to one of our
+	 * settings fields, the response mirrors the WP REST `rest_invalid_param` envelope so the
+	 * settings UI can render the message inline next to the field. Otherwise, the legacy
+	 * `server_error` shape is returned and the message is shown as a generic notice.
+	 *
+	 * @param WP_Error $error The error returned by update_account.
+	 *
+	 * @return WP_REST_Response
+	 */
+	private function build_server_error_response( WP_Error $error ): WP_REST_Response {
+		$message     = $error->get_error_message();
+		$error_code  = $error->get_error_code();
+		$error_data  = $error->get_error_data();
+		$setting_key = isset( $error_data['param'] )
+			? $this->map_error_param_to_setting_key( $error_data['param'] )
+			: null;
+
+		if ( null === $setting_key ) {
+			return new WP_REST_Response( [ 'server_error' => $message ], 400 );
+		}
+
+		return new WP_REST_Response(
+			[
+				'code'    => 'wcpay_server_error',
+				/* translators: %s: setting field key, e.g. account_business_support_phone */
+				'message' => sprintf( __( 'Invalid parameter(s): %s', 'woocommerce-payments' ), $setting_key ),
+				'data'    => [
+					'status'  => 400,
+					'params'  => [ $setting_key => $message ],
+					'details' => [
+						$setting_key => [
+							'code'    => $error_code,
+							'message' => $message,
+							'data'    => null,
+						],
+					],
+				],
+			],
+			400
+		);
+	}
+
+	/**
+	 * Map a server error `param` to the corresponding WooPayments setting key.
+	 *
+	 * The server identifies the offending field using the same account field names this
+	 * client sends in the settings update request — the values of
+	 * {@see WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING} — so an exact reverse
+	 * lookup resolves it. Only fields the client renders inline
+	 * ({@see self::INLINE_ERROR_SETTING_KEYS}) are returned — for any other field the
+	 * inline envelope would suppress the notice without anything rendering the message,
+	 * and it would be lost.
+	 *
+	 * @param string|null $param Field name from the server error response.
+	 *
+	 * @return string|null Matching setting key, or null if no mapping is found.
+	 */
+	private function map_error_param_to_setting_key( ?string $param ): ?string {
+		if ( null === $param || '' === $param ) {
+			return null;
+		}
+
+		$setting_key = array_search( $param, WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING, true );
+
+		if ( false === $setting_key || ! in_array( $setting_key, self::INLINE_ERROR_SETTING_KEYS, true ) ) {
+			return null;
+		}
+
+		return $setting_key;
 	}
 
 	/**

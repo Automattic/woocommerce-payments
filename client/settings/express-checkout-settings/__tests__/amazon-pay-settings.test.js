@@ -13,10 +13,10 @@ import {
 	useAmazonPayEnabledSettings,
 	useAmazonPayLocations,
 	useExpressCheckoutInPaymentMethodsEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useAmazonPayEnabledSettings: jest.fn(),
 	useAmazonPayLocations: jest.fn(),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'medium' ] ),

@@ -10,6 +10,7 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 jest.mock( 'lodash', () => ( {
+	...jest.requireActual( 'lodash' ),
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
 
@@ -18,10 +19,24 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 	default: jest.fn( () => Promise.resolve() ),
 } ) );
 
+// A non-compromised page has the legit Stripe.js tag, so the assertion passes.
+const addStripeScript = () => {
+	const script = document.createElement( 'script' );
+	script.id = 'stripe-js';
+	script.src = 'https://js.stripe.com/v3/?ver=3.0';
+	document.head.appendChild( script );
+};
+
+const clearScripts = () =>
+	document.head
+		.querySelectorAll( 'script' )
+		.forEach( ( script ) => script.remove() );
+
 describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
 		apiFetch.mockReset();
+		addStripeScript();
 		// ensuring jQuery is available globally.
 		global.$ = global.jQuery = $;
 		// ensuring that `callback` is immediately invoked on document.ready.
@@ -122,6 +137,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	afterEach( () => {
 		delete global.Stripe;
+		clearScripts();
 	} );
 
 	it( 'should not initialize Stripe if there is no publishable key', async () => {
@@ -579,7 +595,9 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		);
 	} );
 
-	it( 'should use subscription mode for subscription products', async () => {
+	it( 'should use setupFutureUsage for subscription products', async () => {
+		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+		global.wcpayExpressCheckoutParams.has_subscription = true;
 		global.wcpayExpressCheckoutParams.product.product_type = 'subscription';
 
 		await jest.isolateModulesAsync( async () => {
@@ -589,16 +607,18 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect( global.Stripe ).toHaveBeenCalled();
 		expect( stripeInstance.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				mode: 'subscription',
+				mode: 'payment',
 				amount: 1100,
 				currency: 'usd',
 				paymentMethodTypes: [ 'card' ],
+				setupFutureUsage: 'off_session',
 			} )
 		);
 	} );
 
-	it( 'should use subscription mode for variable-subscription products', async () => {
+	it( 'should use setupFutureUsage for variable-subscription products', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+		global.wcpayExpressCheckoutParams.has_subscription = true;
 		global.wcpayExpressCheckoutParams.product.product_type =
 			'variable-subscription';
 
@@ -609,12 +629,13 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect( global.Stripe ).toHaveBeenCalled();
 		expect( stripeInstance.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				mode: 'subscription',
+				mode: 'payment',
+				setupFutureUsage: 'off_session',
 			} )
 		);
 	} );
 
-	it( 'should use subscription mode when has_subscription is true', async () => {
+	it( 'should use setupFutureUsage when has_subscription is true', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
 		global.wcpayExpressCheckoutParams.has_subscription = true;
@@ -626,7 +647,8 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect( global.Stripe ).toHaveBeenCalled();
 		expect( stripeInstance.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				mode: 'subscription',
+				mode: 'payment',
+				setupFutureUsage: 'off_session',
 			} )
 		);
 	} );

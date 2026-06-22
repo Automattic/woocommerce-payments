@@ -44,6 +44,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->http_client_stub->method( 'get_connected_user_data' )->willReturn( [ 'ID' => 1234 ] );
 
 		$this->tracker = new WooPay_Tracker( $this->http_client_stub );
+		$this->tracker->init_hooks();
 
 		$this->cache      = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
@@ -130,11 +131,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Utility method to access protected methods for testing.
 	 */
-	protected function invoke_method( &$object, $method_name, array $parameters = [] ) {
-		$reflection = new \ReflectionClass( get_class( $object ) );
+	protected function invoke_method( &$instance, $method_name, array $parameters = [] ) {
+		$reflection = new \ReflectionClass( get_class( $instance ) );
 		$method     = $reflection->getMethod( $method_name );
 		$method->setAccessible( true );
-		return $method->invokeArgs( $object, $parameters );
+		return $method->invokeArgs( $instance, $parameters );
 	}
 
 	/**
