@@ -16,9 +16,10 @@ const addScript = ( attrs: Record< string, string > ): void => {
 
 describe( 'verifyStripeJsOrigin', () => {
 	afterEach( () => {
+		// Remove scripts and any non-script element planted with the handle id.
 		document.head
-			.querySelectorAll( 'script' )
-			.forEach( ( script ) => script.remove() );
+			.querySelectorAll( 'script, #stripe-js' )
+			.forEach( ( el ) => el.remove() );
 	} );
 
 	it( 'accepts the canonical WordPress handle tag', () => {
@@ -123,6 +124,53 @@ describe( 'verifyStripeJsOrigin', () => {
 
 		expect( result.ok ).toBe( false );
 		expect( result.detectedOrigin ).toBe( 'https://js.evil.example' );
+	} );
+
+	it( 'ignores a non-script element sharing the stripe-js id', () => {
+		// A planted <div id="stripe-js"> (inserted first) must not divert the
+		// lookup: the tag-qualified `script#stripe-js` selector skips it and
+		// still reads the real repointed handle.
+		const div = document.createElement( 'div' );
+		div.id = 'stripe-js';
+		document.head.appendChild( div );
+		addScript( {
+			id: 'stripe-js',
+			src: 'https://js.evil.example/v3/?ver=3.0',
+		} );
+
+		const result = verifyStripeJsOrigin();
+
+		expect( result.ok ).toBe( false );
+		expect( result.detectedOrigin ).toBe( 'https://js.evil.example' );
+	} );
+
+	it( 'fails closed when only a non-script #stripe-js exists and no Stripe.js tag is present', () => {
+		// No real handle and nothing for the fallback to find: report "no tag"
+		// rather than trusting the planted element.
+		const div = document.createElement( 'div' );
+		div.id = 'stripe-js';
+		document.head.appendChild( div );
+
+		expect( verifyStripeJsOrigin() ).toEqual( {
+			ok: false,
+			detectedSrc: null,
+			detectedOrigin: null,
+		} );
+	} );
+
+	it( 'falls back to a genuine js.stripe.com tag when only a non-script #stripe-js exists', () => {
+		// With no real handle, the presence-check fallback accepts a genuine
+		// js.stripe.com tag loaded by another path. This intentionally does NOT
+		// fail closed: a non-script element sharing the id is not a tampered
+		// handle, and an attacker who can also reassign window.Stripe bypasses any
+		// tag check (the acknowledged limitation). We assert tag origin, not the
+		// Stripe object's identity.
+		const div = document.createElement( 'div' );
+		div.id = 'stripe-js';
+		document.head.appendChild( div );
+		addScript( { src: 'https://js.stripe.com/v3/' } );
+
+		expect( verifyStripeJsOrigin().ok ).toBe( true );
 	} );
 } );
 

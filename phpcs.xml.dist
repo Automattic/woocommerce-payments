@@ -52,45 +52,12 @@
 	</rule>
 
 	<!--
-		The UnusedVariable sniff is being re-enabled incrementally as the sub-issues of
-		https://github.com/Automattic/woocommerce-payments/issues/8436 are completed.
-		Each path below is excluded either because it is out of scope for #8436 or because
-		its sub-issue has not landed yet. Remove a pattern once its files are fixed.
+		The UnusedVariable sniff is enabled repo-wide. The only path still excluded is the
+		POC payment-method definition classes, which are out of scope for
+		https://github.com/Automattic/woocommerce-payments/issues/8436.
 	-->
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable">
-		<!-- POC payment-method definition classes; not part of #8436. -->
 		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
-		<exclude-pattern>tests/unit/payment-methods/Configs/</exclude-pattern>
-
-		<!-- Pending https://github.com/Automattic/woocommerce-payments/issues/8655. -->
-		<exclude-pattern>includes/multi-currency/</exclude-pattern>
-
-		<!-- includes/ + src/ files not listed in https://github.com/Automattic/woocommerce-payments/issues/8654; tracked by #8436. -->
-		<exclude-pattern>includes/admin/class-wc-rest-payments-pm-promotions-controller.php</exclude-pattern>
-		<exclude-pattern>includes/admin/class-wc-rest-payments-settings-controller.php</exclude-pattern>
-		<exclude-pattern>includes/class-wc-payment-token-wcpay-amazon-pay.php</exclude-pattern>
-		<exclude-pattern>includes/class-wc-payments-account.php</exclude-pattern>
-		<exclude-pattern>includes/class-wc-payments-payment-request-session-handler.php</exclude-pattern>
-		<exclude-pattern>includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php</exclude-pattern>
-		<exclude-pattern>includes/subscriptions/class-wc-payments-invoice-service.php</exclude-pattern>
-		<exclude-pattern>includes/subscriptions/class-wc-payments-subscriptions-disabler.php</exclude-pattern>
-		<exclude-pattern>includes/woopay/class-woopay-session.php</exclude-pattern>
-		<exclude-pattern>src/Internal/Abilities/Domain/</exclude-pattern>
-
-		<!-- Test files not listed in https://github.com/Automattic/woocommerce-payments/issues/8653; tracked by #8436. -->
-		<exclude-pattern>tests/WCPAY_UnitTestCase.php</exclude-pattern>
-		<exclude-pattern>tests/unit/bootstrap.php</exclude-pattern>
-		<exclude-pattern>tests/unit/admin/test-class-wc-rest-payments-tos-controller.php</exclude-pattern>
-		<exclude-pattern>tests/unit/helpers/class-wc-subscriptions-change-payment-gateway.php</exclude-pattern>
-		<exclude-pattern>tests/unit/multi-currency/test-class-frontend-currencies.php</exclude-pattern>
-		<exclude-pattern>tests/unit/multi-currency/test-class-frontend-prices.php</exclude-pattern>
-		<exclude-pattern>tests/unit/src/Internal/LoggerContextTest.php</exclude-pattern>
-		<exclude-pattern>tests/unit/subscriptions/test-class-wc-payments-subscriptions-disabler.php</exclude-pattern>
-		<exclude-pattern>tests/unit/test-class-wc-payments-non-reusable-payment-methods-integration.php</exclude-pattern>
-		<exclude-pattern>tests/unit/test-class-wc-payments-order-service.php</exclude-pattern>
-		<exclude-pattern>tests/unit/test-class-wc-payments-styles-cache.php</exclude-pattern>
-		<exclude-pattern>tests/unit/test-class-wc-payments-subscription-service-creation-logic.php</exclude-pattern>
-		<exclude-pattern>tests/unit/wc-payment-api/test-class-wc-payments-api-client.php</exclude-pattern>
 	</rule>
 
 	<!-- Disallow long array syntax -->

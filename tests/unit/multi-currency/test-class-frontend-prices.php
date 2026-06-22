@@ -586,7 +586,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency
 			->method( 'get_raw_conversion' )
 			->willReturnCallback(
-				function ( $price, $from_currency, $to_currency ) {
+				function ( $price, $_unused_from_currency, $_unused_to_currency ) {
 					return (float) $price * 0.75;
 				}
 			);
