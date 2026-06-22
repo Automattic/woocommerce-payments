@@ -43,17 +43,17 @@ class CachingEnvironment {
 	];
 
 	/**
-	 * Managed/edge hosting signals, keyed by a stable provider slug.
+	 * Managed-host signals, keyed by a stable provider slug.
 	 *
-	 * These hosts provide full-page or edge caching at the platform level, so the constants
-	 * they define are a high-confidence signal that anonymous responses are cached.
+	 * Intentionally limited to hosts whose platform full-page caching has been verified in practice
+	 * and whose detection constants are reliable. Other managed or edge hosts cache at the server or
+	 * edge level and expose no dependable PHP signal; they are expected to declare themselves through
+	 * the wcpay_multi_currency_page_caching_active filter instead of being guessed at here.
 	 *
 	 * @var array
 	 */
 	const MANAGED_HOST_SIGNALS = [
 		'wpcom_atomic' => [ 'IS_ATOMIC', 'ATOMIC_SITE_ID' ],
-		'wp_engine'    => [ 'WPE_APIKEY' ],
-		'kinsta'       => [ 'KINSTA_CACHE_ZONE' ],
 		'pressable'    => [ 'IS_PRESSABLE' ],
 	];
 
