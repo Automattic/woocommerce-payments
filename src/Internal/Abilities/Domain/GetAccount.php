@@ -72,11 +72,11 @@ class GetAccount implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Accounts_Controller::get_account_data()
 	 *
-	 * @param mixed $input Unused (zero-arg ability).
+	 * @param mixed $_unused_input Unused (zero-arg ability).
 	 * @return array|\WP_Error Account data, or `wcpay_not_initialized` WP_Error
 	 *                        when the WooPayments account is not initialized.
 	 */
-	public static function execute( $input = null ) {
+	public static function execute( $_unused_input = null ) {
 		$result = AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/accounts' );
 
 		// `false` from the controller (unwrapped to `[]` here) means WooPayments
