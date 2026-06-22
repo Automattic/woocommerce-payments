@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Preserve the express checkouts a merchant enabled in a sandbox account (such as Link by Stripe) when transitioning to a live account, instead of resetting them, while keeping Link and WooPay mutually exclusive.

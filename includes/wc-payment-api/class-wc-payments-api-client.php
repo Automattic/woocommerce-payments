@@ -959,12 +959,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Create a connection token.
 	 *
-	 * @param WP_REST_Request $request request object received.
+	 * @param WP_REST_Request $_unused_request request object received.
 	 *
 	 * @return array
 	 * @throws API_Exception - If request throws.
 	 */
-	public function create_token( $request ) {
+	public function create_token( $_unused_request ) {
 		return $this->request( [], self::CONN_TOKENS_API, self::POST );
 	}
 
@@ -2729,7 +2729,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			Logger::info(
 				sprintf( 'API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
 				[
-					'request' => $request_args,
+					'request' => array_merge( $request_args, [ 'url' => $redacted_url ] ),
 					null !== $body ? [ 'body' => $redacted_params ] : [],
 				]
 			);

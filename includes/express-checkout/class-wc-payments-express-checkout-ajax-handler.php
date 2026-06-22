@@ -85,7 +85,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		$product_type = $product->get_type();
 
-		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity );
+		$is_add_to_cart_valid = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 
 		if ( ! $is_add_to_cart_valid ) {
 			// Some extensions error messages needs to be

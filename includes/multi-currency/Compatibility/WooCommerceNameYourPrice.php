@@ -78,11 +78,11 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 * This prevevents USD > EUR > USD style conversions and potential rounding problems.
 	 *
 	 * @param array $cart_item Cart item array.
-	 * @param array $values Cart item values e.g. quantity and product_id.
+	 * @param array $_unused_values Cart item values e.g. quantity and product_id.
 	 *
 	 * @return array
 	 */
-	public function convert_cart_currency( $cart_item, $values ) {
+	public function convert_cart_currency( $cart_item, $_unused_values ) {
 
 		if ( function_exists( 'WC_Name_Your_Price' ) && isset( $cart_item['nyp_original'] ) && isset( $cart_item['nyp_currency'] ) ) {
 
@@ -141,11 +141,11 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 * Add currency to cart edit link.
 	 *
 	 * @param array $args      The cart args.
-	 * @param array $cart_item The current cart item.
+	 * @param array $_unused_cart_item The current cart item.
 	 *
 	 * @return array
 	 */
-	public function edit_in_cart_args( $args, $cart_item ) {
+	public function edit_in_cart_args( $args, $_unused_cart_item ) {
 		$args['nyp_currency'] = $this->multi_currency->get_selected_currency()->get_code();
 		return $args;
 	}

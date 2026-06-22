@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Harden the client-side Stripe.js origin assertion: ignore non-script elements sharing the Stripe.js script id, and make the blocked-payment error message translatable.

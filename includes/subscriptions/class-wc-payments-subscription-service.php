@@ -820,6 +820,13 @@ class WC_Payments_Subscription_Service {
 			$data['billing_cycle_anchor'] = $subscription->get_time( 'next_payment' );
 		}
 
+		/**
+		 * Filters the subscription data prepared for creating a WCPay subscription.
+		 *
+		 * @since 3.2.0
+		 *
+		 * @param array $data The prepared subscription data.
+		 */
 		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
 	}
 

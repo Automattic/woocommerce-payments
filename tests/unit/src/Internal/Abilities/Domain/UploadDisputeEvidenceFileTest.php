@@ -86,6 +86,26 @@ class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_file_too_large', $result->get_error_code() );
 	}
 
+	public function test_execute_sanitizes_file_name_path_traversal(): void {
+		$contents     = base64_encode( 'file-bytes' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		$mock_service = $this->createMock( FileService::class );
+		$mock_service->expects( $this->once() )->method( 'upload_evidence_file' )
+			->with( $contents, 'evil.pdf', 'application/pdf', 'dispute_evidence' )
+			->willReturn( [ 'id' => 'file_1' ] );
+		wcpay_get_test_container()->replace( FileService::class, $mock_service );
+		try {
+			UploadDisputeEvidenceFile::execute(
+				[
+					'file_name'     => '../../evil.pdf',
+					'file_type'     => 'application/pdf',
+					'file_contents' => $contents,
+				]
+			);
+		} finally {
+			wcpay_get_test_container()->reset_all_replacements();
+		}
+	}
+
 	public function test_execute_delegates_to_file_service(): void {
 		$contents     = base64_encode( 'file-bytes' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		$mock_service = $this->createMock( FileService::class );
