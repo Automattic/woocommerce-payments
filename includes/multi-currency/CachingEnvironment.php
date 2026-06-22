@@ -23,11 +23,14 @@ class CachingEnvironment {
 	/**
 	 * Page-cache plugin signals, keyed by a stable provider slug.
 	 *
-	 * Limited to plugins that cache *without* the advanced-cache.php drop-in. Server-mode LiteSpeed
-	 * caches at the web-server level and installs no drop-in, so the LiteSpeed Cache plugin constant
-	 * is the only reliable PHP signal for it. Plugins that do install the drop-in (WP Rocket, W3 Total
-	 * Cache, WP Super Cache, Cache Enabler, Comet Cache, WP Fastest Cache, Hummingbird, etc.) are
-	 * already caught generically by has_page_cache_dropin(), so they need no per-plugin entry here.
+	 * Limited to plugins that page-cache *without* installing the advanced-cache.php drop-in. The
+	 * LiteSpeed Cache plugin caches through the LiteSpeed web server rather than a PHP drop-in, so
+	 * has_page_cache_dropin() can't see it and its LSCWP_V constant is the only reliable signal.
+	 * Plugins that do install the drop-in (WP Rocket, W3 Total Cache, WP Super Cache, Cache Enabler,
+	 * Comet Cache, WP Fastest Cache, Hummingbird, etc.) are already caught generically there, so they
+	 * need no per-plugin entry here.
+	 *
+	 * @see https://docs.litespeedtech.com/lscache/lscwp/ LSCWP caches via the LiteSpeed server, not a PHP drop-in.
 	 *
 	 * @var array
 	 */
