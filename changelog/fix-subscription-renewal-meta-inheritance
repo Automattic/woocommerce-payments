@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent renewal orders from inheriting stale WCPay intent, charge, refund, fee, and mode meta from the parent order.
