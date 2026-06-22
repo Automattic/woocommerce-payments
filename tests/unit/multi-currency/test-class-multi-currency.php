@@ -148,6 +148,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
 		delete_option( 'wcpay_multi_currency_rendering_mode' );
+		delete_option( 'wcpay_multi_currency_store_currency' );
 
 		parent::tear_down();
 	}
@@ -355,6 +356,38 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_selected_currency_returns_default_currency_for_empty_session_and_user() {
 		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
+	public function test_get_selected_currency_does_not_trigger_null_offset_deprecation_without_stored_currency() {
+		// Regression test for WOOPMNT-6238. With no currency stored for the user or
+		// session, the resolved currency code is null. Subscripting the enabled
+		// currencies array with that null key is deprecated as of PHP 8.5. This suite
+		// does not convert deprecations to exceptions, so assert the absence explicitly.
+		$null_offset_deprecations = [];
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Scoped handler asserting the absence of a deprecation; restored in finally below.
+		set_error_handler(
+			function ( $errno, $errstr ) use ( &$null_offset_deprecations ) {
+				if ( false !== strpos( $errstr, 'null as an array offset' ) ) {
+					$null_offset_deprecations[] = $errstr;
+					return true;
+				}
+				return false;
+			},
+			E_DEPRECATED
+		);
+
+		try {
+			$selected_code = $this->multi_currency->get_selected_currency()->get_code();
+		} finally {
+			restore_error_handler();
+		}
+
+		$this->assertSame( get_woocommerce_currency(), $selected_code );
+		$this->assertSame(
+			[],
+			$null_offset_deprecations,
+			'get_selected_currency() must not use null as an array offset when no currency is stored.'
+		);
 	}
 
 	public function test_get_selected_currency_returns_default_currency_for_invalid_session_currency() {
@@ -570,7 +603,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency();
 
 		// Simulate an active session (e.g. after add-to-cart) by setting the session cookie.
-		$cookie_name             = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
+		$cookie_name             = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 		$_COOKIE[ $cookie_name ] = 'test-session-id';
 
 		try {
@@ -861,7 +894,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			->method( 'get_or_add' )
 			->with( MultiCurrencyCacheInterface::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturnCallback(
-				function ( $key, $generator, $validator ) use ( &$get_or_add_call_count ) {
+				function ( $key, $generator, $_unused_validator ) use ( &$get_or_add_call_count ) {
 					if ( 1 === $get_or_add_call_count ) {
 						// Call that happens inside the init function in MultiCurrency, still use cached data.
 						$get_or_add_call_count++;
@@ -1002,6 +1035,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$expected = '<div class="widget ">		<form>
 						<select
 				name="currency"
+				class="js-woopayments-currency-switcher"
 				aria-label=""
 				onchange="this.form.submit()"
 			>
@@ -1603,6 +1637,59 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_post_meta( $order_id, '_order_currency', $currency );
 
 		return $order_id;
+	}
+
+	public function test_init_invalidates_cache_when_store_currency_changes() {
+		// Simulate previously known currency was USD, but store currency is now EUR.
+		update_option( 'wcpay_multi_currency_store_currency', 'USD' );
+
+		// Clear filters from prior init (FrontendCurrencies adds one at priority 900).
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => 'EUR' );
+
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$mock_cache->expects( $this->once() )
+			->method( 'delete' )
+			->with( MultiCurrencyCacheInterface::CURRENCIES_KEY );
+
+		$this->init_multi_currency( null, true, null, $mock_cache );
+
+		// Verify the stored currency was updated to the new value.
+		$this->assertSame( 'EUR', get_option( 'wcpay_multi_currency_store_currency' ) );
+	}
+
+	public function test_init_does_not_invalidate_cache_when_store_currency_unchanged() {
+		// Store currency matches the current WooCommerce currency (both USD).
+		update_option( 'wcpay_multi_currency_store_currency', 'USD' );
+
+		// Clear filters from prior init to ensure get_woocommerce_currency() returns USD.
+		remove_all_filters( 'woocommerce_currency' );
+
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$mock_cache->expects( $this->never() )
+			->method( 'delete' );
+
+		$this->init_multi_currency( null, true, null, $mock_cache );
+	}
+
+	public function test_init_does_not_invalidate_cache_on_first_install() {
+		// No store_currency option exists yet (first-time install).
+		delete_option( 'wcpay_multi_currency_store_currency' );
+
+		// Clear filters from prior init to ensure get_woocommerce_currency() returns USD.
+		remove_all_filters( 'woocommerce_currency' );
+
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$mock_cache->expects( $this->never() )
+			->method( 'delete' );
+
+		$this->init_multi_currency( null, true, null, $mock_cache );
+
+		// Verify the option was set for the first time (not treated as a change).
+		$this->assertSame( 'USD', get_option( 'wcpay_multi_currency_store_currency' ) );
 	}
 
 	public function test_init_returns_early_when_store_currency_not_in_available_wc_currencies() {

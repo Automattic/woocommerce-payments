@@ -20,7 +20,9 @@ interface OrderStatusConfirmationModalProps {
 	onCancel: () => void;
 }
 
-const OrderStatusConfirmationModal: React.FunctionComponent< OrderStatusConfirmationModalProps > = ( {
+const OrderStatusConfirmationModal: React.FunctionComponent<
+	OrderStatusConfirmationModalProps
+> = ( {
 	title,
 	confirmButtonText,
 	cancelButtonText,

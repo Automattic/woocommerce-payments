@@ -59,7 +59,14 @@ class WC_Payments_Webhook_Reliability_Service {
 		$this->payments_api_client        = $payments_api_client;
 		$this->action_scheduler_service   = $action_scheduler_service;
 		$this->webhook_processing_service = $webhook_processing_service;
+	}
 
+	/**
+	 * Register the hooks for this service.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		// Note: Sometimes the `woocommerce_payments_account_refreshed` hook is ran before ActionScheduler is initialized.
 		// In that case, we will not be able to schedule jobs. We will just ignore it.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );

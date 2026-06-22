@@ -22,7 +22,10 @@ import {
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'wcpay/data';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
 import { Transaction } from 'wcpay/data/transactions/hooks';
 import OrderLink from 'wcpay/components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
@@ -48,7 +51,7 @@ import DownloadButton from 'wcpay/components/download-button';
 import {
 	getTransactionsCSVRequestURL,
 	transactionsDownloadEndpoint,
-} from '../../data/transactions/resolvers';
+} from 'wcpay/data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
@@ -295,21 +298,18 @@ export const TransactionsList = (
 		getQuery(),
 		props.depositId ?? ''
 	);
-	const {
-		transactionsSummary,
-		isLoading: isSummaryLoading,
-	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
+	const { transactionsSummary, isLoading: isSummaryLoading } =
+		useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
 
 	const { createNotice } = useDispatch( 'core/notices' );
 
-	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
-		Column
-	>(
-		'wc_payments_transactions_hidden_columns',
-		getColumns( ! props.depositId, wcpaySettings.isSubscriptionsActive )
-	);
+	const { onColumnsChange, columnsToDisplay } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_transactions_hidden_columns',
+			getColumns( ! props.depositId, wcpaySettings.isSubscriptionsActive )
+		);
 
 	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {
@@ -321,12 +321,13 @@ export const TransactionsList = (
 			'&transaction_id=' +
 			txn.transaction_id +
 			'&transaction_type=' +
-			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
+			( txn.metadata && txn.metadata.charge_type === 'card_reader_fee'
 				? txn.metadata.charge_type
 				: txn.type );
 		const clickable =
-			'financing_payout' !== txn.type &&
-			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
+			txn.type !== 'financing_payout' &&
+			txn.type !== 'network_costs' &&
+			! ( txn.type === 'financing_paydown' && txn.charge_id === '' )
 				? ( children: React.ReactNode ) => (
 						<ClickableCell href={ detailsURL }>
 							{ children }
@@ -420,10 +421,12 @@ export const TransactionsList = (
 		};
 
 		const isFinancingType =
-			-1 !==
-			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
+			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type ) !==
+			-1;
 
 		const isReaderFee = dataType === 'card_reader_fee';
+
+		const isNetworkCosts = txn.type === 'network_costs';
 
 		const deposit = ! isFinancingType && (
 			<Deposit
@@ -470,7 +473,7 @@ export const TransactionsList = (
 			source: {
 				value: txn.source,
 				display:
-					! isFinancingType && ! isReaderFee ? (
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts ? (
 						clickable(
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
@@ -506,14 +509,14 @@ export const TransactionsList = (
 			customer_name: {
 				value: txn.customer_name,
 				display:
-					! isFinancingType && ! isReaderFee
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts
 						? customerName
 						: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
 				display:
-					! isFinancingType && ! isReaderFee
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts
 						? customerEmail
 						: __( 'N/A', 'woocommerce-payments' ),
 			},
@@ -705,17 +708,17 @@ export const TransactionsList = (
 		);
 	}
 
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	const isCurrencyFiltered = typeof getQuery().store_currency_is === 'string';
 
 	const isSingleCurrency =
-		2 > ( transactionsSummary.store_currencies || [] ).length;
+		( transactionsSummary.store_currencies || [] ).length < 2;
 
 	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isTransactionsSummaryDataLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		isSummaryLoading === false;
 
 	// Generate summary only if the data has been loaded
 	if ( isTransactionsSummaryDataLoaded ) {

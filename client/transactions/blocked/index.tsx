@@ -27,7 +27,7 @@ import {
 	FraudOutcomeTransaction,
 	useFraudOutcomeTransactions,
 	useFraudOutcomeTransactionsSummary,
-} from 'data/index';
+} from 'wcpay/data/transactions';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import {
@@ -38,7 +38,7 @@ import {
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
-import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
+import { getFraudOutcomeTransactionsExport } from 'wcpay/data/transactions/resolvers';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 export const BlockedList = (): JSX.Element => {
@@ -47,18 +47,18 @@ export const BlockedList = (): JSX.Element => {
 	const query = getQuery();
 
 	const columns = getBlockedListColumns();
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		Column
-	>( 'wc_payments_transactions_blocked_hidden_columns', columns );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_transactions_blocked_hidden_columns',
+			columns
+		);
 	const { isLoading, transactions } = useFraudOutcomeTransactions(
 		'block',
 		query
 	);
 
-	const {
-		transactionsSummary,
-		isLoading: isSummaryLoading,
-	} = useFraudOutcomeTransactionsSummary( 'block', query );
+	const { transactionsSummary, isLoading: isSummaryLoading } =
+		useFraudOutcomeTransactionsSummary( 'block', query );
 
 	const rows = transactions.map( ( transaction ) =>
 		getBlockedListColumnsStructure( transaction, columnsToDisplay )
@@ -71,7 +71,7 @@ export const BlockedList = (): JSX.Element => {
 	const isTransactionsSummaryLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		isSummaryLoading === false;
 	const totalRows = transactionsSummary.count || 0;
 
 	if ( isTransactionsSummaryLoaded ) {

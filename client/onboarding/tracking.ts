@@ -61,7 +61,7 @@ export const trackRedirected = ( isEmbedded = false ): void => {
  * Track a change in the embedded onboarding step.
  *
  * @param step The current step in the embedded onboarding flow. See:
- * https://docs.stripe.com/connect/supported-embedded-components/account-onboarding#step-values
+ *             https://docs.stripe.com/connect/supported-embedded-components/account-onboarding#step-values
  */
 export const trackEmbeddedStepChange = ( step: string ): void => {
 	const urlParams = new URLSearchParams( window.location.search );

@@ -25,6 +25,8 @@ use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Abilities\AbilitiesRegistrar;
+use WCPay\Internal\Service\DisputeReadinessService;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -32,6 +34,7 @@ use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\WC_Payments_Currency_Manager;
+use WCPay\Onboarding_Experiment;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -65,6 +68,13 @@ class WC_Payments {
 	 * @var WC_Payments_Account
 	 */
 	private static $account;
+
+	/**
+	 * Instance of WCPay\Onboarding_Experiment, created in init function.
+	 *
+	 * @var Onboarding_Experiment
+	 */
+	private static $onboarding_experiment;
 
 	/**
 	 * Instance of WC_Payments_Session_Service, created in init function.
@@ -326,6 +336,13 @@ class WC_Payments {
 	private static $fee_remediation;
 
 	/**
+	 * Instance of WC_Payments_Post_Kyc_Activation_Email_Service, created in init function
+	 *
+	 * @var WC_Payments_Post_Kyc_Activation_Email_Service
+	 */
+	private static $post_kyc_activation_email_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -398,6 +415,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
+		include_once __DIR__ . '/core/server/request/class-prepare-terminal-payment.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
 		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
@@ -415,6 +433,8 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-paginated.php';
 		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
+		include_once __DIR__ . '/core/server/request/class-get-transactions-summary.php';
+		include_once __DIR__ . '/core/server/request/class-get-reporting-balance-summary.php';
 		include_once __DIR__ . '/core/server/request/class-list-fraud-outcome-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
 		include_once __DIR__ . '/core/server/request/class-list-deposits.php';
@@ -437,6 +457,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-session-service.php';
 		include_once __DIR__ . '/class-wc-payments-redirect-service.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
+		include_once __DIR__ . '/class-wc-payments-post-kyc-activation-email-service.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-logger-context.php';
@@ -452,6 +473,8 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-ajax-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-store-api-extension.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-currency-guard.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -494,6 +517,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-wc-payments-onboarding-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
+		include_once __DIR__ . '/class-onboarding-experiment-abtest.php';
+		include_once __DIR__ . '/class-onboarding-experiment.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/class-wc-payments-settings-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
@@ -536,6 +561,9 @@ class WC_Payments {
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
+		// Register the post-KYC activation reminder email.
+		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_post_kyc_activation_email' ], 10 );
+
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
@@ -549,6 +577,7 @@ class WC_Payments {
 		self::$redirect_service                     = new WC_Payments_Redirect_Service( self::$api_client );
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache, self::$session_service );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$onboarding_service, self::$redirect_service );
+		self::$onboarding_experiment                = new Onboarding_Experiment();
 		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$session_service, self::$order_service );
 		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
@@ -569,6 +598,9 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$woopay_tracker->init_hooks();
+		self::$order_service->init_hooks();
+		self::$order_success_page->init_hooks();
 		self::$action_scheduler_service->init_hooks();
 		self::$account->init_hooks();
 		self::$fraud_service->init_hooks();
@@ -618,8 +650,12 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
+		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway, self::$order_service );
+		self::$post_kyc_activation_email_service->init_hooks();
+
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
+		self::$webhook_reliability_service->init_hooks();
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service, self::$token_service );
 
@@ -658,6 +694,25 @@ class WC_Payments {
 		// availability against the correct presentment currency, not the store's default currency.
 		add_action( 'init', [ __CLASS__, 'maybe_display_express_checkout_buttons' ], 15 );
 
+		// Surfaces the currency-filtered ECE method list on the cart response
+		// so the JS can re-evaluate paymentMethodTypes after currency resolves.
+		// `woocommerce_blocks_loaded` fires on plugins_loaded@10 (via
+		// `woocommerce_loaded`), before this method runs at plugins_loaded@11,
+		// so register immediately when it has already fired.
+		if ( did_action( 'woocommerce_blocks_loaded' ) ) {
+			self::register_express_checkout_store_api_extension();
+		} else {
+			add_action(
+				'woocommerce_blocks_loaded',
+				[ __CLASS__, 'register_express_checkout_store_api_extension' ]
+			);
+		}
+
+		// Rejects order placement if the cart's currency drifted away from
+		// the one the Element booted with — e.g. a multi-currency plugin
+		// flipped the cart on shipping address change inside the wallet sheet.
+		WC_Payments_Express_Checkout_Currency_Guard::register();
+
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 			$enabled_bnpl_payment_methods = array_intersect(
@@ -677,6 +732,7 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
+		add_filter( 'woocommerce_printable_order_receipt_css', [ __CLASS__, 'fit_card_brand_icon_for_printable_order_receipt' ], 10, 2 );
 
 		add_filter( 'woocommerce_address_providers', [ __CLASS__, 'add_address_provider' ] );
 		// Add note query support for source.
@@ -722,6 +778,8 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
+		AbilitiesRegistrar::init();
+
 		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';
@@ -731,6 +789,14 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/inline-script-payloads/class-woo-payments-payment-method-definitions.php';
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 		}
+
+		// Banner class is loaded on every request because its order-completion
+		// invalidation hooks must fire on storefront checkout and REST webhooks
+		// (both non-admin contexts). Admin-only hooks are registered separately
+		// further below, gated on is_admin() && manage_woocommerce.
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-banner.php';
+		$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account, self::$order_service );
+		$admin_banner->init_global_hooks();
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			$admin = new WC_Payments_Admin(
@@ -748,6 +814,8 @@ class WC_Payments {
 
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway(), self::get_account_service() );
 			$admin_settings->init_hooks();
+
+			$admin_banner->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -809,6 +877,17 @@ class WC_Payments {
 	 */
 	public static function add_ipp_emails( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
+		return $email_classes;
+	}
+
+	/**
+	 * Adds the post-KYC activation reminder email to WooCommerce emails.
+	 *
+	 * @param array $email_classes the email classes.
+	 * @return array
+	 */
+	public static function add_post_kyc_activation_email( array $email_classes ): array {
+		$email_classes['WC_Payments_Email_Post_Kyc_Activation'] = include __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
 	}
 
@@ -878,6 +957,24 @@ class WC_Payments {
 		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Fits WCPay card brand artwork in WooCommerce Core printable receipts.
+	 *
+	 * Core receipt card icons are rendered as CSS background images. Wide network marks such as eftpos
+	 * and Cartes Bancaires need contain sizing so they are visible in the remote receipts used by mobile.
+	 *
+	 * @param string   $css   Printable receipt CSS.
+	 * @param WC_Order $order Order instance.
+	 * @return string
+	 */
+	public static function fit_card_brand_icon_for_printable_order_receipt( string $css, $order ): string {
+		if ( ! $order instanceof WC_Order || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $order->get_payment_method() ) {
+			return $css;
+		}
+
+		return $css . "\n.card-icon {\n\tbackground-position: center;\n\tbackground-size: contain;\n}\n";
 	}
 
 	/**
@@ -991,13 +1088,19 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
-
-				// WPORG 2025 merchant feedback prompt user dismissed state.
-				'wc_payments_wporg_review_2025_prompt_dismissed',
+				// Reports DataViews per-tab persisted view. Expected shape:
+				// { fields: string[], perPage?: number, layout?: object }.
+				// Stored verbatim via WC Admin's user-data-fields filter, so
+				// any future PHP-side consumer MUST validate this shape
+				// before trusting it (it is user-writable JSON).
+				'wc_payments_reports_fees_view',
 
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',
 				'wc_payments_review_prompt_maybe_later',
+
+				// Reports feedback user preferences.
+				'wc_payments_reports_feedback_dismissed',
 			]
 		);
 	}
@@ -1062,6 +1165,13 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
+		/**
+		 * Allows replacing the API client class used for WooPayments API requests.
+		 *
+		 * @since 2.5.0
+		 *
+		 * @param string $api_client_class The fully-qualified API client class name. Must extend WC_Payments_API_Client.
+		 */
 		$api_client_class = apply_filters( 'wc_payments_api_client', WC_Payments_API_Client::class );
 		if ( ! class_exists( $api_client_class ) || ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
 			$api_client_class = WC_Payments_API_Client::class;
@@ -1103,6 +1213,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
+		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );
+		$dispute_readiness_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
 		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
@@ -1199,9 +1313,21 @@ class WC_Payments {
 		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
 		$reports_transactions_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
+		$reports_fees_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
+		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
+		$reports_balance_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
 		$reports_authorizations_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
@@ -1393,6 +1519,24 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the Onboarding_Experiment instance.
+	 *
+	 * @return Onboarding_Experiment
+	 */
+	public static function get_onboarding_experiment(): Onboarding_Experiment {
+		return self::$onboarding_experiment;
+	}
+
+	/**
+	 * Sets the Onboarding_Experiment instance.
+	 *
+	 * @param Onboarding_Experiment $onboarding_experiment The experiment instance.
+	 */
+	public static function set_onboarding_experiment( Onboarding_Experiment $onboarding_experiment ) {
+		self::$onboarding_experiment = $onboarding_experiment;
+	}
+
+	/**
 	 * Returns the WC_Payments_API_Client
 	 *
 	 * @return WC_Payments_API_Client API Client instance
@@ -1543,6 +1687,11 @@ class WC_Payments {
 	 */
 	public static function install_actions() {
 		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
+			/**
+			 * Fires after WooPayments has been updated to a newer version.
+			 *
+			 * @since 2.1.0
+			 */
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
@@ -1667,6 +1816,13 @@ class WC_Payments {
 	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
 	 */
 	public static function is_network_saved_cards_enabled() {
+		/**
+		 * Allows forcing WooPayments to use network-wide saved payment methods across a multisite network.
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param bool $enabled Whether the site should only use network-wide saved payment methods.
+		 */
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
 
@@ -1726,7 +1882,7 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
+			( new WooPay_Order_Status_Sync( self::$api_client, self::$account ) )->init_hooks();
 		}
 	}
 
@@ -1832,6 +1988,19 @@ class WC_Payments {
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $woopay_button_handler, $express_checkout_element_button_handler, $express_checkout_ajax_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
+	}
+
+	/**
+	 * Bootstraps the Store API cart extension on `woocommerce_blocks_loaded`.
+	 *
+	 * @return void
+	 */
+	public static function register_express_checkout_store_api_extension() {
+		$extension = new WC_Payments_Express_Checkout_Store_API_Extension(
+			self::get_express_checkout_helper(),
+			self::get_gateway()
+		);
+		$extension->init();
 	}
 
 	/**
@@ -1941,10 +2110,10 @@ class WC_Payments {
 	 * @param string $field The checkout field being filtered.
 	 * @param string $key The field key.
 	 * @param mixed  $args Field arguments.
-	 * @param string $value Field value.
+	 * @param string $_unused_value Field value.
 	 * @return string
 	 */
-	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) {
+	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $_unused_value ) {
 		$class = $args['class'][0];
 		if ( false === strpos( $class, 'woopay-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';
@@ -1999,7 +2168,7 @@ class WC_Payments {
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
-			new WooPay_Save_User();
+			( new WooPay_Save_User() )->init_hooks();
 		}
 	}
 
@@ -2051,8 +2220,11 @@ class WC_Payments {
 		/**
 		 * Used for unit tests only, as requests have dependencies, which are not publicly available in live mode.
 		 *
-		 * @param Request $request    Null, but if the filter returns a request, it will be used.
-		 * @param string  $class_name The name of the request class.
+		 * @since 5.6.0
+		 *
+		 * @param Request|null $request    Null by default; if a filter returns a request, it will be used.
+		 * @param string       $class_name The name of the request class.
+		 * @param mixed        $id         The item ID, if the request needs it.
 		 */
 		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
 		if ( $request instanceof Request ) {
@@ -2200,6 +2372,13 @@ class WC_Payments {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 
+		/**
+		 * Allows replacing the HTTP client used for WooPayments API requests.
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param WC_Payments_Http_Interface|null $http_class The HTTP client instance, or null to use the default.
+		 */
 		$http_class = apply_filters( 'wc_payments_http', null );
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {

@@ -15,9 +15,15 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 	use WC_Payments_Subscriptions_Utilities;
 
 	/**
-	 * Initialize the class and attach callbacks.
+	 * Initialize the class.
 	 */
 	public function __construct() {
+	}
+
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts_and_styles' ], 100 );
 		add_action( 'admin_footer', [ $this, 'output_notice_template' ] );
 	}

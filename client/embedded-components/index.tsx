@@ -52,7 +52,7 @@ interface EmbeddedAccountNotificationBannerProps
 /**
  * Hook to initialize Stripe Connect.
  *
- * @param isOnboarding - Whether this is an onboarding flow.
+ * @param isOnboarding   - Whether this is an onboarding flow.
  * @param onboardingData - Data required for onboarding.
  *
  * @return Returns stripeConnectInstance, error, and loading state.
@@ -61,10 +61,8 @@ const useInitializeStripe = (
 	isOnboarding: boolean,
 	onboardingData: OnboardingFields | null
 ) => {
-	const [
-		stripeConnectInstance,
-		setStripeConnectInstance,
-	] = useState< StripeConnectInstance | null >( null );
+	const [ stripeConnectInstance, setStripeConnectInstance ] =
+		useState< StripeConnectInstance | null >( null );
 	const [ initializationError, setInitializationError ] = useState<
 		string | null
 	>( null );
@@ -129,16 +127,18 @@ const useInitializeStripe = (
 /**
  * Embedded Stripe Account Onboarding Component.
  *
- * @param onboardingData - Data required for onboarding.
- * @param onExit - Callback function when the onboarding flow is exited.
- * @param onLoaderStart - Callback function when the onboarding loader starts.
- * @param onLoadError - Callback function when the onboarding load error occurs.
- * @param [onStepChange] - Callback function when the onboarding step changes.
+ * @param onboardingData                    - Data required for onboarding.
+ * @param onExit                            - Callback function when the onboarding flow is exited.
+ * @param onLoaderStart                     - Callback function when the onboarding loader starts.
+ * @param onLoadError                       - Callback function when the onboarding load error occurs.
+ * @param [onStepChange]                    - Callback function when the onboarding step changes.
  * @param [collectPayoutRequirements=false] - Whether to collect payout requirements.
  *
  * @return Rendered Account Onboarding component.
  */
-export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps > = ( {
+export const EmbeddedAccountOnboarding: React.FC<
+	EmbeddedAccountOnboardingProps
+> = ( {
 	onboardingData,
 	onExit,
 	onLoaderStart,
@@ -185,22 +185,17 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 /**
  * Embedded Stripe Notification Banner Component.
  *
- * @param onLoaderStart - Callback when Stripe component starts rendering.
- * @param onLoadError - Callback when Stripe component load error occurs.
+ * @param onLoaderStart         - Callback when Stripe component starts rendering.
+ * @param onLoadError           - Callback when Stripe component load error occurs.
  * @param onNotificationsChange - Callback triggered when notifications change.
  *
  * @return Rendered Notification Banner component.
  */
-export const EmbeddedConnectNotificationBanner: React.FC< EmbeddedAccountNotificationBannerProps > = ( {
-	onLoaderStart,
-	onLoadError,
-	onNotificationsChange,
-} ) => {
-	const {
-		stripeConnectInstance,
-		initializationError,
-		loading,
-	} = useInitializeStripe( false, null );
+export const EmbeddedConnectNotificationBanner: React.FC<
+	EmbeddedAccountNotificationBannerProps
+> = ( { onLoaderStart, onLoadError, onNotificationsChange } ) => {
+	const { stripeConnectInstance, initializationError, loading } =
+		useInitializeStripe( false, null );
 
 	return (
 		<>

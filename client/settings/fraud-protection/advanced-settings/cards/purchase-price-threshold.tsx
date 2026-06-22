@@ -21,13 +21,13 @@ import {
 } from '../../interfaces';
 
 const getFloatValue = ( value: string ) => {
-	return '' === value || '0' === value ? 0 : parseFloat( value );
+	return value === '' || value === '0' ? 0 : parseFloat( value );
 };
 
 const getCurrencySymbol = () => {
 	const fallbackCurrency = { symbol: '$' };
 
-	if ( '1' !== wcpaySettings.isMultiCurrencyEnabled ) {
+	if ( wcpaySettings.isMultiCurrencyEnabled !== '1' ) {
 		return fallbackCurrency.symbol;
 	}
 
@@ -42,14 +42,11 @@ interface PurchasePriceThresholdCustomFormProps {
 	setting: string;
 }
 
-const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFormProps > = ( {
-	setting,
-} ) => {
-	const {
-		protectionSettingsUI,
-		setProtectionSettingsUI,
-		setIsDirty,
-	} = useContext( FraudPreventionSettingsContext );
+const PurchasePriceThresholdCustomForm: React.FC<
+	PurchasePriceThresholdCustomFormProps
+> = ( { setting } ) => {
+	const { protectionSettingsUI, setProtectionSettingsUI, setIsDirty } =
+		useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
 		() =>
@@ -84,7 +81,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
-			<strong>{ __( 'Limits', 'woocommerce-components' ) }</strong>
+			<strong>{ __( 'Limits', 'woocommerce-payments' ) }</strong>
 			<div className="fraud-protection-rule-toggle-children-horizontal-form">
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
 					<AmountInput

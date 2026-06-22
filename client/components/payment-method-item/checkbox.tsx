@@ -9,13 +9,9 @@ import { CheckboxControl } from '@wordpress/components';
  */
 import type { PaymentMethodItemCheckboxProps } from './types';
 
-const PaymentMethodItemCheckbox: React.FC< PaymentMethodItemCheckboxProps > = ( {
-	label,
-	checked,
-	disabled,
-	onChange,
-	'data-testid': dataTestId,
-} ) => (
+const PaymentMethodItemCheckbox: React.FC<
+	PaymentMethodItemCheckboxProps
+> = ( { label, checked, disabled, onChange, 'data-testid': dataTestId } ) => (
 	<div className="payment-method-item__checkbox">
 		<CheckboxControl
 			label={ label }

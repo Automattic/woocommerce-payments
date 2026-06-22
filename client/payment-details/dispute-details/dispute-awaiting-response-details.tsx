@@ -5,8 +5,7 @@
  */
 import React, { useState, useContext } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { backup, edit, lock, arrowRight } from '@wordpress/icons';
-import { useDispatch } from '@wordpress/data';
+import { backup, edit, lock } from '@wordpress/icons';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 
@@ -22,11 +21,12 @@ import {
 	HorizontalRule,
 	Icon,
 	Modal,
+	Tooltip,
 } from '@wordpress/components';
-import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { Dispute } from 'wcpay/types/disputes';
 import { recordEvent } from 'tracks';
-import { useDisputeAccept } from 'wcpay/data';
+import { useDisputeAccept } from 'wcpay/data/disputes';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
@@ -43,12 +43,30 @@ import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
 
 interface Props {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'id'
+		| 'amount'
+		| 'balance_transactions'
+		| 'created'
+		| 'currency'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'metadata'
+		| 'payment_intent'
+		| 'reason'
+		| 'status'
+	>;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
-	orderUrl: string | undefined;
 	paymentMethod: string | null;
 	bankName: string | null;
+	/**
+	 * Opens the refund modal on the transaction details page so the inquiry
+	 * "Issue refund" flow can refund inline.
+	 */
+	onIssueRefund: () => void;
 }
 
 /**
@@ -87,45 +105,27 @@ interface AcceptDisputeProps {
 }
 
 /**
- * Disputes and Inquiries have different text for buttons and the modal.
- * They also have different icons and tracks events. This function returns the correct props.
+ * Returns the copy and tracks events for the dispute-accept modal.
+ *
+ * Inquiries open the refund modal directly, so this only covers the dispute
+ * case.
  */
 function getAcceptDisputeProps( {
 	dispute,
 	isDisputeAcceptRequestPending,
 }: {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'amount'
+		| 'balance_transactions'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'reason'
+		| 'status'
+	>;
 	isDisputeAcceptRequestPending: boolean;
 } ): AcceptDisputeProps {
-	if ( isInquiry( dispute.status ) ) {
-		return {
-			acceptButtonLabel: __( 'Issue refund', 'woocommerce-payments' ),
-			acceptButtonTracksEvent: 'wcpay_dispute_inquiry_refund_modal_view',
-			modalTitle: __( 'Issue a refund?', 'woocommerce-payments' ),
-			modalLines: [
-				{
-					icon: <Icon icon={ backup } size={ 24 } />,
-					description: __(
-						'Issuing a refund will close the inquiry, returning the amount in question back to the cardholder. No additional fees apply.',
-						'woocommerce-payments'
-					),
-				},
-				{
-					icon: <Icon icon={ arrowRight } size={ 24 } />,
-					description: __(
-						'You will be taken to the order, where you must complete the refund process manually.',
-						'woocommerce-payments'
-					),
-				},
-			],
-			modalButtonLabel: __(
-				'View order to issue refund',
-				'woocommerce-payments'
-			),
-			modalButtonTracksEvent: 'wcpay_dispute_inquiry_refund_click',
-		};
-	}
-
 	return {
 		acceptButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
 		acceptButtonTracksEvent: 'wcpay_dispute_accept_modal_view',
@@ -166,21 +166,18 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
-	orderUrl,
 	paymentMethod,
 	bankName,
+	onIssueRefund,
 } ) => {
-	const {
-		doAccept,
-		isLoading: isDisputeAcceptRequestPending,
-	} = useDisputeAccept( dispute );
+	const { doAccept, isLoading: isDisputeAcceptRequestPending } =
+		useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const [
 		isVisaComplianceConditionAccepted,
 		setVisaComplianceConditionAccepted,
 	] = useState( hasStagedEvidence );
-	const { createErrorNotice } = useDispatch( 'core/notices' );
 
 	const {
 		featureFlags: { isDisputeIssuerEvidenceEnabled },
@@ -240,24 +237,28 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		setModalOpen( false );
 	};
 
-	const viewOrder = () => {
-		if ( orderUrl ) {
-			window.location.href = orderUrl;
-			return;
-		}
-
-		createErrorNotice(
-			__(
-				'Unable to view order. Order not found.',
-				'woocommerce-payments'
-			)
-		);
+	const disputeTracksProperties = {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+		on_page: 'transaction_details',
 	};
 
 	const disputeAcceptAction = getAcceptDisputeProps( {
 		dispute,
 		isDisputeAcceptRequestPending,
 	} );
+
+	const isInquiryStatus = isInquiry( dispute.status );
+
+	// Inquiries refund inline via the transaction refund modal; disputes open
+	// the accept-dispute modal. The primary action button reflects whichever.
+	const primaryButtonLabel = isInquiryStatus
+		? __( 'Issue refund', 'woocommerce-payments' )
+		: disputeAcceptAction.acceptButtonLabel;
+	const primaryButtonTracksEvent = isInquiryStatus
+		? 'wcpay_dispute_inquiry_refund_modal_view'
+		: disputeAcceptAction.acceptButtonTracksEvent;
 
 	/**
 	 * The following cases cannot be defended:
@@ -340,10 +341,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					<ExternalLink
 						href={ getLearnMoreDocsUrl() }
 						onClick={ () => {
-							recordEvent( 'wcpay_dispute_help_link_clicked', {
-								dispute_status: dispute.status,
-								on_page: 'transaction_details',
-							} );
+							recordEvent(
+								'wcpay_dispute_help_link_clicked',
+								disputeTracksProperties
+							);
 						} }
 					>
 						{ getHelpLinkText() }
@@ -374,8 +375,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										? ''
 										: getAdminUrl( {
 												page: 'wc-admin',
-												path:
-													'/payments/disputes/challenge',
+												path: '/payments/disputes/challenge',
 												id: dispute.id,
 										  } )
 								}
@@ -391,10 +391,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									onClick={ () => {
 										recordEvent(
 											'wcpay_dispute_challenge_clicked',
-											{
-												dispute_status: dispute.status,
-												on_page: 'transaction_details',
-											}
+											disputeTracksProperties
 										);
 									} }
 									__next40pxDefaultSize
@@ -415,18 +412,54 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							data-testid="open-accept-dispute-modal-button"
 							onClick={ () => {
 								recordEvent(
-									disputeAcceptAction.acceptButtonTracksEvent,
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									primaryButtonTracksEvent,
+									disputeTracksProperties
 								);
-								setModalOpen( true );
+
+								if ( isInquiryStatus ) {
+									onIssueRefund();
+								} else {
+									setModalOpen( true );
+								}
 							} }
 							__next40pxDefaultSize
 						>
-							{ disputeAcceptAction.acceptButtonLabel }
+							{ primaryButtonLabel }
 						</Button>
+
+						{ ! isDefendable && (
+							<Tooltip
+								text={ __(
+									'Challenge available if the inquiry escalates to a dispute',
+									'woocommerce-payments'
+								) }
+							>
+								<span
+									className="transaction-details-dispute-details-body__challenge-disabled"
+									tabIndex={ 0 }
+									role="button"
+									aria-disabled="true"
+									aria-label={ __(
+										'Challenge dispute — available if the inquiry escalates to a dispute',
+										'woocommerce-payments'
+									) }
+								>
+									<Button
+										variant="primary"
+										disabled
+										tabIndex={ -1 }
+										aria-hidden="true"
+										data-testid="challenge-dispute-button-disabled"
+										__next40pxDefaultSize
+									>
+										{ __(
+											'Challenge dispute',
+											'woocommerce-payments'
+										) }
+									</Button>
+								</span>
+							</Tooltip>
+						) }
 
 						{ /** Accept dispute modal */ }
 						{ isModalOpen && (
@@ -484,23 +517,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										onClick={ () => {
 											recordEvent(
 												disputeAcceptAction.modalButtonTracksEvent,
-												{
-													dispute_status:
-														dispute.status,
-													on_page:
-														'transaction_details',
-												}
+												disputeTracksProperties
 											);
 
-											/**
-											 * Handle the primary modal action.
-											 * If it's an inquiry, redirect to the order page; otherwise, continue with the default dispute acceptance.
-											 */
-											if ( isInquiry( dispute.status ) ) {
-												viewOrder();
-											} else {
-												doAccept();
-											}
+											doAccept();
 										} }
 										__next40pxDefaultSize
 									>

@@ -3,8 +3,6 @@
  */
 import WCPayAPI from '..';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/utils/express-checkout';
-import { getConfig } from 'wcpay/utils/checkout';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ).finally( () => {} ) )
@@ -17,47 +15,33 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 
-const mockAppearance = {
-	rules: {
-		'.Block': {},
-		'.Input': {},
-		'.Input--invalid': {},
-		'.Label': {},
-		'.Label--resting': {},
-		'.Tab': {},
-		'.Tab--selected': {},
-		'.Tab:hover': {},
-		'.TabIcon--selected': {
-			color: undefined,
-		},
-		'.TabIcon:hover': {
-			color: undefined,
-		},
-		'.Text': {},
-		'.Text--redirect': {},
-		'.Heading': {},
-		'.Button': {},
-		'.Link': {},
-		'.Container': {},
-		'.Footer': {},
-		'.Footer-link': {},
-		'.Header': {},
-	},
-	theme: 'stripe',
-	variables: {
-		colorBackground: '#ffffff',
-		colorText: undefined,
-		fontFamily: undefined,
-		fontSizeBase: undefined,
-	},
-	labels: 'above',
+const addStripeScript = ( src, id = 'stripe-js' ) => {
+	const script = document.createElement( 'script' );
+	if ( id ) {
+		script.id = id;
+	}
+	script.src = src;
+	document.head.appendChild( script );
 };
+
+const clearScripts = () =>
+	document.head
+		.querySelectorAll( 'script' )
+		.forEach( ( script ) => script.remove() );
 
 describe( 'WCPayAPI', () => {
 	describe( 'getStripe', () => {
+		beforeEach( () => {
+			// Normal, non-compromised page: the legitimate Stripe.js handle tag
+			// is present, so the origin assertion passes silently.
+			addStripeScript( 'https://js.stripe.com/v3/?ver=3.0' );
+		} );
+
 		afterEach( () => {
 			jest.useRealTimers();
+			jest.restoreAllMocks();
 			window.Stripe = undefined;
+			clearScripts();
 		} );
 
 		test( 'waits for Stripe to be available in the global scope', async () => {
@@ -93,77 +77,101 @@ describe( 'WCPayAPI', () => {
 		} );
 	} );
 
-	test( 'does not initialize woopay if already requesting', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				order_id: 1,
-				key: 'testkey',
-				billing_email: 'test@example.com',
-			};
-			return mockProperties[ key ];
+	describe( 'Stripe.js origin assertion', () => {
+		let warn;
+
+		beforeEach( () => {
+			window.Stripe = function Stripe() {};
+			warn = jest.spyOn( console, 'warn' ).mockImplementation( () => {} );
 		} );
 
-		const api = new WCPayAPI( {}, request );
-		api.isWooPayRequesting = true;
-		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
+		afterEach( () => {
+			jest.restoreAllMocks();
+			window.Stripe = undefined;
+			clearScripts();
+		} );
 
-		expect( request ).not.toHaveBeenCalled();
-		expect( api.isWooPayRequesting ).toBe( true );
+		test( 'blocks the payment and warns when the origin is wrong', async () => {
+			addStripeScript( 'https://js.evil.example/v3/?ver=3.0' );
+			const api = new WCPayAPI( {}, request );
+
+			await expect( api.getStripe() ).rejects.toThrow(
+				/provenance check failed/
+			);
+			expect( warn ).toHaveBeenCalledWith(
+				expect.stringContaining( 'js.evil.example' )
+			);
+		} );
+
+		test( 'fails fast on a wrong origin even if window.Stripe never loads', async () => {
+			window.Stripe = undefined;
+			addStripeScript( 'https://js.evil.example/v3/?ver=3.0' );
+			const api = new WCPayAPI( {}, request );
+
+			await expect( api.getStripe() ).rejects.toThrow(
+				/provenance check failed/
+			);
+		} );
+
+		test( 'blocks with a clear message when no Stripe.js tag is present', async () => {
+			const api = new WCPayAPI( {}, request );
+
+			await expect( api.getStripe() ).rejects.toThrow(
+				/provenance check failed/
+			);
+			expect( warn ).toHaveBeenCalledWith(
+				expect.stringContaining( 'no Stripe.js script tag' )
+			);
+		} );
+
+		test( 'resolves without warning when the origin is legitimate', async () => {
+			addStripeScript( 'https://js.stripe.com/v3/?ver=3.0' );
+			const api = new WCPayAPI( {}, request );
+
+			const stripeInstance = await api.getStripe();
+
+			expect( stripeInstance ).toBeInstanceOf( window.Stripe );
+			expect( warn ).not.toHaveBeenCalled();
+		} );
 	} );
 
-	test( 'initializes woopay using config params', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				order_id: 1,
-				key: 'testkey',
-				billing_email: 'test@example.com',
-				isWooPayGlobalThemeSupportEnabled: true,
-				woopayAppearance: mockAppearance,
-			};
-			return mockProperties[ key ];
+	describe( 'createStripe origin assertion', () => {
+		let warn;
+
+		beforeEach( () => {
+			window.Stripe = function Stripe() {};
+			warn = jest.spyOn( console, 'warn' ).mockImplementation( () => {} );
 		} );
 
-		const api = new WCPayAPI( {}, request );
-		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
-
-		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
-			_wpnonce: 'foo',
-			appearance: mockAppearance,
-			email: 'foo@bar.com',
-			user_session: 'qwerty123',
-			order_id: 1,
-			key: 'testkey',
-			billing_email: 'test@example.com',
-		} );
-		expect( api.isWooPayRequesting ).toBe( false );
-	} );
-
-	test( 'WooPay should not support global theme styles', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				isWooPayGlobalThemeSupportEnabled: false,
-			};
-			return mockProperties[ key ];
+		afterEach( () => {
+			jest.restoreAllMocks();
+			window.Stripe = undefined;
+			clearScripts();
 		} );
 
-		const api = new WCPayAPI( {}, request );
-		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
+		// createStripe() is the single point where `new Stripe()` is built, and
+		// confirmIntent's WooPay branch calls it directly (bypassing getStripe),
+		// so the origin must be asserted here too.
+		test( 'blocks a direct createStripe() call on a wrong origin', () => {
+			addStripeScript( 'https://js.evil.example/v3/?ver=3.0' );
+			const api = new WCPayAPI( {}, request );
 
-		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
-			_wpnonce: 'foo',
-			appearance: null,
-			font_rules: null,
-			email: 'foo@bar.com',
-			user_session: 'qwerty123',
-			order_id: undefined,
-			key: undefined,
-			billing_email: undefined,
+			expect( () => api.createStripe( 'pk_test_123', 'en' ) ).toThrow(
+				/provenance check failed/
+			);
+			expect( warn ).toHaveBeenCalledWith(
+				expect.stringContaining( 'js.evil.example' )
+			);
+		} );
+
+		test( 'builds the Stripe instance when the origin is legitimate', () => {
+			addStripeScript( 'https://js.stripe.com/v3/?ver=3.0' );
+			const api = new WCPayAPI( {}, request );
+
+			const stripeInstance = api.createStripe( 'pk_test_123', 'en' );
+
+			expect( stripeInstance ).toBeInstanceOf( window.Stripe );
+			expect( warn ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

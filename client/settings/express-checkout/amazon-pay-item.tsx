@@ -11,16 +11,14 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import { Button } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import methodsConfiguration from '../../payment-methods-map';
-import { useAmazonPayEnabledSettings } from 'wcpay/data';
+import { useAmazonPayEnabledSettings } from 'wcpay/data/settings';
 import usePaymentMethodAvailability from 'wcpay/settings/payment-methods-list/use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
 
 const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
-	const [
-		isAmazonPayEnabled,
-		updateIsAmazonPayEnabled,
-	] = useAmazonPayEnabledSettings();
+	const [ isAmazonPayEnabled, updateIsAmazonPayEnabled ] =
+		useAmazonPayEnabledSettings();
 
 	const {
 		icon: AmazonPayIcon,

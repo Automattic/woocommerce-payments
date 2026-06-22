@@ -267,7 +267,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$stylesheet = $stylesheet ?? $this->stylesheet;
 		add_filter(
 			'stylesheet',
-			function ( $theme ) use ( $stylesheet ) {
+			function ( $_unused_theme ) use ( $stylesheet ) {
 				return $stylesheet;
 			}
 		);
@@ -290,7 +290,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$plugins = $plugins ?? $this->active_plugins;
 		add_filter(
 			'option_active_plugins',
-			function ( $active_plugins ) use ( $plugins ) {
+			function ( $_unused_active_plugins ) use ( $plugins ) {
 				return $plugins;
 			}
 		);

@@ -294,6 +294,12 @@ class MultiCurrency {
 
 		$store_currency_updated = $this->check_store_currency_for_change();
 
+		// If the store currency has been updated, invalidate the exchange rate cache
+		// before initializing currencies so fresh rates are fetched immediately.
+		if ( $store_currency_updated ) {
+			$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
+		}
+
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
@@ -561,7 +567,21 @@ class MultiCurrency {
 
 		the_widget(
 			spl_object_hash( $currency_switcher_widget ),
+			/**
+			 * Filters the instance settings passed to the currency switcher theme widget.
+			 *
+			 * @since 3.0.0
+			 *
+			 * @param array $instance The widget instance settings.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_instance', $instance ),
+			/**
+			 * Filters the args passed to the currency switcher theme widget.
+			 *
+			 * @since 3.0.0
+			 *
+			 * @param array $args The widget display args.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_args', $args )
 		);
 		return ob_get_clean();
@@ -755,6 +775,10 @@ class MultiCurrency {
 		$multi_currency_code = $this->compatibility->override_selected_currency();
 		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
 
+		if ( null === $currency_code ) {
+			return $this->get_default_currency();
+		}
+
 		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
 	}
 
@@ -868,6 +892,13 @@ class MultiCurrency {
 	 * @return mixed The configured value.
 	 */
 	public function get_apply_charm_only_to_products() {
+		/**
+		 * Filters whether charm pricing should only be applied to products.
+		 *
+		 * @since 2.6.0
+		 *
+		 * @param bool $apply_only_to_products Whether to apply charm pricing only to products. Default true.
+		 */
 		return apply_filters( self::FILTER_PREFIX . 'apply_charm_only_to_products', true );
 	}
 
@@ -1024,7 +1055,21 @@ class MultiCurrency {
 		$message = sprintf(
 		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name, %4 Link to switch currency */
 			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a href="%4$s">Use %3$s instead.</a>', 'woocommerce-payments' ),
+			/**
+			 * Filters the country name shown in the currency switch notice.
+			 *
+			 * @since 3.1.0
+			 *
+			 * @param string $country_name The geolocated country name.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] ),
+			/**
+			 * Filters the currency name shown in the currency switch notice.
+			 *
+			 * @since 3.1.0
+			 *
+			 * @param string $currency_name The current currency name.
+			 */
 			apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $current_currency->get_name() ),
 			esc_html( $currencies[ $store_currency ] ),
 			esc_url( '?currency=' . $store_currency )
@@ -1844,7 +1889,7 @@ class MultiCurrency {
 		// Simulate client currency from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_currency_name',
-			function ( $selected_currency_name ) use ( $simulation_currency_name ) {
+			function ( $_unused_selected_currency_name ) use ( $simulation_currency_name ) {
 				return $simulation_currency_name;
 			}
 		);
@@ -1852,7 +1897,7 @@ class MultiCurrency {
 		// Simulate client country from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_country',
-			function ( $selected_country ) use ( $simulation_country ) {
+			function ( $_unused_selected_country ) use ( $simulation_country ) {
 				return $simulation_country;
 			}
 		);

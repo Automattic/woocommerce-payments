@@ -6,8 +6,8 @@ import tinycolor from 'tinycolor2';
 /**
  * Generates hover colors from a background color and a text color.
  *
- * @param {string}  backgroundColor Background color, Any format accepted by tinyColor library
- * @param {string}  color Text color, any format accepted by tinyColor library
+ * @param {string} backgroundColor Background color, Any format accepted by tinyColor library
+ * @param {string} color           Text color, any format accepted by tinyColor library
  * @return {Object} Object with new background color and text color.
  */
 export const generateHoverColors = ( backgroundColor, color ) => {
@@ -49,7 +49,7 @@ export const generateHoverColors = ( backgroundColor, color ) => {
 /**
  * Generates hover rules for UPE using a set of appearance rules as a basis.
  *
- * @param {Object}  baseRules UPE appearance rules to use as a base to generate hover colors
+ * @param {Object} baseRules UPE appearance rules to use as a base to generate hover colors
  * @return {Object} Object with generated hover rules.
  */
 export const generateHoverRules = ( baseRules ) => {
@@ -75,9 +75,9 @@ export const generateHoverRules = ( baseRules ) => {
  * Generates outline style for UPE using outline width, style and color.
  * UPE does not accept the individual properties, we need to concat them.
  *
- * @param {string}  outlineWidth Outline width from computed styles.
- * @param {string}  outlineStyle Outline width from computed styles.
- * @param {string}  outlineColor Outline width from computed styles.
+ * @param {string} outlineWidth Outline width from computed styles.
+ * @param {string} outlineStyle Outline width from computed styles.
+ * @param {string} outlineColor Outline width from computed styles.
  * @return {string} Object with generated hover rules.
  */
 export const generateOutlineStyle = (
@@ -116,8 +116,8 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 
 		const windowObject = scope.defaultView || window;
 
-		const bgColor = windowObject.getComputedStyle( element )
-			.backgroundColor;
+		const bgColor =
+			windowObject.getComputedStyle( element ).backgroundColor;
 		// Accept colors that are mostly opaque (alpha >= 0.5).  Low-alpha
 		// values like rgba(129,110,153,0.14) are decorative overlays, not
 		// real backgrounds — skip them so we fall through to the actual
@@ -178,9 +178,44 @@ export const maybeConvertRGBAtoRGB = ( color ) => {
 };
 
 /**
+ * Whether the theme's checkout label follows the floating-label pattern.
+ *
+ * Stock WC Blocks positions the input label absolutely inside the field, so it
+ * occupies no height and the floating-label padding compensation applies. Some
+ * themes restyle it into a static label above the input; subtracting the label
+ * height there produces a negative input padding.
+ *
+ * @param {string} labelSelector Selector of the cloned active-state label.
+ * @param {Object} scope         The document scope to search in.
+ * @return {boolean} True when the label is positioned out of the normal flow.
+ */
+export const usesFloatingLabelPattern = ( labelSelector, scope = document ) => {
+	let label;
+	try {
+		label = scope.querySelector( labelSelector );
+	} catch ( e ) {
+		return true;
+	}
+	if ( ! label ) {
+		return true;
+	}
+	const windowObject = scope.defaultView || window;
+	const position = windowObject
+		.getComputedStyle( label )
+		.getPropertyValue( 'position' );
+
+	// Default to the floating pattern when position can't be determined.
+	if ( ! position ) {
+		return true;
+	}
+
+	return position === 'absolute' || position === 'fixed';
+};
+
+/**
  * Modifies the appearance object to include styles for floating label.
  *
- * @param {Object} appearance object to modify.
+ * @param {Object} appearance          object to modify.
  * @param {Object} floatingLabelStyles Floating label styles.
  * @return {Object} Modified appearance object.
  */
@@ -245,9 +280,8 @@ export const handleAppearanceForFloatingLabel = (
 		appearance.rules[ '.Label' ].marginTop = `${ Math.floor(
 			( originalPaddingBottom - 1 ) / 3
 		) }px`;
-		appearance.rules[
-			'.Label--floating'
-		].marginTop = originalLabelMarginTop;
+		appearance.rules[ '.Label--floating' ].marginTop =
+			originalLabelMarginTop;
 	}
 
 	return appearance;

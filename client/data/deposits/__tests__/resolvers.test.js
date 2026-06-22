@@ -106,7 +106,7 @@ describe( 'getDeposit resolver', () => {
 			const next = generator.next();
 			expect( next.value ).toStrictEqual( undefined );
 			expect( next.done ).toStrictEqual( true );
-			expect( apiFetch ).not.toBeCalled();
+			expect( apiFetch ).not.toHaveBeenCalled();
 		} );
 	} );
 } );
@@ -149,7 +149,7 @@ describe( 'getDeposits resolver', () => {
 			depositsResponse.data.forEach( ( payout ) => {
 				expect( generator.next().value ).toEqual(
 					controls.dispatch(
-						'wc/payments',
+						'wc/payments/deposits',
 						'finishResolution',
 						'getDeposit',
 						[ payout.id ]

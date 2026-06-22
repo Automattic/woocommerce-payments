@@ -300,7 +300,7 @@ export const formatAccountFeesDescription = (
 			);
 		}
 
-		if ( discountFee.discount && 0 < formats.discount.length ) {
+		if ( discountFee.discount && formats.discount.length > 0 ) {
 			currentBaseFeeDescription +=
 				' ' +
 				sprintf( formats.discount, formatFee( discountFee.discount ) );

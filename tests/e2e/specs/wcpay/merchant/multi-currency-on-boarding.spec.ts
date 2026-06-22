@@ -123,9 +123,16 @@ test.describe( 'Multi-currency on-boarding', { tag: '@critical' }, () => {
 		} );
 
 		test( 'should display suggested currencies at the beginning of the list', async () => {
+			// Wait for the first element to be visible before snapshotting
+			// the full list — .all() doesn't auto-wait so we need the
+			// content to be present first.
 			await expect(
-				( await page.getByTestId( 'recommended-currency' ).all() )
-					.length
+				page.getByTestId( 'recommended-currency' ).first()
+			).toBeVisible();
+			await expect(
+				(
+					await page.getByTestId( 'recommended-currency' ).all()
+				 ).length
 			).toBeGreaterThan( 0 );
 		} );
 

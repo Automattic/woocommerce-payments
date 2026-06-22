@@ -27,7 +27,7 @@ export const getFingerprint = async () => {
 /**
  * Appends a hidden input with the user fingerprint to the checkout form.
  *
- * @param {Object} $form        The jQuery Checkout form object.
+ * @param {Object} $form       The jQuery Checkout form object.
  * @param {string} fingerprint User fingerprint.
  */
 export const appendFingerprintInputToForm = ( $form, fingerprint = '' ) => {

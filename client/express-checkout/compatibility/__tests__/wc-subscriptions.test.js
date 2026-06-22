@@ -18,9 +18,11 @@ const buildTrialSubscriptionItem = ( {
 	billingPeriod = 'month',
 	trialLength = 14,
 	signUpFees = '0',
+	lineSubtotal = '0',
+	lineTotal = '0',
 } = {} ) => ( {
 	name,
-	totals: { line_subtotal: '0', line_total: '0' },
+	totals: { line_subtotal: lineSubtotal, line_total: lineTotal },
 	item_data: [],
 	extensions: {
 		subscriptions: {
@@ -33,6 +35,7 @@ const buildTrialSubscriptionItem = ( {
 
 const buildSubscriptionSchedule = ( {
 	billingPeriod = 'month',
+	billingInterval = 1,
 	nextPaymentDate = '2026-03-19',
 	totalPrice = '1999',
 	totalItems = '1999',
@@ -40,10 +43,15 @@ const buildSubscriptionSchedule = ( {
 	totalShipping = '0',
 	totalShippingTax = '0',
 	currencyMinorUnit = 2,
+	currencyPrefix = '$',
+	currencySuffix = '',
+	currencyDecimalSeparator = '.',
+	currencyThousandSeparator = ',',
 	taxLines = [],
 	shippingRates,
 } = {} ) => ( {
 	billing_period: billingPeriod,
+	billing_interval: billingInterval,
 	next_payment_date: nextPaymentDate,
 	totals: {
 		total_price: totalPrice,
@@ -52,6 +60,10 @@ const buildSubscriptionSchedule = ( {
 		total_shipping: totalShipping,
 		total_shipping_tax: totalShippingTax,
 		currency_minor_unit: currencyMinorUnit,
+		currency_prefix: currencyPrefix,
+		currency_suffix: currencySuffix,
+		currency_decimal_separator: currencyDecimalSeparator,
+		currency_thousand_separator: currencyThousandSeparator,
 		tax_lines: taxLines,
 	},
 	...( shippingRates ? { shipping_rates: shippingRates } : {} ),
@@ -142,9 +154,9 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 		).toBe( regularCart );
 	} );
 
-	it( 'all filters pass through when cart total is non-zero', () => {
+	it( 'total-amount and eligibility filters pass through when cart total is non-zero', () => {
 		// Non-zero total means the subscription has a sign-up fee or other
-		// upfront charges — standard handling applies.
+		// upfront charges — $0-cart overrides don't activate.
 		const cart = buildTrialCart( { totalPrice: '500' } );
 
 		expect(
@@ -157,9 +169,6 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 				cart
 			)
 		).toBe( false );
-		expect(
-			applyFilters( 'wcpay.express-checkout.map-line-items', cart )
-		).toBe( cart );
 	} );
 
 	it( 'total-amount and eligibility filters pass through for subscriptions with sign-up fees (non-zero cart total)', () => {
@@ -423,6 +432,89 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 	} );
 
 	describe( 'map-line-items filter', () => {
+		it( 'adds recurring metadata to trial items with sign-up fee without replacing prices', () => {
+			const cart = buildTrialCart( {
+				items: [
+					buildTrialSubscriptionItem( {
+						name: 'Physical subscription',
+						signUpFees: '200',
+						lineSubtotal: '200',
+						lineTotal: '200',
+					} ),
+				],
+				totalPrice: '217',
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						totalPrice: '758',
+						totalItems: '700',
+						totalTax: '58',
+					} ),
+				],
+			} );
+
+			const result = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+
+			// Must not mutate the original cart data.
+			expect( result ).not.toBe( cart );
+			expect( cart.items[ 0 ].name ).toBe( 'Physical subscription' );
+
+			const item = result.items[ 0 ];
+			// Should add (recurring) label.
+			expect( item.name ).toBe( 'Physical subscription (recurring)' );
+			// Should keep original prices (sign-up fee), not replace with recurring.
+			expect( item.totals.line_subtotal ).toBe( '200' );
+			expect( item.totals.line_total ).toBe( '200' );
+			// Should add Recurring total metadata with recurring price.
+			expect( item.item_data ).toContainEqual( {
+				name: 'Recurring total',
+				value: '$7.58 / month on 2026-03-19',
+			} );
+
+			// Should keep original cart totals (sign-up fee + tax).
+			expect( result.totals.total_price ).toBe( '217' );
+		} );
+
+		it( 'formats plural billing interval in recurring metadata for sign-up fee carts', () => {
+			const cart = buildTrialCart( {
+				items: [
+					buildTrialSubscriptionItem( {
+						name: 'Quarterly Plan',
+						billingPeriod: 'month',
+						signUpFees: '500',
+						lineSubtotal: '500',
+						lineTotal: '500',
+					} ),
+				],
+				totalPrice: '500',
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						billingPeriod: 'month',
+						billingInterval: 3,
+						totalPrice: '2997',
+						totalItems: '2997',
+					} ),
+				],
+			} );
+
+			const result = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+
+			const item = result.items[ 0 ];
+			expect( item.name ).toBe( 'Quarterly Plan (recurring)' );
+			// Should keep original prices (sign-up fee).
+			expect( item.totals.line_subtotal ).toBe( '500' );
+			// Should format plural interval as "3 months".
+			expect( item.item_data ).toContainEqual( {
+				name: 'Recurring total',
+				value: '$29.97 / 3 months on 2026-03-19',
+			} );
+		} );
+
 		it( 'replaces $0 trial items with recurring amounts and metadata', () => {
 			const cart = buildTrialCart();
 			const result = applyFilters(
@@ -439,8 +531,8 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 			expect( item.totals.line_subtotal ).toBe( '1999' );
 			expect( item.totals.line_total ).toBe( '1999' );
 			expect( item.item_data ).toContainEqual( {
-				name: 'First payment',
-				value: '2026-03-19',
+				name: 'Recurring total',
+				value: '$19.99 / month on 2026-03-19',
 			} );
 
 			expect( result.totals.total_price ).toBe( '1999' );
@@ -544,8 +636,8 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 			);
 			expect( result.items[ 0 ].totals.line_subtotal ).toBe( '800' );
 			expect( result.items[ 0 ].item_data ).toContainEqual( {
-				name: 'First payment',
-				value: '2026-03-19',
+				name: 'Recurring total',
+				value: '$8.00 / month on 2026-03-19',
 			} );
 
 			expect( result.items[ 1 ].name ).toBe(
@@ -553,13 +645,96 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 			);
 			expect( result.items[ 1 ].totals.line_subtotal ).toBe( '12000' );
 			expect( result.items[ 1 ].item_data ).toContainEqual( {
-				name: 'First payment',
-				value: '2027-02-19',
+				name: 'Recurring total',
+				value: '$120.00 / year on 2027-02-19',
 			} );
 
 			expect( result.totals.total_price ).toBe( '12800' );
 			expect( result.totals.total_items ).toBe( '12800' );
 			expect( result.totals.total_tax ).toBe( '1280' );
+		} );
+
+		it( 'does not duplicate metadata when multiple schedules share the same billing period', () => {
+			// When subscription schedules differ only by interval/trial/length,
+			// they share a billing_period. Each item must be processed only once.
+			const cart = buildTrialCart( {
+				items: [
+					buildTrialSubscriptionItem( {
+						name: 'Monthly Sub',
+						billingPeriod: 'month',
+						signUpFees: '200',
+						lineSubtotal: '200',
+						lineTotal: '200',
+					} ),
+				],
+				totalPrice: '200',
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						billingPeriod: 'month',
+						billingInterval: 1,
+						totalPrice: '700',
+						totalItems: '700',
+					} ),
+					buildSubscriptionSchedule( {
+						billingPeriod: 'month',
+						billingInterval: 2,
+						totalPrice: '1400',
+						totalItems: '1400',
+					} ),
+				],
+			} );
+
+			const result = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+
+			const item = result.items[ 0 ];
+			// Name should have (recurring) only once.
+			expect( item.name ).toBe( 'Monthly Sub (recurring)' );
+			// Recurring total metadata should appear exactly once.
+			const recurringEntries = item.item_data.filter(
+				( d ) => d.name === 'Recurring total'
+			);
+			expect( recurringEntries ).toHaveLength( 1 );
+		} );
+
+		it( 'is idempotent when the filter runs on already-modified data', () => {
+			const cart = buildTrialCart( {
+				items: [
+					buildTrialSubscriptionItem( {
+						name: 'Physical subscription',
+						signUpFees: '200',
+						lineSubtotal: '200',
+						lineTotal: '200',
+					} ),
+				],
+				totalPrice: '200',
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						totalPrice: '758',
+						totalItems: '700',
+						totalTax: '58',
+					} ),
+				],
+			} );
+
+			// Run the filter twice — second call receives the first call's output.
+			const firstPass = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+			const secondPass = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				firstPass
+			);
+
+			const item = secondPass.items[ 0 ];
+			expect( item.name ).toBe( 'Physical subscription (recurring)' );
+			const recurringEntries = item.item_data.filter(
+				( d ) => d.name === 'Recurring total'
+			);
+			expect( recurringEntries ).toHaveLength( 1 );
 		} );
 	} );
 } );

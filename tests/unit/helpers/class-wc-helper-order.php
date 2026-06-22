@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 
 /**
@@ -36,7 +37,7 @@ class WC_Helper_Order {
 	}
 
 	public static function woocommerce_currency_usd() {
-		return 'USD';
+		return Currency_Code::UNITED_STATES_DOLLAR;
 	}
 
 	/**
@@ -69,6 +70,8 @@ class WC_Helper_Order {
 			'status'        => Order_Status::PENDING,
 			'customer_id'   => $customer_id,
 			'customer_note' => '',
+			'created_via'   => 'checkout',
+			'cart_hash'     => 'test_cart_hash',
 			'total'         => '',
 		];
 

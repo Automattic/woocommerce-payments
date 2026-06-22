@@ -176,7 +176,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $charge_ids ) {
+			function ( $_unused_id ) use ( $charge_ids ) {
 				$subscription = new WC_Subscription();
 
 				$order1 = WC_Helper_Order::create_order();
@@ -207,7 +207,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_charge_ids_from_search_term_handles_invalid_subscription() {
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) {
+			function ( $_unused_id ) {
 				return false;
 			}
 		);
@@ -230,7 +230,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $charge_ids ) {
+			function ( $_unused_id ) use ( $charge_ids ) {
 				$subscription = new WC_Subscription();
 
 				$order1 = WC_Helper_Order::create_order();
@@ -933,8 +933,8 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_last_refund_from_order_id_returns_correct_refund() {
-		$order    = WC_Helper_Order::create_order();
-		$refund_1 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$order = WC_Helper_Order::create_order();
+		wc_create_refund( [ 'order_id' => $order->get_id() ] );
 		$refund_2 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
 
 		$result = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
@@ -1428,5 +1428,59 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'wcpay_localized_messages', $filter );
 
 		$this->assertEquals( 'Error: Custom: card expired', $result );
+	}
+
+	public function test_get_card_brand_display_name_maps_terminal_specific_brands() {
+		$this->assertSame( 'eftpos', WC_Payments_Utils::get_card_brand_display_name( 'eftpos_au' ) );
+		$this->assertSame( 'Cartes Bancaires', WC_Payments_Utils::get_card_brand_display_name( 'cartes_bancaires' ) );
+	}
+
+	public function test_get_terminal_card_brand_asset_name_maps_terminal_specific_brands() {
+		$this->assertSame( 'eftpos_au', WC_Payments_Utils::get_terminal_card_brand_asset_name( 'eftpos_au' ) );
+		$this->assertSame( 'cartes_bancaires', WC_Payments_Utils::get_terminal_card_brand_asset_name( 'cartes_bancaires' ) );
+		$this->assertSame( '', WC_Payments_Utils::get_terminal_card_brand_asset_name( 'visa' ) );
+	}
+
+	public function test_get_terminal_card_brand_icon_base64_returns_existing_asset_contents() {
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$expected = base64_encode( file_get_contents( WCPAY_ABSPATH . 'assets/images/cards/eftpos_au.svg' ) );
+
+		$this->assertSame( $expected, WC_Payments_Utils::get_terminal_card_brand_icon_base64( 'eftpos_au' ) );
+	}
+
+	public function test_get_terminal_card_display_brand_prefers_supported_networks() {
+		$this->assertSame(
+			'eftpos_au',
+			WC_Payments_Utils::get_terminal_card_display_brand(
+				[
+					'brand'   => 'visa',
+					'network' => 'eftpos_au',
+				]
+			)
+		);
+	}
+
+	public function test_get_terminal_card_display_brand_uses_brand_for_unsupported_networks() {
+		$this->assertSame(
+			'visa',
+			WC_Payments_Utils::get_terminal_card_display_brand(
+				[
+					'brand'   => 'visa',
+					'network' => 'unsupported_network',
+				]
+			)
+		);
+	}
+
+	public function test_get_terminal_card_display_name_maps_selected_brand() {
+		$this->assertSame(
+			'eftpos',
+			WC_Payments_Utils::get_terminal_card_display_name(
+				[
+					'brand'   => 'visa',
+					'network' => 'eftpos_au',
+				]
+			)
+		);
 	}
 }

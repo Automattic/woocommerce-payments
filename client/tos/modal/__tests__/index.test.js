@@ -76,8 +76,8 @@ describe( 'ToS modal', () => {
 		const { clickActionButton, queryByText } = renderModal();
 		clickActionButton( 'Accept' );
 
-		expect( apiFetch ).toBeCalledTimes( 1 );
-		expect( apiFetch ).toBeCalledWith( {
+		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+		expect( apiFetch ).toHaveBeenCalledWith( {
 			path: '/wc/v3/payments/tos',
 			method: 'POST',
 			data: { accept: true },
@@ -126,8 +126,8 @@ describe( 'ToS modal', () => {
 		clickActionButton( 'Decline' );
 		clickActionButton( 'Disable' );
 
-		expect( apiFetch ).toBeCalledTimes( 1 );
-		expect( apiFetch ).toBeCalledWith( {
+		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+		expect( apiFetch ).toHaveBeenCalledWith( {
 			path: '/wc/v3/payments/tos',
 			method: 'POST',
 			data: { accept: false },

@@ -32,8 +32,8 @@ export const useCustomerData = () => {
  * information is already collected in the checkout form. Additionally, the options are updated with
  * the terms text if needed.
  *
- * @param {boolean} shouldSavePayment Whether the payment method should be saved.
- * @param {Object} paymentMethodsConfig The payment methods config object.
+ * @param {boolean} shouldSavePayment    Whether the payment method should be saved.
+ * @param {Object}  paymentMethodsConfig The payment methods config object.
  *
  * @return {Object} The options object for the Stripe elements.
  */

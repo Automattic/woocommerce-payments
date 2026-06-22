@@ -158,11 +158,11 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Activates the gateway again, after it's been disabled.
 	 *
-	 * @param WP_REST_Request $request Full data about the request.
+	 * @param WP_REST_Request $_unused_request Full data about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function reactivate( $request ) {
+	public function reactivate( $_unused_request ) {
 		try {
 			$this->gateway->enable();
 			Logger::debug( 'Gateway re-enabled after ToS decline.' );
@@ -177,11 +177,11 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Deletes _wcpay_onboarding_stripe_connected option after KYC completion has been tracked.
 	 *
-	 * @param WP_REST_Request $request Full data about the request.
+	 * @param WP_REST_Request $_unused_request Full data about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function remove_stripe_connect_track( $request ) {
+	public function remove_stripe_connect_track( $_unused_request ) {
 		delete_option( '_wcpay_onboarding_stripe_connected' );
 		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}

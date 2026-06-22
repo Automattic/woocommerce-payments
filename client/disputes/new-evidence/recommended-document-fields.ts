@@ -18,10 +18,10 @@ export { DOCUMENT_FIELD_KEYS };
 /**
  * Get recommended document fields based on dispute reason
  *
- * @param {string} reason - The dispute reason
- * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
- * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
- * @param {string} productType - The product type (for subscription_canceled disputes)
+ * @param {string}   reason                   - The dispute reason
+ * @param {string}   refundStatus             - The refund status (for credit_not_processed disputes)
+ * @param {string}   duplicateStatus          - The duplicate status (for duplicate disputes)
+ * @param {string}   productType              - The product type (for subscription_canceled disputes)
  * @param {string[]} enhancedEligibilityTypes - The enhanced eligibility types (e.g. ['visa_compliance'])
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */

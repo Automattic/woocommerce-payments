@@ -35,16 +35,16 @@ describe( 'Sandbox Mode Confirmation Modal', () => {
 	it( 'triggers the onClose function on close button click', async () => {
 		renderTestModeConfirmationModal();
 		const closeButton = screen.queryByRole( 'button', { name: 'Cancel' } );
-		expect( mockOnClose ).not.toBeCalled();
+		expect( mockOnClose ).not.toHaveBeenCalled();
 		await user.click( closeButton );
-		expect( mockOnClose ).toBeCalled();
+		expect( mockOnClose ).toHaveBeenCalled();
 	} );
 
 	it( 'triggers the onConfirm function on Enable button click', async () => {
 		renderTestModeConfirmationModal();
 		const enableButton = screen.queryByRole( 'button', { name: 'Enable' } );
-		expect( mockOnConfirm ).not.toBeCalled();
+		expect( mockOnConfirm ).not.toHaveBeenCalled();
 		await user.click( enableButton );
-		expect( mockOnConfirm ).toBeCalled();
+		expect( mockOnConfirm ).toHaveBeenCalled();
 	} );
 } );

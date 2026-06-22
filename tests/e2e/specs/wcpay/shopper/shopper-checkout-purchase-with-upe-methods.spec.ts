@@ -27,9 +27,38 @@ import {
 	fillBillingAddress,
 	focusPlaceOrderButton,
 	placeOrder,
+	selectPaymentMethod,
 } from '../../../utils/shopper';
 import { config } from '../../../config/default';
 import { goToCheckout } from '../../../utils/shopper-navigation';
+import { verifyOrderAndRefund } from '../../../utils/merchant-orders';
+
+const checkoutWithBancontact = async (
+	page: Page,
+	ctpEnabled: boolean
+): Promise< string > => {
+	await addToCartFromShopPage( page );
+	await goToCheckout( page );
+	await fillBillingAddress(
+		page,
+		config.addresses[ 'upe-customer' ].billing.be
+	);
+	await expectFraudPreventionToken( page, ctpEnabled );
+	await selectPaymentMethod( page, 'Bancontact' );
+
+	await focusPlaceOrderButton( page );
+	await placeOrder( page );
+	await page.getByRole( 'link', { name: 'Authorize Test Payment' } ).click();
+	await expect( page.getByText( 'Order received' ).first() ).toBeVisible();
+
+	const orderId = page.url().match( /\/order-received\/(\d+)\// )?.[ 1 ];
+	if ( ! orderId ) {
+		throw new Error(
+			`Expected an order-received URL with an order ID, got: ${ page.url() }`
+		);
+	}
+	return orderId;
+};
 
 test.describe(
 	'Local payment method checkout with card testing',
@@ -71,57 +100,34 @@ test.describe(
 		} );
 
 		[ false, true ].forEach( ( ctpEnabled ) => {
-			test.describe(
-				`Card testing protection enabled: ${ ctpEnabled }`,
-				() => {
-					test.beforeAll( async () => {
-						if ( ctpEnabled ) {
-							await enableCardTestingProtection( merchantPage );
-						}
-					} );
+			test.describe( `Card testing protection enabled: ${ ctpEnabled }`, () => {
+				test.beforeAll( async () => {
+					if ( ctpEnabled ) {
+						await enableCardTestingProtection( merchantPage );
+					}
+				} );
 
-					test.afterAll( async () => {
-						if ( ctpEnabled ) {
-							await disableCardTestingProtection( merchantPage );
-						}
-					} );
+				test.afterAll( async () => {
+					if ( ctpEnabled ) {
+						await disableCardTestingProtection( merchantPage );
+					}
+				} );
 
-					test( 'should successfully place order with Bancontact', async () => {
-						await addToCartFromShopPage( shopperPage );
-						await goToCheckout( shopperPage );
-						await fillBillingAddress(
-							shopperPage,
-							config.addresses[ 'upe-customer' ].billing.be
-						);
-						await expectFraudPreventionToken(
-							shopperPage,
-							ctpEnabled
-						);
-						await shopperPage.getByText( 'Bancontact' ).click();
-						// Ensure the actual radio becomes checked (visibility of :checked can be flaky)
-						const bancontactRadio = shopperPage.locator(
-							'#payment_method_woocommerce_payments_bancontact'
-						);
-						await bancontactRadio.scrollIntoViewIfNeeded();
-						// Explicitly check in case label click didn't propagate
-						await bancontactRadio.check( { force: true } );
-						await expect( bancontactRadio ).toBeChecked( {
-							timeout: 10000,
-						} );
+				// Reload after each test to prevent state leaking between tests.
+				test.afterEach( async () => {
+					await shopperPage.reload();
+				} );
 
-						await focusPlaceOrderButton( shopperPage );
-						await placeOrder( shopperPage );
-						await shopperPage
-							.getByRole( 'link', {
-								name: 'Authorize Test Payment',
-							} )
-							.click();
-						await expect(
-							shopperPage.getByText( 'Order received' ).first()
-						).toBeVisible();
-					} );
-				}
-			);
+				test( 'should successfully place order with Bancontact', async () => {
+					await checkoutWithBancontact( shopperPage, ctpEnabled );
+				} );
+			} );
+		} );
+
+		test( 'merchant can see and refund a Bancontact order', async () => {
+			const orderId = await checkoutWithBancontact( shopperPage, false );
+
+			await verifyOrderAndRefund( merchantPage, orderId );
 		} );
 	}
 );

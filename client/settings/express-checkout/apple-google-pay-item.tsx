@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import { usePaymentRequestEnabledSettings } from 'wcpay/data';
+import { usePaymentRequestEnabledSettings } from 'wcpay/data/settings';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
 import methodsConfiguration from '../../payment-methods-map';
@@ -19,10 +19,8 @@ import PaymentMethodItem from 'wcpay/components/payment-method-item';
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
 
-	const [
-		isPaymentRequestEnabled,
-		updateIsPaymentRequestEnabled,
-	] = usePaymentRequestEnabledSettings();
+	const [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ] =
+		usePaymentRequestEnabledSettings();
 
 	const {
 		duplicates,

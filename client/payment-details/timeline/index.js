@@ -9,16 +9,15 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useTimeline } from 'wcpay/data';
+import { useTimeline } from 'wcpay/data/timeline';
 import mapTimelineEvents from './map-events';
 import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
 
 const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
-	const { timeline, timelineError, isLoading } = useTimeline(
-		paymentIntentId
-	);
+	const { timeline, timelineError, isLoading } =
+		useTimeline( paymentIntentId );
 
 	const items = mapTimelineEvents( timeline, bankName );
 

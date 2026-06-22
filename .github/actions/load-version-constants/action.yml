@@ -1,0 +1,17 @@
+name: "Load version constants"
+description: "Single source of truth for Gutenberg versions paired with PHP and WP minima."
+outputs:
+  gutenberg_for_wp_min:
+    description: "Gutenberg version tested against WP minimum."
+    value: ${{ steps.vars.outputs.gutenberg_for_wp_min }}
+  gutenberg_for_php_min:
+    description: "Gutenberg version tested against PHP minimum."
+    value: ${{ steps.vars.outputs.gutenberg_for_php_min }}
+runs:
+  using: "composite"
+  steps:
+    - id: vars
+      shell: bash
+      run: |
+        echo "gutenberg_for_wp_min=13.6.0" >> $GITHUB_OUTPUT
+        echo "gutenberg_for_php_min=22.3.0" >> $GITHUB_OUTPUT

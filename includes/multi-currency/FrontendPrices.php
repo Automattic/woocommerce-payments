@@ -87,12 +87,12 @@ class FrontendPrices {
 	 * This method converts the '_price' parameters based on the selected currency.
 	 *
 	 * @param array     $query The current query variables.
-	 * @param \WP_Block $block The current block instance.
-	 * @param int       $page  The current page number.
+	 * @param \WP_Block $_unused_block The current block instance.
+	 * @param int       $_unused_page  The current page number.
 	 *
 	 * @return array The modified query variables.
 	 */
-	public function maybe_modify_price_ranges_query_var( $query, $block, $page ) {
+	public function maybe_modify_price_ranges_query_var( $query, $_unused_block, $_unused_page ) {
 		if ( 'product' !== $query['post_type'] ) {
 			return $query;
 		}

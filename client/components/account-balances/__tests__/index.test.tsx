@@ -8,7 +8,10 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
  * Internal dependencies
  */
 import AccountBalances from '..';
-import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
+import {
+	useAllDepositsOverviews,
+	useInstantDeposit,
+} from 'wcpay/data/deposits';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
@@ -56,7 +59,7 @@ const mockWcPaySettings = {
 	instantDepositsPreviouslyEligible: false,
 };
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
 } ) );
@@ -65,9 +68,10 @@ jest.mock( 'wcpay/overview/hooks', () => ( {
 	useSelectedCurrency: jest.fn(),
 } ) );
 
-const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
-	typeof useAllDepositsOverviews
->;
+const mockUseAllDepositsOverviews =
+	useAllDepositsOverviews as jest.MockedFunction<
+		typeof useAllDepositsOverviews
+	>;
 const mockUseSelectedCurrency = useSelectedCurrency as jest.MockedFunction<
 	typeof useSelectedCurrency
 >;
@@ -79,7 +83,7 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 			currencies: currencies,
 			account: mockAccount,
 		},
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 

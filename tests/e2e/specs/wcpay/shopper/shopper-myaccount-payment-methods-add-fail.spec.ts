@@ -73,7 +73,7 @@ test.describe( 'Payment Methods', () => {
 
 				await addSavedCard( shopperPage, card, 'US' );
 
-				if ( 'declined-3ds' === cardType ) {
+				if ( cardType === 'declined-3ds' ) {
 					await confirmCardAuthentication( shopperPage, false );
 					await isUIUnblocked( shopperPage );
 				}
@@ -81,7 +81,7 @@ test.describe( 'Payment Methods', () => {
 				// For declined-incorrect, Stripe validates client-side and shows
 				// the error only in the iframe - the form is never submitted to
 				// WooCommerce so no page-level alert is shown.
-				if ( 'declined-incorrect' === cardType ) {
+				if ( cardType === 'declined-incorrect' ) {
 					await expect(
 						shopperPage
 							.frameLocator(
@@ -131,9 +131,8 @@ test.describe( 'Payment Methods', () => {
 			await shopperPage
 				.getByRole( 'button', { name: 'Add payment method' } )
 				.click();
-			// Give the page a moment to handle the submit without selected gateway
-			await shopperPage.waitForTimeout( 300 );
-
+			// Verify no error alert appears after submitting without a selected gateway.
+			// Playwright's auto-retry on `not.toBeVisible()` handles the timing.
 			await expect( shopperPage.getByRole( 'alert' ) ).not.toBeVisible();
 		}
 	);

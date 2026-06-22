@@ -27,8 +27,5 @@ test.describe( 'Admin transactions', () => {
 				} )
 			).toBeVisible();
 		}
-
-		// TODO: Uncomment this line after fixing the screenshot issue.
-		// await expect( merchantPage ).toHaveScreenshot();
 	} );
 } );
