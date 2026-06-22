@@ -110,6 +110,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Isolate the cache-mode auto-detection state per test. Other suites (e.g. the WC_Payments
+		// upgrade test) fire woocommerce_woocommerce_payments_updated, which runs the cache
+		// auto-detect migration and can leave wcpay_multi_currency_cache_autodetect_done set.
+		delete_option( 'wcpay_multi_currency_rendering_mode' );
+		delete_option( 'wcpay_multi_currency_cache_autodetect_done' );
+		delete_option( 'wcpay_multi_currency_cache_recommendation_dismissed' );
+
 		$this->localization_service = new WC_Payments_Localization_Service();
 
 		$this->mock_currency_settings(
