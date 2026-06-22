@@ -18,6 +18,7 @@ jest.mock( 'wcpay/data/disputes', () => ( {
 
 const mockHistoryReplace = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getHistory: () => ( {
 		replace: mockHistoryReplace,
 	} ),
