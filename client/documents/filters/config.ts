@@ -152,7 +152,6 @@ export const advancedFilters = {
 			],
 			input: {
 				component: 'SelectControl',
-				__nextHasNoMarginBottom: true,
 				options: documentTypesOptions,
 			},
 		},
