@@ -21,25 +21,18 @@ defined( 'ABSPATH' ) || exit;
 class CachingEnvironment {
 
 	/**
-	 * Known page-cache plugin signals, keyed by a stable provider slug.
+	 * Page-cache plugin signals, keyed by a stable provider slug.
 	 *
-	 * Each entry lists the constants and/or classes that, when present, indicate the plugin
-	 * is active and providing full-page caching.
+	 * Limited to plugins that cache *without* the advanced-cache.php drop-in. Server-mode LiteSpeed
+	 * caches at the web-server level and installs no drop-in, so the LiteSpeed Cache plugin constant
+	 * is the only reliable PHP signal for it. Plugins that do install the drop-in (WP Rocket, W3 Total
+	 * Cache, WP Super Cache, Cache Enabler, Comet Cache, WP Fastest Cache, Hummingbird, etc.) are
+	 * already caught generically by has_page_cache_dropin(), so they need no per-plugin entry here.
 	 *
 	 * @var array
 	 */
 	const CACHE_PLUGIN_SIGNALS = [
-		'wp_rocket'        => [ 'constants' => [ 'WP_ROCKET_VERSION' ] ],
-		'w3_total_cache'   => [ 'constants' => [ 'W3TC' ] ],
-		'wp_super_cache'   => [ 'constants' => [ 'WPCACHEHOME' ] ],
-		'litespeed_cache'  => [ 'constants' => [ 'LSCWP_V' ] ],
-		'wp_fastest_cache' => [
-			'constants' => [ 'WPFC_MAIN_PATH' ],
-			'classes'   => [ 'WpFastestCache' ],
-		],
-		'cache_enabler'    => [ 'classes' => [ 'Cache_Enabler' ] ],
-		'comet_cache'      => [ 'classes' => [ 'comet_cache' ] ],
-		'hummingbird'      => [ 'classes' => [ 'Hummingbird\WP_Hummingbird' ] ],
+		'litespeed_cache' => [ 'constants' => [ 'LSCWP_V' ] ],
 	];
 
 	/**

@@ -40,9 +40,9 @@ class WCPay_Multi_Currency_Caching_Environment_Tests extends WCPAY_UnitTestCase 
 	}
 
 	public function test_detects_active_cache_plugin() {
-		$detector = $this->get_detector_with_seams( false, 'wp_rocket', null );
+		$detector = $this->get_detector_with_seams( false, 'litespeed_cache', null );
 
-		$this->assertSame( 'wp_rocket', $detector->get_detected_provider() );
+		$this->assertSame( 'litespeed_cache', $detector->get_detected_provider() );
 		$this->assertTrue( $detector->is_page_caching_active() );
 	}
 
@@ -61,7 +61,7 @@ class WCPay_Multi_Currency_Caching_Environment_Tests extends WCPAY_UnitTestCase 
 	}
 
 	public function test_dropin_takes_precedence_over_other_signals() {
-		$detector = $this->get_detector_with_seams( true, 'wp_rocket', 'pressable' );
+		$detector = $this->get_detector_with_seams( true, 'litespeed_cache', 'pressable' );
 
 		$this->assertSame( 'advanced_cache_dropin', $detector->get_detected_provider() );
 	}
