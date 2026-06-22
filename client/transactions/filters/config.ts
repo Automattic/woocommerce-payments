@@ -246,6 +246,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
+					__nextHasNoMarginBottom: true,
 					options: customerCurrencyOptions,
 				},
 			},
@@ -291,6 +292,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
+					__nextHasNoMarginBottom: true,
 					options: transactionSourceOptions,
 				},
 			},
@@ -343,6 +345,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
+					__nextHasNoMarginBottom: true,
 					options: transactionTypesOptions,
 				},
 			},
@@ -395,6 +398,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
+					__nextHasNoMarginBottom: true,
 					options: transactionSourceDeviceOptions,
 				},
 			},
@@ -446,6 +450,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
+					__nextHasNoMarginBottom: true,
 					options: transactionChannelOptions,
 				},
 			},
@@ -498,6 +503,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
+					__nextHasNoMarginBottom: true,
 					options: transactionCustomerCounryOptions,
 				},
 			},
@@ -546,6 +552,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
+					__nextHasNoMarginBottom: true,
 					options: transactionRiskLevelOptions,
 				},
 			},
@@ -591,6 +598,7 @@ export const getAdvancedFilters = (
 			},
 			input: {
 				component: 'SelectControl',
+				__nextHasNoMarginBottom: true,
 				type: 'loans',
 				options: loanSelectionOptions,
 			},
