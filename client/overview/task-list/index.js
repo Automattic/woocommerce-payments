@@ -167,6 +167,8 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 					title={ task.title }
 					actionLabel={ task.actionLabel }
 					completed={ task.completed }
+					inProgress={ task.inProgress ?? false }
+					inProgressLabel={ task.inProgressLabel ?? '' }
 					content={ task.content }
 					additionalInfo={ task.additionalInfo }
 					showActionButton={ task.showActionButton }

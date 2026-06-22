@@ -38,6 +38,7 @@ jest.mock( '@woocommerce/experimental', () => {
 	};
 } );
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getQuery: jest.fn(),
 	addHistoryListener: jest.fn(),
 } ) );

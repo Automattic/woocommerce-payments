@@ -94,6 +94,7 @@ jest.mock( '../balance', () => ( {
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getQuery: jest.fn(),
 	updateQueryString: jest.fn(),
 } ) );
