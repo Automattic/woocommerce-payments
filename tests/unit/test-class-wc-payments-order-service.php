@@ -1978,7 +1978,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order->save();
 
 		$refund_amount = 10;
-		$refund        = wc_create_refund(
+		wc_create_refund(
 			[
 				'amount'   => $refund_amount,
 				'reason'   => 'Testing refund',

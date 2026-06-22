@@ -697,10 +697,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $input ) {
-			return false === strpos( $input, 'some-secret' );
-		};
-
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
@@ -1037,7 +1033,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_readers_charge_summary() {
 		$transaction_id = uniqid( 'trx_' );
-		$charge_date    = gmdate( 'Y-m-d', 1634291278 );
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
