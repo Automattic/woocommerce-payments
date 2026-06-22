@@ -297,8 +297,6 @@ class WC_Payments_Invoice_Service {
 			return;
 		}
 
-		$charge = $intent_object->get_charge();
-
 		$this->order_service->attach_intent_info_to_order( $order, $intent_object );
 	}
 

@@ -840,9 +840,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * to immediately redirect to the main "Welcome to WooPayments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
-	 * @param string|null $error_message Optional error message to show in a notice.
+	 * @param string|null $_unused_error_message Optional error message to show in a notice.
 	 */
-	public function redirect_to_onboarding_welcome_page( $error_message = null ) {
+	public function redirect_to_onboarding_welcome_page( $_unused_error_message = null ) {
 		$this->redirect_service->redirect_to_nox_flow();
 	}
 
@@ -2910,7 +2910,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return [];
 		}
 
-		$gateway_form_fields = $gateway->get_form_fields();
+		$gateway->get_form_fields();
 
 		$payment_methods_available = $gateway->get_upe_available_payment_methods();
 		$payment_methods_enabled   = $gateway->get_upe_enabled_payment_method_ids();
