@@ -52,18 +52,15 @@
 	</rule>
 
 	<!--
-		The UnusedVariable sniff is being re-enabled incrementally as the sub-issues of
-		https://github.com/Automattic/woocommerce-payments/issues/8436 are completed.
-		Each path below is excluded either because it is out of scope for #8436 or because
-		its sub-issue has not landed yet. Remove a pattern once its files are fixed.
+		The UnusedVariable sniff is enabled repo-wide. The paths below stay excluded
+		because they are out of scope for https://github.com/Automattic/woocommerce-payments/issues/8436
+		(POC config classes) or were not enumerated in its sub-issues (#8653 / #8654 / #8655).
+		Remaining cleanup is tracked by #8436; remove a pattern once its files are fixed.
 	-->
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable">
 		<!-- POC payment-method definition classes; not part of #8436. -->
 		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
 		<exclude-pattern>tests/unit/payment-methods/Configs/</exclude-pattern>
-
-		<!-- Pending https://github.com/Automattic/woocommerce-payments/issues/8655. -->
-		<exclude-pattern>includes/multi-currency/</exclude-pattern>
 
 		<!-- includes/ + src/ files not listed in https://github.com/Automattic/woocommerce-payments/issues/8654; tracked by #8436. -->
 		<exclude-pattern>includes/admin/class-wc-rest-payments-pm-promotions-controller.php</exclude-pattern>
