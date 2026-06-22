@@ -358,6 +358,38 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
+	public function test_get_selected_currency_does_not_trigger_null_offset_deprecation_without_stored_currency() {
+		// Regression test for WOOPMNT-6238. With no currency stored for the user or
+		// session, the resolved currency code is null. Subscripting the enabled
+		// currencies array with that null key is deprecated as of PHP 8.5. This suite
+		// does not convert deprecations to exceptions, so assert the absence explicitly.
+		$null_offset_deprecations = [];
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Scoped handler asserting the absence of a deprecation; restored in finally below.
+		set_error_handler(
+			function ( $errno, $errstr ) use ( &$null_offset_deprecations ) {
+				if ( false !== strpos( $errstr, 'null as an array offset' ) ) {
+					$null_offset_deprecations[] = $errstr;
+					return true;
+				}
+				return false;
+			},
+			E_DEPRECATED
+		);
+
+		try {
+			$selected_code = $this->multi_currency->get_selected_currency()->get_code();
+		} finally {
+			restore_error_handler();
+		}
+
+		$this->assertSame( get_woocommerce_currency(), $selected_code );
+		$this->assertSame(
+			[],
+			$null_offset_deprecations,
+			'get_selected_currency() must not use null as an array offset when no currency is stored.'
+		);
+	}
+
 	public function test_get_selected_currency_returns_default_currency_for_invalid_session_currency() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'UNSUPPORTED_CURRENCY' );
 

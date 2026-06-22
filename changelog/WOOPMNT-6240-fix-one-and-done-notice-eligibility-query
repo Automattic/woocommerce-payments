@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed the one-and-done and test-to-live notice eligibility checks running a slow, unbounded order query that could block admin order pages on large stores.
