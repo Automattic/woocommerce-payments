@@ -35,7 +35,7 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return 'MockPaymentMethod';
 	}
 
-	public static function get_title( ?string $account_country = null ): string {
+	public static function get_title( ?string $_unused_account_country = null ): string {
 		return 'Mock Method';
 	}
 
@@ -46,11 +46,11 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return null;
 	}
 
-	public static function get_settings_label( ?string $account_country = null ): string {
+	public static function get_settings_label( ?string $_unused_account_country = null ): string {
 		return 'Mock Method';
 	}
 
-	public static function get_description( ?string $account_country = null ): string {
+	public static function get_description( ?string $_unused_account_country = null ): string {
 		return 'Mock payment method for testing';
 	}
 
@@ -58,7 +58,7 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 	}
 
-	public static function get_supported_countries( ?string $account_country = null ): array {
+	public static function get_supported_countries( ?string $_unused_account_country = null ): array {
 		return [ 'US', 'CA' ];
 	}
 
@@ -66,19 +66,19 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return [];
 	}
 
-	public static function get_icon_url( ?string $account_country = null ): string {
+	public static function get_icon_url( ?string $_unused_account_country = null ): string {
 		return 'https://example.com/icon.png';
 	}
 
-	public static function get_dark_icon_url( ?string $account_country = null ): string {
+	public static function get_dark_icon_url( ?string $_unused_account_country = null ): string {
 		return 'https://example.com/dark-icon.png';
 	}
 
-	public static function get_settings_icon_url( ?string $account_country = null ): string {
+	public static function get_settings_icon_url( ?string $_unused_account_country = null ): string {
 		return 'https://example.com/settings-icon.png';
 	}
 
-	public static function get_testing_instructions( string $account_country ): string {
+	public static function get_testing_instructions( string $_unused_account_country ): string {
 		return 'Test instructions';
 	}
 
@@ -91,11 +91,11 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return [];
 	}
 
-	public static function get_minimum_amount( string $currency, string $country ): ?int {
+	public static function get_minimum_amount( string $_unused_currency, string $_unused_country ): ?int {
 		return null;
 	}
 
-	public static function get_maximum_amount( string $currency, string $country ): ?int {
+	public static function get_maximum_amount( string $_unused_currency, string $_unused_country ): ?int {
 		return null;
 	}
 }

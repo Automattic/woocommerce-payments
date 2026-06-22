@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Stripe's canonical origin. Stripe.js is only ever served from here
  * (https://docs.stripe.com/js/including); any other origin is unsupported.
  */
@@ -23,10 +28,11 @@ export interface StripeOriginResult {
  * a skimmer clone render the card iframe from its own origin. We read the tag
  * before `new Stripe()` so the caller can block first.
  *
- * The `#stripe-js` handle is matched by id first and explicitly, so a repointed
- * handle always wins over a legitimate js.stripe.com tag elsewhere in the DOM.
- * Only without a handle tag do we fall back to any js.stripe.com tag — the
- * origin is asserted, not the path.
+ * The `#stripe-js` handle is matched first and explicitly — tag-qualified as
+ * `script#stripe-js`, so a non-script element sharing the id can't divert the
+ * lookup — so a repointed handle always wins over a legitimate js.stripe.com tag
+ * elsewhere in the DOM. Only without a handle tag do we fall back to any
+ * js.stripe.com tag — the origin is asserted, not the path.
  *
  * @param doc Document to inspect. Injectable for tests.
  */
@@ -34,7 +40,7 @@ export const verifyStripeJsOrigin = (
 	doc: Document = document
 ): StripeOriginResult => {
 	const tag =
-		doc.querySelector< HTMLScriptElement >( '#stripe-js' ) ??
+		doc.querySelector< HTMLScriptElement >( 'script#stripe-js' ) ??
 		// Fallback presence check: the `src^=` filter already pins the origin, so
 		// a match here is always ok — it just confirms Stripe.js is present when
 		// no `#stripe-js` handle exists (a total absence still fails closed below).
@@ -99,5 +105,7 @@ export const assertStripeJsOrigin = ( {
 		`WooPayments: blocking checkout — ${ reason }. Expected Stripe.js from ${ STRIPE_JS_ORIGIN }.`
 	);
 
-	throw new Error( 'Stripe.js provenance check failed.' );
+	throw new Error(
+		__( 'Stripe.js provenance check failed.', 'woocommerce-payments' )
+	);
 };
