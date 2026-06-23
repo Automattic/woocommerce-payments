@@ -78,7 +78,7 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 				},
 			],
 			[
-				function ( $instance ) {
+				function ( $_unused_instance ) {
 					wcpay_get_container()->get( LoggerContext::class )->init_hooks();
 					Logger_Context::set_value( 'foo', 'bar' );
 				},

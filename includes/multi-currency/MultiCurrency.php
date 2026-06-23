@@ -775,6 +775,10 @@ class MultiCurrency {
 		$multi_currency_code = $this->compatibility->override_selected_currency();
 		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
 
+		if ( null === $currency_code ) {
+			return $this->get_default_currency();
+		}
+
 		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
 	}
 
@@ -1885,7 +1889,7 @@ class MultiCurrency {
 		// Simulate client currency from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_currency_name',
-			function ( $selected_currency_name ) use ( $simulation_currency_name ) {
+			function ( $_unused_selected_currency_name ) use ( $simulation_currency_name ) {
 				return $simulation_currency_name;
 			}
 		);
@@ -1893,7 +1897,7 @@ class MultiCurrency {
 		// Simulate client country from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_country',
-			function ( $selected_country ) use ( $simulation_country ) {
+			function ( $_unused_selected_country ) use ( $simulation_country ) {
 				return $simulation_country;
 			}
 		);

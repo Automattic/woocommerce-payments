@@ -25,6 +25,32 @@ section() {
 	echo ""
 }
 
+# Docker Hub / wordpress.org flake transiently on CI (registry timeouts, brief
+# outages); retry. Warnings go to stderr so they survive redirect_output / > /dev/null.
+retry() {
+	local max_attempts=3
+	local delay=10
+	local attempt=1
+	local exit_code
+
+	while true; do
+		if "$@"; then
+			return 0
+		else
+			exit_code=$?
+		fi
+
+		if (( attempt >= max_attempts )); then
+			return "$exit_code"
+		fi
+
+		warn "Attempt ${attempt}/${max_attempts} failed (exit ${exit_code}); retrying in ${delay}s: $*" >&2
+		sleep "$delay"
+		attempt=$(( attempt + 1 ))
+		delay=$(( delay * 2 ))
+	done
+}
+
 is_remote_git_repo() {
 	local repo=$1
 
@@ -472,7 +498,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	success "Secrets created"
 
 	info "Starting server containers..."
-	redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+	retry redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
 	success "Server listening on port ${WP_LISTEN_PORT}"
@@ -532,9 +558,9 @@ fi
 section "WordPress client"
 
 info "Starting containers..."
-redirect_output docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
+retry redirect_output docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
-	docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
+	retry docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
 fi
 success "Containers started"
 
@@ -565,7 +591,7 @@ fi
 section "WordPress setup"
 
 info "Pulling WordPress CLI image..."
-docker pull wordpress:cli > /dev/null
+retry docker pull wordpress:cli > /dev/null
 
 info "Installing WordPress core..."
 cli wp core install \
@@ -579,10 +605,10 @@ cli wp core install \
 
 if [[ -n "$E2E_WP_VERSION" && "$E2E_WP_VERSION" != "latest" ]]; then
 	info "Installing WordPress ${E2E_WP_VERSION}..."
-	cli wp core update --version="$E2E_WP_VERSION" --force --quiet
+	retry cli wp core update --version="$E2E_WP_VERSION" --force --quiet
 else
 	info "Updating WordPress to latest..."
-	cli wp core update --quiet
+	retry cli wp core update --quiet
 fi
 
 cli wp core update-db --quiet
@@ -604,22 +630,22 @@ success "WordPress installed"
 section "WooCommerce"
 
 info "Installing WordPress Importer..."
-cli wp plugin install wordpress-importer --activate
+retry cli wp plugin install wordpress-importer --activate
 
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
 	info "Installing WooCommerce ${E2E_WC_VERSION}..."
-	cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate
+	retry cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate
 else
 	info "Installing latest WooCommerce..."
-	cli wp plugin install woocommerce --activate
+	retry cli wp plugin install woocommerce --activate
 fi
 
 info "Installing REST API auth plugin..."
-cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
+retry cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
 
 info "Installing themes..."
-cli wp theme install storefront --activate
-cli wp theme install twentytwentyfour
+retry cli wp theme install storefront --activate
+retry cli wp theme install twentytwentyfour
 
 info "Configuring WooCommerce settings..."
 cli wp option set woocommerce_store_address "60 29th Street"
@@ -726,9 +752,13 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	info "Installing latest release..."
 	cd "$E2E_ROOT"/deps
 
-	LATEST_RELEASE_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/latest | jq -r '.assets[0].id')
+	# --fail + --retry-all-errors: retry transient HTTP errors (GH 5xx / rate-limit) instead of saving an error body as the zip.
+	LATEST_RELEASE_ASSET_ID=$(curl --retry 3 --retry-all-errors --fail -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/latest | jq -r '.assets[0].id')
 
 	curl -LJ \
+		--retry 3 \
+		--retry-all-errors \
+		--fail \
 		-H "Authorization: token $E2E_GH_TOKEN" \
 		-H "Accept: application/octet-stream" \
 		--output woocommerce-subscriptions.zip \
@@ -748,7 +778,7 @@ fi
 
 if [[ ! ${SKIP_WC_ACTION_SCHEDULER_TESTS} ]]; then
 	info "Installing Action Scheduler..."
-	cli wp plugin install action-scheduler --activate
+	retry cli wp plugin install action-scheduler --activate
 	success "Action Scheduler installed"
 fi
 

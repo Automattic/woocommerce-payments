@@ -113,6 +113,43 @@ class RestAPI {
 		}
 	}
 
+	/**
+	 * Checks whether a widget is currently assigned to a sidebar.
+	 * Matching mirrors deleteWidgets so callers can confirm a save persisted.
+	 */
+	async hasWidget(
+		widgetArea: string,
+		widgetName: string,
+		blockFilter?: string
+	): Promise< boolean > {
+		const client = this.getAdminClient();
+
+		const widgets = await client.get( widgetEndpoint, {
+			params: {
+				sidebar: widgetArea,
+				context: 'edit',
+			},
+		} );
+
+		if ( widgets.data && widgets.data.length ) {
+			for ( let c = 0; c < widgets.data.length; c++ ) {
+				if ( widgets.data[ c ].id_base === widgetName ) {
+					// For block widgets, also require the specific block in the content.
+					if (
+						widgetName === 'block' &&
+						! widgets.data[ c ].rendered.includes( blockFilter )
+					) {
+						continue;
+					}
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	async createCustomer(
 		customerData: CustomerType,
 		billingAddress: AddressType,

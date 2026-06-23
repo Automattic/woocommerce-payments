@@ -697,10 +697,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $input ) {
-			return false === strpos( $input, 'some-secret' );
-		};
-
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
@@ -715,6 +711,72 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				2,
 			],
 		];
+	}
+
+	/**
+	 * Test that data in GET request query parameters is redacted in the log context URL.
+	 *
+	 * Regression test for WOOPMNT-5954: the raw URL (containing e.g. email, name) was
+	 * passed directly into the log context, while the human-readable log message correctly
+	 * used the redacted URL.
+	 */
+	public function test_get_request_url_is_redacted_in_log_context() {
+		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
+			->setMethods( [ 'log' ] )
+			->getMock();
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode() );
+		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
+
+		WC_Payments::mode()->dev();
+
+		$captured_context = null;
+		$mock_logger
+			->expects( $this->atLeastOnce() )
+			->method( 'log' )
+			->willReturnCallback(
+				function ( $level, $message, $context ) use ( &$captured_context ) {
+					if ( false !== strpos( $message, 'API REQUEST' ) ) {
+						$captured_context = $context;
+					}
+				}
+			);
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode( [ 'status' => true ] ),
+					]
+				)
+			);
+
+		$reflection     = new ReflectionClass( $this->payments_api_client );
+		$request_method = $reflection->getMethod( 'request' );
+		$request_method->setAccessible( true );
+		$request_method->invokeArgs(
+			$this->payments_api_client,
+			[ [ 'email' => 'customer@example.com' ], 'abc', 'GET' ]
+		);
+		$request_method->setAccessible( false );
+
+		$this->assertNotNull( $captured_context, 'API REQUEST log entry was not captured.' );
+		$this->assertArrayHasKey( 'request', $captured_context );
+		$this->assertArrayHasKey( 'url', $captured_context['request'] );
+		$this->assertStringNotContainsString(
+			'customer@example.com',
+			$captured_context['request']['url'],
+			'Raw email address must not appear in the log context URL.'
+		);
+
+		// clean up.
+		WC_Payments::mode()->live();
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	/**
@@ -1037,7 +1099,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_readers_charge_summary() {
 		$transaction_id = uniqid( 'trx_' );
-		$charge_date    = gmdate( 'Y-m-d', 1634291278 );
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )

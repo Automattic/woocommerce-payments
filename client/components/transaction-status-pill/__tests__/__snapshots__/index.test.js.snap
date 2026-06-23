@@ -2,9 +2,11 @@
 
 exports[`Transaction status pill should render the allow pill correctly 1`] = `
 .emotion-0 {
-  color: #1e1e1e;
-  line-height: 1.2;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  line-height: 1.4;
   margin: 0;
+  text-wrap: balance;
+  text-wrap: pretty;
   font-size: calc((12 / 13) * 13px);
   font-weight: normal;
   line-height: 16px;
@@ -23,9 +25,11 @@ exports[`Transaction status pill should render the allow pill correctly 1`] = `
 
 exports[`Transaction status pill should render the block pill correctly 1`] = `
 .emotion-0 {
-  color: #1e1e1e;
-  line-height: 1.2;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  line-height: 1.4;
   margin: 0;
+  text-wrap: balance;
+  text-wrap: pretty;
   font-size: calc((12 / 13) * 13px);
   font-weight: normal;
   line-height: 16px;
@@ -44,9 +48,11 @@ exports[`Transaction status pill should render the block pill correctly 1`] = `
 
 exports[`Transaction status pill should render the review pill correctly 1`] = `
 .emotion-0 {
-  color: #1e1e1e;
-  line-height: 1.2;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  line-height: 1.4;
   margin: 0;
+  text-wrap: balance;
+  text-wrap: pretty;
   font-size: calc((12 / 13) * 13px);
   font-weight: normal;
   line-height: 16px;
@@ -65,9 +71,11 @@ exports[`Transaction status pill should render the review pill correctly 1`] = `
 
 exports[`Transaction status pill should render the unknown pill correctly 1`] = `
 .emotion-0 {
-  color: #1e1e1e;
-  line-height: 1.2;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  line-height: 1.4;
   margin: 0;
+  text-wrap: balance;
+  text-wrap: pretty;
   font-size: calc((12 / 13) * 13px);
   font-weight: normal;
   line-height: 16px;

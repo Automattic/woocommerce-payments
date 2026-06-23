@@ -293,9 +293,9 @@ class WooPay_Session {
 	 *
 	 * @param bool      $needs_payment If the order needs payment.
 	 * @param \WC_Order $order The order.
-	 * @param array     $valid_order_statuses The valid order statuses.
+	 * @param array     $_unused_valid_order_statuses The valid order statuses.
 	 */
-	public static function woopay_trial_subscriptions_handler( $needs_payment, $order, $valid_order_statuses ) {
+	public static function woopay_trial_subscriptions_handler( $needs_payment, $order, $_unused_valid_order_statuses ) {
 		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $needs_payment;
 		}

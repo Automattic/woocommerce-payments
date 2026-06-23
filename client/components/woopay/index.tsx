@@ -45,7 +45,7 @@ const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
 
 		setIsLoading( true );
 		promise.then( ( response ) => {
-			window.location = response.url;
+			window.location.href = response.url;
 			setIsLoading( false );
 		} );
 	};

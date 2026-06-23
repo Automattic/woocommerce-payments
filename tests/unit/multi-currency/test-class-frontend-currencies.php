@@ -452,7 +452,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		add_filter( 'wcpay_multi_currency_should_convert_product_price', $should_convert_product_price, 999 );
 
 		// Act.
-		$price_html = $mock_product->get_price_html();
+		$mock_product->get_price_html();
 
 		// Assert.
 		$this->assertEquals( $store_currency_args, ( $spy_return_store_currency->received_args )() );

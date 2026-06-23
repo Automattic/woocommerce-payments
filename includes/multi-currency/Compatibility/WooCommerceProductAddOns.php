@@ -322,11 +322,11 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	 *
 	 * @param float       $price    Price to get converted.
 	 * @param int         $quantity Quantity of the product selected.
-	 * @param \WC_Product $product  WC_Product related to the price.
+	 * @param \WC_Product $_unused_product  WC_Product related to the price.
 	 *
 	 * @return float Adjusted price.
 	 */
-	public function get_product_calculation_price( float $price, int $quantity, \WC_Product $product ): float {
+	public function get_product_calculation_price( float $price, int $quantity, \WC_Product $_unused_product ): float {
 		return $this->multi_currency->get_price( $price / $quantity, 'product' ) * $quantity;
 	}
 }

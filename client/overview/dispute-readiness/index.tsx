@@ -203,6 +203,8 @@ const DisputeReadinessCard = () => {
 									data-status={ signal.status }
 									title={ signal.label }
 									completed={ isComplete }
+									inProgress={ false }
+									inProgressLabel=""
 									content={ signal.description || '' }
 									expanded
 									showActionButton={ hasAction }
