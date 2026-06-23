@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95.69 62.85" height="40" width="61">
+<svg width="64" height="40" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="64" height="40" rx="3" fill="white"/>
     <defs>
         <clipPath id="clip-path">
             <path class="cls-1" d="M53.91 31.28a6.56 6.56 0 1 1-6.56-6.55 6.56 6.56 0 0 1 6.56 6.55Z"/>
@@ -31,6 +32,7 @@
             .cls-1{fill:none}.cls-4{fill:#261f20}.cls-240{fill:#e45716}
         </style>
     </defs>
+    <g transform="translate(10.7 6) scale(0.4455)">
     <g style="isolation:isolate">
         <g id="Mark">
             <path d="M3.3 5.3v52.25a2 2 0 0 0 2 2h55.48a28.13 28.13 0 0 0 28.13-28.12A28.13 28.13 0 0 0 60.78 3.3H5.3a2 2 0 0 0-2 2Z" style="fill:#fff"/>
@@ -351,5 +353,6 @@
                 </g>
             </g>
         </g>
+    </g>
     </g>
 </svg>

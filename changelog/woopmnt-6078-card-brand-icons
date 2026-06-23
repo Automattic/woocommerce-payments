@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Normalize the cards/ brand icon SVGs for visual consistency: unify the Visa blue to the official navy (#1A1F71), round Mastercard's corners, and reframe the Discover icon to standard 64x40 dimensions.
