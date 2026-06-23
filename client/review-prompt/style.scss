@@ -1,5 +1,11 @@
 /** @format */
 
+#wcpay-review-prompt {
+	--wcpay-spotlight-width: 257px;
+	--wcpay-spotlight-font-family: 'SF Pro', #{$default-font};
+	--wcpay-spotlight-heading-margin-bottom: #{$gap-smaller};
+}
+
 .wcpay-review-prompt__illustration {
 	display: flex;
 	align-items: center;
