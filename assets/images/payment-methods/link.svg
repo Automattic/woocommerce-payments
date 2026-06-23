@@ -1,8 +1,7 @@
 <svg width="64" height="40" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Size=Large, Name=Stripe Link, Outline=On">
+<g id="Size=Large, Name=Stripe Link, Outline=Off">
 <rect width="64" height="40" rx="3" fill="white"/>
-<rect x="0.5" y="0.5" width="63" height="39" rx="2.5" stroke="black" stroke-opacity="0.07"/>
-<g id="Link_logo_primary_green_light_RGB 1" clip-path="url(#clip0_7623_50573)">
+<g id="Link_logo_primary_green_light_RGB 1" clip-path="url(#clip0_7623_50571)">
 <path id="Vector" d="M32.0933 13.8597C32.0933 12.9824 32.8325 12.2693 33.7024 12.2693C34.5723 12.2693 35.3115 12.9861 35.3115 13.8597C35.3115 14.7333 34.5984 15.4688 33.7024 15.4688C32.8064 15.4688 32.0933 14.7557 32.0933 13.8597Z" fill="#011E0F"/>
 <path id="Vector_2" d="M27.3184 12.4934H30.1184V28.1734H27.3184V12.4934Z" fill="#011E0F"/>
 <path id="Vector_3" d="M35.1173 16.9734H32.2949V28.1734H35.1173V16.9734Z" fill="#011E0F"/>
@@ -13,7 +12,7 @@
 </g>
 </g>
 <defs>
-<clipPath id="clip0_7623_50573">
+<clipPath id="clip0_7623_50571">
 <rect width="56" height="18.6667" fill="white" transform="translate(4 11)"/>
 </clipPath>
 </defs>

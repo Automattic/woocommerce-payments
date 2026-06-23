@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Replace the cards/ Visa, Mastercard, Amex, and Discover brand icons with the design library's 64x40 outlined exports for consistent styling across the payment method icons.

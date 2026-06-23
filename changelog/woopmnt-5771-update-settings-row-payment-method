@@ -1,4 +1,4 @@
 Significance: patch
 Type: update
 
-Updated settings row payment method icons to use Figma-exported SVGs with baked-in strokes, removing CSS border dependency.
+Updated payment method icons to the latest design-library artwork. The settings-page icon stroke is applied via admin-only CSS, so the public checkout logos are unchanged.
