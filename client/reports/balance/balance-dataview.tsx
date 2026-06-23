@@ -167,7 +167,12 @@ export const BalanceDataView = ( {
 						// the chip and leaves only the funnel toggle, which
 						// re-adds it (primary filters also hard-disable the
 						// funnel in DataViews).
-						operators: [ 'before', 'after', 'between', 'on' ],
+						//
+						// `between` leads so a re-added filter defaults to it
+						// (operators[0]); its range presets avoid the confusing
+						// single-date "Past week / Past month" anchors that a
+						// `before` default surfaced (see WOOPMNT-6243).
+						operators: [ 'between', 'before', 'after', 'on' ],
 					},
 					getValue: () => displayPeriod.start,
 				},
