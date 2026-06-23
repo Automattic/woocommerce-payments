@@ -928,4 +928,97 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}
+
+	public function test_is_product_purchasable_returns_true_off_product_page() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->expects( $this->never() )->method( 'get_product' );
+
+		$this->assertTrue( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_true_for_purchasable_in_stock_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'instock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		$this->assertTrue( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_false_for_out_of_stock_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'outofstock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_true_for_backorder_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( 0 );
+		$product->set_backorders( 'yes' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		// is_in_stock() returns true for backorder products, so they remain purchasable.
+		$this->assertTrue( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_false_for_non_purchasable_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '' );
+		$product->set_price( '' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		// A product with no price is not purchasable.
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	public function test_should_not_show_express_checkout_button_when_product_not_purchasable() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_enabled_express_checkout_methods_for_context', 'is_product_purchasable' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+		// is_product_supported() (private) passes when get_product() returns null — the filter defaults to false,
+		// but is_product_purchasable() returning false fires first, making should_show return false regardless.
+		$helper->method( 'is_product_purchasable' )->willReturn( false );
+
+		$this->assertFalse( $helper->should_show_express_checkout_button() );
+	}
 }

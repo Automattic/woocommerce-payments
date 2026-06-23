@@ -515,6 +515,34 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Whether the product on the current product page can be added to the cart.
+	 *
+	 * Returns true on non-product pages so it never gates the cart or checkout
+	 * contexts. On a product page, a product that is not purchasable or out of
+	 * stock can't be added to the cart, so the express buttons should not show.
+	 *
+	 * Variable products report the parent's aggregate status: is_purchasable()
+	 * and is_in_stock() are true when at least one variation is buyable, so this
+	 * only filters out wholly-unavailable products. Per-variation gating happens
+	 * on the client after the shopper selects options.
+	 *
+	 * @return bool
+	 */
+	public function is_product_purchasable(): bool {
+		if ( ! $this->is_product() ) {
+			return true;
+		}
+
+		$product = $this->get_product();
+
+		if ( ! $product instanceof WC_Product ) {
+			return false;
+		}
+
+		return $product->is_purchasable() && $product->is_in_stock();
+	}
+
+	/**
 	 * Checks whether Express Checkout Element Button should be available on this page.
 	 *
 	 * @return bool
@@ -552,6 +580,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Product page, but has unsupported product type.
 		if ( $this->is_product() && ! $this->is_product_supported() ) {
 			Logger::log( 'Product page has unsupported product type ( Express Checkout Element button disabled )' );
+			return false;
+		}
+
+		// Product page, but the product can't be added to the cart (not purchasable or out of stock).
+		if ( $this->is_product() && ! $this->is_product_purchasable() ) {
+			Logger::log( 'Product is not purchasable ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
