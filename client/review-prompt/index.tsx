@@ -162,7 +162,6 @@ const ReviewPrompt: React.FC = () => {
 			onView={ handleView }
 			showImmediately={ false }
 			showDelayMs={ 2000 }
-			reverseButtons={ true }
 		/>
 	);
 };
