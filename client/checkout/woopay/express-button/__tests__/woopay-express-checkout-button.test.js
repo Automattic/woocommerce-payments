@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { screen, render, waitFor } from '@testing-library/react';
+import { screen, render, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -14,6 +14,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
+import { onProductAvailabilityChange } from 'wcpay/utils/wc-product-page-events';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ) )
@@ -60,6 +61,10 @@ jest.mock( 'tracks', () => ( {
 } ) );
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
+
+jest.mock( 'wcpay/utils/wc-product-page-events', () => ( {
+	onProductAvailabilityChange: jest.fn( () => () => {} ),
+} ) );
 
 jest.mock( 'wcpay/utils/woopay-card-brands', () => ( {
 	wooPayCardBrands: [
@@ -498,19 +503,14 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
-		test( 'should show an alert when clicking the button when add to cart button is disabled', async () => {
+		test( 'hides the WooPay button on product page when add to cart is disabled', () => {
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
-			useExpressCheckoutProductHandler.mockImplementation( () => ( {
-				addToCart: mockAddToCart,
-			} ) );
 
-			// Add a disabled add to cart button to the DOM.
 			const addToCartButton = document.createElement( 'button' );
 			addToCartButton.classList.add( 'single_add_to_cart_button' );
 			addToCartButton.classList.add( 'disabled' );
-			addToCartButton.classList.add( 'wc-variation-selection-needed' );
 			document.body.appendChild( addToCartButton );
 
 			render(
@@ -523,15 +523,72 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			const expressButton = screen.queryByRole( 'button', {
-				name: 'WooPay',
+			expect(
+				screen.queryByRole( 'button', { name: 'WooPay' } )
+			).not.toBeInTheDocument();
+
+			document.body.removeChild( addToCartButton );
+		} );
+
+		test( 'shows the WooPay button on product page when add to cart is available', () => {
+			getConfig.mockImplementation( ( v ) => {
+				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
 
-			await userEvent.click( expressButton );
-
-			expect( window.alert ).toHaveBeenCalledWith(
-				'Please select your product options before proceeding.'
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+					emailSelector="#email"
+				/>
 			);
+
+			expect(
+				screen.getByRole( 'button', { name: 'WooPay' } )
+			).toBeInTheDocument();
+		} );
+
+		test( 'reveals the WooPay button when the product becomes available', () => {
+			getConfig.mockImplementation( ( v ) => {
+				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+			} );
+
+			let availabilityCallback;
+			onProductAvailabilityChange.mockImplementation( ( cb ) => {
+				availabilityCallback = cb;
+				return () => {};
+			} );
+
+			const addToCartButton = document.createElement( 'button' );
+			addToCartButton.classList.add( 'single_add_to_cart_button' );
+			addToCartButton.classList.add( 'disabled' );
+			document.body.appendChild( addToCartButton );
+
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+					emailSelector="#email"
+				/>
+			);
+
+			expect(
+				screen.queryByRole( 'button', { name: 'WooPay' } )
+			).not.toBeInTheDocument();
+
+			// The product becomes available; the watcher notifies the button.
+			addToCartButton.classList.remove( 'disabled' );
+			act( () => {
+				availabilityCallback();
+			} );
+
+			expect(
+				screen.getByRole( 'button', { name: 'WooPay' } )
+			).toBeInTheDocument();
 
 			document.body.removeChild( addToCartButton );
 		} );
