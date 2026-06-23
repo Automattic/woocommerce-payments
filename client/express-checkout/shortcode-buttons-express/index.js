@@ -454,8 +454,20 @@ jQuery( ( $ ) => {
 						onReadyParams.availablePaymentMethods
 					).filter( Boolean ).length
 				) {
-					expressCheckoutButtonUi.showContainer();
-					expressCheckoutButtonUi.getButtonSeparator().show();
+					// On the product page, don't reveal the button when the
+					// product can't be added to the cart (out of stock, or no /
+					// invalid variation selected).
+					if (
+						getExpressCheckoutData( 'button_context' ) ===
+							'product' &&
+						isAddToCartBlocked()
+					) {
+						expressCheckoutButtonUi.hideContainer();
+						expressCheckoutButtonUi.getButtonSeparator().hide();
+					} else {
+						expressCheckoutButtonUi.showContainer();
+						expressCheckoutButtonUi.getButtonSeparator().show();
+					}
 				}
 			} );
 		},
@@ -605,7 +617,11 @@ jQuery( ( $ ) => {
 							'product' &&
 						isAddToCartBlocked()
 					) {
-						expressCheckoutButtonUi.unblockButton();
+						// A blocked product (no variation selected, out of stock…)
+						// can't be added to the cart, so hide the button entirely
+						// rather than leaving it shown-but-inert.
+						expressCheckoutButtonUi.hideContainer();
+						expressCheckoutButtonUi.getButtonSeparator().hide();
 						return;
 					}
 
