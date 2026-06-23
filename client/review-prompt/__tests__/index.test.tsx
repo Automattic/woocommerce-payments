@@ -88,8 +88,9 @@ jest.mock( '@woocommerce/data', () => {
 // Mock the wcpayReviewPromptSettings global
 declare const global: {
 	wcpayReviewPromptSettings: {
-		isLive: boolean;
 		version: string;
+		experiment: string;
+		variant: string;
 	};
 };
 
@@ -110,8 +111,9 @@ describe( 'ReviewPrompt', () => {
 
 		// Mock the global settings
 		global.wcpayReviewPromptSettings = {
-			isLive: true,
 			version: '1.0.0',
+			experiment: 'woopayments_review_prompt_design_v1',
+			variant: 'control',
 		};
 	} );
 
@@ -130,52 +132,89 @@ describe( 'ReviewPrompt', () => {
 		expect( screen.getByText( 'Maybe later' ) ).toBeInTheDocument();
 	} );
 
-	it( 'records payments_review_prompt_shown event on view', () => {
+	it( 'records wcpay_review_prompt_shown event on view', () => {
 		render( <ReviewPrompt /> );
 
 		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_shown',
+			'wcpay_review_prompt_shown',
 			expect.objectContaining( {
-				prompt_id: 'phase0_payments_settings_001',
+				prompt_id: 'review_prompt_settings_001',
 				extension: 'woopayments',
 				location: 'payments_settings_top_level',
 				trigger: 'none',
 				flag_enabled: true,
 				version: '1.0.0',
+				experiment: 'woopayments_review_prompt_design_v1',
+				variant: 'control',
 			} )
 		);
 	} );
 
-	it( 'opens WordPress.org review URL when "Leave review" is clicked in live mode', async () => {
-		global.wcpayReviewPromptSettings.isLive = true;
+	it.each( [
+		[
+			'treatment_illustration',
+			'treatment_illustration',
+			'We built it. You use it. What do you think?',
+			'Leave a quick review and help shape what WooPayments does next.',
+		],
+		[
+			'treatment_revised',
+			'treatment_revised',
+			'Quick check-in?',
+			'Your review helps us improve WooPayments and build a better experience for every store owner.',
+		],
+		[
+			'unknown variant fallback',
+			'mystery_variant',
+			'Enjoying WooPayments so far?',
+			'Your feedback shapes our roadmap and supports the WooCommerce community. We are all ears!',
+		],
+	] )( 'renders %s copy', ( label, variant, heading, description ) => {
+		global.wcpayReviewPromptSettings.variant = variant;
 
 		render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
-
-		await waitFor( () => {
-			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
-				'_blank'
-			);
-		} );
+		expect( screen.getByText( heading ) ).toBeInTheDocument();
+		expect( screen.getByText( description ) ).toBeInTheDocument();
 	} );
 
-	it( 'opens marketplace review URL when "Leave review" is clicked in test mode', async () => {
-		global.wcpayReviewPromptSettings.isLive = false;
+	it( 'includes the variant in event props for treatments', () => {
+		global.wcpayReviewPromptSettings.variant = 'treatment_revised';
 
 		render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_review_prompt_shown',
+			expect.objectContaining( {
+				experiment: 'woopayments_review_prompt_design_v1',
+				variant: 'treatment_revised',
+			} )
+		);
+	} );
+
+	it( 'opens the Marketplace review URL with attribution when "Leave review" is clicked', async () => {
+		global.wcpayReviewPromptSettings.variant = 'treatment_illustration';
+
+		render( <ReviewPrompt /> );
+
+		fireEvent.click( screen.getByText( 'Leave review' ) );
 
 		await waitFor( () => {
-			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://woocommerce.com/products/woocommerce-payments/?review',
-				'_blank'
-			);
+			expect( mockWindowOpen ).toHaveBeenCalledTimes( 1 );
 		} );
+
+		const [ openedUrl, target ] = mockWindowOpen.mock.calls[ 0 ];
+		const url = new URL( openedUrl );
+
+		expect( url.origin + url.pathname ).toBe(
+			'https://woocommerce.com/products/woopayments/'
+		);
+		expect( url.searchParams.has( 'review' ) ).toBe( true );
+		expect( url.searchParams.get( 'utm_content' ) ).toBe(
+			'treatment_illustration'
+		);
+		expect( url.searchParams.get( 'utm_source' ) ).toBe( 'woopayments' );
+		expect( target ).toBe( '_blank' );
 	} );
 
 	it( 'records correct telemetry events when "Leave review" is clicked', async () => {
@@ -185,84 +224,55 @@ describe( 'ReviewPrompt', () => {
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
-			// Should record action event
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_prompt_action',
+				'wcpay_review_prompt_action',
 				expect.objectContaining( {
+					experiment: 'woopayments_review_prompt_design_v1',
+					variant: 'control',
 					action: 'write_review',
-					destination: 'wordpress_org',
+					destination: 'marketplace',
 					time_to_click_ms: expect.any( Number ),
 				} )
 			);
+		} );
+	} );
 
-			// Should record destination selected event
+	it.each( [
+		[
+			'Maybe later',
+			() => screen.getByText( 'Maybe later' ),
+			'maybe_later',
+		],
+		[
+			'dismiss (X)',
+			() => screen.getByLabelText( 'Dismiss' ),
+			'dismiss_x',
+		],
+	] )(
+		'records correct event when %s is clicked',
+		( label, getButton, action ) => {
+			render( <ReviewPrompt /> );
+
+			fireEvent.click( getButton() );
+
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_destination_selected',
+				'wcpay_review_prompt_action',
 				expect.objectContaining( {
-					action: 'write_review',
-					destination: 'wordpress_org',
+					action,
+					time_to_click_ms: expect.any( Number ),
 				} )
 			);
-		} );
-	} );
+		}
+	);
 
-	it( 'hides prompt after "Leave review" is clicked', async () => {
+	it.each( [
+		[ 'Leave review', () => screen.getByText( 'Leave review' ) ],
+		[ 'Maybe later', () => screen.getByText( 'Maybe later' ) ],
+		[ 'dismiss (X)', () => screen.getByLabelText( 'Dismiss' ) ],
+	] )( 'hides prompt after %s is clicked', async ( label, getButton ) => {
 		const { container } = render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
-
-		await waitFor( () => {
-			expect( container.firstChild ).toBeNull();
-		} );
-	} );
-
-	it( 'records correct event when "Maybe later" is clicked', () => {
-		render( <ReviewPrompt /> );
-
-		const maybeLaterButton = screen.getByText( 'Maybe later' );
-		fireEvent.click( maybeLaterButton );
-
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_action',
-			expect.objectContaining( {
-				action: 'maybe_later',
-				time_to_click_ms: expect.any( Number ),
-			} )
-		);
-	} );
-
-	it( 'hides prompt after "Maybe later" is clicked', async () => {
-		const { container } = render( <ReviewPrompt /> );
-
-		const maybeLaterButton = screen.getByText( 'Maybe later' );
-		fireEvent.click( maybeLaterButton );
-
-		await waitFor( () => {
-			expect( container.firstChild ).toBeNull();
-		} );
-	} );
-
-	it( 'records correct event when dismiss (X) is clicked', () => {
-		render( <ReviewPrompt /> );
-
-		const dismissButton = screen.getByLabelText( 'Dismiss' );
-		fireEvent.click( dismissButton );
-
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_action',
-			expect.objectContaining( {
-				action: 'dismiss_x',
-				time_to_click_ms: expect.any( Number ),
-			} )
-		);
-	} );
-
-	it( 'hides prompt after dismiss (X) is clicked', async () => {
-		const { container } = render( <ReviewPrompt /> );
-
-		const dismissButton = screen.getByLabelText( 'Dismiss' );
-		fireEvent.click( dismissButton );
+		fireEvent.click( getButton() );
 
 		await waitFor( () => {
 			expect( container.firstChild ).toBeNull();
@@ -276,7 +286,6 @@ describe( 'ReviewPrompt', () => {
 
 		render( <ReviewPrompt /> );
 
-		// Advance time by 5 seconds
 		jest.advanceTimersByTime( 5000 );
 
 		const writeReviewButton = screen.getByText( 'Leave review' );
@@ -284,7 +293,7 @@ describe( 'ReviewPrompt', () => {
 
 		await waitFor( () => {
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_prompt_action',
+				'wcpay_review_prompt_action',
 				expect.objectContaining( {
 					time_to_click_ms: 5000,
 				} )
@@ -294,47 +303,8 @@ describe( 'ReviewPrompt', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'uses correct destination based on connection state', async () => {
-		// Test live mode
-		global.wcpayReviewPromptSettings.isLive = true;
-		const { unmount } = render( <ReviewPrompt /> );
-
-		let writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
-
-		await waitFor( () => {
-			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_destination_selected',
-				expect.objectContaining( {
-					destination: 'wordpress_org',
-				} )
-			);
-		} );
-
-		// Unmount, reset, and test test mode with a fresh render
-		unmount();
-		jest.clearAllMocks();
-		global.wcpayReviewPromptSettings.isLive = false;
-		render( <ReviewPrompt /> );
-
-		writeReviewButton = screen.getByText( 'Leave review' );
-		fireEvent.click( writeReviewButton );
-
-		await waitFor( () => {
-			expect( recordEvent ).toHaveBeenCalledWith(
-				'payments_review_destination_selected',
-				expect.objectContaining( {
-					destination: 'marketplace',
-				} )
-			);
-		} );
-	} );
-
 	it( 'falls back to window.location when window.open fails', async () => {
-		// Mock window.open to return null (popup blocked)
 		mockWindowOpen.mockReturnValueOnce( null );
-
-		global.wcpayReviewPromptSettings.isLive = true;
 
 		render( <ReviewPrompt /> );
 
@@ -342,15 +312,15 @@ describe( 'ReviewPrompt', () => {
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
-			// Should have tried to open in new window
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
+				expect.stringContaining(
+					'https://woocommerce.com/products/woopayments/'
+				),
 				'_blank'
 			);
 
-			// Should fall back to navigating current window
-			expect( window.location.href ).toBe(
-				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post'
+			expect( window.location.href ).toContain(
+				'https://woocommerce.com/products/woopayments/'
 			);
 		} );
 	} );
