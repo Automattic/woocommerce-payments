@@ -146,6 +146,14 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'store_123', $captured );
 	}
 
+	public function test_validates_variants() {
+		$experiment = $this->build_experiment( 'treatment_a', 'store_123' );
+
+		$this->assertTrue( $experiment->is_valid_variant( 'control' ) );
+		$this->assertTrue( $experiment->is_valid_variant( 'treatment_a' ) );
+		$this->assertFalse( $experiment->is_valid_variant( 'unknown_arm' ) );
+	}
+
 	public function test_memoizes_variant_per_instance() {
 		$this->set_consent( true );
 		$captured   = null;
