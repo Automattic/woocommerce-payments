@@ -49,7 +49,7 @@ const getTimeToClickProps = (
 /**
  * Base prompt telemetry props. The script only loads after server-side eligibility passes.
  */
-const getBaseEventProperties = () => {
+const getBaseEventProperties = ( variant: string ) => {
 	return {
 		prompt_id: 'review_prompt_settings_001',
 		extension: 'woopayments',
@@ -58,15 +58,14 @@ const getBaseEventProperties = () => {
 		flag_enabled: true,
 		version: window.wcpayReviewPromptSettings?.version || 'unknown',
 		experiment: window.wcpayReviewPromptSettings?.experiment || 'unknown',
-		variant: window.wcpayReviewPromptSettings?.variant || 'control',
+		variant,
 	};
 };
 
 const ReviewPrompt: React.FC = () => {
 	const { dismissPrompt, setMaybeLater } = useReviewPromptState();
-	const content = getVariantContent(
-		window.wcpayReviewPromptSettings?.variant
-	);
+	const variant = window.wcpayReviewPromptSettings?.variant || 'control';
+	const content = getVariantContent( variant );
 
 	const [ viewTimestamp, setViewTimestamp ] = useState< number | null >(
 		null
@@ -78,15 +77,14 @@ const ReviewPrompt: React.FC = () => {
 		setViewTimestamp( timestamp );
 		recordPromptEvent(
 			'wcpay_review_prompt_shown',
-			getBaseEventProperties()
+			getBaseEventProperties( variant )
 		);
-	}, [] );
+	}, [ variant ] );
 
 	const handlePrimaryClick = useCallback( async () => {
-		const variant = window.wcpayReviewPromptSettings?.variant || 'control';
 		const reviewUrl = getMarketplaceReviewUrl( variant );
 
-		const baseProps = getBaseEventProperties();
+		const baseProps = getBaseEventProperties( variant );
 		const eventProps = {
 			action: 'write_review',
 			destination: 'marketplace',
@@ -110,12 +108,12 @@ const ReviewPrompt: React.FC = () => {
 			dismissPrompt();
 		}
 		setIsVisible( false );
-	}, [ viewTimestamp, dismissPrompt ] );
+	}, [ variant, viewTimestamp, dismissPrompt ] );
 
 	const handleSecondaryClick = useCallback( () => {
 		recordPromptEvent(
 			'wcpay_review_prompt_action',
-			getBaseEventProperties(),
+			getBaseEventProperties( variant ),
 			{
 				action: 'maybe_later',
 				...getTimeToClickProps( viewTimestamp ),
@@ -123,12 +121,12 @@ const ReviewPrompt: React.FC = () => {
 		);
 		setMaybeLater();
 		setIsVisible( false );
-	}, [ viewTimestamp, setMaybeLater ] );
+	}, [ variant, viewTimestamp, setMaybeLater ] );
 
 	const handleDismiss = useCallback( () => {
 		recordPromptEvent(
 			'wcpay_review_prompt_action',
-			getBaseEventProperties(),
+			getBaseEventProperties( variant ),
 			{
 				action: 'dismiss_x',
 				...getTimeToClickProps( viewTimestamp ),
@@ -136,7 +134,7 @@ const ReviewPrompt: React.FC = () => {
 		);
 		dismissPrompt();
 		setIsVisible( false );
-	}, [ viewTimestamp, dismissPrompt ] );
+	}, [ variant, viewTimestamp, dismissPrompt ] );
 
 	if ( ! isVisible ) {
 		return null;

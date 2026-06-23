@@ -1618,17 +1618,21 @@ class WC_Payments_Admin {
 		 * Internal filter for QA: forces a specific design variant locally
 		 * without an ExPlat assignment. Not a public extension point.
 		 *
-		 * @since 10.9.0
+		 * @since 11.0.0
 		 *
 		 * @param string $variant The assigned variant.
 		 */
 		$variant = apply_filters( 'wcpay_review_prompt_experiment_variant', $experiment->get_variant() );
+		$variant = is_scalar( $variant ) ? (string) $variant : '';
+
+		if ( ! $experiment->is_valid_variant( $variant ) ) {
+			$variant = ReviewPromptExperiment::VARIANT_CONTROL;
+		}
 
 		wp_localize_script(
 			'WCPAY_REVIEW_PROMPT',
 			'wcpayReviewPromptSettings',
 			[
-				'isLive'     => WC_Payments::mode()->is_live(),
 				'version'    => WCPAY_VERSION_NUMBER,
 				'experiment' => $experiment->name(),
 				'variant'    => $variant,

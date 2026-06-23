@@ -804,11 +804,45 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$data = wp_scripts()->get_data( 'WCPAY_REVIEW_PROMPT', 'data' );
 		$this->assertStringContainsString( '"variant":"control"', $data );
 		$this->assertStringContainsString( '"experiment":"woopayments_review_prompt_design_v1"', $data );
+		$this->assertStringNotContainsString( '"isLive"', $data );
 
 		// Clean up.
 		wp_deregister_script( 'WCPAY_REVIEW_PROMPT' );
 		unset( $_REQUEST['page'], $_REQUEST['tab'] );
 		wp_set_current_user( 0 );
+	}
+
+	/**
+	 * Test that invalid filtered review prompt variants fall back to control.
+	 */
+	public function test_enqueue_review_prompt_rejects_invalid_filtered_variant() {
+		$_REQUEST['page'] = 'wc-settings';
+		$_REQUEST['tab']  = 'checkout';
+
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		$this->mock_account->method( 'is_review_prompt_eligible' )->willReturn( true );
+		wp_set_current_user( 1 );
+
+		wp_register_script( 'WCPAY_REVIEW_PROMPT', 'http://example.org/review-prompt.js', [], '1.0', true );
+
+		$force_invalid_variant = function () {
+			return 'totally_bogus_xyz';
+		};
+		add_filter( 'wcpay_review_prompt_experiment_variant', $force_invalid_variant );
+
+		try {
+			$this->payments_admin->enqueue_wc_payments_review_prompt();
+
+			$data = wp_scripts()->get_data( 'WCPAY_REVIEW_PROMPT', 'data' );
+			$this->assertStringContainsString( '"variant":"control"', $data );
+			$this->assertStringNotContainsString( 'totally_bogus_xyz', $data );
+		} finally {
+			remove_filter( 'wcpay_review_prompt_experiment_variant', $force_invalid_variant );
+			wp_deregister_script( 'WCPAY_REVIEW_PROMPT' );
+			unset( $_REQUEST['page'], $_REQUEST['tab'] );
+			wp_set_current_user( 0 );
+		}
 	}
 
 	/**

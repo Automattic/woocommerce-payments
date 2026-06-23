@@ -88,7 +88,6 @@ jest.mock( '@woocommerce/data', () => {
 // Mock the wcpayReviewPromptSettings global
 declare const global: {
 	wcpayReviewPromptSettings: {
-		isLive: boolean;
 		version: string;
 		experiment: string;
 		variant: string;
@@ -112,7 +111,6 @@ describe( 'ReviewPrompt', () => {
 
 		// Mock the global settings
 		global.wcpayReviewPromptSettings = {
-			isLive: true,
 			version: '1.0.0',
 			experiment: 'woopayments_review_prompt_design_v1',
 			variant: 'control',
@@ -219,33 +217,6 @@ describe( 'ReviewPrompt', () => {
 		expect( target ).toBe( '_blank' );
 	} );
 
-	it.each( [
-		[ 'live', true ],
-		[ 'test', false ],
-	] )(
-		'routes to and records Marketplace destination in %s mode',
-		async ( mode, isLive ) => {
-			global.wcpayReviewPromptSettings.isLive = isLive;
-			render( <ReviewPrompt /> );
-			fireEvent.click( screen.getByText( 'Leave review' ) );
-
-			await waitFor( () => {
-				expect( mockWindowOpen ).toHaveBeenCalledWith(
-					expect.stringContaining(
-						'https://woocommerce.com/products/woopayments/'
-					),
-					'_blank'
-				);
-				expect( recordEvent ).toHaveBeenCalledWith(
-					'wcpay_review_prompt_action',
-					expect.objectContaining( {
-						destination: 'marketplace',
-					} )
-				);
-			} );
-		}
-	);
-
 	it( 'records correct telemetry events when "Leave review" is clicked', async () => {
 		render( <ReviewPrompt /> );
 
@@ -256,6 +227,8 @@ describe( 'ReviewPrompt', () => {
 			expect( recordEvent ).toHaveBeenCalledWith(
 				'wcpay_review_prompt_action',
 				expect.objectContaining( {
+					experiment: 'woopayments_review_prompt_design_v1',
+					variant: 'control',
 					action: 'write_review',
 					destination: 'marketplace',
 					time_to_click_ms: expect.any( Number ),
@@ -332,8 +305,6 @@ describe( 'ReviewPrompt', () => {
 
 	it( 'falls back to window.location when window.open fails', async () => {
 		mockWindowOpen.mockReturnValueOnce( null );
-
-		global.wcpayReviewPromptSettings.isLive = true;
 
 		render( <ReviewPrompt /> );
 

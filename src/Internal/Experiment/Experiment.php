@@ -86,6 +86,16 @@ abstract class Experiment {
 	}
 
 	/**
+	 * Checks whether a variant is valid for this experiment.
+	 *
+	 * @param string $variant The variant to validate.
+	 * @return bool
+	 */
+	public function is_valid_variant( string $variant ): bool {
+		return in_array( $variant, $this->variants(), true );
+	}
+
+	/**
 	 * Whether the store has consented to tracking.
 	 *
 	 * @return bool
