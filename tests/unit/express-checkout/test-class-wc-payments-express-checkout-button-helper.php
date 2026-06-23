@@ -1015,8 +1015,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			->getMock();
 		$helper->method( 'is_product' )->willReturn( true );
 		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
-		// is_product_supported() (private) passes when get_product() returns null — the filter defaults to false,
-		// but is_product_purchasable() returning false fires first, making should_show return false regardless.
+		// is_product_supported() (private) runs first; get_product() is not mocked, so it returns null
+		// and is_product_supported() returns false — making should_show return false at that gate.
+		// The is_product_purchasable() mock below is belt-and-suspenders: even if is_product_supported()
+		// were to pass, the purchasability gate (which runs immediately after) would still return false.
 		$helper->method( 'is_product_purchasable' )->willReturn( false );
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );

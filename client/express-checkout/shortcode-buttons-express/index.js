@@ -610,8 +610,8 @@ jQuery( ( $ ) => {
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
 				async () => {
-					// A blocked product (no variation selected, out of stock…) would
-					// fail the cart fetch, so skip the refresh.
+					// A blocked product (no variation selected, out of stock…) should
+					// not show the express button — hide it and bail early.
 					if (
 						getExpressCheckoutData( 'button_context' ) ===
 							'product' &&
