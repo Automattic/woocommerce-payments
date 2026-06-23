@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Normalize card brand icon SVGs for visual consistency: unify border color and corner radius across the payment-method-icons set, round Mastercard corners and align the Visa brand color in the cards set, and reframe the Discover card icon to standard dimensions.
