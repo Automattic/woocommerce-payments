@@ -57,7 +57,10 @@ export const getFeesFields = ( {
 			type: 'date',
 			enableSorting: true,
 			enableGlobalSearch: false,
-			filterBy: { operators: [ 'on', 'before', 'after', 'between' ] },
+			// `between` leads so DataViews defaults a newly added date filter to
+			// it (operators[0]); its range presets avoid the confusing
+			// single-date "Past week / Past month" anchors (see WOOPMNT-6243).
+			filterBy: { operators: [ 'between', 'on', 'before', 'after' ] },
 			getValue: ( { item }: { item: ReportsFee } ) => item.date,
 			render: ( { item }: { item: ReportsFee } ) => (
 				<>

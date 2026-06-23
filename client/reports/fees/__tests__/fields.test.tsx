@@ -209,14 +209,17 @@ describe( 'getFeesFields field configuration', () => {
 		} );
 	} );
 
-	it( 'configures Date as a native DataViews date filter', () => {
+	it( 'configures Date as a native DataViews date filter defaulting to Between', () => {
 		const field = getTestFeesFields().find( ( f ) => f.id === 'date' );
 		expect( field?.label ).toBe( 'Date' );
 		expect( field?.header ).toBe( 'Date & time' );
 		expect( field?.type ).toBe( 'date' );
 		expect( field?.elements ).toBeUndefined();
+		// `between` leads so DataViews defaults a newly added date filter to it
+		// (operators[0]); range presets live there, avoiding the confusing
+		// single-date "Past week / Past month" anchors under before/after/on.
 		expect( field?.filterBy ).toEqual( {
-			operators: [ 'on', 'before', 'after', 'between' ],
+			operators: [ 'between', 'on', 'before', 'after' ],
 		} );
 	} );
 

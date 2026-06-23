@@ -511,7 +511,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
+		$this->wcpay_gateway->get_form_fields();
 
 		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
 
