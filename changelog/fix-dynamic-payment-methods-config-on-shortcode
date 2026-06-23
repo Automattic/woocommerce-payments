@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: checkout errors with plugins that dynamically change currency

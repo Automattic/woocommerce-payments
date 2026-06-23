@@ -96,19 +96,19 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 			recordEvent( 'wcpay_merchant_settings_file_upload_success', {
 				type: key,
 			} );
-		} catch ( { err } ) {
+		} catch ( err: any ) {
 			recordEvent( 'wcpay_merchant_settings_upload_failed', {
-				message: ( err as Error ).message,
+				message: err.message,
 			} );
 
 			// Remove file ID
 			updateFileID( '' );
 
 			setLoading( false );
-			setUploadError( ( err as Error ).message || '' );
+			setUploadError( err.message || '' );
 
 			// Show error notice
-			createErrorNotice( ( err as Error ).message );
+			createErrorNotice( err.message );
 		}
 	};
 
@@ -120,17 +120,16 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 	};
 
 	const openFileDialog = ( event: React.MouseEvent< HTMLButtonElement > ) => {
-		const fileInput:
-			| HTMLInputElement
-			| null
-			| undefined = ( event.target as HTMLButtonElement )
+		const fileInput: HTMLInputElement | null | undefined = (
+			event.target as HTMLButtonElement
+		 )
 			.closest( '.woopay-settings__update-store-logo' )
 			?.querySelector( 'input[type="file"]' );
 
 		fileInput?.click();
 	};
 
-	const isDone = ( ! isLoading && fileID && 0 < fileID.length ) as boolean;
+	const isDone = ( ! isLoading && fileID && fileID.length > 0 ) as boolean;
 	const error = ( uploadError || '' ) as string;
 
 	return (

@@ -59,7 +59,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$this->subscriptions_event_handler = new WC_Payments_Subscriptions_Event_Handler( $this->mock_invoice_service, $this->mock_subscription_service );
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) {
+			function ( $_unused_id ) {
 				return false;
 			}
 		);
@@ -108,7 +108,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		];
 
 		WC_Subscriptions::set_wcs_get_subscriptions(
-			function ( $args ) use ( $mock_subscription ) {
+			function ( $_unused_args ) use ( $mock_subscription ) {
 				return [ $mock_subscription ];
 			}
 		);
@@ -142,13 +142,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->end          = 0;
 		$mock_subscription->set_parent( $mock_order );
 
-		$mock_wcpay_subscription = [
-			'subscription'       => $wcpay_subscription_id,
-			'current_period_end' => time() + 10000,
-		];
-
 		WC_Subscriptions::set_wcs_get_subscriptions(
-			function ( $args ) use ( $mock_subscription ) {
+			function ( $_unused_args ) use ( $mock_subscription ) {
 				return [ $mock_subscription ];
 			}
 		);
@@ -206,19 +201,19 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$mock_subscription     = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscriptions(
-			function ( $args ) use ( $mock_subscription ) {
+			function ( $_unused_args ) use ( $mock_subscription ) {
 				return [ $mock_subscription ];
 			}
 		);
 
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $subscription_id ) use ( $mock_subscription ) {
+			function ( $_unused_subscription_id ) use ( $mock_subscription ) {
 				return $mock_subscription;
 			}
 		);
 
 		WC_Subscriptions::wcs_create_renewal_order(
-			function ( $subscription ) use ( $mock_renewal_order ) {
+			function ( $_unused_subscription ) use ( $mock_renewal_order ) {
 				return $mock_renewal_order;
 			}
 		);
@@ -274,13 +269,13 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions(
-			function ( $args ) use ( $mock_subscription ) {
+			function ( $_unused_args ) use ( $mock_subscription ) {
 				return [ $mock_subscription ];
 			}
 		);
 
 		WC_Subscriptions::wcs_create_renewal_order(
-			function ( $subscription ) use ( $mock_order ) {
+			function ( $_unused_subscription ) use ( $mock_order ) {
 				return $mock_order;
 			}
 		);
@@ -314,13 +309,13 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_parent( $mock_order );
 
 		WC_Subscriptions::set_wcs_get_subscriptions(
-			function ( $args ) use ( $mock_subscription ) {
+			function ( $_unused_args ) use ( $mock_subscription ) {
 				return [ $mock_subscription ];
 			}
 		);
 
 		WC_Subscriptions::wcs_create_renewal_order(
-			function ( $subscription ) use ( $mock_order ) {
+			function ( $_unused_subscription ) use ( $mock_order ) {
 				return $mock_order;
 			}
 		);

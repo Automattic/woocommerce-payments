@@ -149,7 +149,8 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		const ownerDocument = dialog.ownerDocument;
 
 		// Save the currently focused element to restore later
-		previouslyFocusedElementRef.current = ownerDocument.activeElement as HTMLElement;
+		previouslyFocusedElementRef.current =
+			ownerDocument.activeElement as HTMLElement;
 
 		// Focus the dialog
 		dialog.focus();
@@ -163,11 +164,10 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 
 			// Focus trapping
 			if ( event.key === 'Tab' ) {
-				const focusableElements = dialog.querySelectorAll<
-					HTMLElement
-				>(
-					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-				);
+				const focusableElements =
+					dialog.querySelectorAll< HTMLElement >(
+						'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+					);
 				const firstElement = focusableElements[ 0 ];
 				const lastElement =
 					focusableElements[ focusableElements.length - 1 ];
@@ -213,6 +213,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 			className="wcpay-spotlight__primary-btn"
 			variant="secondary"
 			onClick={ handlePrimaryClick }
+			size="compact"
 		>
 			{ primaryButtonLabel }
 		</Button>
@@ -223,6 +224,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 			className="wcpay-spotlight__secondary-btn"
 			variant="tertiary"
 			onClick={ onSecondaryClick }
+			size="compact"
 		>
 			{ secondaryButtonLabel }
 		</Button>

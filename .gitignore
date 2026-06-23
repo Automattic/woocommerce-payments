@@ -14,9 +14,13 @@ project.properties
 CLAUDE.local.md
 **/.claude/**/*.local.*
 .claude/local/
+.claude/docs/analysis/
+.claude/docs/plans/
+.claude/tmp/
 .serena/
 .zed/
 .phpactor.json
+.superpowers/
 
 # Bundle
 dist
@@ -99,6 +103,7 @@ tests/e2e/reports
 /blob-report/
 tests/e2e/.auth/
 tests/e2e/test-results/
+tests/e2e/.slack-thread-state.json
 tests/e2e/playwright/.cache/
 tests/e2e/tests/e2e/.auth/*
 
@@ -110,3 +115,6 @@ bin/jurassictube/
 
 # Git worktrees
 .worktrees/
+
+# Playwright MCP browser-automation artifacts
+.playwright-mcp/

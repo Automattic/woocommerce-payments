@@ -1,5 +1,5 @@
 {
-    "$schema": "https://qit.woo.com/json-schema/test-package",
+    "$schema": "https://raw.githubusercontent.com/woocommerce/qit-cli/trunk/src/src/PreCommand/Schemas/test-package-manifest-schema.json",
     "package": "woocommerce-payments/woopayments-e2e-tests",
     "package_type": "test",
     "test_type": "e2e",
@@ -21,7 +21,6 @@
             ],
             "setup": [
                 "[ -d node_modules ] || npm ci",
-                "npx playwright install chromium --with-deps",
                 "mkdir -p ./test-results"
             ],
             "run": [

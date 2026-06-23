@@ -21,8 +21,8 @@ export default class ExpressCheckoutOrderApi {
 	/**
 	 * Creates an instance of class to query for order data.
 	 *
-	 * @param {string} orderId The order ID,
-	 * @param {string} key The order key, used to verify the order ID.
+	 * @param {string}  orderId      The order ID,
+	 * @param {string}  key          The order key, used to verify the order ID.
 	 * @param {string?} billingEmail The billing email address, used for guest orders.
 	 */
 	constructor( { orderId, key, billingEmail = '' } ) {

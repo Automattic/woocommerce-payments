@@ -45,6 +45,15 @@ class CardDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Get the Stripe PaymentMethod type.
+	 *
+	 * @return string
+	 */
+	public static function get_stripe_payment_method_type(): string {
+		return self::get_id();
+	}
+
+	/**
 	 * Get the customer-facing title of the payment method
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
@@ -67,8 +76,30 @@ class CardDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string|null The dynamic title, or null to use the default get_title().
 	 */
 	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
-		// TODO: to be implemented when fully removing the `CC_Payment_Method` class.
-		return null;
+		if ( ! isset( $payment_details[ self::get_id() ] ) ) {
+			return null;
+		}
+
+		$details       = $payment_details[ self::get_id() ];
+		$funding_types = [
+			'credit'  => __( 'credit', 'woocommerce-payments' ),
+			'debit'   => __( 'debit', 'woocommerce-payments' ),
+			'prepaid' => __( 'prepaid', 'woocommerce-payments' ),
+			'unknown' => __( 'unknown', 'woocommerce-payments' ),
+		];
+
+		$card_network = $details['display_brand'] ?? $details['network'] ?? $details['networks']['preferred'] ?? $details['networks']['available'][0] ?? 'card';
+		// Networks like `cartes_bancaires` may use underscores, so we replace them with spaces.
+		$card_network = str_replace( '_', ' ', $card_network );
+
+		$payment_method_title = sprintf(
+			// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
+			__( '%1$s %2$s card', 'woocommerce-payments' ),
+			ucwords( $card_network ),
+			$funding_types[ $details['funding'] ?? 'unknown' ]
+		);
+
+		return $payment_method_title;
 	}
 
 	/**

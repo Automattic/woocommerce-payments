@@ -74,10 +74,8 @@ const receiveAuthorizations = (
 			};
 		}
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY: {
-			const {
-				query,
-				error,
-			} = action as SetErrorForAuthorizationsSummaryAction;
+			const { query, error } =
+				action as SetErrorForAuthorizationsSummaryAction;
 
 			return {
 				...state,

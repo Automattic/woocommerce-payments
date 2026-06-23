@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: fix: avoid is_express_checkout_in_payment_methods_enabled on null errors with beta WC
-
-

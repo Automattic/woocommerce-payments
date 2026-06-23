@@ -16,8 +16,8 @@ export interface PurchasePriceThresholdSetting {
 export type FraudPreventionOrderItemsThresholdSetting = FraudPreventionSetting &
 	OrderItemsThresholdSetting;
 
-export type FraudPreventionPurchasePriceThresholdSetting = FraudPreventionSetting &
-	PurchasePriceThresholdSetting;
+export type FraudPreventionPurchasePriceThresholdSetting =
+	FraudPreventionSetting & PurchasePriceThresholdSetting;
 
 export type FraudPreventionSettings =
 	| FraudPreventionSetting

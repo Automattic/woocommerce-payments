@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import tinycolor from 'tinycolor2';
+
+/**
  * Internal dependencies
  */
 import { upeRestrictedProperties } from './upe-styles';
@@ -9,9 +14,8 @@ import {
 	getBackgroundColor,
 	maybeConvertRGBAtoRGB,
 	handleAppearanceForFloatingLabel,
+	usesFloatingLabelPattern,
 } from './utils.js';
-
-const PMME_RELATIVE_TEXT_SIZE = 0.875;
 
 export const appearanceSelectors = {
 	default: {
@@ -35,6 +39,12 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+		},
 		backgroundSelectors: [
 			'li.wc_payment_method .wc-payment-form',
 			'li.wc_payment_method .payment_box',
@@ -45,7 +55,6 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
-		pmmeRelativeTextSizeSelector: '.wc_payment_method > label',
 	},
 	blocksCheckout: {
 		appendTarget: '.wc-block-checkout__contact-fields',
@@ -78,8 +87,6 @@ export const appearanceSelectors = {
 		containerSelectors: [
 			'.wp-block-woocommerce-checkout-order-summary-block',
 		],
-		pmmeRelativeTextSizeSelector:
-			'.wc-block-components-radio-control__label-group',
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -153,6 +160,12 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+		},
 		backgroundSelectors: [
 			'#customer_details',
 			'#order_review',
@@ -173,9 +186,70 @@ export const appearanceSelectors = {
 		],
 		containerSelectors: [ '.woocommerce-checkout-review-order-table' ],
 		headerSelectors: [
+			'header > div:has(nav)',
+			'header > div:has(.site-logo)',
+			'header > div:has(.custom-logo)',
 			'.site-header',
 			'#masthead',
-			'header > div',
+			'header > div:last-of-type',
+			'header',
+		],
+		footerSelectors: [
+			'.site-footer',
+			'#colophon',
+			'footer > div',
+			'footer',
+		],
+		footerLink: [ '.site-footer a', 'footer a' ],
+	},
+	wooPayBlocksCheckout: {
+		appendTarget: '.wc-block-checkout__contact-fields',
+		upeThemeInputSelector: '.wc-block-components-text-input #email',
+		upeThemeLabelSelector: '.wc-block-components-text-input label',
+		upeThemeTextSelectors: [
+			'.wc-block-components-checkout-step__description',
+			'.wc-block-components-text-input',
+			'.wc-block-components-radio-control__label',
+			'.wc-block-checkout__terms',
+		],
+		rowElement: 'div',
+		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
+		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		alternateSelectors: {
+			appendTarget: '#billing.wc-block-components-address-form',
+			upeThemeInputSelector: '#billing-first_name',
+			upeThemeLabelSelector:
+				'.wc-block-components-checkout-step__description',
+		},
+		backgroundSelectors: [
+			'#payment-method .wc-block-components-radio-control-accordion-option',
+			'#payment-method',
+			'form.wc-block-checkout__form',
+			'.wc-block-checkout',
+			'body',
+		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
+		linkSelectors: [
+			'.wc-block-checkout a',
+			'.wc-block-components-main a',
+			'main a',
+			'.entry-content a',
+			'.site-content a',
+			'#content a',
+			'#primary a',
+			'a',
+		],
+		containerSelectors: [
+			'.wp-block-woocommerce-checkout-order-summary-block',
+		],
+		headerSelectors: [
+			'header > div:has(nav)',
+			'header > div:has(.site-logo)',
+			'header > div:has(.custom-logo)',
+			'.site-header',
+			'#masthead',
+			'header > div:last-of-type',
 			'header',
 		],
 		footerSelectors: [
@@ -200,9 +274,28 @@ export const appearanceSelectors = {
 			Object.entries( selectors.alternateSelectors ).forEach(
 				( altSelector ) => {
 					const [ key, value ] = altSelector;
+					const current = selectors[ key ];
 
-					if ( ! scope.querySelector( selectors[ key ] ) ) {
-						selectors[ key ] = value;
+					if ( Array.isArray( current ) ) {
+						// For array selectors, check if any element matches.
+						const anyMatch = current.some( ( s ) => {
+							try {
+								return scope.querySelector( s );
+							} catch ( e ) {
+								return false;
+							}
+						} );
+						if ( ! anyMatch ) {
+							selectors[ key ] = value;
+						}
+					} else {
+						try {
+							if ( ! scope.querySelector( selectors[ key ] ) ) {
+								selectors[ key ] = value;
+							}
+						} catch ( e ) {
+							selectors[ key ] = value;
+						}
 					}
 				}
 			);
@@ -217,7 +310,7 @@ export const appearanceSelectors = {
 	 * Returns selectors based on checkout type.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
-	 * @param {Object}  scope           The document scope to search in.
+	 * @param {Object}  scope            The document scope to search in.
 	 *
 	 * @return {Object} Selectors for checkout type specified.
 	 */
@@ -243,6 +336,9 @@ export const appearanceSelectors = {
 			case 'woopay_shortcode_checkout':
 				appearanceSelector = this.wooPayClassicCheckout;
 				break;
+			case 'woopay_blocks_checkout':
+				appearanceSelector = this.wooPayBlocksCheckout;
+				break;
 		}
 
 		return {
@@ -257,7 +353,7 @@ const hiddenElementsForUPE = {
 	 * Create hidden container for generating UPE styles.
 	 *
 	 * @param {string} elementID ID of element to create.
-	 * @param {Object} scope The document scope to search in.
+	 * @param {Object} scope     The document scope to search in.
 	 *
 	 * @return {Object} Object of the created hidden container element.
 	 */
@@ -298,7 +394,7 @@ const hiddenElementsForUPE = {
 	 * @param {Object} appendTarget   Element object where clone should be appended.
 	 * @param {string} elementToClone Selector of the element to be cloned.
 	 * @param {string} newElementID   Selector for the cloned element.
-	 * @param {Object} scope         The document scope to search in.
+	 * @param {Object} scope          The document scope to search in.
 	 */
 	appendClone: function (
 		appendTarget,
@@ -334,7 +430,7 @@ const hiddenElementsForUPE = {
 	 * Initialize hidden fields to generate UPE styles.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
-	 * @param {Object} scope The scope of the elements.
+	 * @param {Object}  scope            The scope of the elements.
 	 */
 	init: function ( elementsLocation, scope ) {
 		const selectors = appearanceSelectors.getSelectors( elementsLocation ),
@@ -438,8 +534,15 @@ export const getFieldStyles = (
 	scope
 ) => {
 	// getting one element per selector to avoid performance issues with selectors matching too many elements.
+	// try/catch guards against selectors using :has() in browsers that don't support it.
 	const elements = ( Array.isArray( selector ) ? selector : [ selector ] )
-		.map( ( s ) => scope.querySelector( s ) )
+		.map( ( s ) => {
+			try {
+				return scope.querySelector( s );
+			} catch ( e ) {
+				return null;
+			}
+		} )
 		.filter( Boolean );
 
 	if ( ! elements.length ) {
@@ -464,9 +567,8 @@ export const getFieldStyles = (
 		}
 
 		if ( camelCase === 'color' ) {
-			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
-				propertyValue
-			);
+			filteredStyles[ camelCase ] =
+				maybeConvertRGBAtoRGB( propertyValue );
 			return;
 		}
 
@@ -529,8 +631,9 @@ export const getFontRulesFromPage = ( scope = document ) => {
 		fontDomains = [
 			'fonts.googleapis.com',
 			'fonts.gstatic.com',
-			'fast.fonts.com',
 			'use.typekit.net',
+			'fonts.bunny.net',
+			'fonts.wp.com',
 		];
 	for ( let i = 0; i < sheets.length; i++ ) {
 		if ( ! sheets[ i ].href ) {
@@ -547,61 +650,28 @@ export const getFontRulesFromPage = ( scope = document ) => {
 	return fontRules;
 };
 
-/**
- * Ensure the font size of the element is smaller than the font size of target element.
- *
- * @param {string} selector Selector of the element to be checked.
- * @param {string} fontSize Pre-computed font size.
- * @param {number} percentage Percentage (0-1) to be used relative to the font size of the target element.
- * @param {Object} scope The scope of the elements.
- *
- * @return {string} Font size of the element.
- */
-function ensureFontSizeSmallerThan(
-	selector,
-	fontSize,
-	percentage = PMME_RELATIVE_TEXT_SIZE,
-	scope
-) {
-	const fontSizeNumber = parseFloat( fontSize );
-
-	if ( isNaN( fontSizeNumber ) ) {
-		return fontSize;
-	}
-
-	// If the element is not found, return the font size number multiplied by the percentage.
-	const elem = scope.querySelector( selector );
-	if ( ! elem ) {
-		return `${ fontSizeNumber * percentage }px`;
-	}
-
-	const styles = window.getComputedStyle( elem );
-	const targetFontSize = styles.getPropertyValue( 'font-size' );
-	const targetFontSizeNumber = parseFloat( targetFontSize ) * percentage;
-
-	if ( isNaN( targetFontSizeNumber ) ) {
-		return fontSize;
-	}
-
-	if ( fontSizeNumber > targetFontSizeNumber ) {
-		return `${ targetFontSizeNumber }px`;
-	}
-
-	return `${ fontSizeNumber }px`;
-}
+// Maps standard element locations to WooPay-specific selector sets that
+// include header, footer, link, and button selectors needed by WooPay.
+const woopayLocationMap = {
+	blocks_checkout: 'woopay_blocks_checkout',
+	shortcode_checkout: 'woopay_shortcode_checkout',
+};
 
 export const getAppearance = (
 	elementsLocation,
 	forWooPay = false,
 	scope = document
 ) => {
+	const selectorLocation = forWooPay
+		? woopayLocationMap[ elementsLocation ] ?? elementsLocation
+		: elementsLocation;
 	const selectors = appearanceSelectors.getSelectors(
-		elementsLocation,
+		selectorLocation,
 		scope
 	);
 
 	// Add hidden fields to DOM for generating styles.
-	hiddenElementsForUPE.init( elementsLocation, scope );
+	hiddenElementsForUPE.init( selectorLocation, scope );
 
 	const inputRules = getFieldStyles(
 		selectors.hiddenInput,
@@ -672,16 +742,10 @@ export const getAppearance = (
 		fontSizeBase: paragraphRules.fontSize,
 	};
 
-	if ( selectors.pmmeRelativeTextSizeSelector && globalRules.fontSizeBase ) {
-		globalRules.fontSizeBase = ensureFontSizeSmallerThan(
-			selectors.pmmeRelativeTextSizeSelector,
-			paragraphRules.fontSize,
-			PMME_RELATIVE_TEXT_SIZE,
-			scope
-		);
-	}
-
-	const isFloatingLabel = elementsLocation === 'blocks_checkout';
+	const isFloatingLabel =
+		( elementsLocation === 'blocks_checkout' ||
+			selectorLocation === 'woopay_blocks_checkout' ) &&
+		usesFloatingLabelPattern( selectors.hiddenValidActiveLabel, scope );
 
 	let appearance = {
 		variables: globalRules,
@@ -719,6 +783,44 @@ export const getAppearance = (
 	}
 
 	if ( forWooPay ) {
+		const headerRules = getFieldStyles(
+			selectors.headerSelectors,
+			'.Header',
+			null,
+			scope
+		);
+		const footerRules = getFieldStyles(
+			selectors.footerSelectors,
+			'.Footer',
+			null,
+			scope
+		);
+
+		// When the header/footer has a transparent background (e.g.
+		// Storefront), walk the selectors with getBackgroundColor to
+		// find the first ancestor with a solid background.  We can't
+		// reuse `backgroundColor` here because that comes from the
+		// checkout content-area selectors, which may differ from what
+		// sits behind the header/footer.
+		if (
+			! headerRules.backgroundColor ||
+			tinycolor( headerRules.backgroundColor ).getAlpha() < 0.5
+		) {
+			headerRules.backgroundColor = getBackgroundColor(
+				[ ...( selectors.headerSelectors ?? [] ), 'body' ],
+				scope
+			);
+		}
+		if (
+			! footerRules.backgroundColor ||
+			tinycolor( footerRules.backgroundColor ).getAlpha() < 0.5
+		) {
+			footerRules.backgroundColor = getBackgroundColor(
+				[ ...( selectors.footerSelectors ?? [] ), 'body' ],
+				scope
+			);
+		}
+
 		appearance.rules = {
 			...appearance.rules,
 			'.Heading': getFieldStyles(
@@ -727,18 +829,8 @@ export const getAppearance = (
 				null,
 				scope
 			),
-			'.Header': getFieldStyles(
-				selectors.headerSelectors,
-				'.Header',
-				null,
-				scope
-			),
-			'.Footer': getFieldStyles(
-				selectors.footerSelectors,
-				'.Footer',
-				null,
-				scope
-			),
+			'.Header': headerRules,
+			'.Footer': footerRules,
 			'.Footer-link': getFieldStyles(
 				selectors.footerLink,
 				'.Footer--link',

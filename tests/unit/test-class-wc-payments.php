@@ -94,6 +94,25 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
 	}
 
+	public function test_fit_card_brand_icon_for_printable_order_receipt_updates_wcpay_receipt_css() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$result = WC_Payments::fit_card_brand_icon_for_printable_order_receipt( '.card-icon { width: 2rem; }', $order );
+
+		$this->assertStringContainsString( 'background-position: center', $result );
+		$this->assertStringContainsString( 'background-size: contain', $result );
+	}
+
+	public function test_fit_card_brand_icon_for_printable_order_receipt_leaves_non_wcpay_receipts_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'bacs' );
+
+		$css = '.card-icon { width: 2rem; }';
+
+		$this->assertSame( $css, WC_Payments::fit_card_brand_icon_for_printable_order_receipt( $css, $order ) );
+	}
+
 	public function test_rest_endpoints_validate_nonce() {
 
 		if ( $this->is_wpcom() ) {
@@ -125,7 +144,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 	}
 
 	private function set_woopay_enabled( $is_enabled ) {
@@ -141,7 +160,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 	}
 
 	public function test_set_woopayments_gateways_before_other_gateways_when_not_in_ordering() {

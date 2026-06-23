@@ -346,6 +346,23 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Recreates the customer for this user - public version for error recovery.
+	 *
+	 * This method is used when a customer ID is found to be invalid (e.g., after site migration)
+	 * and needs to be recreated synchronously during payment processing.
+	 *
+	 * @param WP_User|null $user          User to recreate a customer for.
+	 * @param array        $customer_data Customer data.
+	 *
+	 * @return string The newly created customer's ID
+	 *
+	 * @throws API_Exception Error creating customer.
+	 */
+	public function recreate_customer_for_user( ?WP_User $user, array $customer_data ): string {
+		return $this->recreate_customer( $user, $customer_data );
+	}
+
+	/**
 	 * Recreates the customer for this user.
 	 *
 	 * @param WP_User|null $user          User to recreate a customer for.

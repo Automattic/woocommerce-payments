@@ -41,16 +41,34 @@ export const useEnabledCurrencies = () => {
 };
 
 export const useStoreSettings = () => {
-	const { storeSettings, isLoading } = useSelect( ( select ) => {
-		const { getStoreSettings, isResolving } = select( STORE_NAME );
+	const { storeSettings, isLoading, isDirty, isSaving } = useSelect(
+		( select ) => {
+			const {
+				getStoreSettings,
+				isStoreSettingsDirty,
+				isSavingStoreSettings,
+				isResolving,
+			} = select( STORE_NAME );
 
-		return {
-			storeSettings: getStoreSettings(),
-			isLoading: isResolving( 'getStoreSettings', [] ),
-		};
-	} );
-	const { submitStoreSettingsUpdate } = useDispatch( STORE_NAME );
-	return { storeSettings, isLoading, submitStoreSettingsUpdate };
+			return {
+				storeSettings: getStoreSettings(),
+				isLoading: isResolving( 'getStoreSettings', [] ),
+				isDirty: isStoreSettingsDirty(),
+				isSaving: isSavingStoreSettings(),
+			};
+		}
+	);
+	const { updateStoreSettingValues, saveStoreSettings } = useDispatch(
+		STORE_NAME
+	);
+	return {
+		storeSettings,
+		isLoading,
+		isDirty,
+		isSaving,
+		updateStoreSettingValues,
+		saveStoreSettings,
+	};
 };
 
 export const useDefaultCurrency = () =>

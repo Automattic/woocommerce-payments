@@ -6,16 +6,15 @@ import { getConfig } from 'wcpay/utils/checkout';
 import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from 'utils/express-checkout';
-import { getAppearance } from 'checkout/upe-styles';
 import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
-	isSupportedThemeEntrypoint,
 } from './utils';
-import { getAppearanceType } from '../utils';
+import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -186,12 +185,7 @@ export const handleWooPayEmailInput = async (
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
-		const appearanceType = getAppearanceType();
-		const appearance =
-			isSupportedThemeEntrypoint( appearanceType ) &&
-			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? getAppearance( appearanceType, true )
-				: null;
+		const appearance = resolveWoopayAppearance();
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
@@ -465,7 +459,7 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	window.addEventListener( 'message', ( e ) => {
-		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
+		if ( e.origin !== new URL( getConfig( 'woopayHost' ) ).origin ) {
 			return;
 		}
 		switch ( e.data.action ) {
@@ -479,13 +473,14 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				const promise = api.initWooPay(
+				const promise = initWooPay(
+					api.request,
 					woopayEmailInput.value,
 					e.data.platformCheckoutUserSession
 				);
 
 				// The <Login> component on WooPay re-renders sending the `redirect_to_platform_checkout` message twice.
-				// `api.initWooPay` skips the request the second time and returns undefined.
+				// `initWooPay` skips the request the second time and returns undefined.
 				if ( ! promise ) {
 					break;
 				}
@@ -523,7 +518,8 @@ export const handleWooPayEmailInput = async (
 
 						iframe.style.height = e.data.height + 'px';
 
-						const inputRect = woopayEmailInput.getBoundingClientRect();
+						const inputRect =
+							woopayEmailInput.getBoundingClientRect();
 
 						// iframe top is the input top minus the iframe height.
 						iframe.style.top =

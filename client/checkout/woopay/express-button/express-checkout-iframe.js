@@ -14,11 +14,10 @@ import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
-	isSupportedThemeEntrypoint,
 } from '../utils';
 import { getTracksIdentity } from 'tracks';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
-import { getAppearanceType } from 'wcpay/checkout/utils';
+import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 const getEmailValue = async ( emailSelector ) => {
 	const isPayForOrder = window.wcpayConfig?.pay_for_order === 'true';
@@ -111,12 +110,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
-		const appearanceType = getAppearanceType();
-		const appearance =
-			isSupportedThemeEntrypoint( appearanceType ) &&
-			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? getAppearance( appearanceType, true )
-				: null;
+		const appearance = resolveWoopayAppearance();
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
@@ -220,7 +214,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	};
 
 	function onMessage( e ) {
-		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
+		if ( e.origin !== new URL( getConfig( 'woopayHost' ) ).origin ) {
 			return;
 		}
 
@@ -237,10 +231,17 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				api.initWooPay(
+				const promise = initWooPay(
+					api.request,
 					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
+				);
+
+				if ( ! promise ) {
+					break;
+				}
+
+				promise.then( ( response ) => {
 					// Do nothing if the iframe has been closed.
 					if ( ! document.querySelector( '.woopay-otp-iframe' ) ) {
 						return;

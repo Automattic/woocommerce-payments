@@ -2,7 +2,24 @@
 
 WooPayments e2e tests can be found in the `./tests/e2e/specs` directory. These tests run with Playwright and replaced the Puppeteer e2e tests when we completed the migration to Playwright in early 2025.
 
-E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and don't require any changes to run the tests.
+E2E tests can be run locally or in GitHub Actions. GitHub Actions are already configured and don't require any changes to run the tests.
+
+## Role in the release process
+
+This suite isn't only PR validation — it's also the release-zip smoke gate. Before deleting or "moving down the pyramid," check what each spec is protecting at release time. The scheduled release process ( PaJDYF-6n7-p2 ) wires this suite in three places:
+
+1. **Code-freeze workflow** (Wednesday of week 4) runs the full E2E matrix against the release branch. Failures here block the freeze.
+2. **Manual E2E run on the release branch** (Thursday of week 4) is a release-lead checklist item. The release lead manually classifies failures as flake vs. real (per Updates on the E2E testing workflow ( paJDYF-cZg-p2 )).
+3. **`build-zip-and-run-smoke-tests.yml`** runs the E2E suite against the built release zip — this *is* the smoke test that gates the test package handed to internal testers and (later) the deployment.
+
+Implications when adding/removing specs:
+
+- **Page-load smokes are intentional**, not low-value filler. Specs like `basic.spec.ts` and `merchant-admin-{deposits,transactions,disputes,…}.spec.ts` exist to catch fatals, autoload regressions, missing migrations, and capability errors at release time. Don't delete them just because the assertion is "page loads" — that's exactly what a release smoke test should assert. Replace with equivalent coverage if you must remove.
+- **Subscriptions specs gate release-time compatibility.** The release process explicitly verifies the test package against the latest WooCommerce Subscriptions. `tests/e2e/specs/subscriptions/**` is the only automated coverage of that surface; treat its specs accordingly.
+- **Express Checkout / Apple Pay / Google Pay are intentionally NOT covered here.** They're manually verified on [wcpaytesting.wpcomstaging.com](https://wcpaytesting.wpcomstaging.com) on Week 4 Thursday because real Apple/Google Pay sheets require real device/browser environments that headless Playwright can't simulate. Don't file "no Express Checkout E2E coverage" as a gap — it's a deliberate split.
+- **QIT suite (`tests/qit/`) is a separate release gate**, run by the release lead via the [QIT toolkit](https://qit.woo.com/docs/) on Week 4 Thursday for plugin-marketplace certification. The two suites overlap in surface but are not interchangeable — `tests/e2e/` runs in PRs and against the release zip; `tests/qit/` runs against the QIT environment. Keep them in sync via shared helpers; don't merge them.
+
+If you're considering deleting a spec, ask: "is this surface covered somewhere else that the release process also runs?" If the answer is "no" or "only in PHPUnit", err on the side of keeping the E2E spec — even a thin one — because release smoke needs full-stack coverage.
 
 ## Retry strategy
 
@@ -30,12 +47,22 @@ CI coverage differences:
 
 ## Setting up & running E2E tests
 
-For running E2E tests locally, create a new file named `local.env` under `tests/e2e/config` folder with the following env variables (replace values as required).
+The preferred local setup flow is:
+
+1. Run `npm install` and `composer install` if you have not already done so.
+2. Run `bin/setup-e2e-local.sh` to generate `tests/e2e/config/local.env` from your local infrastructure.
+3. Run `npm run test:e2e-setup` to provision the E2E Docker environment.
+
+The setup script runs preflight checks before provisioning and will build the client automatically if `dist/` is missing or stale.
+
+If the generator cannot detect everything you need, copy `tests/e2e/config/.env.example` to `tests/e2e/config/local.env` and fill in the remaining values manually.
 
 ### Required env variables
 
 ```bash
 # WooPayments Dev Tools Repo
+# Prefer a local checkout when available. Remote GitHub URLs require working
+# SSH or HTTPS auth.
 WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo-ci.git or git@github.com:org/dev-tools-repo-ci.git'
 
 # Optional to see additional verbose output. Default false.
@@ -52,7 +79,11 @@ By default, the local E2E environment is configured to use the Transact Platform
 
 ```bash
 # Transact Platform Server Repo
-TRANSACT_PLATFORM_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+# Prefer a local checkout when you need uncommitted server changes mirrored into
+# E2E. If the sandbox-backed server/ and missioncontrol/ directories are
+# missing, setup will try `npm run pull -- -s` in the E2E clone, which requires
+# sandbox SSH access and rsync.
+TRANSACT_PLATFORM_SERVER_REPO='/path/to/transact-platform-server or git@github.com:org/server-repo.git'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
@@ -122,8 +153,8 @@ E2E_WC_VERSION='<woocommerce_version>'
 
 ### Initialize E2E docker environment
 
-1. Make sure to run `npm install`, `composer install` and `npm run build:client` before running the setup script.
-2. Run the setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+1. Generate `tests/e2e/config/local.env` with `bin/setup-e2e-local.sh`.
+2. Run `npm run test:e2e-setup` to spin up E2E environment in docker containers.
 
 After the E2E environment is up, you can access the containers on:
 
@@ -240,13 +271,15 @@ E2E_SLACK_CHANNEL_ID='<public slack channel id>'
 
 **I'm getting errors that host.docker.internal is not found.**
 
-This is because the `host.docker.internal` alias is not available on Linux. You can use the `localhost` alias instead. To apply it, create a file called `docker-compose.override.yml` in the `tests/e2e` directory and add the following content:
+The Playwright Docker service already maps `host.docker.internal` to Docker's `host-gateway`. If you still see this error, your Docker installation is likely too old to support that mapping. Upgrade Docker first.
+
+If you need a manual fallback, add the same mapping explicitly in `tests/e2e/docker-compose.override.yml`:
 
 ```yaml
 services:
   playwright:
-    environment:
-      - BASE_URL=http://localhost:8084
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 ```
 
 **How do I wait for a page or element to load?**

@@ -25,9 +25,9 @@ class WC_Payments_Order_Success_Page {
 	private $should_hide_status_description = false;
 
 	/**
-	 * Constructor.
+	 * Register all the hooks for the order success page.
 	 */
-	public function __construct() {
+	public function init_hooks() {
 		add_filter( 'woocommerce_order_received_verify_known_shoppers', [ $this, 'determine_woopay_order_received_verify_known_shoppers' ], 11 );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_render_multibanco_payment_instructions' ] );
@@ -202,8 +202,23 @@ class WC_Payments_Order_Success_Page {
 
 		$payment_method = $gateway->get_payment_method( $order );
 
-		// Handle card-based payments (Card, Link).
-		if ( in_array( $payment_method->get_id(), [ Payment_Method::CARD ], true ) ) {
+		// Link payments go through the card gateway (woocommerce_payments), so the gateway's
+		// payment method is 'card'. Detect Link by checking the order's payment tokens.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
+			$token_ids = $order->get_payment_tokens();
+			if ( ! empty( $token_ids ) ) {
+				$last_token = \WC_Payment_Tokens::get( end( $token_ids ) );
+				if ( $last_token instanceof \WC_Payment_Token_WCPay_Link ) {
+					$link_pm = WC_Payments::get_payment_method_by_id( Payment_Method::LINK );
+					if ( $link_pm ) {
+						$payment_method = $link_pm;
+					}
+				}
+			}
+		}
+
+		// Handle card payments.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
 			return $this->show_card_payment_method_name( $order, $payment_method );
 		}
 
@@ -326,6 +341,14 @@ class WC_Payments_Order_Success_Page {
 			'8.5.0',
 			'wc_payments_thank_you_page_lpm_payment_method_logo_url'
 		);
+		/**
+		 * Filters the payment method logo URL shown on the thank you page for local payment methods.
+		 *
+		 * @since 8.5.0
+		 *
+		 * @param string $method_logo_url   The payment method logo URL.
+		 * @param string $payment_method_id The payment method ID.
+		 */
 		$method_logo_url = apply_filters(
 			'wc_payments_thank_you_page_lpm_payment_method_logo_url',
 			$method_logo_url,
@@ -392,8 +415,16 @@ class WC_Payments_Order_Success_Page {
 	public function replace_order_received_text_for_failed_orders( $text ) {
 		global $wp;
 
-		$order_id = absint( $wp->query_vars['order-received'] );
-		$order    = wc_get_order( $order_id );
+		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment, WordPress.Security.NonceVerification.Recommended -- WooCommerce core hook, not defined by WooPayments.
+
+		$order = false;
+		if ( $order_id > 0 ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order instanceof WC_Order || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+				$order = false;
+			}
+		}
 
 		if ( ! $order ||
 			! $order->needs_payment() ||
@@ -495,14 +526,14 @@ class WC_Payments_Order_Success_Page {
 		global $wp;
 
 		$order_id  = $wp->query_vars['order-received'];
-		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) );
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$order     = wc_get_order( $order_id );
 
 		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
 			return $value;
 		}
 
-		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order );
+		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		$date_created              = $order->get_date_created();
 
 		// We do not need to verify the email address if we are within the grace period immediately following order creation.

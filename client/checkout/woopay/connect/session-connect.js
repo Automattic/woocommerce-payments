@@ -29,10 +29,8 @@ class WooPaySessionConnect extends WoopayConnect {
 	 * @return {Promise<*>} Resolves to true if third-party cookies are enabled.
 	 */
 	async isWooPayThirdPartyCookiesEnabled() {
-		const {
-			resolvePostMessagePromise,
-			removeTemporaryIframe,
-		} = this.injectTemporaryWooPayConnectIframe();
+		const { resolvePostMessagePromise, removeTemporaryIframe } =
+			this.injectTemporaryWooPayConnectIframe();
 
 		const isThirdPartyCookieSetPromise = new Promise(
 			( resolve, reject ) => {
@@ -116,7 +114,8 @@ class WooPaySessionConnect extends WoopayConnect {
 		tempPostMessage( { action: 'getIsThirdPartyCookiesEnabled' } );
 
 		try {
-			const isThirdPartyCookieEnabled = await isThirdPartyCookieEnabledPromise;
+			const isThirdPartyCookieEnabled =
+				await isThirdPartyCookieEnabledPromise;
 
 			return isThirdPartyCookieEnabled;
 		} catch ( error ) {

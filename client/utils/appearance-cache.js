@@ -76,3 +76,18 @@ export function dispatchAppearanceEvent( appearance, elementsLocation ) {
 		} )
 	);
 }
+
+/**
+ * Checks whether an extracted appearance has meaningful styling rules.
+ * Returns false when all `.Input` rules are empty (extraction failed).
+ *
+ * @param {Object} appearance The appearance object to validate.
+ * @return {boolean} True if the appearance has meaningful rules.
+ */
+export function isAppearanceValid( appearance ) {
+	if ( ! appearance?.rules ) {
+		return false;
+	}
+	const inputRules = appearance.rules[ '.Input' ];
+	return inputRules && Object.keys( inputRules ).length > 0;
+}

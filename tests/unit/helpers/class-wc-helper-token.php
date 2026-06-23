@@ -50,4 +50,22 @@ class WC_Helper_Token {
 
 		return WC_Payment_Tokens::get( $token->get_id() );
 	}
+
+	/**
+	 * Create a Link token.
+	 *
+	 * @param string $payment_method Token payment method.
+	 * @param int    $user_id        ID of the token's user, defaults to get_current_user_id().
+	 * @param string $email          Link account email.
+	 */
+	public static function create_link_token( $payment_method, $user_id = null, $email = 'test@link.com' ) {
+		$token = new WC_Payment_Token_WCPay_Link();
+		$token->set_token( $payment_method );
+		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$token->set_user_id( $user_id ?? get_current_user_id() );
+		$token->set_email( $email );
+		$token->save();
+
+		return WC_Payment_Tokens::get( $token->get_id() );
+	}
 }

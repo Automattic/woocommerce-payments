@@ -137,7 +137,8 @@ export default {
 			}
 		),
 		verification_document_issue_or_expiry_date_missing: __(
-			'The issue or expiry date is missing on the document. Upload a document that includes the issue and expiry dates.'
+			'The issue or expiry date is missing on the document. Upload a document that includes the issue and expiry dates.',
+			'woocommerce-payments'
 		),
 		verification_document_manipulated: __(
 			'The document was identified as altered or falsified.',

@@ -59,17 +59,48 @@ const receiveMultiCurrencies = (
 			return {
 				...state,
 				settings: {
-					enable_auto_currency:
-						data.wcpay_multi_currency_enable_auto_currency,
-					enable_storefront_switcher:
-						data.wcpay_multi_currency_enable_storefront_switcher,
-					rendering_mode: data.wcpay_multi_currency_rendering_mode,
-					is_cache_optimized_feature_enabled:
-						data.is_cache_optimized_feature_enabled,
-					site_theme: data.site_theme,
-					date_format: data.date_format,
-					time_format: data.time_format,
-					store_url: data.store_url,
+					...state.settings,
+					isDirty: false,
+					data: {
+						enable_auto_currency:
+							data.wcpay_multi_currency_enable_auto_currency,
+						enable_storefront_switcher:
+							data.wcpay_multi_currency_enable_storefront_switcher,
+						rendering_mode:
+							data.wcpay_multi_currency_rendering_mode,
+						is_cache_optimized_feature_enabled:
+							data.is_cache_optimized_feature_enabled,
+						site_theme: data.site_theme,
+						date_format: data.date_format,
+						time_format: data.time_format,
+						store_url: data.store_url,
+					},
+				},
+			};
+		case TYPES.SET_STORE_SETTINGS_VALUES:
+			return {
+				...state,
+				settings: {
+					...state.settings,
+					savingError: null,
+					isDirty: true,
+					data: {
+						...( state.settings?.data || {} ),
+						...data,
+					},
+				},
+			};
+		case TYPES.SET_IS_SAVING_STORE_SETTINGS:
+			return {
+				...state,
+				settings: {
+					...state.settings,
+					isDirty:
+						data.isSaving || data.error
+							? state.settings?.isDirty ?? false
+							: false,
+					isSaving: data.isSaving,
+					savingError: data.error,
 				},
 			};
 	}

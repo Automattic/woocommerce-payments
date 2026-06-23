@@ -9,7 +9,6 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { usePaymentIntentWithChargeFallback } from '../';
-import { STORE_NAME } from '../../constants';
 import {
 	Charge,
 	OutcomeRiskLevel,
@@ -27,10 +26,10 @@ export const chargeMock: Charge = {
 	id: chargeId,
 	amount: 8903,
 	created: 1656701170,
-	payment_method_details: ( {
+	payment_method_details: {
 		card: {},
 		type: 'card',
-	} as unknown ) as PaymentMethodDetails,
+	} as unknown as PaymentMethodDetails,
 	payment_method: 'pm_mock',
 	amount_captured: 8903,
 	amount_refunded: 8903,
@@ -111,9 +110,10 @@ describe( 'Payment Intent hooks', () => {
 	beforeEach( () => {
 		selectors = {};
 
-		const selectMock = jest.fn( ( storeName ) =>
-			STORE_NAME === storeName ? selectors : {}
-		);
+		// The hook reads from the charges and payment-intents stores (passed as
+		// descriptors); each test sets up only the selectors its branch needs,
+		// so return them regardless of which store is selected.
+		const selectMock = jest.fn( () => selectors );
 
 		( useSelect as jest.Mock ).mockImplementation(
 			( cb: ( callback: any ) => jest.Mock ) => cb( selectMock )
@@ -167,9 +167,8 @@ describe( 'Payment Intent hooks', () => {
 				hasFinishedResolution: jest.fn().mockReturnValue( true ),
 			};
 
-			const result = usePaymentIntentWithChargeFallback(
-				paymentIntentId
-			);
+			const result =
+				usePaymentIntentWithChargeFallback( paymentIntentId );
 
 			expect( selectors.getPaymentIntent ).toHaveBeenCalledWith(
 				paymentIntentId
@@ -191,9 +190,8 @@ describe( 'Payment Intent hooks', () => {
 				hasFinishedResolution: jest.fn().mockReturnValue( false ),
 			};
 
-			const result = usePaymentIntentWithChargeFallback(
-				paymentIntentId
-			);
+			const result =
+				usePaymentIntentWithChargeFallback( paymentIntentId );
 
 			expect( selectors.getPaymentIntent ).toHaveBeenCalledWith(
 				paymentIntentId

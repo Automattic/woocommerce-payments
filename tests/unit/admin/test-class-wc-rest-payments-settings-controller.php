@@ -13,12 +13,14 @@ use WCPay\Constants\Country_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Service\DisputeReadinessService;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
@@ -161,6 +163,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_payment_methods = [];
 
 		$payment_method_definitions = [
+			CardDefinition::class,
+			AmazonPayDefinition::class,
 			ApplePayDefinition::class,
 			BancontactDefinition::class,
 			BecsDefinition::class,
@@ -174,13 +178,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			SofortDefinition::class,
 		];
 
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
-		// Create the main payment method (CC) for the gateway constructor.
-		$mock_cc_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $token_service ] )
+		$mock_cc_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $token_service, CardDefinition::class ] )
 			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 		$mock_cc_payment_method->expects( $this->any() )
@@ -195,18 +194,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$mock_payment_method_instance = $this->getMockBuilder( UPE_Payment_Method::class )
 				->setConstructorArgs( [ $token_service, $definition_class ] )
-				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-				->getMock();
-			$mock_payment_method_instance->expects( $this->any() )
-				->method( 'is_subscription_item_in_cart' )
-				->will( $this->returnValue( false ) );
-
-			$mock_payment_methods[ $mock_payment_method_instance->get_id() ] = $mock_payment_method_instance;
-		}
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			$mock_payment_method_instance = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $token_service ] )
 				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
 			$mock_payment_method_instance->expects( $this->any() )
@@ -304,6 +291,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$available_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$expected_method_ids = [
+			Payment_Method::AMAZON_PAY,
 			Payment_Method::CARD,
 			Payment_Method::BECS,
 			Payment_Method::BANCONTACT,
@@ -527,6 +515,26 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'yes', $this->gateway->get_option( 'manual_capture' ) );
 	}
 
+	public function test_update_settings_manual_capture_keeps_payment_methods_with_capture_later_capability() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_manual_capture_enabled', true );
+		$request->set_param(
+			'enabled_payment_method_ids',
+			[ Payment_Method::CARD, Payment_Method::GOOGLE_PAY, Payment_Method::AMAZON_PAY, Payment_Method::IDEAL ]
+		);
+
+		$this->controller->update_settings( $request );
+
+		$enabled = WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' );
+
+		// Card, Google Pay, and Amazon Pay have CAPTURE_LATER capability and should remain enabled.
+		$this->assertContains( Payment_Method::CARD, $enabled );
+		$this->assertContains( Payment_Method::GOOGLE_PAY, $enabled );
+		$this->assertContains( Payment_Method::AMAZON_PAY, $enabled );
+		// iDEAL does not support manual capture and should be filtered out.
+		$this->assertNotContains( Payment_Method::IDEAL, $enabled );
+	}
+
 	public function test_update_settings_disables_manual_capture() {
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_manual_capture_enabled', false );
@@ -645,6 +653,157 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'deposit_schedule_monthly_anchor', 'test deposit_schedule_monthly_anchor' );
 
 		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_updates_account_cache_and_clears_descriptor_confirmation() {
+		update_option(
+			DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION,
+			[
+				'confirmed'             => true,
+				'normalized_descriptor' => 'olddescriptor',
+			]
+		);
+
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'update_stripe_account' )
+			->with( [ 'statement_descriptor' => 'MY STORE' ] );
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'update_account_data' )
+			->with( 'statement_descriptor', 'MY STORE' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_statement_descriptor', 'MY STORE' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertFalse( get_option( DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION ) );
+	}
+
+	public function test_update_settings_returns_field_targeted_error_when_error_param_maps_to_setting() {
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Invalid Japanese phone number.',
+					[ 'param' => 'business_support_phone' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'wcpay_server_error', $data['code'] );
+		$this->assertArrayNotHasKey( 'server_error', $data );
+		$this->assertSame(
+			'Invalid Japanese phone number.',
+			$data['data']['details']['account_business_support_phone']['message']
+		);
+		$this->assertSame(
+			'wcpay_failed_to_update_stripe_account',
+			$data['data']['details']['account_business_support_phone']['code']
+		);
+		$this->assertSame(
+			'Invalid Japanese phone number.',
+			$data['data']['params']['account_business_support_phone']
+		);
+	}
+
+	public function test_update_settings_falls_back_to_server_error_for_raw_stripe_param_form() {
+		// The server resolves Stripe's raw bracketed params (e.g.
+		// `business_profile[support_phone]`) to the request field name before responding.
+		// If a raw form ever reaches this client unmapped, it must not be guessed at —
+		// the legacy notice keeps the message visible.
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Invalid Japanese phone number.',
+					[ 'param' => 'business_profile[support_phone]' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'Invalid Japanese phone number.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
+	}
+
+	public function test_update_settings_falls_back_to_server_error_for_fields_without_inline_ui() {
+		// `business_name` maps to the `account_business_name` setting, but no client
+		// component renders its errors inline, so the legacy shape must be kept.
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Invalid business name.',
+					[ 'param' => 'business_name' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_name', 'Some name' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'Invalid business name.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
+	}
+
+	public function test_update_settings_falls_back_to_server_error_when_stripe_param_does_not_map() {
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Account is restricted.',
+					[ 'param' => 'unrelated_field' ]
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'Account is restricted.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
+	}
+
+	public function test_update_settings_falls_back_to_server_error_when_no_param_provided() {
+		$this->mock_wcpay_account
+			->method( 'update_stripe_account' )
+			->willReturn(
+				new WP_Error(
+					'wcpay_failed_to_update_stripe_account',
+					'Generic Stripe failure.'
+				)
+			);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_business_support_phone', '+15555555555' );
+
+		$response = $this->controller->update_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'Generic Stripe failure.', $data['server_error'] );
+		$this->assertArrayNotHasKey( 'details', $data['data'] ?? [] );
 	}
 
 	public function test_update_settings_calls_store_setup_sync() {

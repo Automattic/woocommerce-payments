@@ -37,5 +37,13 @@ export const getCurrencySettings = ( state ) => {
 };
 
 export const getStoreSettings = ( state ) => {
-	return getMultiCurrencyState( state ).settings || {};
+	return getMultiCurrencyState( state ).settings?.data || {};
+};
+
+export const isStoreSettingsDirty = ( state ) => {
+	return getMultiCurrencyState( state ).settings?.isDirty ?? false;
+};
+
+export const isSavingStoreSettings = ( state ) => {
+	return getMultiCurrencyState( state ).settings?.isSaving ?? false;
 };

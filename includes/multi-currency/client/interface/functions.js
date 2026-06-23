@@ -7,9 +7,6 @@ export { recordEvent } from 'wcpay/tracks';
 export { default as WCPaySettingsContext } from 'wcpay/settings/wcpay-settings-context';
 // wcpay/components/*
 export { default as WizardTaskContext } from 'wcpay/components/wizard/task/context';
-// wcpay/utils/*
-export { formatListOfItems } from 'wcpay/utils/format-list-of-items';
-
 /**
  * Dependencies from MCCY to WooPayments.
  */

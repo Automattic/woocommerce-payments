@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Add infrastructure for displaying express checkout methods (Apple Pay, Google Pay, Amazon Pay) in the payment methods list. Requires WooCommerce 10.6.0+ or dev mode.

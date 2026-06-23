@@ -10,7 +10,7 @@ import user from '@testing-library/user-event';
  */
 import Welcome from '..';
 import { useCurrentWpUser } from '../hooks';
-import { useAllDepositsOverviews } from 'data';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import { useSelectedCurrency } from 'overview/hooks';
 import type { Overview } from 'types/account-overview';
 
@@ -28,16 +28,17 @@ declare const global: {
 jest.mock( '../hooks', () => ( {
 	useCurrentWpUser: jest.fn(),
 } ) );
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 } ) );
 jest.mock( 'wcpay/overview/hooks', () => ( {
 	useSelectedCurrency: jest.fn(),
 } ) );
 
-const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
-	typeof useAllDepositsOverviews
->;
+const mockUseAllDepositsOverviews =
+	useAllDepositsOverviews as jest.MockedFunction<
+		typeof useAllDepositsOverviews
+	>;
 const mockUseSelectedCurrency = useSelectedCurrency as jest.MockedFunction<
 	typeof useSelectedCurrency
 >;

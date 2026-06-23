@@ -93,7 +93,7 @@ const AccountDetails: React.FC< AccountDetailsProps > = ( {
 	accountFees = [],
 	accountLink,
 } ) => {
-	return null === accountDetails ? (
+	return accountDetails === null ? (
 		<AccountDetailsError />
 	) : (
 		<AccountDetailsContent

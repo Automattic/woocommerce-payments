@@ -114,6 +114,12 @@ class WC_Payments_Status {
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
 				],
+				'clear_wcpay_styles_cache'             => [
+					'name'     => __( 'Clear WooPayments calculated styles', 'woocommerce-payments' ),
+					'button'   => __( 'Clear', 'woocommerce-payments' ),
+					'desc'     => __( 'This tool will clear the styles cached for the WooPayments gateway UI elements at checkout', 'woocommerce-payments' ),
+					'callback' => [ $this, 'clear_styles_cache' ],
+				],
 				'remediate_canceled_auth_fees_dry_run' => [
 					'name'     => __( 'Preview canceled authorization fix (Dry Run)', 'woocommerce-payments' ),
 					'button'   => $this->get_dry_run_button_text(),
@@ -188,6 +194,20 @@ class WC_Payments_Status {
 				$e->getMessage()
 			);
 		}
+	}
+
+	/**
+	 * Clears the cached styles for WooPayments gateway UI elements.
+	 *
+	 * @return string Success message.
+	 */
+	public function clear_styles_cache() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return __( 'You do not have permission to run this tool.', 'woocommerce-payments' );
+		}
+
+		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
+		return __( 'WooPayments styles cleared', 'woocommerce-payments' );
 	}
 
 	/**
@@ -459,6 +479,24 @@ class WC_Payments_Status {
 						<td data-export-label="Test Mode"><?php esc_html_e( 'Test Mode', 'woocommerce-payments' ); ?>:</td>
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the payment gateway has test payments enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php WC_Payments::mode()->is_test() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
+					</tr>
+					<tr>
+						<td data-export-label="Dev Mode"><?php esc_html_e( 'Dev Mode', 'woocommerce-payments' ); ?>:</td>
+						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether WooPayments is running in dev (sandbox) mode and what triggered it.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
+						<td>
+						<?php
+						if ( WC_Payments::mode()->is_dev() ) {
+							$triggers = WC_Payments::mode()->get_dev_mode_triggers();
+							$label    = __( 'Enabled', 'woocommerce-payments' );
+							if ( ! empty( $triggers ) ) {
+								$label .= ' (' . implode( ', ', $triggers ) . ')';
+							}
+							echo esc_html( $label );
+						} else {
+							esc_html_e( 'Disabled', 'woocommerce-payments' );
+						}
+						?>
+						</td>
 					</tr>
 					<tr>
 						<td data-export-label="Enabled APMs"><?php esc_html_e( 'Enabled APMs', 'woocommerce-payments' ); ?>:</td>

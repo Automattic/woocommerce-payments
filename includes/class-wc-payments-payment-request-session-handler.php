@@ -120,9 +120,9 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	/**
 	 * Delete the session from the cache and database.
 	 *
-	 * @param int $customer_id Customer ID.
+	 * @param int $_unused_customer_id Customer ID.
 	 */
-	public function delete_session( $customer_id ) {
+	public function delete_session( $_unused_customer_id ) {
 		parent::delete_session( $this->session_id );
 	}
 
@@ -162,9 +162,9 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	/**
 	 * Save data - copy of parent method with a few modifications.
 	 *
-	 * @param int $old_session_key session ID before user logs in.
+	 * @param int $_unused_old_session_key session ID before user logs in.
 	 */
-	public function save_data( $old_session_key = 0 ) {
+	public function save_data( $_unused_old_session_key = 0 ) {
 		// Dirty if something changed - prevents saving nothing new.
 		if ( $this->_dirty ) {
 			global $wpdb;
@@ -200,14 +200,14 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * See "WC_Cart_Session::get_cart_from_session".
 	 *
 	 * @param string $key Key to get.
-	 * @param mixed  $default used if the session variable isn't set.
+	 * @param mixed  $default_value used if the session variable isn't set.
 	 * @return array|string value of session variable
 	 */
-	public function get( $key, $default = null ) {
+	public function get( $key, $default_value = null ) {
 		if ( 'cart' === $key && ! isset( $this->_data['cart'] ) ) {
 			return [];
 		}
 
-		return parent::get( $key, $default );
+		return parent::get( $key, $default_value );
 	}
 }

@@ -37,7 +37,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.' );
 
-		$payment_information = new Payment_Information( '' );
+		new Payment_Information( '' );
 	}
 
 	public function test_is_merchant_initiated_defaults_to_false() {
@@ -278,6 +278,21 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $error );
 		$this->assertEquals( "We're not able to process this payment. Please try again later.", $error->get_error_message() );
 		$this->assertEquals( 'unknown-error', $error->get_error_code() );
+	}
+
+	public function test_from_payment_request_with_error_empty_message() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
+				'wcpay-payment-method-error-message' => '',
+				'wcpay-payment-method-error-code'    => 'unknown-error',
+			]
+		);
+
+		$error = $payment_information->get_error();
+		$this->assertInstanceOf( \WP_Error::class, $error );
+		$this->assertEquals( "We're not able to process this payment. Please try again later.", $error->get_error_message() );
 	}
 
 	public function test_get_cvc_confirmation_from_request_returns_null_if_payment_method_is_empty() {

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -27,72 +27,29 @@ import './index.scss';
 import { useStoreSettings } from 'multi-currency/data';
 
 const StoreSettingsTask = () => {
-	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
+	const {
+		storeSettings,
+		isSaving: isSavingStoreSettings,
+		updateStoreSettingValues,
+		saveStoreSettings,
+	} = useStoreSettings();
 	const { saveSettings, isSaving } = useSettings();
 	const [
 		isMultiCurrencyEnabled,
 		updateIsMultiCurrencyEnabled,
 	] = useMultiCurrency();
 
-	const [ isPending, setPending ] = useState( false );
-
-	const [
-		isAutomaticSwitchEnabledValue,
-		setIsAutomaticSwitchEnabledValue,
-	] = useState( false );
-
-	const [
-		isStorefrontSwitcherEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-	] = useState( false );
-
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
-
-	useEffect( () => {
-		if ( Object.keys( storeSettings ).length ) {
-			setIsStorefrontSwitcherEnabledValue(
-				storeSettings.enable_storefront_switcher
-			);
-			setIsAutomaticSwitchEnabledValue(
-				storeSettings.enable_auto_currency
-			);
-		}
-	}, [
-		setIsAutomaticSwitchEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-		storeSettings,
-	] );
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
-	const handlePreviewModalOpenClick = () => {
-		setPreviewModalOpen( true );
-	};
-
-	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
-		setIsAutomaticSwitchEnabledValue( value );
-	};
-
-	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
-		setIsStorefrontSwitcherEnabledValue( value );
-	};
-
 	const handleContinueClick = () => {
-		setPending( true );
-
 		if ( ! isMultiCurrencyEnabled ) {
 			updateIsMultiCurrencyEnabled( true );
 			saveSettings();
 		}
 
-		submitStoreSettingsUpdate(
-			isAutomaticSwitchEnabledValue,
-			isStorefrontSwitcherEnabledValue,
-			'speed',
-			! isMultiCurrencyEnabled
-		);
-
-		setPending( false );
+		saveStoreSettings( ! isMultiCurrencyEnabled );
 		setCompleted( true, 'setup-complete' );
 	};
 
@@ -126,9 +83,13 @@ const StoreSettingsTask = () => {
 						<Flex direction="column" gap={ 4 }>
 							<FlexItem>
 								<CheckboxControl
-									checked={ isAutomaticSwitchEnabledValue }
-									onChange={
-										handleIsAutomaticSwitchEnabledClick
+									checked={
+										!! storeSettings.enable_auto_currency
+									}
+									onChange={ ( value ) =>
+										updateStoreSettingValues( {
+											enable_auto_currency: value,
+										} )
 									}
 									data-testid={ 'enable_auto_currency' }
 									label={ __(
@@ -146,10 +107,12 @@ const StoreSettingsTask = () => {
 								<FlexItem>
 									<CheckboxControl
 										checked={
-											isStorefrontSwitcherEnabledValue
+											!! storeSettings.enable_storefront_switcher
 										}
-										onChange={
-											handleIsStorefrontSwitcherEnabledClick
+										onChange={ ( value ) =>
+											updateStoreSettingValues( {
+												enable_storefront_switcher: value,
+											} )
 										}
 										data-testid={
 											'enable_storefront_switcher'
@@ -170,8 +133,8 @@ const StoreSettingsTask = () => {
 					</CardBody>
 				</Card>
 				<Button
-					isBusy={ isPending || isSaving }
-					disabled={ isPending || isSaving }
+					isBusy={ isSavingStoreSettings || isSaving }
+					disabled={ isSavingStoreSettings || isSaving }
 					onClick={ handleContinueClick }
 					variant="primary"
 					__next40pxDefaultSize
@@ -179,9 +142,9 @@ const StoreSettingsTask = () => {
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
 				<Button
-					isBusy={ isPending || isSaving }
-					disabled={ isPending || isSaving }
-					onClick={ handlePreviewModalOpenClick }
+					isBusy={ isSavingStoreSettings || isSaving }
+					disabled={ isSavingStoreSettings || isSaving }
+					onClick={ () => setPreviewModalOpen( true ) }
 					className="multi-currency-setup-preview-button"
 					variant="tertiary"
 					__next40pxDefaultSize
@@ -192,10 +155,10 @@ const StoreSettingsTask = () => {
 					isPreviewModalOpen={ isPreviewModalOpen }
 					setPreviewModalOpen={ setPreviewModalOpen }
 					isStorefrontSwitcherEnabledValue={
-						isStorefrontSwitcherEnabledValue
+						!! storeSettings.enable_storefront_switcher
 					}
 					isAutomaticSwitchEnabledValue={
-						isAutomaticSwitchEnabledValue
+						!! storeSettings.enable_auto_currency
 					}
 				/>
 			</CollapsibleBody>

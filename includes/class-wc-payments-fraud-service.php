@@ -122,6 +122,14 @@ class WC_Payments_Fraud_Service {
 			// Apply our internal logic before allowing others to have a say through filters.
 			$config = $this->prepare_fraud_config( $config, $service_id );
 
+			/**
+			 * Filters the fraud service configuration before it is sent to the client.
+			 *
+			 * @since 1.9.0
+			 *
+			 * @param array|null $config     The fraud service configuration, or null when the service should not be used.
+			 * @param string     $service_id The fraud service identifier (e.g. 'stripe').
+			 */
 			$services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
 		}
 
@@ -140,6 +148,24 @@ class WC_Payments_Fraud_Service {
 	 *                   This means that the method is called before the `init` hook.
 	 */
 	public function link_session_if_user_just_logged_in() {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			return;
+		}
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return;
+		}
+
+		/**
+		 * This method is run with the `init` action where REST_REQUEST is not yet defined.
+		 * Therefore, we need to manually catch it based on the request URI.
+		 */
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only used for prefix matching, not output.
+		if ( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( wp_unslash( $_SERVER['REQUEST_URI'] ), $rest_prefix ) ) {
+			return;
+		}
+
 		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
 		if ( ! $wpcom_blog_id ) {
 			// Don't do anything if Jetpack hasn't been connected yet.

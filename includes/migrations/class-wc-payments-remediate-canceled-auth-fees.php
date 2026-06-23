@@ -717,7 +717,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 				$refund->delete( true ); // Force delete, bypass trash.
 
 				// Fire the hook WC expects for refund deletion.
-				do_action( 'woocommerce_refund_deleted', $refund_id, $parent_order_id );
+				do_action( 'woocommerce_refund_deleted', $refund_id, $parent_order_id ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle -- WooCommerce core hook, not defined by WooPayments.
 			}
 
 			// Remove fee metadata from the order.

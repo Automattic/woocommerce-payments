@@ -24,10 +24,10 @@ const cardBrandsBreakpointConfigs = [
  * For card payments, shows card brand logos.
  * For other payment methods, shows the payment method icon.
  *
- * @param {Object} props Component props.
+ * @param {Object} props                 Component props.
  * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
- * @param {string} props.icon The icon URL.
- * @param {string} props.title The payment method title for alt text.
+ * @param {string} props.icon            The icon URL.
+ * @param {string} props.title           The payment method title for alt text.
  * @return {JSX.Element} The payment method icon component.
  */
 const PaymentMethodIcon = memo( function PaymentMethodIcon( {
@@ -93,11 +93,11 @@ const PaymentMethodIcon = memo( function PaymentMethodIcon( {
  * Payment method label component that uses the WooCommerce Blocks PaymentMethodLabel
  * with the icon prop for proper icon positioning.
  *
- * @param {Object} props Component props passed by WooCommerce Blocks.
- * @param {Object} props.components Components provided by WooCommerce Blocks, including PaymentMethodLabel.
- * @param {string} props.title The payment method title to display.
+ * @param {Object} props                 Component props passed by WooCommerce Blocks.
+ * @param {Object} props.components      Components provided by WooCommerce Blocks, including PaymentMethodLabel.
+ * @param {string} props.title           The payment method title to display.
  * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
- * @param {string} props.icon The icon URL.
+ * @param {string} props.icon            The icon URL.
  * @return {JSX.Element} The payment method label component.
  */
 const PaymentMethodLabel = ( {
@@ -121,10 +121,10 @@ const PaymentMethodLabel = ( {
 		[ paymentMethodId, icon, darkIcon, title ]
 	);
 
-	return useMemo( () => <Label text={ title } icon={ iconProp } />, [
-		title,
-		iconProp,
-	] );
+	return useMemo(
+		() => <Label text={ title } icon={ iconProp } />,
+		[ title, iconProp ]
+	);
 };
 
 export default PaymentMethodLabel;

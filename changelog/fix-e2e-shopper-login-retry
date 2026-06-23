@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Improve E2E getShopper helper login reliability with a retry and a stable authentication check

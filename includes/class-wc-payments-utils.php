@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\{ Amount_Too_Small_Exception, API_Exception, Connection_Exception };
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * WC Payments Utils class
@@ -94,7 +95,7 @@ class WC_Payments_Utils {
 
 			// Check if the current token is in the map.
 			if ( isset( $element_map[ $token ] ) ) {
-				$map_matched = preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
+				preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
 				if ( ! $map_matches ) {
 					// Should not happen with the properly formatted html as map value. Return the whole string escaped.
 					return esc_html( $text );
@@ -239,6 +240,21 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the number of decimals Stripe expects when billing the given currency.
+	 *
+	 * Returns 0 for true zero-decimal currencies (e.g. JPY) and 2 for everything else,
+	 * including Stripe's special-case currencies (TWD, HUF, ISK, UGX) that are locally
+	 * rendered without sub-units but still billed as two-decimal by Stripe.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return int 0 or 2.
+	 */
+	public static function get_stripe_minor_unit_for_currency( string $currency ): int {
+		return self::is_zero_decimal_currency( $currency ) ? 0 : 2;
+	}
+
+	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
 	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
@@ -286,6 +302,97 @@ class WC_Payments_Utils {
 			Country_Code::UNITED_STATES        => __( 'United States (US)', 'woocommerce-payments' ),
 			Country_Code::PUERTO_RICO          => __( 'Puerto Rico', 'woocommerce-payments' ),
 		];
+	}
+
+	/**
+	 * Returns the display name for a Stripe card brand.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The display name.
+	 */
+	public static function get_card_brand_display_name( string $brand ): string {
+		$brand = strtolower( str_replace( '-', '_', $brand ) );
+
+		$brand_display_names = [
+			'cartes_bancaires' => __( 'Cartes Bancaires', 'woocommerce-payments' ),
+			'cb'               => __( 'Cartes Bancaires', 'woocommerce-payments' ),
+			'eftpos'           => __( 'eftpos', 'woocommerce-payments' ),
+			'eftpos_au'        => __( 'eftpos', 'woocommerce-payments' ),
+		];
+
+		if ( isset( $brand_display_names[ $brand ] ) ) {
+			return $brand_display_names[ $brand ];
+		}
+
+		return ucfirst( $brand );
+	}
+
+	/**
+	 * Returns the terminal card brand asset name used for card artwork.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The asset name, without extension.
+	 */
+	public static function get_terminal_card_brand_asset_name( string $brand ): string {
+		$brand = strtolower( str_replace( '-', '_', $brand ) );
+
+		$brand_asset_names = [
+			'cartes_bancaires' => 'cartes_bancaires',
+			'cb'               => 'cartes_bancaires',
+			'eftpos'           => 'eftpos_au',
+			'eftpos_au'        => 'eftpos_au',
+		];
+
+		return $brand_asset_names[ $brand ] ?? '';
+	}
+
+	/**
+	 * Returns the terminal card brand icon as a base64-encoded SVG for receipt CSS.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The base64-encoded SVG, or an empty string when unavailable.
+	 */
+	public static function get_terminal_card_brand_icon_base64( string $brand ): string {
+		$asset_name = self::get_terminal_card_brand_asset_name( $brand );
+
+		if ( '' === $asset_name ) {
+			return '';
+		}
+
+		$asset_path = WCPAY_ABSPATH . "assets/images/cards/{$asset_name}.svg";
+
+		if ( ! file_exists( $asset_path ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		return base64_encode( file_get_contents( $asset_path ) );
+	}
+
+	/**
+	 * Returns the terminal card display brand for a card-present payment method.
+	 *
+	 * @param array $payment_method_details The card-present payment method details from Stripe.
+	 * @return string The card network when it should take display priority, otherwise the card brand.
+	 */
+	public static function get_terminal_card_display_brand( array $payment_method_details ): string {
+		$network = $payment_method_details['network'] ?? '';
+
+		if ( '' !== self::get_terminal_card_brand_asset_name( $network ) ) {
+			return $network;
+		}
+
+		return $payment_method_details['brand'] ?? '';
+	}
+
+	/**
+	 * Returns the display name for a terminal card-present payment method.
+	 *
+	 * @param array $payment_method_details The card-present payment method details from Stripe.
+	 * @return string The payment method display name.
+	 */
+	public static function get_terminal_card_display_name( array $payment_method_details ): string {
+		return self::get_card_brand_display_name( self::get_terminal_card_display_brand( $payment_method_details ) );
 	}
 
 	/**
@@ -691,9 +798,74 @@ class WC_Payments_Utils {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() ) {
+			$localized_messages = self::get_localized_messages();
+			$error_code         = $e->get_error_code();
+			$decline_code       = $e->get_decline_code();
+
+			if ( ! empty( $decline_code ) && isset( $localized_messages[ $decline_code ] ) ) {
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $decline_code ]
+				);
+			} elseif ( isset( $localized_messages[ $error_code ] ) ) {
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $error_code ]
+				);
+			}
 		}
 
 		return $error_message;
+	}
+
+	/**
+	 * Returns an array of Stripe error codes mapped to translatable customer-facing messages.
+	 *
+	 * Error codes come from Stripe's API: https://docs.stripe.com/error-codes
+	 * Messages use the woocommerce-payments text domain so they are translatable
+	 * via standard WordPress translation tools.
+	 *
+	 * @return array<string, string> Map of error code/type to translated message.
+	 */
+	public static function get_localized_messages() {
+		/**
+		 * Filters the localized, customer-facing Stripe error messages.
+		 *
+		 * @since 10.7.0
+		 *
+		 * @param array<string, string> $messages Map of Stripe error code/type to translated message.
+		 */
+		return apply_filters(
+			'wcpay_localized_messages',
+			[
+				'invalid_number'                        => __( 'The card number is not a valid credit card number.', 'woocommerce-payments' ),
+				'invalid_expiry_month'                  => __( 'Your card\'s expiration month is invalid.', 'woocommerce-payments' ),
+				'invalid_expiry_year'                   => __( 'Your card\'s expiration year is invalid.', 'woocommerce-payments' ),
+				'invalid_cvc'                           => __( 'Your card\'s security code is invalid.', 'woocommerce-payments' ),
+				'incorrect_number'                      => __( 'Your card number is incorrect.', 'woocommerce-payments' ),
+				'incomplete_number'                     => __( 'Your card number is incomplete.', 'woocommerce-payments' ),
+				'incomplete_cvc'                        => __( 'Your card\'s security code is incomplete.', 'woocommerce-payments' ),
+				'incomplete_expiry'                     => __( 'Your card\'s expiration date is incomplete.', 'woocommerce-payments' ),
+				'expired_card'                          => __( 'Your card has expired.', 'woocommerce-payments' ),
+				'incorrect_cvc'                         => __( "Your card's security code is incorrect.", 'woocommerce-payments' ),
+				'postal_code_invalid'                   => __( 'Invalid zip code, please correct and try again.', 'woocommerce-payments' ),
+				'invalid_expiry_year_past'              => __( 'Your card\'s expiration year is in the past.', 'woocommerce-payments' ),
+				'card_declined'                         => __( 'Your card was declined.', 'woocommerce-payments' ),
+				'missing'                               => __( 'There is no card on a customer that is being charged.', 'woocommerce-payments' ),
+				'processing_error'                      => __( 'An error occurred while processing your card. Try again in a little bit.', 'woocommerce-payments' ),
+				'invalid_sofort_country'                => __( 'The billing country is not accepted by Sofort. Please try another country.', 'woocommerce-payments' ),
+				'email_invalid'                         => __( 'Invalid email address, please correct and try again.', 'woocommerce-payments' ),
+				'country_code_invalid'                  => __( 'Invalid country code, please try again with a valid country code.', 'woocommerce-payments' ),
+				'tax_id_invalid'                        => __( 'Invalid Tax ID, please try again with a valid tax ID.', 'woocommerce-payments' ),
+				'invalid_wallet_type'                   => __( 'Invalid wallet payment type, please try again or use an alternative method.', 'woocommerce-payments' ),
+				'payment_intent_authentication_failure' => __( 'We are unable to authenticate your payment method. Please choose a different payment method and try again.', 'woocommerce-payments' ),
+				'authentication_required'               => __( 'Your card was declined because additional authentication is required. Please contact your card issuer or try a different payment method.', 'woocommerce-payments' ),
+				'insufficient_funds'                    => __( 'Your card has insufficient funds.', 'woocommerce-payments' ),
+			]
+		);
 	}
 
 	/**
@@ -722,136 +894,27 @@ class WC_Payments_Utils {
 	/**
 	 * Get the BNPL limits per currency for a specific payment method.
 	 *
-	 * FLAG: PAYMENT_METHODS_LIST
-	 * This can be replaced once all BNPL methods are converted to use definitions.
+	 * Looks up the payment method definition via the registry and returns its
+	 * declared currency limits. Returns an empty array if the id is not registered.
 	 *
-	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').
+	 * @param string $payment_method The payment method id ('affirm', 'afterpay_clearpay', or 'klarna').
 	 * @return array The BNPL limits per currency for the specified payment method.
 	 */
 	public static function get_bnpl_limits_per_currency( $payment_method ) {
-		switch ( $payment_method ) {
-			case 'affirm':
-				return [
-					Currency_Code::CANADIAN_DOLLAR      => [
-						Country_Code::CANADA => [
-							'min' => 5000,
-							'max' => 3000000,
-						], // Represents CAD 50 - 30,000 CAD.
-					],
-					Currency_Code::UNITED_STATES_DOLLAR => [
-						Country_Code::UNITED_STATES => [
-							'min' => 5000,
-							'max' => 3000000,
-						],
-					], // Represents USD 50 - 30,000 USD.
-				];
-			case 'afterpay_clearpay':
-				return [
-					Currency_Code::AUSTRALIAN_DOLLAR    => [
-						Country_Code::AUSTRALIA => [
-							'min' => 100,
-							'max' => 200000,
-						], // Represents AUD 1 - 2,000 AUD.
-					],
-					Currency_Code::CANADIAN_DOLLAR      => [
-						Country_Code::CANADA => [
-							'min' => 100,
-							'max' => 200000,
-						], // Represents CAD 1 - 2,000 CAD.
-					],
-					Currency_Code::NEW_ZEALAND_DOLLAR   => [
-						Country_Code::NEW_ZEALAND => [
-							'min' => 100,
-							'max' => 200000,
-						], // Represents NZD 1 - 2,000 NZD.
-					],
-					Currency_Code::POUND_STERLING       => [
-						Country_Code::UNITED_KINGDOM => [
-							'min' => 100,
-							'max' => 120000,
-						], // Represents GBP 1 - 1,200 GBP.
-					],
-					Currency_Code::UNITED_STATES_DOLLAR => [
-						Country_Code::UNITED_STATES => [
-							'min' => 100,
-							'max' => 400000,
-						], // Represents USD 1 - 4,000 USD.
-					],
-				];
-			case 'klarna':
-				return [
-					Currency_Code::UNITED_STATES_DOLLAR => [
-						Country_Code::UNITED_STATES => [
-							'min' => 100,
-							'max' => 1000000,
-						], // Represents USD 1 - 10,000 USD.
-					],
-					Currency_Code::POUND_STERLING       => [
-						Country_Code::UNITED_KINGDOM => [
-							'min' => 100,
-							'max' => 500000,
-						], // Represents GBP 1 - 5,000 GBP.
-					],
-					Currency_Code::EURO                 => [
-						Country_Code::AUSTRIA     => [
-							'min' => 100,
-							'max' => 1000000,
-						], // Represents EUR 1 - 10,000 EUR.
-						Country_Code::BELGIUM     => [
-							'min' => 100,
-							'max' => 1000000,
-						], // Represents EUR 1 - 10,000 EUR.
-						Country_Code::GERMANY     => [
-							'min' => 100,
-							'max' => 1000000,
-						], // Represents EUR 1 - 10,000 EUR.
-						Country_Code::NETHERLANDS => [
-							'min' => 100,
-							'max' => 500000,
-						], // Represents EUR 1 - 5,000 EUR.
-						Country_Code::FINLAND     => [
-							'min' => 100,
-							'max' => 1000000,
-						], // Represents EUR 1 - 10,000 EUR.
-						Country_Code::SPAIN       => [
-							'min' => 100,
-							'max' => 1000000,
-						], // Represents EUR 1 - 10,000 EUR.
-						Country_Code::IRELAND     => [
-							'min' => 100,
-							'max' => 400000,
-						], // Represents EUR 1 - 4,000 EUR.
-						Country_Code::ITALY       => [
-							'min' => 100,
-							'max' => 400000,
-						], // Represents EUR 1 - 4,000 EUR.
-						Country_Code::FRANCE      => [
-							'min' => 100,
-							'max' => 400000,
-						], // Represents EUR 1 - 4,000 EUR.
-					],
-					Currency_Code::DANISH_KRONE         => [
-						Country_Code::DENMARK => [
-							'min' => 100,
-							'max' => 10000000,
-						], // Represents DKK 1 - 100,000 DKK.
-					],
-					Currency_Code::NORWEGIAN_KRONE      => [
-						Country_Code::NORWAY => [
-							'min' => 100,
-							'max' => 10000000,
-						], // Represents NOK 1 - 100,000 NOK.
-					],
-					Currency_Code::SWEDISH_KRONA        => [
-						Country_Code::SWEDEN => [
-							'min' => 100,
-							'max' => 10000000,
-						], // Represents SEK 1 - 100,000 SEK.
-					],
-				];
-			default:
-				return [];
+		$registry    = PaymentMethodDefinitionRegistry::instance();
+		$definitions = $registry->get_all_payment_method_definitions();
+
+		if ( empty( $definitions ) ) {
+			$registry->init();
+			$definitions = $registry->get_all_payment_method_definitions();
 		}
+
+		$definition_class = $definitions[ $payment_method ] ?? null;
+		if ( null === $definition_class ) {
+			return [];
+		}
+
+		return $definition_class::get_limits_per_currency();
 	}
 
 	/**
@@ -998,7 +1061,7 @@ class WC_Payments_Utils {
 			array_merge(
 				[
 					'page' => 'wc-admin',
-					'path' => '/payments/transactions/details',
+					'path' => rawurlencode( '/payments/transactions/details' ),
 					'id'   => self::get_transaction_url_id( $primary_id, $fallback_id ),
 				],
 				$query_args
@@ -1040,6 +1103,13 @@ class WC_Payments_Utils {
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
+		/**
+		 * Filters whether the new onboarding flow should be disabled.
+		 *
+		 * @since 8.1.0
+		 *
+		 * @param bool $disabled Whether the new onboarding flow is disabled.
+		 */
 		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}

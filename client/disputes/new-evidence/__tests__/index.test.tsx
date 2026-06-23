@@ -18,24 +18,29 @@ import { useDispatch } from '@wordpress/data';
 import NewEvidence from '../index';
 import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import type { DisputeReason } from 'wcpay/types/disputes';
-import {
-	useGetSettings,
-	useDisputeEvidence,
-	WCPAY_STORE_NAME,
-} from 'wcpay/data';
+import { useGetSettings } from 'wcpay/data/settings';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { PAYMENT_INTENTS_STORE_NAME } from 'wcpay/data/store-names';
 
 // Mock the API fetch calls
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 // Mock the data hooks
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useGetSettings: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 
-// Mock the dispatch hooks
+// Mock the dispatch hooks. `createReduxStore` returns the store name so the
+// slice stores that load through the component resolve to their name string —
+// which is what `useDispatch` is keyed on below.
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
+	createReduxStore: jest.fn( ( name ) => name ),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
@@ -813,9 +818,10 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 		mockUseDisputeEvidence.mockReturnValue( { updateDispute: jest.fn() } );
 		( mockUseDispatch as jest.Mock ).mockImplementation(
 			( storeName: string ) => {
-				if ( storeName === WCPAY_STORE_NAME ) {
+				if ( storeName === PAYMENT_INTENTS_STORE_NAME ) {
 					return {
-						invalidateResolutionForStoreSelector: mockInvalidateResolutionForStoreSelector,
+						invalidateResolutionForStoreSelector:
+							mockInvalidateResolutionForStoreSelector,
 					};
 				}
 				if ( storeName === 'core/notices' ) {
@@ -860,9 +866,8 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 	} );
 
 	it( 'does not invalidate payment intent cache when dispute has no payment_intent', async () => {
-		const disputeWithoutPaymentIntent = createDisputeWithPaymentIntent(
-			false
-		);
+		const disputeWithoutPaymentIntent =
+			createDisputeWithPaymentIntent( false );
 		mockApiFetch.mockResolvedValue( disputeWithoutPaymentIntent );
 
 		render( <NewEvidence query={ { id: 'dp_test_cache' } } /> );
@@ -933,5 +938,98 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 				mockInvalidateResolutionForStoreSelector
 			).toHaveBeenCalledWith( 'getPaymentIntent' );
 		} );
+	} );
+} );
+
+describe( 'NewEvidence - multiple → other product type mapping', () => {
+	const disputeWithMultipleSuggestedType = {
+		id: 'dp_test_multiple',
+		amount: 1000,
+		currency: 'usd',
+		created: 1609459200,
+		reason: 'fraudulent' as DisputeReason,
+		status: 'needs_response',
+		evidence_details: {
+			due_by: 1610064000,
+		},
+		evidence: {},
+		metadata: {},
+		order: {
+			id: 123,
+			number: '123',
+			ip_address: '192.168.1.1',
+			suggested_product_type: 'multiple',
+		},
+		charge: {
+			id: 'ch_test_multiple',
+			payment_method_details: {
+				type: 'card',
+				card: { issuer: 'Test Bank' },
+			},
+		},
+		enhanced_eligibility_types: [],
+		balance_transactions: [],
+	};
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		mockApiFetch.mockResolvedValue( disputeWithMultipleSuggestedType );
+		mockUseGetSettings.mockReturnValue( {
+			account_country: 'US',
+			account_business_name: 'Test Store',
+			account_business_support_email: 'support@test.com',
+			account_business_support_phone: '1234567890',
+		} );
+		mockUseDisputeEvidence.mockReturnValue( { updateDispute: jest.fn() } );
+		( mockUseDispatch as jest.Mock ).mockReturnValue( {
+			createSuccessNotice: jest.fn(),
+			createErrorNotice: jest.fn(),
+			createInfoNotice: jest.fn(),
+		} );
+	} );
+
+	afterEach( () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
+			true;
+	} );
+
+	it( 'remaps multiple → other when the feature flag is enabled', async () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
+			true;
+
+		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByText( 'Product or service details' )
+			).toBeInTheDocument();
+		} );
+
+		const productTypeSelect = screen
+			.getByText( 'Product or service details' )
+			.closest( 'section' )
+			?.querySelector( 'select' ) as HTMLSelectElement;
+
+		expect( productTypeSelect ).not.toBeNull();
+		expect( productTypeSelect ).toHaveValue( 'other' );
+	} );
+
+	it( 'preserves multiple when the feature flag is disabled', async () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
+			false;
+
+		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
+
+		await waitFor( () => {
+			expect( screen.getByText( 'Product details' ) ).toBeInTheDocument();
+		} );
+
+		const productTypeSelect = screen
+			.getByText( 'Product details' )
+			.closest( 'section' )
+			?.querySelector( 'select' ) as HTMLSelectElement;
+
+		expect( productTypeSelect ).not.toBeNull();
+		expect( productTypeSelect ).toHaveValue( 'multiple' );
 	} );
 } );

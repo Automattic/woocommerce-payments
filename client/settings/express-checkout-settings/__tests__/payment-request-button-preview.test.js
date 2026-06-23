@@ -17,7 +17,7 @@ jest.mock( '@wordpress/a11y', () => ( {
 } ) );
 
 jest.mock(
-	'wcpay/express-checkout/blocks/components/express-checkout-preview',
+	'wcpay/express-checkout/block-buttons/components/express-checkout-preview',
 	() => ( {
 		ExpressCheckoutPreviewComponent: () => (
 			<button type="submit">Stripe button mock</button>
@@ -29,13 +29,21 @@ jest.mock( '@stripe/react-stripe-js', () => ( {
 	useStripe: jest.fn(),
 } ) );
 
-jest.mock( 'wcpay/data', () => {
-	const actual = jest.requireActual( 'wcpay/data' );
+jest.mock( 'wcpay/data/settings', () => {
+	const actual = jest.requireActual( 'wcpay/data/settings' );
 	return {
 		__esModule: true,
 		...actual,
 		useWooPayEnabledSettings: () => [ false, jest.fn() ],
 		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
+	};
+} );
+
+jest.mock( 'wcpay/data/pm-promotions', () => {
+	const actual = jest.requireActual( 'wcpay/data/pm-promotions' );
+	return {
+		__esModule: true,
+		...actual,
 		usePmPromotions: () => ( { pmPromotions: [], isLoading: false } ),
 	};
 } );

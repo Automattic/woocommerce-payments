@@ -24,6 +24,14 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->payments_order_success_page = new WC_Payments_Order_Success_Page();
+		$this->payments_order_success_page->init_hooks();
+	}
+
+	public function tear_down() {
+		global $wp;
+		unset( $_GET['key'] );
+		unset( $wp->query_vars['order-received'] );
+		parent::tear_down();
 	}
 
 	public function test_show_card_payment_method_name_without_card_brand() {
@@ -153,9 +161,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 50 ); // Ensure order needs payment.
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
@@ -171,9 +180,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->add_meta_data( '_intent_id', 'pi_123' );
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		// Mock the Get_Intention request.
 		$mock_intent = WC_Helper_Intention::create_intention(
@@ -201,9 +211,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->set_status( 'processing' );
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
@@ -220,5 +231,86 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
 
 		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_invalid_order_key() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'failed' );
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_total( 50 );
+		$order->save();
+
+		// Set up global wp query vars with invalid order key.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = 'wc_order_INVALID';
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_missing_order_key() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'failed' );
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_total( 50 );
+		$order->save();
+
+		// Set up global wp query vars without order key.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		unset( $_GET['key'] );
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_show_express_checkout_payment_method_name_amazon_pay_with_last4() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( 'last4', '4242' );
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'Amazon Pay' );
+		$payment_method->method( 'get_icon' )->willReturn( 'amazon-pay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'amazon-pay.svg' );
+
+		$original_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $original_map, [ 'amazon_pay' => $payment_method ] ) );
+
+		$result = $this->payments_order_success_page->show_express_checkout_payment_method_name( $order, 'amazon_pay' );
+
+		$this->set_payment_method_map( $original_map );
+
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
+		$this->assertStringContainsString( 'amazon', strtolower( $result ) );
+		$this->assertStringContainsString( '•••', $result );
+		$this->assertStringContainsString( '4242', $result );
+	}
+
+	public function test_show_express_checkout_payment_method_name_amazon_pay_without_last4() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'Amazon Pay' );
+		$payment_method->method( 'get_icon' )->willReturn( 'amazon-pay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'amazon-pay.svg' );
+
+		$original_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $original_map, [ 'amazon_pay' => $payment_method ] ) );
+
+		$result = $this->payments_order_success_page->show_express_checkout_payment_method_name( $order, 'amazon_pay' );
+
+		$this->set_payment_method_map( $original_map );
+
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
+		$this->assertStringNotContainsString( '•••', $result );
 	}
 }

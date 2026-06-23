@@ -21,6 +21,13 @@ if [[ "$infra_needed" == "false" ]]; then
     done
 fi
 
+# Check if the database container is running (network/volumes can persist after container removal)
+if [[ "$infra_needed" == "false" ]]; then
+    if ! docker ps --filter name=wcpay_db --filter status=running --format '{{.Names}}' | grep -q wcpay_db; then
+        infra_needed=true
+    fi
+fi
+
 # Auto-start infrastructure if needed
 if [[ "$infra_needed" == "true" ]]; then
     echo "Shared infrastructure not running. Starting it now..."

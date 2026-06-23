@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Tests\PaymentMethods\Configs\MockPaymentMethodDefinition;
 use WCPAY_UnitTestCase;
 use WC_Payments_Account;
@@ -84,6 +85,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
@@ -94,23 +96,10 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 		];
 
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
 		foreach ( $payment_method_definitions as $definition_class ) {
 			/** @var UPE_Payment_Method|MockObject */
 			$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
 				->setConstructorArgs( [ $this->mock_token_service, $definition_class ] )
-				->onlyMethods( [] )
-				->getMock();
-			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
-		}
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			/** @var UPE_Payment_Method|MockObject */
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
 				->onlyMethods( [] )
 				->getMock();
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
@@ -151,7 +140,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 	public function test_klarna_get_countries_with_eu_country_and_eu_currency() {
 		$this->currency_filter_callback = function () {
-			return 'EUR';
+			return Currency_Code::EURO;
 		};
 		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
 
@@ -181,7 +170,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 	public function test_klarna_get_countries_with_eu_country_and_non_eu_currency() {
 		$this->currency_filter_callback = function () {
-			return 'AUD';
+			return Currency_Code::AUSTRALIAN_DOLLAR;
 		};
 		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
 

@@ -19,7 +19,7 @@ import {
 	useAmazonPayEnabledSettings,
 	useAmazonPayLocations,
 	useExpressCheckoutInPaymentMethodsEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import interpolateComponents from '@automattic/interpolate-components';
 import ExpressCheckoutSettingsNotices from './express-checkout-settings-notices';
 
@@ -80,14 +80,10 @@ const GeneralSettings = () => {
 };
 
 const AmazonPaySettings = ( { section } ) => {
-	const [
-		isAmazonPayEnabled,
-		updateIsAmazonPayEnabled,
-	] = useAmazonPayEnabledSettings();
-	const [
-		amazonPayLocations,
-		updateAmazonPayLocations,
-	] = useAmazonPayLocations();
+	const [ isAmazonPayEnabled, updateIsAmazonPayEnabled ] =
+		useAmazonPayEnabledSettings();
+	const [ amazonPayLocations, updateAmazonPayLocations ] =
+		useAmazonPayLocations();
 	const [
 		isExpressCheckoutInPaymentMethodsEnabled,
 		updateIsExpressCheckoutInPaymentMethodsEnabled,

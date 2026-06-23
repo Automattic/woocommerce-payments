@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Cache the affected orders check for the canceled auth fee remediation note to avoid an expensive query on every admin page load

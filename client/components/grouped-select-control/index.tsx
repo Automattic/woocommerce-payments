@@ -164,6 +164,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 				className
 			) }
 		>
+			{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 			<label
 				{ ...getLabelProps( {
 					className: 'wcpay-component-grouped-select-control__label',

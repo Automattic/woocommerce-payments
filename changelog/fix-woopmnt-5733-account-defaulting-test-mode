@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix WCPay account defaulting to Test mode when user selects Live during onboarding

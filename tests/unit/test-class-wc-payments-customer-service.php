@@ -786,4 +786,21 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( $this->customer_service->get_customer_id_for_order( $order ), 'wcpay_cus_test12345' );
 	}
+
+	/**
+	 * Test that recreate_customer_for_user deletes the old ID and creates a new customer.
+	 */
+	public function test_recreate_customer_for_user_creates_new_customer() {
+		$user = wp_get_current_user();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_new' );
+
+		$result = $this->customer_service->recreate_customer_for_user( $user, [ 'name' => 'Test User' ] );
+
+		$this->assertEquals( 'cus_new', $result );
+		$this->assertEquals( 'cus_new', $this->customer_service->get_customer_id_by_user_id( $user->ID ) );
+	}
 }

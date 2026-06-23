@@ -7,6 +7,8 @@ services:
       - $PWD:/woopayments
     environment:
       - "BASE_URL=http://host.docker.internal:8084"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8077:8077"
     ipc: host

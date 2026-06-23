@@ -2,6 +2,107 @@
  * Internal dependencies
  */
 import * as upeStyles from '..';
+import { appearanceSelectors } from '..';
+
+describe( 'appearanceSelectors.updateSelectors', () => {
+	let scope;
+
+	beforeEach( () => {
+		scope = document;
+		document.body.innerHTML = '';
+	} );
+
+	it( 'uses primary selectors when they exist in the DOM', () => {
+		document.body.innerHTML =
+			'<div class="woocommerce-billing-fields__field-wrapper">' +
+			'<input id="billing_first_name" type="text" />' +
+			'</div>';
+
+		const selectors = {
+			appendTarget: '.woocommerce-billing-fields__field-wrapper',
+			upeThemeInputSelector: '#billing_first_name',
+			alternateSelectors: {
+				appendTarget: 'form.checkout',
+				upeThemeInputSelector: 'form.checkout input[type="text"]',
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.appendTarget ).toBe(
+			'.woocommerce-billing-fields__field-wrapper'
+		);
+		expect( result.upeThemeInputSelector ).toBe( '#billing_first_name' );
+		expect( result ).not.toHaveProperty( 'alternateSelectors' );
+	} );
+
+	it( 'falls back to alternate selectors when primary are missing', () => {
+		document.body.innerHTML =
+			'<form class="checkout">' +
+			'<input type="text" name="name" />' +
+			'</form>';
+
+		const selectors = {
+			appendTarget: '.woocommerce-billing-fields__field-wrapper',
+			upeThemeInputSelector: '#billing_first_name',
+			alternateSelectors: {
+				appendTarget: 'form.checkout',
+				upeThemeInputSelector: 'form.checkout input[type="text"]',
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.appendTarget ).toBe( 'form.checkout' );
+		expect( result.upeThemeInputSelector ).toBe(
+			'form.checkout input[type="text"]'
+		);
+	} );
+
+	it( 'falls back array selectors when none of the primary match', () => {
+		document.body.innerHTML =
+			'<form class="checkout">' +
+			'<div class="woocommerce">content</div>' +
+			'</form>';
+
+		const selectors = {
+			upeThemeTextSelectors: [
+				'#payment .payment_methods li .payment_box fieldset',
+				'.woocommerce-checkout .form-row',
+			],
+			alternateSelectors: {
+				upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.upeThemeTextSelectors ).toEqual( [
+			'form.checkout',
+			'.woocommerce',
+		] );
+	} );
+
+	it( 'keeps array selectors when at least one primary matches', () => {
+		document.body.innerHTML =
+			'<div class="woocommerce-checkout">' +
+			'<div class="form-row">content</div>' +
+			'</div>';
+
+		const selectors = {
+			upeThemeTextSelectors: [
+				'#payment .payment_methods li .payment_box fieldset',
+				'.woocommerce-checkout .form-row',
+			],
+			alternateSelectors: {
+				upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.upeThemeTextSelectors ).toEqual( [
+			'#payment .payment_methods li .payment_box fieldset',
+			'.woocommerce-checkout .form-row',
+		] );
+	} );
+} );
 
 describe( 'Getting styles for automated theming', () => {
 	const mockElement = document.createElement( 'input' );
@@ -85,16 +186,21 @@ describe( 'Getting styles for automated theming', () => {
 
 	test( 'getFontRulesFromPage returns font rules from allowed font providers', () => {
 		const mockStyleSheets = {
-			length: 3,
+			length: 5,
 			0: {
-				href:
-					'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
+				href: 'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
 			},
 			1: { href: null },
 			2: {
 				href:
 					// eslint-disable-next-line max-len
 					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.6.0',
+			},
+			3: {
+				href: 'https://fonts.bunny.net/css?family=Inter:400,700',
+			},
+			4: {
+				href: 'https://fonts.wp.com/css?family=Open+Sans:400,700',
 			},
 		};
 		jest.spyOn( document, 'styleSheets', 'get' ).mockReturnValue(
@@ -108,6 +214,10 @@ describe( 'Getting styles for automated theming', () => {
 					// eslint-disable-next-line max-len
 					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.6.0',
 			},
+			{ cssSrc: 'https://fonts.bunny.net/css?family=Inter:400,700' },
+			{
+				cssSrc: 'https://fonts.wp.com/css?family=Open+Sans:400,700',
+			},
 		] );
 	} );
 
@@ -115,8 +225,7 @@ describe( 'Getting styles for automated theming', () => {
 		const mockStyleSheets = {
 			length: 2,
 			0: {
-				href:
-					'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
+				href: 'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
 			},
 			1: { href: null },
 		};
@@ -331,5 +440,90 @@ describe( 'Getting styles for automated theming', () => {
 				} );
 			} );
 		} );
+	} );
+} );
+
+describe( 'getAppearance floating label detection on blocks checkout', () => {
+	const makeScope = ( labelPosition ) => {
+		const labelElement = document.createElement( 'label' );
+		const inputElement = document.createElement( 'input' );
+
+		const inputStyles = {
+			color: 'rgb(29, 35, 39)',
+			'font-size': '13px',
+			'line-height': '18px',
+			'padding-top': '10px',
+			'padding-bottom': '10px',
+		};
+		const labelStyles = {
+			color: 'rgb(100, 105, 112)',
+			'font-size': '10px',
+			'line-height': '12px',
+			position: labelPosition,
+		};
+
+		const declarationFor = ( styles ) => ( {
+			getPropertyValue: ( prop ) => styles[ prop ] || '',
+		} );
+
+		return {
+			querySelector: jest.fn( ( selector ) =>
+				/label/i.test( selector ) ? labelElement : inputElement
+			),
+			createElement: jest.fn( ( htmlTag ) =>
+				document.createElement( htmlTag )
+			),
+			defaultView: {
+				getComputedStyle: jest.fn( ( el ) =>
+					el === labelElement
+						? declarationFor( labelStyles )
+						: declarationFor( inputStyles )
+				),
+			},
+		};
+	};
+
+	test( 'keeps floating labels and padding compensation when the theme label is absolutely positioned', () => {
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			makeScope( 'absolute' )
+		);
+
+		expect( appearance.labels ).toBe( 'floating' );
+		expect( appearance.rules ).toHaveProperty( [ '.Label--floating' ] );
+		expect( appearance.rules[ '.Input' ].paddingTop ).toBe(
+			'calc(10px - 12px - 4px - 1px)'
+		);
+	} );
+
+	test( 'uses above labels and skips padding compensation when the theme label is static', () => {
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			makeScope( 'static' )
+		);
+
+		expect( appearance.labels ).toBe( 'above' );
+		expect( appearance.rules ).not.toHaveProperty( [ '.Label--floating' ] );
+		expect( appearance.rules[ '.Input' ].paddingTop ).toBe( '10px' );
+		expect( appearance.rules[ '.Input' ].paddingBottom ).toBe( '10px' );
+	} );
+
+	test( 'does not clamp fontSizeBase relative to the payment method labels', () => {
+		const scope = makeScope( 'absolute' );
+		// Give the radio-control label group a concrete size so the former
+		// PMME clamp (0.875 of this value) would fire if still present.
+		scope
+			.querySelector( '.wc-block-components-radio-control__label-group' )
+			.style.setProperty( 'font-size', '12px' );
+
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			scope
+		);
+
+		expect( appearance.variables.fontSizeBase ).toBe( '13px' );
 	} );
 } );

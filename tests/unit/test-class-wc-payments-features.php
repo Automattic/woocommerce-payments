@@ -52,10 +52,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$constants    = $reflection->getConstants();
 		$option_array = array_filter(
 			$constants,
-			function ( $key ) {
-				return strpos( $key, '_wcpay_feature_' ) === 0;
-			},
-			ARRAY_FILTER_USE_KEY
+			function ( $value ) {
+				return is_string( $value ) && strpos( $value, '_wcpay_feature_' ) === 0;
+			}
 		);
 
 		$this->clear_feature_flag_options( $option_array );
@@ -72,6 +71,12 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_it_returns_expected_to_array_result( array $enabled_flags ) {
 		$this->setup_enabled_flags( $enabled_flags );
+
+		// Explicitly disable flags that default to ON so they don't appear
+		// in to_array() output unless included in $enabled_flags above.
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '0' );
 
 		$expected = [];
 		foreach ( $enabled_flags as $flag ) {
@@ -96,6 +101,33 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_customer_multi_currency_can_be_disabled() {
 		$this->set_feature_flag_option( '_wcpay_feature_customer_multi_currency', '0' );
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
+	}
+
+	public function test_is_mc_cache_optimized_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
+	public function test_is_mc_cache_optimized_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		$this->assertFalse( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
+	public function test_is_dispute_additional_evidence_types_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
+	}
+
+	public function test_is_dispute_additional_evidence_types_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
+	}
+
+	public function test_is_dispute_outcome_view_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	}
+
+	public function test_is_dispute_outcome_view_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
 	public function test_is_woopay_eligible_returns_true() {
@@ -277,7 +309,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_is_woopay_direct_checkout_enabled_returns_true_when_first_party_auth_is_disabled() {
 		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enabled' => 'yes' ] );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
-		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '0' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
@@ -407,10 +438,10 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
 	}
 
-	public function test_is_amazon_pay_enabled_returns_false_by_default() {
+	public function test_is_amazon_pay_enabled_returns_true_by_default_when_confirmation_tokens_enabled() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
 
-		$this->assertFalse( $result );
+		$this->assertTrue( $result );
 	}
 }

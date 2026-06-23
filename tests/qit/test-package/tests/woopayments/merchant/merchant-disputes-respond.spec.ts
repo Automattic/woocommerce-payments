@@ -159,7 +159,7 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 					).toBeVisible();
 
 					await adminPage
-						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 						.fill( 'my product description' );
 				}
 			);
@@ -543,16 +543,16 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 				// so we retry the fill+verify cycle until the value sticks.
 				await expect( async () => {
 					await adminPage
-						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 						.fill( 'my product description' );
 
 					// Blur the field to ensure value is committed to state
 					await adminPage
-						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 						.press( 'Tab' );
 
 					await expect(
-						adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
+						adminPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					).toHaveValue( 'my product description', {
 						timeout: 2000,
 					} );
@@ -632,7 +632,7 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 					).toBeVisible();
 
 					await expect(
-						adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
+						adminPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					).toHaveValue( 'my product description', {
 						timeout: 5000,
 					} );

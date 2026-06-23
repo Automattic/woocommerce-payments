@@ -114,9 +114,8 @@ function triggerCancelAuthorizationModal(
 				}
 			} }
 			onCancel={ () => {
-				const orderStatusElement: HTMLInputElement | null = document.querySelector(
-					'#order_status'
-				);
+				const orderStatusElement: HTMLInputElement | null =
+					document.querySelector( '#order_status' );
 				if ( orderStatusElement !== null ) {
 					orderStatusElement.value = orderStatus;
 					orderStatusElement.dispatchEvent( new Event( 'change' ) );
@@ -185,9 +184,8 @@ function triggerCaptureAuthorizationModal(
 				}
 			} }
 			onCancel={ () => {
-				const orderStatusElement: HTMLInputElement | null = document.querySelector(
-					'#order_status'
-				);
+				const orderStatusElement: HTMLInputElement | null =
+					document.querySelector( '#order_status' );
 				if ( orderStatusElement !== null ) {
 					orderStatusElement.value = orderStatus;
 					orderStatusElement.dispatchEvent( new Event( 'change' ) );
@@ -300,9 +298,8 @@ function handleCancelledStatus(
 					}
 				} }
 				onCancel={ () => {
-					const orderStatusElement: HTMLInputElement | null = document.querySelector(
-						'#order_status'
-					);
+					const orderStatusElement: HTMLInputElement | null =
+						document.querySelector( '#order_status' );
 					if ( orderStatusElement !== null ) {
 						orderStatusElement.value = orderStatus;
 						orderStatusElement.dispatchEvent(
