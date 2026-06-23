@@ -10,6 +10,7 @@ const mockUpdateUserPreferences = jest.fn();
 let mockUserPrefs: Record< string, unknown > = {};
 
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getQuery: () => mockGetQuery(),
 	updateQueryString: ( args: Record< string, unknown >, path?: string ) =>
 		mockUpdateQueryString( args, path ),
