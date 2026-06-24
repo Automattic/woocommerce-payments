@@ -333,10 +333,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * @param bool            $update_payment_method Whether to update the payment method.
 	 * @param string          $new_payment_method The new payment method.
-	 * @param WC_Subscription $subscription The subscription.
+	 * @param WC_Subscription $_unused_subscription The subscription.
 	 * @return bool
 	 */
-	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $subscription ) {
+	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $_unused_subscription ) {
 		// Skip if the change payment method request was not made yet.
 		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_change_payment_method' ) ) {
 			return $update_payment_method;
@@ -1094,12 +1094,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * want it to inherit from the parent order.
 	 *
 	 * @param string $order_meta_query The metadata query (a valid SQL query).
-	 * @param int    $to_order         The renewal order.
-	 * @param int    $from_order       The source (parent) order.
+	 * @param int    $_unused_to_order         The renewal order.
+	 * @param int    $_unused_from_order       The source (parent) order.
 	 *
 	 * @return string
 	 */
-	public function update_renewal_meta_data( $order_meta_query, $to_order, $from_order ) {
+	public function update_renewal_meta_data( $order_meta_query, $_unused_to_order, $_unused_from_order ) {
 		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
 
 		return $order_meta_query;

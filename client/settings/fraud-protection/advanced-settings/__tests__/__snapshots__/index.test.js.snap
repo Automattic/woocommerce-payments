@@ -124,18 +124,6 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
   }
 }
 
-.emotion-110 {
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.emotion-110 *,
-.emotion-110 *::before,
-.emotion-110 *::after {
-  box-sizing: inherit;
-}
-
 .emotion-112 {
   margin-bottom: calc(4px * 2);
 }
@@ -149,7 +137,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }
@@ -167,7 +155,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
       Notifications
     </p>
@@ -177,7 +165,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-assertive"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
         Settings were not saved. Maximum purchase price must be greater than the minimum purchase price.  
     </div>
@@ -187,7 +175,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-polite"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     />
     <div>
       <div>
@@ -846,7 +834,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                           >
                             <div>
                               <div
-                                class="components-base-control wcpay-components-amount-input with-value emotion-110 emotion-13"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-12 emotion-13"
                               >
                                 <div
                                   class="components-base-control__field emotion-112 emotion-15"
@@ -891,7 +879,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                           >
                             <div>
                               <div
-                                class="components-base-control wcpay-components-amount-input with-value emotion-110 emotion-13"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-12 emotion-13"
                               >
                                 <div
                                   class="components-base-control__field emotion-112 emotion-15"
@@ -1356,18 +1344,6 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
   }
 }
 
-.emotion-110 {
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.emotion-110 *,
-.emotion-110 *::before,
-.emotion-110 *::after {
-  box-sizing: inherit;
-}
-
 .emotion-112 {
   margin-bottom: calc(4px * 2);
 }
@@ -1381,7 +1357,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }
@@ -2052,7 +2028,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                         >
                           <div>
                             <div
-                              class="components-base-control wcpay-components-amount-input with-value emotion-110 emotion-13"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-12 emotion-13"
                             >
                               <div
                                 class="components-base-control__field emotion-112 emotion-15"
@@ -2097,7 +2073,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                         >
                           <div>
                             <div
-                              class="components-base-control wcpay-components-amount-input with-value emotion-110 emotion-13"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-12 emotion-13"
                             >
                               <div
                                 class="components-base-control__field emotion-112 emotion-15"
@@ -2622,7 +2598,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
       Notifications
     </p>
@@ -2632,7 +2608,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-assertive"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     />
     <div
       aria-atomic="true"
@@ -2640,7 +2616,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-polite"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
               Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
     </div>
@@ -4692,7 +4668,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
       Notifications
     </p>
@@ -4702,7 +4678,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-assertive"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     />
     <div
       aria-atomic="true"
@@ -4710,7 +4686,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-polite"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
               Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
     </div>
@@ -6676,18 +6652,6 @@ exports[`Advanced fraud protection settings saves settings when there are no val
   min-width: 0;
 }
 
-.emotion-104 {
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.emotion-104 *,
-.emotion-104 *::before,
-.emotion-104 *::after {
-  box-sizing: inherit;
-}
-
 .emotion-106 {
   margin-bottom: calc(4px * 2);
 }
@@ -6701,7 +6665,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }
@@ -6719,7 +6683,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
       Notifications
     </p>
@@ -6729,7 +6693,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-assertive"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     />
     <div
       aria-atomic="true"
@@ -6737,7 +6701,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
       aria-relevant="additions text"
       class="a11y-speak-region"
       id="a11y-speak-polite"
-      style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
+      style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;word-break:normal !important;"
     >
               Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
     </div>
@@ -7348,7 +7312,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                           >
                             <div>
                               <div
-                                class="components-base-control wcpay-components-amount-input with-value emotion-104 emotion-7"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-6 emotion-7"
                               >
                                 <div
                                   class="components-base-control__field emotion-106 emotion-9"
@@ -7393,7 +7357,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                           >
                             <div>
                               <div
-                                class="components-base-control wcpay-components-amount-input with-value emotion-104 emotion-7"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-6 emotion-7"
                               >
                                 <div
                                   class="components-base-control__field emotion-106 emotion-9"
@@ -7804,18 +7768,6 @@ exports[`Advanced fraud protection settings saves settings when there are no val
   min-width: 0;
 }
 
-.emotion-104 {
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.emotion-104 *,
-.emotion-104 *::before,
-.emotion-104 *::after {
-  box-sizing: inherit;
-}
-
 .emotion-106 {
   margin-bottom: calc(4px * 2);
 }
@@ -7829,7 +7781,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }
@@ -8450,7 +8402,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                         >
                           <div>
                             <div
-                              class="components-base-control wcpay-components-amount-input with-value emotion-104 emotion-7"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-6 emotion-7"
                             >
                               <div
                                 class="components-base-control__field emotion-106 emotion-9"
@@ -8495,7 +8447,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                         >
                           <div>
                             <div
-                              class="components-base-control wcpay-components-amount-input with-value emotion-104 emotion-7"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-6 emotion-7"
                             >
                               <div
                                 class="components-base-control__field emotion-106 emotion-9"

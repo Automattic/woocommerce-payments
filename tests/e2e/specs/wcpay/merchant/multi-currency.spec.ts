@@ -51,8 +51,10 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 		// ).toHaveScreenshot();
 	} );
 
-	test( 'add the currency switcher to the sidebar', async () => {
-		await addMulticurrencyWidget( page );
+	test( 'add the currency switcher to the sidebar', async ( {}, {
+		project,
+	} ) => {
+		await addMulticurrencyWidget( page, project.use.baseURL );
 	} );
 
 	test( 'can add the currency switcher to a post/page and verify on frontend', async () => {

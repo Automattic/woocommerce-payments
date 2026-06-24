@@ -10,27 +10,35 @@ import { __ } from '@wordpress/i18n';
 import Spotlight from 'components/spotlight';
 import { useReviewPromptState } from './hooks';
 import { recordEvent } from 'wcpay/tracks';
-import MegaphoneIcon from './megaphone-icon';
+import { MerchantEvent } from 'wcpay/tracks/event';
+import { getVariantContent } from './variants';
 
-const wordpressOrgReviewUrl =
-	'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post';
-const marketplaceReviewUrl =
-	'https://woocommerce.com/products/woocommerce-payments/?review';
+const marketplaceReviewBaseUrl =
+	'https://woocommerce.com/products/woopayments/';
 
 /**
- * Helper to record an event with base properties and optional additional properties.
+ * Build the Marketplace review URL with UTM attribution for the assigned variant.
  */
+const getMarketplaceReviewUrl = ( variant: string ): string => {
+	const params = new URLSearchParams( {
+		review: '',
+		utm_source: 'woopayments',
+		utm_medium: 'in_app_review_prompt',
+		utm_campaign: 'review_prompt_settings_001',
+		utm_content: variant,
+	} );
+
+	return `${ marketplaceReviewBaseUrl }?${ params.toString() }`;
+};
+
 const recordPromptEvent = (
-	eventName: string,
+	eventName: MerchantEvent,
 	baseProperties: Record< string, unknown >,
 	additionalProperties?: Record< string, unknown >
 ) => {
 	recordEvent( eventName, { ...baseProperties, ...additionalProperties } );
 };
 
-/**
- * Helper to calculate time-to-click properties.
- */
 const getTimeToClickProps = (
 	viewTimestamp: number | null
 ): Record< string, number > => {
@@ -39,22 +47,25 @@ const getTimeToClickProps = (
 };
 
 /**
- * Helper to get base event properties per PRO2-35 telemetry requirements.
- * Eligibility is always true when this script loads (checked server-side).
+ * Base prompt telemetry props. The script only loads after server-side eligibility passes.
  */
-const getBaseEventProperties = () => {
+const getBaseEventProperties = ( variant: string ) => {
 	return {
-		prompt_id: 'phase0_payments_settings_001',
+		prompt_id: 'review_prompt_settings_001',
 		extension: 'woopayments',
 		location: 'payments_settings_top_level',
 		trigger: 'none',
 		flag_enabled: true,
 		version: window.wcpayReviewPromptSettings?.version || 'unknown',
+		experiment: window.wcpayReviewPromptSettings?.experiment || 'unknown',
+		variant,
 	};
 };
 
 const ReviewPrompt: React.FC = () => {
 	const { dismissPrompt, setMaybeLater } = useReviewPromptState();
+	const variant = window.wcpayReviewPromptSettings?.variant || 'control';
+	const content = getVariantContent( variant );
 
 	const [ viewTimestamp, setViewTimestamp ] = useState< number | null >(
 		null
@@ -65,31 +76,23 @@ const ReviewPrompt: React.FC = () => {
 		const timestamp = Date.now();
 		setViewTimestamp( timestamp );
 		recordPromptEvent(
-			'payments_review_prompt_shown',
-			getBaseEventProperties()
+			'wcpay_review_prompt_shown',
+			getBaseEventProperties( variant )
 		);
-	}, [] );
+	}, [ variant ] );
 
 	const handlePrimaryClick = useCallback( async () => {
-		// Determine destination based on connection state
-		const isLive = window.wcpayReviewPromptSettings?.isLive;
-		const destination = isLive ? 'wordpress_org' : 'marketplace';
-		const reviewUrl = isLive ? wordpressOrgReviewUrl : marketplaceReviewUrl;
+		const reviewUrl = getMarketplaceReviewUrl( variant );
 
-		const baseProps = getBaseEventProperties();
+		const baseProps = getBaseEventProperties( variant );
 		const eventProps = {
 			action: 'write_review',
-			destination,
+			destination: 'marketplace',
 			...getTimeToClickProps( viewTimestamp ),
 		};
 
 		recordPromptEvent(
-			'payments_review_prompt_action',
-			baseProps,
-			eventProps
-		);
-		recordPromptEvent(
-			'payments_review_destination_selected',
+			'wcpay_review_prompt_action',
 			baseProps,
 			eventProps
 		);
@@ -105,12 +108,12 @@ const ReviewPrompt: React.FC = () => {
 			dismissPrompt();
 		}
 		setIsVisible( false );
-	}, [ viewTimestamp, dismissPrompt ] );
+	}, [ variant, viewTimestamp, dismissPrompt ] );
 
 	const handleSecondaryClick = useCallback( () => {
 		recordPromptEvent(
-			'payments_review_prompt_action',
-			getBaseEventProperties(),
+			'wcpay_review_prompt_action',
+			getBaseEventProperties( variant ),
 			{
 				action: 'maybe_later',
 				...getTimeToClickProps( viewTimestamp ),
@@ -118,12 +121,12 @@ const ReviewPrompt: React.FC = () => {
 		);
 		setMaybeLater();
 		setIsVisible( false );
-	}, [ viewTimestamp, setMaybeLater ] );
+	}, [ variant, viewTimestamp, setMaybeLater ] );
 
 	const handleDismiss = useCallback( () => {
 		recordPromptEvent(
-			'payments_review_prompt_action',
-			getBaseEventProperties(),
+			'wcpay_review_prompt_action',
+			getBaseEventProperties( variant ),
 			{
 				action: 'dismiss_x',
 				...getTimeToClickProps( viewTimestamp ),
@@ -131,7 +134,7 @@ const ReviewPrompt: React.FC = () => {
 		);
 		dismissPrompt();
 		setIsVisible( false );
-	}, [ viewTimestamp, dismissPrompt ] );
+	}, [ variant, viewTimestamp, dismissPrompt ] );
 
 	if ( ! isVisible ) {
 		return null;
@@ -139,15 +142,10 @@ const ReviewPrompt: React.FC = () => {
 
 	return (
 		<Spotlight
-			icon={ <MegaphoneIcon /> }
-			heading={ __(
-				'Enjoying WooPayments so far?',
-				'woocommerce-payments'
-			) }
-			description={ __(
-				'Your feedback shapes our roadmap and supports the WooCommerce community. We are all ears!',
-				'woocommerce-payments'
-			) }
+			icon={ content.icon }
+			image={ content.image }
+			heading={ content.heading }
+			description={ content.description }
 			primaryButtonLabel={
 				<>
 					{ __( 'Leave review', 'woocommerce-payments' ) }
@@ -164,7 +162,6 @@ const ReviewPrompt: React.FC = () => {
 			onView={ handleView }
 			showImmediately={ false }
 			showDelayMs={ 2000 }
-			reverseButtons={ true }
 		/>
 	);
 };

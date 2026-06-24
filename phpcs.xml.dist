@@ -52,26 +52,12 @@
 	</rule>
 
 	<!--
-		The UnusedVariable sniff is enabled repo-wide. The paths below stay excluded
-		because they are out of scope for https://github.com/Automattic/woocommerce-payments/issues/8436
-		(POC config classes) or were not enumerated in its sub-issues (#8653 / #8654 / #8655).
-		Remaining cleanup is tracked by #8436; remove a pattern once its files are fixed.
+		The UnusedVariable sniff is enabled repo-wide. The only path still excluded is the
+		POC payment-method definition classes, which are out of scope for
+		https://github.com/Automattic/woocommerce-payments/issues/8436.
 	-->
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable">
-		<!-- POC payment-method definition classes; not part of #8436. -->
 		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
-
-		<!-- includes/ + src/ files not listed in https://github.com/Automattic/woocommerce-payments/issues/8654; tracked by #8436. -->
-		<exclude-pattern>includes/admin/class-wc-rest-payments-pm-promotions-controller.php</exclude-pattern>
-		<exclude-pattern>includes/admin/class-wc-rest-payments-settings-controller.php</exclude-pattern>
-		<exclude-pattern>includes/class-wc-payment-token-wcpay-amazon-pay.php</exclude-pattern>
-		<exclude-pattern>includes/class-wc-payments-account.php</exclude-pattern>
-		<exclude-pattern>includes/class-wc-payments-payment-request-session-handler.php</exclude-pattern>
-		<exclude-pattern>includes/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php</exclude-pattern>
-		<exclude-pattern>includes/subscriptions/class-wc-payments-invoice-service.php</exclude-pattern>
-		<exclude-pattern>includes/subscriptions/class-wc-payments-subscriptions-disabler.php</exclude-pattern>
-		<exclude-pattern>includes/woopay/class-woopay-session.php</exclude-pattern>
-		<exclude-pattern>src/Internal/Abilities/Domain/</exclude-pattern>
 	</rule>
 
 	<!-- Disallow long array syntax -->

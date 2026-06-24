@@ -10,6 +10,7 @@ namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 use WC_Payments_Account;
 use WCPay\Core\Mode;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
+use WCPay\Internal\Experiment\ReviewPromptExperiment;
 use WCPay\Internal\Logger;
 use WCPay\Internal\LoggerContext;
 use WCPay\Internal\Proxy\HooksProxy;
@@ -36,6 +37,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		Level3Service::class,
 		DisputeReadinessService::class,
 		TranslationsLoader::class,
+		ReviewPromptExperiment::class,
 	];
 
 	/**
@@ -70,5 +72,8 @@ class GenericServiceProvider extends AbstractServiceProvider {
 		$container->addShared( TranslationsLoader::class )
 			->addArgument( Logger::class )
 			->addArgument( HooksProxy::class );
+
+		$container->addShared( ReviewPromptExperiment::class )
+			->addArgument( LegacyProxy::class );
 	}
 }
