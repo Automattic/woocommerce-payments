@@ -18,9 +18,17 @@ import {
 import { onProductAvailabilityChange } from 'wcpay/utils/wc-product-page-events';
 
 jQuery( () => {
-	onProductAvailabilityChange( () => {
+	// The shared availability watcher fires more than once for a single variation
+	// change: the WooCommerce change event lands immediately, then a DOM
+	// MutationObserver fires again once the add-to-cart control's enabled/disabled
+	// state settles a tick later. Each call re-fetches the variation's totals and
+	// re-renders the express button, so without debouncing one selection triggers
+	// several redundant refetches behind a single (deduped) loading overlay.
+	// Coalesce them into one update per change.
+	const triggerButtonDataUpdate = debounce( 100, () => {
 		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
+	onProductAvailabilityChange( triggerButtonDataUpdate );
 } );
 
 // Block the payment request button as soon as an "input" event is fired, to avoid sync issues
