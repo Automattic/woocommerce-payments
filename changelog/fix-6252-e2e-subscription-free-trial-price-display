@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix shopper free-trial subscription E2E test for WooCommerce Subscriptions 9.0.0 price-string rendering change.

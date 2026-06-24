@@ -81,7 +81,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await expect(
 					shopperPage
 						.locator( '.product' )
-						.getByText( '/ month with a 14-day free trial' )
+						.getByText( 'Free trial: 14 days' )
 				).toBeVisible();
 
 				// Add it to the cart and verify that the cart page shows the free trial details
@@ -90,9 +90,7 @@ describeif( shouldRunSubscriptionsTests )(
 					.click();
 				await goToCart( shopperPage );
 				await expect(
-					shopperPage
-						.getByText( '/ month with a 14-day free trial' )
-						.first()
+					shopperPage.getByText( 'Free trial: 14 days' ).first()
 				).toBeVisible();
 
 				// Also verify that the first renewal is 14 days from now
@@ -118,7 +116,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await expect(
 					shopperPage
 						.locator( '#order_review' )
-						.getByText( '/ month with a 14-day free trial' )
+						.getByText( 'Free trial: 14 days' )
 				).toBeVisible();
 				await expect(
 					shopperPage.getByText(
