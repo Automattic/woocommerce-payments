@@ -530,6 +530,41 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			document.body.removeChild( addToCartButton );
 		} );
 
+		// Flash regression: on a variable product the server renders the
+		// add-to-cart button *without* the `disabled` class and `variation_id`
+		// as 0 — `variation.js` only disables it a tick later. The button must
+		// start hidden anyway, so it never flashes before that class lands.
+		test( 'does not flash on a variable product before the disabled class lands', () => {
+			getConfig.mockImplementation( ( v ) => {
+				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+			} );
+
+			const form = document.createElement( 'form' );
+			form.classList.add( 'variations_form', 'cart' );
+			// No `disabled` class on the button, mirroring the initial markup.
+			form.innerHTML = [
+				'<button class="single_add_to_cart_button">Add</button>',
+				'<input type="hidden" name="variation_id" class="variation_id" value="0" />',
+			].join( '' );
+			document.body.appendChild( form );
+
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+					emailSelector="#email"
+				/>
+			);
+
+			expect(
+				screen.queryByRole( 'button', { name: 'WooPay' } )
+			).not.toBeInTheDocument();
+
+			document.body.removeChild( form );
+		} );
+
 		test( 'shows the WooPay button on product page when add to cart is available', () => {
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
