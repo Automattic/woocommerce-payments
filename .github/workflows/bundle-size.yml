@@ -23,5 +23,9 @@ jobs:
             - name: Checking for file changes
               uses: preactjs/compressed-size-action@68177c91dc8dcaa2f80e10ced85ebee59fb676df # post-2.9.1
               with:
+                  # The action installs both this branch and the base branch
+                  # under the Node version from this branch's .nvmrc. Let the
+                  # base comparison install old package engine metadata.
+                  install-script: npm ci --engine-strict=false
                   pattern: '{release/**/*.js,release/**/*.css}'
                   exclude: '{release/vendor/**}'

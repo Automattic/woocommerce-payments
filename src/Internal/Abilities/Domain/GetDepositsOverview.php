@@ -69,10 +69,10 @@ class GetDepositsOverview implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Deposits_Controller::get_all_deposits_overviews()
 	 *
-	 * @param mixed $input Unused (zero-arg ability).
+	 * @param mixed $_unused_input Unused (zero-arg ability).
 	 * @return array|\WP_Error
 	 */
-	public static function execute( $input = null ) {
+	public static function execute( $_unused_input = null ) {
 		return AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits/overview-all' );
 	}
 }
