@@ -17,14 +17,17 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 	let shopperPage: Page;
 	let wasMulticurrencyEnabled: boolean;
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasMulticurrencyEnabled = await merchant.activateMulticurrency(
 			merchantPage
 		);
 		await merchant.restoreCurrencies( merchantPage );
-		await merchant.addMulticurrencyWidget( merchantPage );
+		await merchant.addMulticurrencyWidget(
+			merchantPage,
+			project.use.baseURL
+		);
 	} );
 
 	test.afterAll( async ( {}, { project } ) => {

@@ -35,6 +35,15 @@ import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import { DataViewsDateRangePresetPortal } from 'wcpay/reports/date-filter/dataviews-date-range-preset-portal';
 
+// Date-filter operators for the Balance report. `between` leads so a newly
+// added (or re-added) filter defaults to it — DataViews uses operators[0] —
+// surfacing the range presets instead of the confusing single-date
+// "Past week / Past month" anchors a `before` default produced (WOOPMNT-6243).
+// Exported so the ordering is guarded by a unit test.
+export const balanceDateFilterOperators: Array<
+	'between' | 'before' | 'after' | 'on'
+> = [ 'between', 'before', 'after', 'on' ];
+
 // DataViews keeps the chips row collapsed until the funnel is toggled —
 // `isShowingFilter` starts false for non-primary filters and isn't part of the
 // public API. We open it once by clicking the funnel button so the active Date
@@ -167,7 +176,7 @@ export const BalanceDataView = ( {
 						// the chip and leaves only the funnel toggle, which
 						// re-adds it (primary filters also hard-disable the
 						// funnel in DataViews).
-						operators: [ 'before', 'after', 'between', 'on' ],
+						operators: balanceDateFilterOperators,
 					},
 					getValue: () => displayPeriod.start,
 				},

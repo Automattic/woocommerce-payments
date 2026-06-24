@@ -30,13 +30,13 @@ test.describe( 'Multi-currency widget setup', () => {
 		borderColor: 'rgb(252, 185, 0)',
 	};
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
 		await restoreCurrencies( merchantPage );
 
-		await addMulticurrencyWidget( merchantPage, true );
+		await addMulticurrencyWidget( merchantPage, project.use.baseURL, true );
 	} );
 
 	test.afterAll( async ( {}, { project } ) => {

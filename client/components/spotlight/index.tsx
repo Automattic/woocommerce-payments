@@ -211,7 +211,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	const primaryButton = (
 		<Button
 			className="wcpay-spotlight__primary-btn"
-			variant="secondary"
+			variant="primary"
 			onClick={ handlePrimaryClick }
 			size="compact"
 		>

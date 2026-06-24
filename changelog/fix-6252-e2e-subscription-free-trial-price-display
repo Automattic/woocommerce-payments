@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Make the shopper free-trial subscription E2E tests (standard and QIT suites) resilient to WooCommerce Subscriptions price-string copy/layout changes (fixes the 9.0.0 "Free trial: 14 days" rendering).
