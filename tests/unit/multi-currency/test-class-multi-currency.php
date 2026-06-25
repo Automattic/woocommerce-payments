@@ -1606,8 +1606,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
 
-		$this->assertSame( 'cache', get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
-		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+		$this->assertSame( 'cache', get_option( 'wcpay_multi_currency_rendering_mode' ) );
+		$this->assertSame( 'yes', get_option( 'wcpay_multi_currency_cache_autodetect_done' ) );
 	}
 
 	public function test_maybe_auto_enable_leaves_mode_unset_when_no_caching_detected() {
@@ -1620,8 +1620,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
 
-		$this->assertFalse( get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
-		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_rendering_mode' ) );
+		$this->assertSame( 'yes', get_option( 'wcpay_multi_currency_cache_autodetect_done' ) );
 	}
 
 	public function test_maybe_auto_enable_never_overrides_existing_mode() {
@@ -1634,8 +1634,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
 
-		$this->assertSame( 'speed', get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
-		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+		$this->assertSame( 'speed', get_option( 'wcpay_multi_currency_rendering_mode' ) );
+		$this->assertSame( 'yes', get_option( 'wcpay_multi_currency_cache_autodetect_done' ) );
 	}
 
 	public function test_maybe_auto_enable_is_noop_when_already_run() {
@@ -1649,7 +1649,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
 
-		$this->assertFalse( get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_rendering_mode' ) );
 	}
 
 	public function test_maybe_auto_enable_is_noop_when_feature_disabled() {
@@ -1662,9 +1662,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->multi_currency->maybe_auto_enable_cache_rendering_mode();
 
-		$this->assertFalse( get_option( MultiCurrency::RENDERING_MODE_OPTION ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_rendering_mode' ) );
 		// Detection is intentionally not marked done so it can run once the feature is enabled later.
-		$this->assertFalse( get_option( MultiCurrency::CACHE_AUTODETECT_DONE_OPTION ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_cache_autodetect_done' ) );
 	}
 
 	public function test_get_settings_recommends_cache_mode_when_on_speed_and_caching_detected() {
@@ -1729,7 +1729,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			[ MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION => 'yes' ]
 		);
 
-		$this->assertSame( 'yes', get_option( MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION ) );
+		$this->assertSame( 'yes', get_option( 'wcpay_multi_currency_cache_recommendation_dismissed' ) );
 	}
 
 	public function test_update_settings_ignores_invalid_cache_recommendation_dismissed() {
@@ -1739,7 +1739,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			[ MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION => 'maybe' ]
 		);
 
-		$this->assertFalse( get_option( MultiCurrency::CACHE_RECOMMENDATION_DISMISSED_OPTION ) );
+		$this->assertFalse( get_option( 'wcpay_multi_currency_cache_recommendation_dismissed' ) );
 	}
 
 	private function mock_currency_settings( $currency_code, $settings ) {
