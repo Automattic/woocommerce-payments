@@ -43,6 +43,13 @@ const renewalDateFormatted = formatter.format( renewalDate );
 const productName = 'Subscription free trial product';
 const productSlug = 'subscription-free-trial-product';
 const customerBilling = config.addresses.customer.billing;
+// Resiliently match the free-trial display: require both the duration
+// ( "14 days" / "14-day" ) and the phrase "free trial", in either order,
+// regardless of wording or layout. WC Subscriptions has changed this copy
+// across releases (e.g. 9.0.0 moved it to "Free trial: 14 days" on its own
+// line, from "...with a 14-day free trial"). The exact 14-day, zero-cost
+// semantics are still pinned by the "First renewal" and "$0.00" assertions.
+const freeTrialDisplay = /14[\s-]?days?.*free trial|free trial.*14[\s-]?days?/i;
 let orderId: string, subscriptionId: string;
 
 describeif( shouldRunSubscriptionsTests )(
@@ -81,7 +88,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await expect(
 					shopperPage
 						.locator( '.product' )
-						.getByText( '/ month with a 14-day free trial' )
+						.getByText( freeTrialDisplay )
 				).toBeVisible();
 
 				// Add it to the cart and verify that the cart page shows the free trial details
@@ -90,9 +97,7 @@ describeif( shouldRunSubscriptionsTests )(
 					.click();
 				await goToCart( shopperPage );
 				await expect(
-					shopperPage
-						.getByText( '/ month with a 14-day free trial' )
-						.first()
+					shopperPage.getByText( freeTrialDisplay ).first()
 				).toBeVisible();
 
 				// Also verify that the first renewal is 14 days from now
@@ -118,7 +123,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await expect(
 					shopperPage
 						.locator( '#order_review' )
-						.getByText( '/ month with a 14-day free trial' )
+						.getByText( freeTrialDisplay )
 				).toBeVisible();
 				await expect(
 					shopperPage.getByText(
