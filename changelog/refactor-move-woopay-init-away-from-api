@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-refactor: move WooPay init away from API class to reduce bundle size/dependency of `tinycolor` in express checkout bundle

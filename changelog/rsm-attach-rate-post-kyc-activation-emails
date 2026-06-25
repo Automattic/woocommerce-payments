@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Added staged activation emails that nudge WooPayments merchants who've completed KYC but haven't taken their first live sale toward activating live payments.

@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: fix: resolve WooCommerce.Commenting phpcs hook comment errors in the subscriptions tests (not user-facing).
-
-
