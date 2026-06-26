@@ -197,13 +197,15 @@ class WC_Payments_One_And_Done_Banner extends WC_Payments_Abstract_Admin_Banner 
 			return false;
 		}
 
-		// Q1 — WooPayments live-mode orders, capped at 2.
+		// Q1 — WooPayments live-mode orders, capped at 2. The 2-row cap only
+		// distinguishes 0 / 1 / ≥2, so `orderby => 'none'` is intentional: it
+		// avoids the ORDER BY filesort that made this slow on large stores
+		// (WOOPMNT-6240). The exactly-1 case reads the single row's date below.
 		$wcpay_live_orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
 				'limit'          => 2,
-				'orderby'        => 'date',
-				'order'          => 'ASC',
+				'orderby'        => 'none',
 				'status'         => [ 'wc-completed', 'wc-processing' ],
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
@@ -234,6 +236,7 @@ class WC_Payments_One_And_Done_Banner extends WC_Payments_Abstract_Admin_Banner 
 				[
 					'payment_method' => $other_gateway_ids,
 					'limit'          => 1,
+					'orderby'        => 'none',
 					'return'         => 'ids',
 					'status'         => [ 'wc-completed', 'wc-processing' ],
 				]

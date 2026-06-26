@@ -986,4 +986,64 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( '', $result['woocommerce_store_id'] );
 	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_explicitly_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_enabled_via_capabilities() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids(
+			$mock_gateway,
+			[
+				'woopay' => true,
+				'link'   => true,
+			]
+		);
+	}
+
+	public function test_update_enabled_payment_methods_ids_enables_woopay_when_link_not_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( true );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_disables_woopay_when_capability_absent() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [] );
+	}
+
+	public function test_maybe_add_test_drive_settings_adds_capabilities_and_keeps_transient() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[
+				'capabilities'            => [ 'link_payments' => [ 'requested' => 'true' ] ],
+				'enabled_payment_methods' => [ 'card', 'link' ],
+			],
+			HOUR_IN_SECONDS
+		);
+
+		$args = $this->onboarding_service->maybe_add_test_drive_settings_to_new_account_request( [ 'account_data' => [] ] );
+
+		$this->assertSame( [ 'link_payments' => [ 'requested' => 'true' ] ], $args['account_data']['capabilities'] );
+		$this->assertNotFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+	}
 }

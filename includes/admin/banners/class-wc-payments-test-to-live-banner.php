@@ -168,10 +168,13 @@ class WC_Payments_Test_To_Live_Banner extends WC_Payments_Abstract_Admin_Banner 
 			return false;
 		}
 
+		// Existence-only check: `orderby => 'none'` keeps the LIMIT from forcing a
+		// filesort over every matching order on large stores (WOOPMNT-6240).
 		$orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
 				'limit'          => 1,
+				'orderby'        => 'none',
 				'return'         => 'ids',
 				'status'         => [ 'wc-completed', 'wc-processing' ],
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key

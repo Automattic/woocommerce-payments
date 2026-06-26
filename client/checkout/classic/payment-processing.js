@@ -147,7 +147,10 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
 		}
 	}
 
-	if ( paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM && ! params.name ) {
+	if (
+		paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM &&
+		! params.billing_details?.name
+	) {
 		// Name is required for Affirm.
 		return true;
 	}
@@ -284,9 +287,11 @@ async function createStripePaymentElement(
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
-			link: isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
-				? 'auto'
-				: 'never',
+			link:
+				isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) ) &&
+				elementsLocation !== 'add_payment_method'
+					? 'auto'
+					: 'never',
 		},
 	} );
 
@@ -391,9 +396,11 @@ export async function mountStripePaymentElement(
  * @return {Promise} A promise that resolves when the setup intent is confirmed and appended to the form.
  */
 export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
-	return api.setupIntent( id ).then( function ( confirmedSetupIntent ) {
-		appendSetupIntentToForm( $form, confirmedSetupIntent );
-	} );
+	return api
+		.setupIntent( id, fingerprint ?? '' )
+		.then( function ( confirmedSetupIntent ) {
+			appendSetupIntentToForm( $form, confirmedSetupIntent );
+		} );
 };
 
 /**

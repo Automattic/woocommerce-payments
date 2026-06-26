@@ -32,6 +32,8 @@ jest.mock( '../upe-utils' );
 
 jest.mock( 'wcpay/checkout/utils/upe' );
 
+const { isLinkEnabled } = jest.requireMock( 'wcpay/checkout/utils/upe' );
+
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getUPEConfig: jest.fn( ( argument ) => {
 		if ( argument === 'paymentMethodsConfig' ) {
@@ -283,6 +285,46 @@ describe( 'Stripe Payment Element mounting', () => {
 
 		expect( apiMock.getStripeForUPE ).toHaveBeenCalled();
 		expect( mockElements ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'Link wallet is disabled on add_payment_method page even when Link is enabled', async () => {
+		isLinkEnabled.mockReturnValue( true );
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		__resetGatewayUPEComponentsElement( 'card' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement(
+			apiMock,
+			mockDomElement,
+			'add_payment_method'
+		);
+
+		expect( mockCreateFunction ).toHaveBeenCalledWith(
+			'payment',
+			expect.objectContaining( {
+				wallets: expect.objectContaining( { link: 'never' } ),
+			} )
+		);
+	} );
+
+	test( 'Link wallet is enabled on shortcode_checkout page when Link is enabled', async () => {
+		isLinkEnabled.mockReturnValue( true );
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		__resetGatewayUPEComponentsElement( 'card' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement(
+			apiMock,
+			mockDomElement,
+			'shortcode_checkout'
+		);
+
+		expect( mockCreateFunction ).toHaveBeenCalledWith(
+			'payment',
+			expect.objectContaining( {
+				wallets: expect.objectContaining( { link: 'auto' } ),
+			} )
+		);
 	} );
 } );
 
@@ -855,8 +897,8 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 
 	test( 'returns false for affirm with complete address and name', () => {
 		const params = {
-			name: 'John Doe',
 			billing_details: {
+				name: 'John Doe',
 				address: {
 					line1: '123 Main St',
 					city: 'New York',
@@ -892,8 +934,8 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 
 	test( 'returns true for affirm with complete address but empty name', () => {
 		const params = {
-			name: '',
 			billing_details: {
+				name: '',
 				address: {
 					line1: '123 Main St',
 					city: 'New York',
@@ -911,8 +953,8 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 
 	test( 'returns true for affirm with complete address but null name', () => {
 		const params = {
-			name: null,
 			billing_details: {
+				name: null,
 				address: {
 					line1: '123 Main St',
 					city: 'New York',

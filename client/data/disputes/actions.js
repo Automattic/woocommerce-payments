@@ -10,9 +10,13 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { NAMESPACE, STORE_NAME } from '../constants';
+import { NAMESPACE } from '../constants';
+import { DISPUTES_STORE_NAME as STORE_NAME } from '../store-names';
 import TYPES from './action-types';
-import { getPaymentIntent } from '../payment-intents/resolvers';
+// getPaymentIntent lives in the payment-intents store; importing its name
+// registers that store so invalidating its resolution refreshes the payment
+// intent shown on the Transaction Details screen after a dispute is accepted.
+import { STORE_NAME as PAYMENT_INTENTS_STORE_NAME } from '../payment-intents/store';
 
 export function updateDispute( data ) {
 	return {
@@ -47,7 +51,7 @@ export function updateDisputesSummary( query, data ) {
 }
 
 export function* acceptDispute( dispute ) {
-	const { id, payment_intent: paymentIntent } = dispute;
+	const { id } = dispute;
 
 	try {
 		yield controls.dispatch( STORE_NAME, 'startResolution', 'getDispute', [
@@ -61,9 +65,13 @@ export function* acceptDispute( dispute ) {
 
 		yield updateDispute( updatedDispute );
 
-		// Fetch and update the payment intent associated with the dispute
-		// to reflect changes to the dispute on the Transaction Details screen.
-		yield getPaymentIntent( paymentIntent );
+		// Invalidate the payment intent associated with the dispute so the
+		// Transaction Details screen re-fetches it and reflects the change.
+		yield controls.dispatch(
+			PAYMENT_INTENTS_STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getPaymentIntent'
+		);
 
 		yield controls.dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
 			id,

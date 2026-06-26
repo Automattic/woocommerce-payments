@@ -12,8 +12,8 @@ import {
 	useAccountBusinessSupportPhone,
 	useGetSavingError,
 	useTestModeOnboarding,
-} from 'wcpay/data';
-import PhoneNumberInput from 'wcpay/settings/phone-input';
+} from 'wcpay/data/settings';
+import PhoneNumberInput from 'wcpay/settings/phone-input/lazy';
 import InlineNotice from 'wcpay/components/inline-notice';
 import './styles.scss';
 

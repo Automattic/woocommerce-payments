@@ -9,17 +9,19 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import { woopayPaymentMethod } from '..';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
+} ) );
+jest.mock( 'wcpay/checkout/woopay/init-woopay', () => ( {
+	initWooPay: jest.fn(),
 } ) );
 
 describe( 'woopayPaymentMethod', () => {
 	let nativeWindowLocation;
 
-	const apiMock = {
-		initWooPay: jest.fn(),
-	};
+	const apiMock = { request: jest.fn() };
 
 	beforeEach( () => {
 		nativeWindowLocation = Object.getOwnPropertyDescriptor(
@@ -28,8 +30,9 @@ describe( 'woopayPaymentMethod', () => {
 		);
 		Object.defineProperty( window, 'location', {
 			writable: true,
+			value: { href: '' },
 		} );
-		apiMock.initWooPay = jest.fn();
+		initWooPay.mockReset();
 	} );
 
 	afterEach( () => {
@@ -77,7 +80,7 @@ describe( 'woopayPaymentMethod', () => {
 		const initCheckoutPromise = new Promise( ( resolve ) => {
 			resolvePromise = resolve;
 		} );
-		apiMock.initWooPay.mockReturnValue( initCheckoutPromise );
+		initWooPay.mockReturnValue( initCheckoutPromise );
 
 		const method = woopayPaymentMethod( apiMock );
 		render( method.content );
@@ -91,7 +94,7 @@ describe( 'woopayPaymentMethod', () => {
 		// Let's click it. It should be disabled and initWooPay should be called.
 		await userEvent.click( buyNowButton );
 		expect( buyNowButton ).toBeDisabled();
-		expect( apiMock.initWooPay ).toHaveBeenCalledTimes( 1 );
+		expect( initWooPay ).toHaveBeenCalledTimes( 1 );
 
 		/*
 		 * The button should be enabled again once the promise is resolved and
@@ -104,6 +107,6 @@ describe( 'woopayPaymentMethod', () => {
 			await initCheckoutPromise;
 		} );
 		expect( buyNowButton ).not.toBeDisabled();
-		expect( window.location ).toEqual( 'https://example.org/' );
+		expect( window.location.href ).toEqual( 'https://example.org/' );
 	} );
 } );

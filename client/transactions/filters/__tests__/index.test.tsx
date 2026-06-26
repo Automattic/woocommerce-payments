@@ -13,7 +13,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { TransactionsFilters } from '../';
 import { getAdvancedFilters } from '../config';
-import { Transaction } from 'wcpay/data';
+import { Transaction } from 'wcpay/data/transactions';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
 } from 'wcpay/constants/payment-method';
@@ -136,11 +136,6 @@ describe( 'Transactions filters', () => {
 			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
-
-			expect( console ).toHaveWarnedWith(
-				'wp.date.__experimentalGetSettings is deprecated since version 6.1. Please use wp.date.getSettings instead.'
-			);
-			expect( console ).toHaveErrored();
 		} );
 
 		test( 'should filter by after', async () => {

@@ -113,12 +113,12 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_script(): void {
-		if ( ! $this->should_show() ) {
+		// Screen gate before the eligibility check, which runs an order query.
+		if ( ! $this->is_banner_screen() ) {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->should_show() ) {
 			return;
 		}
 
@@ -595,5 +595,19 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 			$this->record_tracks_event( $this->shown_event_name(), $this->get_impression_tracks_props() );
 			update_user_meta( get_current_user_id(), $this->shown_meta_key(), true );
 		}
+	}
+
+	/**
+	 * Whether the current admin screen can host a banner.
+	 *
+	 * The eligibility check runs an order query, so enqueue_script() gates on
+	 * this first to avoid that cost on screens where no notice renders
+	 * (WOOPMNT-6240).
+	 *
+	 * @return bool
+	 */
+	private function is_banner_screen(): bool {
+		$screen = get_current_screen();
+		return ! $screen || in_array( $screen->id, wc_get_screen_ids(), true ) || wc_admin_is_registered_page();
 	}
 }

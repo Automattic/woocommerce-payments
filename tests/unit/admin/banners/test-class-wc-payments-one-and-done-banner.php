@@ -247,6 +247,39 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	// ---- should_show: eligibility query shape --------------------------------
+
+	public function test_eligibility_order_queries_use_orderby_none(): void {
+		$this->create_wcpay_live_orders( 1, 8 );
+		$banner = $this->make_banner();
+
+		$captured = [];
+		$capture  = function ( $args ) use ( &$captured ) {
+			$captured[] = $args;
+			return $args;
+		};
+		add_filter( 'woocommerce_order_query_args', $capture );
+
+		$banner->should_show();
+
+		remove_filter( 'woocommerce_order_query_args', $capture );
+
+		// Only assert on the eligibility queries, which always constrain
+		// payment_method. WC core's internal refund fetch (triggered by loading the
+		// returned order objects) leaves payment_method empty and is out of scope.
+		$eligibility_queries = array_filter(
+			$captured,
+			static function ( $args ) {
+				return ! empty( $args['payment_method'] );
+			}
+		);
+
+		$this->assertNotEmpty( $eligibility_queries, 'Eligibility check should issue at least one order query.' );
+		foreach ( $eligibility_queries as $args ) {
+			$this->assertSame( 'none', $args['orderby'] ?? null, 'Eligibility order queries must use orderby=none to avoid filesort (WOOPMNT-6240).' );
+		}
+	}
+
 	public function test_should_show_memoizes_expensive_check(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 

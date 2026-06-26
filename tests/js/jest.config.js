@@ -64,16 +64,18 @@ module.exports = {
 	],
 	transform: {
 		'^.+\\.jsx?$': 'babel-jest',
-		'^.+\\.tsx?$': [ 'ts-jest', { isolatedModules: true } ],
+		'^.+\\.tsx?$': 'ts-jest',
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [
 		[
 			'node_modules/(?!',
 			'(@woocommerce/.+)',
+			'|@wordpress/dataviews/',
 			'|gridicons',
 			'|@automattic/components/',
 			'|@automattic/material-design-icons/',
+			'|parsel-js/',
 			// d3 packages bumped for ReDoS fix ship pure ESM and need Babel transform.
 			'|d3-(color|interpolate|scale|scale-chromatic|format|time|time-format|array)/',
 			'|internmap/',

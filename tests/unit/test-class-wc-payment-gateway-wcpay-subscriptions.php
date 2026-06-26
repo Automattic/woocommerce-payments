@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
@@ -191,6 +192,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
 		WC_Subscriptions::set_wcs_is_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order( null );
+		WC_Subscriptions::set_wcs_order_contains_subscription( null );
+		WC_Subscriptions::wcs_order_contains_renewal( null );
 		wcpay_get_test_container()->reset_all_replacements();
 		parent::tear_down_after_class();
 	}
@@ -209,7 +212,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param string $message The die message.
 	 */
-	public function ajax_wp_die_handler( $message ) {
+	public function ajax_wp_die_handler( $_unused_message ) {
 		// Do nothing - prevents wp_die from terminating the test.
 	}
 
@@ -488,7 +491,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$mock_subscription = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -508,12 +511,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
 		$renewal_order->add_payment_token( $token );
-		$renewal_order->set_currency( 'EUR' );
+		$renewal_order->set_currency( Currency_Code::EURO );
 
 		$mock_subscription = new WC_Subscription();
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return [ '1' => $mock_subscription ];
 			}
 		);
@@ -536,6 +539,73 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
 		$this->assertStringContainsString( 'failed', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+	}
+
+	public function test_scheduled_subscription_payment_normalizes_unusable_pm_error_by_code() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'Raw platform error text', 'payment_method_no_longer_available', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+		$this->assertStringNotContainsString( 'Raw platform error text', $note );
+	}
+
+	public function test_scheduled_subscription_payment_normalizes_detached_payment_method_message() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'The provided PaymentMethod was detached from a Customer. It may not be used again.', 'invalid_request_error', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_normalizes_must_save_payment_method_message() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'You must save this PaymentMethod to a customer before you can update it', 'invalid_request_error', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_normalizes_unusable_pm_message_case_insensitively() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'no such paymentmethod: pm_123', 'invalid_request_error', 400 ) );
+
+		$this->assertStringContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_keeps_raw_message_for_unrelated_error() {
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'Your card was declined', 'card_declined', 402 ) );
+
+		$this->assertStringContainsString( 'Your card was declined', $note );
+		$this->assertStringNotContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_keeps_raw_message_for_resource_missing_non_payment_method() {
+		// `resource_missing` is generic (e.g. a missing customer); it must not be treated as an unusable
+		// payment method. The payment-method case is covered by the `No such PaymentMethod` message instead.
+		$note = $this->get_failed_renewal_note_for_exception( new API_Exception( 'No such customer: cus_123', 'resource_missing', 400 ) );
+
+		$this->assertStringContainsString( 'No such customer', $note );
+		$this->assertStringNotContainsString( 'A new payment method is required', $note );
+	}
+
+	public function test_scheduled_subscription_payment_unusable_pm_note_names_the_payment_method() {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => new WC_Subscription() ] );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willThrowException( new API_Exception( 'Raw platform error text', 'payment_method_no_longer_available', 400 ) );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$notes = wc_get_order_notes(
+			[
+				'order_id' => $renewal_order->get_id(),
+				'limit'    => 1,
+			]
+		);
+
+		// The note names the failed payment method (its display name), matching how WCPay renders methods elsewhere.
+		$this->assertStringContainsString( $token->get_display_name(), $notes[0]->content );
+		$this->assertStringContainsString( 'A new payment method is required', $notes[0]->content );
 	}
 
 	public function test_scheduled_subscription_payment_adds_mandate() {
@@ -696,6 +766,57 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcs_is_subscription( false );
 
 		$this->assertTrue( $this->wcpay_gateway->display_save_payment_method_checkbox( true ) );
+	}
+
+	public function test_is_payment_recurring_returns_true_for_renewal_order() {
+		// A renewal order is not matched by wcs_order_contains_subscription()'s default order
+		// types ('parent', 'resubscribe', 'switch'), but a customer manually paying it through
+		// the checkout must still be treated as recurring so the card is saved. See WOOPMNT-2882.
+		$_GET = [];
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return false;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$this->assertTrue( $this->wcpay_gateway->is_payment_recurring( 123 ) );
+	}
+
+	public function test_is_payment_recurring_returns_true_for_subscription_order() {
+		$_GET = [];
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return false;
+			}
+		);
+
+		$this->assertTrue( $this->wcpay_gateway->is_payment_recurring( 123 ) );
+	}
+
+	public function test_is_payment_recurring_returns_false_for_regular_order() {
+		$_GET = [];
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return false;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return false;
+			}
+		);
+
+		$this->assertFalse( $this->wcpay_gateway->is_payment_recurring( 123 ) );
 	}
 
 	public function test_add_subscription_payment_meta_adds_active_token() {
@@ -1134,17 +1255,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$subscription    = WC_Helper_Order::create_order( self::USER_ID );
 		$non_wcpay_token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID, 'not_woocommerce_payments' );
 
-		$updated             = $this->wcpay_gateway->update_subscription_token( false, $subscription, $non_wcpay_token );
-		$subscription_tokens = $subscription->get_payment_tokens();
+		$updated = $this->wcpay_gateway->update_subscription_token( false, $subscription, $non_wcpay_token );
 
 		$this->assertSame( $updated, false );
 	}
 
 	public function test_ajax_get_user_payment_tokens_success() {
-		$tokens = [
-			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
-			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
-		];
+		WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID );
+		WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID );
 
 		// Set up the AJAX request.
 		$_POST['user_id']  = self::USER_ID;
@@ -1230,7 +1348,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $_unused_order ) use ( $subscriptions ) {
 				return $subscriptions;
 			}
 		);
@@ -1238,7 +1356,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_is_subscription( $return_value ) {
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) use ( $return_value ) {
+			function ( $_unused_order ) use ( $return_value ) {
 				return $return_value;
 			}
 		);
@@ -1246,9 +1364,42 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
+	}
+
+	/**
+	 * Runs a scheduled renewal whose payment processing throws $exception, and returns the latest
+	 * order note content. Used to exercise the unusable-saved-payment-method detection. TRAPLAT-3995.
+	 *
+	 * @param API_Exception $exception The exception thrown while processing the renewal payment.
+	 * @return string The content of the latest order note on the renewal order.
+	 */
+	private function get_failed_renewal_note_for_exception( API_Exception $exception ): string {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => new WC_Subscription() ] );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willThrowException( $exception );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+
+		$notes = wc_get_order_notes(
+			[
+				'order_id' => $renewal_order->get_id(),
+				'limit'    => 1,
+			]
+		);
+
+		return $notes[0]->content;
 	}
 }

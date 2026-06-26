@@ -26,4 +26,6 @@ interface OrderDetails {
 	subscriptions?: SubscriptionDetails[];
 	fraud_meta_box_type?: string;
 	ip_address: string;
+	/** Server-suggested product type derived from order line items. */
+	suggested_product_type?: string;
 }

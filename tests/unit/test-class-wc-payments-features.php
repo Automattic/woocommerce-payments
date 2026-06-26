@@ -52,10 +52,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$constants    = $reflection->getConstants();
 		$option_array = array_filter(
 			$constants,
-			function ( $key ) {
-				return strpos( $key, '_wcpay_feature_' ) === 0;
-			},
-			ARRAY_FILTER_USE_KEY
+			function ( $value ) {
+				return is_string( $value ) && strpos( $value, '_wcpay_feature_' ) === 0;
+			}
 		);
 
 		$this->clear_feature_flag_options( $option_array );
@@ -76,6 +75,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		// Explicitly disable flags that default to ON so they don't appear
 		// in to_array() output unless included in $enabled_flags above.
 		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '0' );
 
 		$expected = [];
 		foreach ( $enabled_flags as $flag ) {
@@ -102,6 +103,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
+	public function test_is_mc_cache_optimized_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
+	public function test_is_mc_cache_optimized_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		$this->assertFalse( WC_Payments_Features::is_mc_cache_optimized_enabled() );
+	}
+
 	public function test_is_dispute_additional_evidence_types_enabled_by_default() {
 		$this->assertTrue( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}
@@ -111,13 +121,13 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}
 
-	public function test_is_dispute_outcome_view_disabled_by_default() {
-		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	public function test_is_dispute_outcome_view_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
-	public function test_is_dispute_outcome_view_can_be_enabled() {
-		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '1' );
-		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	public function test_is_dispute_outcome_view_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '0' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
 	}
 
 	public function test_is_woopay_eligible_returns_true() {

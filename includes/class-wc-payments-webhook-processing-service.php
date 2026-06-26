@@ -164,6 +164,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires before a WooPayments webhook event is processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
@@ -231,6 +239,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires after a WooPayments webhook event has been processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
@@ -390,11 +406,11 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent canceled event.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $_unused_event_body The event that triggered the webhook.
 	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_canceled( $event_body ) {
+	private function process_webhook_payment_intent_canceled( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
@@ -403,11 +419,11 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent amount capturable updated event.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $_unused_event_body The event that triggered the webhook.
 	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
+	private function process_webhook_payment_intent_amount_capturable_updated( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );

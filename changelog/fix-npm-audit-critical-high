@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Override transitive deps to address npm audit critical/high vulnerabilities

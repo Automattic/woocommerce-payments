@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Express Checkout (Apple Pay / Google Pay) wallet sheet amounts for Stripe special-case currencies (TWD, HUF, ISK, UGX) on the blocks-based cart and checkout.

@@ -114,9 +114,10 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
+			add_filter( 'option_woocommerce_currency_pos', [ $this, 'get_woocommerce_currency_pos' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
-			add_action( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
-			add_action( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
+			add_filter( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
+			add_filter( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -140,11 +141,28 @@ class FrontendCurrencies {
 	/**
 	 * Removes 'min_price' and 'max_price' from the URL query parameters.
 	 *
-	 * Clears existing price filters when the currency is changed to prevent inconsistencies.
+	 * Clears existing price filters when the currency is changed to prevent inconsistencies
+	 * during browser navigation. REST requests are excluded because redirecting a
+	 * `/wp-json/wc/store/v1/products?currency=EUR&min_price=...` call (or the equivalent
+	 * `/?rest_route=/wc/store/v1/products&...` form used when pretty permalinks are
+	 * disabled) would strip the caller's filter bounds and break programmatic clients.
+	 *
+	 * Detection is URL-based rather than via the `REST_REQUEST` constant: this method is
+	 * invoked from `MultiCurrency::update_selected_currency_by_url()` on `init:11`, but
+	 * `REST_REQUEST` is only defined later on `parse_request` by `rest_api_loaded()` — a
+	 * constant check here would always evaluate false on REST requests. Both URL-based
+	 * checks (`WC()->is_rest_api_request()` and `$_GET['rest_route']`) work at any hook.
 	 *
 	 * @return void
 	 */
 	public function clear_url_price_params() {
+		if (
+			( function_exists( 'WC' ) && WC()->is_rest_api_request() )
+			|| ! empty( $_GET['rest_route'] ) // phpcs:ignore WordPress.Security.NonceVerification
+		) {
+			return;
+		}
+
 		if ( isset( $_GET['min_price'] ) || isset( $_GET['max_price'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$url = remove_query_arg( [ 'min_price', 'max_price' ] );
 
@@ -262,6 +280,27 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * Returns the currency symbol position for the currently selected currency.
+	 *
+	 * The Cart and Checkout Blocks read the `woocommerce_currency_pos` option (via the Store API
+	 * CurrencyFormatter) rather than the `woocommerce_price_format` filter the shortcode uses. Without
+	 * overriding the option, the Blocks fall back to the store's position setting and format non-store
+	 * currencies (e.g. EUR) differently from the shortcode. Overriding it keeps both paths aligned to
+	 * the currency's CLDR-defined position.
+	 *
+	 * @param string $position The original currency position option value.
+	 *
+	 * @return string The currency position for the selected currency.
+	 */
+	public function get_woocommerce_currency_pos( $position ): string {
+		$currency_code = $this->get_currency_code();
+		if ( $currency_code !== $this->get_store_currency()->get_code() ) {
+			return $this->localization_service->get_currency_format( $currency_code )['currency_pos'];
+		}
+		return $position;
+	}
+
+	/**
 	 * Adds the currency and exchange rate to the cart hash so it's recalculated properly.
 	 *
 	 * @param string $hash The cart hash.
@@ -327,11 +366,11 @@ class FrontendCurrencies {
 	 * Our `wc_get_price_decimals` filter returns the decimals for the selected currency during this calculation, which leads to incorrect results.
 	 *
 	 * @param array  $args   The argument array to be filtered.
-	 * @param object $method The shipping method being calculated.
+	 * @param object $_unused_method The shipping method being calculated.
 	 *
 	 * @return array
 	 */
-	public function fix_price_decimals_for_shipping_rates( array $args, $method ): array {
+	public function fix_price_decimals_for_shipping_rates( array $args, $_unused_method ): array {
 		$args['price_decimals'] = absint( $this->localization_service->get_currency_format( $this->get_store_currency()->get_code() )['num_decimals'] );
 		return $args;
 	}
@@ -371,13 +410,13 @@ class FrontendCurrencies {
 	 * filter is run so that if another total comes up, like in the order list, we use the next order's currency.
 	 *
 	 * @param string   $formatted_total  Total to display.
-	 * @param WC_Order $order            Order data.
-	 * @param string   $tax_display      Type of tax display.
-	 * @param bool     $display_refunded If should include refunded value.
+	 * @param WC_Order $_unused_order            Order data.
+	 * @param string   $_unused_tax_display      Type of tax display.
+	 * @param bool     $_unused_display_refunded If should include refunded value.
 	 *
 	 * @return string The unmodified formatted total.
 	 */
-	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $order, $tax_display, $display_refunded ): string {
+	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $_unused_order, $_unused_tax_display, $_unused_display_refunded ): string {
 		if ( null !== $this->order_currency && $this->should_use_order_currency() ) {
 			$this->order_currency = null;
 		}

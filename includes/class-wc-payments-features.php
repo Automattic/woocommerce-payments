@@ -28,10 +28,12 @@ class WC_Payments_Features {
 	const DISPUTE_ISSUER_EVIDENCE                             = '_wcpay_feature_dispute_issuer_evidence';
 	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
 	const DISPUTE_OUTCOME_VIEW                                = '_wcpay_feature_dispute_outcome_view';
+	const DISPUTE_READINESS_OVERVIEW                          = '_wcpay_feature_dispute_readiness_overview';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
+	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -81,6 +83,13 @@ class WC_Payments_Features {
 			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
 		}
 
+		/**
+		 * Allows filtering of whether WCPay Subscriptions is enabled.
+		 *
+		 * @since 3.9.0
+		 *
+		 * @param bool $enabled Whether WCPay Subscriptions is enabled.
+		 */
 		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
@@ -328,7 +337,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Dispute Outcome View feature should be enabled. Disabled by default.
+	 * Checks whether the Dispute Outcome View feature should be enabled. Enabled by default.
 	 *
 	 * This gates the post-resolution dispute outcome surfaces (won / lost / warning_closed)
 	 * in the payment details page.
@@ -336,7 +345,25 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_dispute_outcome_view_enabled(): bool {
-		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '0' );
+		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '1' );
+	}
+
+	/**
+	 * Checks whether the Dispute Readiness Overview feature should be enabled. Enabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_readiness_overview_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_READINESS_OVERVIEW, '1' );
+	}
+
+	/**
+	 * Checks whether the Reports area is enabled. Disabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_reports_area_enabled(): bool {
+		return '1' === get_option( self::REPORTS_AREA_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -368,12 +395,12 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the multi-currency cache-optimized rendering mode is enabled.
+	 * Checks whether the multi-currency cache-optimized rendering mode is enabled. Enabled by default.
 	 *
 	 * @return bool
 	 */
 	public static function is_mc_cache_optimized_enabled(): bool {
-		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '1' );
 	}
 
 	/**
@@ -413,10 +440,12 @@ class WC_Payments_Features {
 				'isDisputeIssuerEvidenceEnabled'           => self::is_dispute_issuer_evidence_enabled(),
 				'isDisputeAdditionalEvidenceTypesEnabled'  => self::is_dispute_additional_evidence_types_enabled(),
 				'isDisputeOutcomeViewEnabled'              => self::is_dispute_outcome_view_enabled(),
+				'isDisputeReadinessOverviewEnabled'        => self::is_dispute_readiness_overview_enabled(),
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
+				'reportsArea'                              => self::is_reports_area_enabled(),
 			]
 		);
 	}

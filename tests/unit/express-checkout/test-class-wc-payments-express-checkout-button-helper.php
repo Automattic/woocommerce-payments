@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -101,6 +102,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 	public function tear_down() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_renewal( null );
+		WC_Subscriptions::wcs_cart_contains_resubscribe( null );
+		WC_Subscriptions::wcs_cart_contains_switches( null );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
 		WC()->cart->empty_cart();
@@ -209,6 +213,87 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertTrue( $helper->has_subscription_product() );
 
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+	}
+
+	public function test_has_subscription_product_on_cart_with_renewal() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertTrue( $helper->has_subscription_product() );
+
+		WC_Subscriptions::wcs_cart_contains_renewal( null );
+	}
+
+	public function test_has_subscription_product_on_checkout_with_resubscribe() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_resubscribe(
+			function () {
+				return true;
+			}
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+
+		$this->assertTrue( $helper->has_subscription_product() );
+
+		WC_Subscriptions::wcs_cart_contains_resubscribe( null );
+	}
+
+	public function test_has_subscription_product_on_checkout_with_switch() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_switches(
+			function () {
+				return true;
+			}
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+
+		$this->assertTrue( $helper->has_subscription_product() );
+
+		WC_Subscriptions::wcs_cart_contains_switches( null );
+	}
+
+	public function test_has_subscription_product_on_cart_with_no_subscription_variants() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->has_subscription_product() );
 	}
 
 	public function test_common_get_button_settings() {
@@ -553,6 +638,42 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertEmpty( $enabled_methods );
 	}
 
+	public function test_get_methods_enabled_at_current_location_returns_raw_location_settings() {
+		// Unlike get_enabled_express_checkout_methods_for_context(), this reads
+		// the location settings verbatim — no currency or availability gating.
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'payment_request', 'amazon_pay' ] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request' ] );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$this->assertSame(
+			[ 'payment_request', 'amazon_pay' ],
+			$helper->get_methods_enabled_at_current_location()
+		);
+	}
+
+	public function test_get_methods_enabled_at_current_location_returns_empty_without_context() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$this->assertSame( [], $helper->get_methods_enabled_at_current_location() );
+	}
+
 	public function test_get_enabled_express_checkout_methods_for_context_excludes_amazon_pay_when_currency_not_supported() {
 		add_filter(
 			'pre_option__wcpay_feature_amazon_pay',
@@ -611,14 +732,14 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * @return string
 	 */
 	public function return_eur_currency() {
-		return 'EUR';
+		return Currency_Code::EURO;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function return_usd_currency() {
-		return 'USD';
+		return Currency_Code::UNITED_STATES_DOLLAR;
 	}
 
 	/**

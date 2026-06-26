@@ -16,6 +16,13 @@ use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
  */
 class WC_Payments_Express_Checkout_Button_Helper {
 	/**
+	 * Nonce action securing the tokenized cart Store API requests. Created
+	 * client-side and verified on each tokenized-cart entry point, so it lives
+	 * here as the single source of truth shared across those call sites.
+	 */
+	const TOKENIZED_CART_NONCE_ACTION = 'woopayments_tokenized_cart_nonce';
+
+	/**
 	 * WC_Payment_Gateway_WCPay instance.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -72,7 +79,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$discounts = 0;
 		$currency  = get_woocommerce_currency();
 
-		// Default show only subtotal instead of itemization.
+		/**
+		 * Filters whether to hide itemization and show only the subtotal in Express Checkout.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param bool $hide_itemization Whether to hide itemized display items.
+		 */
 		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', ! $itemized_display_items ) ) {
 			foreach ( WC()->cart->get_cart() as $cart_item ) {
 				$amount         = $cart_item['line_subtotal'];
@@ -149,6 +162,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			'displayItems' => $items,
 			'total'        => [
 				'label'   => $this->get_total_label(),
+				/**
+				 * Filters the calculated total for the Express Checkout request.
+				 *
+				 * @since 2.1.0
+				 *
+				 * @param int      $prepared_total The prepared (Stripe-formatted) order total.
+				 * @param string   $order_total    The raw cart total, as a numeric string.
+				 * @param WC_Cart  $cart           The WooCommerce cart object.
+				 */
 				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			],
@@ -173,6 +195,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function get_total_label() {
 		// Get statement descriptor from API/cached account data.
 		$statement_descriptor = $this->account->get_statement_descriptor();
+		/**
+		 * Filters the suffix appended to the Express Checkout total label.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string $suffix The total label suffix.
+		 */
 		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 	}
 
@@ -238,18 +267,22 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
-		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
-		if ( 'pay_for_order' === $location ) {
-			$location = 'checkout';
-		}
+		return in_array( $method_id, $this->get_methods_enabled_at( $location ), true );
+	}
 
-		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
-
-		if ( $enabled_methods && is_array( $enabled_methods ) ) {
-			return in_array( $method_id, $enabled_methods, true );
-		}
-
-		return false;
+	/**
+	 * Returns the methods the merchant enabled at the current page's location,
+	 * straight from the location settings — without the currency or availability
+	 * gating that `get_enabled_express_checkout_methods_for_context()` applies.
+	 *
+	 * The Store API cart response is currency-fresh but location-blind, so the
+	 * client intersects it with this list to keep location gating intact when a
+	 * method's currency availability changes after page load.
+	 *
+	 * @return string[] Method ids (e.g. ['payment_request', 'amazon_pay']).
+	 */
+	public function get_methods_enabled_at_current_location() {
+		return $this->get_methods_enabled_at( $this->get_button_context() );
 	}
 
 	/**
@@ -271,6 +304,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		if ( $this->is_checkout() || $this->is_cart() ) {
 			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
+				return true;
+			}
+			if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
 				return true;
 			}
 		}
@@ -577,6 +619,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return  array
 	 */
 	public function supported_product_types() {
+		/**
+		 * Filters the product types supported by Express Checkout.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string[] $supported_types The list of supported product types.
+		 */
 		return apply_filters(
 			'wcpay_payment_request_supported_types',
 			[
@@ -608,6 +657,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
 			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
@@ -714,6 +764,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		$data['displayItems'] = $items;
 		$data['total']        = [
+			/**
+			 * Filters the label shown for the order total in the Express Checkout request.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param string $total_label The order total label.
+			 */
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 			'pending' => true,
@@ -724,6 +781,14 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 		$data['product_type']   = $product->get_type();
 
+		/**
+		 * Filters the product data sent to the Express Checkout request.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param array      $data    The product data for the Express Checkout request.
+		 * @param WC_Product $product The product object.
+		 */
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
 
@@ -788,7 +853,32 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 		}
 
+		/**
+		 * Filters whether the current product is supported for Express Checkout.
+		 *
+		 * @since 3.4.0
+		 *
+		 * @param bool            $is_supported Whether the product is supported.
+		 * @param WC_Product|null $product      The product object, or null.
+		 */
 		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
+	}
+
+	/**
+	 * Reads the raw location settings for a page location.
+	 *
+	 * @param string $location Location (product, cart, checkout, pay_for_order).
+	 * @return string[] Method ids enabled at that location.
+	 */
+	private function get_methods_enabled_at( $location ) {
+		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
+		if ( 'pay_for_order' === $location ) {
+			$location = 'checkout';
+		}
+
+		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
+
+		return is_array( $enabled_methods ) ? $enabled_methods : [];
 	}
 
 	/**
@@ -881,11 +971,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Sanitize string for comparison.
 	 *
-	 * @param string $string String to be sanitized.
+	 * @param string $value String to be sanitized.
 	 *
 	 * @return string The sanitized string.
 	 */
-	public function sanitize_string( $string ) {
-		return trim( wc_strtolower( remove_accents( $string ) ) );
+	public function sanitize_string( $value ) {
+		return trim( wc_strtolower( remove_accents( $value ) ) );
 	}
 }

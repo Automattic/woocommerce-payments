@@ -49,6 +49,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	const KYC_COMPLETION_DATE_OPTION = 'wcpay_kyc_completion_date';
 
+	const KYC_SUBMITTED_DATE_OPTION = 'wcpay_kyc_submitted_date';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -364,6 +366,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		return [
 			'email'               => $account['email'] ?? '',
+			'businessName'        => $account['business_profile']['name'] ?? '',
+			'accountId'           => $account['account_id'] ?? '',
 			'country'             => $account['country'] ?? Country_Code::UNITED_STATES,
 			'status'              => $account['status'],
 			'created'             => $account['created'] ?? '',
@@ -385,11 +389,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'fraudProtection'     => [
 				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
 				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
-			],
-			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
-			'campaigns'           => [
-				// The flag for the payments settings review prompt (Phase 0). Eligibility is determined per-account on transact-platform-server.
-				'reviewPromptPhase0' => $account['eligibility_review_prompt_phase_0'] ?? false,
 			],
 		];
 	}
@@ -834,9 +833,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * to immediately redirect to the main "Welcome to WooPayments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
-	 * @param string|null $error_message Optional error message to show in a notice.
+	 * @param string|null $_unused_error_message Optional error message to show in a notice.
 	 */
-	public function redirect_to_onboarding_welcome_page( $error_message = null ) {
+	public function redirect_to_onboarding_welcome_page( $_unused_error_message = null ) {
 		$this->redirect_service->redirect_to_nox_flow();
 	}
 
@@ -2235,9 +2234,58 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		if ( get_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) ) {
-			WC_Payments::get_gateway()->update_is_woopay_enabled( true );
+			$gateway = WC_Payments::get_gateway();
+
+			// WooPay and Link by Stripe are mutually exclusive. When a merchant already opted into Link
+			// (e.g. in sandbox before going live), Link wins: the enable-by-default activation keeps WooPay
+			// off rather than overriding that choice. See #9404.
+			$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $gateway->get_upe_enabled_payment_method_ids(), true );
+			$gateway->update_is_woopay_enabled( ! $is_link_enabled );
+
 			delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 		}
+	}
+
+	/**
+	 * Restores the payment methods the merchant had enabled on the test-drive account once the live account connects.
+	 *
+	 * The gateway settings are reset to defaults during the test-drive→live transition, so methods enabled in
+	 * sandbox (e.g. Link) would otherwise be lost. The set is captured before the reset (see save_test_drive_settings)
+	 * and re-applied here. Called from the connection finalization (server side) rather than an admin page load,
+	 * because the embedded onboarding never lands on the success page where an admin_init hook would fire. Since Link
+	 * and WooPay are mutually exclusive, a restored Link also forces WooPay off so Link wins. See #9404.
+	 */
+	public function restore_test_drive_enabled_payment_methods() {
+		$test_drive_settings = get_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+		if ( ! is_array( $test_drive_settings )
+			|| empty( $test_drive_settings['enabled_payment_methods'] )
+			|| ! is_array( $test_drive_settings['enabled_payment_methods'] ) ) {
+			return;
+		}
+
+		$gateway                  = WC_Payments::get_gateway();
+		$restored_payment_methods = array_values(
+			array_unique(
+				array_merge( $gateway->get_upe_enabled_payment_method_ids(), $test_drive_settings['enabled_payment_methods'] )
+			)
+		);
+		$gateway->update_option( 'upe_enabled_payment_method_ids', $restored_payment_methods );
+
+		// Mirror the cross-gateway sync in update_enabled_payment_methods_ids: enable each restored method's
+		// split gateway and keep their duplicated option in step, otherwise the methods stay disabled at checkout.
+		foreach ( $restored_payment_methods as $payment_method_id ) {
+			$payment_gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( $payment_gateway ) {
+				$payment_gateway->enable();
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $restored_payment_methods );
+			}
+		}
+
+		if ( in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $restored_payment_methods, true ) ) {
+			$gateway->update_is_woopay_enabled( false );
+		}
+
+		delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
 
 	/**
@@ -2258,9 +2306,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway->update_option( 'enabled', 'yes' );
 		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
 
+		// Re-enable the payment methods carried over from a test-drive account (reset to defaults in between).
+		$this->restore_test_drive_enabled_payment_methods();
+
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
+
+		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
+		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
+		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
+			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
+		}
 
 		// Track account connection finish.
 		$event_properties = [
@@ -2332,9 +2389,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$this->onboarding_service->update_enabled_payment_methods_ids( $gateway, $capabilities );
 		}
 
+		// Re-enable the payment methods carried over from a test-drive account (reset to defaults in between).
+		$this->restore_test_drive_enabled_payment_methods();
+
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
+
+		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
+		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
+		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
+			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
+		}
 
 		// Track account connection finish.
 		$incentive_id = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
@@ -2548,7 +2614,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to update Stripe account ' . $e );
 
-			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage() );
+			$error_data = [];
+			if ( $e instanceof API_Exception && null !== $e->get_param() ) {
+				$error_data['param'] = $e->get_param();
+			}
+
+			return new WP_Error( 'wcpay_failed_to_update_stripe_account', $e->getMessage(), $error_data );
 		}
 	}
 
@@ -2598,6 +2669,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	/**
 	 * Records the date a merchant's account first becomes KYC-approved and payments-enabled on live mode.
+	 * Stored once and never overwritten so the Post-KYC activation nudge clock starts from the real approval date.
+	 *
+	 * For post-launch merchants we have a `wcpay_kyc_submitted_date` set at finalize_*_connection,
+	 * which means the current observation is a fresh KYC and `time()` is accurate.
+	 * For pre-existing merchants we fall back to `account['created']` (Stripe's account creation timestamp)
+	 * so the nudge clock reflects roughly when KYC happened — imprecise but the best signal we have.
 	 *
 	 * @param array|bool $account The account data passed by woocommerce_payments_account_refreshed.
 	 *
@@ -2617,7 +2694,20 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return;
 		}
 
-		update_option( self::KYC_COMPLETION_DATE_OPTION, time(), false );
+		$kyc_submitted_date = (int) get_option( self::KYC_SUBMITTED_DATE_OPTION, 0 );
+		$account_created    = (int) ( $account['created'] ?? 0 );
+
+		if ( $kyc_submitted_date ) {
+			// Post-launch merchant — use the moment we observe payments_enabled flipping true.
+			$completion_date = time();
+		} elseif ( $account_created ) {
+			// Pre-existing merchant — fall back to the Stripe account creation timestamp.
+			$completion_date = $account_created;
+		} else {
+			return;
+		}
+
+		update_option( self::KYC_COMPLETION_DATE_OPTION, $completion_date, false );
 	}
 
 
@@ -2774,7 +2864,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function is_review_prompt_eligible(): bool {
 		$account = $this->get_cached_account_data();
-		return $account['eligibility_review_prompt_phase_0'] ?? false;
+		return (bool) ( $account['eligibility_review_prompt'] ?? false );
 	}
 
 	/**
@@ -2813,7 +2903,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return [];
 		}
 
-		$gateway_form_fields = $gateway->get_form_fields();
+		$gateway->get_form_fields();
 
 		$payment_methods_available = $gateway->get_upe_available_payment_methods();
 		$payment_methods_enabled   = $gateway->get_upe_enabled_payment_method_ids();
@@ -3187,11 +3277,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	private function get_test_drive_settings_for_live_account(): array {
 		$gateway = WC_Payments::get_gateway();
 
+		$enabled_payment_methods = $gateway->get_upe_enabled_payment_method_ids();
+
 		$capabilities = [];
-		foreach ( $gateway->get_upe_enabled_payment_method_ids() as $payment_method_id ) {
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			$capabilities[ $payment_method_id . '_payments' ] = [ 'requested' => 'true' ];
 		}
 
-		return [ 'capabilities' => $capabilities ];
+		// `capabilities` are requested when creating the live account; `enabled_payment_methods` are
+		// re-applied once it connects, because the gateway settings get reset to defaults in between.
+		return [
+			'capabilities'            => $capabilities,
+			'enabled_payment_methods' => $enabled_payment_methods,
+		];
 	}
 }

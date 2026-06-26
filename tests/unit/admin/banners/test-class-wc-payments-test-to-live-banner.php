@@ -65,6 +65,36 @@ class WC_Payments_Test_To_Live_Banner_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $banner->should_show() );
 	}
 
+	public function test_eligibility_order_query_uses_orderby_none(): void {
+		$this->create_wcpay_test_order();
+		$banner = $this->make_banner();
+
+		$captured = [];
+		$capture  = function ( $args ) use ( &$captured ) {
+			$captured[] = $args;
+			return $args;
+		};
+		add_filter( 'woocommerce_order_query_args', $capture );
+
+		$banner->should_show();
+
+		remove_filter( 'woocommerce_order_query_args', $capture );
+
+		// Only assert on the eligibility query, which constrains payment_method.
+		// WC core's internal refund fetch leaves payment_method empty; out of scope.
+		$eligibility_queries = array_filter(
+			$captured,
+			static function ( $args ) {
+				return ! empty( $args['payment_method'] );
+			}
+		);
+
+		$this->assertNotEmpty( $eligibility_queries, 'Eligibility check should issue at least one order query.' );
+		foreach ( $eligibility_queries as $args ) {
+			$this->assertSame( 'none', $args['orderby'] ?? null, 'Eligibility order query must use orderby=none to avoid filesort (WOOPMNT-6240).' );
+		}
+	}
+
 	public function test_should_show_returns_false_when_user_lacks_capability(): void {
 		$this->create_wcpay_test_order();
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );

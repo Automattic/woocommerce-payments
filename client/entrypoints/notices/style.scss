@@ -1,0 +1,21 @@
+// Shared styles for the attach-rate experiment notices (one-and-done,
+// test-to-live, post-kyc-activation). Each notice ships in its own webpack
+// bundle but they share scaffolding, so the same rule lives once here and
+// each entrypoint imports it.
+//
+// On WC Admin SPA pages (Overview, Marketing, Home, Analytics, …) the page
+// content centers in a narrow column. Constrain the notice to match so it
+// doesn't span dramatically wider than the content it sits above. We detect
+// SPA pages via the presence of .woocommerce-layout__main — the
+// `body.woocommerce-admin-page` class is too broad (it's also added on
+// embed-mode classic pages like Settings, where the notice should stay wide
+// to match the settings form below). 680px matches
+// .woocommerce-payments-page.is-narrow (client/components/page/style.scss).
+body:has( .woocommerce-layout__main ) {
+	#wcpay-one-and-done-notice,
+	#wcpay-test-to-live-notice,
+	#wcpay-post-kyc-activation-notice {
+		max-width: 680px;
+		margin: 0 auto;
+	}
+}

@@ -10,14 +10,15 @@ import React from 'react';
  * Internal dependencies
  */
 import DisputeAwaitingResponseDetails from '../dispute-awaiting-response-details';
-import { useDisputeAccept } from 'wcpay/data';
+import { useDisputeAccept } from 'wcpay/data/disputes';
 import type { ChargeBillingDetails, ChargeDispute } from 'wcpay/types/charges';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import { recordEvent } from 'tracks';
 
 const mockDisputeDoAccept = jest.fn();
+const mockOnIssueRefund = jest.fn();
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeAccept: jest.fn( () => ( {
 		doAccept: mockDisputeDoAccept,
 		isLoading: false,
@@ -25,6 +26,10 @@ jest.mock( 'wcpay/data', () => ( {
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -162,7 +167,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -174,12 +179,12 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		// Check for the two steps: Accept and Challenge
 		expect(
 			screen.getByText( /Accepting the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( /Challenge the dispute/i, {
-				selector: '.dispute-steps__item-name',
+				selector: '.dispute-step-item__name',
 			} )
 		).toBeInTheDocument();
 
@@ -195,7 +200,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -227,7 +232,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -250,7 +255,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -272,7 +277,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -311,7 +316,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -340,7 +345,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -366,7 +371,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -431,7 +436,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -457,7 +462,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -485,7 +490,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -507,7 +512,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="card"
 				bankName="Chase Bank"
 			/>
@@ -576,7 +581,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -611,7 +616,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -649,7 +654,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -658,7 +663,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
 	} );
 
-	test( 'fires inquiry refund modal tracks event with dispute identifiers', async () => {
+	test( 'opens the refund modal and fires tracks event when issuing an inquiry refund', async () => {
 		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'credit_not_processed' as const,
@@ -672,7 +677,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl=""
+				onIssueRefund={ mockOnIssueRefund }
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -682,24 +687,14 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 			screen.getByRole( 'button', { name: /Issue refund/i } )
 		);
 
+		// The inquiry "Issue refund" button opens the refund modal inline.
+		expect( mockOnIssueRefund ).toHaveBeenCalledTimes( 1 );
+
+		// Inquiries don't show the local confirmation dialog.
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+
 		expect( recordEvent ).toHaveBeenCalledWith(
 			'wcpay_dispute_inquiry_refund_modal_view',
-			{
-				dispute_id: dispute.id,
-				dispute_status: dispute.status,
-				dispute_reason: dispute.reason,
-				on_page: 'transaction_details',
-			}
-		);
-
-		await userEvent.click(
-			within( screen.getByRole( 'dialog' ) ).getByRole( 'button', {
-				name: /View order to issue refund/i,
-			} )
-		);
-
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_dispute_inquiry_refund_click',
 			{
 				dispute_id: dispute.id,
 				dispute_status: dispute.status,

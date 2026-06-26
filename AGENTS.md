@@ -130,8 +130,9 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 ```bash
 npm install                         # Install dependencies
 npm start                           # Watch JS changes (alias: npm run watch)
+npm run watch                       # Rebuild assets while developing locally
 npm run hmr                         # Hot module replacement server
-npm run up                          # Start Docker environment
+npm run up                          # Start Docker environment at http://localhost:8082
 npm run dev                         # Start Docker + watch mode
 ```
 
@@ -215,12 +216,11 @@ If non-zero, create a new branch off `develop` instead.
 **Before creating a PR:**
 - Add and commit a changelog entry: `npm run changelog:add -- --type=<type> --entry="<description>"`
 - Use PR template from `.github/PULL_REQUEST_TEMPLATE.md`
+- Open PRs in **draft mode** (`gh pr create --draft`).
 
 **After creating a PR:**
-```bash
-gh pr edit <number> --add-reviewer Automattic/gamma
-gh pr edit <number> --add-label "pr: needs review"
-```
+- Ask the author to review the PR description and testing instructions, then manually test the changes.
+- Add the `pr: needs review` label and reviewers only after the PR has been manually tested, and only when explicitly asked.
 
 ## Git Worktrees
 
@@ -258,8 +258,10 @@ git -C /path/to/main/repo merge worktree-feat/branch-name
 | MySQL | `localhost:5678` |
 
 - First-time: `npm run up:recreate`
-- Subsequent: `npm run up`
+- Subsequent: `npm run up` brings the local WordPress server up at `http://localhost:8082` by default.
+- When testing local frontend/admin UI changes, run `npm run watch` so built assets are regenerated.
 - Xdebug ready (requires IDE path mapping)
+- Local WP admin credentials are `admin` / `admin`. Do **not** change the local admin password with `wp user update admin --user_pass=...` unless explicitly requested. If browser/MCP login fails, ask before resetting credentials.
 
 ## Jurassic Tube (SSH Tunnels)
 
@@ -371,10 +373,15 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 
 - Prefer editing existing files over creating new ones
 - Check both `src/` and `includes/` when searching for PHP code
+- New PHP code in `src/` must follow PSR-4 class/file naming and existing folder conventions. Prefer `WCPay\Internal\Service\PascalCaseService` in `src/Internal/Service/`, register services in the appropriate `src/Internal/DependencyManagement/ServiceProvider/*ServiceProvider.php`, resolve them through `wcpay_get_container()` from legacy `includes/` code, and place matching tests under `tests/unit/src/...` with namespaced PascalCase test classes.
 - React components follow WordPress patterns (@wordpress packages)
+- Prefer TypeScript for new client code where possible (`.ts`/`.tsx` over `.js`/`.jsx`), especially for new React components and shared data/types.
+- For client UI changes, reuse existing WooPayments/WooCommerce components, typography, spacing, colors, and interaction patterns where appropriate; check nearby screens/components before introducing custom styles so new UI remains visually consistent with the rest of the client.
 - PHP tests require Docker — ensure it's running before executing
 - Always push only current branch: `git push origin HEAD`
 - Always pull with rebase: `git pull origin $(git branch --show-current) --rebase`
 - **PHPCS class structure ordering:** `SlevomatCodingStandard.Classes.ClassStructure.IncorrectGroupOrder` requires methods in order: public → protected → private. When adding new private methods, place them after all public and protected methods. Run `vendor/bin/phpcbf --standard=phpcs.xml.dist <file>` to auto-fix ordering violations.
 - **Migration version_compare:** When adding a migration class in `includes/migrations/`, the `version_compare()` threshold must match the version in the `@since` tag (e.g., `version_compare('10.6.0', $previous_version, '>')` for `@since 10.6.0`). The version represents when the migration ships, not when the old behavior was introduced.
 - **Styles cache invalidation on plugin update:** `WC_Payments_Utils::compute_styles_cache_version()` uses `WCPAY_VERSION_NUMBER` in its hash, but the cached WP option persists across updates. Hook `invalidate_styles_cache_version` to `woocommerce_woocommerce_payments_updated` to clear stale caches.
+- **Abilities API registrations** (`src/Internal/Abilities/AbilitiesRegistrar.php` + `src/Internal/Abilities/Domain/*.php`): each ability lives in its own `Domain/<AbilityName>.php` class implementing `Automattic\WooCommerce\Abilities\AbilityDefinition`. When you change the code path behind a registered ability (REST controller callback, backing Request class, capability gate), audit the relevant Domain class for required updates (annotations, `input_schema`, `output_schema`, description). List abilities use the WC 10.9 paginated output envelope (`{ <collection>: [...], total_pages, page, per_page }`) via the `AbstractWCPayAbility` base. The feature gates on `class_exists('\Automattic\WooCommerce\Internal\Abilities\AbilitiesLoader')` and silently no-ops on WC < 10.9. Each Domain class points at the controller method that backs it with `@see`; the controller method points back at the Domain class with the same `@see` so the connection is visible from both sides — keep that pairing when adding a new ability. Run `vendor/bin/phpunit --filter 'Abilities'` after such changes — covers both the registrar coordinator and per-ability Domain tests.
+- **Constants in tests — literals on the assert side:** When a value has a named constant (currency codes like `WCPay\Constants\Currency_Code`, status/enum constants, etc.), use the constant for *incidental* values in the **arrange/act** phases — fixtures, mock return values, setup, and values passed *into* the system under test in their own statements. Use **plain literals** for anything that is the point of an assertion: the expected value, mock `->with()` payloads, **and even an act-input nested inside an `assert*()` wrapper**. Rationale (Meszaros *xUnit Test Patterns* / Fowler): an assertion should pin its expected value *independently* of the code under test — reusing the system-under-test's own constant on both sides couples them and can mask a wrong/drifted constant, and a bare literal (`'EUR'`, `'complete'`) reads better as an expected value than the constant. Don't convert literals where the literal *is* the point: array **keys**, values whose **case** or invalidity is load-bearing (e.g. lowercase Stripe-response codes, rejection-path sentinels), or tests of the constant/formatting logic itself (literals there are the independent oracle). Quick guard: a constant shouldn't appear inside an `assert*()` call — e.g. `grep -n 'assert.*Currency_Code::'` returns nothing.

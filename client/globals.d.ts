@@ -33,10 +33,12 @@ declare global {
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isDisputeAdditionalEvidenceTypesEnabled: boolean;
 			isDisputeOutcomeViewEnabled: boolean;
+			isDisputeReadinessOverviewEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
 			amazonPay: boolean;
+			reportsArea: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -49,6 +51,8 @@ declare global {
 		isAccountValid: boolean;
 		accountStatus: Partial< {
 			email?: string;
+			businessName?: string;
+			accountId?: string;
 			created: string;
 			isLive?: boolean;
 			testDrive?: boolean;
@@ -86,16 +90,6 @@ declare global {
 			fraudProtection: {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
-			};
-			/**
-			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
-			 */
-			campaigns: {
-				/**
-				 * The flag for the payments settings review prompt (Phase 0).
-				 * Eligibility is determined per-account on transact-platform-server.
-				 */
-				reviewPromptPhase0: boolean;
 			};
 		} >;
 		accountLoans: {
@@ -250,8 +244,9 @@ declare global {
 	};
 
 	const wcpayReviewPromptSettings: {
-		isLive: boolean;
 		version: string;
+		experiment: string;
+		variant: string;
 	};
 
 	const wcpayTestToLiveNoticeSettings: {

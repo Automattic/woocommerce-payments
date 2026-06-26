@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Express Checkout 403 nonce error on shortcode checkout when Apple Pay/Google Pay sheet selects an address

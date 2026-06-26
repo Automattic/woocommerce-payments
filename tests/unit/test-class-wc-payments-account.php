@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Currency_Code;
 use WCPay\Database_Cache;
 use WCPay\Onboarding_Experiment;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -1066,6 +1067,81 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Assert.
 		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_maybe_activate_woopay_does_not_enable_when_link_is_enabled() {
+		$_GET['wcpay-connection-success'] = '1';
+		set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card', 'link' ] );
+
+		$this->wcpay_account->maybe_activate_woopay();
+
+		$this->assertSame( 'no', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_maybe_activate_woopay_enables_when_link_not_enabled() {
+		$_GET['wcpay-connection-success'] = '1';
+		set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->maybe_activate_woopay();
+
+		$this->assertSame( 'yes', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_restores_link_and_forces_woopay_off() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'enabled_payment_methods' => [ 'card', 'link' ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		// WooPay starting on simulates a live default; Link wins, so it must end off.
+		$gateway->update_option( 'platform_checkout', 'yes' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertContains( 'link', $gateway->get_upe_enabled_payment_method_ids() );
+		$this->assertSame( 'no', $gateway->get_option( 'platform_checkout' ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_noop_when_transient_has_no_methods() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[ 'capabilities' => [ 'woopay_payments' => [ 'requested' => 'true' ] ] ],
+			HOUR_IN_SECONDS
+		);
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertSame( [ 'card' ], $gateway->get_upe_enabled_payment_method_ids() );
+	}
+
+	public function test_restore_test_drive_enabled_payment_methods_noop_when_no_transient() {
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'platform_checkout', 'yes' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+
+		$this->wcpay_account->restore_test_drive_enabled_payment_methods();
+
+		$this->assertSame( [ 'card' ], $gateway->get_upe_enabled_payment_method_ids() );
+		$this->assertSame( 'yes', $gateway->get_option( 'platform_checkout' ) );
 	}
 
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
@@ -2968,6 +3044,37 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->wcpay_account->get_stripe_account_id() );
 	}
 
+	public function test_get_account_status_data_includes_business_name_and_account_id() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details(
+			[
+				'account_id'       => 'acct_wcpay_123',
+				'is_live'          => true,
+				'status'           => 'complete',
+				'payments_enabled' => true,
+				'business_profile' => [
+					'name' => 'Aperture Science LLC',
+				],
+			]
+		);
+
+		$account_status_data = $this->wcpay_account->get_account_status_data();
+
+		$this->assertSame( 'Aperture Science LLC', $account_status_data['businessName'] );
+		$this->assertSame( 'acct_wcpay_123', $account_status_data['accountId'] );
+	}
+
+	public function test_get_account_status_data_returns_only_error_for_missing_account() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->cache_account_details( [] );
+
+		$this->assertSame( [ 'error' => true ], $this->wcpay_account->get_account_status_data() );
+	}
+
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_test_account_in_dev_mode() {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
@@ -3477,7 +3584,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'USD',
+						'currency'            => Currency_Code::UNITED_STATES_DOLLAR,
 					],
 				]
 			);
@@ -3513,7 +3620,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details' => [
 						'advance_amount'      => $advance_amount,
 						'advance_paid_out_at' => $time,
-						'currency'            => 'CHF',
+						'currency'            => Currency_Code::SWISS_FRANC,
 					],
 				]
 			);
@@ -3860,7 +3967,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn( $payment_method_capability_map );
 		$mock_gateway->method( 'find_duplicates' )->willReturn( [ 'card' => [ 'woocommerce_payments', 'some_other_gateway' ] ] );
 		$mock_gateway->method( 'get_option' )->willReturnCallback(
-			function ( $key, $default = null ) {
+			function ( $key, $default_value = null ) {
 				$options = [
 					'express_checkout_in_payment_methods'  => 'yes',
 					'manual_capture'                       => 'no',
@@ -3875,7 +3982,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'express_checkout_cart_methods'        => [ 'payment_request', 'woopay' ],
 					'express_checkout_checkout_methods'    => [],
 				];
-				return $options[ $key ] ?? $default;
+				return $options[ $key ] ?? $default_value;
 			}
 		);
 		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
@@ -4080,17 +4187,17 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'eligible when flag is true'        => [
 				[
-					'account_id'                        => 'acc_test',
-					'is_live'                           => true,
-					'eligibility_review_prompt_phase_0' => true,
+					'account_id'                => 'acc_test',
+					'is_live'                   => true,
+					'eligibility_review_prompt' => true,
 				],
 				true,
 			],
 			'not eligible when flag is false'   => [
 				[
-					'account_id'                        => 'acc_test',
-					'is_live'                           => true,
-					'eligibility_review_prompt_phase_0' => false,
+					'account_id'                => 'acc_test',
+					'is_live'                   => true,
+					'eligibility_review_prompt' => false,
 				],
 				false,
 			],
@@ -4098,6 +4205,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				[
 					'account_id' => 'acc_test',
 					'is_live'    => true,
+				],
+				false,
+			],
+			'old phase_0 field is ignored'      => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => true,
 				],
 				false,
 			],
@@ -4193,8 +4308,48 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	// maybe_record_kyc_completion_date tests
 	// -------------------------------------------------------------------------
 
-	public function test_maybe_record_kyc_completion_date_stores_date_for_eligible_account(): void {
+	public function test_maybe_record_kyc_completion_date_uses_current_time_for_post_launch_merchant(): void {
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		update_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION, time() );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => time() - 90 * DAY_IN_SECONDS,
+			]
+		);
+
+		$completion_date = (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		$this->assertGreaterThan( time() - 60, $completion_date );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+	}
+
+	public function test_maybe_record_kyc_completion_date_falls_back_to_account_created_for_pre_existing_merchant(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+
+		$account_created = time() - 90 * DAY_IN_SECONDS;
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => $account_created,
+			]
+		);
+
+		$this->assertSame( $account_created, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	public function test_maybe_record_kyc_completion_date_bails_when_no_submitted_date_and_no_created(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
 
 		$this->wcpay_account->maybe_record_kyc_completion_date(
 			[
@@ -4204,7 +4359,23 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->assertNotFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+	}
+
+	public function test_maybe_record_kyc_completion_date_preserves_existing_date(): void {
+		$original_date = time() - 10 * DAY_IN_SECONDS;
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, $original_date );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => time() - 90 * DAY_IN_SECONDS,
+			]
+		);
+
+		$this->assertSame( $original_date, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
 
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
 	}
@@ -4257,22 +4428,5 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_preserves_existing_date(): void {
-		$original_date = time() - 10 * DAY_IN_SECONDS;
-		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, $original_date );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-			]
-		);
-
-		$this->assertSame( $original_date, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
 	}
 }

@@ -10,6 +10,8 @@ import { isNil, omitBy } from 'lodash';
  * Internal dependencies
  */
 import { getExpressCheckoutData } from './utils';
+import { getResolvedCurrency } from './utils/resolved-currency-cache';
+import { getElementCurrency } from './utils/element-currency-cache';
 import {
 	getProductId,
 	getQuantity,
@@ -36,12 +38,14 @@ export default class ExpressCheckoutCartApi {
 			...options,
 			parse: false,
 			path: addQueryArgs( options.path, {
+				// The resolver fires before any Store API call on product
+				// pages. Cart/checkout/pay-for-order fall back to the
+				// localized value (the resolver doesn't run there).
 				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
-				currency:
-					getExpressCheckoutData(
-						'checkout'
-					).currency_code.toUpperCase(),
+				currency: getResolvedCurrency(
+					getExpressCheckoutData( 'checkout' ).currency_code
+				).toUpperCase(),
 			} ),
 			headers: omitBy(
 				{
@@ -101,11 +105,18 @@ export default class ExpressCheckoutCartApi {
 	 * @return {Promise} Result of the order creation request.
 	 */
 	async placeOrder( paymentData ) {
+		const elementCurrency = getElementCurrency();
+
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
 			headers: {
 				'X-WooPayments-Tokenized-Cart': true,
+				// Lets the server reject placement when the cart's currency
+				// drifted away from the one the Element booted with.
+				...( elementCurrency && {
+					'X-WooPayments-Payment-Currency': elementCurrency,
+				} ),
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,
