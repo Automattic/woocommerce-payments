@@ -56,7 +56,8 @@ class WC_Payments_One_And_Done_Notice extends WC_Payments_Abstract_Admin_Notice 
 	 * @return void
 	 */
 	public function handle_cta(): void {
-		if ( ! $this->verify_action_request( $this->cta_query_arg(), $this->cta_nonce_arg(), $this->cta_nonce_action() ) ) {
+		$naming = $this->naming();
+		if ( ! $this->verify_action_request( $naming->cta_query_arg(), $naming->cta_nonce_arg(), $naming->cta_nonce_action() ) ) {
 			return;
 		}
 
@@ -90,7 +91,7 @@ class WC_Payments_One_And_Done_Notice extends WC_Payments_Abstract_Admin_Notice 
 	 * @return void
 	 */
 	public function invalidate_cache_on_order( $order_id ): void {
-		if ( false === get_transient( $this->eligibility_transient_key() ) ) {
+		if ( false === get_transient( $this->naming()->eligibility_transient_key() ) ) {
 			return;
 		}
 
@@ -245,22 +246,15 @@ class WC_Payments_One_And_Done_Notice extends WC_Payments_Abstract_Admin_Notice 
 	}
 
 	/**
-	 * Override: existing key carries an `_at` suffix that predates the
-	 * abstract base's standard naming. Preserved to avoid losing the
-	 * dismissals of merchants currently in the cohort.
+	 * The dismiss/snooze keys carry a legacy `_at` suffix; pinned so merchants
+	 * in the cohort don't lose their dismissals.
 	 *
-	 * @return string
+	 * @return array<string, string>
 	 */
-	protected function dismissed_meta_key(): string {
-		return 'wcpay_one_and_done_notice_dismissed_at';
-	}
-
-	/**
-	 * Override: see dismissed_meta_key() for the legacy-suffix rationale.
-	 *
-	 * @return string
-	 */
-	protected function snoozed_meta_key(): string {
-		return 'wcpay_one_and_done_notice_snoozed_at';
+	protected function naming_overrides(): array {
+		return [
+			'dismissed_meta_key' => 'wcpay_one_and_done_notice_dismissed_at',
+			'snoozed_meta_key'   => 'wcpay_one_and_done_notice_snoozed_at',
+		];
 	}
 }

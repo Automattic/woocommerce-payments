@@ -110,7 +110,8 @@ class WC_Payments_Post_Kyc_Activation_Notice extends WC_Payments_Abstract_Admin_
 	 * @return void
 	 */
 	public function handle_cta(): void {
-		if ( ! $this->verify_action_request( $this->cta_query_arg(), $this->cta_nonce_arg(), $this->cta_nonce_action() ) ) {
+		$naming = $this->naming();
+		if ( ! $this->verify_action_request( $naming->cta_query_arg(), $naming->cta_nonce_arg(), $naming->cta_nonce_action() ) ) {
 			return;
 		}
 		$stage = $this->stage_from_request();
@@ -118,7 +119,7 @@ class WC_Payments_Post_Kyc_Activation_Notice extends WC_Payments_Abstract_Admin_
 			return;
 		}
 
-		$this->record_tracks_event( $this->cta_event_name(), [ 'stage' => $stage ] );
+		$this->record_tracks_event( $naming->cta_event_name(), [ 'stage' => $stage ] );
 		update_user_meta( get_current_user_id(), $this->dismissed_meta_key_for_stage( $stage ), true );
 
 		wp_safe_redirect(
@@ -140,7 +141,8 @@ class WC_Payments_Post_Kyc_Activation_Notice extends WC_Payments_Abstract_Admin_
 	 * @return void
 	 */
 	public function hide_notice(): void {
-		if ( ! $this->verify_action_request( $this->hide_query_arg(), $this->hide_nonce_arg(), $this->hide_nonce_action() ) ) {
+		$naming = $this->naming();
+		if ( ! $this->verify_action_request( $naming->hide_query_arg(), $naming->hide_nonce_arg(), $naming->hide_nonce_action() ) ) {
 			return;
 		}
 		$stage = $this->stage_from_request();
@@ -148,10 +150,10 @@ class WC_Payments_Post_Kyc_Activation_Notice extends WC_Payments_Abstract_Admin_
 			return;
 		}
 
-		$this->record_tracks_event( $this->dismissed_event_name(), [ 'stage' => $stage ] );
+		$this->record_tracks_event( $naming->dismissed_event_name(), [ 'stage' => $stage ] );
 		update_user_meta( get_current_user_id(), $this->dismissed_meta_key_for_stage( $stage ), true );
 
-		wp_safe_redirect( remove_query_arg( [ $this->hide_query_arg(), $this->hide_nonce_arg(), 'wcpay_stage' ] ) );
+		wp_safe_redirect( remove_query_arg( [ $naming->hide_query_arg(), $naming->hide_nonce_arg(), 'wcpay_stage' ] ) );
 		exit;
 	}
 
@@ -165,15 +167,14 @@ class WC_Payments_Post_Kyc_Activation_Notice extends WC_Payments_Abstract_Admin_
 	}
 
 	/**
-	 * Override: return the public TRANSIENT_ELIGIBLE constant so external
-	 * callers (the onboarding service's test-mode-flip cache invalidation)
-	 * and the base's is_eligible() cache lookup share a single source of
-	 * truth.
+	 * Pin the eligibility transient key to the public TRANSIENT_ELIGIBLE
+	 * constant so the onboarding service's cache invalidation and the base's
+	 * cache lookup share one source of truth.
 	 *
-	 * @return string
+	 * @return array<string, string>
 	 */
-	protected function eligibility_transient_key(): string {
-		return self::TRANSIENT_ELIGIBLE;
+	protected function naming_overrides(): array {
+		return [ 'eligibility_transient_key' => self::TRANSIENT_ELIGIBLE ];
 	}
 
 	/**

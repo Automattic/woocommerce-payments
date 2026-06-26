@@ -51,21 +51,22 @@ class WC_Payments_Test_To_Live_Notice extends WC_Payments_Abstract_Admin_Notice 
 	 * @return void
 	 */
 	public function handle_cta(): void {
-		if ( ! $this->verify_action_request( $this->cta_query_arg(), $this->cta_nonce_arg(), $this->cta_nonce_action() ) ) {
+		$naming = $this->naming();
+		if ( ! $this->verify_action_request( $naming->cta_query_arg(), $naming->cta_nonce_arg(), $naming->cta_nonce_action() ) ) {
 			return;
 		}
 
 		if ( $this->account->get_is_live() ) {
-			$this->record_tracks_event( $this->cta_event_name(), [ 'path' => 'switch_mode' ] );
+			$this->record_tracks_event( $naming->cta_event_name(), [ 'path' => 'switch_mode' ] );
 
 			$this->wcpay_gateway->update_option( 'test_mode', 'no' );
 			WC_Payments_Onboarding_Service::set_test_mode( false );
 
-			wp_safe_redirect( remove_query_arg( [ $this->cta_query_arg(), $this->cta_nonce_arg() ] ) );
+			wp_safe_redirect( remove_query_arg( [ $naming->cta_query_arg(), $naming->cta_nonce_arg() ] ) );
 			exit;
 		}
 
-		$this->record_tracks_event( $this->cta_event_name(), [ 'path' => 'onboarding' ] );
+		$this->record_tracks_event( $naming->cta_event_name(), [ 'path' => 'onboarding' ] );
 
 		wp_safe_redirect(
 			add_query_arg(
@@ -92,14 +93,14 @@ class WC_Payments_Test_To_Live_Notice extends WC_Payments_Abstract_Admin_Notice 
 	}
 
 	/**
-	 * Override: return the public TRANSIENT_ELIGIBLE constant so external
-	 * callers (the onboarding service's notice-state sync) and the base's
-	 * is_eligible() cache lookup share a single source of truth.
+	 * Pin the eligibility transient key to the public TRANSIENT_ELIGIBLE
+	 * constant so the onboarding service's sync and the base's cache lookup
+	 * share one source of truth.
 	 *
-	 * @return string
+	 * @return array<string, string>
 	 */
-	protected function eligibility_transient_key(): string {
-		return self::TRANSIENT_ELIGIBLE;
+	protected function naming_overrides(): array {
+		return [ 'eligibility_transient_key' => self::TRANSIENT_ELIGIBLE ];
 	}
 
 	/**
