@@ -38,7 +38,9 @@ class WC_Payments_Abstract_Admin_Notice_Test extends WCPAY_UnitTestCase {
 	// ---- Slug-derived naming -------------------------------------------------
 
 	public function test_multi_word_slug_derives_kebab_and_camel_correctly(): void {
-		$multi = new class() extends WC_Payments_Abstract_Admin_Notice {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$account = $this->createMock( WC_Payments_Account::class );
+		$multi   = new class( $gateway, $account ) extends WC_Payments_Abstract_Admin_Notice {
 			/** @return string */
 			protected function get_slug(): string {
 				return 'multi_word_thing';
@@ -248,7 +250,9 @@ class WC_Payments_Abstract_Admin_Notice_Test extends WCPAY_UnitTestCase {
 	 * @return WC_Payments_Abstract_Admin_Notice
 	 */
 	private function make_fixture(): WC_Payments_Abstract_Admin_Notice {
-		return new class() extends WC_Payments_Abstract_Admin_Notice {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$account = $this->createMock( WC_Payments_Account::class );
+		return new class( $gateway, $account ) extends WC_Payments_Abstract_Admin_Notice {
 			/** @var bool */
 			public $eligibility = true;
 

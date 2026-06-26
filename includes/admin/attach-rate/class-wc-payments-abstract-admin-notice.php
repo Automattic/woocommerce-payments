@@ -17,12 +17,37 @@ defined( 'ABSPATH' ) || exit;
 abstract class WC_Payments_Abstract_Admin_Notice {
 
 	/**
+	 * WCPay gateway service.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	protected $wcpay_gateway;
+
+	/**
+	 * Account service.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	protected $account;
+
+	/**
 	 * Per-request memo of should_show(). Same instance is reused across
 	 * admin_enqueue_scripts and the woocommerce_sections_{$tab} callback.
 	 *
 	 * @var bool|null
 	 */
 	private $should_show_memo = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WCPay gateway service.
+	 * @param WC_Payments_Account      $account       Account service.
+	 */
+	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Account $account ) {
+		$this->wcpay_gateway = $wcpay_gateway;
+		$this->account       = $account;
+	}
 
 	/**
 	 * Hooks that fire regardless of request context. Default is a no-op;

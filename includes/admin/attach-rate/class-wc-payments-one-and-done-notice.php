@@ -36,31 +36,6 @@ class WC_Payments_One_And_Done_Notice extends WC_Payments_Abstract_Admin_Notice 
 	const DAYS_THRESHOLD = 7;
 
 	/**
-	 * Gateway service.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $wcpay_gateway;
-
-	/**
-	 * Account service.
-	 *
-	 * @var WC_Payments_Account
-	 */
-	private $account;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WCPay gateway.
-	 * @param WC_Payments_Account      $account       Account service.
-	 */
-	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Account $account ) {
-		$this->wcpay_gateway = $wcpay_gateway;
-		$this->account       = $account;
-	}
-
-	/**
 	 * Registers the order-completion invalidator. Runs in both admin and
 	 * non-admin contexts so storefront checkout / REST webhook completions
 	 * drop the eligibility transient immediately.

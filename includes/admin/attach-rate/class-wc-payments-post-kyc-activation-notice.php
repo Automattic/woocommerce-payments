@@ -51,31 +51,6 @@ class WC_Payments_Post_Kyc_Activation_Notice extends WC_Payments_Abstract_Admin_
 	const TRANSIENT_ELIGIBLE = 'wcpay_post_kyc_activation_eligible';
 
 	/**
-	 * Gateway service.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $wcpay_gateway;
-
-	/**
-	 * Account service.
-	 *
-	 * @var WC_Payments_Account
-	 */
-	private $account;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WCPay gateway.
-	 * @param WC_Payments_Account      $account       Account service.
-	 */
-	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Account $account ) {
-		$this->wcpay_gateway = $wcpay_gateway;
-		$this->account       = $account;
-	}
-
-	/**
 	 * Adds the account-refresh cache invalidator on top of the base wiring.
 	 *
 	 * @return void
