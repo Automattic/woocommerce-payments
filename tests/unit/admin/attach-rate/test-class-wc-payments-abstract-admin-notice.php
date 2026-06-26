@@ -1,21 +1,21 @@
 <?php
 /**
- * Class WC_Payments_Abstract_Admin_Banner_Test
+ * Class WC_Payments_Abstract_Admin_Notice_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
 /**
- * WC_Payments_Abstract_Admin_Banner unit tests.
+ * WC_Payments_Abstract_Admin_Notice unit tests.
  *
  * The slug for the inline fixture is `'fixture'`. Tests assert against literal
  * derived strings (e.g. `'wcpay_fixture_notice_dismissed'`) so the slug-to-key
  * mapping is verified end-to-end without an explicit derivation test.
  */
-class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
+class WC_Payments_Abstract_Admin_Notice_Test extends WCPAY_UnitTestCase {
 
-	/** @var WC_Payments_Abstract_Admin_Banner */
-	private $banner;
+	/** @var WC_Payments_Abstract_Admin_Notice */
+	private $notice;
 
 	/** @var int */
 	private $admin_user_id;
@@ -24,7 +24,7 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 		$this->admin_user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $this->admin_user_id );
-		$this->banner = $this->make_fixture();
+		$this->notice = $this->make_fixture();
 	}
 
 	public function tear_down(): void {
@@ -38,7 +38,7 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	// ---- Slug-derived naming -------------------------------------------------
 
 	public function test_multi_word_slug_derives_kebab_and_camel_correctly(): void {
-		$multi = new class() extends WC_Payments_Abstract_Admin_Banner {
+		$multi = new class() extends WC_Payments_Abstract_Admin_Notice {
 			/** @return string */
 			protected function get_slug(): string {
 				return 'multi_word_thing';
@@ -66,46 +66,46 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	// ---- should_show ---------------------------------------------------------
 
 	public function test_should_show_returns_true_when_eligible(): void {
-		$this->assertTrue( $this->banner->should_show() );
+		$this->assertTrue( $this->notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_user_lacks_capability(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$this->assertFalse( $this->banner->should_show() );
+		$this->assertFalse( $this->notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_dismissed(): void {
 		update_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_dismissed', time() );
-		$this->assertFalse( $this->banner->should_show() );
+		$this->assertFalse( $this->notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_within_snooze_window(): void {
 		update_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_snoozed', time() );
-		$this->assertFalse( $this->banner->should_show() );
+		$this->assertFalse( $this->notice->should_show() );
 	}
 
 	public function test_should_show_returns_true_after_snooze_window_expires(): void {
 		update_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_snoozed', time() - 8 * DAY_IN_SECONDS );
-		$this->assertTrue( $this->banner->should_show() );
+		$this->assertTrue( $this->notice->should_show() );
 	}
 
-	public function test_should_show_ignores_snooze_when_banner_opts_out(): void {
-		$this->banner->allow_snooze = false;
+	public function test_should_show_ignores_snooze_when_notice_opts_out(): void {
+		$this->notice->allow_snooze = false;
 		update_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_snoozed', time() );
-		$this->assertTrue( $this->banner->should_show() );
+		$this->assertTrue( $this->notice->should_show() );
 	}
 
 	public function test_should_show_memoizes_compute_within_request(): void {
-		$this->banner->should_show();
-		$this->banner->should_show();
-		$this->banner->should_show();
-		$this->assertSame( 1, $this->banner->compute_calls );
+		$this->notice->should_show();
+		$this->notice->should_show();
+		$this->notice->should_show();
+		$this->assertSame( 1, $this->notice->compute_calls );
 	}
 
 	// ---- Eligibility transient cache -----------------------------------------
 
 	public function test_eligibility_transient_caches_across_instances(): void {
-		$this->banner->should_show();
+		$this->notice->should_show();
 		$this->assertSame( '1', get_transient( 'wcpay_fixture_eligible' ) );
 
 		// Fresh instance with the predicate flipped — cached '1' wins.
@@ -119,7 +119,7 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_show_outputs_mount_div_when_eligible(): void {
 		ob_start();
-		$this->banner->maybe_show();
+		$this->notice->maybe_show();
 		$this->assertSame( '<div id="wcpay-fixture-notice"></div>', ob_get_clean() );
 	}
 
@@ -127,14 +127,14 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		update_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_dismissed', time() );
 
 		ob_start();
-		$this->banner->maybe_show();
+		$this->notice->maybe_show();
 		$this->assertSame( '', ob_get_clean() );
 	}
 
 	public function test_maybe_show_records_impression_once_per_user(): void {
 		ob_start();
-		$this->banner->maybe_show();
-		$this->banner->maybe_show();
+		$this->notice->maybe_show();
+		$this->notice->maybe_show();
 		ob_end_clean();
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_shown', true ) );
 	}
@@ -145,14 +145,14 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-hide-fixture-notice']   = '1';
 		$_GET['_wcpay_fixture_notice_nonce'] = wp_create_nonce( 'wcpay_hide_fixture_notice_nonce' );
 
-		$this->assert_handler_redirects( fn() => $this->banner->hide_notice() );
+		$this->assert_handler_redirects( fn() => $this->notice->hide_notice() );
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_dismissed', true ) );
 		unset( $_GET['wcpay-hide-fixture-notice'], $_GET['_wcpay_fixture_notice_nonce'] );
 	}
 
 	public function test_hide_notice_bails_without_marker_query_arg(): void {
-		$this->banner->hide_notice();
+		$this->notice->hide_notice();
 		$this->assertSame( '', get_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_dismissed', true ) );
 	}
 
@@ -160,7 +160,7 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-hide-fixture-notice']   = '1';
 		$_GET['_wcpay_fixture_notice_nonce'] = 'not-a-valid-nonce';
 
-		$this->banner->hide_notice();
+		$this->notice->hide_notice();
 
 		$this->assertSame( '', get_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_dismissed', true ) );
 		unset( $_GET['wcpay-hide-fixture-notice'], $_GET['_wcpay_fixture_notice_nonce'] );
@@ -173,7 +173,7 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-hide-fixture-notice']   = '1';
 		$_GET['_wcpay_fixture_notice_nonce'] = wp_create_nonce( 'wcpay_hide_fixture_notice_nonce' );
 
-		$this->banner->hide_notice();
+		$this->notice->hide_notice();
 
 		$this->assertSame( '', get_user_meta( $subscriber, 'wcpay_fixture_notice_dismissed', true ) );
 		unset( $_GET['wcpay-hide-fixture-notice'], $_GET['_wcpay_fixture_notice_nonce'] );
@@ -185,18 +185,18 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-snooze-fixture-notice']        = '1';
 		$_GET['_wcpay_snooze_fixture_notice_nonce'] = wp_create_nonce( 'wcpay_snooze_fixture_notice_nonce' );
 
-		$this->assert_handler_redirects( fn() => $this->banner->snooze_notice() );
+		$this->assert_handler_redirects( fn() => $this->notice->snooze_notice() );
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_snoozed', true ) );
 		unset( $_GET['wcpay-snooze-fixture-notice'], $_GET['_wcpay_snooze_fixture_notice_nonce'] );
 	}
 
-	public function test_snooze_notice_is_no_op_when_banner_opts_out(): void {
-		$this->banner->allow_snooze                 = false;
+	public function test_snooze_notice_is_no_op_when_notice_opts_out(): void {
+		$this->notice->allow_snooze                 = false;
 		$_GET['wcpay-snooze-fixture-notice']        = '1';
 		$_GET['_wcpay_snooze_fixture_notice_nonce'] = wp_create_nonce( 'wcpay_snooze_fixture_notice_nonce' );
 
-		$this->banner->snooze_notice();
+		$this->notice->snooze_notice();
 
 		$this->assertSame( '', get_user_meta( $this->admin_user_id, 'wcpay_fixture_notice_snoozed', true ) );
 		unset( $_GET['wcpay-snooze-fixture-notice'], $_GET['_wcpay_snooze_fixture_notice_nonce'] );
@@ -205,36 +205,36 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	// ---- init_hooks / init_global_hooks --------------------------------------
 
 	public function test_init_hooks_registers_admin_init_and_enqueue_handlers(): void {
-		$this->banner->init_hooks();
+		$this->notice->init_hooks();
 
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->banner, 'hide_notice' ] ) );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->banner, 'snooze_notice' ] ) );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->banner, 'handle_cta' ] ) );
-		$this->assertNotFalse( has_action( 'admin_enqueue_scripts', [ $this->banner, 'register_script' ] ) );
-		$this->assertNotFalse( has_action( 'admin_enqueue_scripts', [ $this->banner, 'enqueue_script' ] ) );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->notice, 'hide_notice' ] ) );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->notice, 'snooze_notice' ] ) );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->notice, 'handle_cta' ] ) );
+		$this->assertNotFalse( has_action( 'admin_enqueue_scripts', [ $this->notice, 'register_script' ] ) );
+		$this->assertNotFalse( has_action( 'admin_enqueue_scripts', [ $this->notice, 'enqueue_script' ] ) );
 
-		$this->cleanup_admin_init_hooks( $this->banner );
+		$this->cleanup_admin_init_hooks( $this->notice );
 	}
 
-	public function test_init_hooks_skips_snooze_for_banners_that_opt_out(): void {
-		$this->banner->allow_snooze = false;
-		$this->banner->init_hooks();
+	public function test_init_hooks_skips_snooze_for_notices_that_opt_out(): void {
+		$this->notice->allow_snooze = false;
+		$this->notice->init_hooks();
 
-		$this->assertFalse( has_action( 'admin_init', [ $this->banner, 'snooze_notice' ] ) );
+		$this->assertFalse( has_action( 'admin_init', [ $this->notice, 'snooze_notice' ] ) );
 
-		$this->cleanup_admin_init_hooks( $this->banner );
+		$this->cleanup_admin_init_hooks( $this->notice );
 	}
 
 	public function test_init_hooks_registers_sections_hook_on_wc_settings(): void {
 		$_GET['page'] = 'wc-settings';
 		$_GET['tab']  = 'checkout';
 
-		$this->banner->init_hooks();
+		$this->notice->init_hooks();
 
-		$this->assertNotFalse( has_action( 'woocommerce_sections_checkout', [ $this->banner, 'maybe_show' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_sections_checkout', [ $this->notice, 'maybe_show' ] ) );
 
-		remove_action( 'woocommerce_sections_checkout', [ $this->banner, 'maybe_show' ] );
-		$this->cleanup_admin_init_hooks( $this->banner );
+		remove_action( 'woocommerce_sections_checkout', [ $this->notice, 'maybe_show' ] );
+		$this->cleanup_admin_init_hooks( $this->notice );
 		unset( $_GET['page'], $_GET['tab'] );
 	}
 
@@ -245,10 +245,10 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	 * and `allow_snooze` knobs the tests mutate. Slug is `'fixture'` so every
 	 * derived key follows the predictable `wcpay_fixture_*` shape.
 	 *
-	 * @return WC_Payments_Abstract_Admin_Banner
+	 * @return WC_Payments_Abstract_Admin_Notice
 	 */
-	private function make_fixture(): WC_Payments_Abstract_Admin_Banner {
-		return new class() extends WC_Payments_Abstract_Admin_Banner {
+	private function make_fixture(): WC_Payments_Abstract_Admin_Notice {
+		return new class() extends WC_Payments_Abstract_Admin_Notice {
 			/** @var bool */
 			public $eligibility = true;
 
@@ -280,12 +280,12 @@ class WC_Payments_Abstract_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	}
 
 	/** @return void */
-	private function cleanup_admin_init_hooks( WC_Payments_Abstract_Admin_Banner $banner ): void {
-		remove_action( 'admin_init', [ $banner, 'hide_notice' ] );
-		remove_action( 'admin_init', [ $banner, 'snooze_notice' ] );
-		remove_action( 'admin_init', [ $banner, 'handle_cta' ] );
-		remove_action( 'admin_enqueue_scripts', [ $banner, 'register_script' ], 9 );
-		remove_action( 'admin_enqueue_scripts', [ $banner, 'enqueue_script' ] );
+	private function cleanup_admin_init_hooks( WC_Payments_Abstract_Admin_Notice $notice ): void {
+		remove_action( 'admin_init', [ $notice, 'hide_notice' ] );
+		remove_action( 'admin_init', [ $notice, 'snooze_notice' ] );
+		remove_action( 'admin_init', [ $notice, 'handle_cta' ] );
+		remove_action( 'admin_enqueue_scripts', [ $notice, 'register_script' ], 9 );
+		remove_action( 'admin_enqueue_scripts', [ $notice, 'enqueue_script' ] );
 	}
 
 	/**

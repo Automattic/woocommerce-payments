@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Post_Kyc_Activation_Banner_Test
+ * Class WC_Payments_Post_Kyc_Activation_Notice_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -8,14 +8,14 @@
 use WCPay\Constants\Order_Mode;
 
 /**
- * WC_Payments_Post_Kyc_Activation_Banner unit tests.
+ * WC_Payments_Post_Kyc_Activation_Notice unit tests.
  *
- * Keys this banner owns:
+ * Keys this notice owns:
  *   - dismissed user_meta (per stage): wcpay_post_kyc_activation_{stage}_dismissed
  *   - shown user_meta (per stage):     wcpay_post_kyc_activation_{stage}_shown
  *   - eligibility transient:           wcpay_post_kyc_activation_eligible
  */
-class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
+class WC_Payments_Post_Kyc_Activation_Notice_Test extends WCPAY_UnitTestCase {
 
 	/** @var int[] */
 	private $created_order_ids = [];
@@ -31,14 +31,14 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		// Default: 8 days post-KYC (active stage = 7), no live sale.
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 8 * DAY_IN_SECONDS );
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function tear_down(): void {
 		WC_Payments::mode()->live();
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			delete_user_meta( get_current_user_id(), 'wcpay_post_kyc_activation_' . $stage . '_dismissed' );
@@ -60,80 +60,80 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_current_stage_returns_null_when_no_kyc_date(): void {
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		$this->assertNull( $this->make_banner()->get_current_stage() );
+		$this->assertNull( $this->make_notice()->get_current_stage() );
 	}
 
 	public function test_get_current_stage_returns_null_before_day_7(): void {
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 3 * DAY_IN_SECONDS );
-		$this->assertNull( $this->make_banner()->get_current_stage() );
+		$this->assertNull( $this->make_notice()->get_current_stage() );
 	}
 
 	public function test_get_current_stage_returns_7_between_day_7_and_13(): void {
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 7 * DAY_IN_SECONDS );
-		$this->assertSame( 7, $this->make_banner()->get_current_stage() );
+		$this->assertSame( 7, $this->make_notice()->get_current_stage() );
 	}
 
 	public function test_get_current_stage_returns_14_between_day_14_and_29(): void {
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 14 * DAY_IN_SECONDS );
-		$this->assertSame( 14, $this->make_banner()->get_current_stage() );
+		$this->assertSame( 14, $this->make_notice()->get_current_stage() );
 	}
 
 	public function test_get_current_stage_returns_30_at_and_after_day_30(): void {
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 45 * DAY_IN_SECONDS );
-		$this->assertSame( 30, $this->make_banner()->get_current_stage() );
+		$this->assertSame( 30, $this->make_notice()->get_current_stage() );
 	}
 
 	public function test_get_current_stage_returns_null_after_window_closes(): void {
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 90 * DAY_IN_SECONDS );
-		$this->assertNull( $this->make_banner()->get_current_stage() );
+		$this->assertNull( $this->make_notice()->get_current_stage() );
 	}
 
 	// ---- should_show: eligibility predicate ----------------------------------
 
 	public function test_should_show_returns_true_when_all_conditions_met(): void {
-		$this->assertTrue( $this->make_banner()->should_show() );
+		$this->assertTrue( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_no_kyc_date(): void {
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		$this->assertFalse( $this->make_banner()->should_show() );
+		$this->assertFalse( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_returns_false_before_day_7(): void {
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 3 * DAY_IN_SECONDS );
-		$this->assertFalse( $this->make_banner()->should_show() );
+		$this->assertFalse( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_active_stage_dismissed(): void {
 		update_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_7_dismissed', true );
-		$this->assertFalse( $this->make_banner()->should_show() );
+		$this->assertFalse( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_user_lacks_capability(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$this->assertFalse( $this->make_banner()->should_show() );
+		$this->assertFalse( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_not_connected(): void {
-		$this->assertFalse( $this->make_banner( false )->should_show() );
+		$this->assertFalse( $this->make_notice( false )->should_show() );
 	}
 
 	public function test_should_show_returns_false_for_test_drive_account(): void {
-		$this->assertFalse( $this->make_banner( true, true, true )->should_show() );
+		$this->assertFalse( $this->make_notice( true, true, true )->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_payments_not_enabled(): void {
-		$this->assertFalse( $this->make_banner( true, true, false, false )->should_show() );
+		$this->assertFalse( $this->make_notice( true, true, false, false )->should_show() );
 	}
 
 	public function test_should_show_returns_false_in_test_mode(): void {
 		WC_Payments::mode()->test();
-		$this->assertFalse( $this->make_banner()->should_show() );
+		$this->assertFalse( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_live_sale_recorded(): void {
 		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1' );
-		$this->assertFalse( $this->make_banner()->should_show() );
+		$this->assertFalse( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_returns_true_when_only_test_orders_present(): void {
@@ -144,7 +144,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$order->save();
 		$this->created_order_ids[] = $order->get_id();
 
-		$this->assertTrue( $this->make_banner()->should_show() );
+		$this->assertTrue( $this->make_notice()->should_show() );
 	}
 
 	public function test_should_show_short_circuits_before_transient_when_live_sale_recorded(): void {
@@ -155,17 +155,17 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 			++$transient_reads;
 			return $value;
 		};
-		add_filter( 'pre_transient_' . WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE, $counter );
+		add_filter( 'pre_transient_' . WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, $counter );
 
-		$this->assertFalse( $this->make_banner()->should_show() );
+		$this->assertFalse( $this->make_notice()->should_show() );
 
-		remove_filter( 'pre_transient_' . WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE, $counter );
+		remove_filter( 'pre_transient_' . WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, $counter );
 
 		$this->assertSame( 0, $transient_reads, 'compute_should_show() must short-circuit before reaching the eligibility transient when a live sale exists.' );
 	}
 
 	public function test_should_show_memoizes_within_request(): void {
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
 		$dismissal_reads = 0;
 		$counter         = function ( $value, $object_id, $meta_key ) use ( &$dismissal_reads ) {
@@ -176,9 +176,9 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		};
 		add_filter( 'get_user_metadata', $counter, 10, 3 );
 
-		$banner->should_show();
-		$banner->should_show();
-		$banner->should_show();
+		$notice->should_show();
+		$notice->should_show();
+		$notice->should_show();
 
 		remove_filter( 'get_user_metadata', $counter, 10 );
 
@@ -192,7 +192,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
 		$_GET['wcpay_stage']                             = '7';
 
-		$this->assert_handler_redirects( fn() => $this->make_banner()->hide_notice() );
+		$this->assert_handler_redirects( fn() => $this->make_notice()->hide_notice() );
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_7_dismissed', true ) );
 
@@ -200,7 +200,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_hide_notice_respects_url_stage_when_active_stage_advanced(): void {
-		// Banner was rendered at stage 7 but the page sat open until stage 14
+		// Notice was rendered at stage 7 but the page sat open until stage 14
 		// became active. The dismiss must record against the URL's stage (7),
 		// not the active stage (14).
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 14 * DAY_IN_SECONDS );
@@ -209,7 +209,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
 		$_GET['wcpay_stage']                             = '7';
 
-		$this->assert_handler_redirects( fn() => $this->make_banner()->hide_notice() );
+		$this->assert_handler_redirects( fn() => $this->make_notice()->hide_notice() );
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_7_dismissed', true ) );
 		$this->assertEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_14_dismissed', true ) );
@@ -222,7 +222,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
 		$_GET['wcpay_stage']                             = '99';
 
-		$this->make_banner()->hide_notice();
+		$this->make_notice()->hide_notice();
 
 		foreach ( [ 7, 14, 30, 99 ] as $stage ) {
 			$this->assertEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_' . $stage . '_dismissed', true ) );
@@ -235,7 +235,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-hide-post-kyc-activation-notice']   = '1';
 		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
 
-		$this->make_banner()->hide_notice();
+		$this->make_notice()->hide_notice();
 
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			$this->assertEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_' . $stage . '_dismissed', true ) );
@@ -249,7 +249,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = 'bad-nonce';
 		$_GET['wcpay_stage']                             = '7';
 
-		$this->make_banner()->hide_notice();
+		$this->make_notice()->hide_notice();
 
 		$this->assertEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_7_dismissed', true ) );
 
@@ -270,7 +270,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		};
 		add_filter( 'wp_redirect', $intercept );
 		try {
-			$this->make_banner()->handle_cta();
+			$this->make_notice()->handle_cta();
 		} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Redirect intercept throws to short-circuit exit().
 			// Expected.
 		}
@@ -288,7 +288,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['_wcpay_post_kyc_activation_cta_nonce'] = wp_create_nonce( 'wcpay_post_kyc_activation_cta_nonce' );
 		$_GET['wcpay_stage']                          = '99';
 
-		$this->make_banner()->handle_cta();
+		$this->make_notice()->handle_cta();
 
 		foreach ( [ 7, 14, 30, 99 ] as $stage ) {
 			$this->assertEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_' . $stage . '_dismissed', true ) );
@@ -302,7 +302,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['_wcpay_post_kyc_activation_cta_nonce'] = 'bad-nonce';
 		$_GET['wcpay_stage']                          = '7';
 
-		$this->make_banner()->handle_cta();
+		$this->make_notice()->handle_cta();
 
 		$this->assertEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_7_dismissed', true ) );
 
@@ -313,7 +313,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_show_outputs_container_div(): void {
 		ob_start();
-		$this->make_banner()->maybe_show();
+		$this->make_notice()->maybe_show();
 		$this->assertStringContainsString( '<div id="wcpay-post-kyc-activation-notice">', ob_get_clean() );
 	}
 
@@ -322,7 +322,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 	public function test_enqueue_script_records_impression_for_active_stage(): void {
 		// No screen filter so set_current_screen() isn't needed; impression
 		// firing only requires the user be eligible.
-		$this->make_banner()->enqueue_script();
+		$this->make_notice()->enqueue_script();
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_post_kyc_activation_7_shown', true ) );
 	}
@@ -330,30 +330,30 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 	// ---- invalidate_cache ----------------------------------------------------
 
 	public function test_invalidate_cache_drops_transient(): void {
-		set_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
-		$this->make_banner()->invalidate_cache();
+		$this->make_notice()->invalidate_cache();
 
-		$this->assertFalse( get_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE ) );
+		$this->assertFalse( get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
 	}
 
 	// ---- Helpers --------------------------------------------------------------
 
 	/**
-	 * Builds a banner instance with mocked gateway/account.
+	 * Builds a notice instance with mocked gateway/account.
 	 *
 	 * @param bool $is_connected     Whether the gateway reports as connected.
 	 * @param bool $is_account_valid Whether the Stripe account reports as valid.
 	 * @param bool $is_test_drive    Whether the account is a test-drive account.
 	 * @param bool $payments_enabled Whether payments are enabled on the account.
-	 * @return WC_Payments_Post_Kyc_Activation_Banner
+	 * @return WC_Payments_Post_Kyc_Activation_Notice
 	 */
-	private function make_banner(
+	private function make_notice(
 		bool $is_connected = true,
 		bool $is_account_valid = true,
 		bool $is_test_drive = false,
 		bool $payments_enabled = true
-	): WC_Payments_Post_Kyc_Activation_Banner {
+	): WC_Payments_Post_Kyc_Activation_Notice {
 		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -370,7 +370,7 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		return new WC_Payments_Post_Kyc_Activation_Banner( $mock_gateway, $mock_account );
+		return new WC_Payments_Post_Kyc_Activation_Notice( $mock_gateway, $mock_account );
 	}
 
 	/**

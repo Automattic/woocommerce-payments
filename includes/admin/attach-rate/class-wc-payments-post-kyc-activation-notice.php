@@ -1,6 +1,6 @@
 <?php
 /**
- * Post-KYC activation banner.
+ * Post-KYC activation notice.
  *
  * @package WooCommerce\Payments\Admin
  */
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * No snooze flow — only dismiss + CTA (and dismiss is per-stage).
  */
-class WC_Payments_Post_Kyc_Activation_Banner extends WC_Payments_Abstract_Admin_Banner {
+class WC_Payments_Post_Kyc_Activation_Notice extends WC_Payments_Abstract_Admin_Notice {
 
 	/**
 	 * Days after KYC completion during which the notice may be shown. Past this
@@ -86,7 +86,7 @@ class WC_Payments_Post_Kyc_Activation_Banner extends WC_Payments_Abstract_Admin_
 	}
 
 	/**
-	 * Registers this banner's non-admin-context hooks.
+	 * Registers this notice's non-admin-context hooks.
 	 *
 	 * @return void
 	 */
@@ -241,7 +241,7 @@ class WC_Payments_Post_Kyc_Activation_Banner extends WC_Payments_Abstract_Admin_
 	}
 
 	/**
-	 * Override: no snooze for this banner.
+	 * Override: no snooze for this notice.
 	 *
 	 * @return bool
 	 */
@@ -250,27 +250,29 @@ class WC_Payments_Post_Kyc_Activation_Banner extends WC_Payments_Abstract_Admin_
 	}
 
 	/**
-	 * Override: gates on the current calendar-derived stage and a per-stage
-	 * dismissed marker. Short-circuits early if a live sale exists so the
-	 * eligibility transient + order query never run for that branch.
+	 * Override: short-circuit before the eligibility query when a live sale
+	 * already exists or no nudge stage is currently active. Keeps the
+	 * eligibility transient + order query from running for those branches.
 	 *
 	 * @return bool
 	 */
-	protected function compute_should_show(): bool {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return false;
-		}
-		if ( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) ) {
-			return false;
-		}
+	protected function is_applicable(): bool {
+		return ! get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION )
+			&& null !== $this->get_current_stage();
+	}
+
+	/**
+	 * Override: dismissal is tracked per stage rather than via the shared
+	 * dismissed meta key.
+	 *
+	 * @return bool
+	 */
+	protected function is_dismissed(): bool {
 		$stage = $this->get_current_stage();
 		if ( null === $stage ) {
 			return false;
 		}
-		if ( get_user_meta( get_current_user_id(), $this->dismissed_meta_key_for_stage( $stage ), true ) ) {
-			return false;
-		}
-		return $this->is_eligible();
+		return (bool) get_user_meta( get_current_user_id(), $this->dismissed_meta_key_for_stage( $stage ), true );
 	}
 
 	/**

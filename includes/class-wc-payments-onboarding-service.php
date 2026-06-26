@@ -943,8 +943,8 @@ class WC_Payments_Onboarding_Service {
 		// If the account is gone, everything else is too.
 		$this->database_cache->delete_all();
 
-		// Clean up the test-to-live banner state.
-		self::sync_banner_state( false );
+		// Clean up the test-to-live notice state.
+		self::sync_notice_state( false );
 	}
 
 	/**
@@ -1069,7 +1069,7 @@ class WC_Payments_Onboarding_Service {
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
 
-		self::sync_banner_state( $test_mode );
+		self::sync_notice_state( $test_mode );
 	}
 
 	/**
@@ -1089,7 +1089,7 @@ class WC_Payments_Onboarding_Service {
 			return;
 		}
 
-		self::sync_banner_state( 'yes' === $new_test_mode );
+		self::sync_notice_state( 'yes' === $new_test_mode );
 	}
 
 	/**
@@ -1641,14 +1641,14 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Maintains banner state that depends on test mode: sets/clears
+	 * Maintains notice state that depends on test mode: sets/clears
 	 * TEST_MODE_ENABLED_DATE_OPTION (test-to-live nudge clock) and drops the
 	 * test-to-live and post-KYC eligibility transients.
 	 *
 	 * @param bool $test_mode True if test mode is being enabled, false if disabled.
 	 * @return void
 	 */
-	private static function sync_banner_state( bool $test_mode ): void {
+	private static function sync_notice_state( bool $test_mode ): void {
 		if ( $test_mode ) {
 			// Preserve the original enable date on subsequent calls.
 			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
@@ -1659,7 +1659,7 @@ class WC_Payments_Onboarding_Service {
 			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 		}
 
-		delete_transient( WC_Payments_Test_To_Live_Banner::TRANSIENT_ELIGIBLE );
-		delete_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE );
+		delete_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 }

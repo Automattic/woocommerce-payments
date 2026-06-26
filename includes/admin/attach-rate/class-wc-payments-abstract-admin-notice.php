@@ -1,6 +1,6 @@
 <?php
 /**
- * Abstract base class for WooPayments admin banner nudges.
+ * Abstract base class for WooPayments admin notice nudges.
  *
  * @package WooCommerce\Payments\Admin
  */
@@ -9,12 +9,12 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Captures the lifecycle scaffolding shared across every WooPayments admin
- * banner: derived naming from a single get_slug(), per-request memoization of
+ * notice: derived naming from a single get_slug(), per-request memoization of
  * the should-show decision, transient-cached eligibility, and the
  * hide/snooze/render/enqueue handlers. Subclasses supply the slug, the
  * eligibility predicate, and the CTA destination.
  */
-abstract class WC_Payments_Abstract_Admin_Banner {
+abstract class WC_Payments_Abstract_Admin_Notice {
 
 	/**
 	 * Per-request memo of should_show(). Same instance is reused across
@@ -62,7 +62,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Whether the banner should render for the current user this request.
+	 * Whether the notice should render for the current user this request.
 	 *
 	 * @return bool
 	 */
@@ -75,7 +75,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Outputs the React mount-point if the banner is eligible and records the
+	 * Outputs the React mount-point if the notice is eligible and records the
 	 * impression once per user.
 	 *
 	 * @return void
@@ -106,7 +106,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Enqueues the bundle when the banner is eligible and the current screen is
+	 * Enqueues the bundle when the notice is eligible and the current screen is
 	 * a WooCommerce / WC-Admin screen. Localizes the action URLs the React
 	 * component needs.
 	 *
@@ -114,7 +114,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	 */
 	public function enqueue_script(): void {
 		// Screen gate before the eligibility check, which runs an order query.
-		if ( ! $this->is_banner_screen() ) {
+		if ( ! $this->is_notice_screen() ) {
 			return;
 		}
 
@@ -195,14 +195,14 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	/**
 	 * Handles the CTA click. Subclass owns the destination; the protected
 	 * `record_dismissal_and_redirect()` helper covers the common
-	 * "CTA terminally dismisses the banner" case.
+	 * "CTA terminally dismisses the notice" case.
 	 *
 	 * @return void
 	 */
 	abstract public function handle_cta(): void;
 
 	/**
-	 * Snake_case identifier for this banner. All derived keys (user meta,
+	 * Snake_case identifier for this notice. All derived keys (user meta,
 	 * transients, script handles, query args, Tracks events) compute from it.
 	 *
 	 * @return string
@@ -210,7 +210,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	abstract protected function get_slug(): string;
 
 	/**
-	 * Banner's eligibility predicate. Called inside is_eligible() behind the
+	 * Notice's eligibility predicate. Called inside is_eligible() behind the
 	 * transient cache.
 	 *
 	 * @return bool
@@ -218,8 +218,8 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	abstract protected function compute_eligibility(): bool;
 
 	/**
-	 * Whether this banner exposes a snooze flow. Override to return false for
-	 * banners that only support dismiss (e.g. the post-KYC notice).
+	 * Whether this notice exposes a snooze flow. Override to return false for
+	 * notices that only support dismiss (e.g. the post-KYC notice).
 	 *
 	 * @return bool
 	 */
@@ -261,7 +261,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * User meta key marking that the current admin dismissed this banner.
+	 * User meta key marking that the current admin dismissed this notice.
 	 *
 	 * @return string
 	 */
@@ -270,7 +270,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * User meta key recording when the current admin snoozed this banner.
+	 * User meta key recording when the current admin snoozed this notice.
 	 *
 	 * @return string
 	 */
@@ -415,7 +415,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Tracks event recorded the first time the user sees this banner.
+	 * Tracks event recorded the first time the user sees this notice.
 	 *
 	 * @return string
 	 */
@@ -424,7 +424,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Tracks event recorded when the user dismisses this banner.
+	 * Tracks event recorded when the user dismisses this notice.
 	 *
 	 * @return string
 	 */
@@ -433,7 +433,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Tracks event recorded when the user snoozes this banner.
+	 * Tracks event recorded when the user snoozes this notice.
 	 *
 	 * @return string
 	 */
@@ -526,7 +526,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 
 	/**
 	 * Standard terminal-CTA flow: record the cta_clicked event, mark the
-	 * banner as dismissed for this user, then redirect to the destination.
+	 * notice as dismissed for this user, then redirect to the destination.
 	 * Subclasses with non-terminal CTAs (test-to-live's "flip mode" variant)
 	 * should not call this — they record their own event and redirect directly.
 	 *
@@ -552,20 +552,63 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
-		if ( get_user_meta( get_current_user_id(), $this->dismissed_meta_key(), true ) ) {
+		if ( ! $this->is_applicable() ) {
 			return false;
 		}
-		if ( $this->supports_snooze() ) {
-			$snoozed_at = (int) get_user_meta( get_current_user_id(), $this->snoozed_meta_key(), true );
-			if ( $snoozed_at && time() < $snoozed_at + 7 * DAY_IN_SECONDS ) {
-				return false;
-			}
+		if ( $this->is_dismissed() ) {
+			return false;
+		}
+		if ( $this->supports_snooze() && $this->is_snoozed() ) {
+			return false;
 		}
 		return $this->is_eligible();
 	}
 
 	/**
-	 * Builds a nonce-protected action URL with the banner's marker query arg.
+	 * Per-notice guards evaluated before the dismissal, snooze, and eligibility
+	 * checks. Override to add cheap short-circuits that must run before the
+	 * (potentially expensive) eligibility query. Default: no extra guards.
+	 *
+	 * @return bool
+	 */
+	protected function is_applicable(): bool {
+		return true;
+	}
+
+	/**
+	 * Whether the current user has dismissed this notice. Override for notices
+	 * that key dismissal on something other than the shared dismissed meta key
+	 * (e.g. a per-stage marker).
+	 *
+	 * @return bool
+	 */
+	protected function is_dismissed(): bool {
+		return (bool) get_user_meta( get_current_user_id(), $this->dismissed_meta_key(), true );
+	}
+
+	/**
+	 * Whether the current user is within the snooze window. Only consulted when
+	 * supports_snooze() returns true.
+	 *
+	 * @return bool
+	 */
+	protected function is_snoozed(): bool {
+		$snoozed_at = (int) get_user_meta( get_current_user_id(), $this->snoozed_meta_key(), true );
+		return $snoozed_at && time() < $snoozed_at + $this->snooze_window_days() * DAY_IN_SECONDS;
+	}
+
+	/**
+	 * Number of days the notice stays hidden after a snooze. Override to change
+	 * the snooze window; defaults to one week.
+	 *
+	 * @return int
+	 */
+	protected function snooze_window_days(): int {
+		return 7;
+	}
+
+	/**
+	 * Builds a nonce-protected action URL with the notice's marker query arg.
 	 *
 	 * @param string $query_arg    Marker query arg the handler checks for.
 	 * @param string $nonce_action Nonce action.
@@ -584,7 +627,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 
 	/**
 	 * Records the impression Tracks event the first time the user sees the
-	 * banner, then writes the user_meta marker so subsequent views don't
+	 * notice, then writes the user_meta marker so subsequent views don't
 	 * re-record. Idempotent — safe to call from both `enqueue_script()` and
 	 * `maybe_show()`.
 	 *
@@ -598,7 +641,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Whether the current admin screen can host a banner.
+	 * Whether the current admin screen can host a notice.
 	 *
 	 * The eligibility check runs an order query, so enqueue_script() gates on
 	 * this first to avoid that cost on screens where no notice renders
@@ -606,7 +649,7 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	 *
 	 * @return bool
 	 */
-	private function is_banner_screen(): bool {
+	private function is_notice_screen(): bool {
 		$screen = get_current_screen();
 		return ! $screen || in_array( $screen->id, wc_get_screen_ids(), true ) || wc_admin_is_registered_page();
 	}

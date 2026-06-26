@@ -1,6 +1,6 @@
 <?php
 /**
- * Test-to-live activation banner.
+ * Test-to-live activation notice.
  *
  * @package WooCommerce\Payments\Admin
  */
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * flips the mode flag (when a live Stripe account is already connected) or
  * routes the merchant through the live-onboarding flow.
  */
-class WC_Payments_Test_To_Live_Banner extends WC_Payments_Abstract_Admin_Banner {
+class WC_Payments_Test_To_Live_Notice extends WC_Payments_Abstract_Admin_Notice {
 
 	/**
 	 * Number of days a merchant must have been in test mode before the nudge is shown.
@@ -65,12 +65,12 @@ class WC_Payments_Test_To_Live_Banner extends WC_Payments_Abstract_Admin_Banner 
 	 * Two paths:
 	 *   - If a live Stripe account is already connected, flip the gateway and
 	 *     onboarding test_mode flags off directly and redirect back to the
-	 *     current page (the banner disappears because eligibility recomputes).
+	 *     current page (the notice disappears because eligibility recomputes).
 	 *   - Otherwise route to the live-onboarding flow with the appropriate
 	 *     `from` / `source` query args.
 	 *
 	 * Does not call the base's `record_dismissal_and_redirect()` because the
-	 * banner self-clears via the eligibility predicate rather than a per-user
+	 * notice self-clears via the eligibility predicate rather than a per-user
 	 * dismissed-meta flag.
 	 *
 	 * @return void
@@ -118,7 +118,7 @@ class WC_Payments_Test_To_Live_Banner extends WC_Payments_Abstract_Admin_Banner 
 
 	/**
 	 * Override: return the public TRANSIENT_ELIGIBLE constant so external
-	 * callers (the onboarding service's banner-state sync) and the base's
+	 * callers (the onboarding service's notice-state sync) and the base's
 	 * is_eligible() cache lookup share a single source of truth.
 	 *
 	 * @return string

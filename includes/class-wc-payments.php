@@ -792,17 +792,17 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 		}
 
-		// Banner classes are loaded on every request because their order-completion
+		// Notice classes are loaded on every request because their order-completion
 		// invalidation hooks must fire on storefront checkout and REST webhooks
 		// (both non-admin contexts). Admin-only hooks are registered separately
 		// further below, gated on is_admin() && manage_woocommerce.
-		include_once WCPAY_ABSPATH . 'includes/admin/banners/class-wc-payments-abstract-admin-banner.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/banners/class-wc-payments-one-and-done-banner.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/banners/class-wc-payments-test-to-live-banner.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/banners/class-wc-payments-post-kyc-activation-banner.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-banner.php';
-		$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account, self::$order_service );
-		$admin_banner->init_global_hooks();
+		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
+		$admin_notices = new WC_Payments_Admin_Notices( self::get_gateway(), self::$account, self::$order_service );
+		$admin_notices->init_global_hooks();
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			$admin = new WC_Payments_Admin(
@@ -821,7 +821,7 @@ class WC_Payments {
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway(), self::get_account_service() );
 			$admin_settings->init_hooks();
 
-			$admin_banner->init_hooks();
+			$admin_notices->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';

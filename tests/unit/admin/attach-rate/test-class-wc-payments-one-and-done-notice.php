@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_One_And_Done_Banner_Test
+ * Class WC_Payments_One_And_Done_Notice_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -8,7 +8,7 @@
 use WCPay\Constants\Order_Mode;
 
 /**
- * WC_Payments_One_And_Done_Banner unit tests.
+ * WC_Payments_One_And_Done_Notice unit tests.
  *
  * Constants the subclass owns:
  *   - dismissed user_meta:  wcpay_one_and_done_notice_dismissed_at  (legacy, preserved)
@@ -17,7 +17,7 @@ use WCPay\Constants\Order_Mode;
  *   - eligibility transient: wcpay_one_and_done_eligible
  *   - permanent flag option: wcpay_one_and_done_permanently_ineligible
  */
-class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
+class WC_Payments_One_And_Done_Notice_Test extends WCPAY_UnitTestCase {
 
 	/** @var int[] */
 	private $created_order_ids = [];
@@ -38,7 +38,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		delete_user_meta( get_current_user_id(), 'wcpay_one_and_done_notice_snoozed_at' );
 		delete_user_meta( get_current_user_id(), 'wcpay_one_and_done_notice_shown' );
 		delete_transient( 'wcpay_one_and_done_eligible' );
-		delete_option( WC_Payments_One_And_Done_Banner::OPTION_PERMANENTLY_INELIGIBLE );
+		delete_option( WC_Payments_One_And_Done_Notice::OPTION_PERMANENTLY_INELIGIBLE );
 
 		foreach ( $this->created_order_ids as $order_id ) {
 			$order = wc_get_order( $order_id );
@@ -55,84 +55,84 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 
 	public function test_should_show_returns_true_when_all_conditions_met(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertTrue( $banner->should_show() );
+		$this->assertTrue( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_user_lacks_capability(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_gateway_not_connected(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner( false );
+		$notice = $this->make_notice( false );
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_account_invalid(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner( true, false );
+		$notice = $this->make_notice( true, false );
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_for_test_drive_account(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner( true, true, true );
+		$notice = $this->make_notice( true, true, true );
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_payments_not_enabled(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner( true, true, false, false );
+		$notice = $this->make_notice( true, true, false, false );
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_account_not_live(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner( true, true, false, true, false );
+		$notice = $this->make_notice( true, true, false, true, false );
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_in_test_mode(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		WC_Payments::mode()->test();
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_in_dev_mode(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		WC_Payments::mode()->dev();
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_no_live_orders(): void {
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_and_sets_permanent_flag_with_two_live_orders(): void {
 		$this->create_wcpay_live_orders( 2, 8 );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 		$this->assertSame(
 			'1',
-			get_option( WC_Payments_One_And_Done_Banner::OPTION_PERMANENTLY_INELIGIBLE ),
+			get_option( WC_Payments_One_And_Done_Notice::OPTION_PERMANENTLY_INELIGIBLE ),
 			'≥2 live WCPay orders is irreversible — flag must be set.'
 		);
 	}
@@ -140,36 +140,36 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 	public function test_should_show_returns_false_and_sets_permanent_flag_with_one_wcpay_and_one_non_wcpay(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		$this->create_order_with_payment_method( 'cheque' );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 		$this->assertSame(
 			'1',
-			get_option( WC_Payments_One_And_Done_Banner::OPTION_PERMANENTLY_INELIGIBLE ),
+			get_option( WC_Payments_One_And_Done_Notice::OPTION_PERMANENTLY_INELIGIBLE ),
 			'Non-WCPay order present — also irreversible, flag must be set.'
 		);
 	}
 
 	public function test_should_show_returns_false_when_only_order_is_non_wcpay(): void {
 		$this->create_order_with_payment_method( 'cheque' );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_first_order_too_recent(): void {
 		$this->create_wcpay_live_orders( 1, 3 );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_ignores_test_mode_orders(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		$this->create_wcpay_order( Order_Mode::TEST );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertTrue( $banner->should_show() );
+		$this->assertTrue( $notice->should_show() );
 	}
 
 	public function test_should_show_eligible_even_with_many_test_mode_orders(): void {
@@ -179,11 +179,11 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		for ( $i = 0; $i < 25; $i++ ) {
 			$this->create_wcpay_order( Order_Mode::TEST );
 		}
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertTrue( $banner->should_show() );
+		$this->assertTrue( $notice->should_show() );
 		$this->assertFalse(
-			(bool) get_option( WC_Payments_One_And_Done_Banner::OPTION_PERMANENTLY_INELIGIBLE ),
+			(bool) get_option( WC_Payments_One_And_Done_Notice::OPTION_PERMANENTLY_INELIGIBLE ),
 			'Test-mode orders alone must not set the permanent ineligibility flag.'
 		);
 	}
@@ -193,56 +193,56 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 	public function test_should_show_returns_false_when_dismissed(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		update_user_meta( $this->admin_user_id, 'wcpay_one_and_done_notice_dismissed_at', time() );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_false_when_snoozed(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		update_user_meta( $this->admin_user_id, 'wcpay_one_and_done_notice_snoozed_at', time() );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_should_show_returns_true_when_snooze_expired(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		update_user_meta( $this->admin_user_id, 'wcpay_one_and_done_notice_snoozed_at', time() - 8 * DAY_IN_SECONDS );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertTrue( $banner->should_show() );
+		$this->assertTrue( $notice->should_show() );
 	}
 
 	// ---- should_show: permanent flag short-circuits --------------------------
 
 	public function test_permanent_ineligible_flag_short_circuits_eligibility(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		update_option( WC_Payments_One_And_Done_Banner::OPTION_PERMANENTLY_INELIGIBLE, '1' );
-		$banner = $this->make_banner();
+		update_option( WC_Payments_One_And_Done_Notice::OPTION_PERMANENTLY_INELIGIBLE, '1' );
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 	}
 
 	public function test_permanent_flag_not_set_for_reversible_disqualifiers(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
 		WC_Payments::mode()->dev();
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 		$this->assertFalse(
-			(bool) get_option( WC_Payments_One_And_Done_Banner::OPTION_PERMANENTLY_INELIGIBLE ),
+			(bool) get_option( WC_Payments_One_And_Done_Notice::OPTION_PERMANENTLY_INELIGIBLE ),
 			'Dev mode is reversible — permanent flag must not be set.'
 		);
 	}
 
 	public function test_permanent_flag_not_set_for_recent_first_order(): void {
 		$this->create_wcpay_live_orders( 1, 3 );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$this->assertFalse( $banner->should_show() );
+		$this->assertFalse( $notice->should_show() );
 		$this->assertFalse(
-			(bool) get_option( WC_Payments_One_And_Done_Banner::OPTION_PERMANENTLY_INELIGIBLE ),
+			(bool) get_option( WC_Payments_One_And_Done_Notice::OPTION_PERMANENTLY_INELIGIBLE ),
 			'Order age <threshold is reversible — permanent flag must not be set.'
 		);
 	}
@@ -251,7 +251,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 
 	public function test_eligibility_order_queries_use_orderby_none(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
 		$captured = [];
 		$capture  = function ( $args ) use ( &$captured ) {
@@ -260,7 +260,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		};
 		add_filter( 'woocommerce_order_query_args', $capture );
 
-		$banner->should_show();
+		$notice->should_show();
 
 		remove_filter( 'woocommerce_order_query_args', $capture );
 
@@ -302,31 +302,31 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 			->getMock();
 		$mock_gateway->method( 'is_connected' )->willReturn( true );
 
-		$banner = new WC_Payments_One_And_Done_Banner( $mock_gateway, $mock_account );
+		$notice = new WC_Payments_One_And_Done_Notice( $mock_gateway, $mock_account );
 
-		$banner->should_show();
-		$banner->should_show();
-		$banner->should_show();
+		$notice->should_show();
+		$notice->should_show();
+		$notice->should_show();
 	}
 
 	// ---- maybe_show ----------------------------------------------------------
 
 	public function test_maybe_show_outputs_mount_div_when_eligible(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
 		ob_start();
-		$banner->maybe_show();
+		$notice->maybe_show();
 		$this->assertStringContainsString( '<div id="wcpay-one-and-done-notice">', ob_get_clean() );
 	}
 
 	public function test_maybe_show_records_impression_once_per_user(): void {
 		$this->create_wcpay_live_orders( 1, 8 );
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
 		ob_start();
-		$banner->maybe_show();
-		$banner->maybe_show();
+		$notice->maybe_show();
+		$notice->maybe_show();
 		ob_end_clean();
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_one_and_done_notice_shown', true ) );
@@ -338,7 +338,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-hide-one-and-done-notice']   = '1';
 		$_GET['_wcpay_one_and_done_notice_nonce'] = wp_create_nonce( 'wcpay_hide_one_and_done_notice_nonce' );
 
-		$this->assert_handler_redirects( fn() => $this->make_banner()->hide_notice() );
+		$this->assert_handler_redirects( fn() => $this->make_notice()->hide_notice() );
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_one_and_done_notice_dismissed_at', true ) );
 
@@ -349,14 +349,14 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-snooze-one-and-done-notice']        = '1';
 		$_GET['_wcpay_snooze_one_and_done_notice_nonce'] = wp_create_nonce( 'wcpay_snooze_one_and_done_notice_nonce' );
 
-		$this->assert_handler_redirects( fn() => $this->make_banner()->snooze_notice() );
+		$this->assert_handler_redirects( fn() => $this->make_notice()->snooze_notice() );
 
 		$this->assertNotEmpty( get_user_meta( $this->admin_user_id, 'wcpay_one_and_done_notice_snoozed_at', true ) );
 
 		unset( $_GET['wcpay-snooze-one-and-done-notice'], $_GET['_wcpay_snooze_one_and_done_notice_nonce'] );
 	}
 
-	public function test_handle_cta_redirects_to_marketing_and_suppresses_banner(): void {
+	public function test_handle_cta_redirects_to_marketing_and_suppresses_notice(): void {
 		$_GET['wcpay-one-and-done-cta']        = '1';
 		$_GET['_wcpay_one_and_done_cta_nonce'] = wp_create_nonce( 'wcpay_one_and_done_cta_nonce' );
 
@@ -367,7 +367,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		};
 		add_filter( 'wp_redirect', $redirect_intercept );
 		try {
-			$this->make_banner()->handle_cta();
+			$this->make_notice()->handle_cta();
 		} catch ( \Exception $e ) {
 			$this->assertSame( 'redirect', $e->getMessage() );
 		}
@@ -386,7 +386,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_one_and_done_eligible', '1', HOUR_IN_SECONDS );
 		$order_id = $this->create_wcpay_order( Order_Mode::PRODUCTION );
 
-		$this->make_banner()->invalidate_cache_on_order( $order_id );
+		$this->make_notice()->invalidate_cache_on_order( $order_id );
 
 		$this->assertFalse( get_transient( 'wcpay_one_and_done_eligible' ) );
 	}
@@ -395,7 +395,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_one_and_done_eligible', '1', HOUR_IN_SECONDS );
 		$order_id = $this->create_wcpay_order( Order_Mode::TEST );
 
-		$this->make_banner()->invalidate_cache_on_order( $order_id );
+		$this->make_notice()->invalidate_cache_on_order( $order_id );
 
 		$this->assertSame( '1', get_transient( 'wcpay_one_and_done_eligible' ) );
 	}
@@ -406,7 +406,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_one_and_done_eligible', '1', HOUR_IN_SECONDS );
 		$order_id = $this->create_order_with_payment_method( 'cheque' );
 
-		$this->make_banner()->invalidate_cache_on_order( $order_id );
+		$this->make_notice()->invalidate_cache_on_order( $order_id );
 
 		$this->assertFalse( get_transient( 'wcpay_one_and_done_eligible' ) );
 	}
@@ -414,59 +414,59 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 	// ---- init_hooks / init_global_hooks --------------------------------------
 
 	public function test_init_global_hooks_registers_order_completion_listeners(): void {
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$banner->init_global_hooks();
+		$notice->init_global_hooks();
 
-		$this->assertNotFalse( has_action( 'woocommerce_payment_complete', [ $banner, 'invalidate_cache_on_order' ] ) );
-		$this->assertNotFalse( has_action( 'woocommerce_order_status_completed', [ $banner, 'invalidate_cache_on_order' ] ) );
-		$this->assertNotFalse( has_action( 'woocommerce_order_status_processing', [ $banner, 'invalidate_cache_on_order' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_payment_complete', [ $notice, 'invalidate_cache_on_order' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_order_status_completed', [ $notice, 'invalidate_cache_on_order' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_order_status_processing', [ $notice, 'invalidate_cache_on_order' ] ) );
 
-		remove_action( 'woocommerce_payment_complete', [ $banner, 'invalidate_cache_on_order' ] );
-		remove_action( 'woocommerce_order_status_completed', [ $banner, 'invalidate_cache_on_order' ] );
-		remove_action( 'woocommerce_order_status_processing', [ $banner, 'invalidate_cache_on_order' ] );
+		remove_action( 'woocommerce_payment_complete', [ $notice, 'invalidate_cache_on_order' ] );
+		remove_action( 'woocommerce_order_status_completed', [ $notice, 'invalidate_cache_on_order' ] );
+		remove_action( 'woocommerce_order_status_processing', [ $notice, 'invalidate_cache_on_order' ] );
 	}
 
 	public function test_init_hooks_does_not_register_order_completion_listeners(): void {
 		// Guards against regressing the global/admin hook split. Order-completion
 		// hooks must be registered by init_global_hooks(), not init_hooks().
-		$banner = $this->make_banner();
+		$notice = $this->make_notice();
 
-		$banner->init_hooks();
+		$notice->init_hooks();
 
-		$this->assertFalse( has_action( 'woocommerce_payment_complete', [ $banner, 'invalidate_cache_on_order' ] ) );
-		$this->assertFalse( has_action( 'woocommerce_order_status_completed', [ $banner, 'invalidate_cache_on_order' ] ) );
-		$this->assertFalse( has_action( 'woocommerce_order_status_processing', [ $banner, 'invalidate_cache_on_order' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_payment_complete', [ $notice, 'invalidate_cache_on_order' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_order_status_completed', [ $notice, 'invalidate_cache_on_order' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_order_status_processing', [ $notice, 'invalidate_cache_on_order' ] ) );
 
-		remove_action( 'admin_init', [ $banner, 'hide_notice' ] );
-		remove_action( 'admin_init', [ $banner, 'snooze_notice' ] );
-		remove_action( 'admin_init', [ $banner, 'handle_cta' ] );
-		remove_action( 'admin_enqueue_scripts', [ $banner, 'register_script' ], 9 );
-		remove_action( 'admin_enqueue_scripts', [ $banner, 'enqueue_script' ] );
+		remove_action( 'admin_init', [ $notice, 'hide_notice' ] );
+		remove_action( 'admin_init', [ $notice, 'snooze_notice' ] );
+		remove_action( 'admin_init', [ $notice, 'handle_cta' ] );
+		remove_action( 'admin_enqueue_scripts', [ $notice, 'register_script' ], 9 );
+		remove_action( 'admin_enqueue_scripts', [ $notice, 'enqueue_script' ] );
 	}
 
 	public function test_init_hooks_registers_sections_hook_on_wc_settings(): void {
 		$_GET['page'] = 'wc-settings';
 		$_GET['tab']  = 'general';
-		$banner       = $this->make_banner();
+		$notice       = $this->make_notice();
 
-		$banner->init_hooks();
+		$notice->init_hooks();
 
-		$this->assertNotFalse( has_action( 'woocommerce_sections_general', [ $banner, 'maybe_show' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_sections_general', [ $notice, 'maybe_show' ] ) );
 
-		remove_action( 'woocommerce_sections_general', [ $banner, 'maybe_show' ] );
-		remove_action( 'admin_init', [ $banner, 'hide_notice' ] );
-		remove_action( 'admin_init', [ $banner, 'snooze_notice' ] );
-		remove_action( 'admin_init', [ $banner, 'handle_cta' ] );
-		remove_action( 'admin_enqueue_scripts', [ $banner, 'register_script' ], 9 );
-		remove_action( 'admin_enqueue_scripts', [ $banner, 'enqueue_script' ] );
+		remove_action( 'woocommerce_sections_general', [ $notice, 'maybe_show' ] );
+		remove_action( 'admin_init', [ $notice, 'hide_notice' ] );
+		remove_action( 'admin_init', [ $notice, 'snooze_notice' ] );
+		remove_action( 'admin_init', [ $notice, 'handle_cta' ] );
+		remove_action( 'admin_enqueue_scripts', [ $notice, 'register_script' ], 9 );
+		remove_action( 'admin_enqueue_scripts', [ $notice, 'enqueue_script' ] );
 		unset( $_GET['page'], $_GET['tab'] );
 	}
 
 	// ---- Helpers --------------------------------------------------------------
 
 	/**
-	 * Builds a banner instance with mocked gateway/account. Defaults satisfy
+	 * Builds a notice instance with mocked gateway/account. Defaults satisfy
 	 * every eligibility branch except the order-history ones, which are driven
 	 * by real wc_create_order() calls in the test body.
 	 *
@@ -475,15 +475,15 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 	 * @param bool $is_test_drive    Whether the account is a test-drive account.
 	 * @param bool $payments_enabled Whether payments are enabled on the account.
 	 * @param bool $is_live          Whether the account is live.
-	 * @return WC_Payments_One_And_Done_Banner
+	 * @return WC_Payments_One_And_Done_Notice
 	 */
-	private function make_banner(
+	private function make_notice(
 		bool $is_connected = true,
 		bool $is_account_valid = true,
 		bool $is_test_drive = false,
 		bool $payments_enabled = true,
 		bool $is_live = true
-	): WC_Payments_One_And_Done_Banner {
+	): WC_Payments_One_And_Done_Notice {
 		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -501,7 +501,7 @@ class WC_Payments_One_And_Done_Banner_Test extends WCPAY_UnitTestCase {
 		);
 		$mock_account->method( 'get_is_live' )->willReturn( $is_live );
 
-		return new WC_Payments_One_And_Done_Banner( $mock_gateway, $mock_account );
+		return new WC_Payments_One_And_Done_Notice( $mock_gateway, $mock_account );
 	}
 
 	/**

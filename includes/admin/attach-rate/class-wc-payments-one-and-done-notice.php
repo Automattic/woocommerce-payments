@@ -1,6 +1,6 @@
 <?php
 /**
- * One-and-done recovery banner.
+ * One-and-done recovery notice.
  *
  * @package WooCommerce\Payments\Admin
  */
@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * zero non-WooPayments orders) toward the WC Marketing Hub once that sale is
  * at least 7 days old. Surfaces inside WC admin / WC settings pages.
  */
-class WC_Payments_One_And_Done_Banner extends WC_Payments_Abstract_Admin_Banner {
+class WC_Payments_One_And_Done_Notice extends WC_Payments_Abstract_Admin_Notice {
 
 	/**
 	 * Sticky option set the first time the store hits an irreversible
@@ -75,7 +75,7 @@ class WC_Payments_One_And_Done_Banner extends WC_Payments_Abstract_Admin_Banner 
 
 	/**
 	 * Handles the "Promote my store" CTA. Treats the click as terminal
-	 * engagement (suppresses the banner permanently for this user) and routes
+	 * engagement (suppresses the notice permanently for this user) and routes
 	 * to the WC Admin Marketing Hub.
 	 *
 	 * @return void
@@ -99,7 +99,7 @@ class WC_Payments_One_And_Done_Banner extends WC_Payments_Abstract_Admin_Banner 
 
 	/**
 	 * Drops the eligibility transient when an order that affects the
-	 * predicate's count completes, so the banner self-clears within one page
+	 * predicate's count completes, so the notice self-clears within one page
 	 * request rather than waiting for the 1-hour TTL.
 	 *
 	 * Any non-test-mode order completion can change eligibility — a 2nd
