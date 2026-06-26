@@ -53,11 +53,11 @@ class WC_Payments_Abstract_Admin_Notice_Test extends WCPAY_UnitTestCase {
 			public function handle_cta(): void {}
 			/** @return string */
 			public function expose_mount_div_id(): string {
-				return $this->mount_div_id();
+				return $this->naming()->mount_div_id();
 			}
 			/** @return string */
 			public function expose_localize_var(): string {
-				return $this->localize_var_name();
+				return $this->naming()->localize_var_name();
 			}
 		};
 

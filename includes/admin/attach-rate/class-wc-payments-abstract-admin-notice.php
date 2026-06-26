@@ -7,12 +7,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once __DIR__ . '/class-wc-payments-notice-naming.php';
+
 /**
- * Captures the lifecycle scaffolding shared across every WooPayments admin
- * notice: derived naming from a single get_slug(), per-request memoization of
- * the should-show decision, transient-cached eligibility, and the
- * hide/snooze/render/enqueue handlers. Subclasses supply the slug, the
- * eligibility predicate, and the CTA destination.
+ * Lifecycle scaffolding shared across every WooPayments admin notice:
+ * memoized should-show decision, transient-cached eligibility, and the
+ * hide/snooze/render/enqueue handlers. Identifiers come from a
+ * WC_Payments_Notice_Naming object built from get_slug(). Subclasses supply the
+ * slug, the eligibility predicate, and the CTA destination.
  */
 abstract class WC_Payments_Abstract_Admin_Notice {
 
@@ -29,6 +31,13 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @var WC_Payments_Account
 	 */
 	protected $account;
+
+	/**
+	 * Lazily-built naming value object. Use naming() rather than this field.
+	 *
+	 * @var WC_Payments_Notice_Naming|null
+	 */
+	private $naming = null;
 
 	/**
 	 * Per-request memo of should_show(). Same instance is reused across
@@ -110,7 +119,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 			return;
 		}
 		$this->record_impression_if_first();
-		echo '<div id="' . esc_attr( $this->mount_div_id() ) . '"></div>';
+		echo '<div id="' . esc_attr( $this->naming()->mount_div_id() ) . '"></div>';
 	}
 
 	/**
@@ -119,13 +128,15 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return void
 	 */
 	public function register_script(): void {
-		WC_Payments::register_script_with_dependencies( $this->script_handle(), 'dist/' . $this->dist_name() );
-		wp_set_script_translations( $this->script_handle(), 'woocommerce-payments' );
+		$handle    = $this->naming()->script_handle();
+		$dist_name = $this->naming()->dist_name();
+		WC_Payments::register_script_with_dependencies( $handle, 'dist/' . $dist_name );
+		wp_set_script_translations( $handle, 'woocommerce-payments' );
 		WC_Payments_Utils::register_style(
-			$this->script_handle(),
-			plugins_url( 'dist/' . $this->dist_name() . '.css', WCPAY_PLUGIN_FILE ),
+			$handle,
+			plugins_url( 'dist/' . $dist_name . '.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/' . $this->dist_name() . '.css' ),
+			WC_Payments::get_file_version( 'dist/' . $dist_name . '.css' ),
 			'all'
 		);
 	}
@@ -154,20 +165,22 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 		// idempotent so the duplication is safe.
 		$this->record_impression_if_first();
 
+		$naming = $this->naming();
+
 		$settings = array_merge(
 			[
-				'ctaUrl'     => $this->build_action_url( $this->cta_query_arg(), $this->cta_nonce_action(), $this->cta_nonce_arg() ),
-				'dismissUrl' => $this->build_action_url( $this->hide_query_arg(), $this->hide_nonce_action(), $this->hide_nonce_arg() ),
+				'ctaUrl'     => $this->build_action_url( $naming->cta_query_arg(), $naming->cta_nonce_action(), $naming->cta_nonce_arg() ),
+				'dismissUrl' => $this->build_action_url( $naming->hide_query_arg(), $naming->hide_nonce_action(), $naming->hide_nonce_arg() ),
 			],
 			$this->supports_snooze() ? [
-				'snoozeUrl' => $this->build_action_url( $this->snooze_query_arg(), $this->snooze_nonce_action(), $this->snooze_nonce_arg() ),
+				'snoozeUrl' => $this->build_action_url( $naming->snooze_query_arg(), $naming->snooze_nonce_action(), $naming->snooze_nonce_arg() ),
 			] : [],
 			$this->get_extra_localize_data()
 		);
 
-		wp_localize_script( $this->script_handle(), $this->localize_var_name(), $settings );
-		wp_enqueue_script( $this->script_handle() );
-		wp_enqueue_style( $this->script_handle() );
+		wp_localize_script( $naming->script_handle(), $naming->localize_var_name(), $settings );
+		wp_enqueue_script( $naming->script_handle() );
+		wp_enqueue_style( $naming->script_handle() );
 	}
 
 	/**
@@ -176,15 +189,16 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return void
 	 */
 	public function hide_notice(): void {
-		if ( ! $this->verify_action_request( $this->hide_query_arg(), $this->hide_nonce_arg(), $this->hide_nonce_action() ) ) {
+		$naming = $this->naming();
+		if ( ! $this->verify_action_request( $naming->hide_query_arg(), $naming->hide_nonce_arg(), $naming->hide_nonce_action() ) ) {
 			return;
 		}
-		$this->record_tracks_event( $this->dismissed_event_name() );
-		update_user_meta( get_current_user_id(), $this->dismissed_meta_key(), time() );
+		$this->record_tracks_event( $naming->dismissed_event_name() );
+		update_user_meta( get_current_user_id(), $naming->dismissed_meta_key(), time() );
 		wp_safe_redirect(
 			remove_query_arg(
 				array_merge(
-					[ $this->hide_query_arg(), $this->hide_nonce_arg() ],
+					[ $naming->hide_query_arg(), $naming->hide_nonce_arg() ],
 					array_keys( $this->get_extra_action_query_args() )
 				)
 			)
@@ -201,15 +215,16 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 		if ( ! $this->supports_snooze() ) {
 			return;
 		}
-		if ( ! $this->verify_action_request( $this->snooze_query_arg(), $this->snooze_nonce_arg(), $this->snooze_nonce_action() ) ) {
+		$naming = $this->naming();
+		if ( ! $this->verify_action_request( $naming->snooze_query_arg(), $naming->snooze_nonce_arg(), $naming->snooze_nonce_action() ) ) {
 			return;
 		}
-		$this->record_tracks_event( $this->snoozed_event_name() );
-		update_user_meta( get_current_user_id(), $this->snoozed_meta_key(), time() );
+		$this->record_tracks_event( $naming->snoozed_event_name() );
+		update_user_meta( get_current_user_id(), $naming->snoozed_meta_key(), time() );
 		wp_safe_redirect(
 			remove_query_arg(
 				array_merge(
-					[ $this->snooze_query_arg(), $this->snooze_nonce_arg() ],
+					[ $naming->snooze_query_arg(), $naming->snooze_nonce_arg() ],
 					array_keys( $this->get_extra_action_query_args() )
 				)
 			)
@@ -227,8 +242,9 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	abstract public function handle_cta(): void;
 
 	/**
-	 * Snake_case identifier for this notice. All derived keys (user meta,
-	 * transients, script handles, query args, Tracks events) compute from it.
+	 * Snake_case identifier for this notice. The naming value object derives
+	 * every key (user meta, transients, script handles, query args, Tracks
+	 * events) from it.
 	 *
 	 * @return string
 	 */
@@ -241,6 +257,30 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return bool
 	 */
 	abstract protected function compute_eligibility(): bool;
+
+	/**
+	 * The naming value object for this notice. Built once per request from the
+	 * slug and any subclass naming_overrides().
+	 *
+	 * @return WC_Payments_Notice_Naming
+	 */
+	protected function naming(): WC_Payments_Notice_Naming {
+		if ( null === $this->naming ) {
+			$this->naming = new WC_Payments_Notice_Naming( $this->get_slug(), $this->naming_overrides() );
+		}
+		return $this->naming;
+	}
+
+	/**
+	 * Naming overrides keyed by getter name, for keys that can't follow the slug
+	 * derivation (a legacy stored key, or one another module references by
+	 * constant). Default: none.
+	 *
+	 * @return array<string, string>
+	 */
+	protected function naming_overrides(): array {
+		return [];
+	}
 
 	/**
 	 * Whether the store has a connected, valid, non-test-drive account with
@@ -308,193 +348,13 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	}
 
 	/**
-	 * User meta key marking that the current admin dismissed this notice.
-	 *
-	 * @return string
-	 */
-	protected function dismissed_meta_key(): string {
-		return "wcpay_{$this->get_slug()}_notice_dismissed";
-	}
-
-	/**
-	 * User meta key recording when the current admin snoozed this notice.
-	 *
-	 * @return string
-	 */
-	protected function snoozed_meta_key(): string {
-		return "wcpay_{$this->get_slug()}_notice_snoozed";
-	}
-
-	/**
-	 * User meta key recording that the impression Tracks event has fired for this user.
+	 * User meta key marking the impression Tracks event has fired. Stays a
+	 * method because the post-KYC notice suffixes it per stage.
 	 *
 	 * @return string
 	 */
 	protected function shown_meta_key(): string {
-		return "wcpay_{$this->get_slug()}_notice_shown";
-	}
-
-	/**
-	 * Transient key caching the result of the global eligibility check.
-	 *
-	 * @return string
-	 */
-	protected function eligibility_transient_key(): string {
-		return "wcpay_{$this->get_slug()}_eligible";
-	}
-
-	/**
-	 * WP script handle for the React bundle.
-	 *
-	 * @return string
-	 */
-	protected function script_handle(): string {
-		return 'WCPAY_' . strtoupper( $this->get_slug() ) . '_NOTICE';
-	}
-
-	/**
-	 * Build artifact base name in the dist/ directory.
-	 *
-	 * @return string
-	 */
-	protected function dist_name(): string {
-		return 'wc-payments-' . str_replace( '_', '-', $this->get_slug() ) . '-notice';
-	}
-
-	/**
-	 * DOM id the React component mounts into.
-	 *
-	 * @return string
-	 */
-	protected function mount_div_id(): string {
-		return 'wcpay-' . str_replace( '_', '-', $this->get_slug() ) . '-notice';
-	}
-
-	/**
-	 * Global JS variable name for the localized settings object.
-	 *
-	 * @return string
-	 */
-	protected function localize_var_name(): string {
-		$studly = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $this->get_slug() ) ) );
-		return 'wcpay' . $studly . 'NoticeSettings';
-	}
-
-	/**
-	 * $_GET marker that triggers the CTA handler.
-	 *
-	 * @return string
-	 */
-	protected function cta_query_arg(): string {
-		return 'wcpay-' . str_replace( '_', '-', $this->get_slug() ) . '-cta';
-	}
-
-	/**
-	 * $_GET marker that triggers the dismiss handler.
-	 *
-	 * @return string
-	 */
-	protected function hide_query_arg(): string {
-		return 'wcpay-hide-' . str_replace( '_', '-', $this->get_slug() ) . '-notice';
-	}
-
-	/**
-	 * $_GET marker that triggers the snooze handler.
-	 *
-	 * @return string
-	 */
-	protected function snooze_query_arg(): string {
-		return 'wcpay-snooze-' . str_replace( '_', '-', $this->get_slug() ) . '-notice';
-	}
-
-	/**
-	 * Nonce action for the CTA URL.
-	 *
-	 * @return string
-	 */
-	protected function cta_nonce_action(): string {
-		return "wcpay_{$this->get_slug()}_cta_nonce";
-	}
-
-	/**
-	 * Nonce action for the dismiss URL.
-	 *
-	 * @return string
-	 */
-	protected function hide_nonce_action(): string {
-		return "wcpay_hide_{$this->get_slug()}_notice_nonce";
-	}
-
-	/**
-	 * Nonce action for the snooze URL.
-	 *
-	 * @return string
-	 */
-	protected function snooze_nonce_action(): string {
-		return "wcpay_snooze_{$this->get_slug()}_notice_nonce";
-	}
-
-	/**
-	 * $_GET arg name carrying the CTA nonce.
-	 *
-	 * @return string
-	 */
-	protected function cta_nonce_arg(): string {
-		return "_wcpay_{$this->get_slug()}_cta_nonce";
-	}
-
-	/**
-	 * $_GET arg name carrying the dismiss nonce.
-	 *
-	 * @return string
-	 */
-	protected function hide_nonce_arg(): string {
-		return "_wcpay_{$this->get_slug()}_notice_nonce";
-	}
-
-	/**
-	 * $_GET arg name carrying the snooze nonce.
-	 *
-	 * @return string
-	 */
-	protected function snooze_nonce_arg(): string {
-		return "_wcpay_snooze_{$this->get_slug()}_notice_nonce";
-	}
-
-	/**
-	 * Tracks event recorded the first time the user sees this notice.
-	 *
-	 * @return string
-	 */
-	protected function shown_event_name(): string {
-		return "wcpay_{$this->get_slug()}_notice_shown";
-	}
-
-	/**
-	 * Tracks event recorded when the user dismisses this notice.
-	 *
-	 * @return string
-	 */
-	protected function dismissed_event_name(): string {
-		return "wcpay_{$this->get_slug()}_notice_dismissed";
-	}
-
-	/**
-	 * Tracks event recorded when the user snoozes this notice.
-	 *
-	 * @return string
-	 */
-	protected function snoozed_event_name(): string {
-		return "wcpay_{$this->get_slug()}_notice_snoozed";
-	}
-
-	/**
-	 * Tracks event recorded when the user clicks the CTA.
-	 *
-	 * @return string
-	 */
-	protected function cta_event_name(): string {
-		return "wcpay_{$this->get_slug()}_notice_cta_clicked";
+		return $this->naming()->shown_meta_key();
 	}
 
 	/**
@@ -504,12 +364,13 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return bool
 	 */
 	protected function is_eligible(): bool {
-		$cached = get_transient( $this->eligibility_transient_key() );
+		$key    = $this->naming()->eligibility_transient_key();
+		$cached = get_transient( $key );
 		if ( false !== $cached ) {
 			return '1' === $cached;
 		}
 		$eligible = $this->compute_eligibility();
-		set_transient( $this->eligibility_transient_key(), $eligible ? '1' : '0', HOUR_IN_SECONDS );
+		set_transient( $key, $eligible ? '1' : '0', HOUR_IN_SECONDS );
 		return $eligible;
 	}
 
@@ -559,7 +420,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return void
 	 */
 	protected function delete_eligibility_cache(): void {
-		delete_transient( $this->eligibility_transient_key() );
+		delete_transient( $this->naming()->eligibility_transient_key() );
 	}
 
 	/**
@@ -582,8 +443,8 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return void
 	 */
 	protected function record_dismissal_and_redirect( string $destination_url, array $tracks_props = [] ): void {
-		$this->record_tracks_event( $this->cta_event_name(), $tracks_props );
-		update_user_meta( get_current_user_id(), $this->dismissed_meta_key(), time() );
+		$this->record_tracks_event( $this->naming()->cta_event_name(), $tracks_props );
+		update_user_meta( get_current_user_id(), $this->naming()->dismissed_meta_key(), time() );
 		wp_safe_redirect( $destination_url );
 		exit;
 	}
@@ -630,7 +491,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return bool
 	 */
 	protected function is_dismissed(): bool {
-		return (bool) get_user_meta( get_current_user_id(), $this->dismissed_meta_key(), true );
+		return (bool) get_user_meta( get_current_user_id(), $this->naming()->dismissed_meta_key(), true );
 	}
 
 	/**
@@ -640,7 +501,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 * @return bool
 	 */
 	protected function is_snoozed(): bool {
-		$snoozed_at = (int) get_user_meta( get_current_user_id(), $this->snoozed_meta_key(), true );
+		$snoozed_at = (int) get_user_meta( get_current_user_id(), $this->naming()->snoozed_meta_key(), true );
 		return $snoozed_at && time() < $snoozed_at + $this->snooze_window_days() * DAY_IN_SECONDS;
 	}
 
@@ -682,7 +543,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	 */
 	private function record_impression_if_first(): void {
 		if ( ! get_user_meta( get_current_user_id(), $this->shown_meta_key(), true ) ) {
-			$this->record_tracks_event( $this->shown_event_name(), $this->get_impression_tracks_props() );
+			$this->record_tracks_event( $this->naming()->shown_event_name(), $this->get_impression_tracks_props() );
 			update_user_meta( get_current_user_id(), $this->shown_meta_key(), true );
 		}
 	}
