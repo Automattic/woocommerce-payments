@@ -124,6 +124,7 @@ class WC_Payments_Onboarding_Service {
 			10,
 			2
 		);
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cached_onboarding_fields_data' ] );
 	}
 
 	/**
@@ -948,6 +949,16 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Clear cached onboarding fields data.
+	 *
+	 * @return void
+	 */
+	public function clear_cached_onboarding_fields_data() {
+		$this->database_cache->delete( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
+		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+	}
+
+	/**
 	 * Cleanup onboarding flow data after the account is onboarded.
 	 *
 	 * This is to avoid keeping unnecessary data in the database.
@@ -957,8 +968,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function cleanup_on_account_onboarded() {
 		// Delete the onboarding fields data since it is used only during the initial onboarding.
-		$this->database_cache->delete( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
-		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+		$this->clear_cached_onboarding_fields_data();
 		$this->database_cache->delete( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
 	}
 

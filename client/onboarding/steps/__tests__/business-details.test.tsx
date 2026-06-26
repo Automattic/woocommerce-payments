@@ -38,6 +38,11 @@ const countries = [
 		name: 'France',
 		types: [],
 	},
+	{
+		key: 'JP',
+		name: 'Japan',
+		types: [],
+	},
 ];
 
 jest.mocked( getAvailableCountries ).mockReturnValue( countries );
@@ -85,6 +90,36 @@ const businessTypes = [
 				name: 'Company',
 				description: 'Company description',
 				structures: [],
+			},
+			{
+				key: 'non_profit',
+				name: 'Non-profit',
+				description: 'Non-profit description',
+				structures: [],
+			},
+		],
+	},
+	{
+		key: 'JP',
+		name: 'Japan',
+		types: [
+			{
+				key: 'individual',
+				name: 'Individual',
+				description: 'Individual description',
+				structures: [],
+			},
+			{
+				key: 'company',
+				name: 'Company',
+				description: 'Company description',
+				requires_structure: false,
+				structures: [
+					{
+						key: 'sole_proprietorship',
+						name: 'Sole proprietorship',
+					},
+				],
 			},
 			{
 				key: 'non_profit',
@@ -230,5 +265,45 @@ describe( 'BusinessDetails', () => {
 			'Single member LLC'
 		);
 		expect( mccField ).toHaveTextContent( 'Popular Software' );
+	} );
+
+	it( 'continues without showing business structure when it is optional', async () => {
+		render(
+			<OnboardingContextProvider>
+				<BusinessDetails />
+			</OnboardingContextProvider>
+		);
+
+		const countryField = screen
+			.getByTestId( 'country-select' )
+			.querySelector( 'button' );
+
+		if ( ! countryField ) {
+			throw new Error( 'Country select not found' );
+		}
+
+		await user.click( countryField );
+		await screen.findByText( 'Japan' );
+		await user.click( screen.getByText( 'Japan' ) );
+
+		const businessTypeField = screen
+			.getByTestId( 'business-type-select' )
+			.querySelector( 'button' );
+
+		if ( ! businessTypeField ) {
+			throw new Error( 'Business type select not found' );
+		}
+
+		await user.click( businessTypeField );
+		await screen.findByText( 'Company' );
+		await user.click( screen.getByText( 'Company' ) );
+
+		expect(
+			screen.queryByTestId( 'business-structure-select' )
+		).not.toBeInTheDocument();
+		expect( screen.getByTestId( 'mcc-select' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( /By using WooPayments/ )
+		).toBeInTheDocument();
 	} );
 } );

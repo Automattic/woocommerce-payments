@@ -46,11 +46,34 @@ const BusinessDetails: React.FC = () => {
 		( type ) => type.key === data.business_type
 	);
 
+	const selectedBusinessStructures = selectedBusinessType?.structures ?? [];
+	const shouldDisplayBusinessStructure =
+		selectedBusinessStructures.length > 0 &&
+		selectedBusinessType?.requires_structure !== false &&
+		! (
+			selectedBusinessStructures.length === 1 &&
+			selectedBusinessStructures[ 0 ].key === 'nil'
+		);
 	const selectedBusinessStructure =
-		selectedBusinessType?.structures.length === 0 ||
-		selectedBusinessType?.structures.find(
+		! shouldDisplayBusinessStructure ||
+		selectedBusinessStructures.find(
 			( structure ) => structure.key === data[ 'company.structure' ]
 		);
+
+	React.useEffect( () => {
+		if (
+			selectedBusinessType &&
+			! shouldDisplayBusinessStructure &&
+			data[ 'company.structure' ]
+		) {
+			setData( { 'company.structure': undefined } );
+		}
+	}, [
+		data,
+		selectedBusinessType,
+		setData,
+		shouldDisplayBusinessStructure,
+	] );
 
 	const handleTiedChange = (
 		name: keyof OnboardingFields,
@@ -94,16 +117,15 @@ const BusinessDetails: React.FC = () => {
 					</OnboardingSelectField>
 				</span>
 			) }
-			{ selectedBusinessType &&
-				selectedBusinessType.structures.length > 0 && (
-					<span data-testid={ 'business-structure-select' }>
-						<OnboardingSelectField
-							name="company.structure"
-							options={ selectedBusinessType.structures }
-							onChange={ handleTiedChange }
-						/>
-					</span>
-				) }
+			{ selectedBusinessType && shouldDisplayBusinessStructure && (
+				<span data-testid={ 'business-structure-select' }>
+					<OnboardingSelectField
+						name="company.structure"
+						options={ selectedBusinessStructures }
+						onChange={ handleTiedChange }
+					/>
+				</span>
+			) }
 			{ selectedCountry &&
 				selectedBusinessType &&
 				selectedBusinessStructure && (
