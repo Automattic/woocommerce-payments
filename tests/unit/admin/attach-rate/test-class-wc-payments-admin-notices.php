@@ -144,17 +144,17 @@ class WC_Payments_Admin_Notices_Test extends WCPAY_UnitTestCase {
 	 * class. Fails the test if none is found — that itself indicates the
 	 * coordinator isn't registering the expected notice.
 	 *
-	 * @param WC_Payments_Abstract_Admin_Notice[] $notices Notices from the coordinator.
-	 * @param string                              $class   Expected concrete class name.
+	 * @param WC_Payments_Abstract_Admin_Notice[] $notices    Notices from the coordinator.
+	 * @param string                              $class_name Expected concrete class name.
 	 * @return WC_Payments_Abstract_Admin_Notice
 	 */
-	private function find_notice( array $notices, string $class ): WC_Payments_Abstract_Admin_Notice {
+	private function find_notice( array $notices, string $class_name ): WC_Payments_Abstract_Admin_Notice {
 		foreach ( $notices as $notice ) {
-			if ( $notice instanceof $class ) {
+			if ( $notice instanceof $class_name ) {
 				return $notice;
 			}
 		}
-		$this->fail( "Coordinator does not contain a $class instance." );
+		$this->fail( "Coordinator does not contain a $class_name instance." );
 	}
 
 	private function make_coordinator(): WC_Payments_Admin_Notices {
