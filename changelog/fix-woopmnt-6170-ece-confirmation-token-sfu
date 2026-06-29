@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Express Checkout: avoid Stripe "setup_future_usage mismatch" error by detecting all subscription cart variants (subscription, renewal, resubscribe, switch) at page load and using it during ECE mount.

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Register WooPayments with the WordPress Abilities API. Initial set of 15 read-only abilities gated behind the `woocommerce_payments_abilities_enabled` filter (default off).

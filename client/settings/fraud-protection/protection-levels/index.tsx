@@ -15,7 +15,7 @@ import {
 	useAdvancedFraudProtectionSettings,
 	useSettings,
 	useGetSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import FraudProtectionHelpText from './fp-help-text';
 import BasicFraudProtectionModal from './fp-modal';
 import { getAdminUrl } from 'wcpay/utils';
@@ -205,7 +205,6 @@ const ProtectionLevels: React.FC = () => {
 							/>
 						</label>
 						<Button
-							// @ts-expect-error: not sure why href should not be declared - it is.
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/fraud-protection',

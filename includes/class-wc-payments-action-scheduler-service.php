@@ -39,6 +39,17 @@ class WC_Payments_Action_Scheduler_Service {
 	private $compatibility_service;
 
 	/**
+	 * Jobs awaiting ActionScheduler initialization, keyed by hook+args+group.
+	 *
+	 * Used by schedule_job() to deduplicate deferred closures so that multiple
+	 * calls for the same hook+args+group before `action_scheduler_init` fires
+	 * only register one callback, not one per call.
+	 *
+	 * @var array<string, int>
+	 */
+	private $deferred_jobs = [];
+
+	/**
 	 * Constructor for WC_Payments_Action_Scheduler_Service.
 	 *
 	 * @param WC_Payments_API_Client    $payments_api_client - WooCommerce Payments API client.
@@ -214,12 +225,23 @@ class WC_Payments_Action_Scheduler_Service {
 				$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 			} else {
 				// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
-				add_action(
-					'action_scheduler_init',
-					function () use ( $timestamp, $hook, $args, $group ) {
-						$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
-					}
-				);
+				// Register at most one callback per unique hook+args+group, so repeat calls during the same request
+				// (e.g. `woocommerce_update_order` firing multiple times on order creation) don't pile up closures
+				// that each schedule their own action. Subsequent calls just update the stored timestamp; the single
+				// callback reads the latest value when ActionScheduler initializes.
+				$key = md5( (string) wp_json_encode( [ $hook, $args, $group ] ) );
+
+				if ( ! isset( $this->deferred_jobs[ $key ] ) ) {
+					add_action(
+						'action_scheduler_init',
+						function () use ( $hook, $args, $group, $key ) {
+							$timestamp = $this->deferred_jobs[ $key ];
+							$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+						}
+					);
+				}
+
+				$this->deferred_jobs[ $key ] = $timestamp;
 			}
 		} else {
 			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );

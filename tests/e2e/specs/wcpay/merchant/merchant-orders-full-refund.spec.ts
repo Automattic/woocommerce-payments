@@ -16,6 +16,7 @@ import {
 	goToOrder,
 	goToPaymentDetails,
 } from '../../../utils/merchant-navigation';
+import { submitFullRefund } from '../../../utils/merchant-orders';
 
 test.describe( 'WooCommerce Payments - Full Refund', () => {
 	let merchantPage: Page;
@@ -54,52 +55,7 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 			// Open the order
 			await goToOrder( merchantPage, orderId );
 
-			// Click refund button
-			await merchantPage
-				.getByRole( 'button', {
-					name: 'Refund',
-				} )
-				.click();
-
-			// Fill refund details
-			await merchantPage
-				.getByLabel( 'Refund amount' )
-				.fill( orderAmount );
-			// await merchantPage.fill( '.refund_line_total', orderAmount );
-			await merchantPage
-				.getByLabel( 'Reason for refund' )
-				.fill( 'No longer wanted' );
-
-			const refundButton = await merchantPage.getByRole( 'button', {
-				name: `Refund ${ orderAmount } via WooPayments`,
-			} );
-
-			await expect( refundButton ).toBeVisible();
-
-			// TODO: This visual regression test is not flaky, but we should revisit the approach.
-			// await expect( merchantPage ).toHaveScreenshot();
-
-			// Click refund and handle confirmation dialog
-			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
-			await refundButton.click();
-
-			// Wait for the refund to finish processing.
-			await merchantPage.waitForLoadState( 'load' );
-
-			// Verify refund details
-			await expect(
-				merchantPage.getByRole( 'cell', {
-					name: `-${ orderAmount }`,
-				} )
-			).toHaveCount( 2 );
-			await expect(
-				merchantPage.getByText(
-					`A refund of ${ orderAmount } was successfully processed using WooPayments. Reason: No longer wanted`
-				)
-			).toBeVisible();
-
-			// TODO: This visual regression test is not flaky, but we should revisit the approach.
-			// await expect( merchantPage ).toHaveScreenshot();
+			await submitFullRefund( merchantPage );
 		}
 	);
 
@@ -123,6 +79,10 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 
 		await expect(
 			merchantPage.getByText( 'Payment status changed to Refunded.' )
+		).toBeVisible();
+
+		await expect(
+			merchantPage.getByText( 'Reason: No longer wanted' )
 		).toBeVisible();
 
 		// TODO: This visual regression test is not flaky, but we should revisit the approach.

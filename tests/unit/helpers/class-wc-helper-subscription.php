@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
+
 // WC_Mock_WC_Data is needed to mock '*_meta_data' methods required in tests.
 require_once __DIR__ . '/class-wc-mock-wc-data.php';
 
@@ -90,7 +92,7 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	 *
 	 * @var string
 	 */
-	public $currency = 'USD';
+	public $currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 	/**
 	 * Created timestamp
@@ -182,12 +184,12 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return ! empty( $this->parent_order ) ? $this->parent_order->get_shipping_methods() : [];
 	}
 
-	public function get_related_orders( $type ) {
+	public function get_related_orders( $_unused_type ) {
 		return $this->related_orders;
 	}
 
-	public function set_related_orders( $array ) {
-		$this->related_orders = $array;
+	public function set_related_orders( $orders ) {
+		$this->related_orders = $orders;
 	}
 
 	public function get_last_order() {
@@ -228,11 +230,11 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->currency;
 	}
 
-	public function set_currency( $currency = 'USD' ) {
+	public function set_currency( $currency = Currency_Code::UNITED_STATES_DOLLAR ) {
 		$this->currency = $currency;
 	}
 
-	public function add_order_note( $note = '' ) {
+	public function add_order_note( $_unused_note = '' ) {
 		// do nothing.
 	}
 
@@ -260,8 +262,8 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->manual;
 	}
 
-	public function set_requires_manual_renewal( $bool ) {
-		$this->manual = $bool;
+	public function set_requires_manual_renewal( $is_manual ) {
+		$this->manual = $is_manual;
 	}
 
 	public function update_status( $status ) {

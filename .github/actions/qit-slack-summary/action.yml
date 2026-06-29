@@ -1,0 +1,89 @@
+name: "QIT E2E Slack summary"
+description: "Post a single Slack message summarising the failed matrix cells of a QIT E2E run."
+
+inputs:
+  slack-token:
+    description: "Slack bot token. When empty, the action no-ops (no creds = no post)."
+    required: false
+    default: ""
+  channel-id:
+    description: "Slack channel ID to post into. When empty, the action no-ops."
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: "Post failure summary to Slack"
+      shell: bash
+      env:
+        SLACK_TOKEN: ${{ inputs.slack-token }}
+        CHANNEL_ID: ${{ inputs.channel-id }}
+        # Default token has actions:read for the jobs API.
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+        RUN_ATTEMPT: ${{ github.run_attempt }}
+        SERVER_URL: ${{ github.server_url }}
+        WORKFLOW: ${{ github.workflow }}
+        BRANCH: ${{ github.ref_name }}
+        SHA: ${{ github.sha }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "$SLACK_TOKEN" ] || [ -z "$CHANNEL_ID" ]; then
+          echo "Slack credentials not set; skipping post."
+          exit 0
+        fi
+
+        RUN_URL="$SERVER_URL/$REPO/actions/runs/$RUN_ID/attempts/${RUN_ATTEMPT:-1}"
+        COMMIT_URL="$SERVER_URL/$REPO/commit/$SHA"
+        SHORT_SHA="${SHA:0:7}"
+
+        # Capture separately, not `< <(gh api ...)`: a failure inside a process
+        # substitution escapes set -e and would post a bogus "0 failures".
+        JOBS_JSON=$(gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/jobs") || {
+          echo "::error::Failed to fetch run jobs from the GitHub API; cannot build the failure list."
+          exit 1
+        }
+
+        # Failed cells only. The summary job's own conclusion is still null, so
+        # it is excluded.
+        FAILED_LINES=""
+        COUNT=0
+        while IFS=$'\t' read -r name url; do
+          [ -z "$name" ] && continue
+          FAILED_LINES+="• <${url}|${name}>"$'\n'
+          COUNT=$((COUNT + 1))
+        done < <(printf '%s' "$JOBS_JSON" \
+          | jq -r '.jobs[] | select(.conclusion == "failure") | [.name, .html_url] | @tsv')
+
+        FAILED_LINES="${FAILED_LINES%$'\n'}"
+        NOUN=$([ "$COUNT" -eq 1 ] && echo "failure" || echo "failures")
+
+        # Assemble in jq to avoid bash-quoting backticks/newlines (jq encodes them).
+        TEXT=$(jq -n -r \
+          --arg wf "$WORKFLOW" --arg count "$COUNT" --arg noun "$NOUN" \
+          --arg runurl "$RUN_URL" --arg branch "$BRANCH" \
+          --arg commiturl "$COMMIT_URL" --arg sha "$SHORT_SHA" \
+          --arg failed "$FAILED_LINES" \
+          '":red_circle: *\($wf) — \($count) \($noun)* | <\($runurl)|run>\n`\($branch)` | <\($commiturl)|`\($sha)`>"
+           + (if $failed != "" then "\n" + $failed else "" end)')
+
+        # Join in case the bot isn't a channel member yet.
+        curl -sS -X POST https://slack.com/api/conversations.join \
+          -H "Authorization: Bearer $SLACK_TOKEN" \
+          -H "Content-type: application/json; charset=utf-8" \
+          -d "$(jq -n --arg ch "$CHANNEL_ID" '{channel: $ch}')" >/dev/null || true
+
+        PAYLOAD=$(jq -n --arg ch "$CHANNEL_ID" --arg txt "$TEXT" '{channel: $ch, text: $txt}')
+        RESP=$(curl -sS -X POST https://slack.com/api/chat.postMessage \
+          -H "Authorization: Bearer $SLACK_TOKEN" \
+          -H "Content-type: application/json; charset=utf-8" \
+          -d "$PAYLOAD")
+
+        if ! echo "$RESP" | jq -e '.ok' >/dev/null; then
+          echo "::error::Slack post failed: $(echo "$RESP" | jq -r '.error // "unknown"')"
+          exit 1
+        fi
+        echo "Posted QIT E2E failure summary ($COUNT $NOUN) to Slack."

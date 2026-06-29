@@ -98,6 +98,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
+		delete_option( 'wcpay_multi_currency_cache_recommendation_dismissed' );
 		parent::tear_down();
 	}
 
@@ -411,6 +412,23 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+	}
+
+	public function test_update_settings_persists_cache_recommendation_dismissed() {
+		// Assert: the dismissal flag posted to the endpoint is persisted through MultiCurrency.
+		$request = new WP_REST_Request( 'POST', self::ROUTE . '/update-settings' );
+		$request->set_body_params(
+			[
+				// Include the route's required params so the request mirrors the real endpoint contract.
+				'wcpay_multi_currency_enable_auto_currency'           => 'no',
+				'wcpay_multi_currency_enable_storefront_switcher'     => 'no',
+				'wcpay_multi_currency_cache_recommendation_dismissed' => 'yes',
+			]
+		);
+
+		$this->controller->update_settings( $request );
+
+		$this->assertSame( 'yes', get_option( 'wcpay_multi_currency_cache_recommendation_dismissed' ) );
 	}
 
 	private function get_mock_available_currencies() {

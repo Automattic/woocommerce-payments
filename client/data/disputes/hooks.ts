@@ -16,8 +16,9 @@ import type {
 	CachedDisputes,
 	DisputesSummary,
 } from 'wcpay/types/disputes';
+import type { ChargeDispute } from 'wcpay/types/charges';
 import type { ApiError } from 'wcpay/types/errors';
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 
 /**
  * Returns the dispute object, error object, and loading state.
@@ -32,13 +33,23 @@ export const useDispute = (
 } => {
 	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
-			const { getDispute, getDisputeError, isResolving } =
-				select( STORE_NAME );
+			const {
+				getDispute,
+				getDisputeError,
+				isResolving,
+				hasFinishedResolution,
+			} = select( STORE_NAME );
 
 			return {
 				dispute: <Dispute | undefined>getDispute( id ),
 				error: <ApiError | undefined>getDisputeError( id ),
-				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
+				// Match the sibling data hooks (charges, deposits, payment
+				// intents): derive loading from hasFinishedResolution so it stays
+				// true until the resolver settles. isResolving alone is false on
+				// the first render, before resolution starts.
+				isLoading:
+					<boolean>isResolving( 'getDispute', [ id ] ) ||
+					! hasFinishedResolution( 'getDispute', [ id ] ),
 			};
 		},
 		[ id ]
@@ -52,7 +63,7 @@ export const useDispute = (
  * Does not return or fetch the dispute object.
  */
 export const useDisputeAccept = (
-	dispute: Dispute
+	dispute: Pick< ChargeDispute, 'id' | 'payment_intent' >
 ): {
 	doAccept: () => void;
 	isLoading: boolean;

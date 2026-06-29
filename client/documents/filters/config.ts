@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
  */
+import { getSetting } from 'wcpay/utils/wc-settings';
 import { displayType } from 'documents/strings';
 
 interface DocumentsFilterEntryType {

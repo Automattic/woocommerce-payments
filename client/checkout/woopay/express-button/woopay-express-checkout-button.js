@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
 
@@ -25,8 +25,24 @@ import {
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
+import { wooPayCardBrands } from 'wcpay/utils/woopay-card-brands';
+import { isValidPreferredCard, normalizeBrand } from './preferred-card-utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
+const CARD_DISPLAY_WIDTH_THRESHOLD = 220;
+
+const BRAND_DISPLAY_NAMES = {
+	visa: __( 'Visa', 'woocommerce-payments' ),
+	mastercard: __( 'Mastercard', 'woocommerce-payments' ),
+	amex: __( 'American Express', 'woocommerce-payments' ),
+	discover: __( 'Discover', 'woocommerce-payments' ),
+	jcb: __( 'JCB', 'woocommerce-payments' ),
+	unionpay: __( 'UnionPay', 'woocommerce-payments' ),
+	diners: __( 'Diners Club', 'woocommerce-payments' ),
+	// TODO: CB icon not yet shipped in woopay-card-brands; this entry is a
+	// placeholder so the display name is ready when the icon lands.
+	cartes_bancaires: __( 'Cartes Bancaires', 'woocommerce-payments' ),
+};
 
 const ButtonTypeTextMap = {
 	default: __( 'WooPay', 'woocommerce-payments' ),
@@ -43,6 +59,7 @@ export const WoopayExpressCheckoutButton = ( {
 	isProductPage = false,
 	emailSelector = '#email',
 	buttonAttributes,
+	preferredCard = null,
 } ) => {
 	const buttonWidthTypes = {
 		narrow: 'narrow',
@@ -59,9 +76,7 @@ export const WoopayExpressCheckoutButton = ( {
 		radius: borderRadius,
 	} = buttonSettings;
 	const [ isLoading, setIsLoading ] = useState( false );
-	const [ buttonWidthType, setButtonWidthType ] = useState(
-		buttonWidthTypes.wide
-	);
+	const [ measuredWidth, setMeasuredWidth ] = useState( null );
 	const buttonSizeMap = new Map();
 	buttonSizeMap.set( '40', 'small' );
 	buttonSizeMap.set( '48', 'medium' );
@@ -95,12 +110,8 @@ export const WoopayExpressCheckoutButton = ( {
 			return;
 		}
 
-		const buttonWidth = buttonRef.current.getBoundingClientRect().width;
-		const isButtonWide = buttonWidth > BUTTON_WIDTH_THRESHOLD;
-		setButtonWidthType(
-			isButtonWide ? buttonWidthTypes.wide : buttonWidthTypes.narrow
-		);
-	}, [ buttonWidthTypes.narrow, buttonWidthTypes.wide ] );
+		setMeasuredWidth( buttonRef.current.getBoundingClientRect().width );
+	}, [] );
 
 	useEffect( () => {
 		if ( ! isPreview ) {
@@ -361,9 +372,79 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
+	let buttonWidthType = null;
+	if ( measuredWidth !== null ) {
+		buttonWidthType =
+			measuredWidth > BUTTON_WIDTH_THRESHOLD
+				? buttonWidthTypes.wide
+				: buttonWidthTypes.narrow;
+	}
+
+	const normalizedBrand = isValidPreferredCard( preferredCard )
+		? normalizeBrand( preferredCard.brand )
+		: null;
+
+	const cardBrandIcon =
+		normalizedBrand && measuredWidth >= CARD_DISPLAY_WIDTH_THRESHOLD
+			? wooPayCardBrands.find(
+					( brand ) => brand.name === normalizedBrand
+			  )
+			: null;
+
+	const renderButtonContent = () => {
+		if ( cardBrandIcon && preferredCard ) {
+			return (
+				<div className="button-content">
+					<ThemedWooPayIcon />
+					<span
+						className="woopay-button-separator"
+						aria-hidden="true"
+					/>
+					<img
+						src={ cardBrandIcon.component }
+						alt={
+							BRAND_DISPLAY_NAMES[ normalizedBrand ] ||
+							normalizedBrand
+						}
+						className="woopay-button-card-brand"
+					/>
+					<span className="woopay-button-last4">
+						{ preferredCard.last4 }
+					</span>
+				</div>
+			);
+		}
+
+		return (
+			<div className="button-content">
+				{ interpolateComponents( {
+					mixedString: buttonText.replace(
+						ButtonTypeTextMap.default,
+						'{{wooPayLogo /}}'
+					),
+					components: {
+						wooPayLogo: <ThemedWooPayIcon />,
+					},
+				} ) }
+			</div>
+		);
+	};
+
+	const brandDisplayName =
+		BRAND_DISPLAY_NAMES[ normalizedBrand ] || normalizedBrand;
+
+	const ariaLabel = cardBrandIcon
+		? sprintf(
+				/* translators: %1$s: card brand display name (e.g. "American Express"), %2$s: last 4 digits of card */
+				__( 'WooPay with %1$s ending in %2$s', 'woocommerce-payments' ),
+				brandDisplayName,
+				preferredCard.last4
+		  )
+		: buttonText;
+
 	const sharedProps = {
 		ref: buttonRef,
-		'aria-label': buttonText,
+		'aria-label': ariaLabel,
 		onClick: ( e ) => onClickCallbackRef.current( e ),
 		className: clsx( 'woopay-express-button', {
 			'is-loading': isLoading,
@@ -381,17 +462,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const buttonContent = isLoading ? (
 		<span className="wc-block-components-spinner" />
 	) : (
-		<div className="button-content">
-			{ interpolateComponents( {
-				mixedString: buttonText.replace(
-					ButtonTypeTextMap.default,
-					'{{wooPayLogo /}}'
-				),
-				components: {
-					wooPayLogo: <ThemedWooPayIcon />,
-				},
-			} ) }
-		</div>
+		renderButtonContent()
 	);
 
 	return (

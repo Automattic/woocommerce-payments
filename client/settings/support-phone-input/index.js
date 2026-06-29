@@ -12,12 +12,12 @@ import {
 	useAccountBusinessSupportPhone,
 	useGetSavingError,
 	useTestModeOnboarding,
-} from 'wcpay/data';
-import PhoneNumberInput from 'wcpay/settings/phone-input';
+} from 'wcpay/data/settings';
+import PhoneNumberInput from 'wcpay/settings/phone-input/lazy';
 import InlineNotice from 'wcpay/components/inline-notice';
 import './styles.scss';
 
-const SupportPhoneInput = ( { setInputVallid } ) => {
+const SupportPhoneInput = ( { setInputValid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
 
 	let supportPhoneError =
@@ -52,10 +52,10 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	}
 
 	useEffect( () => {
-		if ( setInputVallid ) {
-			setInputVallid( ! supportPhoneError );
+		if ( setInputValid ) {
+			setInputValid( ! supportPhoneError );
 		}
-	}, [ supportPhoneError, setInputVallid ] );
+	}, [ supportPhoneError, setInputValid ] );
 
 	const labelText = __( 'Support phone number', 'woocommerce-payments' );
 	return (

@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Avoid redundant Playwright install in QIT setup and skip an incompatible WC 9.9.7 analytics assertion

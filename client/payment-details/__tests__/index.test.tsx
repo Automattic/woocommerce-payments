@@ -60,6 +60,9 @@ declare const global: {
 // Workaround for mocking @wordpress/data.
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -76,6 +79,7 @@ jest.mock( '@wordpress/data', () => ( {
 
 const mockHistoryReplace = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getQuery: () => {
 		return {
 			status_is: '',
@@ -277,10 +281,12 @@ describe( 'DisputeNotice bank name logic', () => {
 		};
 	};
 
-	it( 'should return null when charge is a string ID', () => {
+	it( 'should not include a bank name when bankName is null', () => {
 		const dispute = {
 			id: 'dp_mock',
-			charge: 'ch_mock',
+			charge: {
+				id: 'ch_mock',
+			} as Charge,
 			reason: 'fraudulent',
 			status: 'needs_response',
 			evidence_details: {

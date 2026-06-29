@@ -16,8 +16,11 @@ import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
  */
 import { getUserTimeZone } from 'jest-utils/timezone';
 import { TransactionsList } from '..';
-import { useTransactions, useTransactionsSummary } from 'data';
-import type { Transaction } from 'data/transactions/hooks';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
+import type { Transaction } from 'wcpay/data/transactions/hooks';
 
 jest.mock( '@woocommerce/data', () => {
 	const actualModule = jest.requireActual( '@woocommerce/data' );
@@ -46,7 +49,7 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data/transactions', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );

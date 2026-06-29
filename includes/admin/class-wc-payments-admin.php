@@ -13,6 +13,7 @@ use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
+use WCPay\Internal\Experiment\ReviewPromptExperiment;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -366,6 +367,19 @@ class WC_Payments_Admin {
 			],
 		];
 
+		if ( WC_Payments_Features::is_reports_area_enabled() ) {
+			$this->admin_child_pages['wc-payments-reports'] = [
+				'id'       => 'wc-payments-reports',
+				'title'    => __( 'Reports', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/reports',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 35,
+				],
+			];
+		}
+
 		try {
 			// Render full payments menu with sub-items only if:
 			// - we have working WPCOM/Jetpack connection;
@@ -397,12 +411,39 @@ class WC_Payments_Admin {
 			]
 		);
 
-		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
-		// That's expected, because account under review is hard-blocked account that spends in a review pretty short time-frame.
-		// Either merchant gets approved and continues to use payments or they remain suspended and can't use payments.
+		// Rejected and under-review merchants get a limited menu: Overview, Transactions, and Disputes.
+		// They need Disputes access to respond to dispute emails they receive, and Transactions for context.
+		// Payouts, Settings, Card Readers, Capital, and Documents remain hidden.
 		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
-			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-disputes'] );
+
+			// Register detail sub-pages so merchants can view individual items.
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-transaction-details',
+					'title'  => __( 'Payment details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions',
+					'path'   => '/payments/transactions/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-details-legacy-redirect',
+					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes',
+					'path'   => '/payments/disputes/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-challenge',
+					'title'  => __( 'Challenge dispute', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes-details-legacy-redirect',
+					'path'   => '/payments/disputes/challenge',
+				]
+			);
 			return;
 		}
 
@@ -1569,12 +1610,32 @@ class WC_Payments_Admin {
 
 		add_action( 'admin_footer', [ $this, 'inject_review_prompt_container' ] );
 
+		$experiment = wcpay_get_container()->get( ReviewPromptExperiment::class );
+
+		/**
+		 * Filters the review prompt experiment variant.
+		 *
+		 * Internal filter for QA: forces a specific design variant locally
+		 * without an ExPlat assignment. Not a public extension point.
+		 *
+		 * @since 11.0.0
+		 *
+		 * @param string $variant The assigned variant.
+		 */
+		$variant = apply_filters( 'wcpay_review_prompt_experiment_variant', $experiment->get_variant() );
+		$variant = is_scalar( $variant ) ? (string) $variant : '';
+
+		if ( ! $experiment->is_valid_variant( $variant ) ) {
+			$variant = ReviewPromptExperiment::VARIANT_CONTROL;
+		}
+
 		wp_localize_script(
 			'WCPAY_REVIEW_PROMPT',
 			'wcpayReviewPromptSettings',
 			[
-				'isLive'  => WC_Payments::mode()->is_live(),
-				'version' => WCPAY_VERSION_NUMBER,
+				'version'    => WCPAY_VERSION_NUMBER,
+				'experiment' => $experiment->name(),
+				'variant'    => $variant,
 			]
 		);
 

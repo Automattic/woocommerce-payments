@@ -1,4 +1,24 @@
 /**
+ * True when a value is non-empty (and, for objects, has a meaningful leaf).
+ * Shared by recommendations.ts and evidence-field-status.ts so "provided vs
+ * missing" stays consistent.
+ */
+export const hasMeaningfulValue = ( value: unknown ): boolean => {
+	if ( value === undefined || value === null ) {
+		return false;
+	}
+	if ( typeof value === 'string' ) {
+		return value.trim().length > 0;
+	}
+	if ( typeof value === 'object' ) {
+		return Object.values( value as Record< string, unknown > ).some(
+			hasMeaningfulValue
+		);
+	}
+	return Boolean( value );
+};
+
+/**
  * Formats a file name with size, returning separate parts for CSS-based truncation.
  *
  * @param fileName - The original file name

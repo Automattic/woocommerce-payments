@@ -58,7 +58,12 @@ class WC_Payments_Invoice_Service {
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->order_service       = $order_service;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		/**
 		 * When a store is in staging mode we don't want any order status chagnes to fire off corrisponding invoice requests to the server.
 		 *
@@ -291,8 +296,6 @@ class WC_Payments_Invoice_Service {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
 			return;
 		}
-
-		$charge = $intent_object->get_charge();
 
 		$this->order_service->attach_intent_info_to_order( $order, $intent_object );
 	}

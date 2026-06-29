@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Resolve block pattern references and style variations when extracting WooPay header/footer appearance colors from block theme template parts.

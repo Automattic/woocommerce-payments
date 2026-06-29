@@ -42,15 +42,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Download plugin artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ${{ inputs.artifact-name }}
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ inputs.php-version }}
           tools: composer
@@ -70,22 +70,64 @@ jobs:
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
-          qit run:e2e woocommerce-payments \
-            --zip=woocommerce-payments.zip \
-            --config tests/qit/qit.json \
-            --woo=${{ inputs.woocommerce-version }} \
-            --wp=${{ inputs.wordpress-version }} \
-            --php=${{ inputs.php-version }} \
-            --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
-            --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
-            --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
-            --wait \
-            --print-report-url \
-            -- --project=${{ inputs.playwright-project }}
+          # QIT provisions the env (downloads WP/WooCommerce/…) before any test; that
+          # step flakes on corrupt downloads or network blips and sinks the cell even
+          # though our code is fine (WOOPMNT-6200). A finished run writes results to the
+          # dirs below; a provisioning flake leaves them empty — so retry only when
+          # nothing was produced, never a run that already has a verdict.
+          max_attempts=3
+          attempt=1
+          # Same paths the "Upload test results" step collects.
+          results_dirs=( "tests/qit/test-package/test-results" "qit-results" )
+
+          run_qit() {
+            qit run:e2e woocommerce-payments \
+              --zip=woocommerce-payments.zip \
+              --config tests/qit/qit.json \
+              --woo=${{ inputs.woocommerce-version }} \
+              --wp=${{ inputs.wordpress-version }} \
+              --php=${{ inputs.php-version }} \
+              --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
+              --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
+              --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
+              --wait \
+              --print-report-url \
+              -- --project=${{ inputs.playwright-project }}
+          }
+
+          # True once tests actually ran (pass or fail).
+          produced_results() {
+            local d
+            for d in "${results_dirs[@]}"; do
+              [ -d "$d" ] && [ -n "$(find "$d" -type f -print -quit 2>/dev/null)" ] && return 0
+            done
+            return 1
+          }
+
+          while true; do
+            # Reset so the check reflects THIS attempt.
+            rm -rf "${results_dirs[@]}"
+
+            set +e
+            run_qit
+            code=$?
+            set -e
+
+            [ "$code" -eq 0 ] && exit 0
+
+            if [ "$attempt" -ge "$max_attempts" ] || produced_results; then
+              # Real failure or out of attempts — surface as-is.
+              exit "$code"
+            fi
+
+            echo "::warning::QIT failed before producing any test results (attempt ${attempt}/${max_attempts}) — environment provisioning likely flaked; retrying after backoff."
+            sleep "$(( attempt * 15 ))"
+            attempt="$(( attempt + 1 ))"
+          done
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: qit-e2e-results-wp${{ inputs.wordpress-version }}-wc${{ inputs.woocommerce-version }}-php${{ inputs.php-version }}-${{ inputs.playwright-project }}
           path: |

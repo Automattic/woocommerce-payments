@@ -2,7 +2,24 @@
 
 WooPayments e2e tests can be found in the `./tests/e2e/specs` directory. These tests run with Playwright and replaced the Puppeteer e2e tests when we completed the migration to Playwright in early 2025.
 
-E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and don't require any changes to run the tests.
+E2E tests can be run locally or in GitHub Actions. GitHub Actions are already configured and don't require any changes to run the tests.
+
+## Role in the release process
+
+This suite isn't only PR validation — it's also the release-zip smoke gate. Before deleting or "moving down the pyramid," check what each spec is protecting at release time. The scheduled release process ( PaJDYF-6n7-p2 ) wires this suite in three places:
+
+1. **Code-freeze workflow** (Wednesday of week 4) runs the full E2E matrix against the release branch. Failures here block the freeze.
+2. **Manual E2E run on the release branch** (Thursday of week 4) is a release-lead checklist item. The release lead manually classifies failures as flake vs. real (per Updates on the E2E testing workflow ( paJDYF-cZg-p2 )).
+3. **`build-zip-and-run-smoke-tests.yml`** runs the E2E suite against the built release zip — this *is* the smoke test that gates the test package handed to internal testers and (later) the deployment.
+
+Implications when adding/removing specs:
+
+- **Page-load smokes are intentional**, not low-value filler. Specs like `basic.spec.ts` and `merchant-admin-{deposits,transactions,disputes,…}.spec.ts` exist to catch fatals, autoload regressions, missing migrations, and capability errors at release time. Don't delete them just because the assertion is "page loads" — that's exactly what a release smoke test should assert. Replace with equivalent coverage if you must remove.
+- **Subscriptions specs gate release-time compatibility.** The release process explicitly verifies the test package against the latest WooCommerce Subscriptions. `tests/e2e/specs/subscriptions/**` is the only automated coverage of that surface; treat its specs accordingly.
+- **Express Checkout / Apple Pay / Google Pay are intentionally NOT covered here.** They're manually verified on [wcpaytesting.wpcomstaging.com](https://wcpaytesting.wpcomstaging.com) on Week 4 Thursday because real Apple/Google Pay sheets require real device/browser environments that headless Playwright can't simulate. Don't file "no Express Checkout E2E coverage" as a gap — it's a deliberate split.
+- **QIT suite (`tests/qit/`) is a separate release gate**, run by the release lead via the [QIT toolkit](https://qit.woo.com/docs/) on Week 4 Thursday for plugin-marketplace certification. The two suites overlap in surface but are not interchangeable — `tests/e2e/` runs in PRs and against the release zip; `tests/qit/` runs against the QIT environment. Keep them in sync via shared helpers; don't merge them.
+
+If you're considering deleting a spec, ask: "is this surface covered somewhere else that the release process also runs?" If the answer is "no" or "only in PHPUnit", err on the side of keeping the E2E spec — even a thin one — because release smoke needs full-stack coverage.
 
 ## Retry strategy
 

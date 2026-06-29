@@ -4,6 +4,11 @@
 import { addFilter } from '@wordpress/hooks';
 import { __, _n, sprintf } from '@wordpress/i18n';
 
+// This module is a side-effect file that registers WC Subscriptions compatibility
+// filters at import time. Do not export generic utilities from here; place pure
+// helpers in `client/express-checkout/utils/` so importing them does not also
+// register these filters.
+//
 // This module is imported by both the shortcode entry point (express-checkout/index.js)
 // and the blocks entry point (express-checkout/blocks/index.js). Because addFilter
 // with the same namespace replaces any previously registered callback, the filters
@@ -196,7 +201,7 @@ const getRecurringCartTotal = ( cartData ) => {
 /**
  * Returns a localized billing period string, e.g. "month" or "2 months".
  *
- * @param {string} period Billing period from Store API ('day','week','month','year').
+ * @param {string} period   Billing period from Store API ('day','week','month','year').
  * @param {number} interval Billing interval (number of periods between renewals).
  * @return {string} Localized period string.
  */

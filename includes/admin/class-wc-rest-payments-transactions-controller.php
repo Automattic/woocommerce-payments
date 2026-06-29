@@ -112,6 +112,8 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	/**
 	 * Retrieve transactions to respond with via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetTransactions
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions( $request ) {
@@ -123,6 +125,8 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 
 	/**
 	 * Retrieve fraud outcome transactions to respond with via API.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetFraudOutcomes
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
@@ -191,6 +195,8 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 
 	/**
 	 * Retrieve transactions summary to respond with via API.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetTransactionsSummary
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */

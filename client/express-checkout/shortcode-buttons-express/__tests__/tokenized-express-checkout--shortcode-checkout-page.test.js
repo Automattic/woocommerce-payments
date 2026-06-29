@@ -14,6 +14,7 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 jest.mock( 'lodash', () => ( {
+	...jest.requireActual( 'lodash' ),
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
 jest.mock( '@wordpress/api-fetch', () => ( {
@@ -21,10 +22,24 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 	default: jest.fn(),
 } ) );
 
+// A non-compromised page has the legit Stripe.js tag, so the assertion passes.
+const addStripeScript = () => {
+	const script = document.createElement( 'script' );
+	script.id = 'stripe-js';
+	script.src = 'https://js.stripe.com/v3/?ver=3.0';
+	document.head.appendChild( script );
+};
+
+const clearScripts = () =>
+	document.head
+		.querySelectorAll( 'script' )
+		.forEach( ( script ) => script.remove() );
+
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
 		apiFetch.mockClear();
+		addStripeScript();
 		apiFetch.mockImplementation( async () =>
 			Promise.resolve( {
 				json: () => Promise.resolve( cartWithItemsMock ),
@@ -98,6 +113,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 	afterEach( async () => {
 		delete global.Stripe;
+		clearScripts();
 		// removing all the registered event handlers so they don't leak between tests.
 		global.$( document.body ).off();
 	} );
@@ -236,5 +252,42 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).not.toBeVisible();
+	} );
+
+	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
+		global.wcpayExpressCheckoutParams.has_subscription = false;
+
+		const cartWithSubscription = {
+			...cartWithItemsMock,
+			extensions: {
+				subscriptions: [
+					{
+						billing_period: 'month',
+						billing_interval: 1,
+						totals: { total_price: '2399' },
+					},
+				],
+			},
+		};
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithSubscription ),
+				headers: new Map(),
+			} )
+		);
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				setupFutureUsage: 'off_session',
+			} )
+		);
 	} );
 } );

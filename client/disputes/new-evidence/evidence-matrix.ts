@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { RecommendedDocument } from './types';
+import type { RecommendedDocument } from './types';
 import { DOCUMENT_FIELD_KEYS } from './document-field-keys';
 
 /**
