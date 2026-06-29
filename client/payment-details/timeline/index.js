@@ -37,7 +37,7 @@ const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
 							'woocommerce-payments'
 						)
 					) : (
-						<Timeline items={ items } />
+						<Timeline items={ items } timezone="site" />
 					) }
 				</LoadableBlock>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
