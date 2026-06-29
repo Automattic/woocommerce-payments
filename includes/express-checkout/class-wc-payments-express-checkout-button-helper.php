@@ -793,8 +793,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * The Store API doesn't allow checkout without the billing email address present on the order data.
-	 * https://github.com/woocommerce/woocommerce/issues/48540
+	 * Determines whether the current Pay for Order page can be paid via the Express Checkout button.
+	 *
+	 * An order can be created without a billing email (e.g. by the merchant). The Store API requires
+	 * one to process the payment, but the email is captured from the wallet (Apple Pay / Google Pay)
+	 * and forwarded to the checkout request, so a pre-existing order email is not required to offer
+	 * the button. See https://github.com/woocommerce/woocommerce/issues/48540
 	 *
 	 * @return bool
 	 */
@@ -809,15 +813,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// we don't need to check its validity or value, we just need to ensure a billing email is present.
-		$billing_email = $order->get_billing_email();
-		if ( ! empty( $billing_email ) ) {
-			return true;
-		}
-
-		Logger::log( 'Billing email not present ( Express Checkout Element button disabled )' );
-
-		return false;
+		return true;
 	}
 
 	/**

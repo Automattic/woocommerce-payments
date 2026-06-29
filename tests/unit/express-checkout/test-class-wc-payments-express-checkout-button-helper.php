@@ -384,6 +384,39 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 	}
 
+	public function test_should_show_express_checkout_button_for_pay_for_order_without_billing_email() {
+		global $wp;
+		global $wp_query;
+
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+		WC_Payments::mode()->dev();
+		$_GET['pay_for_order'] = true;
+
+		// Order created without a billing email (e.g. by the merchant). The email is captured
+		// from the wallet at payment time, so the button should still be offered.
+		$order = WC_Helper_Order::create_order( 1, 100 );
+		$order->set_billing_email( '' );
+		$order->save();
+		$order_id             = $order->get_id();
+		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
+
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+	}
+
 	public function test_should_show_express_checkout_button_for_non_shipping_but_price_includes_tax() {
 		$this->mock_wcpay_account
 			->method( 'is_stripe_connected' )

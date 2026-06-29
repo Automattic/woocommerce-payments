@@ -44,21 +44,54 @@ export default class ExpressCheckoutOrderApi {
 	 * @return {Promise} Result of the order creation request.
 	 */
 	async placeOrder( paymentData ) {
-		return await apiFetch( {
-			method: 'POST',
-			path: `/wc/store/v1/checkout/${ this.orderId }`,
-			headers: {
-				Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
-			},
-			data: {
-				...paymentData,
-				key: this.key,
-				billing_email: this.billingEmail,
-				// preventing billing and shipping address from being overwritten in the request to the store - we don't want to update them
-				billing_address: this.cachedCartData.billing_address,
-				shipping_address: this.cachedCartData.shipping_address,
-			},
-		} );
+		// The order's billing and shipping address are set by the merchant and are
+		// authoritative (they're used for tax) so we keep them as-is rather than overwriting
+		// them with the address from the wallet.
+		const orderBillingAddress = this.cachedCartData.billing_address;
+
+		// The Store API stores the billing email as `billing_address.email` and requires it to
+		// process the payment. An order can be created without one (e.g. a merchant-created
+		// pay-for-order), so when the order has no billing email, we fall back to the email
+		// captured from the wallet.
+		const billingEmail =
+			orderBillingAddress?.email || paymentData.billing_address?.email;
+
+		try {
+			return await apiFetch( {
+				method: 'POST',
+				path: `/wc/store/v1/checkout/${ this.orderId }`,
+				headers: {
+					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
+				},
+				data: {
+					...paymentData,
+					key: this.key,
+					// `billing_email` authorizes access to the order, so it must match the order's
+					// *current* stored email. The new email is sent in `billing_address.email` below,
+					// which the Store API persists to the order before taking payment.
+					billing_email: this.billingEmail,
+					billing_address: orderBillingAddress && {
+						...orderBillingAddress,
+						email: billingEmail,
+					},
+					shipping_address: this.cachedCartData.shipping_address,
+				},
+			} );
+		} catch ( error ) {
+			// The Store API persists `billing_address.email` to the order *before* taking payment,
+			// so a failed payment leaves the (previously email-less) order carrying the email we
+			// just sent. Remember it as the email we authorize with - otherwise a retry is rejected
+			// (401) because the top-level `billing_email` no longer matches the order's stored email.
+			if (
+				billingEmail &&
+				error?.code ===
+					'woocommerce_rest_checkout_process_payment_error'
+			) {
+				this.billingEmail = billingEmail;
+			}
+
+			throw error;
+		}
 	}
 
 	/**
