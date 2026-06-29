@@ -22,11 +22,7 @@ import {
 	appendRedirectionParams,
 	deleteSkipWooPayCookie,
 } from 'wcpay/checkout/woopay/utils';
-import {
-	getAddToCartButtonElement,
-	isAddToCartBlocked,
-} from 'wcpay/utils/wc-product-page-selectors';
-import { onProductAvailabilityChange } from 'wcpay/utils/wc-product-page-events';
+import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 import { wooPayCardBrands } from 'wcpay/utils/woopay-card-brands';
@@ -81,9 +77,6 @@ export const WoopayExpressCheckoutButton = ( {
 	} = buttonSettings;
 	const [ isLoading, setIsLoading ] = useState( false );
 	const [ measuredWidth, setMeasuredWidth ] = useState( null );
-	const [ isAvailable, setIsAvailable ] = useState(
-		() => ! ( isProductPage && isAddToCartBlocked() )
-	);
 	const buttonSizeMap = new Map();
 	buttonSizeMap.set( '40', 'small' );
 	buttonSizeMap.set( '48', 'medium' );
@@ -378,24 +371,6 @@ export const WoopayExpressCheckoutButton = ( {
 			window.removeEventListener( 'pageshow', handlePageShow );
 		};
 	}, [] );
-
-	useEffect( () => {
-		if ( ! isProductPage ) {
-			return;
-		}
-
-		const updateAvailability = () =>
-			setIsAvailable( ! isAddToCartBlocked() );
-
-		// Sync once on mount in case the DOM changed before this effect ran.
-		updateAvailability();
-
-		return onProductAvailabilityChange( updateAvailability );
-	}, [ isProductPage ] );
-
-	if ( ! isAvailable ) {
-		return null;
-	}
 
 	let buttonWidthType = null;
 	if ( measuredWidth !== null ) {

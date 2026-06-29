@@ -7,7 +7,6 @@ import {
 	getQuantity,
 	isIAPIBlock,
 	getIAPIVariationId,
-	getClassicVariationId,
 	getIAPIVariationAttributes,
 	getClassicVariationAttributes,
 	isAddToCartBlocked,
@@ -167,32 +166,6 @@ describe( 'wc-product-page-selectors', () => {
 		} );
 	} );
 
-	describe( 'getClassicVariationId', () => {
-		it( 'returns the variation id when resolved', () => {
-			document.body.innerHTML = [
-				'<form class="variations_form cart">',
-				'  <input type="hidden" name="variation_id" class="variation_id" value="34" />',
-				'</form>',
-			].join( '' );
-			expect( getClassicVariationId() ).toBe( 34 );
-		} );
-
-		it( 'returns null when variation_id is the unresolved default of 0', () => {
-			document.body.innerHTML = [
-				'<form class="variations_form cart">',
-				'  <input type="hidden" name="variation_id" class="variation_id" value="0" />',
-				'</form>',
-			].join( '' );
-			expect( getClassicVariationId() ).toBeNull();
-		} );
-
-		it( 'returns null when there is no classic variations form', () => {
-			document.body.innerHTML =
-				'<button class="single_add_to_cart_button">Add</button>';
-			expect( getClassicVariationId() ).toBeNull();
-		} );
-	} );
-
 	describe( 'getIAPIVariationAttributes', () => {
 		it( 'reads the checked pill value from each attribute group', () => {
 			document.body.innerHTML = [
@@ -320,51 +293,6 @@ describe( 'wc-product-page-selectors', () => {
 		it( 'is false when the classic add-to-cart button is enabled', () => {
 			document.body.innerHTML =
 				'<button class="single_add_to_cart_button">Add</button>';
-			expect( isAddToCartBlocked() ).toBe( false );
-		} );
-
-		// Flash prevention: before WooCommerce's variation.js adds the
-		// `disabled` class on DOM-ready, an unselected classic variable product
-		// must still report blocked so the express button never flashes.
-		it( 'is true for a classic variable product with no variation selected, even before the button gains the disabled class', () => {
-			document.body.innerHTML = [
-				'<form class="variations_form cart">',
-				'  <button class="single_add_to_cart_button">Add</button>',
-				'  <input type="hidden" name="variation_id" class="variation_id" value="0" />',
-				'</form>',
-			].join( '' );
-			expect( isAddToCartBlocked() ).toBe( true );
-		} );
-
-		it( 'is false for a classic variable product once a variation resolves', () => {
-			document.body.innerHTML = [
-				'<form class="variations_form cart">',
-				'  <button class="single_add_to_cart_button">Add</button>',
-				'  <input type="hidden" name="variation_id" class="variation_id" value="34" />',
-				'</form>',
-			].join( '' );
-			expect( isAddToCartBlocked() ).toBe( false );
-		} );
-
-		// Flash prevention for the new block: variation selectors are present
-		// but the form is not yet flagged `is-invalid` (hydration pending).
-		it( 'is true for an IAPI variable product with no variation selected, even before the form is flagged invalid', () => {
-			document.body.innerHTML = [
-				'<form class="wp-block-add-to-cart-with-options">',
-				attributeGroup( 'color', pill( 'blue', false ) ),
-				'  <input type="hidden" name="variation_id" value="0" />',
-				'</form>',
-			].join( '' );
-			expect( isAddToCartBlocked() ).toBe( true );
-		} );
-
-		it( 'is false for an IAPI variable product once a variation resolves', () => {
-			document.body.innerHTML = [
-				'<form class="wp-block-add-to-cart-with-options">',
-				attributeGroup( 'color', pill( 'blue', true ) ),
-				'  <input type="hidden" name="variation_id" value="263" />',
-				'</form>',
-			].join( '' );
 			expect( isAddToCartBlocked() ).toBe( false );
 		} );
 	} );

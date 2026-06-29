@@ -338,20 +338,6 @@ class WC_Payments_WooPay_Button_Handler {
 
 		$settings = $this->get_button_settings();
 
-		// On the product page, a product that still needs options selected before
-		// it can be added to the cart (e.g. a variable product with no variation
-		// chosen yet) won't show the express button until the shopper makes a
-		// valid selection. Skip the visible placeholder in that case: otherwise it
-		// renders from first paint until the React button mounts on `window.load`
-		// and removes it, which shows as a button flashing in and out. The React
-		// component reveals the real button once a selection enables add-to-cart.
-		$product          = $this->express_checkout_helper->get_product();
-		$show_placeholder = ! (
-			$this->express_checkout_helper->is_product()
-			&& $product instanceof WC_Product
-			&& $product->has_options()
-		);
-
 		// Use a <div> placeholder instead of <button>. The Add to Cart + Options block
 		// scans hooked content for form elements (BUTTON, INPUT, etc.) to decide between
 		// Interactivity API mode and legacy form-submit mode. A <button> here forces
@@ -361,16 +347,14 @@ class WC_Payments_WooPay_Button_Handler {
 		// identical.
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
-			<?php if ( $show_placeholder ) : ?>
-				<div
-					class="woopay-express-button is-placeholder"
-					aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
-					data-type="<?php echo esc_attr( $settings['type'] ); ?>"
-					data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
-					data-size="<?php echo esc_attr( $settings['size'] ); ?>"
-					style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $settings['radius'] ); ?>px"
-				></div>
-			<?php endif; ?>
+			<div
+				class="woopay-express-button is-placeholder"
+				aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
+				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
+				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
+				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
+				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $settings['radius'] ); ?>px"
+			></div>
 		</div>
 		<?php
 	}

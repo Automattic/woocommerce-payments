@@ -108,7 +108,6 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 					'is_product',
 					'is_express_checkout_method_enabled_at',
 					'is_product_purchasable',
-					'get_product',
 				]
 			)
 			->getMock();
@@ -607,77 +606,5 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		$this->assertStringNotContainsString( 'disabled', $output );
 		$this->assertStringContainsString( 'woopay-express-button', $output );
 		$this->assertStringContainsString( '<div id="wcpay-woopay-button"', $output );
-	}
-
-	public function test_display_woopay_button_html_omits_placeholder_when_product_needs_options() {
-		$variable_product = WC_Helper_Product::create_variation_product();
-
-		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-					$this->mock_woopay_utilities,
-					$this->mock_express_checkout_helper,
-				]
-			)
-			->setMethods( [ 'should_show_woopay_button' ] )
-			->getMock();
-
-		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
-
-		$this->mock_express_checkout_helper
-			->method( 'is_product' )
-			->willReturn( true );
-
-		$this->mock_express_checkout_helper
-			->method( 'get_product' )
-			->willReturn( $variable_product );
-
-		ob_start();
-		$mock_handler->display_woopay_button_html();
-		$output = ob_get_clean();
-
-		// The container must still render — React mounts into it — but the visible
-		// placeholder must be omitted so it doesn't flash before a variation is
-		// selected on a variable product.
-		$this->assertStringContainsString( '<div id="wcpay-woopay-button"', $output );
-		$this->assertStringNotContainsString( 'is-placeholder', $output );
-		$this->assertStringNotContainsString( 'woopay-express-button', $output );
-	}
-
-	public function test_display_woopay_button_html_renders_placeholder_for_simple_product() {
-		$simple_product = WC_Helper_Product::create_simple_product();
-
-		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-					$this->mock_woopay_utilities,
-					$this->mock_express_checkout_helper,
-				]
-			)
-			->setMethods( [ 'should_show_woopay_button' ] )
-			->getMock();
-
-		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
-
-		$this->mock_express_checkout_helper
-			->method( 'is_product' )
-			->willReturn( true );
-
-		$this->mock_express_checkout_helper
-			->method( 'get_product' )
-			->willReturn( $simple_product );
-
-		ob_start();
-		$mock_handler->display_woopay_button_html();
-		$output = ob_get_clean();
-
-		// A simple in-stock product can be added immediately, so the placeholder
-		// renders to avoid a layout shift while the React button mounts.
-		$this->assertStringContainsString( 'is-placeholder', $output );
-		$this->assertStringContainsString( 'woopay-express-button', $output );
 	}
 }

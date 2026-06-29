@@ -14,21 +14,51 @@ import {
 	isIAPIBlock,
 	getIAPIVariationAttributes,
 	getClassicVariationAttributes,
+	getIAPIVariationSelectorGroups,
 } from 'wcpay/utils/wc-product-page-selectors';
-import { onProductAvailabilityChange } from 'wcpay/utils/wc-product-page-events';
 
-jQuery( () => {
-	// The shared availability watcher fires more than once for a single variation
-	// change: the WooCommerce change event lands immediately, then a DOM
-	// MutationObserver fires again once the add-to-cart control's enabled/disabled
-	// state settles a tick later. Each call re-fetches the variation's totals and
-	// re-renders the express button, so without debouncing one selection triggers
-	// several redundant refetches behind a single (deduped) loading overlay.
-	// Coalesce them into one update per change.
-	const triggerButtonDataUpdate = debounce( 100, () => {
+jQuery( ( $ ) => {
+	// Classic shortcode: listen for jQuery variation-change event.
+	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
 		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
-	onProductAvailabilityChange( triggerButtonDataUpdate );
+
+	// IAPI block: the new block doesn't fire the legacy jQuery event, and its
+	// variation pills resolve selections through Interactivity API directives
+	// rather than native `change`/`input` events — so DOM event listeners miss
+	// them. The block does re-render its selectors (toggling `aria-checked`,
+	// selected classes, options) when the selection changes, so a
+	// MutationObserver on the selectors catches every path: pills, dropdowns,
+	// and default/URL-preselected variations.
+	//
+	// We observe only the variation selectors, never the whole form: the block
+	// renders the express button inside the same form, and refreshing the
+	// button mutates it (block/unblock overlays), which would retrigger the
+	// observer in a loop. The idempotency guard is a second line of defense —
+	// it ignores mutations that don't change the actual selection.
+	const variationSelectors = getIAPIVariationSelectorGroups();
+	if ( variationSelectors.length ) {
+		let lastSelection = null;
+		const observer = new MutationObserver(
+			debounce( 250, () => {
+				const selection = JSON.stringify(
+					getIAPIVariationAttributes()
+				);
+				if ( selection === lastSelection ) {
+					return;
+				}
+				lastSelection = selection;
+				doAction( 'wcpay.express-checkout.update-button-data' );
+			} )
+		);
+		variationSelectors.forEach( ( selector ) =>
+			observer.observe( selector, {
+				subtree: true,
+				childList: true,
+				attributes: true,
+			} )
+		);
+	}
 } );
 
 // Block the payment request button as soon as an "input" event is fired, to avoid sync issues

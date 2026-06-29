@@ -100,24 +100,6 @@ export const getIAPIVariationId = () => {
 };
 
 /**
- * Get the resolved variation ID from the classic variations form.
- *
- * The classic form renders `<input name="variation_id" value="0">` from the
- * start and `variation.js` writes the matched variation's ID into it once the
- * shopper's selection resolves. A non-zero value means a variation is selected.
- *
- * @return {number|null} The variation ID, or null if not resolved.
- */
-export const getClassicVariationId = () => {
-	const input = document.querySelector(
-		'.variations_form input[name="variation_id"]'
-	);
-
-	const value = parseInt( input?.value, 10 );
-	return value > 0 ? value : null;
-};
-
-/**
  * The IAPI block's variation attribute groups (one per attribute).
  *
  * @return {NodeList} The variation-selector-attribute elements.
@@ -232,40 +214,14 @@ export const getClassicVariationAttributes = () => {
  * out-of-stock combination, or invalid quantity. Simple products keep a valid
  * form, so they're never reported as blocked.
  *
- * Those class-based signals only land a tick after page load: the classic
- * `variation.js` adds `disabled` on DOM-ready, and the IAPI block toggles
- * `is-invalid` on hydration. Reading them at mount on a variable product would
- * briefly report "not blocked" and flash the express button before it's hidden.
- * To avoid that, treat a variable product with no resolved variation as blocked
- * up front, using the variation ID that's present in the markup from the start
- * (`<input name="variation_id">`, server-rendered as `0`/empty until a variation
- * resolves). Once a variation is picked, the ID populates and we fall through to
- * the class-based checks.
- *
  * @return {boolean} True when the add-to-cart action is blocked.
  */
 export const isAddToCartBlocked = () => {
 	if ( isIAPIBlock() ) {
-		// Variable product (has attribute selectors) with no resolved
-		// variation: blocked even before the block flags its form invalid.
-		if (
-			getIAPIVariationSelectorGroups().length &&
-			! getIAPIVariationId()
-		) {
-			return true;
-		}
-
 		const form = document.querySelector(
 			'.wp-block-add-to-cart-with-options'
 		);
 		return !! form && form.classList.contains( 'is-invalid' );
-	}
-
-	// Classic variable product with no resolved variation: blocked before
-	// `variation.js` adds the button's `disabled` class.
-	const variationsForm = document.querySelector( '.variations_form' );
-	if ( variationsForm && ! getClassicVariationId() ) {
-		return true;
 	}
 
 	const button = getAddToCartButtonElement();

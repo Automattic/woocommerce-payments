@@ -523,8 +523,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * Variable products report the parent's aggregate status: is_purchasable()
 	 * and is_in_stock() are true when at least one variation is buyable, so this
-	 * only filters out wholly-unavailable products. Per-variation gating happens
-	 * on the client after the shopper selects options.
+	 * only filters out wholly-unavailable products. A specific out-of-stock or
+	 * unavailable variation is still handled at click time, where the express
+	 * button prompts the shopper to pick a valid combination.
 	 *
 	 * @return bool
 	 */

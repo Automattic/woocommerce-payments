@@ -454,20 +454,8 @@ jQuery( ( $ ) => {
 						onReadyParams.availablePaymentMethods
 					).filter( Boolean ).length
 				) {
-					// On the product page, don't reveal the button when the
-					// product can't be added to the cart (out of stock, or no /
-					// invalid variation selected).
-					if (
-						getExpressCheckoutData( 'button_context' ) ===
-							'product' &&
-						isAddToCartBlocked()
-					) {
-						expressCheckoutButtonUi.hideContainer();
-						expressCheckoutButtonUi.getButtonSeparator().hide();
-					} else {
-						expressCheckoutButtonUi.showContainer();
-						expressCheckoutButtonUi.getButtonSeparator().show();
-					}
+					expressCheckoutButtonUi.showContainer();
+					expressCheckoutButtonUi.getButtonSeparator().show();
 				}
 			} );
 		},
@@ -610,18 +598,14 @@ jQuery( ( $ ) => {
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
 				async () => {
-					// A blocked product (no variation selected, out of stock…) should
-					// not show the express button — hide it and bail early.
+					// A blocked product (no variation selected, out of stock…) would
+					// fail the cart fetch, so skip the refresh.
 					if (
 						getExpressCheckoutData( 'button_context' ) ===
 							'product' &&
 						isAddToCartBlocked()
 					) {
-						// A blocked product (no variation selected, out of stock…)
-						// can't be added to the cart, so hide the button entirely
-						// rather than leaving it shown-but-inert.
-						expressCheckoutButtonUi.hideContainer();
-						expressCheckoutButtonUi.getButtonSeparator().hide();
+						expressCheckoutButtonUi.unblockButton();
 						return;
 					}
 

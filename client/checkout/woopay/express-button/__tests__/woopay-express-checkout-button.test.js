@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { screen, render, waitFor, act } from '@testing-library/react';
+import { screen, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -14,7 +14,6 @@ import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
-import { onProductAvailabilityChange } from 'wcpay/utils/wc-product-page-events';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ) )
@@ -61,10 +60,6 @@ jest.mock( 'tracks', () => ( {
 } ) );
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
-
-jest.mock( 'wcpay/utils/wc-product-page-events', () => ( {
-	onProductAvailabilityChange: jest.fn( () => () => {} ),
-} ) );
 
 jest.mock( 'wcpay/utils/woopay-card-brands', () => ( {
 	wooPayCardBrands: [
@@ -503,14 +498,19 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
-		test( 'hides the WooPay button on product page when add to cart is disabled', () => {
+		test( 'should show an alert when clicking the button when add to cart button is disabled', async () => {
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
+			useExpressCheckoutProductHandler.mockImplementation( () => ( {
+				addToCart: mockAddToCart,
+			} ) );
 
+			// Add a disabled add to cart button to the DOM.
 			const addToCartButton = document.createElement( 'button' );
 			addToCartButton.classList.add( 'single_add_to_cart_button' );
 			addToCartButton.classList.add( 'disabled' );
+			addToCartButton.classList.add( 'wc-variation-selection-needed' );
 			document.body.appendChild( addToCartButton );
 
 			render(
@@ -523,107 +523,15 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			expect(
-				screen.queryByRole( 'button', { name: 'WooPay' } )
-			).not.toBeInTheDocument();
-
-			document.body.removeChild( addToCartButton );
-		} );
-
-		// Flash regression: on a variable product the server renders the
-		// add-to-cart button *without* the `disabled` class and `variation_id`
-		// as 0 — `variation.js` only disables it a tick later. The button must
-		// start hidden anyway, so it never flashes before that class lands.
-		test( 'does not flash on a variable product before the disabled class lands', () => {
-			getConfig.mockImplementation( ( v ) => {
-				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+			const expressButton = screen.queryByRole( 'button', {
+				name: 'WooPay',
 			} );
 
-			const form = document.createElement( 'form' );
-			form.classList.add( 'variations_form', 'cart' );
-			// No `disabled` class on the button, mirroring the initial markup.
-			form.innerHTML = [
-				'<button class="single_add_to_cart_button">Add</button>',
-				'<input type="hidden" name="variation_id" class="variation_id" value="0" />',
-			].join( '' );
-			document.body.appendChild( form );
+			await userEvent.click( expressButton );
 
-			render(
-				<WoopayExpressCheckoutButton
-					isPreview={ false }
-					buttonSettings={ buttonSettings }
-					api={ api }
-					isProductPage={ true }
-					emailSelector="#email"
-				/>
+			expect( window.alert ).toHaveBeenCalledWith(
+				'Please select your product options before proceeding.'
 			);
-
-			expect(
-				screen.queryByRole( 'button', { name: 'WooPay' } )
-			).not.toBeInTheDocument();
-
-			document.body.removeChild( form );
-		} );
-
-		test( 'shows the WooPay button on product page when add to cart is available', () => {
-			getConfig.mockImplementation( ( v ) => {
-				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
-			} );
-
-			render(
-				<WoopayExpressCheckoutButton
-					isPreview={ false }
-					buttonSettings={ buttonSettings }
-					api={ api }
-					isProductPage={ true }
-					emailSelector="#email"
-				/>
-			);
-
-			expect(
-				screen.getByRole( 'button', { name: 'WooPay' } )
-			).toBeInTheDocument();
-		} );
-
-		test( 'reveals the WooPay button when the product becomes available', () => {
-			getConfig.mockImplementation( ( v ) => {
-				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
-			} );
-
-			let availabilityCallback;
-			onProductAvailabilityChange.mockImplementation( ( cb ) => {
-				availabilityCallback = cb;
-				return () => {};
-			} );
-
-			const addToCartButton = document.createElement( 'button' );
-			addToCartButton.classList.add( 'single_add_to_cart_button' );
-			addToCartButton.classList.add( 'disabled' );
-			document.body.appendChild( addToCartButton );
-
-			render(
-				<WoopayExpressCheckoutButton
-					isPreview={ false }
-					buttonSettings={ buttonSettings }
-					api={ api }
-					isProductPage={ true }
-					emailSelector="#email"
-				/>
-			);
-
-			expect(
-				screen.queryByRole( 'button', { name: 'WooPay' } )
-			).not.toBeInTheDocument();
-
-			// The product becomes available; the watcher notifies the button.
-			addToCartButton.classList.remove( 'disabled' );
-			act( () => {
-				availabilityCallback();
-			} );
-
-			expect(
-				screen.getByRole( 'button', { name: 'WooPay' } )
-			).toBeInTheDocument();
 
 			document.body.removeChild( addToCartButton );
 		} );
