@@ -16,6 +16,13 @@ use WCPay\Constants\Order_Status;
  */
 class WC_Payments_Order_Success_Page {
 
+	/**
+	 * WC session key holding the payment intent the current session just paid. The order confirmation
+	 * page reads it back to recognise the genuine payer without trusting query-string params.
+	 *
+	 * @type string
+	 */
+	const SESSION_KEY_PAID_INTENT_ID = 'wcpay_paid_intent_id';
 
 	/**
 	 * Whether to hide the blocks status description.
@@ -29,6 +36,8 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function init_hooks() {
 		add_filter( 'woocommerce_order_received_verify_known_shoppers', [ $this, 'determine_woopay_order_received_verify_known_shoppers' ], 11 );
+		add_filter( 'woocommerce_order_email_verification_required', [ $this, 'maybe_skip_email_verification_after_payment' ], 10, 3 );
+		add_action( 'wcpay_internal_last_intent_id', [ $this, 'remember_paid_intent_id' ] );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_render_multibanco_payment_instructions' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
@@ -541,6 +550,58 @@ class WC_Payments_Order_Success_Page {
 			&& time() - $date_created->getTimestamp() <= $verification_grace_period;
 
 		return ! $is_within_grace_period;
+	}
+
+	/**
+	 * Remember, in the WC session, the payment intent the current session just paid. Hooked on
+	 * wcpay_internal_last_intent_id so the gateway need not know about this page. The session
+	 * cannot be reconstructed from a leaked order key, which is what keeps the waiver below safe.
+	 *
+	 * @param string $intent_id The intent id the session just paid.
+	 */
+	public function remember_paid_intent_id( $intent_id ) {
+		if ( WC()->session && '' !== (string) $intent_id ) {
+			WC()->session->set( self::SESSION_KEY_PAID_INTENT_ID, (string) $intent_id );
+		}
+	}
+
+	/**
+	 * Waive guest email verification on the order confirmation page right after a WooPayments payment.
+	 *
+	 * A merchant can create a pay-for-order without a billing email; the shopper supplies it through
+	 * the express wallet at payment time, which stamps it on the order and trips core's guest email
+	 * verification even though the shopper just paid. We waive it only for the session that actually
+	 * completed the payment: at payment time we stored the paid intent id in the WC session, and here
+	 * we waive verification only when it matches the order's intent. A leaked order key in another
+	 * browser carries no such session, so it still has to verify.
+	 * See https://github.com/woocommerce/woocommerce/issues/48540
+	 *
+	 * @param bool|mixed     $required Whether email verification is required.
+	 * @param WC_Order|mixed $order    The order being viewed.
+	 * @param string|mixed   $context  The verification context (e.g. 'order-received', 'order-pay').
+	 * @return bool|mixed
+	 */
+	public function maybe_skip_email_verification_after_payment( $required, $order, $context ) {
+		if ( true !== $required || 'order-received' !== $context || ! $order instanceof WC_Order ) {
+			return $required;
+		}
+
+		if ( 'woocommerce_payments' !== $order->get_payment_method() ) {
+			return $required;
+		}
+
+		$session = WC()->session;
+		if ( null === $session ) {
+			return $required;
+		}
+
+		$session_intent_id = (string) $session->get( self::SESSION_KEY_PAID_INTENT_ID );
+		$order_intent_id   = (string) $order->get_meta( '_intent_id', true );
+		if ( '' === $session_intent_id || '' === $order_intent_id || ! hash_equals( $order_intent_id, $session_intent_id ) ) {
+			return $required;
+		}
+
+		return false;
 	}
 
 	/**

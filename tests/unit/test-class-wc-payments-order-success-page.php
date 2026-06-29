@@ -31,7 +31,87 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		global $wp;
 		unset( $_GET['key'] );
 		unset( $wp->query_vars['order-received'] );
+		remove_action( 'wcpay_internal_last_intent_id', [ $this->payments_order_success_page, 'remember_paid_intent_id' ] );
+		if ( WC()->session ) {
+			WC()->session->set( WC_Payments_Order_Success_Page::SESSION_KEY_PAID_INTENT_ID, null );
+		}
 		parent::tear_down();
+	}
+
+	/**
+	 * Builds a WooPayments order with the given intent attached.
+	 *
+	 * @param string $intent_id The payment intent id to attach to the order.
+	 * @return WC_Order
+	 */
+	private function create_paid_woopayments_order( $intent_id = 'pi_abc123' ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->set_date_paid( time() );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Records the intent the current session paid, mirroring what the gateway stores at payment time.
+	 *
+	 * @param string $intent_id The paid intent id.
+	 */
+	private function set_session_paid_intent_id( $intent_id ) {
+		WC()->session->set( WC_Payments_Order_Success_Page::SESSION_KEY_PAID_INTENT_ID, $intent_id );
+	}
+
+	public function test_skips_email_verification_for_the_session_that_paid() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_abc123' );
+
+		$this->assertFalse(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_when_the_session_has_no_paid_intent() {
+		// A bare order-key leak in another session carries no paid intent, so verification still applies.
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_when_the_session_intent_does_not_match_the_order() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_someone_elses' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_outside_the_order_received_context() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_abc123' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-pay' )
+		);
+	}
+
+	public function test_payment_completed_action_records_the_intent_and_waives_verification() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+
+		// Fire the gateway's action; the success page listener (registered in init_hooks) stores the intent.
+		do_action( 'wcpay_internal_last_intent_id', 'pi_abc123', $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment, WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle -- Firing an existing action in a test.
+
+		$this->assertSame(
+			'pi_abc123',
+			WC()->session->get( WC_Payments_Order_Success_Page::SESSION_KEY_PAID_INTENT_ID )
+		);
+		$this->assertFalse(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
 	}
 
 	public function test_show_card_payment_method_name_without_card_brand() {

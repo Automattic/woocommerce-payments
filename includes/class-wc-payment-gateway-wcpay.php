@@ -2115,6 +2115,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
+
+			/**
+			 * Fires after the current session has paid for an order, with the confirmed intent.
+			 *
+			 * Internal signal: listeners can record the just-paid intent against the session, for example
+			 * to recognise the genuine payer on the order confirmation page.
+			 *
+			 * @since 10.10.0
+			 *
+			 * @param string   $intent_id The confirmed payment intent id.
+			 * @param WC_Order $order     The order that was paid.
+			 */
+			do_action( 'wcpay_internal_last_intent_id', (string) $intent_id, $order );
 		}
 		// Set the branded payment method title + card meta from the charge details BEFORE the status update.
 		// update_order_status_from_intent() -> payment_complete() fires the customer order/renewal email

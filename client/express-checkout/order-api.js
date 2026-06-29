@@ -94,10 +94,8 @@ export default class ExpressCheckoutOrderApi {
 				},
 			} );
 
-			// Placing the order persists this email server-side, so a later attempt (a retry, or
-			// switching express method) must authorize with it. Remember it. This also covers a card
-			// declined during client-side confirmation, which resolves placeOrder first. A page
-			// reload still loses it; the durable fix lives in the issue linked above.
+			// Placing the order persists this email value server-side, so a later attempt (a retry, or
+			// switching express method) must authorize with it. Remembering it, to ensure retries succeed.
 			if ( sentBillingEmail ) {
 				this.billingEmail = sentBillingEmail;
 			}
