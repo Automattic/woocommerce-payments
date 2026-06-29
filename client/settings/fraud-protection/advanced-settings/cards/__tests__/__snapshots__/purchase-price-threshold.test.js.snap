@@ -302,6 +302,18 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
   color: #757575;
 }
 
+.emotion-16 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-16 *,
+.emotion-16 *::before,
+.emotion-16 *::after {
+  box-sizing: inherit;
+}
+
 .emotion-18 {
   margin-bottom: calc(4px * 2);
 }
@@ -446,7 +458,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
             >
               <div>
                 <div
-                  class="components-base-control wcpay-components-amount-input empty emotion-6 emotion-7"
+                  class="components-base-control wcpay-components-amount-input empty emotion-16 emotion-7"
                 >
                   <div
                     class="components-base-control__field emotion-18 emotion-9"
@@ -491,7 +503,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
             >
               <div>
                 <div
-                  class="components-base-control wcpay-components-amount-input empty emotion-6 emotion-7"
+                  class="components-base-control wcpay-components-amount-input empty emotion-16 emotion-7"
                 >
                   <div
                     class="components-base-control__field emotion-18 emotion-9"
@@ -706,6 +718,18 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
   color: #757575;
 }
 
+.emotion-16 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-16 *,
+.emotion-16 *::before,
+.emotion-16 *::after {
+  box-sizing: inherit;
+}
+
 .emotion-18 {
   margin-bottom: calc(4px * 2);
 }
@@ -850,7 +874,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
             >
               <div>
                 <div
-                  class="components-base-control wcpay-components-amount-input empty emotion-6 emotion-7"
+                  class="components-base-control wcpay-components-amount-input empty emotion-16 emotion-7"
                 >
                   <div
                     class="components-base-control__field emotion-18 emotion-9"
@@ -895,7 +919,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
             >
               <div>
                 <div
-                  class="components-base-control wcpay-components-amount-input empty emotion-6 emotion-7"
+                  class="components-base-control wcpay-components-amount-input empty emotion-16 emotion-7"
                 >
                   <div
                     class="components-base-control__field emotion-18 emotion-9"
