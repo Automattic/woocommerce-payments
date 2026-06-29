@@ -435,6 +435,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_update_settings_saves_enabled_payment_methods() {
 		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 
+		$this->mock_api_client
+			->method( 'request_capability' )
+			->willReturn( [ 'status' => 'pending' ] );
+
 		$request = new WP_REST_Request();
 
 		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::IDEAL ] );
@@ -442,6 +446,32 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::IDEAL ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
+	}
+
+	public function test_update_settings_requests_capability_absent_from_cached_account_data() {
+		// On a fresh account the cached account data does not enumerate every capability.
+		// Enabling such a method must still request its capability from the server, otherwise
+		// it shows as enabled in settings while never being activated on the account.
+		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		$this->mock_wcpay_account
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities' => [ 'card_payments' => 'active' ],
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'request_capability' )
+			->with( 'ideal_payments', true )
+			->willReturn( [ 'status' => 'pending' ] );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::IDEAL ] );
+
+		$this->controller->update_settings( $request );
 	}
 
 	public function test_update_settings_calls_promotion_activation_for_newly_enabled_payment_methods() {
@@ -453,6 +483,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_pm_promotions_service->expects( $this->once() )
 			->method( 'maybe_activate_promotion_for_payment_method' )
 			->with( Payment_Method::IDEAL );
+
+		$this->mock_api_client
+			->method( 'request_capability' )
+			->willReturn( [ 'status' => 'pending' ] );
 
 		// Create controller with the specific mock.
 		$controller = new WC_REST_Payments_Settings_Controller(
@@ -516,6 +550,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_manual_capture_keeps_payment_methods_with_capture_later_capability() {
+		$this->mock_api_client
+			->method( 'request_capability' )
+			->willReturn( [ 'status' => 'pending' ] );
+
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_manual_capture_enabled', true );
 		$request->set_param(
