@@ -183,7 +183,7 @@ if [[ -d "$DEV_TOOLS_CLONE_PATH/.git" ]]; then
 	echo "Dev tools already cloned at $DEV_TOOLS_CLONE_PATH — skipping clone."
 	cli wp plugin activate woocommerce-payments-dev-tools
 else
-	git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git "$DEV_TOOLS_CLONE_PATH"
+	git clone git@github.a8c.com:Automattic/woocommerce-payments-dev-tools.git "$DEV_TOOLS_CLONE_PATH"
 	if [[ $? -eq 0 ]]; then
 		cli wp plugin activate woocommerce-payments-dev-tools
 	else

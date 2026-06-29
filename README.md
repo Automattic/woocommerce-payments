@@ -54,7 +54,7 @@ Your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env`
 Install the following plugins:
 
 -   WooCommerce
--   WCPay Dev Tools (clone or download [the GitHub repo](https://github.com/Automattic/woocommerce-payments-dev-tools))
+-   WCPay Dev Tools (clone or download [the GitHub repo](https://github.a8c.com/Automattic/woocommerce-payments-dev-tools))
     - This dependency is automatically updated to the latest version each time you perform a `git pull` or `git merge` in this repository, as long as the WCPay Dev Tools repository is cloned locally and remains on the `trunk` branch. For more details, please refer to the [post-merge](.husky/post-merge) hook.
 
 ### Optional local.env file
