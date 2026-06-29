@@ -51,15 +51,6 @@
 		<exclude-pattern>includes/compat/subscriptions/emails</exclude-pattern>
 	</rule>
 
-	<!--
-		The UnusedVariable sniff is enabled repo-wide. The only path still excluded is the
-		POC payment-method definition classes, which are out of scope for
-		https://github.com/Automattic/woocommerce-payments/issues/8436.
-	-->
-	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable">
-		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
-	</rule>
-
 	<!-- Disallow long array syntax -->
 	<rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
 
