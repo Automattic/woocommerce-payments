@@ -553,6 +553,14 @@ if [[ -d "$DEV_TOOLS_PATH" && ! -f "$DEV_TOOLS_PATH/vendor/autoload.php" ]]; the
 	success "Dev tools dependencies installed"
 fi
 
+# TEMP DEBUG — remove after verification. WCP_DEV_TOOLS_REPO is a masked secret, so the repo
+# URL never appears in CI logs; print the cloned commit + plugin version instead, which uniquely
+# identify which dev-tools repo CI used (-ci trunk HEAD vs the private repo's).
+section "Dev Tools — clone identity (temporary debug)"
+info "HEAD:    $( git -C "$DEV_TOOLS_PATH" rev-parse HEAD 2>/dev/null || echo unknown )"
+info "Commit:  $( git -C "$DEV_TOOLS_PATH" log -1 --pretty=format:'%h %ad %s' --date=short 2>/dev/null || echo unknown )"
+info "Version: $( grep -m1 -E '^\s*\*\s*Version:' "$DEV_TOOLS_PATH/woocommerce-payments-dev-tools.php" 2>/dev/null | tr -d '\r' || echo '(no Version header)' )"
+
 # ─── Client containers ───────────────────────────────────────────────────────
 
 section "WordPress client"

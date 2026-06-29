@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Temporary: log the cloned dev-tools commit and plugin version during E2E setup to confirm which dev-tools repo CI uses.
