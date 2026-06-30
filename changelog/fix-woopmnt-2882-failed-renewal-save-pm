@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixed paying for a failed or pending subscription renewal with a new card not saving the card or updating the subscription's payment method, including 3D Secure payments.
