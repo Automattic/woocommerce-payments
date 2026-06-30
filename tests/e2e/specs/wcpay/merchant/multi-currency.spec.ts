@@ -11,6 +11,7 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
+	disableEditorWelcomeGuide,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 } from '../../../utils/merchant';
@@ -63,22 +64,9 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 
 		await navigation.goToNewPost( page );
 
-		// Modern WP shows the editor Welcome Guide on a fresh post, and its modal
-		// overlay intercepts clicks on the block inserter. Disable it (and
-		// fullscreen mode) deterministically via the preferences store: racing a
-		// "Close" button with isVisible() let the guide slip through on WP nightly
-		// and block the insert. Guarded so it no-ops where core/preferences is
-		// unavailable.
-		await page.waitForFunction( () => ( window as any ).wp?.data );
-		await page.evaluate( async () => {
-			const prefs = ( window as any ).wp?.data?.dispatch?.(
-				'core/preferences'
-			);
-			if ( prefs?.set ) {
-				await prefs.set( 'core/edit-post', 'welcomeGuide', false );
-				await prefs.set( 'core/edit-post', 'fullscreenMode', false );
-			}
-		} );
+		// Disable the editor Welcome Guide so its modal overlay doesn't intercept
+		// clicks on the block inserter (see helper for the WP-nightly background).
+		await disableEditorWelcomeGuide( page );
 
 		// The block editor canvas is iframed on modern WP (6.3+) but rendered
 		// inline on the older WP bundled with WC 7.7.0. `isVisible()` does not

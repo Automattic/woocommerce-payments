@@ -111,6 +111,33 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
+/**
+ * Disables the block editor's Welcome Guide (and fullscreen mode) on the current
+ * page via the preferences store.
+ *
+ * The post editor shows the Welcome Guide on a fresh post, and its modal overlay
+ * intercepts clicks on the block inserter. Dismissing it by racing a "Close"
+ * button with `isVisible()` is unreliable: after Gutenberg deferred the editor's
+ * React mount (WordPress/gutenberg#78508, v23.3.0) the guide renders a few ticks
+ * after the page `load` event, so the check ran too early on WP nightly and the
+ * guide stayed up, blocking the insert. Setting the preference is deterministic.
+ * Guarded to no-op where `core/preferences` is unavailable.
+ *
+ * @param {Page} page The page object.
+ */
+export const disableEditorWelcomeGuide = async ( page: Page ) => {
+	await page.waitForFunction( () => ( window as any ).wp?.data );
+	await page.evaluate( async () => {
+		const prefs = ( window as any ).wp?.data?.dispatch?.(
+			'core/preferences'
+		);
+		if ( prefs?.set ) {
+			await prefs.set( 'core/edit-post', 'welcomeGuide', false );
+			await prefs.set( 'core/edit-post', 'fullscreenMode', false );
+		}
+	} );
+};
+
 export const addMulticurrencyWidget = async (
 	page: Page,
 	baseURL: string,
