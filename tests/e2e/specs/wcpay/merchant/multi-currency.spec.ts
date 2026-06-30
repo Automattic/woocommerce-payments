@@ -67,16 +67,23 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			await page.getByRole( 'button', { name: 'Close' } ).click();
 		}
 
-		if ( await page.locator( '[name="editor-canvas"]' ).isVisible() ) {
-			await expect(
-				page.locator( '[name="editor-canvas"]' )
-			).toBeAttached();
-			const editor = page
-				.locator( '[name="editor-canvas"]' )
-				.contentFrame();
+		// The block editor canvas is iframed on modern WP (6.3+) but rendered
+		// inline on the older WP bundled with WC 7.7.0. `isVisible()` does not
+		// auto-wait, so checking it immediately after load raced the iframe mount
+		// and — deterministically on WP nightly — fell through to the inline path,
+		// where no page-level "Add block" button exists, hanging the test until it
+		// timed out. Wait for the canvas to mount before choosing a path.
+		const editorCanvas = page.locator( '[name="editor-canvas"]' );
+		const usesIframedCanvas = await editorCanvas
+			.waitFor( { state: 'visible', timeout: 15000 } )
+			.then( () => true )
+			.catch( () => false );
+
+		if ( usesIframedCanvas ) {
+			const editor = editorCanvas.contentFrame();
 			await editor.getByRole( 'button', { name: 'Add block' } ).click();
 		} else {
-			// Fallback for WC 7.7.0.
+			// Fallback for the inline (non-iframed) editor on WC 7.7.0.
 			await page.getByRole( 'button', { name: 'Add block' } ).click();
 		}
 

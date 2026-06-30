@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix flaky multi-currency widget E2E test by waiting for the block editor canvas to mount before inserting the currency switcher block.
