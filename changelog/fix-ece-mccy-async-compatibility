@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: ECE currency mismatch on product pages when a cache-optimized multi-currency plugin resolves the customer's currency client-side after page render

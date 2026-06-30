@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Migrate the Balance report to the DataViews composition API with a native date filter

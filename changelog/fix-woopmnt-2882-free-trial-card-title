@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Show the actual card brand instead of a generic "Card" on free-trial ($0) subscription orders, the subscription, and their confirmation emails.

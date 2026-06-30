@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Stop overwriting a customer's billing details on the WCPay/Stripe backend with stale order data when only the payment method of a subscription is changed.

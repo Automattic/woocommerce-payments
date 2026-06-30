@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Route QIT E2E test failures to the #wcpay-bots Slack channel on develop/trunk pushes and pre-release runs.

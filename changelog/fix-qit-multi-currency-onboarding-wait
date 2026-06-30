@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix QIT merchant E2E failure: wait for the recommended currencies list to render before counting it in the multi-currency onboarding spec.
