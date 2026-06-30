@@ -601,6 +601,51 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such payment_method: pm_123.', strip_tags( $notes[0]->content, '' ) );
 	}
 
+	public function test_intent_id_saved_on_failed_payment() {
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+		WCPay\Payment_Information::from_payment_request( $_POST, $order, WCPay\Constants\Payment_Type::SINGLE(), WCPay\Constants\Payment_Initiated_By::CUSTOMER(), WCPay\Constants\Payment_Capture_Type::AUTOMATIC(), 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Arrange: Throw a card-decline exception that carries the failed intent ID,
+		// mirroring how the API client surfaces the intent embedded in the error response.
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						'Error: Your card was declined.',
+						'card_declined',
+						402,
+						'card_error',
+						'expired_card',
+						0,
+						null,
+						null,
+						'pi_mock_failed_123'
+					)
+				)
+			);
+
+		// Assert: The failed intent ID is persisted on the order.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'set_intent_id_for_order' )
+			->with( $this->anything(), 'pi_mock_failed_123' );
+
+		// Act: process payment.
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// Assert: Order failed.
+		$this->assertEquals( 'fail', $result['result'] );
+		$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
+	}
+
 	public function test_failure_result_returned_if_phone_number_is_invalid() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_billing_phone( '+1123456789123456789123' );
