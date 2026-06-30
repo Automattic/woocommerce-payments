@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix Docker image builds by compiling Xdebug from a pinned GitHub release instead of the unreachable PECL channel

@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Display server validation errors inline next to the corresponding settings field when saving WooPayments settings.

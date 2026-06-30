@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Multi-currency: in cache-optimized mode, sync the currency switcher to the customer's localized currency so it matches the displayed prices.

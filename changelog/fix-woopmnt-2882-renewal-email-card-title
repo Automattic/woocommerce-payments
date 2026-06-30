@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Show the actual card brand (e.g. "Visa credit card") instead of a generic "Card" in subscription renewal and order confirmation emails.
