@@ -929,15 +929,17 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}
 
-	public function test_is_product_purchasable_returns_true_off_product_page() {
+	public function test_is_product_purchasable_returns_false_when_no_product() {
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->onlyMethods( [ 'get_product' ] )
 			->getMock();
-		$helper->method( 'is_product' )->willReturn( false );
-		$helper->expects( $this->never() )->method( 'get_product' );
+		$helper->method( 'get_product' )->willReturn( null );
 
-		$this->assertTrue( $helper->is_product_purchasable() );
+		// No resolvable product (e.g. off a product page, where get_product()
+		// returns null) -> not purchasable. Callers still guard with is_product(),
+		// so this never gates the cart or checkout.
+		$this->assertFalse( $helper->is_product_purchasable() );
 	}
 
 	public function test_is_product_purchasable_returns_true_for_purchasable_in_stock_product() {

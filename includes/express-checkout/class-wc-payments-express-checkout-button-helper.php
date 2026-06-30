@@ -515,11 +515,14 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Whether the product on the current product page can be added to the cart.
+	 * Whether the resolvable product can be added to the cart.
 	 *
-	 * Returns true on non-product pages so it never gates the cart or checkout
-	 * contexts. On a product page, a product that is not purchasable or out of
-	 * stock can't be added to the cart, so the express buttons should not show.
+	 * Returns false when no product can be resolved (e.g. off a product page,
+	 * where get_product() returns null), so callers must gate with
+	 * `is_product() && ! is_product_purchasable()` to avoid affecting the cart
+	 * or checkout contexts. On a product page, a product that is not purchasable
+	 * or out of stock can't be added to the cart, so the express buttons should
+	 * not show.
 	 *
 	 * Variable products report the parent's aggregate status: is_purchasable()
 	 * and is_in_stock() are true when at least one variation is buyable, so this
@@ -530,10 +533,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return bool
 	 */
 	public function is_product_purchasable(): bool {
-		if ( ! $this->is_product() ) {
-			return true;
-		}
-
 		$product = $this->get_product();
 
 		if ( ! $product instanceof WC_Product ) {
