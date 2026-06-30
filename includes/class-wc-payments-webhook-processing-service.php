@@ -498,7 +498,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 		$charge_amount = $this->read_webhook_property( $event_object, 'amount' );
 
-		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
+		$payment_method_id = $charges_data[0]['payment_method'] ?? $event_object['payment_method'] ?? null;
 		if ( ! $order ) {
 			return;
 		}
@@ -574,6 +574,7 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id );
 		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
@@ -593,6 +594,26 @@ class WC_Payments_Webhook_Processing_Service {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+	}
+
+	/**
+	 * Ensures recurring orders paid by webhook have a token for future renewals.
+	 *
+	 * @param WC_Order                          $order             The order.
+	 * @param WC_Payments_API_Payment_Intention $payment_intent    The payment intent.
+	 * @param string|null                       $payment_method_id The payment method ID.
+	 */
+	private function ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id ) {
+		if ( ! $payment_intent->is_authorized() || empty( $payment_method_id ) || ! $this->wcpay_gateway->is_payment_recurring( $order->get_id() ) ) {
+			return;
+		}
+
+		try {
+			$this->wcpay_gateway->ensure_payment_method_token_for_order( $order, $payment_method_id, $order->get_user() );
+		} catch ( Exception $e ) {
+			Logger::log( 'Error when saving payment method from webhook: ' . $e->getMessage() );
+			$order->add_order_note( __( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' ) );
+		}
 	}
 
 	/**
