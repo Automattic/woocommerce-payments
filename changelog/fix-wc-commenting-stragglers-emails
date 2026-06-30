@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: fix: resolve WooCommerce.Commenting phpcs hook comment errors in email templates added after the #8437 sweep (not user-facing).
-
-

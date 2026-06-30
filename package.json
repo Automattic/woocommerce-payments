@@ -1,6 +1,6 @@
 {
 	"name": "woocommerce-payments",
-	"version": "10.8.0",
+	"version": "10.9.0",
 	"main": "webpack.config.js",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -134,7 +134,7 @@
 		"@types/wordpress__data-controls": "2.2.0",
 		"@typescript-eslint/eslint-plugin": "5.62.0",
 		"@typescript-eslint/parser": "5.62.0",
-		"@woocommerce/components": "14.0.0",
+		"@woocommerce/components": "14.1.0",
 		"@woocommerce/csv-export": "1.11.0",
 		"@woocommerce/currency": "6.0.0",
 		"@woocommerce/data": "7.0.0",

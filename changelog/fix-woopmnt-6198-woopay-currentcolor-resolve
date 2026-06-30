@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Resolve currentColor link colors to a literal hex in the WooPay checkout appearance
