@@ -15,9 +15,7 @@ class WC_Product_Addons_Helper {
 		return $price;
 	}
 
-	// Required by tests that exercise the real should_show_express_checkout_button()
-	// flow: its private is_product_supported() check (which can't be mocked) calls
-	// WC_Product_Addons_Helper::get_product_addons() before the purchasability gate.
+	// is_product_supported() calls this only because this stub satisfies its class_exists() guard.
 	public static function get_product_addons( $_unused_product_id ) {
 		return [];
 	}
