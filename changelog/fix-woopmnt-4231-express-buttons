@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide WooPay and Apple Pay / Google Pay express checkout buttons on the product page when the product cannot be added to the cart
