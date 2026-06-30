@@ -77,7 +77,7 @@ describe( 'PaymentDetailsTimeline timezone', () => {
 			isLoading: false,
 		} );
 
-		render( <PaymentDetailsTimeline chargeId="ch_test" /> );
+		render( <PaymentDetailsTimeline paymentIntentId="pi_test" /> );
 
 		expect(
 			screen.getByTestId( 'timeline' ).getAttribute( 'data-timezone' )
