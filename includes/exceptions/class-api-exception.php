@@ -51,15 +51,15 @@ class API_Exception extends Base_Exception {
 	/**
 	 * Constructor
 	 *
-	 * @param string     $message    The Exception message to throw.
-	 * @param string     $error_code Error code returned by the server, for example wcpay_account_not_found.
-	 * @param int        $http_code  HTTP response code.
-	 * @param string     $error_type Error type attribute.
-	 * @param string     $decline_code The decline code if it is a card error.
-	 * @param int        $code       The Exception code.
-	 * @param \Throwable $previous   The previous exception used for the exception chaining.
-	 * @param string     $param      The request parameter that triggered the error, if any.
-	 * @param string     $intent_id  The payment intent ID associated with the error, if any.
+	 * @param string          $message      The Exception message to throw.
+	 * @param string          $error_code   Error code returned by the server, for example wcpay_account_not_found.
+	 * @param int             $http_code    HTTP response code.
+	 * @param string|null     $error_type   Error type attribute.
+	 * @param string|null     $decline_code The decline code if it is a card error.
+	 * @param int             $code         The Exception code.
+	 * @param \Throwable|null $previous     The previous exception used for the exception chaining.
+	 * @param string|null     $param        The request parameter that triggered the error, if any.
+	 * @param string|null     $intent_id    The payment intent ID associated with the error, if any.
 	 */
 	public function __construct( $message, $error_code, $http_code, $error_type = null, $decline_code = null, $code = 0, $previous = null, $param = null, $intent_id = null ) {
 		$this->http_code    = $http_code;
