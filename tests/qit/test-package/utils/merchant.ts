@@ -464,15 +464,16 @@ echo wp_json_encode( array_values( array_unique( $ids ) ) );
  * @param {Page} page The page object.
  */
 export const disableEditorWelcomeGuide = async ( page: Page ) => {
-	await page.waitForFunction( () => ( window as any ).wp?.data );
+	// Wait for the preferences store's `set` action, not just `wp.data`: the
+	// store can register a few ticks later, and a silent no-op here would leave
+	// the guide up — the flakiness this helper exists to remove.
+	await page.waitForFunction(
+		() => ( window as any ).wp?.data?.dispatch?.( 'core/preferences' )?.set
+	);
 	await page.evaluate( async () => {
-		const prefs = ( window as any ).wp?.data?.dispatch?.(
-			'core/preferences'
-		);
-		if ( prefs?.set ) {
-			await prefs.set( 'core/edit-post', 'welcomeGuide', false );
-			await prefs.set( 'core/edit-post', 'fullscreenMode', false );
-		}
+		const prefs = ( window as any ).wp.data.dispatch( 'core/preferences' );
+		await prefs.set( 'core/edit-post', 'welcomeGuide', false );
+		await prefs.set( 'core/edit-post', 'fullscreenMode', false );
 	} );
 };
 

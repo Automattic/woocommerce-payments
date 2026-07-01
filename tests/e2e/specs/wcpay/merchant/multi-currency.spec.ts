@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, errors } from '@playwright/test';
 /**
  * Internal dependencies
  */
@@ -74,7 +74,14 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 		const usesIframedCanvas = await editorCanvas
 			.waitFor( { state: 'visible', timeout: 15000 } )
 			.then( () => true )
-			.catch( () => false );
+			.catch( ( error ) => {
+				// Only a timeout means the inline (non-iframed) WC 7.7.0 editor;
+				// surface anything else (page closed, navigation, bad selector).
+				if ( error instanceof errors.TimeoutError ) {
+					return false;
+				}
+				throw error;
+			} );
 
 		if ( usesIframedCanvas ) {
 			const editor = editorCanvas.contentFrame();
