@@ -498,7 +498,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 		$charge_amount = $this->read_webhook_property( $event_object, 'amount' );
 
-		$payment_method_id = $charges_data[0]['payment_method'] ?? $event_object['payment_method'] ?? null;
+		$payment_method_id = $this->get_webhook_payment_method_id( $charges_data[0]['payment_method'] ?? $event_object['payment_method'] ?? null );
 		if ( ! $order ) {
 			return;
 		}
@@ -614,6 +614,20 @@ class WC_Payments_Webhook_Processing_Service {
 			Logger::log( 'Error when saving payment method from webhook: ' . $e->getMessage() );
 			$order->add_order_note( __( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' ) );
 		}
+	}
+
+	/**
+	 * Extracts the payment method ID from a webhook payment method value.
+	 *
+	 * @param mixed $payment_method The payment method value from the webhook.
+	 * @return string|null The payment method ID.
+	 */
+	private function get_webhook_payment_method_id( $payment_method ) {
+		if ( is_array( $payment_method ) ) {
+			return isset( $payment_method['id'] ) && is_string( $payment_method['id'] ) ? $payment_method['id'] : null;
+		}
+
+		return is_string( $payment_method ) ? $payment_method : null;
 	}
 
 	/**

@@ -2733,11 +2733,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new Exception( __( 'Unable to save payment method for subscription. The order customer could not be found.', 'woocommerce-payments' ) );
 		}
 
-		$tokens = WC_Payment_Tokens::get_customer_tokens( $user->ID, self::GATEWAY_ID );
-		foreach ( $tokens as $customer_token ) {
-			if ( $customer_token instanceof WC_Payment_Token && $payment_method_id === $customer_token->get_token() ) {
-				$this->add_token_to_order( $order, $customer_token );
-				return $customer_token;
+		$gateway_ids      = [ self::GATEWAY_ID ];
+		$order_gateway_id = $order->get_payment_method();
+		if ( is_string( $order_gateway_id ) && 0 === strpos( $order_gateway_id, self::GATEWAY_ID ) ) {
+			$gateway_ids[] = $order_gateway_id;
+		}
+
+		foreach ( array_unique( $gateway_ids ) as $gateway_id ) {
+			$tokens = WC_Payment_Tokens::get_customer_tokens( $user->ID, $gateway_id );
+			foreach ( $tokens as $customer_token ) {
+				if ( $customer_token instanceof WC_Payment_Token && $payment_method_id === $customer_token->get_token() ) {
+					$this->add_token_to_order( $order, $customer_token );
+					return $customer_token;
+				}
 			}
 		}
 
