@@ -302,12 +302,13 @@ class MultiCurrency {
 		// If the store currency is not in the list of available WooCommerce currencies
 		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
 		// Multi-Currency cannot function without a valid base currency.
-		if ( ! array_key_exists( get_woocommerce_currency(), get_woocommerce_currencies() ) ) {
+		$store_currency = $this->get_store_currency_code();
+		if ( ! array_key_exists( $store_currency, get_woocommerce_currencies() ) ) {
 			Logger::error(
 				sprintf(
 					'Multi-Currency disabled: store currency "%s" is not a recognized WooCommerce currency. '
 					. 'A custom currency may have been removed. Update the currency at WooCommerce → Settings → General.',
-					get_woocommerce_currency()
+					$store_currency
 				)
 			);
 			// Initialize properties to safe defaults so lazy-init getters and
@@ -500,7 +501,7 @@ class MultiCurrency {
 			MultiCurrencyCacheInterface::CURRENCIES_KEY,
 			function () {
 				try {
-					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
+					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( $this->get_store_currency_code() ) );
 					return [
 						'currencies' => $currency_data,
 						'updated'    => time(),
@@ -736,7 +737,7 @@ class MultiCurrency {
 			$this->init();
 		}
 
-		return $this->default_currency ?? new Currency( $this->localization_service, get_woocommerce_currency() );
+		return $this->default_currency ?? new Currency( $this->localization_service, $this->get_store_currency_code() );
 	}
 
 	/**
@@ -1703,7 +1704,7 @@ class MultiCurrency {
 	 */
 	private function initialize_available_currencies() {
 		// Add default store currency with a rate of 1.0.
-		$woocommerce_currency                                = get_woocommerce_currency();
+		$woocommerce_currency                                = $this->get_store_currency_code();
 		$this->available_currencies[ $woocommerce_currency ] = new Currency( $this->localization_service, $woocommerce_currency, 1.0 );
 
 		$available_currencies = [];
@@ -1783,7 +1784,23 @@ class MultiCurrency {
 	 */
 	private function set_default_currency() {
 		$available_currencies   = $this->get_available_currencies();
-		$this->default_currency = $available_currencies[ get_woocommerce_currency() ] ?? null;
+		$this->default_currency = $available_currencies[ $this->get_store_currency_code() ] ?? null;
+	}
+
+	/**
+	 * Returns the configured WooCommerce store currency.
+	 *
+	 * This intentionally reads the raw option instead of get_woocommerce_currency().
+	 * WooCommerce filters that helper for display and compatibility purposes, and
+	 * visitor-facing currency switchers can use it to return the selected currency.
+	 * Multi-Currency base-currency state must be tied to the admin setting instead.
+	 * Keep cache invalidation and base-currency initialization on this helper to
+	 * avoid reintroducing visitor-triggered cache churn.
+	 *
+	 * @return string
+	 */
+	private function get_store_currency_code(): string {
+		return get_option( 'woocommerce_currency' );
 	}
 
 	/**
@@ -1812,7 +1829,7 @@ class MultiCurrency {
 	 */
 	private function check_store_currency_for_change(): bool {
 		$last_known_currency  = get_option( $this->id . '_store_currency', false );
-		$woocommerce_currency = get_woocommerce_currency();
+		$woocommerce_currency = $this->get_store_currency_code();
 
 		// If the last known currency was not set, update the option to set it and return false.
 		if ( ! $last_known_currency ) {
