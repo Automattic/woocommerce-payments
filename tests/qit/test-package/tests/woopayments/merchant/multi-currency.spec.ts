@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { test, expect } from '../../../fixtures/auth';
+import { errors } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -11,6 +12,7 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
+	disableEditorWelcomeGuide,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 	goToMultiCurrencySettings,
@@ -59,22 +61,30 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 
 		await goToNewPost( adminPage );
 
-		if (
-			await adminPage.getByRole( 'button', { name: 'Close' } ).isVisible()
-		) {
-			await adminPage.getByRole( 'button', { name: 'Close' } ).click();
-		}
+		// Dismiss the Welcome Guide; its overlay blocks the block inserter.
+		await disableEditorWelcomeGuide( adminPage );
 
-		if ( await adminPage.locator( '[name="editor-canvas"]' ).isVisible() ) {
-			await expect(
-				adminPage.locator( '[name="editor-canvas"]' )
-			).toBeAttached();
-			const editor = adminPage
-				.locator( '[name="editor-canvas"]' )
-				.contentFrame();
+		// Wait for the iframed canvas before branching — `isVisible()` doesn't
+		// auto-wait, so an early check raced the mount and took the WC 7.7.0
+		// inline path on WP nightly.
+		const editorCanvas = adminPage.locator( '[name="editor-canvas"]' );
+		const usesIframedCanvas = await editorCanvas
+			.waitFor( { state: 'visible', timeout: 15000 } )
+			.then( () => true )
+			.catch( ( error ) => {
+				// Only a timeout means the inline (non-iframed) WC 7.7.0 editor;
+				// surface anything else (page closed, navigation, bad selector).
+				if ( error instanceof errors.TimeoutError ) {
+					return false;
+				}
+				throw error;
+			} );
+
+		if ( usesIframedCanvas ) {
+			const editor = editorCanvas.contentFrame();
 			await editor.getByRole( 'button', { name: 'Add block' } ).click();
 		} else {
-			// Fallback for WC 7.7.0.
+			// Fallback for the inline (non-iframed) editor on WC 7.7.0.
 			await adminPage
 				.getByRole( 'button', { name: 'Add block' } )
 				.click();
