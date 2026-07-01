@@ -642,7 +642,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Order failed.
 		$this->assertEquals( 'fail', $result['result'] );
-		$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
+		$this->assertEquals( 'failed', $result_order->get_status() );
 	}
 
 	public function test_failure_result_returned_if_phone_number_is_invalid() {
