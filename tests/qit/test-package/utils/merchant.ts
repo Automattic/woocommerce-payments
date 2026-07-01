@@ -458,16 +458,10 @@ echo wp_json_encode( array_values( array_unique( $ids ) ) );
 };
 
 /**
- * Disables the block editor's Welcome Guide (and fullscreen mode) on the current
- * page via the preferences store.
- *
- * The post editor shows the Welcome Guide on a fresh post, and its modal overlay
- * intercepts clicks on the block inserter. Dismissing it by racing a "Close"
- * button with `isVisible()` is unreliable: after Gutenberg deferred the editor's
- * React mount (WordPress/gutenberg#78508, v23.3.0) the guide renders a few ticks
- * after the page `load` event, so the check ran too early on WP nightly and the
- * guide stayed up, blocking the insert. Setting the preference is deterministic.
- * Guarded to no-op where `core/preferences` is unavailable.
+ * Disables the editor Welcome Guide (and fullscreen mode) via the preferences
+ * store. Deterministic alternative to racing a "Close" button, which slipped
+ * past the guide on WP nightly once Gutenberg deferred the editor mount
+ * (WordPress/gutenberg#78508).
  *
  * @param {Page} page The page object.
  */

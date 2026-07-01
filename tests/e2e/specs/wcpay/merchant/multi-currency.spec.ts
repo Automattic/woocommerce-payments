@@ -64,16 +64,12 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 
 		await navigation.goToNewPost( page );
 
-		// Disable the editor Welcome Guide so its modal overlay doesn't intercept
-		// clicks on the block inserter (see helper for the WP-nightly background).
+		// Dismiss the Welcome Guide; its overlay blocks the block inserter.
 		await disableEditorWelcomeGuide( page );
 
-		// The block editor canvas is iframed on modern WP (6.3+) but rendered
-		// inline on the older WP bundled with WC 7.7.0. `isVisible()` does not
-		// auto-wait, so checking it immediately after load raced the iframe mount
-		// and — deterministically on WP nightly — fell through to the inline path,
-		// where no page-level "Add block" button exists, hanging the test until it
-		// timed out. Wait for the canvas to mount before choosing a path.
+		// Wait for the iframed canvas before branching — `isVisible()` doesn't
+		// auto-wait, so an early check raced the mount and took the WC 7.7.0
+		// inline path on WP nightly.
 		const editorCanvas = page.locator( '[name="editor-canvas"]' );
 		const usesIframedCanvas = await editorCanvas
 			.waitFor( { state: 'visible', timeout: 15000 } )
