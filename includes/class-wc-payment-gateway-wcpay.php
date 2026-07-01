@@ -1318,7 +1318,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			// Store the intent ID on failed orders too, so a declined transaction stays traceable
-			// and matchable by webhooks — mirroring successful payments. WOOPMNT-4446.
+			// and matchable by webhooks — mirroring successful payments.
 			if ( $e instanceof API_Exception && ! empty( $e->get_intent_id() ) ) {
 				$this->order_service->set_intent_id_for_order( $order, $e->get_intent_id() );
 			}
