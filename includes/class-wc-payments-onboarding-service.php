@@ -951,6 +951,9 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Clear cached onboarding fields data.
 	 *
+	 * This deliberately excludes recommended payment methods, which are account-specific and are
+	 * only cleared after a successful onboarding flow.
+	 *
 	 * @return void
 	 */
 	public function clear_cached_onboarding_fields_data() {
@@ -967,7 +970,8 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public function cleanup_on_account_onboarded() {
-		// Delete the onboarding fields data since it is used only during the initial onboarding.
+		// Delete the onboarding fields and recommended payment methods data since they are used only
+		// during the initial onboarding.
 		$this->clear_cached_onboarding_fields_data();
 		$this->database_cache->delete( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
 	}

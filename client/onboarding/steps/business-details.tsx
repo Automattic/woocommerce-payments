@@ -61,6 +61,9 @@ const BusinessDetails: React.FC = () => {
 		);
 
 	React.useEffect( () => {
+		// handleTiedChange clears the structure when the merchant changes business type.
+		// This catches cached/initial structure values for business types whose structure field
+		// is hidden.
 		if (
 			selectedBusinessType &&
 			! shouldDisplayBusinessStructure &&
