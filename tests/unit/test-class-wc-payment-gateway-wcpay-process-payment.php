@@ -637,7 +637,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->with( $this->anything(), 'pi_mock_failed_123' );
 
 		// Act: process payment.
-		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		// Assert: Order failed.
