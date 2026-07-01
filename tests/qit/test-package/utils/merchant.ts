@@ -459,9 +459,7 @@ echo wp_json_encode( array_values( array_unique( $ids ) ) );
 
 /**
  * Disables the editor Welcome Guide (and fullscreen mode) via the preferences
- * store. Deterministic alternative to racing a "Close" button, which slipped
- * past the guide on WP nightly once Gutenberg deferred the editor mount
- * (WordPress/gutenberg#78508).
+ * store. Deterministic alternative to racing a "Close" button.
  *
  * @param {Page} page The page object.
  */
