@@ -37,7 +37,8 @@ const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
 							'woocommerce-payments'
 						)
 					) : (
-						<Timeline items={ items } />
+						// Older WooCommerce versions ignore the timezone prop and keep the previous browser-timezone behavior.
+						<Timeline items={ items } timezone="site" />
 					) }
 				</LoadableBlock>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 } />

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Register the order total hooks in FrontendCurrencies with add_filter instead of add_action, since they're filters.

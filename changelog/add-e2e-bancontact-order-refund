@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-test: add merchant order/refund E2E helper and Bancontact coverage

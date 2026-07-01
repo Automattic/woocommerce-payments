@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Reconcile E2E Slack report status after the phase-2 spec re-run so passing re-runs no longer show as failures
