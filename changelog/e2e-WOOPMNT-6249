@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix multi-currency widget E2E test timing out on WP nightly by waiting for the block editor canvas to mount before inserting the currency switcher block.
