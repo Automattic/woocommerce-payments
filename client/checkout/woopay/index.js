@@ -32,8 +32,7 @@ export const renderSaveUserSection = () => {
 				'wp-block-woocommerce-checkout-payment-block'
 			)?.[ 0 ];
 
-			// Without the payment options block there's nowhere to attach the
-			// section, so bail rather than mount into a detached node.
+			// Nowhere to attach it, so bail rather than root a detached node.
 			if ( ! paymentOptions ) {
 				return;
 			}
@@ -51,16 +50,13 @@ export const renderSaveUserSection = () => {
 				paymentOptions.nextSibling
 			);
 
-			// A fresh container means any cached root points at a stale node, so
-			// unmount it (freeing its store subscriptions and listeners) and
-			// mount into the new one.
+			// Fresh container: the cached root is stale, so unmount and drop it.
 			blocksCheckoutRoot?.unmount();
 			blocksCheckoutRoot = null;
 		}
 
-		// Reuse the root across the AJAX-driven re-renders that fire on every
-		// checkout update; a second createRoot() on the same node resets the
-		// component (losing the checkbox state) and warns under React 18.
+		// Reuse the root across AJAX re-renders; re-rooting the same node would
+		// reset the component and warn under React 18.
 		if ( ! blocksCheckoutRoot ) {
 			blocksCheckoutRoot = createRoot( checkoutPageSaveUserContainer );
 		}
