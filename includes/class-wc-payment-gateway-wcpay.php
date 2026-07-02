@@ -1317,6 +1317,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( Order_Status::FAILED );
 			}
 
+			// Store the intent ID on failed orders too, so a declined transaction stays traceable
+			// and matchable by webhooks — mirroring successful payments.
+			if ( $e instanceof API_Exception && ! empty( $e->get_intent_id() ) ) {
+				$this->order_service->set_intent_id_for_order( $order, $e->get_intent_id() );
+			}
+
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
