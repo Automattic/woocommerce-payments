@@ -28,7 +28,11 @@ import {
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
-import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+import {
+	earlyFraudWarningFraudTypeMapping,
+	fraudOutcomeRulesetMapping,
+	paymentFailureMapping,
+} from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
@@ -1293,6 +1297,90 @@ const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
 					]
 				),
 			];
+		case 'early_fraud_warning': {
+			const fraudTypeLabel =
+				earlyFraudWarningFraudTypeMapping[ event.fraud_type ] ?? null;
+			const reportedReason = fraudTypeLabel
+				? sprintf(
+						/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
+						__( 'Reported reason: %s', 'woocommerce-payments' ),
+						fraudTypeLabel
+				  )
+				: null;
+
+			if ( ! event.actionable ) {
+				return [
+					getStatusChangeTimelineItem(
+						event,
+						__(
+							'Early fraud warning resolved',
+							'woocommerce-payments'
+						)
+					),
+					getMainTimelineItem(
+						event,
+						__(
+							'This early fraud warning is no longer actionable.',
+							'woocommerce-payments'
+						),
+						<NoticeOutlineIcon />,
+						[
+							__(
+								'The payment was refunded or disputed, so no further action is needed to avoid a dispute.',
+								'woocommerce-payments'
+							),
+							reportedReason,
+						].filter( Boolean )
+					),
+				];
+			}
+
+			const refundCta = event.payment_intent
+				? createInterpolateElement(
+						__(
+							'Refunding this payment now can prevent a dispute. <link>Refund this payment</link>',
+							'woocommerce-payments'
+						),
+						{
+							link: (
+								<Link
+									href={ getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/transactions/details',
+										id: event.payment_intent,
+									} ) }
+								/>
+							),
+						}
+				  )
+				: __(
+						'Refunding this payment now can prevent a dispute.',
+						'woocommerce-payments'
+				  );
+
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Early fraud warning', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					__(
+						'Payment received an early fraud warning',
+						'woocommerce-payments'
+					),
+					<NoticeOutlineIcon className="is-warning" />,
+					[
+						__(
+							'The card issuer flagged this payment as likely fraudulent.',
+							'woocommerce-payments'
+						),
+						reportedReason,
+						refundCta,
+					].filter( Boolean )
+				),
+			];
+		}
 		case 'fraud_outcome_manual_approve':
 			return getManualFraudOutcomeTimelineItem( event, 'allow' );
 		case 'fraud_outcome_manual_block':

@@ -181,6 +181,48 @@ describe( 'mapTimelineEvents', () => {
 		).toMatchSnapshot();
 	} );
 
+	test( 'formats actionable early_fraud_warning events', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'early_fraud_warning',
+					actionable: true,
+					fraud_type: 'made_with_stolen_card',
+					payment_intent: 'pi_1',
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
+	test( 'formats actionable early_fraud_warning events with an unknown fraud type', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'early_fraud_warning',
+					actionable: true,
+					fraud_type: 'brand_new_stripe_enum',
+					payment_intent: 'pi_1',
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
+	test( 'formats resolved early_fraud_warning events', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'early_fraud_warning',
+					actionable: false,
+					fraud_type: 'made_with_stolen_card',
+					payment_intent: 'pi_1',
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
 	describe( 'single currency events', () => {
 		test( 'formats captured events without fee details', () => {
 			expect(
