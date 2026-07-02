@@ -2337,6 +2337,180 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
+	/**
+	 * Tests that an early fraud warning created event stores the meta and adds an order note.
+	 */
+	public function test_early_fraud_warning_created_order_note() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with(
+				'_wcpay_early_fraud_warning',
+				[
+					'efw_id'     => 'issfr_123',
+					'actionable' => true,
+					'fraud_type' => 'made_with_stolen_card',
+					'created'    => 1719800000,
+				]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment has received an early fraud warning with reason &quot;Made with stolen card&quot;/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning updated event resolves a previously stored warning.
+	 */
+	public function test_early_fraud_warning_updated_resolves_existing_warning() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => false,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		// Arrange: The order has a previously stored, actionable warning.
+		$this->mock_order
+			->method( 'get_meta' )
+			->with( '_wcpay_early_fraud_warning', true )
+			->willReturn(
+				[
+					'efw_id'     => 'issfr_123',
+					'actionable' => true,
+					'fraud_type' => 'made_with_stolen_card',
+					'created'    => 1719800000,
+				]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with(
+				'_wcpay_early_fraud_warning',
+				[
+					'efw_id'     => 'issfr_123',
+					'actionable' => false,
+					'fraud_type' => 'made_with_stolen_card',
+					'created'    => 1719800000,
+				]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/The early fraud warning received for this payment is no longer actionable/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning updated event is ignored when the store never
+	 * received the corresponding created event (e.g. it was skipped because the charge
+	 * was already disputed).
+	 */
+	public function test_early_fraud_warning_updated_is_ignored_without_existing_warning() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => false,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_meta_data' );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'add_order_note' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an early fraud warning event for an unknown charge throws.
+	 */
+	public function test_early_fraud_warning_throws_exception_when_order_not_found() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'unknown_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'unknown_charge_id' )
+			->willReturn( false );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via charge ID: unknown_charge_id' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
 	public function test_process_full_refund_succeeded(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;

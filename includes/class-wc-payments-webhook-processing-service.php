@@ -198,6 +198,10 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'charge.expired':
 				$this->process_webhook_expired_authorization( $event_body );
 				break;
+			case 'radar.early_fraud_warning.created':
+			case 'radar.early_fraud_warning.updated':
+				$this->process_webhook_early_fraud_warning( $event_body );
+				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
 				$this->token_service->clear_all_cached_payment_methods();
@@ -847,6 +851,49 @@ class WC_Payments_Webhook_Processing_Service {
 		// Clear dispute caches to trigger a fetch of new data. The dispute changed on
 		// Stripe's side even when its note is a duplicate of one already on the order.
 		$this->database_cache->delete_dispute_caches();
+	}
+
+	/**
+	 * Process webhook for an early fraud warning being created or updated.
+	 *
+	 * The platform only forwards `created` events for charges without a dispute, but always
+	 * forwards `updated` events so a previously stored warning can be resolved. An `updated`
+	 * event for a warning the store never saw is therefore ignored.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
+	 */
+	private function process_webhook_early_fraud_warning( $event_body ) {
+		$event_type   = $this->read_webhook_property( $event_body, 'type' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
+		$efw_id       = $this->read_webhook_property( $event_object, 'id' );
+		$actionable   = $this->read_webhook_property( $event_object, 'actionable' );
+		$fraud_type   = $this->read_webhook_property( $event_object, 'fraud_type' );
+		$created      = $this->read_webhook_property( $event_object, 'created' );
+
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		if ( ! $order ) {
+			throw new Invalid_Webhook_Data_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		// An update to a warning the store never received (e.g. its creation was skipped
+		// because the charge was already disputed) would only add a confusing "resolved"
+		// note for a warning the merchant never saw — ignore it.
+		if ( 'radar.early_fraud_warning.updated' === $event_type && [] === $this->order_service->get_early_fraud_warning_for_order( $order ) ) {
+			return;
+		}
+
+		$this->order_service->mark_payment_early_fraud_warning( $order, $charge_id, $efw_id, (bool) $actionable, (string) $fraud_type, (int) $created );
 	}
 
 	/**
