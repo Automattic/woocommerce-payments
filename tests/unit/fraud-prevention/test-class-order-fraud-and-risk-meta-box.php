@@ -495,6 +495,142 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->expectOutputString( $risk_actions_block );
 	}
 
+	public function test_display_early_fraud_warning_actionable_in_order_fraud_and_risk_meta_box() {
+		// Arrange: Set the return results for the order service methods.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
+		// Arrange: The order has an actionable early fraud warning stored.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_early_fraud_warning_for_order' )
+			->willReturn(
+				[
+					'efw_id'     => 'issfr_123',
+					'actionable' => true,
+					'fraud_type' => 'made_with_stolen_card',
+					'created'    => 1719800000,
+				]
+			);
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the amber block with the refund CTA has been output.
+		$efw_block          = '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--actionable">'
+			. '<p class="wcpay-fraud-risk-efw__title"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Early fraud warning</p>'
+			. '<p class="wcpay-fraud-risk-efw__reason">Reported reason: Made with stolen card</p>'
+			. '<p>The card issuer flagged this payment as likely fraudulent. Refunding it now can prevent a dispute.</p>'
+			. '<p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Refund to avoid a dispute</a></p>'
+			. '</div>';
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $efw_block . $risk_actions_block );
+	}
+
+	public function test_display_early_fraud_warning_resolved_in_order_fraud_and_risk_meta_box() {
+		// Arrange: Set the return results for the order service methods.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
+		// Arrange: The order has a resolved early fraud warning stored.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_early_fraud_warning_for_order' )
+			->willReturn(
+				[
+					'efw_id'     => 'issfr_123',
+					'actionable' => false,
+					'fraud_type' => 'made_with_stolen_card',
+					'created'    => 1719800000,
+				]
+			);
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the muted block without a refund CTA has been output.
+		$efw_block          = '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--resolved">'
+			. '<p class="wcpay-fraud-risk-efw__title"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> Early fraud warning resolved</p>'
+			. '<p class="wcpay-fraud-risk-efw__reason">Reported reason: Made with stolen card</p>'
+			. '<p>This payment was refunded or disputed, so the warning is no longer actionable.</p>'
+			. '</div>';
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $efw_block . $risk_actions_block );
+	}
+
+	public function test_do_not_display_early_fraud_warning_in_order_fraud_and_risk_meta_box_without_one() {
+		// Arrange: Set the return results for the order service methods.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
+		// Arrange: The order has no early fraud warning stored.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_early_fraud_warning_for_order' )
+			->willReturn( [] );
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure no early fraud warning markup has been output.
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $risk_actions_block );
+	}
+
 	private function compose_fraud_and_risk_level_block( $risk_level, $title, $description ) {
 		$output  = '<div class="wcpay-fraud-risk-level wcpay-fraud-risk-level--' . $risk_level . '">';
 		$output .= '<p class="wcpay-fraud-risk-level__title">' . $title . '</p>';
