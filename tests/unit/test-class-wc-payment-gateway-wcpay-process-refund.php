@@ -1083,6 +1083,44 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
+	public function test_process_refund_insufficient_balance_reaches_failure_tracking() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_status( Order_Status::PROCESSING );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Balance too low', 'insufficient_balance_for_refund', 400 ) );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'handle_insufficient_balance_for_refund' );
+
+		// This branch skips the note-building code, so the shared failure-tracking call must still find a defined $note.
+		$result = $this->wcpay_gateway->process_refund( $order_id, 19.99 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
+		$this->assertEquals( 'Balance too low', $result->get_error_message() );
+	}
+
 	public function test_process_refund_returns_error_when_refund_not_found() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
