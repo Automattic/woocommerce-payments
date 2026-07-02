@@ -400,6 +400,47 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
+	test( 'multiple disputes fold every dispute fee and adjustment', () => {
+		const charge = {
+			amount: 1800,
+			application_fee_amount: 82,
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			disputed: true,
+			disputes: [
+				{
+					amount: 1000,
+					balance_transactions: [
+						{
+							amount: -1000,
+							fee: 1500,
+						},
+					],
+				},
+				{
+					amount: 800,
+					balance_transactions: [
+						{
+							amount: -800,
+							fee: 1500,
+						},
+					],
+				},
+			],
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
+			net: 1800 - 82 - 3000 - 1800,
+			fee: 82 + 3000,
+			refunded: 1800,
+		} );
+	} );
+
 	test( 'reversed dispute', () => {
 		const charge = {
 			amount: 1800,

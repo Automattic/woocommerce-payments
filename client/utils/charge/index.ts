@@ -10,8 +10,18 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { Dispute } from 'types/disputes';
-import { Charge, ChargeAmounts } from 'types/charges';
+import { Charge, ChargeAmounts, ChargeDispute } from 'types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
+
+// Prefer the array when a newer server sends it (it's authoritative and
+// already includes the singular one); fall back to `charge.dispute` so older
+// servers that only expose the singular field still render their dispute.
+export const getChargeDisputes = ( charge: Charge ): ChargeDispute[] => {
+	if ( charge.disputes?.length ) {
+		return charge.disputes;
+	}
+	return charge.dispute ? [ charge.dispute ] : [];
+};
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
@@ -225,12 +235,13 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		);
 	}
 
-	if ( isChargeDisputed( charge ) && typeof charge.dispute !== 'undefined' ) {
-		balance.fee += sumBy( charge.dispute?.balance_transactions, 'fee' );
-		balance.refunded -= sumBy(
-			charge.dispute?.balance_transactions,
-			'amount'
-		);
+	if ( isChargeDisputed( charge ) ) {
+		// A charge can carry more than one dispute; fold every dispute's fee
+		// and adjustment so the totals stay right when there are 2+.
+		for ( const dispute of getChargeDisputes( charge ) ) {
+			balance.fee += sumBy( dispute.balance_transactions, 'fee' );
+			balance.refunded -= sumBy( dispute.balance_transactions, 'amount' );
+		}
 	}
 
 	balance.net = balance.amount - balance.fee - balance.refunded;

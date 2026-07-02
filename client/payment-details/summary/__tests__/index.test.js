@@ -475,6 +475,215 @@ describe( 'PaymentDetailsSummary', () => {
 		).toBeNull();
 	} );
 
+	describe( 'multiple disputes per charge', () => {
+		test( 'treats charge.disputes as authoritative, one pane per distinct dispute', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const first = getBaseDispute();
+			first.id = 'dp_1';
+			first.status = 'needs_response';
+			const second = getBaseDispute();
+			second.id = 'dp_2';
+			second.status = 'needs_response';
+			// charge.dispute duplicates the first array entry; it must not add
+			// a third pane.
+			charge.dispute = first;
+			charge.disputes = [ first, second ];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 2 );
+
+			const challengeHrefs = screen
+				.getAllByRole( 'button', { name: /Challenge dispute/ } )
+				.map( ( button ) =>
+					button.closest( 'a' ).getAttribute( 'href' )
+				);
+
+			expect( challengeHrefs ).toEqual(
+				expect.arrayContaining( [
+					expect.stringContaining( 'id=dp_1' ),
+					expect.stringContaining( 'id=dp_2' ),
+				] )
+			);
+		} );
+
+		test( 'renders both an awaiting-response pane and a resolution footer for a mixed-status charge', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const awaiting = getBaseDispute();
+			awaiting.id = 'dp_awaiting';
+			awaiting.status = 'needs_response';
+			const resolved = getBaseDispute();
+			resolved.id = 'dp_resolved';
+			resolved.status = 'won';
+			resolved.metadata.__evidence_submitted_at = '1693400000';
+			charge.dispute = awaiting;
+			charge.disputes = [ awaiting, resolved ];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-footer'
+				).length
+			).toBeGreaterThanOrEqual( 1 );
+
+			const challengeLink = screen
+				.getByRole( 'button', { name: /Challenge dispute/ } )
+				.closest( 'a' );
+
+			expect( challengeLink.getAttribute( 'href' ) ).toEqual(
+				expect.stringContaining( 'id=dp_awaiting' )
+			);
+
+			const detailsLink = screen
+				.getByRole( 'button', { name: /View dispute details/i } )
+				.closest( 'a' );
+
+			expect( detailsLink.getAttribute( 'href' ) ).toEqual(
+				expect.stringContaining( 'id=dp_resolved' )
+			);
+		} );
+
+		test( 'falls back to charge.dispute and renders one pane when disputes array is absent', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+		} );
+
+		test( 'falls back to charge.dispute and renders one pane when disputes array is empty', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.disputes = [];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+		} );
+
+		test( 'sums every dispute fee in the breakdown tooltip so it reconciles with the total', async () => {
+			const charge = getBaseCharge();
+			charge.balance_transaction = {
+				amount: 2000,
+				currency: 'usd',
+				fee: 70,
+			};
+			charge.disputed = true;
+			const first = getBaseDispute();
+			first.id = 'dp_1';
+			first.status = 'under_review';
+			first.balance_transactions = [
+				{
+					amount: -1500,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				},
+			];
+			const second = getBaseDispute();
+			second.id = 'dp_2';
+			second.status = 'under_review';
+			second.balance_transactions = [
+				{
+					amount: -1000,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				},
+			];
+			charge.dispute = first;
+			charge.disputes = [ first, second ];
+
+			renderCharge( charge );
+
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /Fee breakdown/i } )
+			);
+
+			const tooltipContent = screen.getByRole( 'tooltip' );
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Transaction fee/ )
+			).toHaveTextContent( /\$0.70/ );
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Dispute fee/ )
+			).toHaveTextContent( /\$30.00/ );
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Total fees/ )
+			).toHaveTextContent( /\$30.70/ );
+		} );
+
+		test( 'hides the refund menu when any dispute is non-refundable', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const refundable = getBaseDispute();
+			refundable.id = 'dp_1';
+			refundable.status = 'won';
+			const nonRefundable = getBaseDispute();
+			nonRefundable.id = 'dp_2';
+			nonRefundable.status = 'needs_response';
+			charge.dispute = refundable;
+			charge.disputes = [ refundable, nonRefundable ];
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Transaction actions/i,
+				} )
+			).toBeNull();
+		} );
+
+		test( 'shows the refund menu when every dispute is refundable', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const won = getBaseDispute();
+			won.id = 'dp_1';
+			won.status = 'won';
+			const inquiry = getBaseDispute();
+			inquiry.id = 'dp_2';
+			inquiry.status = 'warning_closed';
+			charge.dispute = won;
+			charge.disputes = [ won, inquiry ];
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'button', {
+					name: /Transaction actions/i,
+				} )
+			).toBeInTheDocument();
+		} );
+	} );
+
 	test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
 		// True when multi-currency is enabled.
 		global.wcpaySettings.shouldUseExplicitPrice = true;

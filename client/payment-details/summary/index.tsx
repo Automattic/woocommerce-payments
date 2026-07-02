@@ -27,6 +27,7 @@ import {
 import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,
+	getChargeDisputes,
 	getChargeStatus,
 	getChargeChannel,
 	isOnHoldByFraudTools,
@@ -48,14 +49,14 @@ import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import {
-	getDisputeFeeFormatted,
+	getDisputeFeeAmount,
 	isAwaitingResponse,
 	isRefundable,
 } from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data/authorizations';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
-import { Charge } from 'wcpay/types/charges';
+import { Charge, ChargeDispute } from 'wcpay/types/charges';
 import { recordEvent } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
@@ -284,13 +285,37 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
-	const disputeFee =
-		charge.dispute && getDisputeFeeFormatted( charge.dispute );
+	const disputes = getChargeDisputes( charge );
 
-	// If this transaction is disputed, check if it is refundable.
-	const isDisputeRefundable = charge.dispute
-		? isRefundable( charge.dispute.status )
-		: true;
+	// Header summary can only surface one dispute; a single charge can hold
+	// several. Drive the status chip off the most urgent one — the one
+	// awaiting a response, else the first — while the panes below carry each
+	// dispute's own details.
+	const primaryDispute =
+		disputes.find( ( dispute ) => isAwaitingResponse( dispute.status ) ) ??
+		disputes[ 0 ];
+
+	// `Total fees` folds every dispute's fee (server-side on the envelope path,
+	// via getChargeAmounts on the legacy path), so the tooltip's `Dispute fee`
+	// line must sum all disputes — not just the primary — or the breakdown
+	// won't reconcile once a charge has 2+ fee-bearing disputes.
+	const disputeFeeAmounts = disputes
+		.map( getDisputeFeeAmount )
+		.filter(
+			( fee ): fee is { amount: number; currency: string } => !! fee
+		);
+	const disputeFee = disputeFeeAmounts.length
+		? formatCurrency(
+				_.sumBy( disputeFeeAmounts, 'amount' ),
+				disputeFeeAmounts[ 0 ].currency
+		  )
+		: undefined;
+
+	// Refunding is blocked while any single dispute blocks it, so the menu is
+	// only refundable when every dispute is.
+	const isDisputeRefundable = disputes.every( ( dispute ) =>
+		isRefundable( dispute.status )
+	);
 
 	// Partial refunds are done through the order page. If order number is not
 	// present, partial refund is not possible.
@@ -390,10 +415,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										</span>
 									</Loadable>
 								</p>
-								{ charge.dispute ? (
+								{ primaryDispute ? (
 									<DisputeStatusChip
 										className="payment-details-summary__status"
-										status={ charge.dispute.status }
+										status={ primaryDispute.status }
 										prefixDisputeType={ true }
 									/>
 								) : (
@@ -736,7 +761,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
 						items={
-							charge.dispute
+							disputes.length
 								? composePaymentSummaryItemsForDispute( {
 										charge,
 								  } )
@@ -749,16 +774,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				</LoadableBlock>
 			</CardBody>
 
-			{ charge.dispute && (
-				<ErrorBoundary>
-					{ renderDisputeDetails(
-						charge.dispute,
-						charge,
-						bankName,
-						() => setIsRefundModalOpen( true )
+			{ disputes.map( ( dispute ) => (
+				<ErrorBoundary key={ dispute.id }>
+					{ renderDisputeDetails( dispute, charge, bankName, () =>
+						setIsRefundModalOpen( true )
 					) }
 				</ErrorBoundary>
-			) }
+			) ) }
 			{ isRefundModalOpen && (
 				<RefundModal
 					charge={ charge }
@@ -850,17 +872,17 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	);
 };
 
-const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
-	props
-) => {
-	const dispute = props.charge?.dispute;
+// One card + Tracks effect per dispute; a charge can hold several disputes,
+// each with its own outcome to surface and record.
+const DisputeOutcome: React.FC< { dispute: ChargeDispute } > = ( {
+	dispute,
+} ) => {
 	// Gate on won/lost specifically: DisputeRecommendationsCard has no entries
 	// for warning_* inquiries (warning_closed is the one that reaches here, since
 	// the Outcome View admits it). AND suppress when the merchant accepted the
 	// dispute: accepting is a deliberate non-engagement, so coaching them to
 	// "submit evidence next time" misreads the choice. Per RiskOps review.
 	const showRecommendationsCard =
-		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
 		( dispute.status === 'won' || dispute.status === 'lost' ) &&
 		dispute.metadata?.__closed_by_merchant !== '1';
@@ -869,44 +891,54 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 	// path (won/lost/warning_closed + flag) so the signal stays stable
 	// across the component refactor. Dedup is in `recordOutcomeViewOnce`.
 	const isOutcomeViewStatus =
-		dispute?.status === 'won' ||
-		dispute?.status === 'lost' ||
-		dispute?.status === 'warning_closed';
+		dispute.status === 'won' ||
+		dispute.status === 'lost' ||
+		dispute.status === 'warning_closed';
 	const shouldRecordOutcomeView =
-		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
 		isOutcomeViewStatus;
 	// COUPLED with dispute-recommendations/index.tsx: the card filters its
 	// catalog by this same productType. Keep both call sites in lockstep.
-	const productType = dispute
-		? resolveProductType(
-				dispute.metadata,
-				dispute.order?.suggested_product_type,
-				wcpaySettings?.featureFlags
-					?.isDisputeAdditionalEvidenceTypesEnabled ?? false
-		  )
-		: '';
+	const productType = resolveProductType(
+		dispute.metadata,
+		dispute.order?.suggested_product_type,
+		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
+			false
+	);
 
 	// Mirror the card: true only when the card actually renders entries.
 	const hasRecommendations =
 		showRecommendationsCard &&
-		dispute !== undefined &&
 		getDisputeRecommendations( dispute, productType ).length > 0;
 
 	useEffect( () => {
-		if ( shouldRecordOutcomeView && dispute ) {
+		if ( shouldRecordOutcomeView ) {
 			recordOutcomeViewOnce( dispute, productType, hasRecommendations );
 		}
 	}, [ shouldRecordOutcomeView, dispute, productType, hasRecommendations ] );
 
+	if ( ! showRecommendationsCard ) {
+		return null;
+	}
+
+	return (
+		<ErrorBoundary>
+			<DisputeRecommendationsCard dispute={ dispute } />
+		</ErrorBoundary>
+	);
+};
+
+const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
+	props
+) => {
+	const disputes = props.charge ? getChargeDisputes( props.charge ) : [];
+
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
 			<PaymentDetailsSummary { ...props } />
-			{ showRecommendationsCard && dispute && (
-				<ErrorBoundary>
-					<DisputeRecommendationsCard dispute={ dispute } />
-				</ErrorBoundary>
-			) }
+			{ disputes.map( ( dispute ) => (
+				<DisputeOutcome key={ dispute.id } dispute={ dispute } />
+			) ) }
 		</WCPaySettingsContext.Provider>
 	);
 };
