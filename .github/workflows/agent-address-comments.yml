@@ -61,6 +61,10 @@ jobs:
 
       - name: Prepare prompt from template
         id: prompt
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          BRANCH_NAME: ${{ inputs.branch_name }}
         run: |
           TEMPLATE=".gamma-ai-tools/prompts/pipeline/address-comments.md"
           if [ ! -f "$TEMPLATE" ]; then
@@ -68,12 +72,10 @@ jobs:
             exit 1
           fi
 
-          # Substitute variables
-          sed \
-            -e 's|{{PR_NUMBER}}|${{ inputs.pr_number }}|g' \
-            -e 's|{{TARGET_BRANCH}}|${{ inputs.target_branch }}|g' \
-            -e 's|{{BRANCH_NAME}}|${{ inputs.branch_name }}|g' \
-            "$TEMPLATE" > /tmp/address-comments-prompt.md
+          # Substitute placeholders. Values come from the environment and are
+          # inserted literally, so metacharacters in an input can't break out
+          # of the command or corrupt the substitution.
+          perl -pe 's/\{\{PR_NUMBER\}\}/$ENV{PR_NUMBER}/g; s/\{\{TARGET_BRANCH\}\}/$ENV{TARGET_BRANCH}/g; s/\{\{BRANCH_NAME\}\}/$ENV{BRANCH_NAME}/g;' "$TEMPLATE" > /tmp/address-comments-prompt.md
 
           # Write multiline output
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
@@ -101,10 +103,15 @@ jobs:
 
       - name: Write job summary
         if: always()
+        env:
+          LINEAR_ISSUE_ID: ${{ inputs.linear_issue_id }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          BRANCH_NAME: ${{ inputs.branch_name }}
+          MODEL: ${{ inputs.model }}
         run: |
           echo "## Address Comments Agent Results" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Issue:** ${{ inputs.linear_issue_id }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**PR:** #${{ inputs.pr_number }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Branch:** ${{ inputs.branch_name }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Model:** ${{ inputs.model }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Issue:** ${LINEAR_ISSUE_ID}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**PR:** #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** ${BRANCH_NAME}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Model:** ${MODEL}" >> "$GITHUB_STEP_SUMMARY"
