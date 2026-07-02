@@ -70,6 +70,29 @@ describe( 'wc-product-page-selectors', () => {
 			expect( getProductId() ).toBe( '42' );
 		} );
 
+		it( 'returns parent product ID for a classic variable product', () => {
+			// Variable products render the add-to-cart button with no value
+			// attribute; the parent ID lives in a hidden input in the form.
+			document.body.innerHTML = [
+				'<form class="variations_form cart">',
+				'  <input type="hidden" name="product_id" value="55" />',
+				'  <input type="hidden" name="variation_id" class="variation_id" value="0" />',
+				'  <button type="submit" class="single_add_to_cart_button">Add to cart</button>',
+				'</form>',
+			].join( '' );
+			expect( getProductId() ).toBe( '55' );
+		} );
+
+		it( 'prefers the classic button value when it is set', () => {
+			document.body.innerHTML = [
+				'<form class="cart">',
+				'  <input type="hidden" name="product_id" value="55" />',
+				'  <button type="submit" class="single_add_to_cart_button" value="42">Add to cart</button>',
+				'</form>',
+			].join( '' );
+			expect( getProductId() ).toBe( '42' );
+		} );
+
 		it( 'returns product ID from new block hidden input', () => {
 			document.body.innerHTML =
 				'<div class="wp-block-add-to-cart-with-options"><input type="hidden" name="add-to-cart" value="99" /></div>';
