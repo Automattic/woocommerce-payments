@@ -140,6 +140,13 @@ class MultiCurrency {
 	protected $enabled_currencies;
 
 	/**
+	 * The selected currency for the current request.
+	 *
+	 * @var Currency|null
+	 */
+	protected $selected_currency;
+
+	/**
 	 * Instance of MultiCurrencySettingsInterface.
 	 *
 	 * @var MultiCurrencySettingsInterface
@@ -797,14 +804,24 @@ class MultiCurrency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
+		if ( null !== $this->selected_currency && ! has_filter( self::FILTER_PREFIX . 'override_selected_currency' ) ) {
+			return $this->selected_currency;
+		}
+
 		$multi_currency_code = $this->compatibility->override_selected_currency();
 		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
 
 		if ( null === $currency_code ) {
-			return $this->get_default_currency();
+			$currency = $this->get_default_currency();
+		} else {
+			$currency = $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
 		}
 
-		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
+		if ( ! has_filter( self::FILTER_PREFIX . 'override_selected_currency' ) ) {
+			$this->selected_currency = $currency;
+		}
+
+		return $currency;
 	}
 
 	/**
@@ -816,6 +833,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function update_selected_currency( string $currency_code, bool $persist_change = true ) {
+		$this->selected_currency = null;
+
 		$code     = strtoupper( $currency_code );
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
@@ -1735,6 +1754,8 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function initialize_enabled_currencies() {
+		$this->selected_currency = null;
+
 		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
 		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];

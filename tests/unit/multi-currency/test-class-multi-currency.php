@@ -144,6 +144,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
+		remove_all_filters( 'wcpay_multi_currency_override_selected_currency' );
 		remove_all_filters( 'woocommerce_currency' );
 		remove_all_filters( 'woocommerce_geolocate_ip' );
 		remove_all_filters( 'stylesheet' );
@@ -419,6 +420,26 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
+	public function test_get_selected_currency_caches_selected_currency_without_override_filter() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
+
+		$this->assertNull( $this->get_selected_currency_cache() );
+		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
+		$this->assertSame( 'GBP', $this->get_selected_currency_cache()->get_code() );
+	}
+
+	public function test_get_selected_currency_does_not_cache_when_override_filter_exists() {
+		add_filter(
+			'wcpay_multi_currency_override_selected_currency',
+			function () {
+				return 'CAD';
+			}
+		);
+
+		$this->assertSame( 'CAD', $this->multi_currency->get_selected_currency()->get_code() );
+		$this->assertNull( $this->get_selected_currency_cache() );
+	}
+
 	public function test_get_selected_currency_returns_currency_from_user() {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
 		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\MultiCurrency\MultiCurrency::CURRENCY_META_KEY, 'GBP' );
@@ -446,9 +467,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_selected_currency_sets_session_currency() {
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
+		$this->multi_currency->get_selected_currency();
+		$this->assertSame( 'GBP', $this->get_selected_currency_cache()->get_code() );
+
 		$this->multi_currency->update_selected_currency( 'GBP' );
 
 		$this->assertSame( 'GBP', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+		$this->assertNull( $this->get_selected_currency_cache() );
 	}
 
 	public function test_update_selected_currency_sets_user_currency() {
@@ -1872,5 +1898,12 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 				return $theme;
 			}
 		);
+	}
+
+	private function get_selected_currency_cache() {
+		$reflection = new ReflectionProperty( MultiCurrency::class, 'selected_currency' );
+		$reflection->setAccessible( true );
+
+		return $reflection->getValue( $this->multi_currency );
 	}
 }
