@@ -608,12 +608,60 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		$previous_token_id = $this->get_order_last_payment_token_id( $order );
+
 		try {
-			$this->wcpay_gateway->ensure_payment_method_token_for_order( $order, $payment_method_id, $order->get_user() );
+			$token = $this->wcpay_gateway->ensure_payment_method_token_for_order( $order, $payment_method_id, $order->get_user() );
+			$this->maybe_add_subscription_token_repair_note( $order, $previous_token_id, $token );
 		} catch ( Exception $e ) {
 			Logger::log( 'Error when saving payment method from webhook: ' . $e->getMessage() );
 			$order->add_order_note( __( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' ) );
 		}
+	}
+
+	/**
+	 * Gets the last payment token ID attached to an order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return int|null The last payment token ID, or null if none exists.
+	 */
+	private function get_order_last_payment_token_id( $order ) {
+		$payment_token_ids = $order->get_payment_tokens();
+		if ( ! is_array( $payment_token_ids ) || empty( $payment_token_ids ) ) {
+			return null;
+		}
+
+		$payment_token_id = end( $payment_token_ids );
+
+		return $payment_token_id ? (int) $payment_token_id : null;
+	}
+
+	/**
+	 * Adds observability when webhook token repair changes an existing subscription token.
+	 *
+	 * @param WC_Order         $order             The order.
+	 * @param int|null         $previous_token_id The token ID previously attached to the order.
+	 * @param WC_Payment_Token $token             The token attached after repair.
+	 */
+	private function maybe_add_subscription_token_repair_note( $order, $previous_token_id, $token ) {
+		if ( null === $previous_token_id || ! $token instanceof WC_Payment_Token ) {
+			return;
+		}
+
+		$new_token_id = (int) $token->get_id();
+		if ( $previous_token_id === $new_token_id ) {
+			return;
+		}
+
+		$note = sprintf(
+			/* translators: 1: Previous payment token ID, 2: New payment token ID. */
+			__( 'WooPayments updated the subscription payment method token from token #%1$d to #%2$d after receiving a successful renewal payment webhook.', 'woocommerce-payments' ),
+			$previous_token_id,
+			$new_token_id
+		);
+
+		Logger::log( $note );
+		$order->add_order_note( $note );
 	}
 
 	/**
