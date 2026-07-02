@@ -769,6 +769,373 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.succeeded event saves a token before completing a recurring order.
+	 */
+	public function test_payment_intent_successful_saves_token_before_completing_recurring_order() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+		$token_saved                        = false;
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' )
+			->willReturnCallback(
+				function () use ( &$token_saved ) {
+					$this->assertTrue( $token_saved );
+				}
+			);
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_foo', $user )
+			->willReturnCallback(
+				function () use ( &$token_saved ) {
+					$token_saved = true;
+				}
+			);
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a recurring payment_intent.succeeded event handles an expanded intent payment method fallback.
+	 */
+	public function test_payment_intent_successful_saves_token_from_expanded_intent_payment_method() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'pi_123123123123123',
+			'object'         => 'payment_intent',
+			'amount'         => 1500,
+			'charges'        => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency'       => 'eur',
+			'payment_method' => [
+				'id'     => 'pm_expanded',
+				'object' => 'payment_method',
+			],
+			'status'         => Intent_Status::SUCCEEDED,
+			'metadata'       => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+		$stored_payment_method_id           = null;
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->expects( $this->atLeastOnce() )
+			->method( 'update_meta_data' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$stored_payment_method_id ) {
+					if ( '_payment_method_id' === $key ) {
+						$stored_payment_method_id = $value;
+					}
+				}
+			);
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_expanded', $user );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertSame( 'pm_expanded', $stored_payment_method_id );
+	}
+
+	/**
+	 * Tests that token repair notes when a webhook replaces an existing subscription token.
+	 */
+	public function test_payment_intent_successful_notes_when_token_repair_replaces_existing_token() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_new',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+		$token                              = $this->createMock( WC_Payment_Token::class );
+		$repair_note_added                  = false;
+
+		$token
+			->method( 'get_id' )
+			->willReturn( 22 );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->method( 'get_payment_tokens' )
+			->willReturn( [ 11 ] );
+		$this->mock_order
+			->method( 'add_order_note' )
+			->willReturnCallback(
+				function ( $note ) use ( &$repair_note_added ) {
+					if ( false !== strpos( $note, 'updated the subscription payment method token from token #11 to #22' ) ) {
+						$repair_note_added = true;
+					}
+				}
+			);
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_new', $user )
+			->willReturn( $token );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->assertTrue( $repair_note_added );
+	}
+
+	/**
+	 * Tests that a recurring payment_intent.succeeded event completes the order when token saving fails.
+	 */
+	public function test_payment_intent_successful_completes_recurring_order_when_token_saving_fails() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123',
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method'         => 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+		$user                               = new WP_User( self::factory()->user->create() );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => Intent_Status::SUCCEEDED,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_user' )
+			->willReturn( $user );
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'add_order_note' )
+			->withConsecutive(
+				[ $this->stringContains( 'Unable to save payment method for subscription.' ) ],
+				[ $this->stringContains( 'A payment of' ) ]
+			);
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+		$this->mock_order
+			->method( 'has_status' )
+			->willReturn( false );
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_payment_recurring' )
+			->with( 1234 )
+			->willReturn( true );
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'ensure_payment_method_token_for_order' )
+			->with( $this->mock_order, 'pm_foo', $user )
+			->willThrowException( new Exception( 'Unable to save payment method for subscription.' ) );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will ignore the order due to key mismatch.
 	 */
 	public function test_payment_intent_successful_ignores_order_due_to_key_mismatch() {
