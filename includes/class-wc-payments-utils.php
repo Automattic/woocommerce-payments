@@ -1313,6 +1313,36 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns a merchant-friendly description of an early fraud warning fraud type.
+	 *
+	 * This mapping is duplicated in client/payment-details/timeline/map-events.js.
+	 *
+	 * @param string $fraud_type The fraud type reported by the card network.
+	 *
+	 * @return string The description, or an empty string for unknown fraud types.
+	 */
+	public static function get_early_fraud_warning_fraud_type_description( string $fraud_type ): string {
+		switch ( $fraud_type ) {
+			case 'card_never_received':
+				return __( 'Card never received', 'woocommerce-payments' );
+			case 'fraudulent_card_application':
+				return __( 'Fraudulent card application', 'woocommerce-payments' );
+			case 'made_with_counterfeit_card':
+				return __( 'Made with counterfeit card', 'woocommerce-payments' );
+			case 'made_with_lost_card':
+				return __( 'Made with lost card', 'woocommerce-payments' );
+			case 'made_with_stolen_card':
+				return __( 'Made with stolen card', 'woocommerce-payments' );
+			case 'misc':
+				return __( 'Other', 'woocommerce-payments' );
+			case 'unauthorized_use_of_card':
+				return __( 'Unauthorized use of card', 'woocommerce-payments' );
+			default:
+				return '';
+		}
+	}
+
+	/**
 	 * Register a style for use.
 	 *
 	 * @uses   wp_register_style()

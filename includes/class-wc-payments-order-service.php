@@ -242,6 +242,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_OPEN_DISPUTE_IDS_META_KEY = '_wcpay_open_dispute_ids';
 
 	/**
+	 * Meta key used to store the latest early fraud warning received for the order's charge.
+	 *
+	 * @const string
+	 */
+	const WCPAY_EARLY_FRAUD_WARNING_META_KEY = '_wcpay_early_fraud_warning';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -692,6 +699,46 @@ class WC_Payments_Order_Service {
 		remove_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
 		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Stores the latest early fraud warning on the order and adds a private note about it.
+	 *
+	 * Early fraud warnings are orthogonal to the fraud outcome: an approved charge can still
+	 * receive one. The meta always reflects the latest warning; the note is only added once
+	 * per warning state.
+	 *
+	 * @param WC_Order $order      Order object.
+	 * @param string   $charge_id  The ID of the charge the early fraud warning relates to.
+	 * @param string   $efw_id     The ID of the early fraud warning object.
+	 * @param bool     $actionable Whether the payment can still be refunded to prevent a dispute.
+	 * @param string   $fraud_type The fraud type reported by the card network.
+	 * @param int      $created    Unix timestamp of when the early fraud warning was created.
+	 *
+	 * @return void
+	 */
+	public function mark_payment_early_fraud_warning( $order, string $charge_id, string $efw_id, bool $actionable, string $fraud_type, int $created ) {
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+
+		$this->set_early_fraud_warning_for_order(
+			$order,
+			[
+				'efw_id'     => $efw_id,
+				'actionable' => $actionable,
+				'fraud_type' => $fraud_type,
+				'created'    => $created,
+			]
+		);
+
+		$note = $this->generate_early_fraud_warning_note( $charge_id, $actionable, $fraud_type );
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$order->add_order_note( $note );
+		$order->save();
 	}
 
 	/**
@@ -1231,6 +1278,36 @@ class WC_Payments_Order_Service {
 	public function get_fraud_meta_box_type_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY, true );
+	}
+
+	/**
+	 * Set the early fraud warning data for an order.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  array $early_fraud_warning The early fraud warning data to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_early_fraud_warning_for_order( $order, array $early_fraud_warning ) {
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, $early_fraud_warning );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the early fraud warning data for an order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return array The early fraud warning data, or an empty array when none was received.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_early_fraud_warning_for_order( $order ): array {
+		$order               = $this->get_order( $order );
+		$early_fraud_warning = $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, true );
+
+		return is_array( $early_fraud_warning ) ? $early_fraud_warning : [];
 	}
 
 	/**
@@ -2479,6 +2556,58 @@ class WC_Payments_Order_Service {
 		}
 
 		return $note;
+	}
+
+	/**
+	 * Get content for the early fraud warning order note.
+	 *
+	 * @param string $charge_id  The ID of the charge the early fraud warning relates to.
+	 * @param bool   $actionable Whether the payment can still be refunded to prevent a dispute.
+	 * @param string $fraud_type The fraud type reported by the card network.
+	 *
+	 * @return string Note content.
+	 */
+	private function generate_early_fraud_warning_note( $charge_id, $actionable, $fraud_type ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( '', $charge_id );
+
+		if ( ! $actionable ) {
+			return sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					__( 'The early fraud warning received for this payment is no longer actionable, because the payment was refunded or disputed. See <a>payment details</a> for more information.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%1$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$transaction_url
+			);
+		}
+
+		// Get merchant-friendly fraud type description.
+		$reason = WC_Payments_Utils::get_early_fraud_warning_fraud_type_description( $fraud_type );
+
+		if ( '' === $reason ) {
+			return sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					__( 'Payment has received an early fraud warning. Refunding the payment now can prevent a dispute. See <a>payment details</a> for more information.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%1$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$transaction_url
+			);
+		}
+
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the early fraud warning reason, e.g. "Made with stolen card" */
+				__( 'Payment has received an early fraud warning with reason "%1$s". Refunding the payment now can prevent a dispute. See <a>payment details</a> for more information.', 'woocommerce-payments' ),
+				[
+					'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
+				]
+			),
+			$reason,
+			$transaction_url
+		);
 	}
 
 	/**

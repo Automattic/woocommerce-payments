@@ -1821,6 +1821,95 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that an actionable early fraud warning stores meta and adds a note once.
+	 */
+	public function test_mark_payment_early_fraud_warning_actionable() {
+		// Act: Mark the early fraud warning on the order.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+
+		// Assert: Check that the early fraud warning meta was stored.
+		$this->assertSame(
+			[
+				'efw_id'     => 'issfr_123',
+				'actionable' => true,
+				'fraud_type' => 'made_with_stolen_card',
+				'created'    => 1719800000,
+			],
+			$this->order->get_meta( '_wcpay_early_fraud_warning', true )
+		);
+
+		// Assert: Check that the note was added with the reason and a link to the payment details.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 1, $notes );
+		$this->assertStringContainsString( 'Payment has received an early fraud warning with reason', $notes[0]->content );
+		$this->assertStringContainsString( 'Made with stolen card', $notes[0]->content );
+		$this->assertStringContainsString( 'Refunding the payment now can prevent a dispute', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">payment details', $notes[0]->content );
+
+		// Assert: Applying the same data multiple times does not cause duplicate notes.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 1, $notes_2 );
+	}
+
+	/**
+	 * Tests that a resolved early fraud warning overwrites the meta and adds a resolved note.
+	 */
+	public function test_mark_payment_early_fraud_warning_resolved() {
+		// Arrange: Store an actionable early fraud warning first.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Mark the same early fraud warning as no longer actionable.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', false, 'made_with_stolen_card', 1719800000 );
+
+		// Assert: Check that the early fraud warning meta was overwritten with the latest state.
+		$this->assertSame(
+			[
+				'efw_id'     => 'issfr_123',
+				'actionable' => false,
+				'fraud_type' => 'made_with_stolen_card',
+				'created'    => 1719800000,
+			],
+			$this->order->get_meta( '_wcpay_early_fraud_warning', true )
+		);
+
+		// Assert: Check that a resolved note was added on top of the actionable one.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'The early fraud warning received for this payment is no longer actionable', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment has received an early fraud warning', $notes[1]->content );
+	}
+
+	/**
+	 * Tests that an unknown fraud type produces a note without a reason.
+	 */
+	public function test_mark_payment_early_fraud_warning_with_unknown_fraud_type() {
+		// Act: Mark an early fraud warning with a fraud type we have no label for.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'some_future_fraud_type', 1719800000 );
+
+		// Assert: Check that the note was added without the reason clause.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'Payment has received an early fraud warning. Refunding the payment now can prevent a dispute', $notes[0]->content );
+		$this->assertStringNotContainsString( 'with reason', $notes[0]->content );
+	}
+
+	/**
+	 * Tests to make sure mark_payment_early_fraud_warning exits if the order is invalid.
+	 */
+	public function test_mark_payment_early_fraud_warning_exits_if_order_invalid() {
+		// Arrange: Get current notes.
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		// Act: Attempt to mark the early fraud warning on an invalid order.
+		$this->order_service->mark_payment_early_fraud_warning( 'fake_order', 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+
+		// Assert: Confirm no meta was stored and the notes were not updated.
+		$this->assertSame( '', $this->order->get_meta( '_wcpay_early_fraud_warning', true ) );
+		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( $expected_notes, $updated_notes );
+	}
+
+	/**
 	 * Tests if the order was completed successfully.
 	 */
 	public function test_mark_terminal_payment_completed() {
@@ -2064,6 +2153,34 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order->save_meta_data();
 		$fraud_meta_box_type_from_service = $this->order_service->get_fraud_meta_box_type_for_order( $this->order->get_id() );
 		$this->assertEquals( $fraud_meta_box_type_from_service, $fraud_meta_box_type );
+	}
+
+	public function test_set_early_fraud_warning_for_order() {
+		$early_fraud_warning = [
+			'efw_id'     => 'issfr_123',
+			'actionable' => true,
+			'fraud_type' => 'made_with_stolen_card',
+			'created'    => 1719800000,
+		];
+		$this->order_service->set_early_fraud_warning_for_order( $this->order, $early_fraud_warning );
+		$this->assertSame( $this->order->get_meta( '_wcpay_early_fraud_warning', true ), $early_fraud_warning );
+	}
+
+	public function test_get_early_fraud_warning_for_order() {
+		$early_fraud_warning = [
+			'efw_id'     => 'issfr_123',
+			'actionable' => true,
+			'fraud_type' => 'made_with_stolen_card',
+			'created'    => 1719800000,
+		];
+		$this->order->update_meta_data( '_wcpay_early_fraud_warning', $early_fraud_warning );
+		$this->order->save_meta_data();
+		$early_fraud_warning_from_service = $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() );
+		$this->assertSame( $early_fraud_warning_from_service, $early_fraud_warning );
+	}
+
+	public function test_get_early_fraud_warning_for_order_returns_empty_array_when_not_set() {
+		$this->assertSame( [], $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() ) );
 	}
 
 	public function test_set_payment_transaction_id_for_order() {
