@@ -112,6 +112,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		'customer_email',
 		// Free-text refund reason can contain merchant-entered PII, so keep it out of logs.
 		'merchant_refund_reason',
+		// Address autocomplete JWT is a credential; keep it out of logs.
+		'token',
 	];
 
 	const EVENT_AUTHORIZED            = 'authorized';
