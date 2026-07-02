@@ -28,7 +28,9 @@ export const getAddToCartButtonElement = () => {
 /**
  * Get the product ID from the add-to-cart form.
  *
- * Classic block: .single_add_to_cart_button value attribute
+ * Classic simple product: .single_add_to_cart_button value attribute
+ * Classic variable product: the button has NO value attribute, so read the
+ *   hidden input[name="product_id"] the variations form renders instead
  * Add to Cart + Options block: hidden input[name="add-to-cart"] value
  *
  * @return {string|undefined} The product ID, or undefined.
@@ -37,8 +39,17 @@ export const getProductId = () => {
 	const classicButton = document.querySelector(
 		'.single_add_to_cart_button'
 	);
-	if ( classicButton ) {
+	if ( classicButton?.value ) {
 		return classicButton.value;
+	}
+
+	// Variable products render an <button> without a value attribute; the parent
+	// product ID lives in a hidden input alongside the variations form.
+	const productIdInput = document.querySelector(
+		'form.cart input[name="product_id"]'
+	);
+	if ( productIdInput?.value ) {
+		return productIdInput.value;
 	}
 
 	const hiddenInput = document.querySelector(
