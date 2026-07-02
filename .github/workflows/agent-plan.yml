@@ -52,6 +52,9 @@ jobs:
 
       - name: Prepare prompt from template
         id: prompt
+        env:
+          LINEAR_ISSUE_ID: ${{ inputs.linear_issue_id }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
         run: |
           TEMPLATE=".gamma-ai-tools/prompts/pipeline/plan.md"
           if [ ! -f "$TEMPLATE" ]; then
@@ -59,10 +62,11 @@ jobs:
             exit 1
           fi
 
-          # Substitute variables
+          # Substitute variables. Inputs are read from the environment so their
+          # values never reach the shell parser as literal command text.
           sed \
-            -e 's|{{LINEAR_ISSUE_ID}}|${{ inputs.linear_issue_id }}|g' \
-            -e 's|{{TARGET_BRANCH}}|${{ inputs.target_branch }}|g' \
+            -e "s|{{LINEAR_ISSUE_ID}}|${LINEAR_ISSUE_ID}|g" \
+            -e "s|{{TARGET_BRANCH}}|${TARGET_BRANCH}|g" \
             "$TEMPLATE" > /tmp/plan-prompt.md
 
           # Write multiline output
@@ -95,12 +99,16 @@ jobs:
 
       - name: Write job summary
         if: always()
+        env:
+          LINEAR_ISSUE_ID: ${{ inputs.linear_issue_id }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          MODEL: ${{ inputs.model }}
         run: |
           echo "## Plan Agent Results" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Issue:** ${{ inputs.linear_issue_id }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Branch:** ${{ inputs.target_branch }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Model:** ${{ inputs.model }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Issue:** ${LINEAR_ISSUE_ID}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** ${TARGET_BRANCH}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Model:** ${MODEL}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ -f plan.md ]; then

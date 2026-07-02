@@ -61,6 +61,10 @@ jobs:
 
       - name: Prepare prompt from template
         id: prompt
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          BRANCH_NAME: ${{ inputs.branch_name }}
         run: |
           TEMPLATE=".gamma-ai-tools/prompts/pipeline/address-comments.md"
           if [ ! -f "$TEMPLATE" ]; then
@@ -68,11 +72,12 @@ jobs:
             exit 1
           fi
 
-          # Substitute variables
+          # Substitute variables. Inputs are read from the environment so their
+          # values never reach the shell parser as literal command text.
           sed \
-            -e 's|{{PR_NUMBER}}|${{ inputs.pr_number }}|g' \
-            -e 's|{{TARGET_BRANCH}}|${{ inputs.target_branch }}|g' \
-            -e 's|{{BRANCH_NAME}}|${{ inputs.branch_name }}|g' \
+            -e "s|{{PR_NUMBER}}|${PR_NUMBER}|g" \
+            -e "s|{{TARGET_BRANCH}}|${TARGET_BRANCH}|g" \
+            -e "s|{{BRANCH_NAME}}|${BRANCH_NAME}|g" \
             "$TEMPLATE" > /tmp/address-comments-prompt.md
 
           # Write multiline output
@@ -101,10 +106,15 @@ jobs:
 
       - name: Write job summary
         if: always()
+        env:
+          LINEAR_ISSUE_ID: ${{ inputs.linear_issue_id }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          BRANCH_NAME: ${{ inputs.branch_name }}
+          MODEL: ${{ inputs.model }}
         run: |
           echo "## Address Comments Agent Results" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Issue:** ${{ inputs.linear_issue_id }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**PR:** #${{ inputs.pr_number }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Branch:** ${{ inputs.branch_name }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Model:** ${{ inputs.model }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Issue:** ${LINEAR_ISSUE_ID}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**PR:** #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** ${BRANCH_NAME}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Model:** ${MODEL}" >> "$GITHUB_STEP_SUMMARY"
