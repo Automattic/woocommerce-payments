@@ -72,13 +72,10 @@ jobs:
             exit 1
           fi
 
-          # Substitute variables. Inputs are read from the environment so their
-          # values never reach the shell parser as literal command text.
-          sed \
-            -e "s|{{PR_NUMBER}}|${PR_NUMBER}|g" \
-            -e "s|{{TARGET_BRANCH}}|${TARGET_BRANCH}|g" \
-            -e "s|{{BRANCH_NAME}}|${BRANCH_NAME}|g" \
-            "$TEMPLATE" > /tmp/address-comments-prompt.md
+          # Substitute placeholders. Values come from the environment and are
+          # inserted literally, so metacharacters in an input can't break out
+          # of the command or corrupt the substitution.
+          perl -pe 's/\{\{PR_NUMBER\}\}/$ENV{PR_NUMBER}/g; s/\{\{TARGET_BRANCH\}\}/$ENV{TARGET_BRANCH}/g; s/\{\{BRANCH_NAME\}\}/$ENV{BRANCH_NAME}/g;' "$TEMPLATE" > /tmp/address-comments-prompt.md
 
           # Write multiline output
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)

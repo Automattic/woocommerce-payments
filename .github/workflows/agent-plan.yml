@@ -62,12 +62,10 @@ jobs:
             exit 1
           fi
 
-          # Substitute variables. Inputs are read from the environment so their
-          # values never reach the shell parser as literal command text.
-          sed \
-            -e "s|{{LINEAR_ISSUE_ID}}|${LINEAR_ISSUE_ID}|g" \
-            -e "s|{{TARGET_BRANCH}}|${TARGET_BRANCH}|g" \
-            "$TEMPLATE" > /tmp/plan-prompt.md
+          # Substitute placeholders. Values come from the environment and are
+          # inserted literally, so metacharacters in an input can't break out
+          # of the command or corrupt the substitution.
+          perl -pe 's/\{\{LINEAR_ISSUE_ID\}\}/$ENV{LINEAR_ISSUE_ID}/g; s/\{\{TARGET_BRANCH\}\}/$ENV{TARGET_BRANCH}/g;' "$TEMPLATE" > /tmp/plan-prompt.md
 
           # Write multiline output
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
