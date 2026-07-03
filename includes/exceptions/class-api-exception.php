@@ -42,22 +42,31 @@ class API_Exception extends Base_Exception {
 	private $param = null;
 
 	/**
+	 * The payment intent ID associated with the error, when the server returns one.
+	 *
+	 * @var string|null
+	 */
+	private $intent_id = null;
+
+	/**
 	 * Constructor
 	 *
-	 * @param string     $message    The Exception message to throw.
-	 * @param string     $error_code Error code returned by the server, for example wcpay_account_not_found.
-	 * @param int        $http_code  HTTP response code.
-	 * @param string     $error_type Error type attribute.
-	 * @param string     $decline_code The decline code if it is a card error.
-	 * @param int        $code       The Exception code.
-	 * @param \Throwable $previous   The previous exception used for the exception chaining.
-	 * @param string     $param      The request parameter that triggered the error, if any.
+	 * @param string          $message      The Exception message to throw.
+	 * @param string          $error_code   Error code returned by the server, for example wcpay_account_not_found.
+	 * @param int             $http_code    HTTP response code.
+	 * @param string|null     $error_type   Error type attribute.
+	 * @param string|null     $decline_code The decline code if it is a card error.
+	 * @param int             $code         The Exception code.
+	 * @param \Throwable|null $previous     The previous exception used for the exception chaining.
+	 * @param string|null     $param        The request parameter that triggered the error, if any.
+	 * @param string|null     $intent_id    The payment intent ID associated with the error, if any.
 	 */
-	public function __construct( $message, $error_code, $http_code, $error_type = null, $decline_code = null, $code = 0, $previous = null, $param = null ) {
+	public function __construct( $message, $error_code, $http_code, $error_type = null, $decline_code = null, $code = 0, $previous = null, $param = null, $intent_id = null ) {
 		$this->http_code    = $http_code;
 		$this->error_type   = $error_type;
 		$this->decline_code = $decline_code;
 		$this->param        = $param;
+		$this->intent_id    = $intent_id;
 
 		parent::__construct( $message, $error_code, $code, $previous );
 	}
@@ -100,5 +109,18 @@ class API_Exception extends Base_Exception {
 	 */
 	public function get_param() {
 		return $this->param;
+	}
+
+	/**
+	 * Returns the payment intent ID associated with the error, if the server returned one.
+	 *
+	 * Present on declined-card responses, where Stripe embeds the payment intent in the error
+	 * body; null for errors that occur before an intent exists (for example an invalid payment
+	 * method).
+	 *
+	 * @return string|null The payment intent ID, or null when none was returned.
+	 */
+	public function get_intent_id() {
+		return $this->intent_id;
 	}
 }

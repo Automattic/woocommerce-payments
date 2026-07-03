@@ -2,14 +2,14 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
 import BusinessDetails from '../business-details';
-import { OnboardingContextProvider } from '../../context';
+import { OnboardingContextProvider, useOnboardingContext } from '../../context';
 import {
 	getAvailableCountries,
 	getBusinessTypes,
@@ -38,11 +38,39 @@ const countries = [
 		name: 'France',
 		types: [],
 	},
+	{
+		key: 'JP',
+		name: 'Japan',
+		types: [],
+	},
 ];
 
 jest.mocked( getAvailableCountries ).mockReturnValue( countries );
 
 const businessTypes = [
+	{
+		key: 'ES',
+		name: 'Spain',
+		types: [
+			{
+				key: 'individual',
+				name: 'Individual',
+				description: 'Individual description',
+				structures: [],
+			},
+			{
+				key: 'company',
+				name: 'Company',
+				description: 'Company description',
+				structures: [
+					{
+						key: 'nil',
+						name: 'None',
+					},
+				],
+			},
+		],
+	},
 	{
 		key: 'US',
 		name: 'United States',
@@ -85,6 +113,36 @@ const businessTypes = [
 				name: 'Company',
 				description: 'Company description',
 				structures: [],
+			},
+			{
+				key: 'non_profit',
+				name: 'Non-profit',
+				description: 'Non-profit description',
+				structures: [],
+			},
+		],
+	},
+	{
+		key: 'JP',
+		name: 'Japan',
+		types: [
+			{
+				key: 'individual',
+				name: 'Individual',
+				description: 'Individual description',
+				structures: [],
+			},
+			{
+				key: 'company',
+				name: 'Company',
+				description: 'Company description',
+				requires_structure: false,
+				structures: [
+					{
+						key: 'sole_proprietorship',
+						name: 'Sole proprietorship',
+					},
+				],
 			},
 			{
 				key: 'non_profit',
@@ -169,50 +227,78 @@ const mccsFlatList = [
 
 jest.mocked( getMccsFlatList ).mockReturnValue( mccsFlatList );
 
+const ContextDataViewer = () => {
+	const { data } = useOnboardingContext();
+
+	return (
+		<span data-testid="company-structure-value">
+			{ data[ 'company.structure' ] }
+		</span>
+	);
+};
+
+const selectBusinessCountry = async ( countryName: string ) => {
+	const countryField = screen
+		.getByTestId( 'country-select' )
+		.querySelector( 'button' );
+
+	if ( ! countryField ) {
+		throw new Error( 'Country select not found' );
+	}
+
+	await user.click( countryField );
+	await screen.findByText( countryName );
+	await user.click( screen.getByText( countryName ) );
+};
+
+const selectBusinessType = async ( businessTypeName: string ) => {
+	const businessTypeField = screen
+		.getByTestId( 'business-type-select' )
+		.querySelector( 'button' );
+
+	if ( ! businessTypeField ) {
+		throw new Error( 'Business type select not found' );
+	}
+
+	await user.click( businessTypeField );
+	await screen.findByText( businessTypeName );
+	await user.click( screen.getByText( businessTypeName ) );
+
+	return businessTypeField;
+};
+
+const selectBusinessStructure = async ( businessStructureName: string ) => {
+	const companyStructureField = screen
+		.getByTestId( 'business-structure-select' )
+		.querySelector( 'button' );
+
+	if ( ! companyStructureField ) {
+		throw new Error( 'Company structure select not found' );
+	}
+
+	await user.click( companyStructureField );
+	await screen.findByText( businessStructureName );
+	await user.click( screen.getByText( businessStructureName ) );
+
+	return companyStructureField;
+};
+
 describe( 'BusinessDetails', () => {
+	beforeEach( () => {
+		jest.mocked( getBusinessTypes ).mockReturnValue( businessTypes );
+	} );
+
 	it( 'renders and updates fields data when they are changed', async () => {
 		render(
 			<OnboardingContextProvider>
 				<BusinessDetails />
 			</OnboardingContextProvider>
 		);
-		const countryField = screen
-			.getByTestId( 'country-select' )
-			.querySelector( 'button' );
-
-		if ( ! countryField ) {
-			throw new Error( 'Country select not found' );
-		}
-
-		expect( countryField ).toBeInTheDocument();
-
-		await user.click( countryField );
-		await screen.findByText( 'United States' );
-		await user.click( screen.getByText( 'United States' ) );
-
-		const businessTypeField = screen
-			.getByTestId( 'business-type-select' )
-			.querySelector( 'button' );
-
-		if ( ! businessTypeField ) {
-			throw new Error( 'Business type select not found' );
-		}
-
-		await user.click( businessTypeField );
-		await screen.findByText( 'Company' );
-		await user.click( screen.getByText( 'Company' ) );
-
-		const companyStructureField = screen
-			.getByTestId( 'business-structure-select' )
-			.querySelector( 'button' );
-
-		if ( ! companyStructureField ) {
-			throw new Error( 'Company structure select not found' );
-		}
-
-		await user.click( companyStructureField );
-		await screen.findByText( 'Single member LLC' );
-		await user.click( screen.getByText( 'Single member LLC' ) );
+		await selectBusinessCountry( 'United States' );
+		const businessTypeField = await selectBusinessType( 'Company' );
+		const companyStructureField = await selectBusinessStructure(
+			'Single member LLC'
+		);
 
 		const mccField = screen
 			.getByTestId( 'mcc-select' )
@@ -230,5 +316,92 @@ describe( 'BusinessDetails', () => {
 			'Single member LLC'
 		);
 		expect( mccField ).toHaveTextContent( 'Popular Software' );
+	} );
+
+	it( 'continues without showing business structure when it is optional', async () => {
+		render(
+			<OnboardingContextProvider>
+				<BusinessDetails />
+			</OnboardingContextProvider>
+		);
+
+		await selectBusinessCountry( 'Japan' );
+		await selectBusinessType( 'Company' );
+
+		expect(
+			screen.queryByTestId( 'business-structure-select' )
+		).not.toBeInTheDocument();
+		expect( screen.getByTestId( 'mcc-select' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( /By using WooPayments/ )
+		).toBeInTheDocument();
+	} );
+
+	it( 'continues without showing business structure when the only structure is nil', async () => {
+		render(
+			<OnboardingContextProvider>
+				<BusinessDetails />
+			</OnboardingContextProvider>
+		);
+
+		await selectBusinessCountry( 'Spain' );
+		await selectBusinessType( 'Company' );
+
+		expect(
+			screen.queryByTestId( 'business-structure-select' )
+		).not.toBeInTheDocument();
+		expect( screen.getByTestId( 'mcc-select' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( /By using WooPayments/ )
+		).toBeInTheDocument();
+	} );
+
+	it( 'clears stale company structure when the structure field becomes hidden', async () => {
+		const optionalStructureBusinessTypes = businessTypes.map( ( country ) =>
+			country.key === 'US'
+				? {
+						...country,
+						types: country.types.map( ( type ) =>
+							type.key === 'company'
+								? { ...type, requires_structure: false }
+								: type
+						),
+				  }
+				: country
+		);
+
+		const { rerender } = render(
+			<OnboardingContextProvider>
+				<BusinessDetails />
+				<ContextDataViewer />
+			</OnboardingContextProvider>
+		);
+
+		await selectBusinessCountry( 'United States' );
+		await selectBusinessType( 'Company' );
+		await selectBusinessStructure( 'Single member LLC' );
+		expect(
+			screen.getByTestId( 'company-structure-value' )
+		).toHaveTextContent( 'single_member_llc' );
+
+		jest.mocked( getBusinessTypes ).mockReturnValue(
+			optionalStructureBusinessTypes
+		);
+
+		rerender(
+			<OnboardingContextProvider>
+				<BusinessDetails />
+				<ContextDataViewer />
+			</OnboardingContextProvider>
+		);
+
+		expect(
+			screen.queryByTestId( 'business-structure-select' )
+		).not.toBeInTheDocument();
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'company-structure-value' )
+			).toHaveTextContent( /^$/ )
+		);
 	} );
 } );
