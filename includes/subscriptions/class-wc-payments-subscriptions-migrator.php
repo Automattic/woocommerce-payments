@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+defined( 'ABSPATH' ) || exit;
+
 use WCPay\Exceptions\API_Exception;
 
 require_once __DIR__ . '/class-wc-payments-subscription-migration-log-handler.php';
