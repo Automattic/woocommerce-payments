@@ -7,8 +7,6 @@
 
 use WCPay\Container;
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * Returns the WCPay DI container.
  *
