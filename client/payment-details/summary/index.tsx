@@ -872,24 +872,37 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	);
 };
 
-// One card + Tracks effect per dispute; a charge can hold several disputes,
-// each with its own outcome to surface and record.
-const DisputeOutcome: React.FC< { dispute: ChargeDispute } > = ( {
+// COUPLED with dispute-recommendations/index.tsx: the card filters its catalog
+// by this same productType. Keep both call sites in lockstep.
+const resolveDisputeProductType = ( dispute: ChargeDispute ): string =>
+	resolveProductType(
+		dispute.metadata,
+		dispute.order?.suggested_product_type,
+		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
+			false
+	);
+
+// Gate on won/lost specifically: DisputeRecommendationsCard has no entries for
+// warning_* inquiries (warning_closed is the one that reaches here, since the
+// Outcome View admits it). AND suppress when the merchant accepted the dispute:
+// accepting is a deliberate non-engagement, so coaching them to "submit evidence
+// next time" misreads the choice. Per RiskOps review.
+const qualifiesForRecommendationsCard = ( dispute: ChargeDispute ): boolean =>
+	!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+	( dispute.status === 'won' || dispute.status === 'lost' ) &&
+	dispute.metadata?.__closed_by_merchant !== '1';
+
+// Effect-only sibling of the recommendations card: fires the per-dispute Outcome
+// View Tracks. Kept separate from card rendering so analytics stay one-per-dispute
+// even after the cards are deduped by recommendation signature.
+const DisputeOutcomeTracker: React.FC< { dispute: ChargeDispute } > = ( {
 	dispute,
 } ) => {
-	// Gate on won/lost specifically: DisputeRecommendationsCard has no entries
-	// for warning_* inquiries (warning_closed is the one that reaches here, since
-	// the Outcome View admits it). AND suppress when the merchant accepted the
-	// dispute: accepting is a deliberate non-engagement, so coaching them to
-	// "submit evidence next time" misreads the choice. Per RiskOps review.
-	const showRecommendationsCard =
-		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
-		( dispute.status === 'won' || dispute.status === 'lost' ) &&
-		dispute.metadata?.__closed_by_merchant !== '1';
+	const showRecommendationsCard = qualifiesForRecommendationsCard( dispute );
 
-	// Outcome View Tracks: gating mirrors the original DisputeOutcomeView
-	// path (won/lost/warning_closed + flag) so the signal stays stable
-	// across the component refactor. Dedup is in `recordOutcomeViewOnce`.
+	// Gating mirrors the original DisputeOutcomeView path
+	// (won/lost/warning_closed + flag) so the signal stays stable across the
+	// component refactor. Dedup is in `recordOutcomeViewOnce`.
 	const isOutcomeViewStatus =
 		dispute.status === 'won' ||
 		dispute.status === 'lost' ||
@@ -897,14 +910,7 @@ const DisputeOutcome: React.FC< { dispute: ChargeDispute } > = ( {
 	const shouldRecordOutcomeView =
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
 		isOutcomeViewStatus;
-	// COUPLED with dispute-recommendations/index.tsx: the card filters its
-	// catalog by this same productType. Keep both call sites in lockstep.
-	const productType = resolveProductType(
-		dispute.metadata,
-		dispute.order?.suggested_product_type,
-		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
-			false
-	);
+	const productType = resolveDisputeProductType( dispute );
 
 	// Mirror the card: true only when the card actually renders entries.
 	const hasRecommendations =
@@ -917,15 +923,7 @@ const DisputeOutcome: React.FC< { dispute: ChargeDispute } > = ( {
 		}
 	}, [ shouldRecordOutcomeView, dispute, productType, hasRecommendations ] );
 
-	if ( ! showRecommendationsCard ) {
-		return null;
-	}
-
-	return (
-		<ErrorBoundary>
-			<DisputeRecommendationsCard dispute={ dispute } />
-		</ErrorBoundary>
-	);
+	return null;
 };
 
 const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
@@ -933,11 +931,40 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 ) => {
 	const disputes = props.charge ? getChargeDisputes( props.charge ) : [];
 
+	// Recommendations are driven by productType, which comes from the shared
+	// order, so several disputes on one charge normally resolve to the same set.
+	// Collapse to one card per unique set — keyed by the sorted recommendation
+	// ids — so two won disputes don't stack two identical "Tips for future
+	// disputes" cards. Analytics stay per-dispute via DisputeOutcomeTracker.
+	const seenSignatures = new Set< string >();
+	const cardDisputes = disputes.filter( ( dispute ) => {
+		if ( ! qualifiesForRecommendationsCard( dispute ) ) {
+			return false;
+		}
+		const signature = getDisputeRecommendations(
+			dispute,
+			resolveDisputeProductType( dispute )
+		)
+			.map( ( rec ) => rec.id )
+			.sort()
+			.join( '|' );
+		if ( seenSignatures.has( signature ) ) {
+			return false;
+		}
+		seenSignatures.add( signature );
+		return true;
+	} );
+
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
 			<PaymentDetailsSummary { ...props } />
 			{ disputes.map( ( dispute ) => (
-				<DisputeOutcome key={ dispute.id } dispute={ dispute } />
+				<DisputeOutcomeTracker key={ dispute.id } dispute={ dispute } />
+			) ) }
+			{ cardDisputes.map( ( dispute ) => (
+				<ErrorBoundary key={ dispute.id }>
+					<DisputeRecommendationsCard dispute={ dispute } />
+				</ErrorBoundary>
 			) ) }
 		</WCPaySettingsContext.Provider>
 	);

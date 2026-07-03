@@ -1464,6 +1464,86 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 		} );
 
+		// Recommendations are the same for every dispute on a charge whenever
+		// they share the order-derived productType, so the cards are deduped by
+		// recommendation signature while analytics stay per-dispute.
+		describe( 'recommendations card dedup across disputes', () => {
+			const makeWonDispute = ( id ) => {
+				const dispute = getBaseDispute();
+				dispute.id = id;
+				dispute.status = 'won';
+				dispute.reason = 'product_not_received';
+				dispute.metadata = {
+					__dispute_closed_at: '1693626817',
+					__product_type: 'physical_product',
+				};
+				// Tracking only (no carrier/receipt/communication) yields
+				// keep_doing tips → the "Tips for future disputes" section.
+				dispute.evidence = { shipping_tracking_number: '1Z999' };
+				return dispute;
+			};
+
+			beforeEach( () => {
+				recordEvent.mockClear();
+				_resetOutcomeViewTrackingForTests();
+				global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+			} );
+
+			test( 'renders a single card for two won disputes with the same recommendations', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				const first = makeWonDispute( 'dp_won_1' );
+				const second = makeWonDispute( 'dp_won_2' );
+				charge.dispute = first;
+				charge.disputes = [ first, second ];
+
+				renderCharge( charge );
+
+				expect(
+					screen.getAllByRole( 'heading', {
+						name: /tips for future disputes/i,
+					} )
+				).toHaveLength( 1 );
+			} );
+
+			test( 'renders one card for a single won dispute', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				charge.dispute = makeWonDispute( 'dp_won_1' );
+
+				renderCharge( charge );
+
+				expect(
+					screen.getAllByRole( 'heading', {
+						name: /tips for future disputes/i,
+					} )
+				).toHaveLength( 1 );
+			} );
+
+			test( 'fires the outcome-viewed event once per dispute despite the deduped card', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				const first = makeWonDispute( 'dp_won_1' );
+				const second = makeWonDispute( 'dp_won_2' );
+				charge.dispute = first;
+				charge.disputes = [ first, second ];
+
+				renderCharge( charge );
+
+				const viewedCalls = recordEvent.mock.calls.filter(
+					( [ name ] ) => name === 'wcpay_dispute_outcome_viewed'
+				);
+
+				expect( viewedCalls ).toHaveLength( 2 );
+
+				expect(
+					viewedCalls
+						.map( ( [ , props ] ) => props.dispute_id )
+						.sort()
+				).toEqual( [ 'dp_won_1', 'dp_won_2' ] );
+			} );
+		} );
+
 		// Wrapper-lifecycle coverage for the Tracks dedup. The function-level
 		// guard is unit-tested in `dispute-outcome/__tests__/tracks.test.ts`;
 		// these tests cover the remount path the dedup actually defends.
