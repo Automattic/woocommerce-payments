@@ -641,6 +641,48 @@ describe( 'PaymentDetailsSummary', () => {
 			).toHaveTextContent( /\$30.70/ );
 		} );
 
+		test( 'labels each pane "Dispute N of M", ordered oldest-first', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const newer = getBaseDispute();
+			newer.id = 'dp_newer';
+			newer.status = 'needs_response';
+			newer.created = 2000;
+			const older = getBaseDispute();
+			older.id = 'dp_older';
+			older.status = 'needs_response';
+			older.created = 1000;
+			charge.dispute = newer;
+			// Deliberately out of creation order to prove the numbering sorts.
+			charge.disputes = [ newer, older ];
+
+			const container = renderCharge( charge );
+
+			const labels = Array.from(
+				container.querySelectorAll(
+					'.payment-details-summary__dispute-label'
+				)
+			).map( ( node ) => node.textContent );
+
+			expect( labels ).toEqual( [ 'Dispute 1 of 2', 'Dispute 2 of 2' ] );
+		} );
+
+		test( 'omits the pane label when there is a single dispute', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelector(
+					'.payment-details-summary__dispute-label'
+				)
+			).toBeNull();
+			expect( screen.queryByText( 'Dispute 1 of 1' ) ).toBeNull();
+		} );
+
 		test( 'hides the refund menu when any dispute is non-refundable', () => {
 			const charge = getBaseCharge();
 			charge.disputed = true;

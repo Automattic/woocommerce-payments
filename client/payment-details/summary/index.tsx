@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -28,6 +28,7 @@ import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,
 	getChargeDisputes,
+	getDisputeOrdinals,
 	getChargeStatus,
 	getChargeChannel,
 	isOnHoldByFraudTools,
@@ -286,6 +287,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
 	const disputes = getChargeDisputes( charge );
+
+	// Panes and the timeline both derive their "Dispute N of M" numbering from
+	// this shared, creation-ordered map, so the two views always agree.
+	const { orderById: disputeOrderById, total: disputeTotal } =
+		getDisputeOrdinals( charge );
+
+	// Render panes oldest-first so their visible order matches the numbering.
+	const orderedDisputes = [ ...disputes ].sort(
+		( a, b ) => ( a.created ?? 0 ) - ( b.created ?? 0 )
+	);
 
 	// Header summary can only surface one dispute; a single charge can hold
 	// several. Drive the status chip off the most urgent one — the one
@@ -774,8 +785,21 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				</LoadableBlock>
 			</CardBody>
 
-			{ disputes.map( ( dispute ) => (
+			{ orderedDisputes.map( ( dispute ) => (
 				<ErrorBoundary key={ dispute.id }>
+					{ disputeTotal > 1 && (
+						<p className="payment-details-summary__dispute-label">
+							{ sprintf(
+								/* translators: %1$d is the dispute's position, %2$d is the total number of disputes on the charge */
+								__(
+									'Dispute %1$d of %2$d',
+									'woocommerce-payments'
+								),
+								disputeOrderById[ dispute.id ],
+								disputeTotal
+							) }
+						</p>
+					) }
 					{ renderDisputeDetails( dispute, charge, bankName, () =>
 						setIsRefundModalOpen( true )
 					) }

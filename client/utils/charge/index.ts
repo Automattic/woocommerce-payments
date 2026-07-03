@@ -23,6 +23,30 @@ export const getChargeDisputes = ( charge: Charge ): ChargeDispute[] => {
 	return charge.dispute ? [ charge.dispute ] : [];
 };
 
+export interface DisputeOrder {
+	orderById: Record< string, number >;
+	total: number;
+}
+
+// Numbering the disputes by their creation time (not array order) is what lets
+// the summary panes and the timeline agree on "Dispute N of M": both derive the
+// ordinal from this single mapping keyed by dispute id, so the oldest dispute is
+// always "Dispute 1" wherever it appears. `created` can be missing on older
+// server payloads; when it is, the sort leaves those entries in their original
+// relative position, so the result is still deterministic.
+export const getDisputeOrdinals = ( charge: Charge ): DisputeOrder => {
+	const disputes = [ ...getChargeDisputes( charge ) ].sort(
+		( a, b ) => ( a.created ?? 0 ) - ( b.created ?? 0 )
+	);
+
+	const orderById: Record< string, number > = {};
+	disputes.forEach( ( dispute, index ) => {
+		orderById[ dispute.id ] = index + 1;
+	} );
+
+	return { orderById, total: disputes.length };
+};
+
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
 

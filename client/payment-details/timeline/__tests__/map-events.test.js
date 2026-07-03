@@ -1,5 +1,10 @@
 /** @format */
 /**
+ * External dependencies
+ */
+import { render } from '@testing-library/react';
+
+/**
  * Internal dependencies
  */
 import mapTimelineEvents, { composeTaxString } from '../map-events';
@@ -1232,6 +1237,98 @@ describe( 'mapTimelineEvents', () => {
 				] )
 			).toMatchSnapshot();
 		} );
+	} );
+} );
+
+describe( 'mapTimelineEvents dispute ordinal qualifiers', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
+			zeroDecimalCurrencies: [],
+			connect: { country: 'US' },
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+			dateFormat: 'M j, Y',
+		};
+	} );
+
+	const headlineText = ( item ) =>
+		render( <>{ item.headline }</> ).container.textContent;
+
+	const disputeOrder = {
+		orderById: { dp_first: 1, dp_second: 2 },
+		total: 2,
+	};
+
+	const twoDisputeEvents = [
+		{
+			amount: 9500,
+			currency: 'USD',
+			datetime: 1585793174,
+			deposit: null,
+			dispute_id: 'dp_first',
+			fee: 1500,
+			reason: 'fraudulent',
+			type: 'dispute_needs_response',
+		},
+		{
+			amount: 8000,
+			currency: 'USD',
+			datetime: 1585879574,
+			deposit: null,
+			dispute_id: 'dp_second',
+			fee: 1500,
+			reason: 'fraudulent',
+			type: 'dispute_needs_response',
+		},
+	];
+
+	test( 'appends "Dispute N of M" to the status-change and main dispute lines', () => {
+		const [ firstStatus, , firstMain, secondStatus, , secondMain ] =
+			mapTimelineEvents( twoDisputeEvents, null, disputeOrder );
+
+		expect( headlineText( firstStatus ) ).toContain( 'Dispute 1 of 2' );
+		expect( headlineText( firstMain ) ).toContain( 'Dispute 1 of 2' );
+
+		expect( headlineText( secondStatus ) ).toContain( 'Dispute 2 of 2' );
+		expect( headlineText( secondMain ) ).toContain( 'Dispute 2 of 2' );
+	} );
+
+	test( 'leaves the deposit line unqualified', () => {
+		const [ , firstDeposit ] = mapTimelineEvents(
+			twoDisputeEvents,
+			null,
+			disputeOrder
+		);
+
+		expect( headlineText( firstDeposit ) ).not.toContain(
+			'Dispute 1 of 2'
+		);
+	} );
+
+	test( 'omits the qualifier when the charge has a single dispute', () => {
+		const [ statusItem, , mainItem ] = mapTimelineEvents(
+			[ twoDisputeEvents[ 0 ] ],
+			null,
+			{ orderById: { dp_first: 1 }, total: 1 }
+		);
+
+		expect( headlineText( statusItem ) ).not.toContain( '· Dispute' );
+		expect( headlineText( mainItem ) ).not.toContain( '· Dispute' );
+	} );
+
+	test( 'omits the qualifier when no dispute order map is passed', () => {
+		const [ statusItem ] = mapTimelineEvents( [ twoDisputeEvents[ 0 ] ] );
+
+		expect( headlineText( statusItem ) ).not.toContain( '· Dispute' );
 	} );
 } );
 
