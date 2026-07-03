@@ -587,7 +587,7 @@ describe( 'PaymentDetailsSummary', () => {
 			).toHaveLength( 1 );
 		} );
 
-		test( 'sums every dispute fee in the breakdown tooltip so it reconciles with the total', async () => {
+		test( 'sums every dispute fee in the breakdown tooltip on the envelope path', async () => {
 			const charge = getBaseCharge();
 			charge.balance_transaction = {
 				amount: 2000,
@@ -619,6 +619,21 @@ describe( 'PaymentDetailsSummary', () => {
 			];
 			charge.dispute = first;
 			charge.disputes = [ first, second ];
+			// Envelope path only: the server folds both dispute fees into the
+			// totals, so `Total fees` reflects them and the tooltip's summed
+			// `Dispute fee` line reconciles. On the legacy path only the
+			// singular dispute is folded (see the single-dispute test below).
+			charge.fee_breakdown_v1 = {
+				rows: [],
+				totals: {
+					fee: { amount: 3070, currency: 'usd' },
+					tax: { amount: 0, currency: 'usd' },
+					net: { amount: -1070, currency: 'usd' },
+					gross: { amount: 2000, currency: 'usd' },
+					fee_plus_tax: { amount: 3070, currency: 'usd' },
+				},
+				notes: [],
+			};
 
 			renderCharge( charge );
 
@@ -627,10 +642,6 @@ describe( 'PaymentDetailsSummary', () => {
 			);
 
 			const tooltipContent = screen.getByRole( 'tooltip' );
-
-			expect(
-				within( tooltipContent ).getByLabelText( /Transaction fee/ )
-			).toHaveTextContent( /\$0.70/ );
 
 			expect(
 				within( tooltipContent ).getByLabelText( /Dispute fee/ )

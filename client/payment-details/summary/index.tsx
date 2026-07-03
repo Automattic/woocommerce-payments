@@ -51,6 +51,7 @@ import { ClickTooltip } from 'components/tooltip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeAmount,
+	getDisputeFeeFormatted,
 	isAwaitingResponse,
 	isRefundable,
 } from 'wcpay/disputes/utils';
@@ -306,21 +307,36 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		disputes.find( ( dispute ) => isAwaitingResponse( dispute.status ) ) ??
 		disputes[ 0 ];
 
-	// `Total fees` folds every dispute's fee (server-side on the envelope path,
-	// via getChargeAmounts on the legacy path), so the tooltip's `Dispute fee`
-	// line must sum all disputes — not just the primary — or the breakdown
-	// won't reconcile once a charge has 2+ fee-bearing disputes.
-	const disputeFeeAmounts = disputes
-		.map( getDisputeFeeAmount )
-		.filter(
-			( fee ): fee is { amount: number; currency: string } => !! fee
-		);
-	const disputeFee = disputeFeeAmounts.length
-		? formatCurrency(
-				_.sumBy( disputeFeeAmounts, 'amount' ),
-				disputeFeeAmounts[ 0 ].currency
-		  )
-		: undefined;
+	// Mirror the branch getChargeAmounts takes, so the tooltip's `Dispute fee`
+	// line matches whichever path produced `Total fees`.
+	const usingFeeBreakdownEnvelope =
+		canUseFeeBreakdownData( charge ) &&
+		!! charge.fee_breakdown_v1?.totals?.net &&
+		!! charge.fee_breakdown_v1?.totals?.gross;
+
+	// On the envelope path the server-computed `Total fees` folds every
+	// dispute, so the tooltip has to sum all of them to reconcile once a
+	// charge has 2+ fee-bearing disputes. The legacy path only folds the
+	// singular `charge.dispute` into `Total fees`, so mirror that with the
+	// singular fee or the breakdown won't add up.
+	let disputeFee: string | undefined;
+	if ( usingFeeBreakdownEnvelope ) {
+		const disputeFeeAmounts = disputes
+			.map( getDisputeFeeAmount )
+			.filter(
+				( fee ): fee is { amount: number; currency: string } => !! fee
+			);
+		disputeFee = disputeFeeAmounts.length
+			? formatCurrency(
+					_.sumBy( disputeFeeAmounts, 'amount' ),
+					disputeFeeAmounts[ 0 ].currency
+			  )
+			: undefined;
+	} else {
+		disputeFee = charge.dispute
+			? getDisputeFeeFormatted( charge.dispute )
+			: undefined;
+	}
 
 	// Refunding is blocked while any single dispute blocks it, so the menu is
 	// only refundable when every dispute is.

@@ -260,12 +260,11 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	}
 
 	if ( isChargeDisputed( charge ) ) {
-		// A charge can carry more than one dispute; fold every dispute's fee
-		// and adjustment so the totals stay right when there are 2+.
-		for ( const dispute of getChargeDisputes( charge ) ) {
-			balance.fee += sumBy( dispute.balance_transactions, 'fee' );
-			balance.refunded -= sumBy( dispute.balance_transactions, 'amount' );
-		}
+		balance.fee += sumBy( charge.dispute?.balance_transactions, 'fee' );
+		balance.refunded -= sumBy(
+			charge.dispute?.balance_transactions,
+			'amount'
+		);
 	}
 
 	balance.net = balance.amount - balance.fee - balance.refunded;

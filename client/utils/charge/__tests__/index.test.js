@@ -443,7 +443,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
-	test( 'multiple disputes fold every dispute fee and adjustment', () => {
+	test( 'legacy path folds only the singular dispute, ignoring the disputes array', () => {
 		const charge = {
 			amount: 1800,
 			application_fee_amount: 82,
@@ -453,6 +453,15 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 				fee: 82,
 			},
 			disputed: true,
+			dispute: {
+				amount: 1000,
+				balance_transactions: [
+					{
+						amount: -1000,
+						fee: 1500,
+					},
+				],
+			},
 			disputes: [
 				{
 					amount: 1000,
@@ -478,9 +487,9 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
 			amount: 1800,
 			currency: 'usd',
-			net: 1800 - 82 - 3000 - 1800,
-			fee: 82 + 3000,
-			refunded: 1800,
+			net: 1800 - 82 - 1500 - 1000,
+			fee: 82 + 1500,
+			refunded: 1000,
 		} );
 	} );
 
