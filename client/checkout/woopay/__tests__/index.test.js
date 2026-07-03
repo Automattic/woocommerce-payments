@@ -1,8 +1,9 @@
 /**
  * Internal dependencies
  */
-// The module under test is required fresh inside each test so its module-level
-// root cache is reset between cases.
+// The entry module wires renderSaveUserSection to `window.load` and jQuery's
+// `ajaxComplete`. Tests drive those same callbacks rather than the (unexported)
+// function, so they exercise the real public surface.
 
 const mockCreateRoot = jest.fn();
 
@@ -15,12 +16,44 @@ jest.mock(
 	() => () => null
 );
 
-const requireModule = () =>
-	require( 'wcpay/checkout/woopay/index' ).renderSaveUserSection;
+// Load the entry module in isolation (fresh module-level root cache each time)
+// and hand back the callbacks it registers, so a test can trigger the initial
+// render (`load`) and the re-renders that follow checkout updates
+// (`ajaxComplete`).
+const loadCheckoutEntry = () => {
+	let ajaxCompleteHandler;
+
+	global.jQuery = jest.fn( ( arg ) => {
+		if ( typeof arg === 'function' ) {
+			arg( global.jQuery );
+		}
+
+		return {
+			ajaxComplete: ( handler ) => {
+				ajaxCompleteHandler = handler;
+			},
+		};
+	} );
+
+	const addEventListenerSpy = jest.spyOn( window, 'addEventListener' );
+
+	jest.isolateModules( () => {
+		require( 'wcpay/checkout/woopay/index' );
+	} );
+
+	const loadCall = addEventListenerSpy.mock.calls.find(
+		( [ event ] ) => event === 'load'
+	);
+	addEventListenerSpy.mockRestore();
+
+	return {
+		triggerLoad: loadCall[ 1 ],
+		triggerAjaxComplete: () => ajaxCompleteHandler(),
+	};
+};
 
 describe( 'renderSaveUserSection - Blocks checkout', () => {
 	beforeEach( () => {
-		jest.resetModules();
 		mockCreateRoot.mockReset();
 		mockCreateRoot.mockImplementation( () => ( {
 			render: jest.fn(),
@@ -35,14 +68,15 @@ describe( 'renderSaveUserSection - Blocks checkout', () => {
 				<div class="wp-block-woocommerce-checkout-payment-block"></div>
 			</div>
 		`;
-		const renderSaveUserSection = requireModule();
+		const { triggerLoad, triggerAjaxComplete } = loadCheckoutEntry();
 
-		renderSaveUserSection();
-		renderSaveUserSection();
+		triggerLoad();
+		triggerAjaxComplete();
 
 		expect( mockCreateRoot ).toHaveBeenCalledTimes( 1 );
 
 		const root = mockCreateRoot.mock.results[ 0 ].value;
+
 		expect( root.render ).toHaveBeenCalledTimes( 2 );
 	} );
 
@@ -52,29 +86,30 @@ describe( 'renderSaveUserSection - Blocks checkout', () => {
 				<div class="wp-block-woocommerce-checkout-payment-block"></div>
 			</div>
 		`;
-		const renderSaveUserSection = requireModule();
+		const { triggerLoad, triggerAjaxComplete } = loadCheckoutEntry();
 
-		renderSaveUserSection();
+		triggerLoad();
 		const firstRoot = mockCreateRoot.mock.results[ 0 ].value;
 
 		// Simulate WC core replacing the checkout subtree, taking our
 		// container with it.
 		document.querySelector( '#remember-me' ).remove();
 
-		renderSaveUserSection();
+		triggerAjaxComplete();
 
 		expect( firstRoot.unmount ).toHaveBeenCalledTimes( 1 );
 		expect( mockCreateRoot ).toHaveBeenCalledTimes( 2 );
 
 		const newContainer = document.querySelector( '#remember-me' );
+
 		expect( mockCreateRoot ).toHaveBeenLastCalledWith( newContainer );
 	} );
 
 	it( 'does not mount into a detached container when the payment options block is missing', () => {
 		document.body.innerHTML = '<div class="wc-block-checkout"></div>';
-		const renderSaveUserSection = requireModule();
+		const { triggerLoad, triggerAjaxComplete } = loadCheckoutEntry();
 
-		renderSaveUserSection();
+		triggerLoad();
 
 		expect( mockCreateRoot ).not.toHaveBeenCalled();
 		expect( document.querySelector( '#remember-me' ) ).toBeNull();
@@ -85,11 +120,12 @@ describe( 'renderSaveUserSection - Blocks checkout', () => {
 			.querySelector( '.wc-block-checkout' )
 			.appendChild( paymentBlock );
 
-		renderSaveUserSection();
+		triggerAjaxComplete();
 
 		expect( mockCreateRoot ).toHaveBeenCalledTimes( 1 );
 
 		const container = document.querySelector( '#remember-me' );
+
 		expect( container ).not.toBeNull();
 		expect( mockCreateRoot ).toHaveBeenCalledWith( container );
 	} );

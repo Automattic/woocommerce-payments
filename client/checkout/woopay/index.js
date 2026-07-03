@@ -11,7 +11,7 @@ import CheckoutPageSaveUser from 'wcpay/components/woopay/save-user/checkout-pag
 
 let blocksCheckoutRoot = null;
 
-export const renderSaveUserSection = () => {
+const renderSaveUserSection = () => {
 	const saveUserSection = document.getElementsByClassName(
 		'woopay-save-new-user-container'
 	)?.[ 0 ];
