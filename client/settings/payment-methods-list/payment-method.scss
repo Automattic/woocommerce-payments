@@ -46,6 +46,18 @@
 					height: 20px;
 					object-fit: contain;
 					margin-right: 0;
+					// Admin-only stroke so white-background brand logos read
+					// as defined chips instead of floating (settings-only
+					// stylesheet; checkout stays strokeless). The colored brand
+					// badges (JCB, Cartes Bancaires, …) bake ~2px rounded
+					// corners into their artwork, so keep the chip radius small
+					// to hug them — a larger radius exposes the badges'
+					// transparent corners as a thin white line inside the
+					// stroke. `content-box` keeps the box at 32×20 (ratio 1.6)
+					// so the full-bleed 64×40 badges fill it exactly.
+					border: 1px solid rgba( 0, 0, 0, 0.07 );
+					border-radius: 2px;
+					box-sizing: content-box;
 				}
 			}
 		}
