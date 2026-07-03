@@ -2121,6 +2121,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
+
+			// Remember the intent this session paid so the order confirmation page can recognise the
+			// genuine payer without trusting query-string params. The session cannot be reconstructed
+			// from a leaked order key.
+			if ( WC()->session && '' !== (string) $intent_id ) {
+				WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, (string) $intent_id );
+			}
 		}
 		// Set the branded payment method title + card meta from the charge details BEFORE the status update.
 		// update_order_status_from_intent() -> payment_complete() fires the customer order/renewal email
