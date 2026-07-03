@@ -107,7 +107,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		'state',
 		'city',
 		'country',
-		'company',
 		'customer_name',
 		'customer_email',
 		// Free-text refund reason can contain merchant-entered PII, so keep it out of logs.
