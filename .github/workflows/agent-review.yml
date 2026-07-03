@@ -56,6 +56,10 @@ jobs:
 
       - name: Prepare prompt from template
         id: prompt
+        env:
+          LINEAR_ISSUE_ID: ${{ inputs.linear_issue_id }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          BRANCH_NAME: ${{ inputs.branch_name }}
         run: |
           TEMPLATE=".gamma-ai-tools/prompts/pipeline/review.md"
           if [ ! -f "$TEMPLATE" ]; then
@@ -63,12 +67,10 @@ jobs:
             exit 1
           fi
 
-          # Substitute variables
-          sed \
-            -e 's|{{LINEAR_ISSUE_ID}}|${{ inputs.linear_issue_id }}|g' \
-            -e 's|{{TARGET_BRANCH}}|${{ inputs.target_branch }}|g' \
-            -e 's|{{BRANCH_NAME}}|${{ inputs.branch_name }}|g' \
-            "$TEMPLATE" > /tmp/review-prompt.md
+          # Substitute placeholders. Values come from the environment and are
+          # inserted literally, so metacharacters in an input can't break out
+          # of the command or corrupt the substitution.
+          perl -pe 's/\{\{LINEAR_ISSUE_ID\}\}/$ENV{LINEAR_ISSUE_ID}/g; s/\{\{TARGET_BRANCH\}\}/$ENV{TARGET_BRANCH}/g; s/\{\{BRANCH_NAME\}\}/$ENV{BRANCH_NAME}/g;' "$TEMPLATE" > /tmp/review-prompt.md
 
           # Write multiline output
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
@@ -81,7 +83,7 @@ jobs:
 
       - name: Run Review Agent
         id: review
-        uses: anthropics/claude-code-action@0f97b95b6536c26e5f6bd90faec370d41695beca # v1.0.144
+        uses: anthropics/claude-code-action@521136812280ae7ef256e06045655b9da02793f0 # v1.0.158
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: ${{ inputs.model }}
@@ -100,13 +102,18 @@ jobs:
 
       - name: Write job summary
         if: always()
+        env:
+          LINEAR_ISSUE_ID: ${{ inputs.linear_issue_id }}
+          BRANCH_NAME: ${{ inputs.branch_name }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          MODEL: ${{ inputs.model }}
         run: |
           echo "## Review Agent Results" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Issue:** ${{ inputs.linear_issue_id }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Branch:** ${{ inputs.branch_name }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Base:** ${{ inputs.target_branch }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Model:** ${{ inputs.model }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Issue:** ${LINEAR_ISSUE_ID}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** ${BRANCH_NAME}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Base:** ${TARGET_BRANCH}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Model:** ${MODEL}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ -f review-report.md ]; then
