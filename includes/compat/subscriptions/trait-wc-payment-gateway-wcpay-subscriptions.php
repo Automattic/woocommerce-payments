@@ -66,6 +66,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	abstract public function add_token_to_order( $order, $token );
 
 	/**
+	 * Ensures a payment method is saved as a WooCommerce token and attached to the order/subscription.
+	 *
+	 * @param WC_Order     $order             The order.
+	 * @param string       $payment_method_id The payment method ID.
+	 * @param WP_User|null $user              The user to attach the token to.
+	 * @return WC_Payment_Token The saved token.
+	 *
+	 * @throws Exception When the payment method cannot be saved for the order customer.
+	 */
+	abstract public function ensure_payment_method_token_for_order( $order, $payment_method_id, $user = null );
+
+	/**
 	 * Returns a formatted token list for a user.
 	 *
 	 * @param int         $user_id    The user ID.
@@ -396,6 +408,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
+			$token = $this->maybe_repair_renewal_order_payment_token( $renewal_order );
+		}
+		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
 			$renewal_order->add_order_note( 'Subscription renewal failed: No saved payment method found.' );
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
@@ -469,6 +484,44 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 				$renewal_order->add_order_note( $note );
 			}
+		}
+	}
+
+	/**
+	 * Attempts to repair a renewal order that is missing a token by using its subscription parent order.
+	 *
+	 * @param WC_Order $renewal_order The renewal order.
+	 * @return WC_Payment_Token|null The repaired token, or null when repair is not possible.
+	 */
+	private function maybe_repair_renewal_order_payment_token( $renewal_order ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
+			return null;
+		}
+
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
+		$subscription  = reset( $subscriptions );
+		if ( ! $subscription instanceof WC_Subscription ) {
+			return null;
+		}
+
+		$parent_order = wc_get_order( $subscription->get_parent_id() );
+		if ( ! $parent_order ) {
+			return null;
+		}
+
+		$payment_method_id = $this->order_service->get_payment_method_id_for_order( $parent_order );
+		if ( empty( $payment_method_id ) ) {
+			return null;
+		}
+
+		try {
+			$token = $this->ensure_payment_method_token_for_order( $parent_order, $payment_method_id, get_user_by( 'id', $subscription->get_customer_id() ) );
+			$this->add_token_to_order( $renewal_order, $token );
+			$renewal_order->add_order_note( __( 'Recovered missing subscription payment method token from the parent order.', 'woocommerce-payments' ) );
+			return $token;
+		} catch ( Exception $e ) {
+			Logger::error( 'Error repairing subscription renewal payment token for order #' . $renewal_order->get_id() . ': ' . $e->getMessage() );
+			return null;
 		}
 	}
 

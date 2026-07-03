@@ -5225,6 +5225,24 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
 	}
 
+	public function test_ensure_payment_method_token_for_order_reuses_existing_amazon_pay_token() {
+		$user_id = self::factory()->user->create();
+		$user    = new WP_User( $user_id );
+		$order   = WC_Helper_Order::create_order( $user_id );
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+		$token = WC_Helper_Token::create_amazon_pay_token( 'pm_amazon_mock', $user_id );
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result = $this->card_gateway->ensure_payment_method_token_for_order( $order, 'pm_amazon_mock', $user );
+
+		$this->assertSame( $token->get_id(), $result->get_id() );
+		$this->assertSame( [ $token->get_id() ], wc_get_order( $order->get_id() )->get_payment_tokens() );
+	}
+
 	/**
 	 * Reset the PaymentMethodDefinitionRegistry singleton and register specific definitions.
 	 *
