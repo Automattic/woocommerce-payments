@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add direct file access protection to PHP files flagged by Plugin Check.

@@ -31,7 +31,71 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		global $wp;
 		unset( $_GET['key'] );
 		unset( $wp->query_vars['order-received'] );
+		if ( WC()->session ) {
+			WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
+		}
 		parent::tear_down();
+	}
+
+	/**
+	 * Builds a WooPayments order with the given intent attached.
+	 *
+	 * @param string $intent_id The payment intent id to attach to the order.
+	 * @return WC_Order
+	 */
+	private function create_paid_woopayments_order( $intent_id = 'pi_abc123' ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->set_date_paid( time() );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Records the intent the current session paid, mirroring what the gateway stores at payment time.
+	 *
+	 * @param string $intent_id The paid intent id.
+	 */
+	private function set_session_paid_intent_id( $intent_id ) {
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, $intent_id );
+	}
+
+	public function test_skips_email_verification_for_the_session_that_paid() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_abc123' );
+
+		$this->assertFalse(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_when_the_session_has_no_paid_intent() {
+		// A bare order-key leak in another session carries no paid intent, so verification still applies.
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_when_the_session_intent_does_not_match_the_order() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_someone_elses' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_outside_the_order_received_context() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_abc123' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-pay' )
+		);
 	}
 
 	public function test_show_card_payment_method_name_without_card_brand() {

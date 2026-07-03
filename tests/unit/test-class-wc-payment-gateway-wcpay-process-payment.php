@@ -221,6 +221,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
 
 		parent::tear_down();
 	}
@@ -329,6 +330,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( $this->return_url, $result['redirect'] );
+
+		// Assert: The paid intent id is remembered in the session for the order confirmation page.
+		$this->assertSame( 'pi_mock', WC()->session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY ) );
 	}
 
 	/**
