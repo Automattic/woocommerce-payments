@@ -644,6 +644,10 @@ describe( 'PaymentDetailsSummary', () => {
 			const tooltipContent = screen.getByRole( 'tooltip' );
 
 			expect(
+				within( tooltipContent ).getByLabelText( /Transaction fee/ )
+			).toHaveTextContent( /\$0.70/ );
+
+			expect(
 				within( tooltipContent ).getByLabelText( /Dispute fee/ )
 			).toHaveTextContent( /\$30.00/ );
 

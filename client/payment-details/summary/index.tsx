@@ -320,15 +320,17 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// singular `charge.dispute` into `Total fees`, so mirror that with the
 	// singular fee or the breakdown won't add up.
 	let disputeFee: string | undefined;
+	let envelopeDisputeFeeTotal = 0;
 	if ( usingFeeBreakdownEnvelope ) {
 		const disputeFeeAmounts = disputes
 			.map( getDisputeFeeAmount )
 			.filter(
 				( fee ): fee is { amount: number; currency: string } => !! fee
 			);
+		envelopeDisputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
 		disputeFee = disputeFeeAmounts.length
 			? formatCurrency(
-					_.sumBy( disputeFeeAmounts, 'amount' ),
+					envelopeDisputeFeeTotal,
 					disputeFeeAmounts[ 0 ].currency
 			  )
 			: undefined;
@@ -355,18 +357,22 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
 	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-	// For the dispute-fee tooltip to reconcile ("Transaction fee" +
-	// "Dispute fee" = "Total fees"), `transactionFee.fee` must be the FULL
-	// Stripe deduction in store currency (pre-tax fee + tax). Older
-	// envelopes may omit `fee_plus_tax`, so sum the two components.
+	// The tooltip's three lines must reconcile: Transaction fee + Dispute fee
+	// = Total fees. On the envelope path `Total fees` (balance.fee, from
+	// getChargeAmounts) already folds in every dispute fee, so the
+	// "Transaction fee" line is the total minus the summed dispute fees —
+	// i.e. the non-dispute processing + tax portion. On the legacy path
+	// `transactionFee.fee` stays the raw balance-transaction fee, which
+	// already excludes disputes (Total folds the singular dispute separately).
 	const breakdown = charge.fee_breakdown_v1;
 	const transactionFee = ( () => {
-		if ( canUseFeeBreakdownData( charge ) && breakdown?.totals?.fee ) {
+		if ( usingFeeBreakdownEnvelope && breakdown?.totals?.fee ) {
 			return {
 				fee:
-					breakdown.totals.fee_plus_tax?.amount ??
-					breakdown.totals.fee.amount +
-						( breakdown.totals.tax?.amount ?? 0 ),
+					( breakdown.totals.fee_plus_tax?.amount ??
+						breakdown.totals.fee.amount +
+							( breakdown.totals.tax?.amount ?? 0 ) ) -
+					envelopeDisputeFeeTotal,
 				currency: breakdown.totals.fee.currency.toLowerCase(),
 			};
 		}
