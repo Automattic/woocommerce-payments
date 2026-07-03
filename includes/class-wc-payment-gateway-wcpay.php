@@ -2718,6 +2718,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Ensures a payment method is saved as a WooCommerce token and attached to the order/subscription.
+	 *
+	 * @param WC_Order     $order             The order.
+	 * @param string       $payment_method_id The payment method ID.
+	 * @param WP_User|null $user              The user to attach the token to.
+	 * @return WC_Payment_Token The saved token.
+	 *
+	 * @throws Exception When the payment method cannot be saved for the order customer.
+	 */
+	public function ensure_payment_method_token_for_order( $order, $payment_method_id, $user = null ) {
+		$token = $this->get_payment_token( $order );
+		if ( $token instanceof WC_Payment_Token && $payment_method_id === $token->get_token() ) {
+			$this->add_token_to_order( $order, $token );
+			return $token;
+		}
+
+		$user = $this->get_payment_token_user_for_order( $order, $user );
+		if ( ! $user instanceof WP_User || empty( $user->ID ) ) {
+			throw new Exception( __( 'Unable to save payment method for subscription. The order customer could not be found.', 'woocommerce-payments' ) );
+		}
+
+		$gateway_ids      = [ self::GATEWAY_ID ];
+		$order_gateway_id = $order->get_payment_method();
+		if ( is_string( $order_gateway_id ) && 0 === strpos( $order_gateway_id, self::GATEWAY_ID ) ) {
+			$gateway_ids[] = $order_gateway_id;
+		}
+
+		foreach ( array_unique( $gateway_ids ) as $gateway_id ) {
+			$tokens = WC_Payment_Tokens::get_customer_tokens( $user->ID, $gateway_id );
+			foreach ( $tokens as $customer_token ) {
+				if ( $customer_token instanceof WC_Payment_Token && $payment_method_id === $customer_token->get_token() ) {
+					$this->add_token_to_order( $order, $customer_token );
+					return $customer_token;
+				}
+			}
+		}
+
+		$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+		$this->add_token_to_order( $order, $token );
+
+		return $token;
+	}
+
+	/**
 	 * Retrieve payment token from a subscription or order.
 	 *
 	 * @param WC_Order $order Order or subscription object.
@@ -2820,6 +2864,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
+			// Default reason so the failure tracking below always has a value, even on branches that don't build a richer note.
+			$note = $e->getMessage();
 			if ( $e instanceof API_Exception && 'insufficient_balance_for_refund' === $e->get_error_code() ) {
 				// Handle insufficient_balance_for_refund error.
 				$this->order_service->handle_insufficient_balance_for_refund( $order, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
@@ -4147,8 +4193,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$token = null;
 			if ( $intent->is_authorized() && $should_save_payment_method && ! empty( $payment_method_id ) ) {
 				try {
-					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
-					$this->add_token_to_order( $order, $token );
+					$token = $this->ensure_payment_method_token_for_order( $order, $payment_method_id, wp_get_current_user() );
 				} catch ( Exception $e ) {
 					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 
@@ -4938,6 +4983,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
 		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : LinkDefinition::get_id();
+	}
+
+	/**
+	 * Resolves the user that should own a payment token for an order.
+	 *
+	 * @param WC_Order     $order The order.
+	 * @param WP_User|null $user  The preferred user.
+	 * @return WP_User|false
+	 */
+	private function get_payment_token_user_for_order( $order, $user = null ) {
+		if ( $user instanceof WP_User && ! empty( $user->ID ) ) {
+			return $user;
+		}
+
+		return $order->get_user();
 	}
 
 	/**
