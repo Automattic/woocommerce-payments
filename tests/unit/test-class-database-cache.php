@@ -118,8 +118,47 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( $value, $first );
 		$this->assertEquals( $value, $second );
-		$this->assertSame( $validations_for_first_call, $validation_count, 'A repeated call should not validate the cached data again.' );
+		// A repeated call revalidates the resolved value exactly once (the caller's
+		// own validator still applies) instead of the two validations plus
+		// refresh-decision checks of a full read.
+		$this->assertSame( $validations_for_first_call + 1, $validation_count );
 		$this->assertFalse( $refreshed );
+	}
+
+	public function test_get_or_add_does_not_serve_resolved_value_rejected_by_the_callers_validator() {
+		$refreshed = false;
+		$old_value = [ 'old' => true ];
+		$new_value = [ 'new' => true ];
+
+		$this->write_mock_cache( $old_value );
+
+		$first = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				$this->fail( 'Should not call the generator.' );
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		// A caller whose validator rejects the resolved value must not be served
+		// from the in-request memo: it falls through to the full path, which
+		// treats the data as invalid and refreshes it.
+		$second = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $new_value ) {
+				return $new_value;
+			},
+			'__return_false',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $old_value, $first );
+		$this->assertEquals( $new_value, $second );
+		$this->assertTrue( $refreshed );
+		$this->assert_cache_contains( $new_value );
 	}
 
 	public function test_get_or_add_force_refresh_bypasses_resolved_values() {
