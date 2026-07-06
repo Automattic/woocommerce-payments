@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve request time by only building the enabled Multi-Currency currencies instead of the full available list

@@ -235,6 +235,30 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 1.0, $default_currency->get_rate() );
 	}
 
+	public function test_init_does_not_build_available_currencies_list() {
+		$property = new ReflectionProperty( MultiCurrency::class, 'available_currencies' );
+		$property->setAccessible( true );
+
+		$this->assertNull( $property->getValue( $this->multi_currency ), 'available currencies should not be built during init()' );
+
+		// Enabled and default currencies work without touching the available list.
+		$this->assertNotEmpty( $this->multi_currency->get_enabled_currencies() );
+		$this->assertNotEmpty( $this->multi_currency->get_default_currency()->get_code() );
+		$this->assertNull( $property->getValue( $this->multi_currency ), 'enabled/default access should not build the available list' );
+
+		// First access builds the list.
+		$available = $this->multi_currency->get_available_currencies();
+		$this->assertNotEmpty( $available );
+		$this->assertSame( $available, $property->getValue( $this->multi_currency ) );
+	}
+
+	public function test_get_default_currency_matches_available_currencies_entry() {
+		$default   = $this->multi_currency->get_default_currency();
+		$available = $this->multi_currency->get_available_currencies();
+
+		$this->assertEquals( $available[ $default->get_code() ], $default );
+	}
+
 	public function test_get_available_currencies_uses_store_currency_when_woocommerce_currency_is_filtered() {
 		update_option( 'woocommerce_currency', 'USD' );
 		remove_all_filters( 'woocommerce_currency' );
@@ -270,6 +294,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_available_currencies_can_be_filtered() {
+		// Build the list before the filter exists.
+		$this->assertArrayHasKey( 'BRL', $this->multi_currency->get_available_currencies() );
+
 		add_filter(
 			'wcpay_multi_currency_available_currencies',
 			function ( $available_currencies ) {
@@ -283,6 +310,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			}
 		);
 
+		// The already built list is reused; the filter applies on the next build.
 		$this->assertArrayHasKey( 'BRL', $this->multi_currency->get_available_currencies() );
 
 		$this->init_multi_currency();

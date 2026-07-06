@@ -126,6 +126,15 @@ class MultiCurrency {
 	protected $available_currencies;
 
 	/**
+	 * Memo of the account currency data used to build Currency objects, so the
+	 * default, enabled and lazily built available currencies all see the same
+	 * data from a single fetch. Reset by init().
+	 *
+	 * @var array|null
+	 */
+	protected $account_currency_data;
+
+	/**
 	 * The default currency.
 	 *
 	 * @var Currency|null
@@ -293,8 +302,9 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
-	 * default currency and enabled currencies for the Multi-Currency plugin.
+	 * Called after the WooCommerce session has been initialized. Initialises the default currency
+	 * and enabled currencies for the Multi-Currency plugin. The full available currencies list is
+	 * built lazily on first access.
 	 *
 	 * @return void
 	 */
@@ -326,7 +336,11 @@ class MultiCurrency {
 			$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
 		}
 
-		$this->initialize_available_currencies();
+		// Reset the currency data memo and the lazily built available list so a
+		// re-init rebuilds both from fresh data.
+		$this->account_currency_data = null;
+		$this->available_currencies  = null;
+
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
 
@@ -721,7 +735,14 @@ class MultiCurrency {
 	 */
 	public function get_available_currencies(): array {
 		if ( null === $this->available_currencies ) {
-			$this->init();
+			if ( null === $this->enabled_currencies ) {
+				$this->init();
+			}
+
+			// init() leaves the available list unset; build it on first access.
+			if ( null === $this->available_currencies ) {
+				$this->initialize_available_currencies();
+			}
 		}
 
 		return $this->available_currencies ?? [];
@@ -1451,7 +1472,7 @@ class MultiCurrency {
 	 * @return  string|false  Returns back the currency code in uppercase letters if it's valid, or `false` if not.
 	 */
 	public function validate_currency_code( $currency_code ) {
-		return array_key_exists( strtoupper( $currency_code ), $this->available_currencies )
+		return array_key_exists( strtoupper( $currency_code ), $this->get_available_currencies() )
 		? strtoupper( $currency_code )
 		: false;
 	}
@@ -1709,18 +1730,11 @@ class MultiCurrency {
 
 		$available_currencies = [];
 
-		$currencies = $this->get_account_available_currencies();
-		if ( ! empty( $currencies ) ) {
-			$cache_data = $this->get_cached_currencies();
+		foreach ( $this->get_account_currency_data()['account_currencies'] as $currency_code ) {
+			$new_currency = $this->build_account_currency( $currency_code );
 
-			foreach ( $currencies as $currency_code ) {
-				$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
-				$update_time   = $cache_data['updated'] ?? null;
-				$new_currency  = new Currency( $this->localization_service, $currency_code, $currency_rate, $update_time );
-
-				// Add this to our list of available currencies.
-				$available_currencies[ $new_currency->get_name() ] = $new_currency;
-			}
+			// Add this to our list of available currencies.
+			$available_currencies[ $new_currency->get_name() ] = $new_currency;
 		}
 
 		ksort( $available_currencies );
@@ -1731,31 +1745,83 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Gets the account currency data used to build Currency objects: the account-available
+	 * currency codes and the cached exchange rate data. Fetched once and memoized, so the
+	 * default, enabled and available currencies are all built from the same data. init()
+	 * resets the memo.
+	 *
+	 * @return array Array with 'account_currencies' and 'cache_data' keys.
+	 */
+	private function get_account_currency_data(): array {
+		if ( null === $this->account_currency_data ) {
+			$account_currencies = $this->get_account_available_currencies();
+
+			$this->account_currency_data = [
+				'account_currencies' => $account_currencies,
+				'cache_data'         => empty( $account_currencies ) ? null : $this->get_cached_currencies(),
+			];
+		}
+
+		return $this->account_currency_data;
+	}
+
+	/**
+	 * Builds a Currency for the given account currency code using the cached exchange rate data.
+	 *
+	 * @param string $currency_code The currency code.
+	 *
+	 * @return Currency The built currency.
+	 */
+	private function build_account_currency( string $currency_code ): Currency {
+		$cache_data = $this->get_account_currency_data()['cache_data'];
+
+		return new Currency(
+			$this->localization_service,
+			$currency_code,
+			$cache_data['currencies'][ $currency_code ] ?? 1.0,
+			$cache_data['updated'] ?? null
+		);
+	}
+
+	/**
 	 * Sets up the enabled currencies.
 	 *
 	 * @return void
 	 */
 	private function initialize_enabled_currencies() {
-		$available_currencies     = $this->get_available_currencies();
 		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
 		$enabled_currency_codes   = is_array( $enabled_currency_codes ) ? $enabled_currency_codes : [];
 		$default_code             = $this->get_default_currency()->get_code();
 		$default                  = [];
 		$enabled_currency_codes[] = $default_code;
 
-		// This allows to keep the alphabetical sorting by name.
-		$enabled_currencies = array_filter(
-			$available_currencies,
-			function ( $currency ) use ( $enabled_currency_codes ) {
-				return in_array( $currency->get_code(), $enabled_currency_codes, true );
+		$account_currencies = $this->get_account_currency_data()['account_currencies'];
+
+		// Build Currency objects for the enabled codes only; the full available
+		// list is built lazily on first access. Codes no longer available for
+		// the account are dropped, matching the previous filter on that list.
+		$enabled_currencies = [];
+		foreach ( array_unique( $enabled_currency_codes ) as $currency_code ) {
+			if ( in_array( $currency_code, $account_currencies, true ) ) {
+				$enabled_currencies[ $currency_code ] = $this->build_account_currency( $currency_code );
+			} elseif ( $currency_code === $default_code ) {
+				// The store currency is always enabled, even when the account does not list it.
+				$enabled_currencies[ $currency_code ] = new Currency( $this->localization_service, $currency_code, 1.0 );
+			}
+		}
+
+		// Keep the alphabetical sorting by name the available list would give.
+		uasort(
+			$enabled_currencies,
+			function ( $a, $b ) {
+				return strcmp( $a->get_name(), $b->get_name() );
 			}
 		);
 
 		$this->enabled_currencies = [];
 
-		foreach ( $enabled_currencies as $enabled_currency ) {
+		foreach ( $enabled_currencies as $currency ) {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
-			$currency = clone $enabled_currency;
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
 			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), $currency->get_is_zero_decimal() ? '100' : '1.00' );
 			$currency->set_charm( $charm );
@@ -1783,8 +1849,16 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function set_default_currency() {
-		$available_currencies   = $this->get_available_currencies();
-		$this->default_currency = $available_currencies[ $this->get_store_currency_code() ] ?? null;
+		// Mirror the construction the available currencies list would use for the
+		// store currency, without building the whole list.
+		$store_currency_code = $this->get_store_currency_code();
+
+		if ( in_array( $store_currency_code, $this->get_account_currency_data()['account_currencies'], true ) ) {
+			$this->default_currency = $this->build_account_currency( $store_currency_code );
+			return;
+		}
+
+		$this->default_currency = new Currency( $this->localization_service, $store_currency_code, 1.0 );
 	}
 
 	/**
@@ -1982,7 +2056,7 @@ class MultiCurrency {
 		];
 
 		$simulation_currency      = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';
-		$simulation_currency_name = $this->available_currencies[ $simulation_currency ]->get_name();
+		$simulation_currency_name = $this->get_available_currencies()[ $simulation_currency ]->get_name();
 		$simulation_country       = $predefined_simulation_currencies[ $simulation_currency ];
 
 		// Simulate client currency from geolocation.
