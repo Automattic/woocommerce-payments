@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Look up webhook IDs in WooPay order status sync tests instead of hardcoding them, fixing order-dependent failures in full suite runs
