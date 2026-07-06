@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+defined( 'ABSPATH' ) || exit;
+
 ?>
 <script type="text/template" id="tmpl-wcpay-subscriptions-plugin-warning">
 	<div id="wcpay-subscriptions-plugin-warning-notice" class="wc-backbone-modal woopayments-plugin-warning-modal">

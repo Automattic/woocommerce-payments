@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+update: ECE to allow pay-for-order flow when customer billing email is missing
