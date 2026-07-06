@@ -1800,7 +1800,7 @@ class MultiCurrency {
 	 * @return string
 	 */
 	private function get_store_currency_code(): string {
-		return get_option( 'woocommerce_currency' );
+		return (string) get_option( 'woocommerce_currency', '' );
 	}
 
 	/**

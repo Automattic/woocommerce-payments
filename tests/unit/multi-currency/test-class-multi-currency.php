@@ -240,11 +240,20 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		remove_all_filters( 'woocommerce_currency' );
 		add_filter( 'woocommerce_currency', fn() => 'EUR', 999 );
 
-		$this->init_multi_currency();
+		$mock_account = $this->createMock( MultiCurrencyAccountInterface::class );
+		$mock_account
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'id' => 'acct' ] );
+		$mock_account
+			->method( 'get_account_customer_supported_currencies' )
+			->willReturn( [ 'usd', 'cad' ] );
+
+		$this->init_multi_currency( null, true, $mock_account );
 
 		$available_currencies = $this->multi_currency->get_available_currencies();
 
 		$this->assertArrayHasKey( 'USD', $available_currencies );
+		$this->assertArrayNotHasKey( 'EUR', $available_currencies );
 		$this->assertSame( 'USD', $available_currencies['USD']->get_code() );
 		$this->assertSame( 1.0, $available_currencies['USD']->get_rate() );
 	}
@@ -257,6 +266,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency();
 
 		$this->assertSame( 'USD', $this->multi_currency->get_default_currency()->get_code() );
+		$this->assertTrue( $this->multi_currency->get_default_currency()->get_is_default() );
 	}
 
 	public function test_available_currencies_can_be_filtered() {
