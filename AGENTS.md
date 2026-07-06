@@ -336,7 +336,7 @@ npm run tube:stop
 |-----|---------|
 | `README.md` | Main setup and overview |
 | `CONTRIBUTING.md` | Contribution guidelines |
-| `tests/README.md` | Testing guide |
+| `tests/README.md` | Testing overview & index of suites (unit, JS, E2E, QIT) |
 | `docker/README.md` | Docker setup |
 | `includes/core/README.md` | Extensibility docs |
 | `docs/` | Additional documentation |
