@@ -1982,9 +1982,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function maybe_display_express_checkout_buttons() {
-		// Cron and XML-RPC requests never render express checkout buttons, serve
-		// their wc-ajax endpoints, or fire any hook the handlers register, so the
-		// construction cost is pure overhead there.
+		// None of the handlers' hooks can fire on cron or XML-RPC requests.
 		if ( wp_doing_cron() || ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) ) {
 			return;
 		}

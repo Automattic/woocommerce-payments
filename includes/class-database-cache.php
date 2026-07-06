@@ -109,17 +109,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	private $in_memory_cache = [];
 
 	/**
-	 * Values already resolved by get_or_add() during this request, keyed by cache key.
+	 * Values resolved by get_or_add() during this request, keyed by cache key.
 	 *
-	 * Once a key has been resolved (validated and refreshed if needed), repeated
-	 * get_or_add() calls for it within the same request return this value after
-	 * revalidating it with the caller's own validate_data callback, skipping the
-	 * redundant second validation and refresh-decision work. Hot keys like the
-	 * account data are read dozens of times per request (once per gateway
-	 * availability check). If the caller's validator rejects the resolved value
-	 * (different caller, or a validator whose verdict changed mid-request), the
-	 * call falls through to the full read/refresh path. Entries are cleared
-	 * whenever the key is written or deleted.
+	 * Repeated calls are served from here once the caller's validate_data
+	 * callback approves the value; rejected values fall through to the full
+	 * read/refresh path. Cleared by add() and delete().
 	 *
 	 * @var array
 	 */

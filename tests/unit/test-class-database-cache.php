@@ -118,10 +118,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( $value, $first );
 		$this->assertEquals( $value, $second );
-		// A repeated call revalidates the resolved value exactly once (the caller's
-		// own validator still applies) instead of the two validations plus
-		// refresh-decision checks of a full read.
-		$this->assertSame( $validations_for_first_call + 1, $validation_count );
+		$this->assertSame( $validations_for_first_call + 1, $validation_count, 'The repeated call should revalidate once instead of performing a full read.' );
 		$this->assertFalse( $refreshed );
 	}
 
@@ -142,9 +139,6 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 			$refreshed
 		);
 
-		// A caller whose validator rejects the resolved value must not be served
-		// from the in-request memo: it falls through to the full path, which
-		// treats the data as invalid and refreshes it.
 		$second = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
 			function () use ( $new_value ) {
