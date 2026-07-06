@@ -1982,6 +1982,13 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function maybe_display_express_checkout_buttons() {
+		// Cron and XML-RPC requests never render express checkout buttons, serve
+		// their wc-ajax endpoints, or fire any hook the handlers register, so the
+		// construction cost is pure overhead there.
+		if ( wp_doing_cron() || ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) ) {
+			return;
+		}
+
 		if ( WC_Payments_Features::are_payments_enabled() ) {
 			$woopay_button_handler = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
 
