@@ -13,6 +13,34 @@ use WCPay\Exceptions\API_Exception;
  * WC_Payments_Utils unit tests.
  */
 class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
+
+	/**
+	 * The value of $_SERVER['REQUEST_URI'] before the test, so tests that
+	 * simulate request URLs don't leak them into later tests. A leaked
+	 * /wp-json/ URI makes WC()->is_rest_api_request() return true suite-wide,
+	 * which sends product creation down REST-only code paths.
+	 *
+	 * @var string|null
+	 */
+	private $original_request_uri;
+
+	public function set_up() {
+		parent::set_up();
+
+		$this->original_request_uri = $_SERVER['REQUEST_URI'] ?? null;
+	}
+
+	public function tear_down() {
+		if ( null === $this->original_request_uri ) {
+			unset( $_SERVER['REQUEST_URI'] );
+		} else {
+			$_SERVER['REQUEST_URI'] = $this->original_request_uri;
+		}
+		unset( $_REQUEST['rest_route'] );
+
+		parent::tear_down();
+	}
+
 	public function test_esc_interpolated_html_returns_raw_string() {
 		$result = WC_Payments_Utils::esc_interpolated_html(
 			'hello world',
