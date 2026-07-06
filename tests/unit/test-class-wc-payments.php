@@ -128,6 +128,22 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
+	public function test_init_rest_api_registers_routes_when_admin_screen_is_set() {
+		set_current_screen( 'edit-page' );
+
+		global $wp_rest_server;
+		$previous_server = $wp_rest_server;
+		$wp_rest_server  = null;
+
+		try {
+			$routes = rest_get_server()->get_routes( 'wc/v3' );
+			$this->assertArrayHasKey( '/wc/v3/payments/onboarding/fields', $routes );
+		} finally {
+			$wp_rest_server = $previous_server;
+			set_current_screen( 'front' );
+		}
+	}
+
 	/**
 	 * @param bool $is_enabled
 	 */

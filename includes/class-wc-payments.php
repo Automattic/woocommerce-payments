@@ -1190,13 +1190,21 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
-		// Ensures we are not initializing our REST during `rest_preload_api_request`.
-		// When constructor signatures change, in manual update scenarios we were running into fatals.
-		// Those fatals are not critical, but they cause hiccups in the release process as catches unnecessary attention.
-		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
-			return;
+		// Catch fatals from controller constructor signature changes when old and new code mix
+		// during a manual plugin update. Routes must otherwise always register: internal REST
+		// requests dispatched with an admin screen set (e.g. WooCommerce core fetching
+		// /wc/v3/payments/onboarding/fields on every admin page) 404 without them.
+		try {
+			self::register_rest_controllers();
+		} catch ( \Throwable $e ) {
+			\WCPay\Logger::error( 'Failed to register REST controllers: ' . $e->getMessage() );
 		}
+	}
 
+	/**
+	 * Registers the REST API controllers.
+	 */
+	private static function register_rest_controllers() {
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
