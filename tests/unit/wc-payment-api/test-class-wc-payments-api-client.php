@@ -1171,6 +1171,59 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_api_merchant_exception_includes_payment_intent_id() {
+		$mock_response                                  = [];
+		$mock_response['error']['code']                 = 'card_declined';
+		$mock_response['error']['payment_intent']['id'] = 'pi_mock_failed_123';
+		$mock_response['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] = 'Bank declined';
+		$this->set_http_mock_response(
+			401,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Merchant_Exception was not thrown.' );
+		} catch ( API_Merchant_Exception $e ) {
+			$this->assertSame( 'pi_mock_failed_123', $e->get_intent_id() );
+		}
+	}
+
+	public function test_api_exception_includes_payment_intent_id() {
+		$mock_response                                  = [];
+		$mock_response['error']['code']                 = 'incorrect_cvc';
+		$mock_response['error']['type']                 = 'card_error';
+		$mock_response['error']['payment_intent']['id'] = 'pi_mock_failed_456';
+		$this->set_http_mock_response(
+			402,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Exception was not thrown.' );
+		} catch ( API_Exception $e ) {
+			$this->assertSame( 'pi_mock_failed_456', $e->get_intent_id() );
+		}
+	}
+
+	public function test_api_exception_intent_id_is_null_when_no_payment_intent() {
+		$mock_response                     = [];
+		$mock_response['error']['code']    = 'resource_missing';
+		$mock_response['error']['message'] = 'No such payment_method: pm_123.';
+		$this->set_http_mock_response(
+			400,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Exception was not thrown.' );
+		} catch ( API_Exception $e ) {
+			$this->assertNull( $e->get_intent_id() );
+		}
+	}
+
 	/**
 	 * Test sending store setup data.
 	 */

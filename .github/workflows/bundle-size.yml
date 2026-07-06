@@ -21,7 +21,7 @@ jobs:
                   node-version-file: '.nvmrc'
                   cache: npm
             - name: Checking for file changes
-              uses: preactjs/compressed-size-action@68177c91dc8dcaa2f80e10ced85ebee59fb676df # post-2.9.1
+              uses: preactjs/compressed-size-action@f322c295dde06a1cb7ccaef105732dd8a726d1d9 # post-2.9.1
               with:
                   # The action installs both this branch and the base branch
                   # under the Node version from this branch's .nvmrc. Let the

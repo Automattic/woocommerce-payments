@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure file purpose cache key value is consistent
