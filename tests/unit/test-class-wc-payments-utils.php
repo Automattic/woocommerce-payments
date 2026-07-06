@@ -15,7 +15,7 @@ use WCPay\Exceptions\API_Exception;
 class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * Restored after each test — a leaked /wp-json/ REQUEST_URI makes
+	 * Restored after each test. A leaked /wp-json/ REQUEST_URI makes
 	 * WC()->is_rest_api_request() return true for all later tests.
 	 *
 	 * @var string|null

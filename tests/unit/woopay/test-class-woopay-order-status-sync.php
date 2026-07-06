@@ -103,7 +103,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 		// Create the WebHook with WooPay specific delivery URL.
 		$this->webhook_sync_mock->maybe_create_woopay_order_webhook();
 
-		// The webhook ID can't be hardcoded — auto-increment counters survive the per-test rollback.
+		// Look up the webhook ID rather than hardcoding it. Auto-increment counters survive the per-test rollback.
 		$webhook_id = current( WooPay_Order_Status_Sync::get_webhook() );
 
 		$post_processing_payload = $this->webhook_sync_mock->create_payload( $pre_processing_payload, 'product', 1, $webhook_id );
