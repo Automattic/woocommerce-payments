@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Forward structured error details (error code and type) in the test drive account init REST error response, so consumers can distinguish non-recoverable errors.
