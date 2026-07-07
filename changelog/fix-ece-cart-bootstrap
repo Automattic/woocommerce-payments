@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Render the cart and checkout Express Checkout button from bootstrapped data to remove a request from first paint

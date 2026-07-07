@@ -1062,4 +1062,72 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}
+
+	public function test_get_cart_render_data_returns_false_when_not_cart_or_checkout() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->get_cart_render_data() );
+	}
+
+	public function test_get_cart_render_data_returns_false_for_empty_cart() {
+		WC()->cart->empty_cart();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->get_cart_render_data() );
+	}
+
+	public function test_get_cart_render_data_returns_snapshot_for_populated_cart() {
+		update_option( 'woocommerce_currency', 'USD' );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$data = $helper->get_cart_render_data();
+
+		$this->assertIsArray( $data );
+		$this->assertGreaterThan( 0, $data['total']['amount'] );
+		$this->assertIsInt( $data['total']['amount'] );
+		$this->assertSame( 'usd', $data['currency'] );
+		$this->assertIsBool( $data['needs_shipping'] );
+		$this->assertIsArray( $data['displayItems'] );
+	}
+
+	public function test_get_cart_render_data_returns_false_for_zero_total_cart() {
+		// A zero total (here a virtual $0 product, so no shipping lifts it above
+		// zero) is withheld so free-trial subscriptions fall through to the fetch
+		// path, which carries the Store API extensions their recurring total needs.
+		$free_product = WC_Helper_Product::create_simple_product();
+		$free_product->set_virtual( true );
+		$free_product->set_regular_price( 0 );
+		$free_product->set_price( 0 );
+		$free_product->save();
+
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $free_product->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->get_cart_render_data() );
+	}
 }

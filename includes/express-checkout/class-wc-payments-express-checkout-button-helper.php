@@ -827,6 +827,51 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Render-time cart snapshot that lets the cart/checkout Express Checkout button paint
+	 * without the initial `GET /wc/store/v1/cart` fetch. Built from the same cart totals the
+	 * fetch reports and shaped like get_product_data() so the client renders it through the
+	 * identical first-paint path. These pages carry a session and aren't currency-cached, so
+	 * the totals reflect the session's resolved currency.
+	 *
+	 * Returns false whenever the button must render from the live cart instead: off the
+	 * cart/checkout pages, an empty cart, or a zero total. A zero total is either a plain
+	 * empty-value cart (nothing to charge) or a free-trial subscription, which needs the
+	 * Store API extensions the fetch returns to compute its recurring total — the client
+	 * then falls back to fetchNewCartData().
+	 *
+	 * @return array|false
+	 */
+	public function get_cart_render_data() {
+		if ( ! $this->is_cart() && ! $this->is_checkout() ) {
+			return false;
+		}
+
+		if ( is_null( WC()->cart ) || WC()->cart->is_empty() ) {
+			return false;
+		}
+
+		$display_items = $this->build_display_items();
+
+		// Round before casting: the total passes through the `wcpay_calculated_total` filter,
+		// which can hand back a non-integer minor-unit value a bare (int) cast would truncate.
+		$total = (int) round( (float) $display_items['total']['amount'] );
+
+		if ( $total <= 0 ) {
+			return false;
+		}
+
+		return [
+			'total'          => [
+				'label'  => $display_items['total']['label'],
+				'amount' => $total,
+			],
+			'displayItems'   => $display_items['displayItems'],
+			'needs_shipping' => WC()->cart->needs_shipping(),
+			'currency'       => strtolower( get_woocommerce_currency() ),
+		];
+	}
+
+	/**
 	 * Determines whether the current Pay for Order page can be paid via the Express Checkout button.
 	 *
 	 * An order can be created without a billing email (e.g. by the merchant). The Store API requires

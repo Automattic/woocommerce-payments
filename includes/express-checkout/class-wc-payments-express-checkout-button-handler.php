@@ -261,6 +261,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 					'button_context'              => $this->express_checkout_helper->get_button_context(),
 					'has_block'                   => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 					'product'                     => $this->express_checkout_helper->get_product_data(),
+					'cart'                        => $this->express_checkout_helper->get_cart_render_data(),
 					'store_name'                  => get_bloginfo( 'name' ),
 					'enabled_methods'             => $this->express_checkout_helper->get_enabled_express_checkout_methods_for_context(),
 					'methods_enabled_at_location' => $this->express_checkout_helper->get_methods_enabled_at_current_location(),

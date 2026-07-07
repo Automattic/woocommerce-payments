@@ -290,4 +290,56 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			} )
 		);
 	} );
+
+	it( 'renders from the localized cart snapshot without fetching cart details on first paint', async () => {
+		global.wcpayExpressCheckoutParams.cart = {
+			total: { label: 'Total', amount: 1500 },
+			displayItems: [ { label: 'Beanie', amount: 1500 } ],
+			needs_shipping: false,
+			currency: 'usd',
+		};
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		expect( apiFetch ).not.toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( { amount: 1500, currency: 'usd' } )
+		);
+	} );
+
+	it( 'falls back to fetching cart details once the snapshot has been consumed', async () => {
+		global.wcpayExpressCheckoutParams.cart = {
+			total: { label: 'Total', amount: 1500 },
+			displayItems: [ { label: 'Beanie', amount: 1500 } ],
+			needs_shipping: false,
+			currency: 'usd',
+		};
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		expect( apiFetch ).not.toHaveBeenCalled();
+
+		// A second init (e.g. a live cart update) must reconcile against the
+		// Store API rather than reuse the now-stale first-paint snapshot.
+		$( document.body ).trigger( 'updated_checkout' );
+
+		await waitFor( () =>
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					method: 'GET',
+					path: expect.stringContaining( '/wc/store/v1/cart' ),
+				} )
+			)
+		);
+	} );
 } );
