@@ -75,6 +75,16 @@ You will need an externally accessible URL to set up the plugin. You can use ngr
 
 See: [CONTRIBUTING.md](CONTRIBUTING.md) for more development details.
 
+## Testing
+
+WooPayments has PHP unit, JavaScript unit, E2E, and QIT test suites. Once your [Docker environment](docker/README.md) is running:
+
+```bash
+npm test          # Run JS and PHP unit tests
+```
+
+See [tests/README.md](tests/README.md) for how to run each suite, and [docs/test-matrix.md](docs/test-matrix.md) for the full inventory of suites and what they gate.
+
 ## Debugging
 
 If you are following the [Docker setup](docker/README.md), Xdebug is ready to use for debugging.
