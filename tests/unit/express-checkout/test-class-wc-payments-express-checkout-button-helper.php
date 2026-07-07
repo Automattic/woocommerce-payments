@@ -327,6 +327,31 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $this->system_under_test->cart_prices_include_tax() );
 	}
 
+	public function test_get_taxes_like_cart_returns_tax_for_taxable_product() {
+		add_filter( 'wc_tax_enabled', '__return_true' ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] ); // reset in tear_down.
+		$tax_rate_id = $this->insert_ten_percent_tax_rate();
+
+		$taxes    = $this->system_under_test->get_taxes_like_cart( $this->simple_product, 10.0 );
+		$expected = [ $tax_rate_id => 1.0 ];
+		WC_Tax::_delete_tax_rate( $tax_rate_id );
+
+		$this->assertEquals( $expected, $taxes );
+	}
+
+	public function test_get_taxes_like_cart_returns_no_tax_for_non_taxable_product() {
+		add_filter( 'wc_tax_enabled', '__return_true' ); // reset in tear_down.
+		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] ); // reset in tear_down.
+		$tax_rate_id = $this->insert_ten_percent_tax_rate();
+		$this->simple_product->set_tax_status( 'none' );
+		$this->simple_product->save();
+
+		$taxes = $this->system_under_test->get_taxes_like_cart( $this->simple_product, 10.0 );
+		WC_Tax::_delete_tax_rate( $tax_rate_id );
+
+		$this->assertEquals( [], $taxes );
+	}
+
 	public function test_get_total_label() {
 		$this->mock_wcpay_account->method( 'get_statement_descriptor' )
 			->willReturn( 'Google Pay' );
@@ -514,6 +539,27 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$method = WC_Shipping_Zones::get_shipping_method( $instance_id );
 
 		return $method->get_rate_id();
+	}
+
+	/**
+	 * Inserts a 10% standard-class tax rate and returns its id.
+	 *
+	 * @return int The inserted tax rate id.
+	 */
+	private static function insert_ten_percent_tax_rate() {
+		return WC_Tax::_insert_tax_rate(
+			[
+				'tax_rate_country'  => '',
+				'tax_rate_state'    => '',
+				'tax_rate'          => '10.0000',
+				'tax_rate_name'     => 'TAX',
+				'tax_rate_priority' => '1',
+				'tax_rate_compound' => '0',
+				'tax_rate_shipping' => '1',
+				'tax_rate_order'    => '1',
+				'tax_rate_class'    => '',
+			]
+		);
 	}
 
 	public function test_get_enabled_express_checkout_methods_for_context_returns_payment_request_when_enabled_on_product_page() {

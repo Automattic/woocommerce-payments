@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Do not show a tax line in the Express Checkout product preview for non-taxable products

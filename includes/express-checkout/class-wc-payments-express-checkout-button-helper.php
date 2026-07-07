@@ -988,6 +988,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return [];
 		}
 
+		// The cart charges no tax on non-taxable products, so the preview must not show one either.
+		if ( ! ( $product instanceof WC_Product ) || ! $product->is_taxable() ) {
+			return [];
+		}
+
 		// Follows the way `WC_Cart_Totals::get_item_tax_rates()` works.
 		$tax_class = $product->get_tax_class();
 		$rates     = WC_Tax::get_rates( $tax_class );
