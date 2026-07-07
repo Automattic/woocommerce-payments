@@ -22,7 +22,15 @@ You can also set up linting hints in your editor. Here are some useful instructi
 
 ## Running the tests
 
-Follow the instructions in the [tests readme](tests/README.md).
+WooPayments has several test suites. Once your [Docker environment](docker/README.md) is running:
+
+```bash
+npm test          # Run JS and PHP unit tests
+npm run test:js   # JavaScript unit tests only
+npm run test:php  # PHP unit tests only
+```
+
+See the [tests README](tests/README.md) for an overview of all suites, and the per-suite guides for setup and details: [PHP unit](tests/unit/README.md), [JavaScript unit](tests/js/README.md), [E2E](tests/e2e/README.md), and [QIT](tests/qit/README.md).
 
 ## Development
 
