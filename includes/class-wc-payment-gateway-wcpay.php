@@ -2086,7 +2086,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$payment_needed ? 'pi' : 'si',
 						$order_id,
 						$client_secret,
-						wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+						wp_create_nonce( $this->get_update_order_status_nonce_action( $order ) ),
 					];
 
 					// For ECE SetupIntents, include the confirmation token so the frontend can
@@ -2385,7 +2385,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
 							$client_secret,
-							wp_create_nonce( 'wcpay_update_order_status_nonce' )
+							wp_create_nonce( $this->get_update_order_status_nonce_action( $order ) )
 						);
 						wp_safe_redirect( $redirect_url );
 						exit;
@@ -4043,6 +4043,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Build the nonce action for the update_order_status AJAX endpoint, bound to a single order.
+	 *
+	 * The order id and key are folded into the action string so a nonce minted for one order
+	 * cannot be replayed against a different one — the verifier rebuilds the same action from
+	 * the order it resolved and the tokens won't match otherwise.
+	 *
+	 * @param WC_Order $order The order the nonce is scoped to.
+	 * @return string The order-scoped nonce action.
+	 */
+	public function get_update_order_status_nonce_action( $order ) {
+		return 'wcpay_update_order_status_nonce_' . $order->get_id() . '_' . $order->get_order_key();
+	}
+
+	/**
 	 * Handle AJAX request after authenticating payment at checkout.
 	 *
 	 * This function is used to update the order status after the user has
@@ -4055,23 +4069,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
-		$intent_id_received = null;
-		$order              = null;
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Process_Payment_Exception(
-					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-					'invalid_referrer'
-				);
-			}
-
-			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
+			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$order    = wc_get_order( $order_id );
 			if ( ! $order ) {
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 					'order_not_found'
+				);
+			}
+
+			// Resolve the order first so the nonce can be checked against its order-scoped action.
+			// wc_get_order() is a read; the order is not modified until every check below passes.
+			$is_nonce_valid = check_ajax_referer( $this->get_update_order_status_nonce_action( $order ), false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'invalid_referrer'
 				);
 			}
 
@@ -4259,24 +4273,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				wp_die();
 			}
 		} catch ( Intent_Authentication_Exception $e ) {
-			$error_code = $e->get_error_code();
-
-			switch ( $error_code ) {
-				case 'intent_id_mismatch':
-				case 'empty_intent_id': // The empty_intent_id case needs the same handling.
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
-							__( 'A payment with ID <code>%1$s</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
-							[
-								'code' => '<code>',
-							]
-						),
-						$intent_id_received
-					);
-					$order->add_order_note( $note );
-					break;
-			}
+			// An empty or mismatched intent id is an untrusted-input path: the submitted intent
+			// doesn't match the one stored on the order, so the order is left unchanged and only
+			// the error is returned to the caller.
 
 			// Send back error so it can be displayed to the customer.
 			echo wp_json_encode(

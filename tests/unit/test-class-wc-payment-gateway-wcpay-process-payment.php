@@ -1062,7 +1062,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
-			'#wcpay-confirm-pi:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'#wcpay-confirm-pi:' . $order_id . ':' . $secret . ':' . wp_create_nonce( $this->mock_wcpay_gateway->get_update_order_status_nonce_action( $mock_order ) ),
 			$result['redirect']
 		);
 	}
@@ -1293,7 +1293,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
-			'#wcpay-confirm-si:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'#wcpay-confirm-si:' . $order_id . ':' . $secret . ':' . wp_create_nonce( $this->mock_wcpay_gateway->get_update_order_status_nonce_action( $mock_order ) ),
 			$result['redirect']
 		);
 	}

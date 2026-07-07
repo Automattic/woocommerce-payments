@@ -5292,7 +5292,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'seti_mock_pm_change';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
 		$_POST                = [
 			'action'              => 'update_order_status',
 			'order_id'            => $order->get_id(),
@@ -5347,7 +5347,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_renewal';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5409,7 +5409,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_renewal_meta';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5474,7 +5474,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_renewal_email';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5551,7 +5551,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_no_save';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5639,7 +5639,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'seti_mock_free_trial';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5715,7 +5715,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'seti_mock_link_free_trial';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5756,6 +5756,74 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'A Link payment must not be titled as a branded card.' );
 	}
 
+	public function test_update_order_status_rejects_nonce_minted_for_another_order() {
+		$order_a = WC_Helper_Order::create_order();
+		$order_b = WC_Helper_Order::create_order();
+
+		$intent_id = 'pi_mock_cross_order';
+		$this->order_service->set_intent_id_for_order( $order_b, $intent_id );
+
+		// The nonce is scoped to order A, but the request submits order B's id.
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order_a ) );
+		$_POST                = [
+			'action'    => 'update_order_status',
+			'order_id'  => $order_b->get_id(),
+			'intent_id' => $intent_id,
+			'_wpnonce'  => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			$output = ob_get_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$response = json_decode( $output, true );
+
+		$this->assertArrayHasKey( 'error', $response );
+
+		$this->assertCount( 0, $this->get_payment_attempt_notes( $order_b->get_id() ) );
+	}
+
+	public function test_update_order_status_adds_no_note_on_intent_mismatch() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_intent_id_for_order( $order, 'pi_mock_stored' );
+
+		$nonce                = wp_create_nonce( $this->card_gateway->get_update_order_status_nonce_action( $order ) );
+		$_POST                = [
+			'action'    => 'update_order_status',
+			'order_id'  => $order->get_id(),
+			'intent_id' => 'pi_mock_submitted',
+			'_wpnonce'  => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			$output = ob_get_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$response = json_decode( $output, true );
+
+		$this->assertArrayHasKey( 'error', $response );
+
+		$this->assertCount( 0, $this->get_payment_attempt_notes( $order->get_id() ) );
+	}
+
 	public function return_ajax_wp_die_handler() {
 		return [ $this, 'ajax_wp_die_handler' ];
 	}
@@ -5771,5 +5839,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$product->save();
 
 		return wc_get_product( $product->get_id() );
+	}
+
+	private function get_payment_attempt_notes( int $order_id ): array {
+		$notes = wc_get_order_notes( [ 'order_id' => $order_id ] );
+
+		return array_filter(
+			$notes,
+			static function ( $note ) {
+				return false !== strpos( $note->content, 'was used in an attempt to pay for this order' );
+			}
+		);
 	}
 }

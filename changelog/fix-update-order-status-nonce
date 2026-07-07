@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Bind the order-status update nonce to its order and avoid modifying the order before validation
