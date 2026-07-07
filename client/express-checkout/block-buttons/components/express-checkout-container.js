@@ -59,29 +59,45 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const elementCurrency = billing.currency.code.toLowerCase();
 
-	const options = {
-		mode: 'payment',
-		...( useConfirmationToken
-			? { paymentMethodTypes }
-			: { paymentMethodCreation: 'manual' } ),
-		...( useConfirmationToken && isManualCaptureEnabled
-			? { captureMethod: 'manual' }
-			: {} ),
-		...( useConfirmationToken
-			? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
-			: {} ),
-		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-		amount: applyFilters(
-			'wcpay.express-checkout.total-amount',
-			transformPrice( billing.cartTotal.value, {
-				currency_minor_unit: billing.currency.minorUnit ?? 0,
-			} ),
-			cartData
-		),
-		currency: rememberElementCurrency( elementCurrency ),
-		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
-		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
-	};
+	// Blocks hands us fresh `billing`/`cartData` refs on every cart tick, so an
+	// inline options object would give <Elements> a new reference each render and
+	// churn (re-mount) the Stripe element. Memoise on the values Stripe actually
+	// consumes so it only rebuilds when one of them changes.
+	const options = useMemo(
+		() => ( {
+			mode: 'payment',
+			...( useConfirmationToken
+				? { paymentMethodTypes }
+				: { paymentMethodCreation: 'manual' } ),
+			...( useConfirmationToken && isManualCaptureEnabled
+				? { captureMethod: 'manual' }
+				: {} ),
+			...( useConfirmationToken
+				? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+				: {} ),
+			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+			amount: applyFilters(
+				'wcpay.express-checkout.total-amount',
+				transformPrice( billing.cartTotal.value, {
+					currency_minor_unit: billing.currency.minorUnit ?? 0,
+				} ),
+				cartData
+			),
+			currency: rememberElementCurrency( elementCurrency ),
+			appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
+			locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
+		} ),
+		[
+			useConfirmationToken,
+			isManualCaptureEnabled,
+			paymentMethodTypes,
+			cartData,
+			billing.cartTotal.value,
+			billing.currency.minorUnit,
+			elementCurrency,
+			buttonAttributes,
+		]
+	);
 
 	return (
 		<div style={ { minHeight: '40px' } }>

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Memoize the Express Checkout block button to avoid re-mounting the Stripe element on unrelated cart updates
