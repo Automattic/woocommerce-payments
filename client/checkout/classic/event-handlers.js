@@ -182,12 +182,18 @@ jQuery( function ( $ ) {
 		const cardLabel = document.querySelector(
 			'label[for="payment_method_woocommerce_payments"]'
 		);
-		if ( ! cardLabel ) return;
+		if ( ! cardLabel ) {
+			return;
+		}
 
-		if ( cardLabel.querySelector( '.payment-methods--logos' ) ) return;
+		if ( cardLabel.querySelector( '.payment-methods--logos' ) ) {
+			return;
+		}
 
 		const target = cardLabel.querySelector( 'img' );
-		if ( ! target ) return;
+		if ( ! target ) {
+			return;
+		}
 
 		// Create container div
 		const logosContainer = document.createElement( 'div' );
@@ -250,7 +256,9 @@ jQuery( function ( $ ) {
 
 		function positionPopover( popover, anchor ) {
 			const label = anchor.closest( 'label' );
-			if ( ! label ) return;
+			if ( ! label ) {
+				return;
+			}
 
 			const labelRect = label.getBoundingClientRect();
 			const labelStyle = window.getComputedStyle( label );
@@ -355,7 +363,9 @@ jQuery( function ( $ ) {
 		}
 
 		function togglePopover() {
-			if ( ! shouldHavePopover() ) return;
+			if ( ! shouldHavePopover() ) {
+				return;
+			}
 
 			const existingPopover = cardLabel.querySelector( '.logo-popover' );
 			if ( existingPopover ) {

@@ -18,7 +18,6 @@ const Incentive: React.FC<
 				{ strings.incentive.limitedTimeOffer }
 			</div>
 			<h2
-				// eslint-disable-next-line react/no-danger
 				dangerouslySetInnerHTML={ sanitizeHTML(
 					incentive.description + '*'
 				) }

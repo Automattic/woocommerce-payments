@@ -209,7 +209,9 @@ export const fillCardDetails = async (
 
 		const stripeFrame = await frameHandle.contentFrame();
 
-		if ( ! stripeFrame ) return;
+		if ( ! stripeFrame ) {
+			return;
+		}
 
 		await stripeFrame.locator( '[name="number"]' ).fill( card.number );
 
@@ -230,7 +232,9 @@ export const fillCardDetails = async (
 		);
 		const stripeFrame = await frameHandle.contentFrame();
 
-		if ( ! stripeFrame ) return;
+		if ( ! stripeFrame ) {
+			return;
+		}
 
 		await stripeFrame.locator( '[name="cardnumber"]' ).fill( card.number );
 
@@ -257,7 +261,9 @@ export const fillCardDetailsWCB = async (
 		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	if ( ! stripeFrame ) return;
+	if ( ! stripeFrame ) {
+		return;
+	}
 	await stripeFrame.getByPlaceholder( '1234 1234 1234' ).fill( card.number );
 	await stripeFrame
 		.getByPlaceholder( 'MM / YY' )
@@ -279,12 +285,16 @@ export const confirmCardAuthentication = async (
 		.waitFor( { state: 'visible', timeout: 20000 } )
 		.then( () => true )
 		.catch( () => false );
-	if ( ! appeared ) return;
+	if ( ! appeared ) {
+		return;
+	}
 
 	const stripeFrame = page.frameLocator(
 		'body>div>iframe[name^="__privateStripeFrame"]'
 	);
-	if ( ! stripeFrame ) return;
+	if ( ! stripeFrame ) {
+		return;
+	}
 
 	const challengeFrame = stripeFrame.frameLocator(
 		'iframe[name="stripe-challenge-frame"]'
@@ -587,7 +597,9 @@ export const addSavedCard = async (
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
 
-	if ( ! stripeFrame ) return;
+	if ( ! stripeFrame ) {
+		return;
+	}
 
 	await stripeFrame
 		.getByPlaceholder( '1234 1234 1234 1234' )
@@ -602,7 +614,9 @@ export const addSavedCard = async (
 		.getByRole( 'combobox', { name: 'country' } )
 		.selectOption( country );
 	const zip = stripeFrame.getByLabel( 'ZIP Code' );
-	if ( zip ) await zip.fill( zipCode ?? '90210' );
+	if ( zip ) {
+		await zip.fill( zipCode ?? '90210' );
+	}
 
 	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
 

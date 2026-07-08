@@ -103,7 +103,6 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 					<Button
 						target="_blank"
 						rel="noreferrer"
-						/* eslint-disable-next-line max-len */
 						href="https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/"
 						isSecondary
 					>

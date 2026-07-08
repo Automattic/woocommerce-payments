@@ -130,7 +130,6 @@ export const getFilters = (
  * TODO: Add an interface here for advanced filters, or adjust ESLint rules to allow using inferred type.
  */
 
-/*eslint-disable max-len*/
 export const getAdvancedFilters = (
 	customerCurrencyOptions?: TransactionsFilterEntryType[],
 	transactionSourceOptions?: TransactionsFilterEntryType[]
@@ -599,4 +598,3 @@ export const getAdvancedFilters = (
 
 	return advancedFilters;
 };
-/*eslint-enable max-len*/

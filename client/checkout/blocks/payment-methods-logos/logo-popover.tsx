@@ -33,7 +33,9 @@ export const LogoPopover: React.FC<
 		}
 
 		const label = anchor.closest( 'label' );
-		if ( ! label ) return;
+		if ( ! label ) {
+			return;
+		}
 
 		const labelRect = label.getBoundingClientRect();
 		const labelStyle = window.getComputedStyle( label );

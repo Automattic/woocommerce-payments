@@ -136,7 +136,7 @@ const AmazonPaySettings = ( { section } ) => {
 								__nextHasNoMarginBottom
 							/>
 						) }
-						{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+						{  }
 						<BaseControl
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom

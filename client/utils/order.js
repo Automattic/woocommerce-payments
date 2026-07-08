@@ -9,7 +9,7 @@
 export const getConfig = ( name ) => {
 	// Config for the Edit Order screen.
 	const config =
-		wcpay_order_config ?? // eslint-disable-line camelcase
+		wcpay_order_config ??
 		wc.wcSettings.getSetting( 'woocommerce_payments_data' );
 
 	return config?.[ name ];

@@ -107,7 +107,9 @@ export const getCurrentBaseFee = (
 export const formatMethodFeesTooltip = (
 	accountFees?: FeeStructure
 ): JSX.Element => {
-	if ( ! accountFees ) return <></>;
+	if ( ! accountFees ) {
+		return <></>;
+	}
 
 	const discountAdjustedFeeRate: number =
 		accountFees.discount.length && accountFees.discount[ 0 ].discount
@@ -292,7 +294,6 @@ export const formatAccountFeesDescription = (
 
 		if ( formats.displayBaseFeeIfDifferent ) {
 			currentBaseFeeDescription = sprintf(
-				// eslint-disable-next-line max-len
 				/* translators: %1 Base fee (that don't apply to this account at this moment), %2: Current fee (e.g: "2.9% + $.30 per transaction") */
 				__( '<s>%1$s</s> %2$s', 'woocommerce-payments' ),
 				feeDescription,

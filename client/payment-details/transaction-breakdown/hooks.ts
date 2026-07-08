@@ -25,7 +25,9 @@ export const useTransactionAmounts = (
 		}
 
 		const { transaction_details: details } = captureEvent;
-		if ( ! details ) return null;
+		if ( ! details ) {
+			return null;
+		}
 
 		const formattedStoreAmount = `${ formatCurrency(
 			details.store_amount,

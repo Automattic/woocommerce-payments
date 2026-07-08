@@ -51,19 +51,13 @@ const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
 	const tooltipContent =
 		tcUrl && tcLabel ? (
 			<>
-				<span
-					// eslint-disable-next-line react/no-danger
-					dangerouslySetInnerHTML={ sanitizeHTML( tooltip ) }
-				/>{ ' ' }
+				<span dangerouslySetInnerHTML={ sanitizeHTML( tooltip ) } />{ ' ' }
 				<a href={ tcUrl } target="_blank" rel="noopener noreferrer">
 					{ tcLabel }
 				</a>
 			</>
 		) : (
-			<span
-				// eslint-disable-next-line react/no-danger
-				dangerouslySetInnerHTML={ sanitizeHTML( tooltip ) }
-			/>
+			<span dangerouslySetInnerHTML={ sanitizeHTML( tooltip ) } />
 		);
 
 	return (

@@ -242,7 +242,9 @@ export const TestModeNotice: React.FC< Props > = ( {
 	isDetailsView = false,
 	isTestModeOnboarding = false,
 } ) => {
-	if ( ! isInTestMode() ) return null;
+	if ( ! isInTestMode() ) {
+		return null;
+	}
 
 	return (
 		<BannerNotice

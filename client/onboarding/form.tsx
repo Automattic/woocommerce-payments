@@ -83,12 +83,15 @@ export const OnboardingTextField: React.FC<
 					touched[ name ] ||
 					inputRef.current !==
 						inputRef.current?.ownerDocument.activeElement
-				)
+				) {
 					validate( value );
+				}
 			} }
 			onBlur={ () => validate() }
 			onKeyDown={ ( event: React.KeyboardEvent< HTMLInputElement > ) => {
-				if ( event.key === 'Enter' ) validate();
+				if ( event.key === 'Enter' ) {
+					validate();
+				}
 			} }
 			error={ error() }
 			{ ...props }
@@ -142,7 +145,7 @@ interface OnboardingGroupedSelectFieldProps< ItemType >
 }
 
 export const OnboardingGroupedSelectField = <
-	ListItemType extends GroupedSelectItem
+	ListItemType extends GroupedSelectItem,
 >( {
 	onChange,
 	...rest

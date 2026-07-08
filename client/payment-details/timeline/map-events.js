@@ -108,7 +108,6 @@ const getDepositTimelineItem = (
 		} );
 
 		headline = createInterpolateElement( headline, {
-			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			a: <Link href={ depositUrl } />,
 		} );
 	} else {
@@ -165,7 +164,6 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 		} );
 
 		headline = createInterpolateElement( headline, {
-			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			a: <Link href={ depositUrl } />,
 		} );
 	} else {
@@ -270,7 +268,9 @@ const convertAndFormatFeeAmount = ( feeAmount, feeCurrency, event ) => {
  * @return {boolean} true if the only applied fee is the base fee
  */
 const isBaseFeeOnly = ( event ) => {
-	if ( ! event.fee_rates ) return false;
+	if ( ! event.fee_rates ) {
+		return false;
+	}
 
 	const history = event.fee_rates.history;
 	return history?.length === 1 && history[ 0 ].type === 'base';
@@ -1153,7 +1153,6 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			let headlineText;
 			if ( event.reason === 'noncompliant' ) {
 				headlineText = __(
-					// eslint-disable-next-line max-len
 					"<strong>Dispute lost.</strong> Visa reviewed the evidence and decided in the customer's favor.",
 					'woocommerce-payments'
 				);

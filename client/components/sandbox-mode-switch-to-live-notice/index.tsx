@@ -53,7 +53,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								// eslint-disable-next-line max-len
 								"{{div}}{{strong}}You're using a test account.{{/strong}} To accept payments from shoppers, {{switchToLiveLink}}activate your %1$s account.{{/switchToLiveLink}}{{/div}}{{learnMoreIcon/}}",
 								'woocommerce-payments'
 							),
@@ -76,7 +75,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												mixedString: sprintf(
 													/* translators: 1: WooPayments */
 													__(
-														// eslint-disable-next-line max-len
 														'A test account gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 														'woocommerce-payments'
 													),
@@ -84,10 +82,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												),
 												components: {
 													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
 															href={
-																// eslint-disable-next-line max-len
 																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/'
 															}
 															target="_blank"
@@ -127,7 +123,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								// eslint-disable-next-line max-len
 								"{{div}}{{strong}}You're using a test account.{{/strong}} ⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!{{/div}}{{learnMoreIcon/}}",
 								'woocommerce-payments'
 							),
@@ -150,7 +145,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												mixedString: sprintf(
 													/* translators: 1: WooPayments */
 													__(
-														// eslint-disable-next-line max-len
 														'To begin accepting real payments, please go to the live store or change your {{wpEnvLink}}WordPress environment{{/wpEnvLink}} to a production one. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 														'woocommerce-payments'
 													),
@@ -158,7 +152,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												),
 												components: {
 													wpEnvLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
 															type="external"
 															target="_blank"
@@ -169,10 +162,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 														/>
 													),
 													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
 															href={
-																// eslint-disable-next-line max-len
 																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
 															}
 															target="_blank"
@@ -205,7 +196,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								// eslint-disable-next-line max-len
 								"{{div}}{{strong}}You're using a sandbox test account.{{/strong}} To accept real payments from shoppers, you will need to first {{resetAccountLink}}reset your account{{/resetAccountLink}} and, then, provide additional details about your business.{{/div}}{{learnMoreIcon/}}",
 								'woocommerce-payments'
 							),
@@ -215,7 +205,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							div: <div />,
 							strong: <strong />,
 							resetAccountLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<Link
 									href={
 										'https://woocommerce.com/document/woopayments/startup-guide/#resetting'
@@ -239,7 +228,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												mixedString: sprintf(
 													/* translators: 1: WooPayments */
 													__(
-														// eslint-disable-next-line max-len
 														'A sandbox account gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 														'woocommerce-payments'
 													),
@@ -247,10 +235,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												),
 												components: {
 													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
 															href={
-																// eslint-disable-next-line max-len
 																'https://woocommerce.com/document/woopayments/startup-guide/#sign-up-process'
 															}
 															target="_blank"
@@ -283,7 +269,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								// eslint-disable-next-line max-len
 								'{{div}}{{strong}}You are using a sandbox test account.{{/strong}} ⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!{{/div}}{{learnMoreIcon/}}',
 								'woocommerce-payments'
 							),
@@ -306,7 +291,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												mixedString: sprintf(
 													/* translators: 1: WooPayments */
 													__(
-														// eslint-disable-next-line max-len
 														'To begin accepting real payments, please go to the live store or change your {{wpEnvLink}}WordPress environment{{/wpEnvLink}} to a production one. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 														'woocommerce-payments'
 													),
@@ -314,7 +298,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 												),
 												components: {
 													wpEnvLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
 															type="external"
 															target="_blank"
@@ -325,10 +308,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 														/>
 													),
 													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
 															href={
-																// eslint-disable-next-line max-len
 																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
 															}
 															target="_blank"

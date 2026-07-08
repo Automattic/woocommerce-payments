@@ -125,7 +125,7 @@ const PhoneNumberInput = ( {
 			if ( accountCountry === 'JP' ) {
 				phoneCountries = {
 					initialCountry: 'JP',
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 					// @ts-ignore
 					onlyCountries: [ 'JP' ],
 				};

@@ -104,7 +104,6 @@ class WoopayConnect {
 		document.body.appendChild( hiddenDiv );
 
 		// self is used to maintain this context in the promise.
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 		this.iframePostMessage = new Promise( ( resolve ) => {
 			self.listeners.getIframePostMessageCallback = resolve;

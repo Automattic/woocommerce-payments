@@ -17,13 +17,13 @@ declare module '@wordpress/dataviews/wp' {
 declare module 'dompurify' {
 	/* eslint-disable @typescript-eslint/naming-convention */
 	const DOMPurify: {
-		sanitize(
+		sanitize: (
 			html: string,
 			options?: {
 				ALLOWED_TAGS: string[];
 				ALLOWED_ATTR: string[];
 			}
-		): string;
+		) => string;
 	};
 	export default DOMPurify;
 	/* eslint-enable @typescript-eslint/naming-convention */

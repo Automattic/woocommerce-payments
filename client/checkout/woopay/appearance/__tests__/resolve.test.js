@@ -45,7 +45,9 @@ describe( 'resolveWoopayAppearance', () => {
 	it( 'returns null when appearance type is not supported', () => {
 		isSupportedThemeEntrypoint.mockReturnValue( false );
 		getConfig.mockImplementation( ( key ) => {
-			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) return true;
+			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) {
+				return true;
+			}
 			return null;
 		} );
 
@@ -55,8 +57,12 @@ describe( 'resolveWoopayAppearance', () => {
 	it( 'returns server appearance when available', () => {
 		const serverAppearance = { theme: 'stripe' };
 		getConfig.mockImplementation( ( key ) => {
-			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) return true;
-			if ( key === 'woopayAppearance' ) return serverAppearance;
+			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) {
+				return true;
+			}
+			if ( key === 'woopayAppearance' ) {
+				return serverAppearance;
+			}
 			return null;
 		} );
 
@@ -68,8 +74,12 @@ describe( 'resolveWoopayAppearance', () => {
 	it( 'falls back to DOM extraction on shortcode checkout and persists', () => {
 		const domAppearance = { theme: 'night' };
 		getConfig.mockImplementation( ( key ) => {
-			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) return true;
-			if ( key === 'woopayAppearance' ) return null;
+			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) {
+				return true;
+			}
+			if ( key === 'woopayAppearance' ) {
+				return null;
+			}
 			return null;
 		} );
 		isShortcodeCheckout.mockReturnValue( true );
@@ -87,8 +97,12 @@ describe( 'resolveWoopayAppearance', () => {
 
 	it( 'returns null when no server appearance and not on shortcode checkout', () => {
 		getConfig.mockImplementation( ( key ) => {
-			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) return true;
-			if ( key === 'woopayAppearance' ) return null;
+			if ( key === 'isWooPayGlobalThemeSupportEnabled' ) {
+				return true;
+			}
+			if ( key === 'woopayAppearance' ) {
+				return null;
+			}
 			return null;
 		} );
 		isShortcodeCheckout.mockReturnValue( false );

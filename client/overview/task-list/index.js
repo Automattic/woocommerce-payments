@@ -104,11 +104,8 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	};
 
 	const undoRemindTaskLater = async ( key ) => {
-		const {
-			// eslint-disable-next-line no-unused-vars
-			[ key ]: oldValue,
-			...updatedRemindMeLaterTasks
-		} = remindMeLaterTodoTasks;
+		const { [ key ]: oldValue, ...updatedRemindMeLaterTasks } =
+			remindMeLaterTodoTasks;
 
 		delete remindMeLaterTodoTasks[ key ];
 		setVisibleTasks( getVisibleTasks() );

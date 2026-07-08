@@ -246,7 +246,9 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	};
 
 	useEffect( () => {
-		if ( isLoading ) return;
+		if ( isLoading ) {
+			return;
+		}
 
 		cardObserver.current = new IntersectionObserver( observerCallback );
 

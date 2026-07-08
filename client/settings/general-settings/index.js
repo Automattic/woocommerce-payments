@@ -104,7 +104,6 @@ const GeneralSettings = () => {
 														<a
 															target="_blank"
 															rel="noreferrer"
-															/* eslint-disable-next-line max-len */
 															href="https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/"
 														/>
 													),

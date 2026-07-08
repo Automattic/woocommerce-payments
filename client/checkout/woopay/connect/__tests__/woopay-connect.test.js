@@ -31,7 +31,9 @@ describe( 'WoopayConnect origin validation', () => {
 
 	beforeEach( () => {
 		getConfig.mockImplementation( ( key ) => {
-			if ( key === 'woopayHost' ) return 'https://pay.woo.com';
+			if ( key === 'woopayHost' ) {
+				return 'https://pay.woo.com';
+			}
 			return undefined;
 		} );
 
@@ -66,7 +68,9 @@ describe( 'WoopayConnect origin validation', () => {
 
 	it( 'accepts messages when woopayHost includes a path', () => {
 		getConfig.mockImplementation( ( key ) => {
-			if ( key === 'woopayHost' ) return 'https://pay.woo.com/woopay';
+			if ( key === 'woopayHost' ) {
+				return 'https://pay.woo.com/woopay';
+			}
 			return undefined;
 		} );
 

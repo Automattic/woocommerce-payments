@@ -45,7 +45,6 @@ const ProtectionLevels: React.FC = () => {
 		}
 
 		if ( initialSettingsRef.current === null && currentSettings ) {
-			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
 			initialSettingsRef.current = { ...currentSettings };
 		}

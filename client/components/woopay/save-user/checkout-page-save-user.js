@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /* global jQuery */
 /**
  * External dependencies

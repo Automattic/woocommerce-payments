@@ -66,7 +66,6 @@ export const fraudOutcomeRulesetMapping = {
 	},
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const paymentFailureMapping = {
 	card_declined: __(
 		'The card was declined by the bank',

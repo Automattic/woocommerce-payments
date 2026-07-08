@@ -55,7 +55,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 							! isPaymentRequestEnabled &&
 								interpolateComponents( {
 									mixedString: __(
-										/* eslint-disable-next-line max-len */
 										'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}} and' +
 											"{{appleLink}} Apple{{/appleLink}}'s terms of use.",
 										'woocommerce-payments'
@@ -72,7 +71,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 											<a
 												target="_blank"
 												rel="noreferrer"
-												/* eslint-disable-next-line max-len */
 												href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
 											/>
 										),
@@ -93,7 +91,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 							! isPaymentRequestEnabled &&
 								interpolateComponents( {
 									mixedString: __(
-										/* eslint-disable-next-line max-len */
 										'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
 											"and {{googleLink}}Google{{/googleLink}}'s terms of use.",
 										'woocommerce-payments'

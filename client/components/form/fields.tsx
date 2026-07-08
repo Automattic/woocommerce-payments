@@ -42,7 +42,9 @@ const makeField = (
 	ref?: React.Ref< any >
 ): React.ReactElement => {
 	const { error, ...rest } = props;
-	if ( ! error ) return React.createElement( Control, { ...rest, ref } );
+	if ( ! error ) {
+		return React.createElement( Control, { ...rest, ref } );
+	}
 	return (
 		<>
 			{ React.createElement( Control, {

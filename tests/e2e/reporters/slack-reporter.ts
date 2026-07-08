@@ -238,7 +238,6 @@ function slugifyForFileName( input: string ): string {
  * Strip ANSI color/escape codes from a string so Slack messages are readable.
  */
 function stripAnsi( text: string ): string {
-	// eslint-disable-next-line no-control-regex
 	return text.replace( /\u001B\[[0-9;]*m/g, '' );
 }
 

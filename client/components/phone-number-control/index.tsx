@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/no-onchange */
 /**
  * External dependencies
  */
@@ -16,12 +15,13 @@ import { useUniqueId } from 'hooks/use-unique-id';
 
 // Rely on the global variable set by the intl-tel-input library.
 // It can by replaced with a static list of country/codes if needed.
-const countryCodes = window.intlTelInputGlobals
-	.getCountryData()
-	.reduce( ( acc, { dialCode, iso2 } ) => {
+const countryCodes = window.intlTelInputGlobals.getCountryData().reduce(
+	( acc, { dialCode, iso2 } ) => {
 		acc[ iso2.toLocaleUpperCase() ] = `+${ dialCode }`;
 		return acc;
-	}, {} as Record< string, string > );
+	},
+	{} as Record< string, string >
+);
 
 interface Props {
 	value: string;

@@ -13,7 +13,6 @@
 const debounce = ( wait, func, immediate = false ) => {
 	let timeout;
 	return function () {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const context = this,
 			args = arguments;
 		const later = () => {

@@ -81,7 +81,9 @@ const SpotlightPromotion: React.FC = () => {
 	}, [ getEventProperties ] );
 
 	const handlePrimaryClick = useCallback( () => {
-		if ( ! spotlightPromotion ) return;
+		if ( ! spotlightPromotion ) {
+			return;
+		}
 		recordEvent(
 			'wcpay_payment_method_promotion_activate_click',
 			getEventProperties()
@@ -90,7 +92,9 @@ const SpotlightPromotion: React.FC = () => {
 	}, [ getEventProperties, activatePmPromotion, spotlightPromotion ] );
 
 	const handleSecondaryClick = useCallback( () => {
-		if ( ! spotlightPromotion ) return;
+		if ( ! spotlightPromotion ) {
+			return;
+		}
 		recordEvent( 'wcpay_payment_method_promotion_link_click', {
 			...getEventProperties(),
 			link_type: 'terms',
@@ -115,7 +119,9 @@ const SpotlightPromotion: React.FC = () => {
 	}, [ getEventProperties, spotlightPromotion ] );
 
 	const handleDismiss = useCallback( () => {
-		if ( ! spotlightPromotion ) return;
+		if ( ! spotlightPromotion ) {
+			return;
+		}
 		recordEvent(
 			'wcpay_payment_method_promotion_dismiss_click',
 			getEventProperties()

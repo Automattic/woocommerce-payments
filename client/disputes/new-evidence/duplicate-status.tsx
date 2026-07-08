@@ -36,7 +36,6 @@ const DuplicateStatus: React.FC< DuplicateStatusProps > = ( {
 					selected={ duplicateStatus }
 					options={ [
 						{
-							// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 							// @ts-ignore - description is a valid prop for RadioControl on newer versions of wordpress/components
 							description: __(
 								'A refund has been issued',
@@ -49,7 +48,6 @@ const DuplicateStatus: React.FC< DuplicateStatusProps > = ( {
 							value: 'is_duplicate',
 						},
 						{
-							// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 							// @ts-ignore - description is a valid prop for RadioControl on newer versions of wordpress/components
 							description: __(
 								'No refund needed',
@@ -63,7 +61,6 @@ const DuplicateStatus: React.FC< DuplicateStatusProps > = ( {
 						},
 					] }
 					onChange={ handleDuplicateStatusChange }
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 					// @ts-ignore - disabled is not a valid prop for RadioControl, but it is in the HTML Input element
 					disabled={ readOnly }
 				/>

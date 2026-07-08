@@ -275,7 +275,7 @@ declare global {
 	const wcSettingsModule: {
 		getSetting: <
 			K extends keyof WcSettings,
-			T extends WcSettings[ K ] | undefined
+			T extends WcSettings[ K ] | undefined,
 		>(
 			setting: K,
 			fallback?: T
@@ -344,7 +344,7 @@ declare global {
 		wcpayTestToLiveNoticeSettings?: typeof wcpayTestToLiveNoticeSettings;
 		wcpayPostKycActivationNoticeSettings?: typeof wcpayPostKycActivationNoticeSettings;
 		wcpayOneAndDoneNoticeSettings?: typeof wcpayOneAndDoneNoticeSettings;
-		// eslint-disable-next-line @typescript-eslint/naming-convention
+
 		wcpay_upe_config?: typeof wcpay_upe_config;
 	}
 }

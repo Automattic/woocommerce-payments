@@ -44,7 +44,7 @@ import PaymentMethodItem from 'wcpay/components/payment-method-item';
 interface PaymentMethodProps {
 	id: string;
 	label: string;
-	// eslint-disable-next-line @typescript-eslint/naming-convention
+
 	Icon: () => JSX.Element | null;
 	description: string;
 	onCheckClick: ( id: string ) => void;

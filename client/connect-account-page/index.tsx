@@ -395,7 +395,9 @@ const ConnectAccountPage: React.FC = () => {
 					path: `/wc-analytics/admin/notes/experimental-activate-promo/${ incentive.id }`,
 					method: 'POST',
 				} );
-				if ( ! activatePromoRequest?.success ) throw new Error();
+				if ( ! activatePromoRequest?.success ) {
+					throw new Error();
+				}
 			} catch ( _ ) {
 				setErrorMessage( strings.incentive.error );
 			}
@@ -477,7 +479,6 @@ const ConnectAccountPage: React.FC = () => {
 					isDismissible={ false }
 				>
 					<div
-						// eslint-disable-next-line react/no-danger
 						dangerouslySetInnerHTML={ sanitizeHTML(
 							decodeEntities( errorMessage )
 						) }

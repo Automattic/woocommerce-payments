@@ -200,7 +200,6 @@ describe( 'Settings actions tests', () => {
 			const saveGenerator = saveSettings();
 
 			apiFetch.mockImplementation( () => {
-				// eslint-disable-next-line no-throw-literal
 				throw {
 					server_error: 'Stripe rejected this',
 				};
@@ -221,7 +220,6 @@ describe( 'Settings actions tests', () => {
 			const saveGenerator = saveSettings();
 
 			apiFetch.mockImplementation( () => {
-				// eslint-disable-next-line no-throw-literal
 				throw {
 					server_error: 'Stripe rejected this',
 					data: {

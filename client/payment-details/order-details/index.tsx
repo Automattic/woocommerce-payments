@@ -24,7 +24,9 @@ const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 	const isLoading = isLoadingCharge || shouldRedirect;
 
 	useEffect( () => {
-		if ( ! charge ) return;
+		if ( ! charge ) {
+			return;
+		}
 
 		if ( shouldRedirect ) {
 			const url = getAdminUrl( {

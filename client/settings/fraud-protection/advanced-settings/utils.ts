@@ -68,7 +68,9 @@ export const isSellingToAvsSupportedLocations = (): boolean => {
 const buildFormattedRulePrice = ( price: string ): string => {
 	const priceFloat = parseFloat( price );
 
-	if ( isNaN( priceFloat ) ) return '';
+	if ( isNaN( priceFloat ) ) {
+		return '';
+	}
 
 	const convertedPrice = parseInt( ( priceFloat * 100 ).toString(), 10 );
 	const defaultCurrency = wcpaySettings.storeCurrency || 'usd';
@@ -77,7 +79,9 @@ const buildFormattedRulePrice = ( price: string ): string => {
 };
 
 const readFormattedRulePrice = ( value: number ) => {
-	if ( ! value ) return '';
+	if ( ! value ) {
+		return '';
+	}
 
 	const [ amount ] = value.toString().split( '|' );
 

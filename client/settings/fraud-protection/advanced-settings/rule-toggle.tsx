@@ -38,7 +38,9 @@ const getFilterAction = (
 	settingUI: FraudPreventionSettings,
 	isFRTReviewFeatureActive: boolean
 ) => {
-	if ( ! isFRTReviewFeatureActive ) return filterActions.BLOCK;
+	if ( ! isFRTReviewFeatureActive ) {
+		return filterActions.BLOCK;
+	}
 
 	return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
 };

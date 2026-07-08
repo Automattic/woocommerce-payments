@@ -275,9 +275,9 @@ export const onConfirmHandler = async (
 export const onReadyHandler = async function ( { availablePaymentMethods } ) {
 	if ( availablePaymentMethods ) {
 		const enabledMethods = Object.entries( availablePaymentMethods )
-			// eslint-disable-next-line no-unused-vars
+
 			.filter( ( [ _, isEnabled ] ) => isEnabled )
-			// eslint-disable-next-line no-unused-vars
+
 			.map( ( [ methodName, _ ] ) => methodName );
 
 		trackExpressCheckoutButtonLoad( {

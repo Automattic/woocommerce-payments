@@ -36,8 +36,12 @@ describe( 'WooPayConnectIframe', () => {
 
 	beforeEach( () => {
 		getConfig.mockImplementation( ( key ) => {
-			if ( key === 'testMode' ) return mockTestMode;
-			if ( key === 'woopayHost' ) return mockWoopayHost;
+			if ( key === 'testMode' ) {
+				return mockTestMode;
+			}
+			if ( key === 'woopayHost' ) {
+				return mockWoopayHost;
+			}
 		} );
 
 		getTracksIdentity.mockResolvedValue( mockTracksUserId );

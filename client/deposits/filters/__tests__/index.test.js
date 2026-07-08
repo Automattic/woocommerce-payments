@@ -47,7 +47,7 @@ describe( 'Deposits filters', () => {
 	// Waiting for the microtask queue to be flushed to prevent "TypeError: Cannot read properties of null (reading 'documentElement')"
 	// See https://github.com/floating-ui/floating-ui/issues/1908 and https://floating-ui.com/docs/react#testing
 	afterEach( async () => {
-		// eslint-disable-next-line @typescript-eslint/no-empty-function, testing-library/no-unnecessary-act
+		// eslint-disable-next-line testing-library/no-unnecessary-act
 		await act( async () => {} );
 	} );
 

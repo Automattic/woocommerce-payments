@@ -5,7 +5,9 @@
  * @return Error messages.
  */
 export const getErrorMessageFromNotice = ( notice: string | undefined ) => {
-	if ( ! notice ) return '';
+	if ( ! notice ) {
+		return '';
+	}
 
 	const div = document.createElement( 'div' );
 	div.innerHTML = notice.trim();

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/naming-convention */
 
 /**
  * External dependencies

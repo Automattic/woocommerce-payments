@@ -121,7 +121,7 @@ export const RiskReviewList = (): JSX.Element => {
 		setIsDownloading( true );
 
 		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 		const { page, path, ...params } = getQuery();
 
 		try {

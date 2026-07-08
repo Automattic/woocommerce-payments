@@ -52,7 +52,6 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 						{ description + ' ' }
 						{ interpolateComponents( {
 							mixedString: __(
-								/* eslint-disable-next-line max-len */
 								'By activating this feature, you accept ' +
 									'{{stripeLink}}Stripe{{/stripeLink}} and ' +
 									"{{amazonLink}}Amazon{{/amazonLink}}'s terms of use.",

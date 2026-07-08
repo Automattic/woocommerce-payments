@@ -1,4 +1,3 @@
-/* eslint-disable */
 const { mergeWithRules } = require( 'webpack-merge' );
 
 const shared = require( './webpack/shared' );

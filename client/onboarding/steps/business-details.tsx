@@ -8,14 +8,13 @@ import React from 'react';
  */
 import { useOnboardingContext } from '../context';
 import { Item } from 'components/custom-select-control';
-import { OnboardingFields } from '../types';
+import { OnboardingFields, BusinessType } from '../types';
 import { OnboardingGroupedSelectField, OnboardingSelectField } from '../form';
 import {
 	getAvailableCountries,
 	getBusinessTypes,
 	getMccsFlatList,
 } from 'onboarding/utils';
-import { BusinessType } from 'onboarding/types';
 import strings from 'onboarding/strings';
 
 /**

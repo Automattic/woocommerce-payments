@@ -299,7 +299,6 @@ const OverviewPage = () => {
 							),
 							components: {
 								seeDetailsLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
 									<ExternalLink
 										href={
 											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'

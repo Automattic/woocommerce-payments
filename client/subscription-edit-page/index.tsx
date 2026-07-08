@@ -221,7 +221,6 @@ export const PaymentMethodSelect = ( {
 	}
 
 	return (
-		// eslint-disable-next-line
 		<select name={ inputName } defaultValue={ value } key={ userId }>
 			{ value === 0 && (
 				<option value={ 0 } key={ 'select' } disabled>

@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
 import React from 'react';
 import { CardReader } from 'wcpay/types/card-readers';
 
-/*eslint-disable camelcase*/
 const CardReaderListItem: React.FunctionComponent< {
 	reader: CardReader;
 } > = ( { reader } ): JSX.Element => {

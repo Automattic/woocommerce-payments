@@ -348,7 +348,9 @@ describe( 'Getting styles for automated theming', () => {
 			...cssPropertiesCamel,
 			color: accentColor,
 			getPropertyValue: ( prop ) => {
-				if ( prop === 'color' ) return accentColor;
+				if ( prop === 'color' ) {
+					return accentColor;
+				}
 				return cssPropertiesDashed[ prop ];
 			},
 		};
@@ -356,7 +358,9 @@ describe( 'Getting styles for automated theming', () => {
 			...cssPropertiesCamel,
 			color: navColor,
 			getPropertyValue: ( prop ) => {
-				if ( prop === 'color' ) return navColor;
+				if ( prop === 'color' ) {
+					return navColor;
+				}
 				return cssPropertiesDashed[ prop ];
 			},
 		};
@@ -364,8 +368,12 @@ describe( 'Getting styles for automated theming', () => {
 		// Both 'form.checkout a' and bare 'a' match, but the first should win.
 		const scope = {
 			querySelector: jest.fn( ( selector ) => {
-				if ( selector === 'form.checkout a' ) return contentElement;
-				if ( selector === 'a' ) return bareElement;
+				if ( selector === 'form.checkout a' ) {
+					return contentElement;
+				}
+				if ( selector === 'a' ) {
+					return bareElement;
+				}
 				return null;
 			} ),
 			defaultView: {

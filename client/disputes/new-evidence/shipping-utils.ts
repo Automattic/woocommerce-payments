@@ -23,8 +23,12 @@ export function needsShipping(
 	productType = ''
 ): boolean {
 	// Only physical products need shipping
-	if ( productType !== 'physical_product' ) return false;
+	if ( productType !== 'physical_product' ) {
+		return false;
+	}
 	// Check dispute reason logic
-	if ( ReasonsNoShipping.includes( reason || '' ) ) return false;
+	if ( ReasonsNoShipping.includes( reason || '' ) ) {
+		return false;
+	}
 	return true;
 }

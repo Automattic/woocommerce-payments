@@ -270,10 +270,9 @@ export const handleAppearanceForFloatingLabel = (
 		const originalPaddingBottom = parseFloat(
 			appearance.rules[ '.Input' ].paddingBottom
 		);
-		appearance.rules[
-			'.Input'
-			// eslint-disable-next-line max-len
-		].paddingBottom = `${ originalPaddingBottom - 1 }px`;
+		appearance.rules[ '.Input' ].paddingBottom = `${
+			originalPaddingBottom - 1
+		}px`;
 
 		const originalLabelMarginTop =
 			appearance.rules[ '.Label' ].marginTop ?? '0';

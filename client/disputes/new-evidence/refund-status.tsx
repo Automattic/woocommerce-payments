@@ -51,7 +51,6 @@ const RefundStatus: React.FC< RefundStatusProps > = ( {
 						},
 					] }
 					onChange={ handleRefundStatusChange }
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 					// @ts-ignore - disabled is not a valid prop for RadioControl, but it is in the HTML Input element
 					disabled={ readOnly }
 				/>

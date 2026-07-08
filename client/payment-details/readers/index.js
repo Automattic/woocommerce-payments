@@ -122,7 +122,6 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 
 	const onDownload = () => {
 		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 
 		downloadCSVFile(

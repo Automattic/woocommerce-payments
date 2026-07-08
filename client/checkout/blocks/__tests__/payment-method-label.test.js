@@ -54,8 +54,12 @@ describe( 'PaymentMethodLabel', () => {
 		getCachedTheme.mockReturnValue( null );
 		getIconTheme.mockReturnValue( 'stripe' );
 		getUPEConfig.mockImplementation( ( key ) => {
-			if ( key === 'testMode' ) return false;
-			if ( key === 'stylesCacheVersion' ) return 'v1';
+			if ( key === 'testMode' ) {
+				return false;
+			}
+			if ( key === 'stylesCacheVersion' ) {
+				return 'v1';
+			}
 			return null;
 		} );
 	} );

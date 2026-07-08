@@ -84,7 +84,6 @@ const BasePaymentMethodDetails: React.FC< Props > = ( {
 					label={ __( 'Address', 'woocommerce-payments' ) }
 				>
 					<span
-						// eslint-disable-next-line react/no-danger
 						dangerouslySetInnerHTML={ {
 							__html: formattedAddress || '–',
 						} }

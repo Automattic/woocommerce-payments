@@ -339,7 +339,6 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						{ typeof description === 'string' ? (
 							<div
 								className="wcpay-spotlight__description"
-								// eslint-disable-next-line react/no-danger
 								dangerouslySetInnerHTML={ sanitizeHTML(
 									description
 								) }
@@ -353,7 +352,6 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 							( typeof footnote === 'string' ? (
 								<div
 									className="wcpay-spotlight__footnote"
-									// eslint-disable-next-line react/no-danger
 									dangerouslySetInnerHTML={ sanitizeHTML(
 										footnote
 									) }

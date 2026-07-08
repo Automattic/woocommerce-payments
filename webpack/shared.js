@@ -1,4 +1,3 @@
-/* eslint-disable */
 const path = require( 'path' );
 const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );

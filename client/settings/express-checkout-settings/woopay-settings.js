@@ -99,7 +99,6 @@ const WooPaySettings = ( { section } ) => {
 									  )
 									: interpolateComponents( {
 											mixedString: __(
-												/* eslint-disable-next-line max-len */
 												'When enabled, customers will be able to checkout using WooPay. ' +
 													'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
 													'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
@@ -143,7 +142,7 @@ const WooPaySettings = ( { section } ) => {
 							}
 							__nextHasNoMarginBottom
 						/>
-						{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+						{  }
 						<BaseControl
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
@@ -292,14 +291,14 @@ const WooPaySettings = ( { section } ) => {
 							),
 							// prettier-ignore
 							components: {
-									/* eslint-disable prettier/prettier */
+									 
 									privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
 										<Link href={ window.wcSettings.storePages.privacy.permalink } type="external" /> :
 										<span />,
 									termsLink: window.wcSettings?.storePages?.terms?.permalink ?
 										<Link href={ window.wcSettings.storePages.terms.permalink } type="external" /> :
 										<span />,
-									/* eslint-enable prettier/prettier */
+									 
 									learnMoreLink: (
 										// @ts-expect-error: children is provided when interpolating the component
 										// eslint-disable-next-line max-len

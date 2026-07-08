@@ -23,7 +23,6 @@ declare module '@woocommerce/components' {
 			status: string;
 		};
 		className?: string;
-		// eslint-disable-next-line @typescript-eslint/ban-types
 		orderStatusMap: Object;
 		labelPositionToLeft?: boolean;
 	} ) => JSX.Element;

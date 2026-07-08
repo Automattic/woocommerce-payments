@@ -39,7 +39,9 @@ const FraudProtectionTour: React.FC = () => {
 
 	useEffect( () => {
 		const reference = document.getElementById( 'fp-settings' );
-		if ( isWelcomeTourDismissed || isLoading || ! reference ) return;
+		if ( isWelcomeTourDismissed || isLoading || ! reference ) {
+			return;
+		}
 
 		const observer = new IntersectionObserver(
 			( [ entry ] ) => {
@@ -72,7 +74,9 @@ const FraudProtectionTour: React.FC = () => {
 		}
 	};
 
-	if ( ! showTour ) return null;
+	if ( ! showTour ) {
+		return null;
+	}
 
 	return (
 		<TourKit

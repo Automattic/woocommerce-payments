@@ -147,7 +147,6 @@ const DisputeReadinessCard = () => {
 							{ sprintf(
 								/* translators: %d: total number of dispute readiness steps. */
 								__(
-									// eslint-disable-next-line max-len
 									'These %d steps help customers recognize charges, understand your policies, and contact you before opening a dispute.',
 									'woocommerce-payments'
 								),

@@ -120,7 +120,6 @@ describe( 'Payment Intent hooks', () => {
 		);
 
 		jest.spyOn(
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			require( '@wordpress/data' ),
 			'useDispatch'
 		).mockReturnValue( () => {

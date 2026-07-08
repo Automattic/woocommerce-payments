@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { ComponentProps } from 'react';
-// eslint-disable-next-line no-restricted-syntax
+
 import { Flex, FlexItem, Icon, Notice, Button } from '@wordpress/components';
 
 import clsx from 'clsx';

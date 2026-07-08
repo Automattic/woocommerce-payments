@@ -220,7 +220,6 @@ describe( 'Payment details page', () => {
 
 		expect( container ).toMatchSnapshot();
 
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		expect( console ).toHaveWarnedWith(
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'

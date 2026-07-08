@@ -54,8 +54,9 @@ export const formatMerchantAddress = (
 export const formatDeliveryDate = (
 	dateString: string | undefined
 ): string => {
-	if ( ! dateString )
+	if ( ! dateString ) {
 		return __( '<Delivery/Service Date>', 'woocommerce-payments' );
+	}
 
 	const unixTimestamp = Math.floor( new Date( dateString ).getTime() / 1000 );
 	return formatDateTimeFromTimestamp( unixTimestamp, {

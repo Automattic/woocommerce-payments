@@ -52,7 +52,9 @@ describe( 'WooPay appearance theming', () => {
 			...cssPropertiesCamel,
 			color: accentColor,
 			getPropertyValue: ( prop ) => {
-				if ( prop === 'color' ) return accentColor;
+				if ( prop === 'color' ) {
+					return accentColor;
+				}
 				return cssPropertiesDashed[ prop ];
 			},
 		};
@@ -60,7 +62,9 @@ describe( 'WooPay appearance theming', () => {
 			...cssPropertiesCamel,
 			color: navColor,
 			getPropertyValue: ( prop ) => {
-				if ( prop === 'color' ) return navColor;
+				if ( prop === 'color' ) {
+					return navColor;
+				}
 				return cssPropertiesDashed[ prop ];
 			},
 		};
@@ -68,9 +72,13 @@ describe( 'WooPay appearance theming', () => {
 		const scope = {
 			querySelector: jest.fn( ( selector ) => {
 				// Content-area link — should win for .Link color.
-				if ( selector === 'form.checkout a' ) return contentLink;
+				if ( selector === 'form.checkout a' ) {
+					return contentLink;
+				}
 				// Bare fallback — should NOT win.
-				if ( selector === 'a' ) return navLink;
+				if ( selector === 'a' ) {
+					return navLink;
+				}
 				// Everything else uses default mock element.
 				return mockElement;
 			} ),
@@ -79,8 +87,12 @@ describe( 'WooPay appearance theming', () => {
 			),
 			defaultView: {
 				getComputedStyle: jest.fn( ( el ) => {
-					if ( el === contentLink ) return accentStyleDeclaration;
-					if ( el === navLink ) return navStyleDeclaration;
+					if ( el === contentLink ) {
+						return accentStyleDeclaration;
+					}
+					if ( el === navLink ) {
+						return navStyleDeclaration;
+					}
 					return mockCSStyleDeclaration;
 				} ),
 			},

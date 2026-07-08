@@ -97,7 +97,6 @@ export const loginAsCustomer = async (
 
 	for ( let i = 0; i < customerRetries; i++ ) {
 		try {
-			// eslint-disable-next-line no-console
 			console.log( 'Trying to log-in as customer...' );
 			await wpAdminLogin( page, customer );
 			// Let the login navigation settle so the goto() below can't interrupt
@@ -232,7 +231,9 @@ export const addSupportSessionDetectedCookie = async (
 	page: Page,
 	project: FullProject
 ) => {
-	if ( process.env.NODE_ENV !== 'atomic' ) return;
+	if ( process.env.NODE_ENV !== 'atomic' ) {
+		return;
+	}
 
 	const domain = new URL( project.use.baseURL ).hostname;
 
@@ -265,7 +266,6 @@ export const loginAsEditor = async (
 
 	for ( let i = 0; i < editorRetries; i++ ) {
 		try {
-			// eslint-disable-next-line no-console
 			console.log( 'Trying to log-in as editor...' );
 			await wpAdminLogin( page, editor );
 			await page.goto( '/wp-admin' );

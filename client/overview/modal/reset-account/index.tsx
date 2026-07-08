@@ -20,7 +20,9 @@ interface Props {
 const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 	const { isVisible, onDismiss, onSubmit } = props;
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	if ( ! isVisible ) return null;
+	if ( ! isVisible ) {
+		return null;
+	}
 
 	return (
 		<Modal

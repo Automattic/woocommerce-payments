@@ -37,7 +37,9 @@ export const trackStarted = (): void => {
 
 export const trackStepCompleted = ( step: string ): void => {
 	// We only track a completed step once.
-	if ( trackedSteps.has( step ) ) return;
+	if ( trackedSteps.has( step ) ) {
+		return;
+	}
 
 	recordEvent( 'wcpay_onboarding_flow_step_completed', {
 		step,

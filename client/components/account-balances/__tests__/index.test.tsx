@@ -100,7 +100,7 @@ const mockUseInstantDeposit = useInstantDeposit as jest.MockedFunction<
 mockUseInstantDeposit.mockReturnValue( {
 	deposit: undefined,
 	inProgress: false,
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
+
 	submit: () => {},
 } );
 

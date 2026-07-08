@@ -360,7 +360,9 @@ describe( 'Payment processing', () => {
 			'billing_state',
 		].forEach( ( id ) => {
 			const element = document.getElementById( id );
-			if ( ! element ) return;
+			if ( ! element ) {
+				return;
+			}
 
 			document.body.removeChild( element );
 		} );

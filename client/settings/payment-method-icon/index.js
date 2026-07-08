@@ -11,7 +11,9 @@ import clsx from 'clsx';
 import './style.scss';
 
 const PaymentMethodIcon = ( { Icon, label } ) => {
-	if ( ! Icon ) return null;
+	if ( ! Icon ) {
+		return null;
+	}
 
 	return (
 		<span className={ clsx( 'woocommerce-payments__payment-method-icon' ) }>

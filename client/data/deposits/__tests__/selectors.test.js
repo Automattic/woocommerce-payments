@@ -166,7 +166,7 @@ describe( 'Deposits overviews selectors', () => {
 		const second = computed.currencies[ 1 ];
 
 		// Verify that the default currency is always first.
-		// eslint-disable-next-line prettier/prettier
+
 		expect( first.currency ).toEqual(
 			overviewsFixture.account.default_currency
 		);

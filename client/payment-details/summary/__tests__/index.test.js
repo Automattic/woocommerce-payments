@@ -221,7 +221,6 @@ describe( 'PaymentDetailsSummary', () => {
 
 	test( 'correctly renders a charge', () => {
 		expect( renderCharge( getBaseCharge() ) ).toMatchSnapshot();
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		expect( console ).toHaveWarnedWith(
 			// eslint-disable-next-line max-len

@@ -106,9 +106,12 @@ const getIdentityCookieValue = (): string | undefined => {
 	const ca = document.cookie.split( ';' ); // Split cookie string and get all individual name=value pairs in an array
 	for ( let i = 0; i < ca.length; i++ ) {
 		let c = ca[ i ];
-		while ( c.charAt( 0 ) === ' ' ) c = c.substring( 1, c.length ); // Trim leading whitespace
-		if ( c.indexOf( nameEQ ) === 0 )
-			return c.substring( nameEQ.length, c.length ); // Check if it's the right cookie and return its value
+		while ( c.charAt( 0 ) === ' ' ) {
+			c = c.substring( 1, c.length );
+		} // Trim leading whitespace
+		if ( c.indexOf( nameEQ ) === 0 ) {
+			return c.substring( nameEQ.length, c.length );
+		} // Check if it's the right cookie and return its value
 	}
 	return undefined; // Return undefined if the cookie is not found
 };

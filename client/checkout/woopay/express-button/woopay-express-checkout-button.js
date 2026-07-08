@@ -166,7 +166,7 @@ export const WoopayExpressCheckoutButton = ( {
 			e?.preventDefault();
 
 			if ( isPreview ) {
-				return; // eslint-disable-line no-useless-return
+				return;
 			}
 
 			recordUserEvent( 'woopay_button_click', {

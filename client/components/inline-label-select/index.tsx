@@ -191,7 +191,7 @@ function InlineLabelSelect< ItemType extends SelectItem >( {
 				} ) }
 			>
 				{
-					/* eslint-disable-next-line jsx-a11y/label-has-associated-control, jsx-a11y/label-has-for */
+					/* eslint-disable-next-line jsx-a11y/label-has-associated-control */
 					<label
 						{ ...getLabelProps( {
 							className:

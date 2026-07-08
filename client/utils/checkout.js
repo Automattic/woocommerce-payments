@@ -15,7 +15,6 @@ export const getConfig = ( name ) => {
 		return wcpayConfig[ name ];
 	}
 
-	// eslint-disable-next-line no-use-before-define
 	return getUPEConfig( name );
 };
 

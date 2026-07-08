@@ -4,7 +4,9 @@
 import { __ } from '@wordpress/i18n';
 
 const Container = ( { children, isBlocksCheckout } ) => {
-	if ( ! isBlocksCheckout ) return children;
+	if ( ! isBlocksCheckout ) {
+		return children;
+	}
 	return (
 		<>
 			<div className="woopay-save-new-user-container">

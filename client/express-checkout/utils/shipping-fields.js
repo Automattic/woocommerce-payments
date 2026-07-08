@@ -30,7 +30,9 @@ const updateShortcodeField = ( formSelector, fieldName, value ) => {
 		`${ formSelector } [name="${ fieldName }"]`
 	);
 
-	if ( ! field ) return;
+	if ( ! field ) {
+		return;
+	}
 
 	// Check if the field is a dropdown (country/state).
 	if ( field.tagName === 'SELECT' && /country|state/.test( fieldName ) ) {

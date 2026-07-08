@@ -310,14 +310,20 @@ export default ( { query }: { query: { id: string } } ) => {
 				( fileKey ) => dispute?.evidence?.[ fileKey ]
 			);
 			// If we don't have any file keys, return.
-			if ( fileKeys.length === 0 ) return;
+			if ( fileKeys.length === 0 ) {
+				return;
+			}
 			// If we already loaded the file details, return.
-			if ( Object.keys( uploadedFiles ).length > 0 ) return;
+			if ( Object.keys( uploadedFiles ).length > 0 ) {
+				return;
+			}
 			// Build the URLS to bulk fetch the file details.
 			const fileDetails = await Promise.all(
 				fileKeys.map( async ( fileKey ) => {
 					const fileId = dispute?.evidence?.[ fileKey ];
-					if ( ! fileId ) return null;
+					if ( ! fileId ) {
+						return null;
+					}
 					const file: any = await apiFetch( {
 						path: `/wc/v3/payments/file/${ fileId }/details`,
 					} );
@@ -357,7 +363,9 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// Update cover letter when evidence changes
 	useEffect( () => {
-		if ( ! dispute || ! settings ) return;
+		if ( ! dispute || ! settings ) {
+			return;
+		}
 
 		// Get the document fields that are applicable for the current reason + product type
 		// This ensures we only include evidence for fields shown in the current UI
@@ -690,7 +698,9 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {
-		if ( ! dispute ) return [];
+		if ( ! dispute ) {
+			return [];
+		}
 		const disputeReasonSummary = reasons[ disputeReason ]?.summary || [];
 		return [
 			{
@@ -900,7 +910,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	const doUploadFile = async ( key: string, file: File ) => {
-		if ( ! file ) return;
+		if ( ! file ) {
+			return;
+		}
 
 		if ( fileSizeExceeded( file.size ) ) {
 			return;

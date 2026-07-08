@@ -72,7 +72,7 @@ describe( 'AmazonPaySettings', () => {
 			)
 		).toBeChecked();
 
-		userEvent.click(
+		await userEvent.click(
 			screen.getByLabelText(
 				'Enable Amazon Pay as an express payment button'
 			)
@@ -142,19 +142,23 @@ describe( 'AmazonPaySettings', () => {
 
 		expect( updateAmazonPayLocationsHandler ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( 'Show on checkout page' ) );
+		await userEvent.click(
+			screen.getByLabelText( 'Show on checkout page' )
+		);
 		expect( updateAmazonPayLocationsHandler ).toHaveBeenLastCalledWith(
 			'checkout',
 			true
 		);
 
-		userEvent.click( screen.getByLabelText( 'Show on product page' ) );
+		await userEvent.click(
+			screen.getByLabelText( 'Show on product page' )
+		);
 		expect( updateAmazonPayLocationsHandler ).toHaveBeenLastCalledWith(
 			'product',
 			false
 		);
 
-		userEvent.click( screen.getByLabelText( 'Show on cart page' ) );
+		await userEvent.click( screen.getByLabelText( 'Show on cart page' ) );
 		expect( updateAmazonPayLocationsHandler ).toHaveBeenLastCalledWith(
 			'cart',
 			true

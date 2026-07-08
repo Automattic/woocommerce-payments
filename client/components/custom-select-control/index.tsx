@@ -150,7 +150,7 @@ function CustomSelectControl< ItemType extends Item >( {
 			) }
 		>
 			{
-				/* eslint-disable-next-line jsx-a11y/label-has-associated-control, jsx-a11y/label-has-for */
+				/* eslint-disable-next-line jsx-a11y/label-has-associated-control */
 				<label
 					{ ...getLabelProps( {
 						className: 'components-custom-select-control__label',

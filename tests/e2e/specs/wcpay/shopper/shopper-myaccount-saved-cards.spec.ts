@@ -68,7 +68,9 @@ const makeCardTimingHelper = () => {
 
 		// Be careful that this is only needed for a successful card addition, so call it only where it's needed the most, to prevent unnecessary delays.
 		async waitIfNeededBeforeAddingCard( page: Page ) {
-			if ( ! lastCardAddedAt ) return;
+			if ( ! lastCardAddedAt ) {
+				return;
+			}
 
 			const elapsed = Date.now() - lastCardAddedAt;
 			const waitTime = 20000 - elapsed;

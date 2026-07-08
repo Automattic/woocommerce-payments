@@ -69,7 +69,6 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 								  )
 								: interpolateComponents( {
 										mixedString: __(
-											/* eslint-disable-next-line max-len */
 											'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
 												'In order to use {{wooPayLink}}WooPay{{/wooPayLink}},' +
 												' you must agree to our ' +
@@ -84,7 +83,6 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 												<a
 													target="_blank"
 													rel="noreferrer"
-													// eslint-disable-next-line max-len
 													href="https://woocommerce.com/document/woopay-merchant-documentation/"
 												/>
 											),

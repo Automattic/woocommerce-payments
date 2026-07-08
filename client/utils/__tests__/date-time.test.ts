@@ -65,7 +65,6 @@ describe( 'Date/Time Formatting', () => {
 		} );
 
 		it( 'should handle different timezones correctly', () => {
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const dateI18n = require( '@wordpress/date' ).dateI18n;
 			// Temporarily modify the mock to use a different timezone: America/New_York
 			dateI18n.mockImplementationOnce(
@@ -140,7 +139,6 @@ describe( 'Date/Time Formatting', () => {
 		} );
 
 		it( 'should handle different timezones correctly', () => {
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const dateI18n = require( '@wordpress/date' ).dateI18n;
 			// Temporarily modify the mock to use a different timezone: America/New_York
 			dateI18n.mockImplementationOnce(

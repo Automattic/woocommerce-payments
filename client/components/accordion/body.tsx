@@ -35,7 +35,7 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 			className,
 			icon,
 			initialOpen,
-			// eslint-disable-next-line @typescript-eslint/no-empty-function
+
 			onToggle = () => {},
 			opened,
 			title,

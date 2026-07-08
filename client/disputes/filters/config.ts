@@ -101,7 +101,6 @@ export const filters: [ DisputesFilterType, DisputesFilterType ] = [
 const wooCommerceVersionString = getSetting( 'wcVersion' );
 const wooCommerceVersion = parseFloat( wooCommerceVersionString ); // This will parse 7.7.1 to 7.7, but it's fine for this purpose
 
-/*eslint-disable max-len*/
 export const advancedFilters = {
 	/** translators: A sentence describing filters for Disputes. */
 	title:
@@ -201,4 +200,3 @@ export const advancedFilters = {
 		},
 	},
 };
-/*eslint-enable max-len*/

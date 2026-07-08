@@ -24,7 +24,7 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
 import { reasons } from './strings';
-import { formatStringValue } from 'utils';
+import { formatStringValue, applyThousandSeparator } from 'utils';
 import {
 	formatExplicitCurrency,
 	formatExportAmount,
@@ -36,7 +36,6 @@ import {
 	getDisputesCSVRequestURL,
 	disputesDownloadEndpoint,
 } from 'wcpay/data/disputes/resolvers';
-import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data/settings';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import './style.scss';

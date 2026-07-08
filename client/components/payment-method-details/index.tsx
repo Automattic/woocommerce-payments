@@ -86,7 +86,9 @@ const WalletIcon = ( { payment }: PaymentMethodDetailsProps ) => {
 	// Amazon Pay is itself the wallet — no card.wallet wrapper.
 	if ( payment?.type === 'amazon_pay' ) {
 		const amazonPayMethod = paymentMethodsMap.amazon_pay;
-		if ( ! amazonPayMethod ) return null;
+		if ( ! amazonPayMethod ) {
+			return null;
+		}
 		const { icon: AmazonPayIcon, label: amazonPayLabel } = amazonPayMethod;
 		return (
 			<HoverTooltip
@@ -100,12 +102,18 @@ const WalletIcon = ( { payment }: PaymentMethodDetailsProps ) => {
 	}
 
 	const wallet = payment[ payment.type ]?.wallet;
-	if ( ! wallet ) return null;
+	if ( ! wallet ) {
+		return null;
+	}
 
-	if ( ! wallet.type ) return null;
+	if ( ! wallet.type ) {
+		return null;
+	}
 
 	const paymentMethod = paymentMethodsMap[ wallet.type ];
-	if ( ! paymentMethod ) return null;
+	if ( ! paymentMethod ) {
+		return null;
+	}
 
 	const { icon: Icon, label } = paymentMethod;
 
