@@ -13,9 +13,11 @@ import { Dispute } from 'types/disputes';
 import { Charge, ChargeAmounts, ChargeDispute } from 'types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
 
-// Prefer the array when a newer server sends it (it's authoritative and
-// already includes the singular one); fall back to `charge.dispute` so older
-// servers that only expose the singular field still render their dispute.
+// Prefer the array when the server sends it — it's authoritative and already
+// includes the singular dispute. Fall back to `charge.dispute` for payloads
+// without the array: responses from before the companion server change
+// deploys, and any where the server omits it (e.g. its List Disputes call
+// failed), so a single dispute still renders.
 export const getChargeDisputes = ( charge: Charge ): ChargeDispute[] => {
 	if ( charge.disputes?.length ) {
 		return charge.disputes;
@@ -31,8 +33,8 @@ export interface DisputeOrder {
 // Numbering the disputes by their creation time (not array order) is what lets
 // the summary panes and the timeline agree on "Dispute N of M": both derive the
 // ordinal from this single mapping keyed by dispute id, so the oldest dispute is
-// always "Dispute 1" wherever it appears. `created` can be missing on older
-// server payloads; when it is, the sort leaves those entries in their original
+// always "Dispute 1" wherever it appears. `created` can be missing on some
+// payloads; when it is, the sort leaves those entries in their original
 // relative position, so the result is still deterministic.
 export const getDisputeOrdinals = ( charge: Charge ): DisputeOrder => {
 	const disputes = [ ...getChargeDisputes( charge ) ].sort(
@@ -260,11 +262,14 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	}
 
 	if ( isChargeDisputed( charge ) ) {
-		balance.fee += sumBy( charge.dispute?.balance_transactions, 'fee' );
-		balance.refunded -= sumBy(
-			charge.dispute?.balance_transactions,
-			'amount'
+		// A charge can carry more than one dispute; fold every dispute's
+		// balance transactions into the fee/refund totals so a second dispute
+		// isn't silently dropped from `Total fees` on this fallback path.
+		const disputeBalanceTransactions = getChargeDisputes( charge ).flatMap(
+			( dispute ) => dispute.balance_transactions ?? []
 		);
+		balance.fee += sumBy( disputeBalanceTransactions, 'fee' );
+		balance.refunded -= sumBy( disputeBalanceTransactions, 'amount' );
 	}
 
 	balance.net = balance.amount - balance.fee - balance.refunded;

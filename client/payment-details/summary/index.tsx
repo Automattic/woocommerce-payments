@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -51,7 +51,6 @@ import { ClickTooltip } from 'components/tooltip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import {
 	getDisputeFeeAmount,
-	getDisputeFeeFormatted,
 	isAwaitingResponse,
 	isRefundable,
 } from 'wcpay/disputes/utils';
@@ -100,14 +99,29 @@ const isTapToPay = ( model: string ) => {
 	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
-const renderDisputeDetails = (
-	dispute: NonNullable< Charge[ 'dispute' ] >,
-	charge: Charge,
-	bankName: string | null,
-	onIssueRefund: () => void
-) => {
-	if ( isAwaitingResponse( dispute.status ) ) {
-		return (
+const DisputePane: React.FC< {
+	dispute: ChargeDispute;
+	charge: Charge;
+	bankName: string | null;
+	// Position of this dispute among the charge's disputes, and the total, used
+	// for the "Dispute N of M" label. Both derive from the shared creation-order
+	// map so panes and the timeline agree.
+	ordinal: number;
+	total: number;
+	onIssueRefund: () => void;
+} > = ( { dispute, charge, bankName, ordinal, total, onIssueRefund } ) => (
+	<ErrorBoundary>
+		{ total > 1 && (
+			<p className="payment-details-summary__dispute-label">
+				{ sprintf(
+					/* translators: %1$d is the dispute's position, %2$d is the total number of disputes on the charge */
+					__( 'Dispute %1$d of %2$d', 'woocommerce-payments' ),
+					ordinal,
+					total
+				) }
+			</p>
+		) }
+		{ isAwaitingResponse( dispute.status ) ? (
 			<DisputeAwaitingResponseDetails
 				dispute={ dispute }
 				customer={ charge.billing_details }
@@ -116,13 +130,14 @@ const renderDisputeDetails = (
 				bankName={ bankName }
 				onIssueRefund={ onIssueRefund }
 			/>
-		);
-	}
-
-	return (
-		<DisputeResolutionFooter dispute={ dispute } bankName={ bankName } />
-	);
-};
+		) : (
+			<DisputeResolutionFooter
+				dispute={ dispute }
+				bankName={ bankName }
+			/>
+		) }
+	</ErrorBoundary>
+);
 
 const getTapToPayChannel = ( platform: string ) => {
 	if ( platform === 'ios' ) {
@@ -307,38 +322,24 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		disputes.find( ( dispute ) => isAwaitingResponse( dispute.status ) ) ??
 		disputes[ 0 ];
 
-	// Mirror the branch getChargeAmounts takes, so the tooltip's `Dispute fee`
-	// line matches whichever path produced `Total fees`.
 	const usingFeeBreakdownEnvelope =
 		canUseFeeBreakdownData( charge ) &&
 		!! charge.fee_breakdown_v1?.totals?.net &&
 		!! charge.fee_breakdown_v1?.totals?.gross;
 
-	// On the envelope path the server-computed `Total fees` folds every
-	// dispute, so the tooltip has to sum all of them to reconcile once a
-	// charge has 2+ fee-bearing disputes. The legacy path only folds the
-	// singular `charge.dispute` into `Total fees`, so mirror that with the
-	// singular fee or the breakdown won't add up.
-	let disputeFee: string | undefined;
-	let envelopeDisputeFeeTotal = 0;
-	if ( usingFeeBreakdownEnvelope ) {
-		const disputeFeeAmounts = disputes
-			.map( getDisputeFeeAmount )
-			.filter(
-				( fee ): fee is { amount: number; currency: string } => !! fee
-			);
-		envelopeDisputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
-		disputeFee = disputeFeeAmounts.length
-			? formatCurrency(
-					envelopeDisputeFeeTotal,
-					disputeFeeAmounts[ 0 ].currency
-			  )
-			: undefined;
-	} else {
-		disputeFee = charge.dispute
-			? getDisputeFeeFormatted( charge.dispute )
-			: undefined;
-	}
+	// Both the envelope and legacy `Total fees` fold in every dispute's fee
+	// (see getChargeAmounts), so the tooltip's dispute-fee line has to sum all
+	// of them too or the breakdown won't reconcile once a charge has 2+
+	// fee-bearing disputes.
+	const disputeFeeAmounts = disputes
+		.map( getDisputeFeeAmount )
+		.filter(
+			( fee ): fee is { amount: number; currency: string } => !! fee
+		);
+	const disputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
+	const disputeFee = disputeFeeAmounts.length
+		? formatCurrency( disputeFeeTotal, disputeFeeAmounts[ 0 ].currency )
+		: undefined;
 
 	// Refunding is blocked while any single dispute blocks it, so the menu is
 	// only refundable when every dispute is.
@@ -363,7 +364,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// "Transaction fee" line is the total minus the summed dispute fees —
 	// i.e. the non-dispute processing + tax portion. On the legacy path
 	// `transactionFee.fee` stays the raw balance-transaction fee, which
-	// already excludes disputes (Total folds the singular dispute separately).
+	// already excludes disputes (Total folds the disputes in separately).
 	const breakdown = charge.fee_breakdown_v1;
 	const transactionFee = ( () => {
 		if ( usingFeeBreakdownEnvelope && breakdown?.totals?.fee ) {
@@ -372,7 +373,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					( breakdown.totals.fee_plus_tax?.amount ??
 						breakdown.totals.fee.amount +
 							( breakdown.totals.tax?.amount ?? 0 ) ) -
-					envelopeDisputeFeeTotal,
+					disputeFeeTotal,
 				currency: breakdown.totals.fee.currency.toLowerCase(),
 			};
 		}
@@ -423,7 +424,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		balance.currency
 	);
 
-	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
+	// `null` while closed. An object opens the modal, carrying the dispute the
+	// refund was initiated from so the modal can warn about closing that
+	// inquiry rather than guessing from `charge.dispute`. The non-dispute
+	// openers (the refund menu, the missing-order notice) pass no dispute and
+	// let the modal fall back to `charge.dispute`.
+	const [ refundTarget, setRefundTarget ] = useState< {
+		dispute?: ChargeDispute;
+	} | null >( null );
 
 	const bankName = getBankName( charge );
 
@@ -542,14 +550,18 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 														<Flex>
 															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
-																{ __(
+																{ _n(
 																	'Dispute fee',
+																	'Dispute fees',
+																	disputeFeeAmounts.length,
 																	'woocommerce-payments'
 																) }
 															</label>
 															<span
-																aria-label={ __(
+																aria-label={ _n(
 																	'Dispute fee',
+																	'Dispute fees',
+																	disputeFeeAmounts.length,
 																	'woocommerce-payments'
 																) }
 															>
@@ -739,9 +751,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											{ ! isPartiallyRefunded && (
 												<MenuItem
 													onClick={ () => {
-														setIsRefundModalOpen(
-															true
-														);
+														setRefundTarget( {} );
 														recordEvent(
 															'payments_transactions_details_refund_modal_open',
 															{
@@ -808,32 +818,24 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			</CardBody>
 
 			{ orderedDisputes.map( ( dispute ) => (
-				<ErrorBoundary key={ dispute.id }>
-					{ disputeTotal > 1 && (
-						<p className="payment-details-summary__dispute-label">
-							{ sprintf(
-								/* translators: %1$d is the dispute's position, %2$d is the total number of disputes on the charge */
-								__(
-									'Dispute %1$d of %2$d',
-									'woocommerce-payments'
-								),
-								disputeOrderById[ dispute.id ],
-								disputeTotal
-							) }
-						</p>
-					) }
-					{ renderDisputeDetails( dispute, charge, bankName, () =>
-						setIsRefundModalOpen( true )
-					) }
-				</ErrorBoundary>
+				<DisputePane
+					key={ dispute.id }
+					dispute={ dispute }
+					charge={ charge }
+					bankName={ bankName }
+					ordinal={ disputeOrderById[ dispute.id ] }
+					total={ disputeTotal }
+					onIssueRefund={ () => setRefundTarget( { dispute } ) }
+				/>
 			) ) }
-			{ isRefundModalOpen && (
+			{ refundTarget && (
 				<RefundModal
 					charge={ charge }
+					dispute={ refundTarget.dispute }
 					formattedAmount={ formattedAmount }
 					orderUrl={ charge.order?.url }
 					onModalClose={ () => {
-						setIsRefundModalOpen( false );
+						setRefundTarget( null );
 						recordEvent(
 							'payments_transactions_details_refund_modal_close',
 							{
@@ -847,7 +849,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<MissingOrderNotice
 					charge={ charge }
 					isLoading={ isLoading }
-					onButtonClick={ () => setIsRefundModalOpen( true ) }
+					onButtonClick={ () => setRefundTarget( {} ) }
 				/>
 			) }
 			{ authorization && ! authorization.captured && (

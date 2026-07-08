@@ -71,8 +71,9 @@ export interface Charge {
 	/**
 	 * All disputes on the charge. A single charge can accrue more than one
 	 * dispute (e.g. AmEx/Klarna partial disputes for separately-shipped items).
-	 * Additive and only emitted by newer servers; `dispute` (singular) stays
-	 * populated for backwards compatibility.
+	 * Additive: absent on responses from before the companion server change
+	 * deploys, and may be omitted if the server can't load the list. `dispute`
+	 * (singular) stays populated for backwards compatibility.
 	 */
 	disputes?: ChargeDispute[];
 	disputed: boolean;

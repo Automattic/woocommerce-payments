@@ -619,10 +619,10 @@ describe( 'PaymentDetailsSummary', () => {
 			];
 			charge.dispute = first;
 			charge.disputes = [ first, second ];
-			// Envelope path only: the server folds both dispute fees into the
+			// Envelope path: the server folds both dispute fees into the
 			// totals, so `Total fees` reflects them and the tooltip's summed
-			// `Dispute fee` line reconciles. On the legacy path only the
-			// singular dispute is folded (see the single-dispute test below).
+			// `Dispute fee` line reconciles. The legacy fallback sums the
+			// disputes client-side (see the charge-utils tests).
 			charge.fee_breakdown_v1 = {
 				rows: [],
 				totals: {
@@ -650,6 +650,11 @@ describe( 'PaymentDetailsSummary', () => {
 			expect(
 				within( tooltipContent ).getByLabelText( /Dispute fee/ )
 			).toHaveTextContent( /\$30.00/ );
+
+			// Two fees are summed, so the label reads plural.
+			expect(
+				within( tooltipContent ).getByText( 'Dispute fees' )
+			).toBeInTheDocument();
 
 			expect(
 				within( tooltipContent ).getByLabelText( /Total fees/ )
@@ -852,6 +857,11 @@ describe( 'PaymentDetailsSummary', () => {
 		expect(
 			within( tooltipContent ).getByLabelText( /Dispute fee/ )
 		).toHaveTextContent( /\$15.00/ );
+
+		// A single fee keeps the label singular.
+		expect(
+			within( tooltipContent ).getByText( 'Dispute fee' )
+		).toBeInTheDocument();
 
 		expect(
 			within( tooltipContent ).getByLabelText( /Total fees/ )
