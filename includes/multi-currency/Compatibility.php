@@ -209,7 +209,7 @@ class Compatibility extends BaseCompatibility {
 		 * Some shipping methods (such as live-rate plugins) return costs that are already
 		 * converted to the customer's currency. Converting again would double-convert the cost.
 		 *
-		 * @since 10.9.0
+		 * @since 10.10.0
 		 *
 		 * @param bool   $convert         Whether the shipping cost should be converted. Default true.
 		 * @param object $shipping_method The shipping method object adding the rate.
