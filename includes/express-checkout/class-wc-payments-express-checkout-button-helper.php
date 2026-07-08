@@ -213,7 +213,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function get_quantity() {
 		// Express Checkout Element sends the quantity as qty. WooPay sends it as quantity.
 		// wc_stock_amount() respects the store's decimal-quantity setting; wc_format_decimal()
-		// normalises localised separators ("0,25") before the cast so fractions survive.
+		// normalizes localized separators ("0,25") before the cast so fractions survive.
 		if ( isset( $_POST['quantity'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return max( 0, wc_stock_amount( (float) wc_format_decimal( wc_clean( wp_unslash( $_POST['quantity'] ) ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		} elseif ( isset( $_POST['qty'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
