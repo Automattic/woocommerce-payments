@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update the lint stack to ESLint 9 with @wordpress/eslint-plugin 25, typescript-eslint 8 and Prettier 3, replacing the unmaintained @woocommerce/eslint-plugin
