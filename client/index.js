@@ -22,20 +22,19 @@ import ErrorBoundary from 'components/error-boundary';
 import { getTasks } from 'overview/task-list/tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
 
-const withSuspense = ( LazyComponent ) => ( props ) =>
-	(
-		<ErrorBoundary>
-			<Suspense
-				fallback={
-					<div className="wcpay-route-loading">
-						<Spinner />
-					</div>
-				}
-			>
-				<LazyComponent { ...props } />
-			</Suspense>
-		</ErrorBoundary>
-	);
+const withSuspense = ( LazyComponent ) => ( props ) => (
+	<ErrorBoundary>
+		<Suspense
+			fallback={
+				<div className="wcpay-route-loading">
+					<Spinner />
+				</div>
+			}
+		>
+			<LazyComponent { ...props } />
+		</Suspense>
+	</ErrorBoundary>
+);
 
 // Payouts: list → details is a linear drill-down; load together.
 const DepositsPage = withSuspense(

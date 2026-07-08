@@ -73,9 +73,8 @@ test.describe(
 			shopperPage = ( await getShopper( browser ) ).shopperPage;
 
 			// Prepare merchant side of tests.
-			wasMultiCurrencyEnabled = await activateMulticurrency(
-				merchantPage
-			);
+			wasMultiCurrencyEnabled =
+				await activateMulticurrency( merchantPage );
 			await addCurrency( merchantPage, 'EUR' );
 			await enablePaymentMethods( merchantPage, [ 'bancontact' ] );
 			// Prepare shopper side of tests.

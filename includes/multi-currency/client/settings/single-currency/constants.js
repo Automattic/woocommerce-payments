@@ -6,21 +6,21 @@
 import { __ } from '@wordpress/i18n';
 
 export const decimalCurrencyRoundingOptions = {
-	'0': __( 'None', 'woocommerce-payments' ),
-	'0.25': '0.25',
+	0: __( 'None', 'woocommerce-payments' ),
+	0.25: '0.25',
 	'0.50': '0.50',
 	'1.00': '1.00 (recommended)',
 	'5.00': '5.00',
 	'10.00': '10.00',
 };
 export const zeroDecimalCurrencyRoundingOptions = {
-	'1': '1',
-	'10': '10',
-	'25': '25',
-	'50': '50',
-	'100': '100 (recommended)',
-	'500': '500',
-	'1000': '1000',
+	1: '1',
+	10: '10',
+	25: '25',
+	50: '50',
+	100: '100 (recommended)',
+	500: '500',
+	1000: '1000',
 };
 
 export const decimalCurrencyCharmOptions = {

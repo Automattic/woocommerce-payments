@@ -57,7 +57,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 			subscriptionId = (
 				await page.getByLabel( 'View subscription number' ).innerText()
-			 ).substring( 1 );
+			).substring( 1 );
 		} );
 
 		test.beforeEach( async () => {

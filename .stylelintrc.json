@@ -26,8 +26,8 @@
 			}
 		],
 		"rule-empty-line-before": null,
+		"selector-pseudo-class-parentheses-space-inside": null,
 		"selector-class-pattern": null,
-		"selector-pseudo-class-parentheses-space-inside": "always",
 		"string-quotes": "single",
 		"value-keyword-case": null,
 		"value-list-comma-newline-after": null

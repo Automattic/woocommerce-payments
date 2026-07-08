@@ -296,9 +296,8 @@ describe( 'BusinessDetails', () => {
 		);
 		await selectBusinessCountry( 'United States' );
 		const businessTypeField = await selectBusinessType( 'Company' );
-		const companyStructureField = await selectBusinessStructure(
-			'Single member LLC'
-		);
+		const companyStructureField =
+			await selectBusinessStructure( 'Single member LLC' );
 
 		const mccField = screen
 			.getByTestId( 'mcc-select' )
@@ -357,17 +356,18 @@ describe( 'BusinessDetails', () => {
 	} );
 
 	it( 'clears stale company structure when the structure field becomes hidden', async () => {
-		const optionalStructureBusinessTypes = businessTypes.map( ( country ) =>
-			country.key === 'US'
-				? {
-						...country,
-						types: country.types.map( ( type ) =>
-							type.key === 'company'
-								? { ...type, requires_structure: false }
-								: type
-						),
-				  }
-				: country
+		const optionalStructureBusinessTypes = businessTypes.map(
+			( country ) =>
+				country.key === 'US'
+					? {
+							...country,
+							types: country.types.map( ( type ) =>
+								type.key === 'company'
+									? { ...type, requires_structure: false }
+									: type
+							),
+					  }
+					: country
 		);
 
 		const { rerender } = render(

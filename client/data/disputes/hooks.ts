@@ -41,14 +41,14 @@ export const useDispute = (
 			} = select( STORE_NAME );
 
 			return {
-				dispute: <Dispute | undefined>getDispute( id ),
-				error: <ApiError | undefined>getDisputeError( id ),
+				dispute: < Dispute | undefined >getDispute( id ),
+				error: < ApiError | undefined >getDisputeError( id ),
 				// Match the sibling data hooks (charges, deposits, payment
 				// intents): derive loading from hasFinishedResolution so it stays
 				// true until the resolver settles. isResolving alone is false on
 				// the first render, before resolution starts.
 				isLoading:
-					<boolean>isResolving( 'getDispute', [ id ] ) ||
+					< boolean >isResolving( 'getDispute', [ id ] ) ||
 					! hasFinishedResolution( 'getDispute', [ id ] ),
 			};
 		},

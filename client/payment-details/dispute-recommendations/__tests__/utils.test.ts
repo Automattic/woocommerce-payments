@@ -32,7 +32,7 @@ const buildDispute = (
 		reason: 'product_not_received',
 		status: 'lost',
 		...overrides,
-	} as ChargeDispute );
+	} ) as ChargeDispute;
 
 const wonPhysicalShippingProvided = (): ChargeDispute =>
 	buildDispute( {

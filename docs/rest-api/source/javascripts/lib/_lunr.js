@@ -971,11 +971,11 @@
 
 				if ( ! fieldLength ) return memo;
 
-				var tokenCount = docTokens[ field.name ].filter( function (
-					t
-				) {
-					return t === token;
-				} ).length;
+				var tokenCount = docTokens[ field.name ].filter(
+					function ( t ) {
+						return t === token;
+					}
+				).length;
 
 				return memo + ( tokenCount / fieldLength ) * field.boost;
 			}, 0 );
@@ -1115,37 +1115,38 @@
 			var tf = ( 1 / tokens.length ) * this._fields.length * fieldBoosts,
 				self = this;
 
-			var set = this.tokenStore
-				.expand( token )
-				.reduce( function ( memo, key ) {
-					var pos = self.corpusTokens.indexOf( key ),
-						idf = self.idf( key ),
-						similarityBoost = 1,
-						set = new lunr.SortedSet();
+			var set = this.tokenStore.expand( token ).reduce( function (
+				memo,
+				key
+			) {
+				var pos = self.corpusTokens.indexOf( key ),
+					idf = self.idf( key ),
+					similarityBoost = 1,
+					set = new lunr.SortedSet();
 
-					// if the expanded key is not an exact match to the token then
-					// penalise the score for this key by how different the key is
-					// to the token.
-					if ( key !== token ) {
-						var diff = Math.max( 3, key.length - token.length );
-						similarityBoost = 1 / Math.log( diff );
+				// if the expanded key is not an exact match to the token then
+				// penalise the score for this key by how different the key is
+				// to the token.
+				if ( key !== token ) {
+					var diff = Math.max( 3, key.length - token.length );
+					similarityBoost = 1 / Math.log( diff );
+				}
+
+				// calculate the query tf-idf score for this token
+				// applying an similarityBoost to ensure exact matches
+				// these rank higher than expanded terms
+				if ( pos > -1 )
+					queryVector.insert( pos, tf * idf * similarityBoost );
+
+				// add all the documents that have this key into a set
+				Object.keys( self.tokenStore.get( key ) ).forEach(
+					function ( ref ) {
+						set.add( ref );
 					}
+				);
 
-					// calculate the query tf-idf score for this token
-					// applying an similarityBoost to ensure exact matches
-					// these rank higher than expanded terms
-					if ( pos > -1 )
-						queryVector.insert( pos, tf * idf * similarityBoost );
-
-					// add all the documents that have this key into a set
-					Object.keys( self.tokenStore.get( key ) ).forEach(
-						function ( ref ) {
-							set.add( ref );
-						}
-					);
-
-					return memo.union( set );
-				}, new lunr.SortedSet() );
+				return memo.union( set );
+			}, new lunr.SortedSet() );
 
 			documentSets.push( set );
 		}, this );
@@ -1282,8 +1283,7 @@
 		) {
 			memo[ key ] = lunr.SortedSet.load( serialisedData.store[ key ] );
 			return memo;
-		},
-		{} );
+		}, {} );
 
 		return store;
 	};
@@ -1420,11 +1420,13 @@
 		var re4_1b_2 = new RegExp( '^' + C + v + '[^aeiouwxy]$' );
 
 		var re_1c = /^(.+?[^aeiou])y$/;
-		var re_2 = /^(.+?)(ational|tional|enci|anci|izer|bli|alli|entli|eli|ousli|ization|ation|ator|alism|iveness|fulness|ousness|aliti|iviti|biliti|logi)$/;
+		var re_2 =
+			/^(.+?)(ational|tional|enci|anci|izer|bli|alli|entli|eli|ousli|ization|ation|ator|alism|iveness|fulness|ousness|aliti|iviti|biliti|logi)$/;
 
 		var re_3 = /^(.+?)(icate|ative|alize|iciti|ical|ful|ness)$/;
 
-		var re_4 = /^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/;
+		var re_4 =
+			/^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/;
 		var re2_4 = /^(.+?)(s|t)(ion)$/;
 
 		var re_5 = /^(.+?)e$/;

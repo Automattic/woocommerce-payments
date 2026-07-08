@@ -364,8 +364,8 @@ describe( 'NotificationsEmailInput', () => {
 		const errorNotices = container.querySelectorAll(
 			'.components-notice.is-error'
 		);
-		const mismatchNotice = Array.from( errorNotices ).find( ( el ) =>
-			el.textContent?.includes( 'Email addresses do not match' )
+		const mismatchNotice = Array.from( errorNotices ).find(
+			( el ) => el.textContent?.includes( 'Email addresses do not match' )
 		);
 		expect( mismatchNotice ).toBeDefined();
 	} );
@@ -395,8 +395,8 @@ describe( 'NotificationsEmailInput', () => {
 		const errorNotices = container.querySelectorAll(
 			'.components-notice.is-error'
 		);
-		const mismatchNotice = Array.from( errorNotices ).find( ( el ) =>
-			el.textContent?.includes( 'Email addresses do not match' )
+		const mismatchNotice = Array.from( errorNotices ).find(
+			( el ) => el.textContent?.includes( 'Email addresses do not match' )
 		);
 		expect( mismatchNotice ).toBeUndefined();
 	} );

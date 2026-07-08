@@ -37,10 +37,9 @@ describeif( shouldRunSubscriptionsTests )(
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
 			shopperPage = (
 				await getShopper( browser, true, project.use.baseURL )
-			 ).shopperPage;
-			wasMulticurrencyEnabled = await activateMulticurrency(
-				merchantPage
-			);
+			).shopperPage;
+			wasMulticurrencyEnabled =
+				await activateMulticurrency( merchantPage );
 			await restoreCurrencies( merchantPage );
 		} );
 
@@ -77,7 +76,7 @@ describeif( shouldRunSubscriptionsTests )(
 					await shopperPage
 						.getByLabel( 'View subscription number' )
 						.innerText()
-				 )
+				)
 					.trim()
 					.replace( '#', '' );
 

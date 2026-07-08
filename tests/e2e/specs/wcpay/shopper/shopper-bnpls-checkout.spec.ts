@@ -61,9 +61,8 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await merchant.isMulticurrencyEnabled(
-			merchantPage
-		);
+		wasMulticurrencyEnabled =
+			await merchant.isMulticurrencyEnabled( merchantPage );
 
 		await merchant.enablePaymentMethods( merchantPage, bnplProviders );
 		if ( wasMulticurrencyEnabled ) {

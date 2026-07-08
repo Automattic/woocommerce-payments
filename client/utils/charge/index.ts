@@ -17,40 +17,44 @@ const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
 
 export const getDisputeStatus = (
-	dispute: null | Pick< Dispute, 'status' > = <Dispute>{}
+	dispute: null | Pick< Dispute, 'status' > = < Dispute >{}
 ): string => dispute?.status || '';
 
-export const getChargeOutcomeType = ( charge: Charge = <Charge>{} ): string =>
-	charge.outcome ? charge.outcome.type : '';
+export const getChargeOutcomeType = (
+	charge: Charge = < Charge >{}
+): string => ( charge.outcome ? charge.outcome.type : '' );
 
-export const isChargeSuccessful = ( charge: Charge = <Charge>{} ): boolean =>
+export const isChargeSuccessful = ( charge: Charge = < Charge >{} ): boolean =>
 	charge.status === 'succeeded' && charge.paid === true;
 
-export const isChargeFailed = ( charge: Charge = <Charge>{} ): boolean =>
+export const isChargeFailed = ( charge: Charge = < Charge >{} ): boolean =>
 	charge.status === 'failed' &&
 	failedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
-export const isChargeBlocked = ( charge: Charge = <Charge>{} ): boolean =>
+export const isChargeBlocked = ( charge: Charge = < Charge >{} ): boolean =>
 	charge.status === 'failed' &&
 	blockedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
-export const isChargeCaptured = ( charge: Charge = <Charge>{} ): boolean =>
+export const isChargeCaptured = ( charge: Charge = < Charge >{} ): boolean =>
 	charge.captured === true;
 
-export const isChargeDisputed = ( charge: Charge = <Charge>{} ): boolean =>
+export const isChargeDisputed = ( charge: Charge = < Charge >{} ): boolean =>
 	charge.disputed === true;
 
-export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean =>
+export const isChargeRefunded = ( charge: Charge = < Charge >{} ): boolean =>
 	charge.amount_refunded > 0;
 
-export const isChargeRefundFailed = ( charge: Charge = <Charge>{} ): boolean =>
+export const isChargeRefundFailed = (
+	charge: Charge = < Charge >{}
+): boolean =>
 	charge.refunded === false && get( charge, 'refunds.data', [] ).length > 0;
 
-export const isChargeFullyRefunded = ( charge: Charge = <Charge>{} ): boolean =>
-	charge.refunded === true;
+export const isChargeFullyRefunded = (
+	charge: Charge = < Charge >{}
+): boolean => charge.refunded === true;
 
 export const isChargePartiallyRefunded = (
-	charge: Charge = <Charge>{}
+	charge: Charge = < Charge >{}
 ): boolean => isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
 const getFraudMetaBoxType = (
@@ -96,7 +100,7 @@ const getPaymentIntentDerivedStatus = (
 	paymentIntent?.status === 'requires_capture' ? 'authorized' : undefined;
 
 export const getChargeStatus = (
-	charge: Charge = <Charge>{},
+	charge: Charge = < Charge >{},
 	paymentIntent?: PaymentIntent
 ): string => {
 	if ( isOnHoldByFraudTools( charge, paymentIntent ) ) {

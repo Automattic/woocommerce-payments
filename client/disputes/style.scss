@@ -66,7 +66,9 @@
 		align-items: center;
 
 		// Selector here is super specific to ensure styles are overwritten.
-		.components-button.is-secondary:not( :disabled ):not( [aria-disabled='true'] ) {
+		.components-button.is-secondary:not( :disabled ):not(
+				[aria-disabled='true']
+			) {
 			&.is-success {
 				box-shadow: inset 0 0 0 1px $studio-green;
 				color: $studio-green;
@@ -88,7 +90,9 @@
 			}
 		}
 
-		.components-button.delete-uploaded-file-button:not( :disabled ):not( [aria-disabled='true'] ) {
+		.components-button.delete-uploaded-file-button:not( :disabled ):not(
+				[aria-disabled='true']
+			) {
 			&:hover {
 				color: $studio-red-60;
 				box-shadow: none;

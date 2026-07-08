@@ -56,7 +56,7 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 						name: 'View subscription number',
 					} )
 					.textContent()
-			 )
+			)
 				.trim()
 				.replace( '#', '' );
 		} );

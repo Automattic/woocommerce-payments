@@ -83,7 +83,9 @@
 	// Show test mode badge when payment method is selected
 	input:checked
 		~ div
-		.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] )
+		.wc-block-components-radio-control__label:where(
+			[id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label']
+		)
 		> .wc-block-components-payment-method-label
 		.test-mode.badge {
 		display: inline-block;

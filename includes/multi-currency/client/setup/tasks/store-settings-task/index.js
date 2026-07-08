@@ -34,10 +34,8 @@ const StoreSettingsTask = () => {
 		saveStoreSettings,
 	} = useStoreSettings();
 	const { saveSettings, isSaving } = useSettings();
-	const [
-		isMultiCurrencyEnabled,
-		updateIsMultiCurrencyEnabled,
-	] = useMultiCurrency();
+	const [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ] =
+		useMultiCurrency();
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
@@ -111,7 +109,8 @@ const StoreSettingsTask = () => {
 										}
 										onChange={ ( value ) =>
 											updateStoreSettingValues( {
-												enable_storefront_switcher: value,
+												enable_storefront_switcher:
+													value,
 											} )
 										}
 										data-testid={

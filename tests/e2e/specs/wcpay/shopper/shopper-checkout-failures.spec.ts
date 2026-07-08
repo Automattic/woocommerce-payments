@@ -51,9 +51,8 @@ test.describe(
 			await waitForBanner( 'Error: Your card was declined.' );
 
 			// Verify the failed order has a note about the decline in WC admin.
-			const { merchantPage, merchantContext } = await getMerchant(
-				browser
-			);
+			const { merchantPage, merchantContext } =
+				await getMerchant( browser );
 			try {
 				await merchantPage.goto(
 					'/wp-admin/admin.php?page=wc-orders&status=wc-failed',
@@ -99,9 +98,8 @@ test.describe(
 			);
 
 			const stripeFrame = await frameHandle.contentFrame();
-			const cvcErrorText = await stripeFrame.locator(
-				'p#Field-cvcError'
-			);
+			const cvcErrorText =
+				await stripeFrame.locator( 'p#Field-cvcError' );
 
 			await expect( cvcErrorText ).toHaveText(
 				'Your card\u2019s security code is incomplete.'

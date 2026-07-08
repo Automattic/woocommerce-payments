@@ -18,10 +18,8 @@ const EnabledCurrenciesListItem = ( {
 	currency: { code, flag, id, is_default: isDefault, name, symbol, rate },
 	onDeleteClick,
 } ) => {
-	const {
-		code: defaultCode,
-		is_zero_decimal: isDefaultZeroDecimal,
-	} = useDefaultCurrency();
+	const { code: defaultCode, is_zero_decimal: isDefaultZeroDecimal } =
+		useDefaultCurrency();
 
 	const { setCurrencyCodeToShowSettingsFor } = useContext(
 		MultiCurrencySettingsContext

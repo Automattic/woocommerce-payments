@@ -109,8 +109,8 @@ describe( 'NonCompliantDisputeSteps', () => {
 		const descriptions = container.querySelectorAll(
 			'.dispute-step-item__description'
 		);
-		const acceptDescription = Array.from( descriptions ).find( ( el ) =>
-			el.textContent?.includes( 'forfeit the funds' )
+		const acceptDescription = Array.from( descriptions ).find(
+			( el ) => el.textContent?.includes( 'forfeit the funds' )
 		);
 		expect( acceptDescription?.textContent ).toMatch(
 			/Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the \$500 USD Visa network fee./i

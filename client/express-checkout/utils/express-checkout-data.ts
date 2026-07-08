@@ -111,7 +111,7 @@ declare global {
 }
 
 export const getExpressCheckoutData = <
-	K extends keyof WCPayExpressCheckoutParams
+	K extends keyof WCPayExpressCheckoutParams,
 >(
 	key: K
 ) => {

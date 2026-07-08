@@ -30,10 +30,13 @@
 
 // Preview button
 @supports not ( -webkit-appearance: -apple-pay-button ) {
-	/* stylelint-disable-next-line selector-id-pattern */
-	#express-payment-method-woocommerce_payments_express_checkout_applePay:has( #express-checkout-button-preview-applePay ) {
+	/* stylelint-disable selector-id-pattern */
+	#express-payment-method-woocommerce_payments_express_checkout_applePay:has(
+			#express-checkout-button-preview-applePay
+		) {
 		display: none;
 	}
+	/* stylelint-enable selector-id-pattern */
 }
 
 // Google Pay preview button - fix internal sizing

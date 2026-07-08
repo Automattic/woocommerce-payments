@@ -58,9 +58,8 @@ export const useStoreSettings = () => {
 			};
 		}
 	);
-	const { updateStoreSettingValues, saveStoreSettings } = useDispatch(
-		STORE_NAME
-	);
+	const { updateStoreSettingValues, saveStoreSettings } =
+		useDispatch( STORE_NAME );
 	return {
 		storeSettings,
 		isLoading,

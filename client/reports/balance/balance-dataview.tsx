@@ -61,9 +61,11 @@ export const balanceDateFilterOperators: Array<
 // TODO: Replace with a public DataViews API (e.g. a `defaultFiltersOpen` prop
 // or an `isShowingFilter` setter) once one ships upstream.
 const openFiltersRowWorkaround = ( root: HTMLElement | null ): void => {
-	root?.querySelector< HTMLButtonElement >(
-		'.dataviews-filters__visibility-toggle[aria-pressed="false"]:not([aria-haspopup])'
-	)?.click();
+	root
+		?.querySelector< HTMLButtonElement >(
+			'.dataviews-filters__visibility-toggle[aria-pressed="false"]:not([aria-haspopup])'
+		)
+		?.click();
 };
 
 interface BalanceItem {

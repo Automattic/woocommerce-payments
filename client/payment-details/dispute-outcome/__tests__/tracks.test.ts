@@ -41,7 +41,7 @@ const buildDispute = (
 		reason: 'product_unacceptable',
 		status: 'lost',
 		...overrides,
-	} as ChargeDispute );
+	} ) as ChargeDispute;
 
 describe( 'recordOutcomeViewOnce', () => {
 	beforeEach( () => {

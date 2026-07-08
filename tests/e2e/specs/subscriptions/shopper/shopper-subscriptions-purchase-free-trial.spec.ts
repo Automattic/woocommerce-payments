@@ -60,9 +60,8 @@ describeif( shouldRunSubscriptionsTests )(
 
 		test.beforeAll( async ( { browser } ) => {
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
-			wasMultiCurrencyEnabled = await isMulticurrencyEnabled(
-				merchantPage
-			);
+			wasMultiCurrencyEnabled =
+				await isMulticurrencyEnabled( merchantPage );
 			if ( wasMultiCurrencyEnabled ) {
 				await deactivateMulticurrency( merchantPage );
 			}
@@ -150,14 +149,14 @@ describeif( shouldRunSubscriptionsTests )(
 				// Get the order ID so we can open it in the merchant view
 				orderId = (
 					await shopperPage.getByText( 'Order number:' ).innerText()
-				 )
+				)
 					.replace( /[^0-9]/g, '' )
 					.trim();
 				subscriptionId = (
 					await shopperPage
 						.getByLabel( 'View subscription number' )
 						.textContent()
-				 )
+				)
 					.trim()
 					.replace( '#', '' );
 			}

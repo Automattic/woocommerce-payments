@@ -14,9 +14,8 @@ import CurrencyDeleteIllustration from 'multi-currency/components/currency-delet
 import { paymentMethodsMap } from 'multi-currency/interface/assets';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
-	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
-		false
-	);
+	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] =
+		useState( false );
 
 	const currencyDependentPaymentMethods =
 		window.multiCurrencyPaymentMethodsMap;

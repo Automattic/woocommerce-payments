@@ -103,10 +103,8 @@ const AddCurrenciesTask = () => {
 	const [ isSaving, setSaving ] = useState( false );
 	const { isActive, setCompleted } = useContext( WizardTaskContext );
 
-	const {
-		enabledCurrencies,
-		submitEnabledCurrenciesUpdate,
-	} = useEnabledCurrencies();
+	const { enabledCurrencies, submitEnabledCurrenciesUpdate } =
+		useEnabledCurrencies();
 
 	const availableCurrencies = useAvailableCurrencies();
 	const defaultCurrency = useDefaultCurrency();

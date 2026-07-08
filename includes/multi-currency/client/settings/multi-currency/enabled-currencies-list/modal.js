@@ -24,10 +24,8 @@ const EnabledCurrenciesModal = ( { className } ) => {
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
 	const enabledCurrenciesList = useRef( null );
 
-	const {
-		enabledCurrencies,
-		submitEnabledCurrenciesUpdate,
-	} = useEnabledCurrencies();
+	const { enabledCurrencies, submitEnabledCurrenciesUpdate } =
+		useEnabledCurrencies();
 	const enabledCurrencyCodes = Object.keys( enabledCurrencies );
 
 	const defaultCurrency = useDefaultCurrency();
@@ -78,14 +76,11 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		} ) );
 	};
 
-	const [
-		isEnabledCurrenciesModalOpen,
-		setIsEnabledCurrenciesModalOpen,
-	] = useState( false );
+	const [ isEnabledCurrenciesModalOpen, setIsEnabledCurrenciesModalOpen ] =
+		useState( false );
 
-	const [ enabledCurrenciesListWidth, setCurrenciesListWidth ] = useState(
-		false
-	);
+	const [ enabledCurrenciesListWidth, setCurrenciesListWidth ] =
+		useState( false );
 
 	const handleEnabledCurrenciesAddButtonClick = useCallback( () => {
 		setIsEnabledCurrenciesModalOpen( true );
