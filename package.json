@@ -72,7 +72,7 @@
 		"install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
 		"lint": "npm run lint:js && npm run lint:css && npm run lint:php",
 		"lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
-		"lint:js": "tsc --noEmit && eslint . --ext=js,jsx,ts,tsx",
+		"lint:js": "tsc --noEmit && eslint .",
 		"lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
 		"lint:php-compatibility": "./vendor/bin/phpcs --standard=phpcs-compat.xml.dist $(git ls-files | grep .php$)",
 		"lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
@@ -132,14 +132,11 @@
 		"@types/react-dom": "18.3.7",
 		"@types/react-transition-group": "4.4.6",
 		"@types/wordpress__data-controls": "2.2.0",
-		"@typescript-eslint/eslint-plugin": "5.62.0",
-		"@typescript-eslint/parser": "5.62.0",
 		"@woocommerce/components": "14.1.0",
 		"@woocommerce/csv-export": "1.11.0",
 		"@woocommerce/currency": "6.0.0",
 		"@woocommerce/data": "7.0.0",
 		"@woocommerce/dependency-extraction-webpack-plugin": "5.0.0",
-		"@woocommerce/eslint-plugin": "3.0.0",
 		"@woocommerce/experimental": "4.0.0",
 		"@woocommerce/navigation": "9.0.0",
 		"@wordpress/a11y": "3.58.0",
@@ -158,6 +155,7 @@
 		"@wordpress/date": "4.5.0",
 		"@wordpress/dom-ready": "3.6.1",
 		"@wordpress/element": "4.4.1",
+		"@wordpress/eslint-plugin": "25.6.0",
 		"@wordpress/hooks": "3.6.1",
 		"@wordpress/html-entities": "3.6.1",
 		"@wordpress/i18n": "4.6.1",
@@ -180,16 +178,14 @@
 		"dompurify": "2.5.6",
 		"dotenv": "8.2.0",
 		"downshift": "6.1.12",
-		"eslint": "8.57.1",
-		"eslint-config-prettier": "7.2.0",
-		"eslint-import-resolver-typescript": "2.4.0",
-		"eslint-plugin-jest": "27.9.0",
-		"eslint-plugin-jsdoc-alignment": "0.0.5",
+		"eslint": "9.39.4",
+		"eslint-import-resolver-typescript": "4.4.5",
+		"eslint-plugin-jest": "28.14.0",
 		"eslint-plugin-jsx-a11y": "6.10.2",
-		"eslint-plugin-prettier": "3.4.1",
 		"eslint-plugin-react": "7.37.5",
-		"eslint-plugin-react-hooks": "4.6.2",
-		"eslint-plugin-wpcalypso": "5.0.0",
+		"eslint-plugin-react-hooks": "7.1.1",
+		"eslint-plugin-testing-library": "7.16.2",
+		"globals": "17.7.0",
 		"gridicons": "3.4.2",
 		"history": "5.3.0",
 		"husky": "8.0.1",
@@ -206,7 +202,7 @@
 		"node-wp-i18n": "1.2.8",
 		"playwright": "1.59.1",
 		"postcss": "8.3.5",
-		"prettier": "npm:wp-prettier@2.8.5",
+		"prettier": "npm:wp-prettier@3.0.3",
 		"process": "0.11.10",
 		"react": "18.3.1",
 		"react-dom": "18.3.1",
@@ -231,7 +227,8 @@
 		"webpack-dev-server": "5.2.3",
 		"webpack-merge": "5.8.0",
 		"whatwg-fetch": "3.6.20",
-		"yarnhook": "0.6.2"
+		"yarnhook": "0.6.2",
+		"zod": "4.4.3"
 	},
 	"overrides": {
 		"@woocommerce/components": {
@@ -255,9 +252,6 @@
 			"@wordpress/rich-text": "7.46.0"
 		},
 		"@wordpress/scripts": {
-			"@wordpress/eslint-plugin": "15.1.0"
-		},
-		"@woocommerce/eslint-plugin": {
 			"@wordpress/eslint-plugin": "15.1.0"
 		},
 		"nwsapi": "2.2.12",

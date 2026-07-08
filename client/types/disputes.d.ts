@@ -1,4 +1,3 @@
-// eslint-disable-next-line wpcalypso/import-docblock
 import { Charge } from './charges';
 import { BalanceTransaction } from './balance-transactions';
 import { TableCardColumn } from '@woocommerce/components';

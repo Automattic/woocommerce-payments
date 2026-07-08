@@ -183,7 +183,6 @@ const OverviewPage = () => {
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
 
-	// eslint-disable-next-line valid-jsdoc
 	/**
 	 * Configure custom banner behaviour so the banner isn't shown when there are no action items.
 	 * We'll use notificationBannerMessage for that.

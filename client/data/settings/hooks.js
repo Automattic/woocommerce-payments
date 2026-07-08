@@ -1,4 +1,4 @@
-/* eslint-disable valid-jsdoc,jsdoc/require-returns-description */
+/* eslint-disable jsdoc/require-returns-description */
 // disabled while we work on getting all the hooks typed.
 
 /**
