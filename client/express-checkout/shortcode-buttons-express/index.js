@@ -55,11 +55,8 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
-// First-paint snapshot localized for cart/checkout, mirroring the `product`
-// data shape so it flows through the same first-paint path. Consumed once, then
-// every re-init reconciles via fetchNewCartData(). Held only while it's the
-// active data source: cachedCartData supersedes it as soon as a fetch lands.
-let cartBootstrapData = null;
+// The localized Store API cart (see get_cart_render_data) seeds cachedCartData for first
+// paint, so we skip the blocking GET /wc/store/v1/cart. Consumed once; re-inits fetch fresh.
 let cartBootstrapConsumed = false;
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
@@ -90,14 +87,6 @@ const getTotalAmount = () => {
 		);
 	}
 
-	if ( cartBootstrapData ) {
-		return applyFilters(
-			'wcpay.express-checkout.total-amount',
-			cartBootstrapData.total.amount,
-			cartBootstrapData
-		);
-	}
-
 	if (
 		getExpressCheckoutData( 'button_context' ) === 'product' &&
 		getExpressCheckoutData( 'product' )
@@ -118,24 +107,6 @@ const getOnClickOptions = () => {
 				getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
 				false,
 			lineItems: transformCartDataForDisplayItems( cachedCartData ),
-		};
-	}
-
-	if ( cartBootstrapData ) {
-		return {
-			shippingAddressRequired: cartBootstrapData.needs_shipping ?? false,
-			phoneNumberRequired:
-				getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
-				false,
-			// No shipping rates are localized in the snapshot; the `click`
-			// handler's "pending" fallback supplies the placeholder rate until
-			// the wallet's first shippingaddresschange fetches the real ones.
-			lineItems: ( cartBootstrapData.displayItems ?? [] ).map(
-				( { label, amount } ) => ( {
-					name: label,
-					amount,
-				} )
-			),
 		};
 	}
 
@@ -533,29 +504,30 @@ jQuery( ( $ ) => {
 				isProductContext &&
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
 
-			// On cart/checkout the page is rendered with the session's resolved
-			// currency (these pages carry a session and aren't currency-cached),
-			// so the localized snapshot is authoritative for first paint. Render
-			// from it once to drop the GET /wc/store/v1/cart from the critical
-			// path; every later re-init goes through fetchNewCartData() below,
-			// which is also where any currency re-evaluation is picked up.
-			//
-			// Known trade-off (display-only): the charge is always the live
-			// server-side total placed at confirm, but the in-sheet amount is
-			// the page-render total until a re-init corrects it. A no-shipping
-			// (digital) checkout has no shippingaddresschange to trigger that
-			// correction, so if a total-changing action lands inside the initial
-			// updated_checkout debounce window the sheet can briefly show the
-			// stale total. It self-corrects on the next updated_checkout.
-			cartBootstrapData =
-				! isProductContext &&
-				! cachedCartData &&
-				! cartBootstrapConsumed
+			// Cart/checkout render at the session's resolved currency (and
+			// pay-for-order at the order's), so the localized Store API response
+			// is authoritative for first paint. Seed it once; the charge is always
+			// the live server-side total placed at confirm, and any drift
+			// self-corrects on the next re-init below.
+			const buttonContext = getExpressCheckoutData( 'button_context' );
+			const canBootstrap =
+				buttonContext === 'cart' ||
+				buttonContext === 'checkout' ||
+				buttonContext === 'pay_for_order';
+			const bootstrapCartData =
+				canBootstrap && ! cachedCartData && ! cartBootstrapConsumed
 					? getExpressCheckoutData( 'cart' ) || null
 					: null;
 
-			if ( cartBootstrapData ) {
+			if ( bootstrapCartData ) {
+				cachedCartData = bootstrapCartData;
 				cartBootstrapConsumed = true;
+
+				// pay-for-order places through the Order API handler, which replays the
+				// order's addresses from its own cached copy — seed it so the fetch is skipped.
+				if ( buttonContext === 'pay_for_order' ) {
+					getCartApiHandler().prefillCart( bootstrapCartData );
+				}
 			} else if (
 				! cachedCartData &&
 				( ! getExpressCheckoutData( 'product' ) ||
@@ -576,7 +548,7 @@ jQuery( ( $ ) => {
 			const isCartEligible = applyFilters(
 				'wcpay.express-checkout.is-cart-eligible',
 				total > 0,
-				cachedCartData ?? cartBootstrapData
+				cachedCartData
 			);
 
 			// If the resolver settled on a different currency, the localized
@@ -629,24 +601,6 @@ jQuery( ( $ ) => {
 					enabledMethods: enabledMethodsOverride,
 					setupFutureUsage:
 						getSetupFutureUsageForCart( cachedCartData ),
-				} );
-			} else if ( cartBootstrapData ) {
-				await wcpayECE.startExpressCheckoutElement( {
-					total,
-					currency: cartBootstrapData.currency,
-					// `enabledMethodsOverride` is only set when the product-context
-					// currency resolver re-evaluated methods; on cart/checkout it's
-					// undefined, so startExpressCheckoutElement falls back to the
-					// localized `enabled_methods`, already gated at the session
-					// currency this snapshot was rendered with.
-					enabledMethods: enabledMethodsOverride,
-					// Matches the product path: a full re-fetch on the next re-init
-					// recomputes this from the cart's subscription extensions.
-					setupFutureUsage: getExpressCheckoutData(
-						'has_subscription'
-					)
-						? 'off_session'
-						: null,
 				} );
 			} else if (
 				isProductContext &&
@@ -760,7 +714,6 @@ jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
 		cachedCartData = null;
-		cartBootstrapData = null;
 		wcpayECE.init();
 	} );
 
@@ -768,7 +721,6 @@ jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_checkout', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
 		cachedCartData = null;
-		cartBootstrapData = null;
 		wcpayECE.init();
 	} );
 } );

@@ -291,13 +291,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		);
 	} );
 
-	it( 'renders from the localized cart snapshot without fetching cart details on first paint', async () => {
-		global.wcpayExpressCheckoutParams.cart = {
-			total: { label: 'Total', amount: 1500 },
-			displayItems: [ { label: 'Beanie', amount: 1500 } ],
-			needs_shipping: false,
-			currency: 'usd',
-		};
+	it( 'renders from the localized Store API cart without fetching on first paint', async () => {
+		// The localized payload is the same Store API cart shape the fetch returns,
+		// so it seeds the button directly — no bespoke client-side mapping.
+		global.wcpayExpressCheckoutParams.cart = cartWithItemsMock;
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
@@ -309,17 +306,30 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		expect( apiFetch ).not.toHaveBeenCalled();
 		expect( stripeInstance.elements ).toHaveBeenCalledWith(
-			expect.objectContaining( { amount: 1500, currency: 'usd' } )
+			expect.objectContaining( { amount: 3697, currency: 'usd' } )
 		);
 	} );
 
-	it( 'falls back to fetching cart details once the snapshot has been consumed', async () => {
-		global.wcpayExpressCheckoutParams.cart = {
-			total: { label: 'Total', amount: 1500 },
-			displayItems: [ { label: 'Beanie', amount: 1500 } ],
-			needs_shipping: false,
-			currency: 'usd',
-		};
+	it( 'first-paints on the cart page from localized data, without waiting for an event or a fetch', async () => {
+		// The cart page inits on load (checkout defers to `updated_checkout`), so
+		// this covers the immediate-init bootstrap path.
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
+		global.wcpayExpressCheckoutParams.cart = cartWithItemsMock;
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		expect( apiFetch ).not.toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( { amount: 3697, currency: 'usd' } )
+		);
+	} );
+
+	it( 'falls back to fetching the cart once the localized data has been consumed', async () => {
+		global.wcpayExpressCheckoutParams.cart = cartWithItemsMock;
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
@@ -327,10 +337,11 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		$( document.body ).trigger( 'updated_checkout' );
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
 		expect( apiFetch ).not.toHaveBeenCalled();
 
 		// A second init (e.g. a live cart update) must reconcile against the
-		// Store API rather than reuse the now-stale first-paint snapshot.
+		// Store API rather than reuse the now-stale first-paint data.
 		$( document.body ).trigger( 'updated_checkout' );
 
 		await waitFor( () =>

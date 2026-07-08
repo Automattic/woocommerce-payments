@@ -1,4 +1,4 @@
 Significance: patch
 Type: update
 
-Render the cart and checkout Express Checkout button from bootstrapped data to remove a request from first paint
+Render the cart, checkout, and pay-for-order Express Checkout button from a localized Store API response to remove a request from first paint

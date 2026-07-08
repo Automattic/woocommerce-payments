@@ -827,22 +827,29 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Render-time cart snapshot that lets the cart/checkout Express Checkout button paint
-	 * without the initial `GET /wc/store/v1/cart` fetch. Built from the same cart totals the
-	 * fetch reports and shaped like get_product_data() so the client renders it through the
-	 * identical first-paint path. These pages carry a session and aren't currency-cached, so
-	 * the totals reflect the session's resolved currency.
+	 * Full Store API cart response, localized so the classic cart/checkout Express Checkout
+	 * button first-paints without the blocking `GET /wc/store/v1/cart`. Same `hydrate_from_api`
+	 * strategy the blocks use, so the payload is the exact shape the client already consumes
+	 * from the live fetch (totals, items, `extensions`) and seeds straight into its cart cache.
 	 *
-	 * Returns false whenever the button must render from the live cart instead: off the
-	 * cart/checkout pages, an empty cart, or a zero total. A zero total is either a plain
-	 * empty-value cart (nothing to charge) or a free-trial subscription, which needs the
-	 * Store API extensions the fetch returns to compute its recurring total — the client
-	 * then falls back to fetchNewCartData().
-	 *
-	 * @return array|false
+	 * @return array|false False off cart/checkout, on block-based cart/checkout (they hydrate
+	 *                      themselves), or for an empty cart — the client then fetches instead.
 	 */
 	public function get_cart_render_data() {
-		if ( ! $this->is_cart() && ! $this->is_checkout() ) {
+		// get_button_context() is the canonical context check. Pay-for-order paints from
+		// the order (its own endpoint), not the cart; product pages render from product data.
+		$context = $this->get_button_context();
+
+		if ( 'pay_for_order' === $context ) {
+			return $this->get_order_render_data();
+		}
+
+		if ( ! in_array( $context, [ 'cart', 'checkout' ], true ) ) {
+			return false;
+		}
+
+		// Block cart/checkout hydrate their own Store API data; the shortcode button bails there.
+		if ( has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ) ) {
 			return false;
 		}
 
@@ -850,25 +857,56 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		$display_items = $this->build_display_items();
+		// Zero-total/free-trial carts are kept on purpose: their recurring totals and
+		// eligibility live in `extensions`, which the client's cart-data path reads.
+		$preloaded = rest_preload_api_request( [], '/wc/store/v1/cart' );
 
-		// Round before casting: the total passes through the `wcpay_calculated_total` filter,
-		// which can hand back a non-integer minor-unit value a bare (int) cast would truncate.
-		$total = (int) round( (float) $display_items['total']['amount'] );
+		return $preloaded['/wc/store/v1/cart']['body'] ?? false;
+	}
 
-		if ( $total <= 0 ) {
+	/**
+	 * Full Store API order response for a pay-for-order page, localized like get_cart_render_data()
+	 * so the button first-paints without the blocking `GET /wc/store/v1/order/{id}`.
+	 *
+	 * Gated on the order key from the pay-for-order URL — the credential the visitor presents, since
+	 * the `pay_for_order` cap is permissive for guest orders and can't gate this. The preload runs
+	 * the order route's own permission callback, which returns the order only to its logged-in owner
+	 * (account orders) or a matching key + billing email (guest orders); any other case is a non-200
+	 * the preload drops, so another customer's order is never localized.
+	 *
+	 * @return array|false False when the order or key is missing or invalid.
+	 */
+	private function get_order_render_data() {
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		if ( 0 === $order_id ) {
 			return false;
 		}
 
-		return [
-			'total'          => [
-				'label'  => $display_items['total']['label'],
-				'amount' => $total,
+		$order = wc_get_order( $order_id );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return false;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The order key is a bearer credential, not a form submission.
+		$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+		if ( ! hash_equals( $order->get_order_key(), $order_key ) ) {
+			return false;
+		}
+
+		$path = add_query_arg(
+			[
+				'key'           => $order_key,
+				'billing_email' => $order->get_billing_email(),
 			],
-			'displayItems'   => $display_items['displayItems'],
-			'needs_shipping' => WC()->cart->needs_shipping(),
-			'currency'       => strtolower( get_woocommerce_currency() ),
-		];
+			'/wc/store/v1/order/' . $order_id
+		);
+
+		$preloaded = rest_preload_api_request( [], $path );
+		$body      = $preloaded[ $path ]['body'] ?? false;
+
+		// The preload only populates on a 200, so an auth failure leaves nothing; the id check
+		// is a final guard that we're seeding an order, never an error body.
+		return isset( $body['id'] ) ? $body : false;
 	}
 
 	/**
