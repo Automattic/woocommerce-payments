@@ -161,7 +161,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			->willThrowException(
 				new API_Exception(
 					"Error: The statement descriptor matches a common term or website URL, and can't be used.",
-					'invalid_request_error',
+					'account_country_invalid',
 					409,
 					'invalid_request_error'
 				)
@@ -176,7 +176,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 
 		$error_data = $response->get_error_data();
 		$this->assertSame( 409, $error_data['status'] );
-		$this->assertSame( 'invalid_request_error', $error_data['error_code'] );
+		$this->assertSame( 'account_country_invalid', $error_data['error_code'] );
 		$this->assertSame( 'invalid_request_error', $error_data['error_type'] );
 	}
 
