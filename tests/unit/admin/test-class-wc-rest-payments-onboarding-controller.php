@@ -162,7 +162,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 				new API_Exception(
 					"Error: The statement descriptor matches a common term or website URL, and can't be used.",
 					'invalid_request_error',
-					400,
+					409,
 					'invalid_request_error'
 				)
 			);
@@ -175,9 +175,32 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'bad_request', $response->get_error_code() );
 
 		$error_data = $response->get_error_data();
-		$this->assertSame( 400, $error_data['status'] );
+		$this->assertSame( 409, $error_data['status'] );
 		$this->assertSame( 'invalid_request_error', $error_data['error_code'] );
 		$this->assertSame( 'invalid_request_error', $error_data['error_type'] );
+	}
+
+	public function test_init_test_drive_account_falls_back_to_400_when_api_exception_has_no_http_code() {
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->willThrowException(
+				new API_Exception(
+					'Something went wrong',
+					'wcpay_account_creation_failed',
+					0,
+					'api_error'
+				)
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params( [ 'country' => 'US' ] );
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertInstanceOf( WP_Error::class, $response );
+
+		$error_data = $response->get_error_data();
+		$this->assertSame( 400, $error_data['status'] );
 	}
 
 	public function test_finalize_embedded_kyc() {
