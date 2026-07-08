@@ -1,4 +1,4 @@
-Sub Significance: patch
+Significance: patch
 Type: dev
 
 tweak: added a `should_convert_shipping_amount` filter to MCCY
