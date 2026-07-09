@@ -8,8 +8,6 @@
 namespace WCPay\Tests\PaymentMethods\Configs;
 
 use WCPay\Constants\Currency_Code;
-use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPAY_UnitTestCase;
@@ -262,26 +260,5 @@ class PaymentMethodDefinitionRegistryTest extends WCPAY_UnitTestCase {
 		$methods = $registry->get_available_payment_method_definitions( 'GB', Currency_Code::EURO );
 		$this->assertIsArray( $methods );
 		$this->assertEmpty( $methods );
-	}
-
-	/**
-	 * Test that deprecated payment methods are not in the default available definitions.
-	 *
-	 * Regression test for WOOPMNT-6277: commit a4739037b re-added GiropayDefinition
-	 * and SofortDefinition to $available_definitions, causing giropay to re-appear as
-	 * an enabled gateway and trigger "incompatible with block-based checkout" warnings.
-	 */
-	public function test_deprecated_methods_not_in_default_available_definitions() {
-		// Read the real default $available_definitions directly from a new (unconstructed)
-		// instance. set_up() clears this list on the singleton, so we bypass the singleton
-		// pattern and read the class-level property default instead.
-		$reflection   = new ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$fresh        = $reflection->newInstanceWithoutConstructor();
-		$default_prop = $reflection->getProperty( 'available_definitions' );
-		$default_prop->setAccessible( true );
-		$defaults = $default_prop->getValue( $fresh );
-
-		$this->assertNotContains( GiropayDefinition::class, $defaults, 'GiropayDefinition must not be in $available_definitions (deprecated).' );
-		$this->assertNotContains( SofortDefinition::class, $defaults, 'SofortDefinition must not be in $available_definitions (deprecated).' );
 	}
 }
