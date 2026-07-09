@@ -1197,7 +1197,7 @@ class WC_Payments {
 		try {
 			self::register_rest_controllers();
 		} catch ( \Throwable $e ) {
-			\WCPay\Logger::error( 'Failed to register REST controllers: ' . $e->getMessage() );
+			\WCPay\Logger::exception( 'Failed to register REST controllers.', $e );
 		}
 	}
 
