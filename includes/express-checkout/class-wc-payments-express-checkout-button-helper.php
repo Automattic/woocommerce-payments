@@ -863,7 +863,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// eligibility live in `extensions`, which the client's cart-data path reads.
 		$preloaded = rest_preload_api_request( [], '/wc/store/v1/cart' );
 
-		return $preloaded['/wc/store/v1/cart']['body'] ?? false;
+		return $this->normalize_preloaded_body( $preloaded['/wc/store/v1/cart']['body'] ?? false );
 	}
 
 	/**
@@ -904,11 +904,29 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		);
 
 		$preloaded = rest_preload_api_request( [], $path );
-		$body      = $preloaded[ $path ]['body'] ?? false;
+		$body      = $this->normalize_preloaded_body( $preloaded[ $path ]['body'] ?? false );
 
 		// The preload only populates on a 200, so an auth failure leaves nothing; the id check
 		// is a final guard that we're seeding an order, never an error body.
 		return isset( $body['id'] ) ? $body : false;
+	}
+
+	/**
+	 * `rest_preload_api_request()` only casts the top level of the response to an array, so nested
+	 * nodes (e.g. `totals`) can stay `stdClass` depending on the Store API schema. Recurse into a
+	 * plain associative array so the returned shape matches the `@return array` contract regardless
+	 * of WooCommerce version — the payload is JSON-encoded downstream, so the localized output is
+	 * unchanged either way.
+	 *
+	 * @param array|false $body Preloaded response body, or false when the preload didn't populate.
+	 * @return array|false Fully associative array, or false when there's no body.
+	 */
+	private function normalize_preloaded_body( $body ) {
+		if ( ! is_array( $body ) ) {
+			return false;
+		}
+
+		return json_decode( wp_json_encode( $body ), true );
 	}
 
 	/**
