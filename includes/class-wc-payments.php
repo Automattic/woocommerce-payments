@@ -13,8 +13,6 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
@@ -765,8 +763,16 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), GiropayDefinition::get_id(), '7.9.0' ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), SofortDefinition::get_id(), '8.9.0' ), 'maybe_migrate' ] );
+		/**
+		 * Bumped migration version from for giropay from 7.9.0 to 11.0.0 because commit a4739037b re-added giropay to
+		 *              PaymentMethodDefinitionRegistry, which re-enabled them on accounts that
+		 *              still had fee data for them. Re-running the migration ensures those
+		 *              accounts are cleaned up after the registry fix in 11.0.0.
+		 *
+		 * @see WOOPMNT-6277.
+		 */
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'giropay', '11.0.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'sofort', '8.9.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
