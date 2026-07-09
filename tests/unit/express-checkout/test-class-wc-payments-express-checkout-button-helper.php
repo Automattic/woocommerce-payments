@@ -1210,6 +1210,34 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $result );
 	}
 
+	public function test_get_cart_render_data_returns_false_for_account_order_viewed_by_non_owner() {
+		// The security-critical case: an account order is guarded by the Store API route's
+		// ownership check (logged-in owner only), not by the key. A different logged-in user
+		// holding the correct key must still receive nothing.
+		$owner_id = self::factory()->user->create();
+		$order    = WC_Helper_Order::create_order( $owner_id );
+		$order->save();
+
+		wp_set_current_user( self::factory()->user->create() );
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = $order->get_order_key();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_button_context' ] )
+			->getMock();
+		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
+
+		$result = $helper->get_cart_render_data();
+
+		unset( $_GET['key'] );
+		set_query_var( 'order-pay', '' );
+		wp_set_current_user( 0 );
+
+		$this->assertFalse( $result );
+	}
+
 	public function test_get_cart_render_data_hydrates_order_when_key_matches() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_customer_id( 0 );

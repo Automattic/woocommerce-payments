@@ -889,7 +889,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The order key is a bearer credential, not a form submission.
 		$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
-		if ( ! hash_equals( $order->get_order_key(), $order_key ) ) {
+		if ( '' === $order_key || ! hash_equals( $order->get_order_key(), $order_key ) ) {
 			return false;
 		}
 
