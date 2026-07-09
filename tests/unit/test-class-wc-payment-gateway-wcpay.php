@@ -528,16 +528,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'expected_title'   => 'Mastercard credit card',
 				'expected_gateway' => 'woocommerce_payments',
 			],
-			'giropay'                => [
-				'payment_details'  => [ 'type' => 'giropay' ],
-				'expected_title'   => 'giropay',
-				'expected_gateway' => 'woocommerce_payments_giropay',
-			],
-			'Sofort'                 => [
-				'payment_details'  => [ 'type' => 'sofort' ],
-				'expected_title'   => 'Sofort',
-				'expected_gateway' => 'woocommerce_payments_sofort',
-			],
 			'Bancontact'             => [
 				'payment_details'  => [ 'type' => 'bancontact' ],
 				'expected_title'   => 'Bancontact',
@@ -950,14 +940,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'funding' => 'credit',
 			],
 		];
-		$mock_giropay_details    = [
-			'type' => 'giropay',
-		];
 		$mock_p24_details        = [
 			'type' => 'p24',
-		];
-		$mock_sofort_details     = [
-			'type' => 'sofort',
 		];
 		$mock_bancontact_details = [
 			'type' => 'bancontact',
@@ -985,9 +969,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		];
 
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
 		$p24_method        = $this->payment_methods['p24'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1004,23 +986,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $card_method->is_reusable() );
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
-		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title( 'US', $mock_giropay_details ) );
-		$this->assertTrue( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_reusable() );
-
 		$this->assertEquals( 'p24', $p24_method->get_id() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( 'US', $mock_p24_details ) );
 		$this->assertTrue( $p24_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $p24_method->is_reusable() );
-
-		$this->assertEquals( 'sofort', $sofort_method->get_id() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title( 'US', $mock_sofort_details ) );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_reusable() );
 
 		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
 		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
@@ -1093,8 +1063,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1106,8 +1074,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$grabpay_method    = $this->payment_methods['grabpay'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $eps_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $sepa_method->is_enabled_at_checkout( 'US' ) );
@@ -1203,8 +1169,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1219,8 +1183,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$account_domestic_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1235,8 +1197,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1266,8 +1226,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_payment_method_compares_correct_currency() {
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1281,8 +1239,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$account_domestic_currency                   = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1297,8 +1253,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -4815,7 +4769,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GrabPayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
@@ -4823,7 +4776,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
 		];
