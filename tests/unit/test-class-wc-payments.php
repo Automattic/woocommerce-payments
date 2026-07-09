@@ -145,6 +145,24 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
+	public function test_init_rest_api_registers_routes_when_admin_screen_is_set() {
+		global $wp_rest_server, $current_screen;
+		$previous_server = $wp_rest_server;
+		$previous_screen = $current_screen;
+		$wp_rest_server  = null;
+
+		set_current_screen( 'edit-page' );
+
+		try {
+			$routes = rest_get_server()->get_routes( 'wc/v3' );
+			$this->assertArrayHasKey( '/wc/v3/payments/onboarding/fields', $routes );
+		} finally {
+			$wp_rest_server = $previous_server;
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the screen snapshot taken above.
+			$current_screen = $previous_screen;
+		}
+	}
+
 	/**
 	 * @param bool $is_enabled
 	 */

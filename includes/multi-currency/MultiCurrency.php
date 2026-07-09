@@ -392,15 +392,15 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_rest_api() {
-		// Ensures we are not initializing our REST during `rest_preload_api_request`.
-		// When constructors signature changes, in manual update scenarios we were run into fatals.
-		// Those fatals are not critical, but it causes hickups in release process as catches unnecessary attention.
-		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
-			return;
+		// Catch fatals from controller constructor signature changes when old and new code mix
+		// during a manual plugin update. Routes must otherwise always register: internal REST
+		// requests dispatched with an admin screen set 404 without them.
+		try {
+			$api_controller = new RestController( $this );
+			$api_controller->register_routes();
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to register REST controller: ' . $e->getMessage() );
 		}
-
-		$api_controller = new RestController( $this );
-		$api_controller->register_routes();
 	}
 
 	/**

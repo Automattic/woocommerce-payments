@@ -1196,150 +1196,15 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
-		// Ensures we are not initializing our REST during `rest_preload_api_request`.
-		// When constructor signatures change, in manual update scenarios we were running into fatals.
-		// Those fatals are not critical, but they cause hiccups in the release process as catches unnecessary attention.
-		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
-			return;
+		// Catch fatals from controller constructor signature changes when old and new code mix
+		// during a manual plugin update. Routes must otherwise always register: internal REST
+		// requests dispatched with an admin screen set (e.g. WooCommerce core fetching
+		// /wc/v3/payments/onboarding/fields on every admin page) 404 without them.
+		try {
+			self::register_rest_controllers();
+		} catch ( \Throwable $e ) {
+			\WCPay\Logger::exception( 'Failed to register REST controllers.', $e );
 		}
-
-		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
-		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
-		$accounts_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
-		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
-		$deposits_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
-		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
-		$transactions_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
-		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
-		$disputes_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
-		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );
-		$dispute_readiness_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
-		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
-		$charges_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
-		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client );
-		$conn_tokens_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::get_gateway(), self::$customer_service, self::$order_service );
-		$orders_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-outcomes-controller.php';
-		$fraud_outcomes_controller = new WC_REST_Payments_Fraud_Outcomes_Controller( self::$api_client );
-		$fraud_outcomes_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
-		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
-		$timeline_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
-		$webhook_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
-		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::get_gateway(), self::$account );
-		$tos_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
-		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
-		$accounts_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account, self::$pm_promotions_service );
-		$settings_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
-		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
-		$settings_option_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
-		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
-		$charges_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-files-controller.php';
-		$files_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
-		$files_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-capital-controller.php';
-		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
-		$capital_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
-		$promotions_controller = new WC_REST_Payments_PM_Promotions_Controller( self::$api_client, self::$pm_promotions_service );
-		$promotions_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
-		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
-		$onboarding_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-customer-controller.php';
-		$customer_controller = new WC_REST_Payments_Customer_Controller( self::$api_client, self::$customer_service );
-		$customer_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
-		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
-		$refunds_controller->register_routes();
-
-		if ( WC_Payments_Features::is_documents_section_enabled() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
-			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
-			$documents_controller->register_routes();
-
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-vat-controller.php';
-			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
-			$vat_controller->register_routes();
-		}
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
-			self::$api_client,
-			self::get_gateway(),
-			wcpay_get_container()->get( OrderService::class ),
-			wcpay_get_container()->get( Level3Service::class )
-		);
-		$payment_intents_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
-		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
-		$authorizations_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
-		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
-		$reports_transactions_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
-		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
-		$reports_fees_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
-		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
-		$reports_balance_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
-		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
-		$reports_authorizations_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-		$survey_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
-		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
-		$woopay_session_controller->register_routes();
 	}
 
 	/**
@@ -2439,5 +2304,148 @@ class WC_Payments {
 		);
 
 		return (bool) ( is_countable( $result ) ? count( $result ) : 0 );
+	}
+
+	/**
+	 * Registers the REST API controllers.
+	 */
+	private static function register_rest_controllers() {
+		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
+		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
+		$accounts_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
+		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
+		$deposits_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
+		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
+		$transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
+		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
+		$disputes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
+		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );
+		$dispute_readiness_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
+		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
+		$charges_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
+		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client );
+		$conn_tokens_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::get_gateway(), self::$customer_service, self::$order_service );
+		$orders_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-outcomes-controller.php';
+		$fraud_outcomes_controller = new WC_REST_Payments_Fraud_Outcomes_Controller( self::$api_client );
+		$fraud_outcomes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
+		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
+		$timeline_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
+		$webhook_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
+		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::get_gateway(), self::$account );
+		$tos_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
+		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
+		$accounts_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account, self::$pm_promotions_service );
+		$settings_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
+		$settings_option_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
+		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
+		$charges_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-files-controller.php';
+		$files_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
+		$files_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-capital-controller.php';
+		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
+		$capital_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
+		$promotions_controller = new WC_REST_Payments_PM_Promotions_Controller( self::$api_client, self::$pm_promotions_service );
+		$promotions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
+		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
+		$onboarding_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-customer-controller.php';
+		$customer_controller = new WC_REST_Payments_Customer_Controller( self::$api_client, self::$customer_service );
+		$customer_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
+		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
+		$refunds_controller->register_routes();
+
+		if ( WC_Payments_Features::is_documents_section_enabled() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
+			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
+			$documents_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-vat-controller.php';
+			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
+			$vat_controller->register_routes();
+		}
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
+			self::$api_client,
+			self::get_gateway(),
+			wcpay_get_container()->get( OrderService::class ),
+			wcpay_get_container()->get( Level3Service::class )
+		);
+		$payment_intents_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
+		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
+		$authorizations_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
+		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
+		$reports_transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
+		$reports_fees_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
+		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
+		$reports_balance_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
+		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
+		$reports_authorizations_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
+		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
+		$woopay_session_controller->register_routes();
 	}
 }
