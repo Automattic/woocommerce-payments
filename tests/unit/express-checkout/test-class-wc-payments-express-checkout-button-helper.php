@@ -1239,6 +1239,13 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_get_express_checkout_render_data_hydrates_order_when_key_matches() {
+		// The Store API order route (WooCommerce > 7.6) is what makes the hydration possible.
+		// On older WooCommerce the preload finds no route and the button falls back to the fetch,
+		// so there's nothing to hydrate to assert here.
+		if ( ! class_exists( \Automattic\WooCommerce\StoreApi\Routes\V1\Order::class ) ) {
+			$this->markTestSkipped( 'Store API order route is unavailable on this WooCommerce version.' );
+		}
+
 		$order = WC_Helper_Order::create_order();
 		$order->set_customer_id( 0 );
 		$order->set_billing_email( 'shopper@example.com' );
