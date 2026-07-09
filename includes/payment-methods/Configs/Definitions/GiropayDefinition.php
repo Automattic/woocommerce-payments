@@ -15,6 +15,10 @@ use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
  * Class implementing the Giropay payment method definition.
+ *
+ * @deprecated Giropay was shut down in 2024. This class is retained only
+ *             for migration hooks that reference its ID. Do not use it in any
+ *             new code or re-add it to PaymentMethodDefinitionRegistry.
  */
 class GiropayDefinition implements PaymentMethodDefinitionInterface {
 
