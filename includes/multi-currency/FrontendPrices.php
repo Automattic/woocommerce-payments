@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Order;
+use WC_Shipping_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -272,12 +273,12 @@ class FrontendPrices {
 	/**
 	 * Returns the shipping add rate args with cost converted.
 	 *
-	 * @param array $args   Shipping rate args.
-	 * @param mixed $method The shipping method object adding the rate.
+	 * @param array              $args   Shipping rate args.
+	 * @param WC_Shipping_Method $method The shipping method adding the rate.
 	 *
 	 * @return array Shipping rate args with converted cost.
 	 */
-	public function convert_shipping_method_rate_cost( $args, $method = null ) {
+	public function convert_shipping_method_rate_cost( $args, $method ) {
 		if ( isset( $args['cost'] ) && $this->compatibility->should_convert_shipping_amount( $method ) ) {
 			/**
 			 * We need to keep the `cost` structure intact when applying
