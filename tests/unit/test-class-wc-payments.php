@@ -77,6 +77,23 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_maybe_display_express_checkout_buttons_bails_during_cron_requests() {
+		$this->mock_cache->expects( $this->never() )->method( 'get' );
+
+		add_filter( 'wp_doing_cron', '__return_true' );
+		WC_Payments::maybe_display_express_checkout_buttons();
+		remove_filter( 'wp_doing_cron', '__return_true' );
+	}
+
+	public function test_maybe_display_express_checkout_buttons_checks_account_on_regular_requests() {
+		$this->mock_cache->expects( $this->once() )
+			->method( 'get' )
+			->with( 'wcpay_account_data', true )
+			->willReturn( null );
+
+		WC_Payments::maybe_display_express_checkout_buttons();
+	}
+
 	public function test_it_skips_stripe_link_gateway_registration() {
 		$all_gateways_before_registration = count( WC_Payments::get_payment_method_map() );
 		$card_gateway_mock                = $this->createMock( WC_Payment_Gateway_WCPay::class );
