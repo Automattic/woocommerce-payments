@@ -1063,7 +1063,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}
 
-	public function test_get_cart_render_data_returns_false_when_not_cart_or_checkout() {
+	public function test_get_express_checkout_render_data_returns_false_when_not_cart_or_checkout() {
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
 			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
@@ -1071,10 +1071,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_cart' )->willReturn( false );
 		$helper->method( 'is_checkout' )->willReturn( false );
 
-		$this->assertFalse( $helper->get_cart_render_data() );
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
 	}
 
-	public function test_get_cart_render_data_returns_false_on_pay_for_order() {
+	public function test_get_express_checkout_render_data_returns_false_on_pay_for_order() {
 		// Core treats the pay-for-order page as the checkout page, so is_checkout() is
 		// true there; get_button_context() still resolves it to pay_for_order, which
 		// uses its own Order API and must not seed from the customer's cart.
@@ -1086,10 +1086,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_checkout' )->willReturn( true );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( true );
 
-		$this->assertFalse( $helper->get_cart_render_data() );
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
 	}
 
-	public function test_get_cart_render_data_returns_false_on_block_cart_or_checkout() {
+	public function test_get_express_checkout_render_data_returns_false_on_block_cart_or_checkout() {
 		// Block cart/checkout hydrate their own Store API data and the shortcode
 		// button bails there, so no snapshot should be localized.
 		$original_post = $GLOBALS['post'] ?? null;
@@ -1105,7 +1105,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_cart' )->willReturn( false );
 		$helper->method( 'is_checkout' )->willReturn( true );
 
-		$result = $helper->get_cart_render_data();
+		$result = $helper->get_express_checkout_render_data();
 
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the global post.
 		$GLOBALS['post'] = $original_post;
@@ -1113,7 +1113,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $result );
 	}
 
-	public function test_get_cart_render_data_returns_false_for_empty_cart() {
+	public function test_get_express_checkout_render_data_returns_false_for_empty_cart() {
 		WC()->cart->empty_cart();
 
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
@@ -1123,10 +1123,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 
-		$this->assertFalse( $helper->get_cart_render_data() );
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
 	}
 
-	public function test_get_cart_render_data_returns_store_api_cart_response_for_populated_cart() {
+	public function test_get_express_checkout_render_data_returns_store_api_cart_response_for_populated_cart() {
 		update_option( 'woocommerce_currency', 'USD' );
 
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
@@ -1136,7 +1136,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 
-		$data = $helper->get_cart_render_data();
+		$data = $helper->get_express_checkout_render_data();
 
 		// The payload is the live Store API cart response the client already consumes,
 		// so it carries the same top-level shape a `GET /wc/store/v1/cart` returns —
@@ -1147,7 +1147,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertArrayHasKey( 'extensions', $data );
 	}
 
-	public function test_get_cart_render_data_returns_store_api_response_for_zero_total_cart() {
+	public function test_get_express_checkout_render_data_returns_store_api_response_for_zero_total_cart() {
 		// A zero-total cart (here a virtual $0 product) is no longer withheld. The old
 		// guard punted free-trial subscriptions to the fetch path because the bespoke
 		// snapshot lacked their recurring data; the full response carries it in
@@ -1169,13 +1169,13 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 
-		$data = $helper->get_cart_render_data();
+		$data = $helper->get_express_checkout_render_data();
 
 		$this->assertIsArray( $data );
 		$this->assertSame( '0', $data['totals']['total_price'] );
 	}
 
-	public function test_get_cart_render_data_returns_false_for_pay_for_order_without_order() {
+	public function test_get_express_checkout_render_data_returns_false_for_pay_for_order_without_order() {
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
 			->onlyMethods( [ 'get_button_context' ] )
@@ -1183,10 +1183,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
 
 		// No `order-pay` query var, so there is no order to hydrate.
-		$this->assertFalse( $helper->get_cart_render_data() );
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
 	}
 
-	public function test_get_cart_render_data_returns_false_for_pay_for_order_with_wrong_key() {
+	public function test_get_express_checkout_render_data_returns_false_for_pay_for_order_with_wrong_key() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_customer_id( 0 );
 		$order->set_billing_email( 'shopper@example.com' );
@@ -1201,7 +1201,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			->getMock();
 		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
 
-		$result = $helper->get_cart_render_data();
+		$result = $helper->get_express_checkout_render_data();
 
 		unset( $_GET['key'] );
 		set_query_var( 'order-pay', '' );
@@ -1210,7 +1210,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $result );
 	}
 
-	public function test_get_cart_render_data_returns_false_for_account_order_viewed_by_non_owner() {
+	public function test_get_express_checkout_render_data_returns_false_for_account_order_viewed_by_non_owner() {
 		// The security-critical case: an account order is guarded by the Store API route's
 		// ownership check (logged-in owner only), not by the key. A different logged-in user
 		// holding the correct key must still receive nothing.
@@ -1229,7 +1229,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			->getMock();
 		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
 
-		$result = $helper->get_cart_render_data();
+		$result = $helper->get_express_checkout_render_data();
 
 		unset( $_GET['key'] );
 		set_query_var( 'order-pay', '' );
@@ -1238,7 +1238,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $result );
 	}
 
-	public function test_get_cart_render_data_hydrates_order_when_key_matches() {
+	public function test_get_express_checkout_render_data_hydrates_order_when_key_matches() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_customer_id( 0 );
 		$order->set_billing_email( 'shopper@example.com' );
@@ -1253,7 +1253,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			->getMock();
 		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
 
-		$data = $helper->get_cart_render_data();
+		$data = $helper->get_express_checkout_render_data();
 
 		unset( $_GET['key'] );
 		set_query_var( 'order-pay', '' );

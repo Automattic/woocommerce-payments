@@ -55,9 +55,6 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
-// The localized Store API cart (see get_cart_render_data) seeds cachedCartData for first
-// paint, so we skip the blocking GET /wc/store/v1/cart. Consumed once; re-inits fetch fresh.
-let cartBootstrapConsumed = false;
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
 		return await getCartApiHandler().getCart();
@@ -506,22 +503,18 @@ jQuery( ( $ ) => {
 
 			// Cart/checkout render at the session's resolved currency (and
 			// pay-for-order at the order's), so the localized Store API response
-			// is authoritative for first paint. Seed it once; the charge is always
-			// the live server-side total placed at confirm, and any drift
-			// self-corrects on the next re-init below.
+			// (see get_express_checkout_render_data) is authoritative for first
+			// paint. Consumed once — the charge is always the live server-side
+			// total placed at confirm, and any drift self-corrects on the re-init
+			// below, which reads a now-empty param and fetches fresh.
 			const buttonContext = getExpressCheckoutData( 'button_context' );
-			const canBootstrap =
-				buttonContext === 'cart' ||
-				buttonContext === 'checkout' ||
-				buttonContext === 'pay_for_order';
-			const bootstrapCartData =
-				canBootstrap && ! cachedCartData && ! cartBootstrapConsumed
-					? getExpressCheckoutData( 'cart' ) || null
-					: null;
+			const bootstrapCartData = ! cachedCartData
+				? getExpressCheckoutData( 'cart' ) || null
+				: null;
 
 			if ( bootstrapCartData ) {
 				cachedCartData = bootstrapCartData;
-				cartBootstrapConsumed = true;
+				wcpayExpressCheckoutParams.cart = undefined;
 
 				// pay-for-order places through the Order API handler, which replays the
 				// order's addresses from its own cached copy — seed it so the fetch is skipped.

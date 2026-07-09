@@ -827,15 +827,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Full Store API cart response, localized so the classic cart/checkout Express Checkout
-	 * button first-paints without the blocking `GET /wc/store/v1/cart`. Same `hydrate_from_api`
-	 * strategy the blocks use, so the payload is the exact shape the client already consumes
-	 * from the live fetch (totals, items, `extensions`) and seeds straight into its cart cache.
+	 * Full Store API response for the current context, localized so the classic Express Checkout
+	 * button first-paints without a blocking `GET`. On cart/checkout this is the `/cart` response;
+	 * on pay-for-order it's the `/order/{id}` response (see get_order_render_data). Same
+	 * `hydrate_from_api` strategy the blocks use, so the payload is the exact shape the client
+	 * already consumes from the live fetch (totals, items, `extensions`) and seeds straight into
+	 * its cart cache.
 	 *
 	 * @return array|false False off cart/checkout, on block-based cart/checkout (they hydrate
 	 *                      themselves), or for an empty cart — the client then fetches instead.
 	 */
-	public function get_cart_render_data() {
+	public function get_express_checkout_render_data() {
 		// get_button_context() is the canonical context check. Pay-for-order paints from
 		// the order (its own endpoint), not the cart; product pages render from product data.
 		$context = $this->get_button_context();
@@ -865,7 +867,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Full Store API order response for a pay-for-order page, localized like get_cart_render_data()
+	 * Full Store API order response for a pay-for-order page, localized like get_express_checkout_render_data()
 	 * so the button first-paints without the blocking `GET /wc/store/v1/order/{id}`.
 	 *
 	 * Gated on the order key from the pay-for-order URL — the credential the visitor presents, since
