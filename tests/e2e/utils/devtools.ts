@@ -10,8 +10,8 @@ import { Page } from '@playwright/test';
 // verify the page rendered fully, reload-and-retry when it didn't, and fail fast
 // with a clear message otherwise. A save is a full POST -> redirect -> re-render
 // round trip through that same fragile page, so the truncation can just as easily
-// hit the post-save render as the initial one — the retry below wraps the whole
-// navigate/toggle/save/verify sequence rather than just the initial load.
+// hit the post-save render as the initial one — hence the retry wraps the whole
+// navigate/toggle/save/verify sequence.
 const devToolsRenderTimeoutMs = 15 * 1000;
 const devToolsMaxLoadAttempts = 3;
 
@@ -42,9 +42,9 @@ const saveDevToolsSettings = async ( page: Page ) => {
 
 	await page.waitForLoadState( 'load' );
 
-	// Checking for the button again (on top of the "Settings saved" notice) confirms
-	// the post-save render wasn't truncated before the checkbox we're about to
-	// re-read, the same way the initial load check does.
+	// The "Settings saved" notice alone doesn't prove the post-save render
+	// survived: the submit button sits after every settings section, so its
+	// presence means the page the caller re-reads state from isn't truncated.
 	const [ savedNoticeVisible, renderedFully ] = await Promise.all( [
 		page
 			.getByText( /Settings saved/ )
@@ -79,11 +79,11 @@ const setActAsDisconnectedFromWCPay = ( page: Page, enabled: boolean ) =>
 		.getByLabel( 'act as disconnected from the Transact Platform Server' )
 		.setChecked( enabled );
 
-// Drives navigate -> (skip if already correct) -> toggle -> save -> re-verify, and
-// retries the entire sequence on any failure rather than just the failing leg. The
-// re-verify step matters on its own: trusting the "Settings saved" notice alone
-// would let a save that rendered the notice but silently dropped the checkbox
-// update slip through as a false success.
+// Any leg of the toggle-and-save sequence can be taken down by the page's
+// intermittent PHP fatal, so a failure anywhere restarts from navigation instead
+// of retrying just the failing step against a possibly-truncated page. The final
+// re-read of the setting guards against a save that rendered the "Settings saved"
+// notice but silently dropped the checkbox update.
 const setDevToolsSetting = async (
 	page: Page,
 	settingName: string,

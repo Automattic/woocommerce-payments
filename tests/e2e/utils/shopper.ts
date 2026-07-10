@@ -210,9 +210,8 @@ export const placeOrder = async ( page: Page, maxAttempts = 3 ) => {
 				throw error;
 			}
 
-			// A genuinely dead first click does happen (the Stripe element can
-			// swallow it) — give the page a beat and try again, rather than
-			// hammering the button in a tight loop.
+			// A genuinely dead first click does happen — the Stripe element
+			// can swallow it — so give the page a beat before trying again.
 			await page.waitForTimeout( 1000 );
 		}
 	}

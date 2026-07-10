@@ -28,8 +28,11 @@ async function waitForDisputeToAppear( merchantPage: Page, url: string ) {
 		await merchantPage.goto( url );
 		await merchantPage.waitForLoadState( 'load' );
 
+		// Not the similarly-named `accept-dispute-button`: that testid belongs
+		// to the accept modal's confirm button, which only exists while the
+		// modal is open.
 		await expect(
-			merchantPage.getByTestId( 'accept-dispute-button' )
+			merchantPage.getByTestId( 'open-accept-dispute-modal-button' )
 		).toBeVisible( { timeout: 2000 } );
 	} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 }

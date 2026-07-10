@@ -44,8 +44,8 @@ const checkoutWithBancontact = async (
 		page,
 		config.addresses[ 'upe-customer' ].billing.be
 	);
-	// Changing the country re-triggers WC's checkout AJAX refresh, which
-	// re-renders the payment methods list, so wait for it to settle first.
+	// Changing the country triggers WC's checkout AJAX refresh, which
+	// re-renders the payment methods list out from under the next click.
 	await waitForUiRefresh( page );
 	await expectFraudPreventionToken( page, ctpEnabled );
 	await selectPaymentMethod( page, 'Bancontact' );
