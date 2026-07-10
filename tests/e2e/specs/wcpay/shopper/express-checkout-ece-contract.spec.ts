@@ -36,6 +36,13 @@ const readyClass = /is-ready/;
 const revealTimeout = 20000;
 
 test.describe( 'Express Checkout (ECE) scaffolding contract', () => {
+	// The fake-sheet mu-plugin isn't installed on Atomic, so the proxy never
+	// mounts there and these can't run.
+	test.skip(
+		process.env.NODE_ENV === 'atomic',
+		'ECE specs need the fake-sheet mu-plugin, absent on Atomic'
+	);
+
 	let merchantPage: Page;
 	let priorEceState: boolean;
 

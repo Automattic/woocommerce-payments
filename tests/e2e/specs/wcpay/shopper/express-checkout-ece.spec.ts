@@ -95,6 +95,13 @@ let merchantPage: Page;
 let priorEceState: boolean;
 
 test.describe( 'Express Checkout (ECE) wallet buttons', () => {
+	// The fake-sheet mu-plugin isn't installed on Atomic, so the proxy never
+	// mounts there and these can't run.
+	test.skip(
+		process.env.NODE_ENV === 'atomic',
+		'ECE specs need the fake-sheet mu-plugin, absent on Atomic'
+	);
+
 	test.beforeAll( async ( { browser } ) => {
 		( { merchantPage } = await getMerchant( browser ) );
 		// enableExpressCheckout returns whether it was ALREADY enabled, so we
