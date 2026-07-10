@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
 /**
@@ -368,6 +369,19 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 		try {
 			$success = $this->onboarding_service->init_test_drive_account( $country, $request->get_param( 'capabilities' ) ?? [], $request->get_param( 'account_data' ) ?? [] );
+		} catch ( API_Exception $e ) {
+			// Forward the structured error details so consumers (e.g. the WooCommerce NOX onboarding)
+			// can distinguish non-recoverable errors from transient ones.
+			$http_code = $e->get_http_code();
+			return new WP_Error(
+				self::RESULT_BAD_REQUEST,
+				$e->getMessage(),
+				[
+					'status'     => 0 !== $http_code ? $http_code : 400,
+					'error_code' => $e->get_error_code(),
+					'error_type' => $e->get_error_type(),
+				]
+			);
 		} catch ( Exception $e ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}
