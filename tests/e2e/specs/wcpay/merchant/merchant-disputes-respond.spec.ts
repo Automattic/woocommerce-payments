@@ -15,6 +15,26 @@ import {
 } from '../../../utils/merchant-navigation';
 
 /**
+ * Polls the payment details page until the dispute is visible.
+ *
+ * `createDisputedOrder()` only waits for the shopper's checkout to complete;
+ * the dispute itself is created merchant-side once Stripe's async
+ * charge.dispute.created webhook is processed, which can trail checkout by
+ * tens of seconds. The payment details page does a one-shot fetch on load,
+ * so we reload until the dispute has landed.
+ */
+async function waitForDisputeToAppear( merchantPage: Page, url: string ) {
+	await expect( async () => {
+		await merchantPage.goto( url );
+		await merchantPage.waitForLoadState( 'load' );
+
+		await expect(
+			merchantPage.getByTestId( 'accept-dispute-button' )
+		).toBeVisible( { timeout: 2000 } );
+	} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
+}
+
+/**
  * Navigates to the payment details page for a given disputed order.
  */
 async function goToPaymentDetailsForOrder(
@@ -41,6 +61,9 @@ async function goToPaymentDetailsForOrder(
 			const currentUrl = merchantPage.url();
 			return currentUrl;
 		} );
+
+	await test.step( 'Wait for the dispute to be created by the async webhook', () =>
+		waitForDisputeToAppear( merchantPage, paymentDetailsLink ) );
 
 	return paymentDetailsLink;
 }
@@ -88,6 +111,9 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			const orderId = await createDisputedOrder( browser );
 
 			await goToPaymentDetails( merchantPage, orderId );
+
+			await test.step( 'Wait for the dispute to be created by the async webhook', () =>
+				waitForDisputeToAppear( merchantPage, merchantPage.url() ) );
 
 			await test.step( 'Click the dispute accept button to open the accept dispute modal', async () => {
 				// View the modal.

@@ -141,18 +141,79 @@ export const fillBillingAddressWCB = async (
 		.fill( billingAddress.phone );
 };
 
-// The Stripe element can swallow the first click, so keep retrying until
-// checkout shows the blocking overlay or reaches the order-received page.
-export const placeOrder = async ( page: Page ) => {
-	let orderPlaced = false;
-	while ( ! orderPlaced ) {
-		await page.locator( placeOrderButtonSelector ).first().click();
+// WC's checkout AJAX finishes a submission with a `window.location` change —
+// straight to order-received, off-site to a BNPL/Klarna page, or just a
+// same-page #wcpay-confirm- hash for 3DS — so it can tear the page down in the
+// middle of a click. Playwright surfaces that as a navigation/context error
+// rather than a resolved click, and that's the click succeeding, not failing.
+const navigationTeardownErrorPattern =
+	/execution context was destroyed|target closed|target page, context or browser has been closed|frame was detached|navigating frame was detached/i;
 
-		if (
-			( await page.$( '.blockUI' ) ) ||
-			page.url().includes( '/checkout/order-received/' )
-		) {
-			orderPlaced = true;
+const placeOrderTerminalStateTimeout = 15000;
+
+export const placeOrder = async ( page: Page, maxAttempts = 3 ) => {
+	const button = page.locator( placeOrderButtonSelector ).first();
+	const errorNotice = page.locator( '.woocommerce-error' ).first();
+
+	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
+		const startUrl = page.url();
+
+		// A leftover error banner from an earlier attempt on the same page (no
+		// reload in between, e.g. retry-after-decline specs) would otherwise
+		// read as an immediate terminal state for this click, when it isn't one.
+		const hadStaleErrorNotice = await errorNotice.isVisible();
+
+		try {
+			await button.click();
+
+			const terminalStateWaits = [
+				page.locator( '.blockUI' ).first().waitFor( {
+					state: 'visible',
+					timeout: placeOrderTerminalStateTimeout,
+				} ),
+				page.waitForURL( ( url ) => url.toString() !== startUrl, {
+					timeout: placeOrderTerminalStateTimeout,
+				} ),
+			];
+
+			if ( ! hadStaleErrorNotice ) {
+				terminalStateWaits.push(
+					errorNotice.waitFor( {
+						state: 'visible',
+						timeout: placeOrderTerminalStateTimeout,
+					} )
+				);
+			}
+
+			// The waits that lose the race keep running and eventually reject —
+			// on their own timeout, or when the page navigates away — and
+			// Playwright fails tests over unhandled rejections. A no-op handler
+			// marks them as handled without affecting the race itself, which
+			// still rejects if every wait fails.
+			terminalStateWaits.forEach( ( wait ) =>
+				wait.catch( () => undefined )
+			);
+
+			await Promise.race( terminalStateWaits );
+
+			return;
+		} catch ( error ) {
+			if (
+				navigationTeardownErrorPattern.test(
+					( error as Error ).message
+				)
+			) {
+				return;
+			}
+
+			if ( attempt === maxAttempts ) {
+				throw error;
+			}
+
+			// A genuinely dead first click does happen (the Stripe element can
+			// swallow it) — give the page a beat and try again, rather than
+			// hammering the button in a tight loop.
+			await page.waitForTimeout( 1000 );
 		}
 	}
 };
