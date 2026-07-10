@@ -1936,4 +1936,99 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'receipt.pdf', (string) $captured_body );
 		$this->assertStringContainsString( 'dispute_evidence', (string) $captured_body );
 	}
+
+	/**
+	 * A charge can have more than one dispute, so the additive `disputes` array
+	 * on the server response must survive deserialization onto the charge model.
+	 */
+	public function test_deserialize_payment_intention_carries_charge_disputes() {
+		$disputes = [
+			[
+				'id'     => 'dp_1',
+				'status' => 'needs_response',
+			],
+			[
+				'id'     => 'dp_2',
+				'status' => 'under_review',
+			],
+		];
+
+		$intention_array = [
+			'id'            => 'pi_mock',
+			'amount'        => 1500,
+			'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
+			'created'       => ( new DateTime() )->getTimestamp(),
+			'status'        => Intent_Status::SUCCEEDED,
+			'client_secret' => 'pi_mock_secret',
+			'metadata'      => [],
+			'charges'       => [
+				'total_count' => 1,
+				'data'        => [
+					[
+						'id'       => 'ch_mock',
+						'amount'   => 1500,
+						'created'  => ( new DateTime() )->getTimestamp(),
+						'dispute'  => [ 'id' => 'dp_1' ],
+						'disputed' => true,
+						'disputes' => $disputes,
+					],
+				],
+			],
+		];
+
+		$intent = $this->payments_api_client->deserialize_payment_intention_object_from_array( $intention_array );
+		$charge = $intent->get_charge();
+
+		$this->assertSame(
+			[
+				[
+					'id'     => 'dp_1',
+					'status' => 'needs_response',
+				],
+				[
+					'id'     => 'dp_2',
+					'status' => 'under_review',
+				],
+			],
+			$charge->get_disputes()
+		);
+
+		$this->assertSame( [ 'id' => 'dp_1' ], $charge->get_dispute() );
+
+		$this->assertTrue( $charge->get_disputed() );
+	}
+
+	/**
+	 * Back-compat: a charge with no `disputes` array still deserializes, and the
+	 * singular dispute fields are untouched.
+	 */
+	public function test_deserialize_payment_intention_without_charge_disputes() {
+		$intention_array = [
+			'id'            => 'pi_mock',
+			'amount'        => 1500,
+			'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
+			'created'       => ( new DateTime() )->getTimestamp(),
+			'status'        => Intent_Status::SUCCEEDED,
+			'client_secret' => 'pi_mock_secret',
+			'metadata'      => [],
+			'charges'       => [
+				'total_count' => 1,
+				'data'        => [
+					[
+						'id'      => 'ch_mock',
+						'amount'  => 1500,
+						'created' => ( new DateTime() )->getTimestamp(),
+						'dispute' => [ 'id' => 'dp_1' ],
+					],
+				],
+			],
+		];
+
+		$intent = $this->payments_api_client->deserialize_payment_intention_object_from_array( $intention_array );
+		$charge = $intent->get_charge();
+
+		$this->assertNull( $charge->get_disputes() );
+
+		$this->assertSame( [ 'id' => 'dp_1' ], $charge->get_dispute() );
+	}
 }

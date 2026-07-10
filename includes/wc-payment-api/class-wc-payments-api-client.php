@@ -3062,7 +3062,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$charge_array['payment_intent'] ?? null,
 			$charge_array['refunded'] ?? null,
 			$charge_array['refunds'] ?? null,
-			$charge_array['status'] ?? null
+			$charge_array['status'] ?? null,
+			$charge_array['disputes'] ?? null
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {
