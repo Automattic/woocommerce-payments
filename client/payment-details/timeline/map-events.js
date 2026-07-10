@@ -770,13 +770,44 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 /**
  * Formats an event into one or more payment timeline items
  *
- * @param {Object}        event    An event data
- * @param {string | null} bankName The name of the bank
+ * @param {Object}        event        An event data
+ * @param {string | null} bankName     The name of the bank
+ * @param {Object}        disputeOrder Shared "Dispute N of M" numbering ({ orderById, total })
  *
  * @return {Array} Payment timeline items
  */
-const mapEventToTimelineItems = ( event, bankName = null ) => {
+const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
 	const { type } = event;
+
+	// A charge can accrue more than one dispute, and their event groups are
+	// otherwise indistinguishable. Number them off the same creation-ordered map
+	// the summary panes use so both views read "Dispute N of M" consistently.
+	const disputeNumber =
+		disputeOrder?.total > 1 && event.dispute_id
+			? disputeOrder.orderById[ event.dispute_id ]
+			: undefined;
+	const disputeNumberLabel = disputeNumber
+		? sprintf(
+				/* translators: %1$d is the dispute's position, %2$d is the total number of disputes on the charge */
+				__( 'Dispute %1$d of %2$d', 'woocommerce-payments' ),
+				disputeNumber,
+				disputeOrder.total
+		  )
+		: undefined;
+	const withDisputeQualifier = ( item ) => {
+		if ( ! disputeNumberLabel || ! item ) {
+			return item;
+		}
+		return {
+			...item,
+			headline: (
+				<>
+					{ item.headline }
+					{ ` · ${ disputeNumberLabel }` }
+				</>
+			),
+		};
+	};
 
 	const stringWithAmount = ( headline, amount, explicit = false ) =>
 		sprintf(
@@ -1046,30 +1077,38 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			}
 
 			return [
-				getStatusChangeTimelineItem(
-					event,
-					__( 'Disputed: Needs response', 'woocommerce-payments' )
+				withDisputeQualifier(
+					getStatusChangeTimelineItem(
+						event,
+						__( 'Disputed: Needs response', 'woocommerce-payments' )
+					)
 				),
 				depositTimelineItem,
-				getMainTimelineItem(
-					event,
-					reasonHeadline,
-					<CrossIcon className="is-error" />
+				withDisputeQualifier(
+					getMainTimelineItem(
+						event,
+						reasonHeadline,
+						<CrossIcon className="is-error" />
+					)
 				),
 			];
 		case 'dispute_in_review':
 			return [
-				getStatusChangeTimelineItem(
-					event,
-					__( 'Disputed: In review', 'woocommerce-payments' )
+				withDisputeQualifier(
+					getStatusChangeTimelineItem(
+						event,
+						__( 'Disputed: In review', 'woocommerce-payments' )
+					)
 				),
-				getMainTimelineItem(
-					event,
-					__(
-						'Challenge evidence submitted.',
-						'woocommerce-payments'
-					),
-					<CheckmarkIcon className="is-success" />
+				withDisputeQualifier(
+					getMainTimelineItem(
+						event,
+						__(
+							'Challenge evidence submitted.',
+							'woocommerce-payments'
+						),
+						<CheckmarkIcon className="is-success" />
+					)
 				),
 			];
 		case 'dispute_won':
@@ -1085,9 +1124,11 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				disputeWonImpact?.currency ?? event.currency
 			);
 			return [
-				getStatusChangeTimelineItem(
-					event,
-					__( 'Disputed: Won', 'woocommerce-payments' )
+				withDisputeQualifier(
+					getStatusChangeTimelineItem(
+						event,
+						__( 'Disputed: Won', 'woocommerce-payments' )
+					)
 				),
 				getDepositTimelineItem( event, formattedExplicitTotal, true, [
 					sprintf(
@@ -1101,13 +1142,15 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 						formatCurrency( Math.abs( event.fee ), event.currency )
 					),
 				] ),
-				getMainTimelineItem(
-					event,
-					__(
-						'Dispute won! The bank ruled in your favor.',
-						'woocommerce-payments'
-					),
-					<NoticeOutlineIcon className="is-success" />
+				withDisputeQualifier(
+					getMainTimelineItem(
+						event,
+						__(
+							'Dispute won! The bank ruled in your favor.',
+							'woocommerce-payments'
+						),
+						<NoticeOutlineIcon className="is-success" />
+					)
 				),
 			];
 		case 'dispute_lost': {
@@ -1176,39 +1219,47 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 
 			return [
 				networkCostItem,
-				getStatusChangeTimelineItem(
-					event,
-					__( 'Disputed: Lost', 'woocommerce-payments' )
+				withDisputeQualifier(
+					getStatusChangeTimelineItem(
+						event,
+						__( 'Disputed: Lost', 'woocommerce-payments' )
+					)
 				),
-				getMainTimelineItem(
-					event,
-					createInterpolateElement( headlineText, {
-						strong: <strong />,
-					} ),
-					<CrossIcon className="is-error" />
+				withDisputeQualifier(
+					getMainTimelineItem(
+						event,
+						createInterpolateElement( headlineText, {
+							strong: <strong />,
+						} ),
+						<CrossIcon className="is-error" />
+					)
 				),
 			];
 		}
 		case 'dispute_warning_closed':
 			return [
-				getMainTimelineItem(
-					event,
-					__(
-						'Dispute inquiry closed. The bank chose not to pursue this dispute.',
-						'woocommerce-payments'
-					),
-					<NoticeOutlineIcon className="is-success" />
+				withDisputeQualifier(
+					getMainTimelineItem(
+						event,
+						__(
+							'Dispute inquiry closed. The bank chose not to pursue this dispute.',
+							'woocommerce-payments'
+						),
+						<NoticeOutlineIcon className="is-success" />
+					)
 				),
 			];
 		case 'dispute_charge_refunded':
 			return [
-				getMainTimelineItem(
-					event,
-					__(
-						'The disputed charge has been refunded.',
-						'woocommerce-payments'
-					),
-					<NoticeOutlineIcon className="is-success" />
+				withDisputeQualifier(
+					getMainTimelineItem(
+						event,
+						__(
+							'The disputed charge has been refunded.',
+							'woocommerce-payments'
+						),
+						<NoticeOutlineIcon className="is-success" />
+					)
 				),
 			];
 		case 'financing_paydown':
@@ -1260,15 +1311,16 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
  *
  * @param {Array}         timelineEvents array of events
  * @param {string | null} bankName       The name of the bank
+ * @param {Object}        disputeOrder   Shared "Dispute N of M" numbering ({ orderById, total })
  *
  * @return {Array} Array of view items
  */
-export default ( timelineEvents, bankName = null ) => {
+export default ( timelineEvents, bankName = null, disputeOrder ) => {
 	if ( ! timelineEvents ) {
 		return [];
 	}
 
 	return flatMap( timelineEvents, ( event ) =>
-		mapEventToTimelineItems( event, bankName )
+		mapEventToTimelineItems( event, bankName, disputeOrder )
 	).filter( Boolean );
 };

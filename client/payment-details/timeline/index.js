@@ -15,11 +15,15 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
 
-const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
+const PaymentDetailsTimeline = ( {
+	paymentIntentId,
+	bankName,
+	disputeOrder,
+} ) => {
 	const { timeline, timelineError, isLoading } =
 		useTimeline( paymentIntentId );
 
-	const items = mapTimelineEvents( timeline, bankName );
+	const items = mapTimelineEvents( timeline, bankName, disputeOrder );
 
 	return (
 		<Card size="large">
