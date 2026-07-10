@@ -18,7 +18,7 @@ import PaymentTransactionBreakdown from '../transaction-breakdown';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
-import { getBankName } from 'wcpay/utils/charge';
+import { getBankName, getDisputeOrdinals } from 'wcpay/utils/charge';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -58,6 +58,10 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	const bankName = charge ? getBankName( charge ) : null;
 
+	// Shared with the summary panes so both views number multi-dispute charges
+	// identically. Only meaningful when the charge carries 2+ disputes.
+	const disputeOrder = charge ? getDisputeOrdinals( charge ) : undefined;
+
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<TestModeNotice currentPage="payments" isDetailsView={ true } />
@@ -75,6 +79,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 					<PaymentDetailsTimeline
 						paymentIntentId={ id }
 						bankName={ bankName }
+						disputeOrder={ disputeOrder }
 					/>
 				</ErrorBoundary>
 			) }
