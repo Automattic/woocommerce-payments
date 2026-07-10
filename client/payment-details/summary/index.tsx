@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -27,6 +27,8 @@ import {
 import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,
+	getChargeDisputes,
+	getDisputeOrdinals,
 	getChargeStatus,
 	getChargeChannel,
 	isOnHoldByFraudTools,
@@ -48,14 +50,14 @@ import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import {
-	getDisputeFeeFormatted,
+	getDisputeFeeAmount,
 	isAwaitingResponse,
 	isRefundable,
 } from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data/authorizations';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
-import { Charge } from 'wcpay/types/charges';
+import { Charge, ChargeDispute } from 'wcpay/types/charges';
 import { recordEvent } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
@@ -97,14 +99,29 @@ const isTapToPay = ( model: string ) => {
 	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
-const renderDisputeDetails = (
-	dispute: NonNullable< Charge[ 'dispute' ] >,
-	charge: Charge,
-	bankName: string | null,
-	onIssueRefund: () => void
-) => {
-	if ( isAwaitingResponse( dispute.status ) ) {
-		return (
+const DisputePane: React.FC< {
+	dispute: ChargeDispute;
+	charge: Charge;
+	bankName: string | null;
+	// Position of this dispute among the charge's disputes, and the total, used
+	// for the "Dispute N of M" label. Both derive from the shared creation-order
+	// map so panes and the timeline agree.
+	ordinal: number;
+	total: number;
+	onIssueRefund: () => void;
+} > = ( { dispute, charge, bankName, ordinal, total, onIssueRefund } ) => (
+	<ErrorBoundary>
+		{ total > 1 && (
+			<p className="payment-details-summary__dispute-label">
+				{ sprintf(
+					/* translators: %1$d is the dispute's position, %2$d is the total number of disputes on the charge */
+					__( 'Dispute %1$d of %2$d', 'woocommerce-payments' ),
+					ordinal,
+					total
+				) }
+			</p>
+		) }
+		{ isAwaitingResponse( dispute.status ) ? (
 			<DisputeAwaitingResponseDetails
 				dispute={ dispute }
 				customer={ charge.billing_details }
@@ -113,13 +130,14 @@ const renderDisputeDetails = (
 				bankName={ bankName }
 				onIssueRefund={ onIssueRefund }
 			/>
-		);
-	}
-
-	return (
-		<DisputeResolutionFooter dispute={ dispute } bankName={ bankName } />
-	);
-};
+		) : (
+			<DisputeResolutionFooter
+				dispute={ dispute }
+				bankName={ bankName }
+			/>
+		) }
+	</ErrorBoundary>
+);
 
 const getTapToPayChannel = ( platform: string ) => {
 	if ( platform === 'ios' ) {
@@ -284,13 +302,50 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
 
-	const disputeFee =
-		charge.dispute && getDisputeFeeFormatted( charge.dispute );
+	const disputes = getChargeDisputes( charge );
 
-	// If this transaction is disputed, check if it is refundable.
-	const isDisputeRefundable = charge.dispute
-		? isRefundable( charge.dispute.status )
-		: true;
+	// Panes and the timeline both derive their "Dispute N of M" numbering from
+	// this shared, creation-ordered map, so the two views always agree.
+	const { orderById: disputeOrderById, total: disputeTotal } =
+		getDisputeOrdinals( charge );
+
+	// Render panes oldest-first so their visible order matches the numbering.
+	const orderedDisputes = [ ...disputes ].sort(
+		( a, b ) => ( a.created ?? 0 ) - ( b.created ?? 0 )
+	);
+
+	// Header summary can only surface one dispute; a single charge can hold
+	// several. Drive the status chip off the most urgent one — the one
+	// awaiting a response, else the first — while the panes below carry each
+	// dispute's own details.
+	const primaryDispute =
+		disputes.find( ( dispute ) => isAwaitingResponse( dispute.status ) ) ??
+		disputes[ 0 ];
+
+	const usingFeeBreakdownEnvelope =
+		canUseFeeBreakdownData( charge ) &&
+		!! charge.fee_breakdown_v1?.totals?.net &&
+		!! charge.fee_breakdown_v1?.totals?.gross;
+
+	// Both the envelope and legacy `Total fees` fold in every dispute's fee
+	// (see getChargeAmounts), so the tooltip's dispute-fee line has to sum all
+	// of them too or the breakdown won't reconcile once a charge has 2+
+	// fee-bearing disputes.
+	const disputeFeeAmounts = disputes
+		.map( getDisputeFeeAmount )
+		.filter(
+			( fee ): fee is { amount: number; currency: string } => !! fee
+		);
+	const disputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
+	const disputeFee = disputeFeeAmounts.length
+		? formatCurrency( disputeFeeTotal, disputeFeeAmounts[ 0 ].currency )
+		: undefined;
+
+	// Refunding is blocked while any single dispute blocks it, so the menu is
+	// only refundable when every dispute is.
+	const isDisputeRefundable = disputes.every( ( dispute ) =>
+		isRefundable( dispute.status )
+	);
 
 	// Partial refunds are done through the order page. If order number is not
 	// present, partial refund is not possible.
@@ -303,18 +358,22 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
 	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-	// For the dispute-fee tooltip to reconcile ("Transaction fee" +
-	// "Dispute fee" = "Total fees"), `transactionFee.fee` must be the FULL
-	// Stripe deduction in store currency (pre-tax fee + tax). Older
-	// envelopes may omit `fee_plus_tax`, so sum the two components.
+	// The tooltip's three lines must reconcile: Transaction fee + Dispute fee
+	// = Total fees. On the envelope path `Total fees` (balance.fee, from
+	// getChargeAmounts) already folds in every dispute fee, so the
+	// "Transaction fee" line is the total minus the summed dispute fees —
+	// i.e. the non-dispute processing + tax portion. On the legacy path
+	// `transactionFee.fee` stays the raw balance-transaction fee, which
+	// already excludes disputes (Total folds the disputes in separately).
 	const breakdown = charge.fee_breakdown_v1;
 	const transactionFee = ( () => {
-		if ( canUseFeeBreakdownData( charge ) && breakdown?.totals?.fee ) {
+		if ( usingFeeBreakdownEnvelope && breakdown?.totals?.fee ) {
 			return {
 				fee:
-					breakdown.totals.fee_plus_tax?.amount ??
-					breakdown.totals.fee.amount +
-						( breakdown.totals.tax?.amount ?? 0 ),
+					( breakdown.totals.fee_plus_tax?.amount ??
+						breakdown.totals.fee.amount +
+							( breakdown.totals.tax?.amount ?? 0 ) ) -
+					disputeFeeTotal,
 				currency: breakdown.totals.fee.currency.toLowerCase(),
 			};
 		}
@@ -365,7 +424,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		balance.currency
 	);
 
-	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
+	// `null` while closed. An object opens the modal, carrying the dispute the
+	// refund was initiated from so the modal can warn about closing that
+	// inquiry rather than guessing from `charge.dispute`. The non-dispute
+	// openers (the refund menu, the missing-order notice) pass no dispute and
+	// let the modal fall back to `charge.dispute`.
+	const [ refundTarget, setRefundTarget ] = useState< {
+		dispute?: ChargeDispute;
+	} | null >( null );
 
 	const bankName = getBankName( charge );
 
@@ -390,10 +456,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										</span>
 									</Loadable>
 								</p>
-								{ charge.dispute ? (
+								{ primaryDispute ? (
 									<DisputeStatusChip
 										className="payment-details-summary__status"
-										status={ charge.dispute.status }
+										status={ primaryDispute.status }
 										prefixDisputeType={ true }
 									/>
 								) : (
@@ -484,14 +550,18 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 														<Flex>
 															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
-																{ __(
+																{ _n(
 																	'Dispute fee',
+																	'Dispute fees',
+																	disputeFeeAmounts.length,
 																	'woocommerce-payments'
 																) }
 															</label>
 															<span
-																aria-label={ __(
+																aria-label={ _n(
 																	'Dispute fee',
+																	'Dispute fees',
+																	disputeFeeAmounts.length,
 																	'woocommerce-payments'
 																) }
 															>
@@ -681,9 +751,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											{ ! isPartiallyRefunded && (
 												<MenuItem
 													onClick={ () => {
-														setIsRefundModalOpen(
-															true
-														);
+														setRefundTarget( {} );
 														recordEvent(
 															'payments_transactions_details_refund_modal_open',
 															{
@@ -736,7 +804,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
 						items={
-							charge.dispute
+							disputes.length
 								? composePaymentSummaryItemsForDispute( {
 										charge,
 								  } )
@@ -749,23 +817,25 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				</LoadableBlock>
 			</CardBody>
 
-			{ charge.dispute && (
-				<ErrorBoundary>
-					{ renderDisputeDetails(
-						charge.dispute,
-						charge,
-						bankName,
-						() => setIsRefundModalOpen( true )
-					) }
-				</ErrorBoundary>
-			) }
-			{ isRefundModalOpen && (
+			{ orderedDisputes.map( ( dispute ) => (
+				<DisputePane
+					key={ dispute.id }
+					dispute={ dispute }
+					charge={ charge }
+					bankName={ bankName }
+					ordinal={ disputeOrderById[ dispute.id ] }
+					total={ disputeTotal }
+					onIssueRefund={ () => setRefundTarget( { dispute } ) }
+				/>
+			) ) }
+			{ refundTarget && (
 				<RefundModal
 					charge={ charge }
+					dispute={ refundTarget.dispute }
 					formattedAmount={ formattedAmount }
 					orderUrl={ charge.order?.url }
 					onModalClose={ () => {
-						setIsRefundModalOpen( false );
+						setRefundTarget( null );
 						recordEvent(
 							'payments_transactions_details_refund_modal_close',
 							{
@@ -779,7 +849,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<MissingOrderNotice
 					charge={ charge }
 					isLoading={ isLoading }
-					onButtonClick={ () => setIsRefundModalOpen( true ) }
+					onButtonClick={ () => setRefundTarget( {} ) }
 				/>
 			) }
 			{ authorization && ! authorization.captured && (
@@ -850,63 +920,100 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	);
 };
 
-const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
-	props
-) => {
-	const dispute = props.charge?.dispute;
-	// Gate on won/lost specifically: DisputeRecommendationsCard has no entries
-	// for warning_* inquiries (warning_closed is the one that reaches here, since
-	// the Outcome View admits it). AND suppress when the merchant accepted the
-	// dispute: accepting is a deliberate non-engagement, so coaching them to
-	// "submit evidence next time" misreads the choice. Per RiskOps review.
-	const showRecommendationsCard =
-		!! dispute &&
-		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
-		( dispute.status === 'won' || dispute.status === 'lost' ) &&
-		dispute.metadata?.__closed_by_merchant !== '1';
+// COUPLED with dispute-recommendations/index.tsx: the card filters its catalog
+// by this same productType. Keep both call sites in lockstep.
+const resolveDisputeProductType = ( dispute: ChargeDispute ): string =>
+	resolveProductType(
+		dispute.metadata,
+		dispute.order?.suggested_product_type,
+		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
+			false
+	);
 
-	// Outcome View Tracks: gating mirrors the original DisputeOutcomeView
-	// path (won/lost/warning_closed + flag) so the signal stays stable
-	// across the component refactor. Dedup is in `recordOutcomeViewOnce`.
+// Gate on won/lost specifically: DisputeRecommendationsCard has no entries for
+// warning_* inquiries (warning_closed is the one that reaches here, since the
+// Outcome View admits it). AND suppress when the merchant accepted the dispute:
+// accepting is a deliberate non-engagement, so coaching them to "submit evidence
+// next time" misreads the choice. Per RiskOps review.
+const qualifiesForRecommendationsCard = ( dispute: ChargeDispute ): boolean =>
+	!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+	( dispute.status === 'won' || dispute.status === 'lost' ) &&
+	dispute.metadata?.__closed_by_merchant !== '1';
+
+// Effect-only sibling of the recommendations card: fires the per-dispute Outcome
+// View Tracks. Kept separate from card rendering so analytics stay one-per-dispute
+// even after the cards are deduped by recommendation signature.
+const DisputeOutcomeTracker: React.FC< { dispute: ChargeDispute } > = ( {
+	dispute,
+} ) => {
+	const showRecommendationsCard = qualifiesForRecommendationsCard( dispute );
+
+	// Gating mirrors the original DisputeOutcomeView path
+	// (won/lost/warning_closed + flag) so the signal stays stable across the
+	// component refactor. Dedup is in `recordOutcomeViewOnce`.
 	const isOutcomeViewStatus =
-		dispute?.status === 'won' ||
-		dispute?.status === 'lost' ||
-		dispute?.status === 'warning_closed';
+		dispute.status === 'won' ||
+		dispute.status === 'lost' ||
+		dispute.status === 'warning_closed';
 	const shouldRecordOutcomeView =
-		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
 		isOutcomeViewStatus;
-	// COUPLED with dispute-recommendations/index.tsx: the card filters its
-	// catalog by this same productType. Keep both call sites in lockstep.
-	const productType = dispute
-		? resolveProductType(
-				dispute.metadata,
-				dispute.order?.suggested_product_type,
-				wcpaySettings?.featureFlags
-					?.isDisputeAdditionalEvidenceTypesEnabled ?? false
-		  )
-		: '';
+	const productType = resolveDisputeProductType( dispute );
 
 	// Mirror the card: true only when the card actually renders entries.
 	const hasRecommendations =
 		showRecommendationsCard &&
-		dispute !== undefined &&
 		getDisputeRecommendations( dispute, productType ).length > 0;
 
 	useEffect( () => {
-		if ( shouldRecordOutcomeView && dispute ) {
+		if ( shouldRecordOutcomeView ) {
 			recordOutcomeViewOnce( dispute, productType, hasRecommendations );
 		}
 	}, [ shouldRecordOutcomeView, dispute, productType, hasRecommendations ] );
 
+	return null;
+};
+
+const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
+	props
+) => {
+	const disputes = props.charge ? getChargeDisputes( props.charge ) : [];
+
+	// Recommendations are driven by productType, which comes from the shared
+	// order, so several disputes on one charge normally resolve to the same set.
+	// Collapse to one card per unique set — keyed by the sorted recommendation
+	// ids — so two won disputes don't stack two identical "Tips for future
+	// disputes" cards. Analytics stay per-dispute via DisputeOutcomeTracker.
+	const seenSignatures = new Set< string >();
+	const cardDisputes = disputes.filter( ( dispute ) => {
+		if ( ! qualifiesForRecommendationsCard( dispute ) ) {
+			return false;
+		}
+		const signature = getDisputeRecommendations(
+			dispute,
+			resolveDisputeProductType( dispute )
+		)
+			.map( ( rec ) => rec.id )
+			.sort()
+			.join( '|' );
+		if ( seenSignatures.has( signature ) ) {
+			return false;
+		}
+		seenSignatures.add( signature );
+		return true;
+	} );
+
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
 			<PaymentDetailsSummary { ...props } />
-			{ showRecommendationsCard && dispute && (
-				<ErrorBoundary>
+			{ disputes.map( ( dispute ) => (
+				<DisputeOutcomeTracker key={ dispute.id } dispute={ dispute } />
+			) ) }
+			{ cardDisputes.map( ( dispute ) => (
+				<ErrorBoundary key={ dispute.id }>
 					<DisputeRecommendationsCard dispute={ dispute } />
 				</ErrorBoundary>
-			) }
+			) ) }
 		</WCPaySettingsContext.Provider>
 	);
 };

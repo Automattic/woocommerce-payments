@@ -133,32 +133,29 @@ const getDisputeDeductedBalanceTransaction = (
 };
 
 /**
- * Returns the dispute fee formatted as a currency string if it exists
- * and the deduction has not been reversed.
+ * Returns the effective dispute fee as a raw `{ amount, currency }` pair if it
+ * exists and the deduction has not been reversed.
  *
  * Prefers the server-computed `dispute.effective_fee` when present.
  * Falls back to inspecting `balance_transactions` directly for responses
  * from older servers that don't emit the annotation.
+ *
+ * Callers that need the number (e.g. summing across a charge's disputes)
+ * use this; `getDisputeFeeFormatted` formats the same value for display.
  */
-export const getDisputeFeeFormatted = (
-	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >,
-	appendCurrencyCode?: boolean
-): string | undefined => {
+export const getDisputeFeeAmount = (
+	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >
+): { amount: number; currency: string } | undefined => {
 	// Server-computed path: effective_fee is explicitly null when the fee
 	// was reversed, an object when it's still effective.
 	if ( dispute.effective_fee !== undefined ) {
 		if ( dispute.effective_fee === null ) {
 			return undefined;
 		}
-		return appendCurrencyCode
-			? formatExplicitCurrency(
-					dispute.effective_fee.amount,
-					dispute.effective_fee.currency
-			  )
-			: formatCurrency(
-					dispute.effective_fee.amount,
-					dispute.effective_fee.currency
-			  );
+		return {
+			amount: dispute.effective_fee.amount,
+			currency: dispute.effective_fee.currency,
+		};
 	}
 
 	// Legacy fallback.
@@ -166,8 +163,22 @@ export const getDisputeFeeFormatted = (
 	if ( ! disputeFee ) {
 		return undefined;
 	}
-	if ( appendCurrencyCode ) {
-		return formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
+	return { amount: disputeFee.fee, currency: disputeFee.currency };
+};
+
+/**
+ * Returns the dispute fee formatted as a currency string if it exists
+ * and the deduction has not been reversed.
+ */
+export const getDisputeFeeFormatted = (
+	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >,
+	appendCurrencyCode?: boolean
+): string | undefined => {
+	const disputeFee = getDisputeFeeAmount( dispute );
+	if ( ! disputeFee ) {
+		return undefined;
 	}
-	return formatCurrency( disputeFee.fee, disputeFee.currency );
+	return appendCurrencyCode
+		? formatExplicitCurrency( disputeFee.amount, disputeFee.currency )
+		: formatCurrency( disputeFee.amount, disputeFee.currency );
 };
