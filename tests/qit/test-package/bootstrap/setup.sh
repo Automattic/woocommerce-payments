@@ -231,12 +231,6 @@ if ( false === file_put_contents( \$mu . '/wcpay-ece-test-proxy.php', base64_dec
 if ( false === file_put_contents( \$mu . '/wcpay-ece-test-proxy/proxy.js', base64_decode( '$JS_B64' ) ) ) { WP_CLI::error( 'Failed to write ECE proxy script to ' . \$mu ); }
 "
 
-# Gate the proxy on; it no-ops without this constant. The proxy also needs
-# WooPayments in test/dev mode, satisfied by the WCPAY_DEV_MODE constant and
-# wcpay_dev_mode option set elsewhere here; don't remove those dev-mode lines or
-# the ECE proxy silently disables.
-wp config set WCPAY_ECE_TEST_PROXY true --raw --type=constant --quiet 2>/dev/null || true
-
 # Check required environment variables for Jetpack authentication.
 if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
     echo "Configuring WooPayments with Jetpack authentication..."
