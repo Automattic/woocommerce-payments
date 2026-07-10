@@ -1,37 +1,26 @@
-# WooPayments Unit Tests
+# WooPayments Tests
 
-This guide follows the [WooCommerce guide to unit tests](https://github.com/woocommerce/woocommerce/tree/master/tests).
+WooPayments has several test suites, each documented alongside the tests it covers. Use this page to find the right one.
 
-## Setup for running tests in the docker containers
+| Suite | Location | What it covers | Guide |
+|-------|----------|----------------|-------|
+| **PHP unit** | `tests/unit/` | PHPUnit tests for backend PHP code (`includes/`, `src/`) | [tests/unit/README.md](unit/README.md) |
+| **JavaScript unit** | `tests/js/` | Jest + React Testing Library tests for the `client/` frontend | [tests/js/README.md](js/README.md) |
+| **End-to-end (E2E)** | `tests/e2e/` | Playwright tests exercising full flows in a real WordPress environment | [tests/e2e/README.md](e2e/README.md) |
+| **QIT** | `tests/qit/` | WooCommerce Quality Insights Toolkit suites (E2E, security, malware, PHPStan) for marketplace certification | [tests/qit/README.md](qit/README.md) |
 
-1. Start the WordPress container: `npm run up` (or `npm run up:recreate` for first-time setup)
-   - This auto-starts shared infrastructure (database, phpMyAdmin) if not already running
-2. Once the containers are up, run tests from the plugin root directory:
-   - `npm run test:php` - Run PHP unit tests only
-   - `npm run test:js` - Run JavaScript unit tests only
-   - `npm test` - Run both JS and PHP tests
-3. Watch mode for iterative development:
-   - `npm run test:php-watch` - PHP tests in watch mode
-   - `npm run test:watch` - JavaScript tests in watch mode
+## Quick start
 
-## Initial Setup for running tests locally
+Once your [Docker environment](../docker/README.md) is running:
 
-1. From the plugin directory, run `composer install` if you have not already:
-
-```
-$ composer install
+```bash
+npm test          # Run JS and PHP unit tests
+npm run test:js   # JavaScript unit tests only
+npm run test:php  # PHP unit tests only
 ```
 
-2. Install WordPress and the WP Unit Test lib using the `bin/install-wp-tests.sh` script. From the plugin root directory type:
+See the per-suite guides above for setup, watch mode, coverage, and how to run a single test.
 
-```
-$ bin/install-wp-tests.sh <db-name> <db-user> <db-password> [db-host]
-```
+## Deep reference
 
-Tip: try using `127.0.0.1` for the DB host if the default `localhost` isn't working.
-
-3. Run the tests from the plugin root directory using
-
-```
-$ ./vendor/bin/phpunit
-```
+[`docs/test-matrix.md`](../docs/test-matrix.md) is the authoritative inventory of every suite — including which run in CI, which gate a release, and their reliability notes.
