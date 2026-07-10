@@ -65,7 +65,9 @@ export const getProductId = () => {
  */
 export const getQuantity = () => {
 	const qty = document.querySelector( '.quantity .qty' );
-	return qty ? parseInt( qty.value, 10 ) || 1 : 1;
+	// Stores selling in fractional units (e.g. 0.25 m of fabric) carry a decimal
+	// quantity, which the Store API preserves via wc_stock_amount().
+	return qty ? parseFloat( qty.value ) || 1 : 1;
 };
 
 /**
