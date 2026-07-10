@@ -154,9 +154,17 @@ const placeOrderTerminalStateTimeout = 15000;
 export const placeOrder = async ( page: Page, maxAttempts = 3 ) => {
 	const button = page.locator( placeOrderButtonSelector ).first();
 	const errorNotice = page.locator( '.woocommerce-error' ).first();
+	const checkoutUrl = page.url();
 
 	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
-		const startUrl = page.url();
+		// An earlier attempt's click can land even when its terminal-state wait
+		// timed out — the submission then navigates away while we're retrying,
+		// and another click would chase a button that no longer exists. A URL
+		// change (including the #wcpay-confirm- hash) means the submission is
+		// already under way.
+		if ( page.url() !== checkoutUrl ) {
+			return;
+		}
 
 		// A leftover error banner from an earlier attempt on the same page (no
 		// reload in between, e.g. retry-after-decline specs) would otherwise
@@ -164,14 +172,23 @@ export const placeOrder = async ( page: Page, maxAttempts = 3 ) => {
 		const hadStaleErrorNotice = await errorNotice.isVisible();
 
 		try {
-			await button.click();
+			// Without a timeout, a click blocked by the processing overlay can
+			// outlive the page and re-resolve the selector on whatever page
+			// comes next, hanging until the test-level timeout.
+			await button.click( {
+				timeout: placeOrderTerminalStateTimeout,
+			} );
 
 			const terminalStateWaits = [
+				// jQuery blockUI inserts a hidden placeholder div before the
+				// visible overlay, and both carry the .blockUI class — so wait
+				// for presence, not visibility: the first match can be the
+				// hidden node.
 				page.locator( '.blockUI' ).first().waitFor( {
-					state: 'visible',
+					state: 'attached',
 					timeout: placeOrderTerminalStateTimeout,
 				} ),
-				page.waitForURL( ( url ) => url.toString() !== startUrl, {
+				page.waitForURL( ( url ) => url.toString() !== checkoutUrl, {
 					timeout: placeOrderTerminalStateTimeout,
 				} ),
 			];
