@@ -109,6 +109,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	private $in_memory_cache = [];
 
 	/**
+	 * Values resolved by get_or_add() during this request, keyed by cache key.
+	 *
+	 * Repeated calls are served from here once the caller's validate_data
+	 * callback approves the value; rejected values fall through to the full
+	 * read/refresh path. Cleared by add() and delete().
+	 *
+	 * @var array
+	 */
+	private $resolved_values = [];
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -136,6 +147,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return mixed|null The cached value. NULL on failure to regenerate or validate the data.
 	 */
 	public function get_or_add( string $key, callable $generator, callable $validate_data, bool $force_refresh = false, bool &$refreshed = false ) {
+		if ( ! $force_refresh && array_key_exists( $key, $this->resolved_values ) && $validate_data( $this->resolved_values[ $key ] ) ) {
+			$refreshed = false;
+			return $this->resolved_values[ $key ];
+		}
+
 		$cache_contents = $this->get_from_cache( $key );
 		$data           = null;
 		$old_data       = null;
@@ -164,6 +180,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 
 			$this->write_to_cache( $key, $data, $errored );
 		}
+
+		$this->resolved_values[ $key ] = $data;
 
 		return $data;
 	}
@@ -198,6 +216,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	public function add( string $key, $data ) {
+		unset( $this->resolved_values[ $key ] );
 		$this->write_to_cache( $key, $data, false );
 	}
 
@@ -209,8 +228,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	public function delete( string $key ) {
-		// Remove from the in-memory cache.
+		// Remove from the in-memory caches.
 		unset( $this->in_memory_cache[ $key ] );
+		unset( $this->resolved_values[ $key ] );
 
 		// Remove from the DB cache.
 		delete_option( $key );
