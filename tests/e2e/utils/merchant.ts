@@ -465,6 +465,39 @@ export const deactivateWooPay = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
+// The express-checkout row has no test id, but its CheckboxControl renders a
+// real <label> we can target by text like enablePaymentMethods does. One toggle
+// drives both wallets (is_payment_request_enabled).
+const expressCheckoutLabel = 'Apple Pay / Google Pay';
+
+export const isExpressCheckoutEnabled = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	return await page.getByLabel( expressCheckoutLabel ).isChecked();
+};
+
+export const enableExpressCheckout = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const wasInitiallyEnabled = await isExpressCheckoutEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByLabel( expressCheckoutLabel ).check();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const disableExpressCheckout = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	// Idempotent so afterAll restore is safe even when it was already off.
+	if ( await page.getByLabel( expressCheckoutLabel ).isChecked() ) {
+		await page.getByLabel( expressCheckoutLabel ).uncheck();
+		await saveWooPaymentsSettings( page );
+	}
+};
+
 export const ensureBlockSettingsPanelIsOpen = async ( page: Page ) => {
 	const settingsButton = page.locator(
 		'.interface-pinned-items > button[aria-label="Settings"]'

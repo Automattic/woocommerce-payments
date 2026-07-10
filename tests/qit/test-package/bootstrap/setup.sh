@@ -116,6 +116,53 @@ wp option set woocommerce_checkout_company_field "optional" --quiet 2>/dev/null 
 wp option set woocommerce_coming_soon "no" --quiet 2>/dev/null || true
 wp option set woocommerce_store_pages_only "no" --quiet 2>/dev/null || true
 
+# Give the ECE fake-sheet real shipping choices: a US zone (Free + $11 flat rate)
+# and the rest-of-world zone (Free + $22 flat rate). Zones and per-instance costs
+# need the WC shipping API, not plain `wp option`. Guarded against duplicate runs.
+echo "Provisioning shipping methods..."
+wp eval-file - <<'PHP'
+<?php
+if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
+	WP_CLI::error( 'WooCommerce shipping API is unavailable' );
+}
+
+function wcpay_e2e_set_flat_rate_cost( $instance_id, $cost ) {
+	update_option(
+		'woocommerce_flat_rate_' . $instance_id . '_settings',
+		array(
+			'title'      => 'Flat rate',
+			'tax_status' => 'taxable',
+			'cost'       => (string) $cost,
+		)
+	);
+}
+
+$has_us_zone = false;
+foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
+	if ( 'United States' === $zone['zone_name'] ) {
+		$has_us_zone = true;
+		break;
+	}
+}
+
+if ( ! $has_us_zone ) {
+	$us_zone = new WC_Shipping_Zone();
+	$us_zone->set_zone_name( 'United States' );
+	$us_zone->add_location( 'US', 'country' );
+	$us_zone->save();
+	$us_zone->add_shipping_method( 'free_shipping' );
+	wcpay_e2e_set_flat_rate_cost( $us_zone->add_shipping_method( 'flat_rate' ), 11 );
+	WP_CLI::log( 'Created United States shipping zone (Free + $11 flat rate).' );
+}
+
+$row_zone = new WC_Shipping_Zone( 0 );
+if ( 0 === count( $row_zone->get_shipping_methods() ) ) {
+	$row_zone->add_shipping_method( 'free_shipping' );
+	wcpay_e2e_set_flat_rate_cost( $row_zone->add_shipping_method( 'flat_rate' ), 22 );
+	WP_CLI::log( 'Configured rest-of-world shipping zone (Free + $22 flat rate).' );
+}
+PHP
+
 # Create test users.
 echo "Creating test users..."
 
@@ -167,6 +214,28 @@ wp theme activate storefront
 # Enable WooPayments settings.
 echo "Enabling WooPayments settings..."
 wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+
+# Install the ECE test-proxy mu-plugin; it fakes the Apple/Google/Amazon Pay
+# wallet sheet that headless Playwright can't drive. WPMU_PLUGIN_DIR is a PHP
+# constant the shell can't resolve, so base64 the local files and let `wp eval`
+# write them where WP knows the path. WordPress only auto-loads
+# top-level mu-plugin PHP, so the loader sits at the root and reads its sibling
+# proxy/ dir. `tr -d '\n'` keeps each blob single-line so the shell var stays safe.
+echo "Installing ECE test-proxy mu-plugin..."
+PHP_B64=$(base64 < ./bootstrap/mu-plugins/wcpay-ece-test-proxy.php | tr -d '\n')
+JS_B64=$(base64 < ./bootstrap/mu-plugins/wcpay-ece-test-proxy/proxy.js | tr -d '\n')
+wp eval "
+\$mu = WPMU_PLUGIN_DIR;
+wp_mkdir_p( \$mu . '/wcpay-ece-test-proxy' );
+if ( false === file_put_contents( \$mu . '/wcpay-ece-test-proxy.php', base64_decode( '$PHP_B64' ) ) ) { WP_CLI::error( 'Failed to write ECE proxy loader to ' . \$mu ); }
+if ( false === file_put_contents( \$mu . '/wcpay-ece-test-proxy/proxy.js', base64_decode( '$JS_B64' ) ) ) { WP_CLI::error( 'Failed to write ECE proxy script to ' . \$mu ); }
+"
+
+# Gate the proxy on; it no-ops without this constant. The proxy also needs
+# WooPayments in test/dev mode, satisfied by the WCPAY_DEV_MODE constant and
+# wcpay_dev_mode option set elsewhere here; don't remove those dev-mode lines or
+# the ECE proxy silently disables.
+wp config set WCPAY_ECE_TEST_PROXY true --raw --type=constant --quiet 2>/dev/null || true
 
 # Check required environment variables for Jetpack authentication.
 if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
