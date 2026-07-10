@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Order;
+use WC_Shipping_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -66,7 +67,7 @@ class FrontendPrices {
 
 		// Shipping methods hooks.
 		add_filter( 'woocommerce_shipping_zone_shipping_methods', [ $this, 'convert_free_shipping_method_min_amount' ], 99 );
-		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 99 );
+		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 99, 2 );
 
 		// Coupon hooks.
 		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 99, 2 );
@@ -272,12 +273,13 @@ class FrontendPrices {
 	/**
 	 * Returns the shipping add rate args with cost converted.
 	 *
-	 * @param array $args Shipping rate args.
+	 * @param array              $args   Shipping rate args.
+	 * @param WC_Shipping_Method $method The shipping method adding the rate.
 	 *
 	 * @return array Shipping rate args with converted cost.
 	 */
-	public function convert_shipping_method_rate_cost( $args ) {
-		if ( isset( $args['cost'] ) ) {
+	public function convert_shipping_method_rate_cost( $args, $method ) {
+		if ( isset( $args['cost'] ) && $this->compatibility->should_convert_shipping_amount( $method ) ) {
 			/**
 			 * We need to keep the `cost` structure intact when applying
 			 * multi-currency conversions, because downstream it is important
