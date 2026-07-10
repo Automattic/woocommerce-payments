@@ -354,6 +354,56 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_all_filters( 'wcpay_payment_request_total_label_suffix' );
 	}
 
+	public function test_get_quantity_preserves_decimal_on_decimal_stores() {
+		// Stores that sell in fractional units (e.g. fabric by the metre) swap the
+		// default integer stock-amount filter for a float one; mirror that here so
+		// wc_stock_amount() keeps the fraction instead of truncating it.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+
+		try {
+			$_POST['qty'] = '0.25';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+			unset( $_POST['qty'] );
+		}
+
+		$this->assertEqualsWithDelta( 0.25, $result, 0.0001 );
+	}
+
+	public function test_get_quantity_preserves_decimal_from_woopay_quantity_key() {
+		// WooPay posts the quantity as `quantity`; it must be preserved the same way.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+
+		try {
+			$_POST['quantity'] = '0.25';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+			unset( $_POST['quantity'] );
+		}
+
+		$this->assertEqualsWithDelta( 0.25, $result, 0.0001 );
+	}
+
+	public function test_get_quantity_returns_integer_on_default_stores() {
+		try {
+			$_POST['qty'] = '3';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			unset( $_POST['qty'] );
+		}
+
+		$this->assertSame( 3, $result );
+	}
+
 	public function test_should_show_express_checkout_button_for_tokenized_ece_with_billing_email() {
 		global $wp;
 		global $wp_query;

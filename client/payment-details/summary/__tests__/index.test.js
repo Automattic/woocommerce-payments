@@ -475,6 +475,277 @@ describe( 'PaymentDetailsSummary', () => {
 		).toBeNull();
 	} );
 
+	describe( 'multiple disputes per charge', () => {
+		test( 'treats charge.disputes as authoritative, one pane per distinct dispute', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const first = getBaseDispute();
+			first.id = 'dp_1';
+			first.status = 'needs_response';
+			const second = getBaseDispute();
+			second.id = 'dp_2';
+			second.status = 'needs_response';
+			// charge.dispute duplicates the first array entry; it must not add
+			// a third pane.
+			charge.dispute = first;
+			charge.disputes = [ first, second ];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 2 );
+
+			const challengeHrefs = screen
+				.getAllByRole( 'button', { name: /Challenge dispute/ } )
+				.map( ( button ) =>
+					button.closest( 'a' ).getAttribute( 'href' )
+				);
+
+			expect( challengeHrefs ).toEqual(
+				expect.arrayContaining( [
+					expect.stringContaining( 'id=dp_1' ),
+					expect.stringContaining( 'id=dp_2' ),
+				] )
+			);
+		} );
+
+		test( 'renders both an awaiting-response pane and a resolution footer for a mixed-status charge', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const awaiting = getBaseDispute();
+			awaiting.id = 'dp_awaiting';
+			awaiting.status = 'needs_response';
+			const resolved = getBaseDispute();
+			resolved.id = 'dp_resolved';
+			resolved.status = 'won';
+			resolved.metadata.__evidence_submitted_at = '1693400000';
+			charge.dispute = awaiting;
+			charge.disputes = [ awaiting, resolved ];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-footer'
+				).length
+			).toBeGreaterThanOrEqual( 1 );
+
+			const challengeLink = screen
+				.getByRole( 'button', { name: /Challenge dispute/ } )
+				.closest( 'a' );
+
+			expect( challengeLink.getAttribute( 'href' ) ).toEqual(
+				expect.stringContaining( 'id=dp_awaiting' )
+			);
+
+			const detailsLink = screen
+				.getByRole( 'button', { name: /View dispute details/i } )
+				.closest( 'a' );
+
+			expect( detailsLink.getAttribute( 'href' ) ).toEqual(
+				expect.stringContaining( 'id=dp_resolved' )
+			);
+		} );
+
+		test( 'falls back to charge.dispute and renders one pane when disputes array is absent', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+		} );
+
+		test( 'falls back to charge.dispute and renders one pane when disputes array is empty', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.disputes = [];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+		} );
+
+		test( 'sums every dispute fee in the breakdown tooltip on the envelope path', async () => {
+			const charge = getBaseCharge();
+			charge.balance_transaction = {
+				amount: 2000,
+				currency: 'usd',
+				fee: 70,
+			};
+			charge.disputed = true;
+			const first = getBaseDispute();
+			first.id = 'dp_1';
+			first.status = 'under_review';
+			first.balance_transactions = [
+				{
+					amount: -1500,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				},
+			];
+			const second = getBaseDispute();
+			second.id = 'dp_2';
+			second.status = 'under_review';
+			second.balance_transactions = [
+				{
+					amount: -1000,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				},
+			];
+			charge.dispute = first;
+			charge.disputes = [ first, second ];
+			// Envelope path: the server folds both dispute fees into the
+			// totals, so `Total fees` reflects them and the tooltip's summed
+			// `Dispute fee` line reconciles. The legacy fallback sums the
+			// disputes client-side (see the charge-utils tests).
+			charge.fee_breakdown_v1 = {
+				rows: [],
+				totals: {
+					fee: { amount: 3070, currency: 'usd' },
+					tax: { amount: 0, currency: 'usd' },
+					net: { amount: -1070, currency: 'usd' },
+					gross: { amount: 2000, currency: 'usd' },
+					fee_plus_tax: { amount: 3070, currency: 'usd' },
+				},
+				notes: [],
+			};
+
+			renderCharge( charge );
+
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /Fee breakdown/i } )
+			);
+
+			const tooltipContent = screen.getByRole( 'tooltip' );
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Transaction fee/ )
+			).toHaveTextContent( /\$0.70/ );
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Dispute fee/ )
+			).toHaveTextContent( /\$30.00/ );
+
+			// Two fees are summed, so the label reads plural.
+			expect(
+				within( tooltipContent ).getByText( 'Dispute fees' )
+			).toBeInTheDocument();
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Total fees/ )
+			).toHaveTextContent( /\$30.70/ );
+		} );
+
+		test( 'labels each pane "Dispute N of M", ordered oldest-first', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const newer = getBaseDispute();
+			newer.id = 'dp_newer';
+			newer.status = 'needs_response';
+			newer.created = 2000;
+			const older = getBaseDispute();
+			older.id = 'dp_older';
+			older.status = 'needs_response';
+			older.created = 1000;
+			charge.dispute = newer;
+			// Deliberately out of creation order to prove the numbering sorts.
+			charge.disputes = [ newer, older ];
+
+			const container = renderCharge( charge );
+
+			const labels = Array.from(
+				container.querySelectorAll(
+					'.payment-details-summary__dispute-label'
+				)
+			).map( ( node ) => node.textContent );
+
+			expect( labels ).toEqual( [ 'Dispute 1 of 2', 'Dispute 2 of 2' ] );
+		} );
+
+		test( 'omits the pane label when there is a single dispute', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelector(
+					'.payment-details-summary__dispute-label'
+				)
+			).toBeNull();
+			expect( screen.queryByText( 'Dispute 1 of 1' ) ).toBeNull();
+		} );
+
+		test( 'hides the refund menu when any dispute is non-refundable', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const refundable = getBaseDispute();
+			refundable.id = 'dp_1';
+			refundable.status = 'won';
+			const nonRefundable = getBaseDispute();
+			nonRefundable.id = 'dp_2';
+			nonRefundable.status = 'needs_response';
+			charge.dispute = refundable;
+			charge.disputes = [ refundable, nonRefundable ];
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Transaction actions/i,
+				} )
+			).toBeNull();
+		} );
+
+		test( 'shows the refund menu when every dispute is refundable', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const won = getBaseDispute();
+			won.id = 'dp_1';
+			won.status = 'won';
+			const inquiry = getBaseDispute();
+			inquiry.id = 'dp_2';
+			inquiry.status = 'warning_closed';
+			charge.dispute = won;
+			charge.disputes = [ won, inquiry ];
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'button', {
+					name: /Transaction actions/i,
+				} )
+			).toBeInTheDocument();
+		} );
+	} );
+
 	test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
 		// True when multi-currency is enabled.
 		global.wcpaySettings.shouldUseExplicitPrice = true;
@@ -586,6 +857,11 @@ describe( 'PaymentDetailsSummary', () => {
 		expect(
 			within( tooltipContent ).getByLabelText( /Dispute fee/ )
 		).toHaveTextContent( /\$15.00/ );
+
+		// A single fee keeps the label singular.
+		expect(
+			within( tooltipContent ).getByText( 'Dispute fee' )
+		).toBeInTheDocument();
 
 		expect(
 			within( tooltipContent ).getByLabelText( /Total fees/ )
@@ -1253,6 +1529,86 @@ describe( 'PaymentDetailsSummary', () => {
 					name: /what's working well/i,
 				} )
 			).not.toBeInTheDocument();
+		} );
+
+		// Recommendations are the same for every dispute on a charge whenever
+		// they share the order-derived productType, so the cards are deduped by
+		// recommendation signature while analytics stay per-dispute.
+		describe( 'recommendations card dedup across disputes', () => {
+			const makeWonDispute = ( id ) => {
+				const dispute = getBaseDispute();
+				dispute.id = id;
+				dispute.status = 'won';
+				dispute.reason = 'product_not_received';
+				dispute.metadata = {
+					__dispute_closed_at: '1693626817',
+					__product_type: 'physical_product',
+				};
+				// Tracking only (no carrier/receipt/communication) yields
+				// keep_doing tips → the "Tips for future disputes" section.
+				dispute.evidence = { shipping_tracking_number: '1Z999' };
+				return dispute;
+			};
+
+			beforeEach( () => {
+				recordEvent.mockClear();
+				_resetOutcomeViewTrackingForTests();
+				global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+			} );
+
+			test( 'renders a single card for two won disputes with the same recommendations', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				const first = makeWonDispute( 'dp_won_1' );
+				const second = makeWonDispute( 'dp_won_2' );
+				charge.dispute = first;
+				charge.disputes = [ first, second ];
+
+				renderCharge( charge );
+
+				expect(
+					screen.getAllByRole( 'heading', {
+						name: /tips for future disputes/i,
+					} )
+				).toHaveLength( 1 );
+			} );
+
+			test( 'renders one card for a single won dispute', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				charge.dispute = makeWonDispute( 'dp_won_1' );
+
+				renderCharge( charge );
+
+				expect(
+					screen.getAllByRole( 'heading', {
+						name: /tips for future disputes/i,
+					} )
+				).toHaveLength( 1 );
+			} );
+
+			test( 'fires the outcome-viewed event once per dispute despite the deduped card', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				const first = makeWonDispute( 'dp_won_1' );
+				const second = makeWonDispute( 'dp_won_2' );
+				charge.dispute = first;
+				charge.disputes = [ first, second ];
+
+				renderCharge( charge );
+
+				const viewedCalls = recordEvent.mock.calls.filter(
+					( [ name ] ) => name === 'wcpay_dispute_outcome_viewed'
+				);
+
+				expect( viewedCalls ).toHaveLength( 2 );
+
+				expect(
+					viewedCalls
+						.map( ( [ , props ] ) => props.dispute_id )
+						.sort()
+				).toEqual( [ 'dp_won_1', 'dp_won_2' ] );
+			} );
 		} );
 
 		// Wrapper-lifecycle coverage for the Tracks dedup. The function-level
