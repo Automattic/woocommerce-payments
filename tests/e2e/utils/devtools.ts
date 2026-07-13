@@ -9,9 +9,8 @@ import { Page } from '@playwright/test';
 // click on the missing button would wait out the full 120s test timeout, so we
 // verify the page rendered fully, reload-and-retry when it didn't, and fail fast
 // with a clear message otherwise. A save is a full POST -> redirect -> re-render
-// round trip through that same fragile page, so the truncation can just as easily
-// hit the post-save render as the initial one — hence the retry wraps the whole
-// navigate/toggle/save/verify sequence.
+// round trip through the same fragile page, so the retry wraps the whole
+// toggle-and-save sequence.
 const devToolsRenderTimeoutMs = 15 * 1000;
 const devToolsMaxLoadAttempts = 3;
 
@@ -42,9 +41,9 @@ const saveDevToolsSettings = async ( page: Page ) => {
 
 	await page.waitForLoadState( 'load' );
 
-	// The "Settings saved" notice alone doesn't prove the post-save render
-	// survived: the submit button sits after every settings section, so its
-	// presence means the page the caller re-reads state from isn't truncated.
+	// The "Settings saved" notice alone isn't proof the whole page rendered.
+	// The submit button comes after every settings section, so checking it
+	// again tells us the post-save render isn't truncated either.
 	const [ savedNoticeVisible, renderedFully ] = await Promise.all( [
 		page
 			.getByText( /Settings saved/ )
@@ -79,11 +78,9 @@ const setActAsDisconnectedFromWCPay = ( page: Page, enabled: boolean ) =>
 		.getByLabel( 'act as disconnected from the Transact Platform Server' )
 		.setChecked( enabled );
 
-// Any leg of the toggle-and-save sequence can be taken down by the page's
-// intermittent PHP fatal, so a failure anywhere restarts from navigation instead
-// of retrying just the failing step against a possibly-truncated page. The final
-// re-read of the setting guards against a save that rendered the "Settings saved"
-// notice but silently dropped the checkbox update.
+// The PHP fatal can hit any step, so a failure anywhere restarts the whole
+// sequence from navigation. Re-reading the checkbox after saving catches a
+// save that showed the notice but didn't actually persist the new value.
 const setDevToolsSetting = async (
 	page: Page,
 	settingName: string,

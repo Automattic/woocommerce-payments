@@ -17,20 +17,17 @@ import {
 /**
  * Polls the payment details page until the dispute is visible.
  *
- * `createDisputedOrder()` only waits for the shopper's checkout to complete;
- * the dispute itself is created merchant-side once Stripe's async
- * charge.dispute.created webhook is processed, which can trail checkout by
- * tens of seconds. The payment details page does a one-shot fetch on load,
- * so we reload until the dispute has landed.
+ * The dispute is only created merchant-side once Stripe's charge.dispute.created
+ * webhook is processed, which can trail the shopper checkout by tens of seconds.
+ * The page fetches its data once on load, so we reload until the dispute is there.
  */
 async function waitForDisputeToAppear( merchantPage: Page, url: string ) {
 	await expect( async () => {
 		await merchantPage.goto( url );
 		await merchantPage.waitForLoadState( 'load' );
 
-		// Not the similarly-named `accept-dispute-button`: that testid belongs
-		// to the accept modal's confirm button, which only exists while the
-		// modal is open.
+		// not `accept-dispute-button` - that one is the modal's confirm
+		// button, which only exists while the modal is open.
 		await expect(
 			merchantPage.getByTestId( 'open-accept-dispute-modal-button' )
 		).toBeVisible( { timeout: 2000 } );
@@ -500,8 +497,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
-		// The saved-evidence restore step below polls against Stripe's
-		// read-after-write lag, which can run past the default test budget.
+		// Stripe can take a while to return the saved evidence, and the
+		// restore poll below needs the extra room.
 		test.slow();
 
 		const { merchantPage } = await getMerchant( browser );

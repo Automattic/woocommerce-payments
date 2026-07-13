@@ -40,10 +40,9 @@ test.describe( 'Disputes > View dispute details via disputed order notice', () =
 	test( 'should navigate to dispute details when disputed order notice button clicked', async ( {
 		browser,
 	} ) => {
-		// The dispute only becomes merchant-visible once Stripe's async
-		// charge.dispute.created webhook is processed, which can trail checkout
-		// by tens of seconds — the retry loop below needs room beyond the
-		// default test budget.
+		// The dispute only shows up merchant-side once Stripe's webhook is
+		// processed, which can take a while - the retry loop below needs the
+		// extra room.
 		test.slow();
 
 		const { merchantPage } = await getMerchant( browser );
@@ -62,8 +61,8 @@ test.describe( 'Disputes > View dispute details via disputed order notice', () =
 		}
 
 		// The order notice and the dispute details both depend on the webhook
-		// having landed, so retry the whole navigate → click → verify cycle
-		// with a fresh page load on each attempt.
+		// having landed, so retry the whole cycle with a fresh page load
+		// each time.
 		await expect( async () => {
 			await goToOrder( merchantPage, orderId );
 
