@@ -194,6 +194,22 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Cleanup summary for \`$RELEASE_VERSION\`: $DELETED deleted, $SKIPPED skipped." >> $GITHUB_STEP_SUMMARY
 
+  compare-release-files:
+    name: "Check changelog.txt and readme.txt drift between trunk and develop"
+    needs: get-last-released-version
+    runs-on: ubuntu-latest
+    # Never let a drift alert block the rest of the release.
+    continue-on-error: true
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: "Compare release files"
+        uses: ./.github/actions/compare-release-files
+        with:
+          slack-webhook: ${{ secrets.RELEASE_FILES_DRIFT_SLACK_WEBHOOK_URL }}
+
   update-wiki:
     name: "Update the wiki for the next release"
     needs: get-last-released-version

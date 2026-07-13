@@ -1,0 +1,28 @@
+name: "Weekly release file drift check"
+
+# Runs every Monday at 09:00 UTC as a safety net to catch any
+# changelog.txt / readme.txt drift between trunk and develop that
+# wasn't caught by the post-release-updates workflow.
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare-release-files:
+    name: "Compare changelog.txt and readme.txt between trunk and develop"
+    # Only the upstream repo carries the webhook secret; skip on forks.
+    if: github.repository == 'Automattic/woocommerce-payments'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: "Compare release files"
+        uses: ./.github/actions/compare-release-files
+        with:
+          slack-webhook: ${{ secrets.RELEASE_FILES_DRIFT_SLACK_WEBHOOK_URL }}

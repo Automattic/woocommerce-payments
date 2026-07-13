@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Guard: compare changelog.txt and readme.txt between trunk and develop after each release
