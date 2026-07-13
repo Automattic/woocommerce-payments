@@ -98,14 +98,17 @@ const ExpressCheckoutComponent = ( {
 	);
 
 	// The Cart & Checkout blocks provide unified styles across all buttons,
-	// which should override the extension specific settings. Memoised so the
-	// options object keeps a stable reference across cart ticks and only
-	// rebuilds when the styling or the express method changes.
+	// which should override the extension specific settings. Keyed on the button
+	// height primitive (not the fresh `buttonAttributes` object) so the options
+	// keep a stable reference and only rebuild when the styling or the express
+	// method actually changes.
+	const hasButtonAttributes = typeof buttonAttributes !== 'undefined';
+	const buttonHeight = buttonAttributes?.height;
 	const checkoutElementOptions = useMemo( () => {
 		const withBlockOverride = {
 			...buttonOptions,
-			...( typeof buttonAttributes !== 'undefined'
-				? { buttonHeight: Number( buttonAttributes.height ) }
+			...( hasButtonAttributes
+				? { buttonHeight: Number( buttonHeight ) }
 				: {} ),
 		};
 
@@ -113,7 +116,12 @@ const ExpressCheckoutComponent = ( {
 			...adjustButtonHeights( withBlockOverride, expressPaymentMethod ),
 			...getPaymentMethodsOverride( expressPaymentMethod ),
 		};
-	}, [ buttonOptions, buttonAttributes, expressPaymentMethod ] );
+	}, [
+		buttonOptions,
+		hasButtonAttributes,
+		buttonHeight,
+		expressPaymentMethod,
+	] );
 
 	return (
 		<ExpressCheckoutElement

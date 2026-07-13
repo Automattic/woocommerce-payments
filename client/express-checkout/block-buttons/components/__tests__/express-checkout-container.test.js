@@ -106,8 +106,9 @@ describe( 'ExpressCheckoutContainer', () => {
 		);
 		const firstOptions = mockElementsProps.options;
 
-		// A fresh billing object with the same values (a cart tick) must not
-		// regenerate the options and re-mount the Stripe element.
+		// A cart tick hands Blocks fresh `billing` and `buttonAttributes` objects
+		// with the same values. Keying the memo on the primitives Stripe consumes
+		// must keep the options reference stable across such a re-render.
 		rerender(
 			<ExpressCheckoutContainer
 				{ ...props }
@@ -115,6 +116,7 @@ describe( 'ExpressCheckoutContainer', () => {
 					cartTotal: { value: 2399 },
 					currency: { code: 'USD', minorUnit: 2 },
 				} }
+				buttonAttributes={ {} }
 			/>
 		);
 

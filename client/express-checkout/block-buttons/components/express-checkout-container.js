@@ -43,9 +43,13 @@ const ExpressCheckoutContainer = ( props ) => {
 				?.express_checkout_methods,
 		[]
 	);
-	const enabledMethods = Array.isArray( enabledMethodsFromCart )
-		? filterCartMethodsByLocation( enabledMethodsFromCart )
-		: getExpressCheckoutData( 'enabled_methods' );
+	const enabledMethods = useMemo(
+		() =>
+			Array.isArray( enabledMethodsFromCart )
+				? filterCartMethodsByLocation( enabledMethodsFromCart )
+				: getExpressCheckoutData( 'enabled_methods' ),
+		[ enabledMethodsFromCart ]
+	);
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.
 	const paymentMethodTypes = useMemo( () => {
@@ -59,10 +63,25 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const elementCurrency = billing.currency.code.toLowerCase();
 
-	// Blocks hands us fresh `billing`/`cartData` refs on every cart tick, so an
-	// inline options object would give <Elements> a new reference each render and
-	// churn (re-mount) the Stripe element. Memoise on the values Stripe actually
-	// consumes so it only rebuilds when one of them changes.
+	// `buttonAttributes` arrives as a fresh object on every render; key the
+	// appearance on the one primitive it actually reads so its reference stays
+	// stable across renders that don't touch the button styling.
+	const hasButtonAttributes = typeof buttonAttributes !== 'undefined';
+	const buttonBorderRadius = buttonAttributes?.borderRadius;
+	const appearance = useMemo(
+		() =>
+			getExpressCheckoutButtonAppearance(
+				hasButtonAttributes
+					? { borderRadius: buttonBorderRadius }
+					: undefined
+			),
+		[ hasButtonAttributes, buttonBorderRadius ]
+	);
+
+	// Blocks re-renders this component on every cart tick with fresh prop refs.
+	// Memoise the options on the primitives Stripe actually consumes so a render
+	// that changes nothing relevant reuses the same options reference (and skips
+	// re-deriving the amount/setup-future-usage/appearance each time).
 	const options = useMemo(
 		() => ( {
 			mode: 'payment',
@@ -84,7 +103,7 @@ const ExpressCheckoutContainer = ( props ) => {
 				cartData
 			),
 			currency: rememberElementCurrency( elementCurrency ),
-			appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
+			appearance,
 			locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 		} ),
 		[
@@ -95,7 +114,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			billing.cartTotal.value,
 			billing.currency.minorUnit,
 			elementCurrency,
-			buttonAttributes,
+			appearance,
 		]
 	);
 
