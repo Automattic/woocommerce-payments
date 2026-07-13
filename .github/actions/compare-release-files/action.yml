@@ -14,19 +14,9 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: "Checkout trunk"
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      with:
-        ref: trunk
-        path: _trunk
-        fetch-depth: 1
-
-    - name: "Checkout develop"
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      with:
-        ref: develop
-        path: _develop
-        fetch-depth: 1
+    - name: "Fetch trunk and develop"
+      shell: bash
+      run: git fetch origin trunk develop
 
     - name: "Diff release files"
       id: compare
@@ -37,7 +27,7 @@ runs:
         SUMMARY=""
 
         for FILE in changelog.txt readme.txt; do
-          DIFF=$(diff "_trunk/$FILE" "_develop/$FILE" || true)
+          DIFF=$(git diff origin/trunk origin/develop -- "$FILE" || true)
           if [ -n "$DIFF" ]; then
             HAS_DRIFT=true
             SUMMARY+="### \`$FILE\`"$'\n'
