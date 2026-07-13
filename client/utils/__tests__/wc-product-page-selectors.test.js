@@ -117,6 +117,13 @@ describe( 'wc-product-page-selectors', () => {
 			expect( getQuantity() ).toBe( 3 );
 		} );
 
+		it( 'preserves a decimal quantity for fractional-unit stores', () => {
+			document.body.innerHTML =
+				'<div class="quantity"><input class="qty" value="0.25" /></div>';
+
+			expect( getQuantity() ).toBe( 0.25 );
+		} );
+
 		it( 'defaults to 1 when no quantity input exists', () => {
 			expect( getQuantity() ).toBe( 1 );
 		} );

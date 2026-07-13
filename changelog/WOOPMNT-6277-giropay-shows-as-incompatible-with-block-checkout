@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove giropay and sofort from payment method registry to prevent incompatible block checkout warnings
