@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Guard: compare changelog.txt and readme.txt between trunk and develop after each release
+Remove trunk→develop auto-merge from post-release workflow; add a composite action and weekly scheduled job to detect changelog.txt and readme.txt drift between trunk and develop.
