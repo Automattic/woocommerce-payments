@@ -154,7 +154,10 @@
 img {
 	&.payment-method__icon {
 		border: 1px solid rgba( 0, 0, 0, 0.07 );
-		border-radius: 4px;
+		// 2px hugs the brand badges' baked ~2px rounded corners; a wider
+		// radius exposes their transparent corners as a thin white line
+		// inside the stroke (matches the settings-strip treatment).
+		border-radius: 2px;
 		display: block;
 
 		&.no-border {
