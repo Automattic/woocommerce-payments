@@ -198,9 +198,7 @@ jobs:
           RELEASE_VERSION: ${{ needs.prepare-release.outputs.branch }}
           RELEASE_PR_ID: ${{ needs.prepare-release.outputs.release-pr-id }}
         run: |
-          PR_BODY="Applies the changelog entries from \`$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge.
-
-Related release PR: #${RELEASE_PR_ID}"
+          PR_BODY=$(echo -e "Applies the changelog entries from \`$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge.\n\nRelated release PR: #${RELEASE_PR_ID}")
           gh pr create \
             --title "Changelog for ${RELEASE_VERSION#release/} → develop" \
             --body "$PR_BODY" \
