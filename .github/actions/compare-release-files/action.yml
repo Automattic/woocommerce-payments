@@ -3,9 +3,8 @@ description: "Diffs changelog.txt and readme.txt between trunk and develop. Post
 
 inputs:
   slack-webhook:
-    description: "Slack incoming-webhook URL. When empty, the Slack step is skipped."
-    required: false
-    default: ""
+    description: "Slack incoming-webhook URL."
+    required: true
 
 outputs:
   has-drift:
@@ -61,7 +60,7 @@ runs:
         fi
 
     - name: "Slack notification"
-      if: ${{ steps.compare.outputs.has-drift == 'true' && inputs.slack-webhook != '' }}
+      if: ${{ steps.compare.outputs.has-drift == 'true' }}
       uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
       with:
         webhook: ${{ inputs.slack-webhook }}

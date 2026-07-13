@@ -25,4 +25,4 @@ jobs:
       - name: "Compare release files"
         uses: ./.github/actions/compare-release-files
         with:
-          slack-webhook: ${{ secrets.RELEASE_FILES_DRIFT_SLACK_WEBHOOK_URL }}
+          slack-webhook: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
