@@ -500,6 +500,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
+		// The saved-evidence restore step below polls against Stripe's
+		// read-after-write lag, which can run past the default test budget.
+		test.slow();
+
 		const { merchantPage } = await getMerchant( browser );
 
 		const orderId = await createDisputedOrder( browser );
@@ -633,7 +637,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				).toHaveValue( 'my product description', {
 					timeout: 5000,
 				} );
-			} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
+			} ).toPass( { timeout: 120000, intervals: [ 3000 ] } );
 		} );
 	} );
 } );
