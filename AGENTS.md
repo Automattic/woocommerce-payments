@@ -340,7 +340,7 @@ Treat a symbol as **externally exposed** when it is implemented or consumed outs
 - `do_action`/`apply_filters` hooks — `wcpay_*` and the `woocommerce_*` hooks this plugin fires (renaming a hook, changing its args, or dropping a filter's passthrough value is breaking).
 - The Request/Response class layer (`includes/core/server/request/`) — deliberately hook-extensible (`wcpay_*_request` filters), so its constructors, setters, and validation are consumed externally.
 - The public gateway class `WC_Payment_Gateway_WCPay` and payment-method classes.
-- REST controllers under `includes/admin/` (route paths, params, response shapes) and registered Abilities.
+- REST controllers (`includes/admin/`, `includes/reports/`, `includes/multi-currency/`) — route paths, params, response shapes — and registered Abilities.
 - `wcpay_*` option keys and stored meta.
 
 Adding a **required** method to an interface that external code can implement is backward-incompatible — existing implementers fatal on load. Prefer a non-breaking alternative: add the method to a concrete class, introduce a separate new interface, or provide a default via an abstract base class.
