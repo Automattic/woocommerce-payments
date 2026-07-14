@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { addFilter, removeFilter } from '@wordpress/hooks';
+import { recordUserEvent } from 'tracks';
+
+/**
  * Internal dependencies
  */
 import {
@@ -11,6 +17,10 @@ import {
 	rememberElementCurrency,
 	__resetElementCurrencyForTests,
 } from '../utils/element-currency-cache';
+
+jest.mock( 'tracks', () => ( {
+	recordUserEvent: jest.fn(),
+} ) );
 
 describe( 'Express checkout event handlers', () => {
 	let cartApiUpdateCustomerMock;
@@ -601,8 +611,67 @@ describe( 'Express checkout event handlers', () => {
 					),
 					expect.any( Error )
 				);
+				// The failure must also be observable in production
+				// monitoring, not just the shopper's browser console.
+				expect( recordUserEvent ).toHaveBeenCalledWith(
+					'express_checkout_pickup_reselect_failed'
+				);
 
 				consoleWarnSpy.mockRestore();
+			} );
+
+			it( 'resolves rates and package id through the express-checkout filters (deferred-shipping carts)', async () => {
+				// Emulate the wc-subscriptions compatibility layer: for trial
+				// subscriptions with deferred shipping the main package has no
+				// rates and the effective rates/package id come from filters.
+				addFilter(
+					'wcpay.express-checkout.shipping-rates',
+					'wcpay-test/deferred-shipping',
+					( rates, cartData ) =>
+						rates.length > 0 ? rates : cartData.extensions.testRates
+				);
+				addFilter(
+					'wcpay.express-checkout.shipping-package-id',
+					'wcpay-test/deferred-shipping',
+					() => 3
+				);
+
+				try {
+					const deferredCart = buildCart( [], 0 );
+					deferredCart.extensions = {
+						testRates: [ pickupRate, deliveryRate ],
+					};
+					cartApiUpdateCustomerMock.mockResolvedValue( deferredCart );
+					cartApiSelectShippingRateMock.mockResolvedValue(
+						buildCart(
+							[
+								{ ...pickupRate, selected: false },
+								{ ...deliveryRate, selected: true },
+							],
+							1000
+						)
+					);
+
+					await shippingAddressChangeHandler( event, elements );
+
+					expect(
+						cartApiSelectShippingRateMock
+					).toHaveBeenCalledWith( {
+						package_id: 3,
+						rate_id: 'flat_rate:14',
+					} );
+					expect( event.reject ).not.toHaveBeenCalled();
+					expect( event.resolve ).toHaveBeenCalled();
+				} finally {
+					removeFilter(
+						'wcpay.express-checkout.shipping-rates',
+						'wcpay-test/deferred-shipping'
+					);
+					removeFilter(
+						'wcpay.express-checkout.shipping-package-id',
+						'wcpay-test/deferred-shipping'
+					);
+				}
 			} );
 		} );
 	} );

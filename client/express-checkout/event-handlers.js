@@ -16,6 +16,7 @@ import {
 	shouldUseConfirmationTokens,
 } from './utils';
 import { getElementCurrency } from './utils/element-currency-cache';
+import { recordUserEvent } from 'tracks';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
@@ -106,14 +107,26 @@ const isLocalPickupRate = ( rate ) =>
  *
  * Costs one extra Store API round-trip (`select-shipping-rate`) per address
  * change in the bug scenario, because the WC session must be updated server-
- * side. Once WOOPLUG-6671 lands the WC core fix, this helper can be removed.
+ * side. Note this is NOT fully superseded by the WC core origin-tracking fix
+ * (WOOPLUG-6671 / woocommerce/woocommerce#64795): core only re-evaluates the
+ * chosen method when the package's rate set changes, so when pickup and a
+ * delivery rate are both available before the address arrives, this reselect
+ * is the only thing that moves the selection off pickup. Keep it until core
+ * also re-evaluates auto-defaulted choices on unchanged rate sets.
  *
  * @param {Object} cartData Cart response from `updateCustomer`.
  * @return {Promise<Object>} Cart data with a non-pickup rate selected when applicable.
  */
 const preferDeliveryOverLocalPickup = async ( cartData ) => {
-	const shippingPackage = cartData.shipping_rates?.[ 0 ];
-	const rates = shippingPackage?.shipping_rates ?? [];
+	// Resolve the effective rates the same way the display path does — for
+	// trial subscriptions with deferred shipping the rates live in the
+	// subscription extensions rather than the main cart package.
+	const rates =
+		applyFilters(
+			'wcpay.express-checkout.shipping-rates',
+			cartData.shipping_rates?.[ 0 ]?.shipping_rates || [],
+			cartData
+		) || [];
 	const selectedRate = rates.find( ( rate ) => rate.selected );
 
 	if ( ! selectedRate || ! isLocalPickupRate( selectedRate ) ) {
@@ -129,14 +142,20 @@ const preferDeliveryOverLocalPickup = async ( cartData ) => {
 
 	try {
 		return await cartApi.selectShippingRate( {
-			package_id: shippingPackage.package_id,
+			package_id: applyFilters(
+				'wcpay.express-checkout.shipping-package-id',
+				0,
+				cartData,
+				firstDeliveryRate.rate_id
+			),
 			rate_id: firstDeliveryRate.rate_id,
 		} );
 	} catch ( e ) {
 		// Fall back to the original cart data; the wallet will still show
 		// Local Pickup as selected but the user can change it manually.
-		// Logged so we can tell the mitigation is failing in production vs.
-		// silently always falling back.
+		// Tracked so a production regression re-exposing the underlying bug
+		// is visible to operators, not just the shopper's browser console.
+		recordUserEvent( 'express_checkout_pickup_reselect_failed' );
 		// eslint-disable-next-line no-console
 		console.warn(
 			'[WCPay ECE] preferDeliveryOverLocalPickup failed, falling back to original cart:',
