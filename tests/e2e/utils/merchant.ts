@@ -111,8 +111,29 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
+/**
+ * Disables the editor Welcome Guide (and fullscreen mode) via the preferences
+ * store. Deterministic alternative to racing a "Close" button.
+ *
+ * @param {Page} page The page object.
+ */
+export const disableEditorWelcomeGuide = async ( page: Page ) => {
+	// Wait for the preferences store's `set` action, not just `wp.data`: the
+	// store can register a few ticks later, and a silent no-op here would leave
+	// the guide up — the flakiness this helper exists to remove.
+	await page.waitForFunction(
+		() => ( window as any ).wp?.data?.dispatch?.( 'core/preferences' )?.set
+	);
+	await page.evaluate( async () => {
+		const prefs = ( window as any ).wp.data.dispatch( 'core/preferences' );
+		await prefs.set( 'core/edit-post', 'welcomeGuide', false );
+		await prefs.set( 'core/edit-post', 'fullscreenMode', false );
+	} );
+};
+
 export const addMulticurrencyWidget = async (
 	page: Page,
+	baseURL: string,
 	blocksVersion = false
 ) => {
 	await navigation.goToWidgets( page );
@@ -137,12 +158,17 @@ export const addMulticurrencyWidget = async (
 	const widgetName = blocksVersion
 		? 'Currency Switcher Block'
 		: 'Currency Switcher Widget';
-	const isWidgetAdded = blocksVersion
-		? ( await page.locator( `[data-title="${ widgetName }"]` ).count() ) > 0
-		: ( await page.getByRole( 'heading', { name: widgetName } ).count() ) >
-		  0;
+	// Locator for the widget once inserted in the editor canvas. Scope the classic
+	// match to the inserted block by its (locale-independent) block type: a bare
+	// heading match also matches the block-inspector card name, which renders the
+	// same text and intermittently makes the guard skip the add (cf. #11844).
+	const insertedWidget = blocksVersion
+		? page.locator( `[data-title="${ widgetName }"]` )
+		: page
+				.locator( '[data-type="core/legacy-widget"]' )
+				.getByRole( 'heading', { name: widgetName } );
 
-	if ( ! isWidgetAdded ) {
+	if ( ( await insertedWidget.count() ) === 0 ) {
 		await page.getByRole( 'button', { name: 'Add block' } ).click();
 		await page
 			.locator( 'input[placeholder="Search"]' )
@@ -155,15 +181,7 @@ export const addMulticurrencyWidget = async (
 			.first()
 			.click();
 		// Wait for the newly inserted widget/block to render before clicking Update.
-		if ( blocksVersion ) {
-			await page
-				.locator( `[data-title="${ widgetName }"]` )
-				.waitFor( { timeout: 5000 } );
-		} else {
-			await page
-				.getByRole( 'heading', { name: widgetName } )
-				.waitFor( { timeout: 5000 } );
-		}
+		await insertedWidget.first().waitFor( { timeout: 5000 } );
 		// Give the widgets editor a moment to register the inserted block before saving.
 		await page.waitForTimeout( 2000 );
 		await expect(
@@ -172,6 +190,26 @@ export const addMulticurrencyWidget = async (
 		await page.getByRole( 'button', { name: 'Update' } ).click();
 		await expectSnackbarWithText( page, 'Widgets saved.' );
 	}
+
+	// The block-widgets editor occasionally reports "Widgets saved." before the
+	// widget is actually assigned to the sidebar, leaving the storefront without
+	// the switcher (the top flake on shopper-multi-currency-widget). Confirm it
+	// persisted before returning so the setup guarantees its postcondition.
+	// The assignment can lag well past the test's own 20s wait (observed in CI on
+	// the WC 7.7.0 / 9.9.7 shopper jobs), so poll generously — it resolves as soon
+	// as the widget is assigned, so the long timeout only applies to a real miss.
+	const restApi = new RestAPI( baseURL );
+	await expect
+		.poll(
+			() =>
+				restApi.hasWidget(
+					'sidebar-1',
+					blocksVersion ? 'block' : 'currency_switcher_widget',
+					blocksVersion ? 'currency-switcher-holder' : undefined
+				),
+			{ timeout: 60000 }
+		)
+		.toBeTruthy();
 };
 
 export const removeMultiCurrencyWidgets = async ( baseURL: string ) => {

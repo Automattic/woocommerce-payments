@@ -513,6 +513,82 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$this->tear_down_one_and_done_global_state();
 	}
 
+	/**
+	 * Performance contract (WOOPMNT-6240): the eligibility order queries must pass
+	 * `orderby => 'none'` so their LIMIT short-circuits instead of filesorting
+	 * every matching order on large stores. Captures the args WC receives and
+	 * asserts the contract, so a future refactor can't silently reintroduce the
+	 * default ORDER BY.
+	 */
+	public function test_one_and_done_eligibility_order_queries_use_orderby_none(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$captured = [];
+		$capture  = function ( $args ) use ( &$captured ) {
+			$captured[] = $args;
+			return $args;
+		};
+		add_filter( 'woocommerce_order_query_args', $capture );
+
+		$banner->should_show_one_and_done_notice();
+
+		remove_filter( 'woocommerce_order_query_args', $capture );
+
+		// Only assert on the eligibility queries, which always constrain
+		// payment_method. WC core's internal refund fetch (triggered by loading the
+		// returned order objects) leaves payment_method empty and is out of scope.
+		$eligibility_queries = array_filter(
+			$captured,
+			static function ( $args ) {
+				return ! empty( $args['payment_method'] );
+			}
+		);
+
+		$this->assertNotEmpty( $eligibility_queries, 'Eligibility check should issue at least one order query.' );
+		foreach ( $eligibility_queries as $args ) {
+			$this->assertSame( 'none', $args['orderby'] ?? null );
+		}
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	/**
+	 * Performance contract (WOOPMNT-6240): mirror of the one-and-done assertion for
+	 * the test-to-live eligibility order query.
+	 */
+	public function test_test_to_live_eligibility_order_query_uses_orderby_none(): void {
+		$this->set_up_notice_global_state();
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$captured = [];
+		$capture  = function ( $args ) use ( &$captured ) {
+			$captured[] = $args;
+			return $args;
+		};
+		add_filter( 'woocommerce_order_query_args', $capture );
+
+		$banner->should_show_test_to_live_notice();
+
+		remove_filter( 'woocommerce_order_query_args', $capture );
+
+		// Only assert on the eligibility queries, which always constrain
+		// payment_method (see the one-and-done sibling test for rationale).
+		$eligibility_queries = array_filter(
+			$captured,
+			static function ( $args ) {
+				return ! empty( $args['payment_method'] );
+			}
+		);
+
+		$this->assertNotEmpty( $eligibility_queries, 'Eligibility check should issue at least one order query.' );
+		foreach ( $eligibility_queries as $args ) {
+			$this->assertSame( 'none', $args['orderby'] ?? null );
+		}
+
+		$this->tear_down_notice_global_state();
+	}
+
 	public function test_should_show_one_and_done_notice_returns_false_when_user_cannot_manage_woocommerce(): void {
 		$this->set_up_one_and_done_global_state();
 		$subscriber = self::factory()->user->create( [ 'role' => 'subscriber' ] );

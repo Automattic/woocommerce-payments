@@ -366,11 +366,11 @@ class FrontendCurrencies {
 	 * Our `wc_get_price_decimals` filter returns the decimals for the selected currency during this calculation, which leads to incorrect results.
 	 *
 	 * @param array  $args   The argument array to be filtered.
-	 * @param object $method The shipping method being calculated.
+	 * @param object $_unused_method The shipping method being calculated.
 	 *
 	 * @return array
 	 */
-	public function fix_price_decimals_for_shipping_rates( array $args, $method ): array {
+	public function fix_price_decimals_for_shipping_rates( array $args, $_unused_method ): array {
 		$args['price_decimals'] = absint( $this->localization_service->get_currency_format( $this->get_store_currency()->get_code() )['num_decimals'] );
 		return $args;
 	}
@@ -410,13 +410,13 @@ class FrontendCurrencies {
 	 * filter is run so that if another total comes up, like in the order list, we use the next order's currency.
 	 *
 	 * @param string   $formatted_total  Total to display.
-	 * @param WC_Order $order            Order data.
-	 * @param string   $tax_display      Type of tax display.
-	 * @param bool     $display_refunded If should include refunded value.
+	 * @param WC_Order $_unused_order            Order data.
+	 * @param string   $_unused_tax_display      Type of tax display.
+	 * @param bool     $_unused_display_refunded If should include refunded value.
 	 *
 	 * @return string The unmodified formatted total.
 	 */
-	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $order, $tax_display, $display_refunded ): string {
+	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $_unused_order, $_unused_tax_display, $_unused_display_refunded ): string {
 		if ( null !== $this->order_currency && $this->should_use_order_currency() ) {
 			$this->order_currency = null;
 		}

@@ -133,4 +133,62 @@ describe( 'Multi-Currency store settings', () => {
 		createContainer();
 		expect( window.onbeforeunload ).toBeNull();
 	} );
+
+	const mockRecommendation = ( overrides = {} ) => {
+		useStoreSettings.mockReturnValue( {
+			storeSettings: {
+				enable_storefront_switcher: false,
+				enable_auto_currency: false,
+				site_theme: 'Storefront',
+				is_cache_optimized_feature_enabled: true,
+				rendering_mode: 'speed',
+				should_recommend_cache_mode: true,
+				...overrides,
+			},
+			isDirty: false,
+			isSaving: false,
+			updateStoreSettingValues: mockUpdateStoreSettingValues,
+			saveStoreSettings: mockSaveStoreSettings,
+		} );
+	};
+
+	test( 'shows the cache-mode recommendation notice when recommended', () => {
+		mockRecommendation();
+		createContainer();
+		// Assert via the notice's action button: the message text is also mirrored
+		// into wp.a11y's live region, so a text query would match twice.
+		expect(
+			screen.getByRole( 'button', { name: /Use caching mode/i } )
+		).toBeInTheDocument();
+	} );
+
+	test( 'hides the recommendation notice when not recommended', () => {
+		mockRecommendation( { should_recommend_cache_mode: false } );
+		createContainer();
+		expect(
+			screen.queryByRole( 'button', { name: /Use caching mode/i } )
+		).not.toBeInTheDocument();
+	} );
+
+	test( '"Use caching mode" enables cache rendering and saves', () => {
+		mockRecommendation();
+		createContainer();
+		fireEvent.click(
+			screen.getByRole( 'button', { name: /Use caching mode/i } )
+		);
+		expect( mockUpdateStoreSettingValues ).toHaveBeenCalledWith( {
+			rendering_mode: 'cache',
+		} );
+		expect( mockSaveStoreSettings ).toHaveBeenCalled();
+	} );
+
+	test( 'dismissing the recommendation persists the dismissal and saves', () => {
+		mockRecommendation();
+		createContainer();
+		fireEvent.click( screen.getByRole( 'button', { name: /^Close$/i } ) );
+		expect( mockUpdateStoreSettingValues ).toHaveBeenCalledWith( {
+			cache_recommendation_dismissed: true,
+		} );
+		expect( mockSaveStoreSettings ).toHaveBeenCalled();
+	} );
 } );

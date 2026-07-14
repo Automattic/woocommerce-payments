@@ -70,6 +70,29 @@ describe( 'wc-product-page-selectors', () => {
 			expect( getProductId() ).toBe( '42' );
 		} );
 
+		it( 'returns parent product ID for a classic variable product', () => {
+			// Variable products render the add-to-cart button with no value
+			// attribute; the parent ID lives in a hidden input in the form.
+			document.body.innerHTML = [
+				'<form class="variations_form cart">',
+				'  <input type="hidden" name="product_id" value="55" />',
+				'  <input type="hidden" name="variation_id" class="variation_id" value="0" />',
+				'  <button type="submit" class="single_add_to_cart_button">Add to cart</button>',
+				'</form>',
+			].join( '' );
+			expect( getProductId() ).toBe( '55' );
+		} );
+
+		it( 'prefers the classic button value when it is set', () => {
+			document.body.innerHTML = [
+				'<form class="cart">',
+				'  <input type="hidden" name="product_id" value="55" />',
+				'  <button type="submit" class="single_add_to_cart_button" value="42">Add to cart</button>',
+				'</form>',
+			].join( '' );
+			expect( getProductId() ).toBe( '42' );
+		} );
+
 		it( 'returns product ID from new block hidden input', () => {
 			document.body.innerHTML =
 				'<div class="wp-block-add-to-cart-with-options"><input type="hidden" name="add-to-cart" value="99" /></div>';
@@ -92,6 +115,13 @@ describe( 'wc-product-page-selectors', () => {
 			document.body.innerHTML =
 				'<div class="quantity"><input class="qty" value="3" /></div>';
 			expect( getQuantity() ).toBe( 3 );
+		} );
+
+		it( 'preserves a decimal quantity for fractional-unit stores', () => {
+			document.body.innerHTML =
+				'<div class="quantity"><input class="qty" value="0.25" /></div>';
+
+			expect( getQuantity() ).toBe( 0.25 );
 		} );
 
 		it( 'defaults to 1 when no quantity input exists', () => {

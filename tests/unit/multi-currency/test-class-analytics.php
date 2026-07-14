@@ -295,7 +295,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_select_clauses',
-			function ( $new_clauses ) use ( $clauses ) {
+			function ( $_unused_new_clauses ) use ( $clauses ) {
 				return array_reverse( $clauses );
 			}
 		);
@@ -489,7 +489,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_join_clauses',
-			function ( $new_clauses ) use ( $clauses ) {
+			function ( $_unused_new_clauses ) use ( $clauses ) {
 				return array_reverse( $clauses );
 			}
 		);
@@ -545,7 +545,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = array_reverse( $clauses );
 		add_filter(
 			'wcpay_multi_currency_filter_select_orders_clauses',
-			function ( $new_clauses ) use ( $clauses ) {
+			function ( $_unused_new_clauses ) use ( $clauses ) {
 				return array_reverse( $clauses );
 			}
 		);

@@ -107,11 +107,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		'state',
 		'city',
 		'country',
-		'company',
 		'customer_name',
 		'customer_email',
 		// Free-text refund reason can contain merchant-entered PII, so keep it out of logs.
 		'merchant_refund_reason',
+		// Address autocomplete JWT is a credential; keep it out of logs.
+		'token',
 	];
 
 	const EVENT_AUTHORIZED            = 'authorized';
@@ -521,6 +522,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$response = wp_remote_get(
 			$url,
 			[
+				/**
+				 * Allows filtering of the headers sent with a WooPayments API request.
+				 *
+				 * @since 0.8.2
+				 *
+				 * @param array $headers The request headers.
+				 */
 				'headers'    => apply_filters(
 					'wcpay_api_request_headers',
 					[
@@ -952,12 +960,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Create a connection token.
 	 *
-	 * @param WP_REST_Request $request request object received.
+	 * @param WP_REST_Request $_unused_request request object received.
 	 *
 	 * @return array
 	 * @throws API_Exception - If request throws.
 	 */
-	public function create_token( $request ) {
+	public function create_token( $_unused_request ) {
 		return $this->request( [], self::CONN_TOKENS_API, self::POST );
 	}
 
@@ -1148,6 +1156,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		bool $collect_payout_requirements = false,
 		?string $referral_code = null
 	): array {
+		/**
+		 * Allows filtering of the arguments sent when fetching onboarding data.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param array $request_args The onboarding request arguments.
+		 */
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1188,6 +1203,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		array $actioned_notes = [],
 		?string $referral_code = null
 	): array {
+		/**
+		 * Allows filtering of the arguments sent when fetching onboarding data.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param array $request_args The onboarding request arguments.
+		 */
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -2616,6 +2638,15 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
+		/**
+		 * Allows filtering of the parameters sent with a WooPayments API request.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param array  $params The request parameters.
+		 * @param string $api    The API endpoint being requested.
+		 * @param string $method The HTTP method used for the request.
+		 */
 		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
 
 		// Honor a caller-supplied idempotency key (e.g. from an agent-driven
@@ -2666,6 +2697,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			}
 		}
 
+		/**
+		 * Allows filtering of the headers sent with a WooPayments API request.
+		 *
+		 * @since 0.8.2
+		 *
+		 * @param array $headers The request headers.
+		 */
 		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
 		$retries        = 0;
@@ -2692,7 +2730,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			Logger::info(
 				sprintf( 'API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
 				[
-					'request' => $request_args,
+					'request' => array_merge( $request_args, [ 'url' => $redacted_url ] ),
 					null !== $body ? [ 'body' => $redacted_params ] : [],
 				]
 			);
@@ -2700,6 +2738,16 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			try {
 				$response = $this->http_client->remote_request( $request_args, $body, $is_site_specific, $use_user_token );
 
+				/**
+				 * Allows filtering of the raw response returned from a WooPayments API request.
+				 *
+				 * @since 5.0.0
+				 *
+				 * @param array|WP_Error $response The HTTP response (or error) from the request.
+				 * @param string         $method   The HTTP method used for the request.
+				 * @param string         $url      The request URL.
+				 * @param string         $api      The API endpoint being requested.
+				 */
 				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
 				$response_code = wp_remote_retrieve_response_code( $response );
 
@@ -2789,8 +2837,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
-			$error_type   = null;
-			$decline_code = null;
+			$error_type        = null;
+			$decline_code      = null;
+			$error_param       = null;
+			$payment_intent_id = null;
 			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
 				throw new Amount_Too_Small_Exception(
 					$response_body['message'],
@@ -2801,6 +2851,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			} elseif ( isset( $response_body['error'] ) ) {
 				$response_body_error_code = $response_body['error']['code'] ?? $response_body['error']['message_code'] ?? null;
 				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
+				$payment_intent_id        = $response_body['error']['payment_intent']['id'] ?? null;
 
 				// We redact the API error message to prevent prompting the merchant to contact Stripe support
 				// when attempting to manually capture an amount greater than what's authorized. Contacting support is unnecessary in this scenario.
@@ -2817,6 +2868,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				$error_code    = $response_body_error_code ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
+				$error_param   = $response_body['error']['param'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
 				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
 
@@ -2842,6 +2894,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
+				// The server identifies the request field that caused the failure (e.g. on a
+				// rejected account settings update) in `data.param`.
+				$error_param = $response_body['data']['param'] ?? null;
 			} else {
 				$error_code    = 'wcpay_client_error_code_missing';
 				$error_message = __( 'Server error. Please try again.', 'woocommerce-payments' );
@@ -2858,10 +2913,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			if ( 'card_declined' === $error_code && isset( $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] ) ) {
 				$merchant_message = $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'];
 
-				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code );
+				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code, 0, null, $payment_intent_id );
 			}
 
-			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code, 0, null, $error_param, $payment_intent_id );
 		}
 	}
 
@@ -3007,7 +3062,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$charge_array['payment_intent'] ?? null,
 			$charge_array['refunded'] ?? null,
 			$charge_array['refunds'] ?? null,
-			$charge_array['status'] ?? null
+			$charge_array['status'] ?? null,
+			$charge_array['disputes'] ?? null
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {

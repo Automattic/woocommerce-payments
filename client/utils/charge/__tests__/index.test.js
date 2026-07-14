@@ -184,6 +184,49 @@ describe( 'Charge utilities', () => {
 	} );
 } );
 
+describe( 'Charge utilities / getDisputeOrdinals', () => {
+	test( 'numbers disputes oldest-first regardless of array order', () => {
+		const charge = {
+			disputes: [
+				{ id: 'dp_newer', created: 2000 },
+				{ id: 'dp_older', created: 1000 },
+			],
+		};
+
+		const { orderById, total } = utils.getDisputeOrdinals( charge );
+
+		expect( orderById ).toEqual( { dp_older: 1, dp_newer: 2 } );
+		expect( total ).toBe( 2 );
+	} );
+
+	test( 'reports total 1 for a single dispute', () => {
+		const charge = {
+			disputes: [ { id: 'dp_only', created: 1000 } ],
+		};
+
+		const { orderById, total } = utils.getDisputeOrdinals( charge );
+
+		expect( orderById ).toEqual( { dp_only: 1 } );
+		expect( total ).toBe( 1 );
+	} );
+
+	test( 'falls back to the singular dispute field', () => {
+		const charge = { dispute: { id: 'dp_single', created: 1000 } };
+
+		const { orderById, total } = utils.getDisputeOrdinals( charge );
+
+		expect( orderById ).toEqual( { dp_single: 1 } );
+		expect( total ).toBe( 1 );
+	} );
+
+	test( 'reports total 0 when there are no disputes', () => {
+		const { orderById, total } = utils.getDisputeOrdinals( {} );
+
+		expect( orderById ).toEqual( {} );
+		expect( total ).toBe( 0 );
+	} );
+} );
+
 describe( 'Charge utilities / getChargeAmounts', () => {
 	test( 'basic charge', () => {
 		const charge = {
@@ -397,6 +440,56 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			net: 0 - charge.application_fee_amount - 1500,
 			fee: charge.application_fee_amount + 1500,
 			refunded: charge.dispute.amount,
+		} );
+	} );
+
+	test( 'legacy path folds every dispute in the disputes array', () => {
+		const charge = {
+			amount: 1800,
+			application_fee_amount: 82,
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			disputed: true,
+			dispute: {
+				amount: 1000,
+				balance_transactions: [
+					{
+						amount: -1000,
+						fee: 1500,
+					},
+				],
+			},
+			disputes: [
+				{
+					amount: 1000,
+					balance_transactions: [
+						{
+							amount: -1000,
+							fee: 1500,
+						},
+					],
+				},
+				{
+					amount: 800,
+					balance_transactions: [
+						{
+							amount: -800,
+							fee: 1500,
+						},
+					],
+				},
+			],
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
+			net: 1800 - 82 - 3000 - 1800,
+			fee: 82 + 3000,
+			refunded: 1800,
 		} );
 	} );
 

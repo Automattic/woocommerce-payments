@@ -1,0 +1,54 @@
+name: Branch protection change alert
+
+# Fires on any change to a classic branch-protection rule in this repo.
+# The default branch (develop) hosts this workflow, so it is the version
+# that runs for branch_protection_rule events. Refs WOOPMNT-6229.
+on:
+  branch_protection_rule:
+    types: [created, edited, deleted]
+
+permissions:
+  contents: read
+
+jobs:
+  alert:
+    name: Notify Slack of branch protection change
+    # Only the upstream repo carries the webhook secret; skip on forks so the
+    # absence of the secret doesn't surface as a misleading failed run.
+    if: github.repository == 'Automattic/woocommerce-payments'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack ping
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          webhook: ${{ secrets.BRANCH_PROTECTION_ALERT_SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":lock: Branch protection changed",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
+                    { "type": "mrkdwn", "text": "*Action:*\n${{ github.event.action }}" },
+                    { "type": "mrkdwn", "text": "*Branch rule:*\n${{ github.event.rule.name }}" },
+                    { "type": "mrkdwn", "text": "*Changed by:*\n${{ github.event.sender.login }}" }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<https://github.com/${{ github.repository }}/settings/branches|Review branch protection settings>"
+                  }
+                }
+              ]
+            }

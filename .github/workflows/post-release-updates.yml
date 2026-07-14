@@ -78,33 +78,6 @@ jobs:
             gh release create "$RELEASE_VERSION" --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" "$FILENAME"
           fi
 
-  merge-trunk-into-develop:
-    name: "Merge trunk back into develop"
-    needs: get-last-released-version
-    runs-on: ubuntu-latest
-    env:
-      RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
-
-    steps:
-      - name: "Checkout repository"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: 'trunk'
-          fetch-depth: 0
-          token: ${{ SECRETS.BOTWOO_TOKEN }}
-
-      - name: "Merge trunk back into develop"
-        run: |
-          git config user.name "botwoo"
-          git config user.email "botwoo@users.noreply.github.com"
-          git checkout develop && git pull
-          if git merge-base --is-ancestor trunk develop; then
-            echo ":information_source: develop already contains trunk v$RELEASE_VERSION; skipping merge." >> $GITHUB_STEP_SUMMARY
-          else
-            git merge trunk --no-ff -m "Merge trunk v$RELEASE_VERSION into develop"
-            git push
-          fi
-
   trigger-translations:
     name: "Trigger translations update for the release"
     needs: [ get-last-released-version, create-gh-release ]
@@ -257,3 +230,19 @@ jobs:
             echo ":information_source: No changes to push." >> $GITHUB_STEP_SUMMARY
             exit 0 # Exit with success anyway
           fi
+
+  compare-release-files:
+    name: "Check changelog.txt and readme.txt drift between trunk and develop"
+    needs: [ create-gh-release, trigger-translations, cleanup-testing-branches, update-wiki ]
+    runs-on: ubuntu-latest
+    # Run even if earlier jobs failed so drift is always checked after a release attempt.
+    if: always()
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: "Compare release files"
+        uses: ./.github/actions/compare-release-files
+        with:
+          slack-webhook: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}

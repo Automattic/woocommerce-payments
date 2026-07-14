@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "378a9a5633bb31c700e86b2690499d49",
+    "content-hash": "aa2e7e9d7ef32b385ce48727dcd8cc25",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -240,36 +240,20 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v3.1.1",
+            "version": "v3.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "2704e4122684c6553c618cca76e5d84cd524738c"
+                "reference": "8cc8329020ea15907150b167a514a35f62a0b25b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/2704e4122684c6553c618cca76e5d84cd524738c",
-                "reference": "2704e4122684c6553c618cca76e5d84cd524738c",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/8cc8329020ea15907150b167a514a35f62a0b25b",
+                "reference": "8cc8329020ea15907150b167a514a35f62a0b25b",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2"
-            },
-            "require-dev": {
-                "automattic/jetpack-account-protection": "@dev",
-                "automattic/jetpack-changelogger": "^6.0.5",
-                "automattic/jetpack-connection": "@dev",
-                "automattic/jetpack-import": "@dev",
-                "automattic/jetpack-jitm": "@dev",
-                "automattic/jetpack-post-list": "@dev",
-                "automattic/jetpack-publicize": "@dev",
-                "automattic/jetpack-search": "@dev",
-                "automattic/jetpack-stats": "@dev",
-                "automattic/jetpack-stats-admin": "@dev",
-                "automattic/jetpack-sync": "@dev",
-                "automattic/jetpack-videopress": "@dev",
-                "automattic/jetpack-waf": "@dev",
-                "automattic/jetpack-yoast-promo": "@dev"
             },
             "suggest": {
                 "automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
@@ -314,9 +298,9 @@
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-config/tree/v3.1.1"
+                "source": "https://github.com/Automattic/jetpack-config/tree/v3.1.3"
             },
-            "time": "2025-06-19T13:25:10+00:00"
+            "time": "2026-05-19T09:16:41+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
@@ -396,24 +380,23 @@
         },
         {
             "name": "automattic/jetpack-constants",
-            "version": "v3.0.8",
+            "version": "v3.0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-constants.git",
-                "reference": "f9bf00ab48956b8326209e7c0baf247a0ed721c4"
+                "reference": "672be0a51baadfc6eee0ffd3bf8e9db691a8ab27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/f9bf00ab48956b8326209e7c0baf247a0ed721c4",
-                "reference": "f9bf00ab48956b8326209e7c0baf247a0ed721c4",
+                "url": "https://api.github.com/repos/Automattic/jetpack-constants/zipball/672be0a51baadfc6eee0ffd3bf8e9db691a8ab27",
+                "reference": "672be0a51baadfc6eee0ffd3bf8e9db691a8ab27",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^6.0.5",
-                "automattic/phpunit-select-config": "^1.0.3",
+                "automattic/phpunit-select-config": "^1.0.8",
                 "brain/monkey": "^2.6.2",
                 "yoast/phpunit-polyfills": "^4.0.0"
             },
@@ -442,9 +425,9 @@
             ],
             "description": "A wrapper for defining constants in a more testable way.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-constants/tree/v3.0.8"
+                "source": "https://github.com/Automattic/jetpack-constants/tree/v3.0.12"
             },
-            "time": "2025-04-28T15:12:45+00:00"
+            "time": "2026-06-08T08:27:00+00:00"
         },
         {
             "name": "automattic/jetpack-ip",
@@ -1002,16 +985,16 @@
     "packages-dev": [
         {
             "name": "automattic/jetpack-changelogger",
-            "version": "v6.0.14",
+            "version": "v6.0.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-changelogger.git",
-                "reference": "f81fd5f7fb9046ccbed9e4462f4fe619d961ce24"
+                "reference": "61e1f2af86527a3c9b8f078f2b27a8bad6ae8386"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/f81fd5f7fb9046ccbed9e4462f4fe619d961ce24",
-                "reference": "f81fd5f7fb9046ccbed9e4462f4fe619d961ce24",
+                "url": "https://api.github.com/repos/Automattic/jetpack-changelogger/zipball/61e1f2af86527a3c9b8f078f2b27a8bad6ae8386",
+                "reference": "61e1f2af86527a3c9b8f078f2b27a8bad6ae8386",
                 "shasum": ""
             },
             "require": {
@@ -1064,9 +1047,9 @@
                 "keepachangelog"
             ],
             "support": {
-                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v6.0.14"
+                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v6.0.17"
             },
-            "time": "2026-02-12T23:21:29+00:00"
+            "time": "2026-06-15T12:14:58+00:00"
         },
         {
             "name": "clue/stdio-react",
@@ -4761,7 +4744,7 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.36.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
@@ -4820,7 +4803,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -4844,16 +4827,16 @@
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
-            "version": "v1.36.0",
+            "version": "v1.38.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "ad1b7b9092976d6c948b8a187cec9faaea9ec1df"
+                "reference": "e9247d281d694a5120554d9afaf54e070e88a603"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/ad1b7b9092976d6c948b8a187cec9faaea9ec1df",
-                "reference": "ad1b7b9092976d6c948b8a187cec9faaea9ec1df",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/e9247d281d694a5120554d9afaf54e070e88a603",
+                "reference": "e9247d281d694a5120554d9afaf54e070e88a603",
                 "shasum": ""
             },
             "require": {
@@ -4902,7 +4885,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.38.1"
             },
             "funding": [
                 {
@@ -4922,20 +4905,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T16:19:22+00:00"
+            "time": "2026-05-26T05:58:03+00:00"
         },
         {
             "name": "symfony/polyfill-intl-normalizer",
-            "version": "v1.36.0",
+            "version": "v1.38.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-normalizer.git",
-                "reference": "3833d7255cc303546435cb650316bff708a1c75c"
+                "reference": "2d446c214bdbe5b71bde5011b060a05fece3ae6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/3833d7255cc303546435cb650316bff708a1c75c",
-                "reference": "3833d7255cc303546435cb650316bff708a1c75c",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/2d446c214bdbe5b71bde5011b060a05fece3ae6b",
+                "reference": "2d446c214bdbe5b71bde5011b060a05fece3ae6b",
                 "shasum": ""
             },
             "require": {
@@ -4987,7 +4970,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.38.0"
             },
             "funding": [
                 {
@@ -5007,20 +4990,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-09T11:45:10+00:00"
+            "time": "2026-05-25T13:48:31+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.36.0",
+            "version": "v1.38.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "6a21eb99c6973357967f6ce3708cd55a6bec6315"
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/6a21eb99c6973357967f6ce3708cd55a6bec6315",
-                "reference": "6a21eb99c6973357967f6ce3708cd55a6bec6315",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
                 "shasum": ""
             },
             "require": {
@@ -5072,7 +5055,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.2"
             },
             "funding": [
                 {
@@ -5092,11 +5075,11 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T17:25:58+00:00"
+            "time": "2026-05-27T06:59:30+00:00"
         },
         {
             "name": "symfony/polyfill-php73",
-            "version": "v1.36.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php73.git",
@@ -5152,7 +5135,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php73/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-php73/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -5176,7 +5159,7 @@
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.36.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
@@ -5236,7 +5219,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.37.0"
             },
             "funding": [
                 {

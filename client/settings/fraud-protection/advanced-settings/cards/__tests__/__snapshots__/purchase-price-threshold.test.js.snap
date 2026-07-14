@@ -327,7 +327,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }
@@ -743,7 +743,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
   font-weight: 500;
   line-height: 1.4;
   text-transform: uppercase;
-  display: inline-block;
+  display: block;
   margin-bottom: calc(4px * 2);
   padding: 0;
 }

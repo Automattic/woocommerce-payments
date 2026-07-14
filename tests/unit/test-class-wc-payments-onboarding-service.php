@@ -148,6 +148,19 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
 		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->onboarding_service, 'clear_cached_onboarding_fields_data' ] ) );
+	}
+
+	public function test_clear_cached_onboarding_fields_data() {
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ Database_Cache::ONBOARDING_FIELDS_DATA_KEY ],
+				[ Database_Cache::BUSINESS_TYPES_KEY ]
+			);
+
+		$this->onboarding_service->clear_cached_onboarding_fields_data();
 	}
 
 	public function test_create_embedded_kyc_session() {
@@ -985,5 +998,65 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( [] );
 
 		$this->assertSame( '', $result['woocommerce_store_id'] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_explicitly_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_enabled_via_capabilities() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids(
+			$mock_gateway,
+			[
+				'woopay' => true,
+				'link'   => true,
+			]
+		);
+	}
+
+	public function test_update_enabled_payment_methods_ids_enables_woopay_when_link_not_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( true );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_disables_woopay_when_capability_absent() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [] );
+	}
+
+	public function test_maybe_add_test_drive_settings_adds_capabilities_and_keeps_transient() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[
+				'capabilities'            => [ 'link_payments' => [ 'requested' => 'true' ] ],
+				'enabled_payment_methods' => [ 'card', 'link' ],
+			],
+			HOUR_IN_SECONDS
+		);
+
+		$args = $this->onboarding_service->maybe_add_test_drive_settings_to_new_account_request( [ 'account_data' => [] ] );
+
+		$this->assertSame( [ 'link_payments' => [ 'requested' => 'true' ] ], $args['account_data']['capabilities'] );
+		$this->assertNotFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
 }

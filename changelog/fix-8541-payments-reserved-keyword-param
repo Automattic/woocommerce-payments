@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Rename reserved keyword parameter names flagged by phpcs in Payments classes and tests

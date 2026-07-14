@@ -13,8 +13,6 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
@@ -473,6 +471,8 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-ajax-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-store-api-extension.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-currency-guard.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -596,6 +596,7 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$woopay_tracker->init_hooks();
 		self::$order_service->init_hooks();
 		self::$order_success_page->init_hooks();
 		self::$action_scheduler_service->init_hooks();
@@ -691,6 +692,25 @@ class WC_Payments {
 		// availability against the correct presentment currency, not the store's default currency.
 		add_action( 'init', [ __CLASS__, 'maybe_display_express_checkout_buttons' ], 15 );
 
+		// Surfaces the currency-filtered ECE method list on the cart response
+		// so the JS can re-evaluate paymentMethodTypes after currency resolves.
+		// `woocommerce_blocks_loaded` fires on plugins_loaded@10 (via
+		// `woocommerce_loaded`), before this method runs at plugins_loaded@11,
+		// so register immediately when it has already fired.
+		if ( did_action( 'woocommerce_blocks_loaded' ) ) {
+			self::register_express_checkout_store_api_extension();
+		} else {
+			add_action(
+				'woocommerce_blocks_loaded',
+				[ __CLASS__, 'register_express_checkout_store_api_extension' ]
+			);
+		}
+
+		// Rejects order placement if the cart's currency drifted away from
+		// the one the Element booted with — e.g. a multi-currency plugin
+		// flipped the cart on shipping address change inside the wallet sheet.
+		WC_Payments_Express_Checkout_Currency_Guard::register();
+
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 			$enabled_bnpl_payment_methods = array_intersect(
@@ -735,6 +755,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
+		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -742,8 +763,16 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), GiropayDefinition::get_id(), '7.9.0' ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), SofortDefinition::get_id(), '8.9.0' ), 'maybe_migrate' ] );
+		/**
+		 * Bumped migration version from for giropay from 7.9.0 to 11.0.0 because commit a4739037b re-added giropay to
+		 *              PaymentMethodDefinitionRegistry, which re-enabled them on accounts that
+		 *              still had fee data for them. Re-running the migration ensures those
+		 *              accounts are cleaned up after the registry fix in 11.0.0.
+		 *
+		 * @see WOOPMNT-6277.
+		 */
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'giropay', '11.0.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'sofort', '8.9.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
@@ -751,6 +780,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -1080,6 +1110,9 @@ class WC_Payments {
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',
 				'wc_payments_review_prompt_maybe_later',
+
+				// Reports feedback user preferences.
+				'wc_payments_reports_feedback_dismissed',
 			]
 		);
 	}
@@ -1144,6 +1177,13 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
+		/**
+		 * Allows replacing the API client class used for WooPayments API requests.
+		 *
+		 * @since 2.5.0
+		 *
+		 * @param string $api_client_class The fully-qualified API client class name. Must extend WC_Payments_API_Client.
+		 */
 		$api_client_class = apply_filters( 'wc_payments_api_client', WC_Payments_API_Client::class );
 		if ( ! class_exists( $api_client_class ) || ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
 			$api_client_class = WC_Payments_API_Client::class;
@@ -1160,146 +1200,15 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
-		// Ensures we are not initializing our REST during `rest_preload_api_request`.
-		// When constructor signatures change, in manual update scenarios we were running into fatals.
-		// Those fatals are not critical, but they cause hiccups in the release process as catches unnecessary attention.
-		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
-			return;
+		// Catch fatals from controller constructor signature changes when old and new code mix
+		// during a manual plugin update. Routes must otherwise always register: internal REST
+		// requests dispatched with an admin screen set (e.g. WooCommerce core fetching
+		// /wc/v3/payments/onboarding/fields on every admin page) 404 without them.
+		try {
+			self::register_rest_controllers();
+		} catch ( \Throwable $e ) {
+			\WCPay\Logger::exception( 'Failed to register REST controllers.', $e );
 		}
-
-		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
-		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
-		$accounts_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
-		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
-		$deposits_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
-		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
-		$transactions_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
-		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
-		$disputes_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
-		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );
-		$dispute_readiness_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
-		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
-		$charges_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
-		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client );
-		$conn_tokens_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::get_gateway(), self::$customer_service, self::$order_service );
-		$orders_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-outcomes-controller.php';
-		$fraud_outcomes_controller = new WC_REST_Payments_Fraud_Outcomes_Controller( self::$api_client );
-		$fraud_outcomes_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
-		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
-		$timeline_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
-		$webhook_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
-		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::get_gateway(), self::$account );
-		$tos_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
-		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
-		$accounts_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account, self::$pm_promotions_service );
-		$settings_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
-		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
-		$settings_option_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
-		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
-		$charges_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-files-controller.php';
-		$files_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
-		$files_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-capital-controller.php';
-		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
-		$capital_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
-		$promotions_controller = new WC_REST_Payments_PM_Promotions_Controller( self::$api_client, self::$pm_promotions_service );
-		$promotions_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
-		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
-		$onboarding_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-customer-controller.php';
-		$customer_controller = new WC_REST_Payments_Customer_Controller( self::$api_client, self::$customer_service );
-		$customer_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
-		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
-		$refunds_controller->register_routes();
-
-		if ( WC_Payments_Features::is_documents_section_enabled() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
-			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
-			$documents_controller->register_routes();
-
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-vat-controller.php';
-			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
-			$vat_controller->register_routes();
-		}
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
-			self::$api_client,
-			self::get_gateway(),
-			wcpay_get_container()->get( OrderService::class ),
-			wcpay_get_container()->get( Level3Service::class )
-		);
-		$payment_intents_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
-		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
-		$authorizations_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
-		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
-		$reports_transactions_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
-		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
-		$reports_fees_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
-		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
-		$reports_balance_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
-		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
-		$reports_authorizations_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
-		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
-		$woopay_session_controller->register_routes();
 	}
 
 	/**
@@ -1655,6 +1564,11 @@ class WC_Payments {
 	 */
 	public static function install_actions() {
 		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
+			/**
+			 * Fires after WooPayments has been updated to a newer version.
+			 *
+			 * @since 2.1.0
+			 */
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
@@ -1779,6 +1693,13 @@ class WC_Payments {
 	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
 	 */
 	public static function is_network_saved_cards_enabled() {
+		/**
+		 * Allows forcing WooPayments to use network-wide saved payment methods across a multisite network.
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param bool $enabled Whether the site should only use network-wide saved payment methods.
+		 */
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
 
@@ -1838,7 +1759,7 @@ class WC_Payments {
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 
-			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
+			( new WooPay_Order_Status_Sync( self::$api_client, self::$account ) )->init_hooks();
 		}
 	}
 
@@ -1936,6 +1857,11 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function maybe_display_express_checkout_buttons() {
+		// None of the handlers' hooks can fire on cron or XML-RPC requests.
+		if ( wp_doing_cron() || ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) ) {
+			return;
+		}
+
 		if ( WC_Payments_Features::are_payments_enabled() ) {
 			$woopay_button_handler = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
 
@@ -1944,6 +1870,19 @@ class WC_Payments {
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $woopay_button_handler, $express_checkout_element_button_handler, $express_checkout_ajax_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
+	}
+
+	/**
+	 * Bootstraps the Store API cart extension on `woocommerce_blocks_loaded`.
+	 *
+	 * @return void
+	 */
+	public static function register_express_checkout_store_api_extension() {
+		$extension = new WC_Payments_Express_Checkout_Store_API_Extension(
+			self::get_express_checkout_helper(),
+			self::get_gateway()
+		);
+		$extension->init();
 	}
 
 	/**
@@ -2053,10 +1992,10 @@ class WC_Payments {
 	 * @param string $field The checkout field being filtered.
 	 * @param string $key The field key.
 	 * @param mixed  $args Field arguments.
-	 * @param string $value Field value.
+	 * @param string $_unused_value Field value.
 	 * @return string
 	 */
-	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $value ) {
+	public static function filter_woocommerce_form_field_woopay_email( $field, $key, $args, $_unused_value ) {
 		$class = $args['class'][0];
 		if ( false === strpos( $class, 'woopay-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';
@@ -2111,7 +2050,7 @@ class WC_Payments {
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
-			new WooPay_Save_User();
+			( new WooPay_Save_User() )->init_hooks();
 		}
 	}
 
@@ -2163,8 +2102,11 @@ class WC_Payments {
 		/**
 		 * Used for unit tests only, as requests have dependencies, which are not publicly available in live mode.
 		 *
-		 * @param Request $request    Null, but if the filter returns a request, it will be used.
-		 * @param string  $class_name The name of the request class.
+		 * @since 5.6.0
+		 *
+		 * @param Request|null $request    Null by default; if a filter returns a request, it will be used.
+		 * @param string       $class_name The name of the request class.
+		 * @param mixed        $id         The item ID, if the request needs it.
 		 */
 		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
 		if ( $request instanceof Request ) {
@@ -2312,6 +2254,13 @@ class WC_Payments {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 
+		/**
+		 * Allows replacing the HTTP client used for WooPayments API requests.
+		 *
+		 * @since 1.5.0
+		 *
+		 * @param WC_Payments_Http_Interface|null $http_class The HTTP client instance, or null to use the default.
+		 */
 		$http_class = apply_filters( 'wc_payments_http', null );
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
@@ -2359,5 +2308,148 @@ class WC_Payments {
 		);
 
 		return (bool) ( is_countable( $result ) ? count( $result ) : 0 );
+	}
+
+	/**
+	 * Registers the REST API controllers.
+	 */
+	private static function register_rest_controllers() {
+		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
+		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
+		$accounts_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
+		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
+		$deposits_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
+		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
+		$transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
+		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
+		$disputes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
+		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );
+		$dispute_readiness_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
+		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
+		$charges_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
+		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client );
+		$conn_tokens_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::get_gateway(), self::$customer_service, self::$order_service );
+		$orders_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-outcomes-controller.php';
+		$fraud_outcomes_controller = new WC_REST_Payments_Fraud_Outcomes_Controller( self::$api_client );
+		$fraud_outcomes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
+		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
+		$timeline_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
+		$webhook_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
+		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::get_gateway(), self::$account );
+		$tos_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
+		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
+		$accounts_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account, self::$pm_promotions_service );
+		$settings_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
+		$settings_option_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
+		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
+		$charges_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-files-controller.php';
+		$files_controller = new WC_REST_Payments_Files_Controller( self::$api_client );
+		$files_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-capital-controller.php';
+		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
+		$capital_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
+		$promotions_controller = new WC_REST_Payments_PM_Promotions_Controller( self::$api_client, self::$pm_promotions_service );
+		$promotions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
+		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
+		$onboarding_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-customer-controller.php';
+		$customer_controller = new WC_REST_Payments_Customer_Controller( self::$api_client, self::$customer_service );
+		$customer_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
+		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
+		$refunds_controller->register_routes();
+
+		if ( WC_Payments_Features::is_documents_section_enabled() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
+			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
+			$documents_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-vat-controller.php';
+			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
+			$vat_controller->register_routes();
+		}
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
+			self::$api_client,
+			self::get_gateway(),
+			wcpay_get_container()->get( OrderService::class ),
+			wcpay_get_container()->get( Level3Service::class )
+		);
+		$payment_intents_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
+		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
+		$authorizations_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
+		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
+		$reports_transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
+		$reports_fees_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
+		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
+		$reports_balance_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
+		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
+		$reports_authorizations_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
+		$survey_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
+		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
+		$woopay_session_controller->register_routes();
 	}
 }

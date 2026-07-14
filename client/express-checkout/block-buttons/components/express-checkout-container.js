@@ -13,7 +13,9 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
+	filterCartMethodsByLocation,
 } from '../../utils';
+import { rememberElementCurrency } from '../../utils/element-currency-cache';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import { getSetupFutureUsageForCart } from '../../utils/subscriptions';
 import '../express-checkout-element.scss';
@@ -35,7 +37,15 @@ const ExpressCheckoutContainer = ( props ) => {
 		[]
 	);
 
-	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
+	const enabledMethodsFromCart = useSelect(
+		( s ) =>
+			s( WC_STORE_CART )?.getCartData()?.extensions?.wcpay
+				?.express_checkout_methods,
+		[]
+	);
+	const enabledMethods = Array.isArray( enabledMethodsFromCart )
+		? filterCartMethodsByLocation( enabledMethodsFromCart )
+		: getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.
 	const paymentMethodTypes = useMemo( () => {
@@ -46,6 +56,8 @@ const ExpressCheckoutContainer = ( props ) => {
 			methods.includes( 'amazon_pay' ) && 'amazon_pay',
 		].filter( Boolean );
 	}, [ enabledMethods ] );
+
+	const elementCurrency = billing.currency.code.toLowerCase();
 
 	const options = {
 		mode: 'payment',
@@ -66,7 +78,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			} ),
 			cartData
 		),
-		currency: billing.currency.code.toLowerCase(),
+		currency: rememberElementCurrency( elementCurrency ),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};

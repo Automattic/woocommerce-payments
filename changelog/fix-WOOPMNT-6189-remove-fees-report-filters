@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Removed Gross amount, Fees total, and Settlement date filters from the Fees report.

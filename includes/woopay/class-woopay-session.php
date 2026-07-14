@@ -293,9 +293,9 @@ class WooPay_Session {
 	 *
 	 * @param bool      $needs_payment If the order needs payment.
 	 * @param \WC_Order $order The order.
-	 * @param array     $valid_order_statuses The valid order statuses.
+	 * @param array     $_unused_valid_order_statuses The valid order statuses.
 	 */
-	public static function woopay_trial_subscriptions_handler( $needs_payment, $order, $valid_order_statuses ) {
+	public static function woopay_trial_subscriptions_handler( $needs_payment, $order, $_unused_valid_order_statuses ) {
 		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $needs_payment;
 		}
@@ -854,6 +854,13 @@ class WooPay_Session {
 	 * @return bool True if the request signature is valid.
 	 */
 	public static function has_valid_request_signature() {
+		/**
+		 * Filters whether the current request is signed with the store's blog token.
+		 *
+		 * @since 5.9.0
+		 *
+		 * @param bool $is_signed Whether the request signature was verified against the blog token.
+		 */
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
 	}
 

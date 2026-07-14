@@ -46,13 +46,13 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 *
 	 * @see WP_Http::request()
 	 *
-	 * @param false|array|WP_Error $response    A preemptive return value of an HTTP request. Default false.
-	 * @param array                $parsed_args HTTP request arguments.
-	 * @param string               $url         The request URL.
+	 * @param false|array|WP_Error $_unused_response    A preemptive return value of an HTTP request. Default false.
+	 * @param array                $_unused_parsed_args HTTP request arguments.
+	 * @param string               $_unused_url         The request URL.
 	 *
 	 * @return array
 	 */
-	public function filter_intercept_external_requests( $response, $parsed_args, $url ) {
+	public function filter_intercept_external_requests( $_unused_response, $_unused_parsed_args, $_unused_url ) {
 		// Return a service unavailable response.
 		return [
 			'body'          => '',

@@ -1,15 +1,5 @@
 /** @format */
 
-.woocommerce-payments-page {
-	.components-card__header {
-		font-size: 20px;
-	}
-
-	.components-card {
-		margin-bottom: 24px;
-	}
-}
-
 .payment-details-summary {
 	display: flex;
 	flex: 1;
@@ -124,6 +114,15 @@
 			font-family: monospace;
 		}
 	}
+}
+
+.payment-details-summary__dispute-label {
+	@include font-size( 11 );
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	color: $studio-gray-60;
+	margin: $grid-unit-15 $grid-unit-20 0;
 }
 
 .woocommerce-list--horizontal {

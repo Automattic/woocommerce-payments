@@ -70,6 +70,7 @@ const SupportEmailInput = ( { setInputValid } ) => {
 				value={ supportEmail }
 				onChange={ setSupportEmail }
 				onBlur={ () => setHasBlurred( true ) }
+				id="account-business-support-email-input"
 				data-testid={ 'account-business-support-email-input' }
 				type="email"
 				aria-invalid={ errorMessage ? true : undefined }

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix inconsistent card brand SVG styling: add missing rounded corners to Mastercard, correct Discover rendered width from 61px to 64px, and add explicit white background fill to Discover.

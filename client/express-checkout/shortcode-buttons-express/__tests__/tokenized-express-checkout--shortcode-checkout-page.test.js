@@ -22,10 +22,24 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 	default: jest.fn(),
 } ) );
 
+// A non-compromised page has the legit Stripe.js tag, so the assertion passes.
+const addStripeScript = () => {
+	const script = document.createElement( 'script' );
+	script.id = 'stripe-js';
+	script.src = 'https://js.stripe.com/v3/?ver=3.0';
+	document.head.appendChild( script );
+};
+
+const clearScripts = () =>
+	document.head
+		.querySelectorAll( 'script' )
+		.forEach( ( script ) => script.remove() );
+
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
 		apiFetch.mockClear();
+		addStripeScript();
 		apiFetch.mockImplementation( async () =>
 			Promise.resolve( {
 				json: () => Promise.resolve( cartWithItemsMock ),
@@ -99,6 +113,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 	afterEach( async () => {
 		delete global.Stripe;
+		clearScripts();
 		// removing all the registered event handlers so they don't leak between tests.
 		global.$( document.body ).off();
 	} );

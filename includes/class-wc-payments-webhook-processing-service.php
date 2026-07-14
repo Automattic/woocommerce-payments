@@ -164,6 +164,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires before a WooPayments webhook event is processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
@@ -231,6 +239,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		try {
+			/**
+			 * Fires after a WooPayments webhook event has been processed.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string $event_type The webhook event type.
+			 * @param array  $event_body The webhook event body.
+			 */
 			do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
@@ -390,11 +406,11 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent canceled event.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $_unused_event_body The event that triggered the webhook.
 	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_canceled( $event_body ) {
+	private function process_webhook_payment_intent_canceled( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
@@ -403,11 +419,11 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Process webhook for a payment intent amount capturable updated event.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $_unused_event_body The event that triggered the webhook.
 	 *
 	 * @return void
 	 */
-	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
+	private function process_webhook_payment_intent_amount_capturable_updated( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
@@ -482,7 +498,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 		$charge_amount = $this->read_webhook_property( $event_object, 'amount' );
 
-		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
+		$payment_method_id = $this->get_webhook_payment_method_id( $charges_data[0]['payment_method'] ?? $event_object['payment_method'] ?? null );
 		if ( ! $order ) {
 			return;
 		}
@@ -558,6 +574,7 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id );
 		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
@@ -577,6 +594,88 @@ class WC_Payments_Webhook_Processing_Service {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+	}
+
+	/**
+	 * Ensures recurring orders paid by webhook have a token for future renewals.
+	 *
+	 * @param WC_Order                          $order             The order.
+	 * @param WC_Payments_API_Payment_Intention $payment_intent    The payment intent.
+	 * @param string|null                       $payment_method_id The payment method ID.
+	 */
+	private function ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id ) {
+		if ( ! $payment_intent->is_authorized() || empty( $payment_method_id ) || ! $this->wcpay_gateway->is_payment_recurring( $order->get_id() ) ) {
+			return;
+		}
+
+		$previous_token_id = $this->get_order_last_payment_token_id( $order );
+
+		try {
+			$token = $this->wcpay_gateway->ensure_payment_method_token_for_order( $order, $payment_method_id, $order->get_user() );
+			$this->maybe_add_subscription_token_repair_note( $order, $previous_token_id, $token );
+		} catch ( Exception $e ) {
+			Logger::log( 'Error when saving payment method from webhook: ' . $e->getMessage() );
+			$order->add_order_note( __( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' ) );
+		}
+	}
+
+	/**
+	 * Gets the last payment token ID attached to an order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return int|null The last payment token ID, or null if none exists.
+	 */
+	private function get_order_last_payment_token_id( $order ) {
+		$payment_token_ids = $order->get_payment_tokens();
+		if ( ! is_array( $payment_token_ids ) || empty( $payment_token_ids ) ) {
+			return null;
+		}
+
+		$payment_token_id = end( $payment_token_ids );
+
+		return $payment_token_id ? (int) $payment_token_id : null;
+	}
+
+	/**
+	 * Adds observability when webhook token repair changes an existing subscription token.
+	 *
+	 * @param WC_Order         $order             The order.
+	 * @param int|null         $previous_token_id The token ID previously attached to the order.
+	 * @param WC_Payment_Token $token             The token attached after repair.
+	 */
+	private function maybe_add_subscription_token_repair_note( $order, $previous_token_id, $token ) {
+		if ( null === $previous_token_id || ! $token instanceof WC_Payment_Token ) {
+			return;
+		}
+
+		$new_token_id = (int) $token->get_id();
+		if ( $previous_token_id === $new_token_id ) {
+			return;
+		}
+
+		$note = sprintf(
+			/* translators: 1: Previous payment token ID, 2: New payment token ID. */
+			__( 'WooPayments updated the subscription payment method token from token #%1$d to #%2$d after receiving a successful renewal payment webhook.', 'woocommerce-payments' ),
+			$previous_token_id,
+			$new_token_id
+		);
+
+		Logger::log( $note );
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Extracts the payment method ID from a webhook payment method value.
+	 *
+	 * @param mixed $payment_method The payment method value from the webhook.
+	 * @return string|null The payment method ID.
+	 */
+	private function get_webhook_payment_method_id( $payment_method ) {
+		if ( is_array( $payment_method ) ) {
+			return isset( $payment_method['id'] ) && is_string( $payment_method['id'] ) ? $payment_method['id'] : null;
+		}
+
+		return is_string( $payment_method ) ? $payment_method : null;
 	}
 
 	/**

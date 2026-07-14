@@ -288,12 +288,12 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_test_to_live_notice_script() {
-		if ( ! $this->should_show_test_to_live_notice() ) {
+		// Screen gate before the eligibility check, which runs an order query.
+		if ( ! $this->is_banner_screen() ) {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->should_show_test_to_live_notice() ) {
 			return;
 		}
 
@@ -489,12 +489,12 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_one_and_done_notice_script() {
-		if ( ! $this->should_show_one_and_done_notice() ) {
+		// Screen gate before the eligibility check, which runs order queries.
+		if ( ! $this->is_banner_screen() ) {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->should_show_one_and_done_notice() ) {
 			return;
 		}
 
@@ -755,10 +755,13 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
+		// Existence-only check: `orderby => 'none'` keeps the LIMIT from forcing a
+		// filesort over every matching order on large stores (WOOPMNT-6240).
 		$orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
 				'limit'          => 1,
+				'orderby'        => 'none',
 				'return'         => 'ids',
 				'status'         => [ 'wc-completed', 'wc-processing' ],
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
@@ -781,8 +784,7 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_post_kyc_activation_notice_script(): void {
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->is_banner_screen() ) {
 			return;
 		}
 
@@ -1102,8 +1104,9 @@ class WC_Payments_Admin_Banner {
 	 * - That single order's date_created is at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD
 	 *   days in the past.
 	 *
-	 * Strategy: two narrow indexed queries against post_meta rather than one wide
-	 * unindexed scan.
+	 * Strategy: two narrow queries capped to the smallest row count that answers
+	 * the question, both unsorted (`orderby => 'none'`) so the LIMIT short-circuits
+	 * instead of forcing a filesort over every matching order (WOOPMNT-6240).
 	 *
 	 *   Q1 — WooPayments live orders capped at 2: filtered server-side by
 	 *        `_payment_method` + `_wcpay_mode` (same shape `compute_test_to_live_notice_eligibility()`
@@ -1148,13 +1151,15 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
-		// Q1 — WooPayments live-mode orders, capped at 2.
+		// Q1 — WooPayments live-mode orders, capped at 2. The 2-row cap only
+		// distinguishes 0 / 1 / ≥2, so `orderby => 'none'` is intentional: it
+		// avoids the ORDER BY filesort that made this slow on large stores
+		// (WOOPMNT-6240). The exactly-1 case reads the single row's date below.
 		$wcpay_live_orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
 				'limit'          => 2,
-				'orderby'        => 'date',
-				'order'          => 'ASC',
+				'orderby'        => 'none',
 				'status'         => [ 'wc-completed', 'wc-processing' ],
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
@@ -1187,6 +1192,7 @@ class WC_Payments_Admin_Banner {
 				[
 					'payment_method' => $other_gateway_ids,
 					'limit'          => 1,
+					'orderby'        => 'none',
 					'return'         => 'ids',
 					'status'         => [ 'wc-completed', 'wc-processing' ],
 				]
@@ -1250,6 +1256,19 @@ class WC_Payments_Admin_Banner {
 		}
 
 		return $this->is_one_and_done_notice_eligible_to_be_shown();
+	}
+
+	/**
+	 * Whether the current admin screen can host one of this class's banners.
+	 *
+	 * The banner eligibility checks run order queries, so every enqueue callback
+	 * gates on this first to avoid that cost on screens where no notice renders.
+	 *
+	 * @return bool
+	 */
+	private function is_banner_screen(): bool {
+		$screen = get_current_screen();
+		return ! $screen || in_array( $screen->id, wc_get_screen_ids(), true ) || wc_admin_is_registered_page();
 	}
 
 	/**

@@ -10,6 +10,7 @@ const mockUpdateUserPreferences = jest.fn();
 let mockUserPrefs: Record< string, unknown > = {};
 
 jest.mock( '@woocommerce/navigation', () => ( {
+	getPersistedQuery: () => ( {} ),
 	getQuery: () => mockGetQuery(),
 	updateQueryString: ( args: Record< string, unknown >, path?: string ) =>
 		mockUpdateQueryString( args, path ),
@@ -32,19 +33,27 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
-import { encodeCustomDateFilterValue } from '../date-filter-values';
 
-const renderUseFeesView = () => renderHook( () => useFeesView() );
+type SetFeesViewOptions = {
+	dateFilterNow?: Date;
+};
+
+const renderUseFeesView = ( now?: Date ) =>
+	renderHook( () => useFeesView( now ) );
 
 const updateFeesView = (
 	result: ReturnType< typeof renderUseFeesView >[ 'result' ],
-	nextView: Partial< View >
+	nextView: Partial< View >,
+	options?: SetFeesViewOptions
 ) => {
 	act( () => {
-		result.current[ 1 ]( {
-			...result.current[ 0 ],
-			...nextView,
-		} );
+		result.current[ 1 ](
+			{
+				...result.current[ 0 ],
+				...nextView,
+			},
+			options
+		);
 	} );
 };
 
@@ -65,8 +74,10 @@ const buildPaymentMethodFilter = ( value = 'card' ): Filter =>
 const buildTypeFilter = ( value: unknown, operator = 'is' ): Filter =>
 	buildFilter( 'type', value, operator );
 
-const buildDateFilter = ( value: unknown ): Filter =>
-	buildFilter( 'date', value );
+const buildDateFilter = (
+	operator: Filter[ 'operator' ],
+	value: unknown
+): Filter => buildFilter( 'date', value, operator );
 
 const expectRecordedTracksEvent = (
 	eventName: string,
@@ -170,20 +181,12 @@ describe( 'useFeesView', () => {
 		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
-	it( 'reads date_preset from URL into the native Date filter', () => {
+	it( 'ignores legacy date_preset URLs', () => {
 		mockGetQuery.mockReturnValue( {
 			date_preset: 'month_to_date',
 		} );
 		const { result } = renderUseFeesView();
-		expect( result.current[ 0 ].filters ).toEqual(
-			expect.arrayContaining( [
-				{
-					field: 'date',
-					operator: 'is',
-					value: 'month_to_date',
-				},
-			] )
-		);
+		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
 	it( 'reads custom date bounds from URL into the native Date filter', () => {
@@ -195,14 +198,35 @@ describe( 'useFeesView', () => {
 			expect.arrayContaining( [
 				{
 					field: 'date',
-					operator: 'is',
-					value: encodeCustomDateFilterValue( {
-						operator: 'between',
-						value: [ '2026-03-01', '2026-03-31' ],
-					} ),
+					operator: 'between',
+					value: [ '2026-03-01', '2026-03-31' ],
 				},
 			] )
 		);
+	} );
+
+	it( 'collapses same-day date bounds from URL into the native Date filter', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-15', '2026-03-15' ],
+		} );
+		const { result } = renderUseFeesView();
+		expect( result.current[ 0 ].filters ).toEqual(
+			expect.arrayContaining( [
+				{
+					field: 'date',
+					operator: 'on',
+					value: '2026-03-15',
+				},
+			] )
+		);
+	} );
+
+	it( 'ignores legacy datetime date bounds from URL in the native Date filter', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01 00:00:00', '2026-03-31 23:59:59' ],
+		} );
+		const { result } = renderUseFeesView();
+		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
 	it( 'reads fields from user_meta without duplicating the primary date column', () => {
@@ -342,14 +366,7 @@ describe( 'useFeesView', () => {
 	it( 'pushes native Date filter changes to URL', () => {
 		const { result } = renderUseFeesView();
 		updateFeesView( result, {
-			filters: [
-				buildDateFilter(
-					encodeCustomDateFilterValue( {
-						operator: 'before',
-						value: '2026-03-31',
-					} )
-				),
-			],
+			filters: [ buildDateFilter( 'before', '2026-03-31' ) ],
 		} );
 
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
@@ -397,25 +414,87 @@ describe( 'useFeesView', () => {
 		const { result } = renderUseFeesView();
 
 		updateFeesView( result, {
-			filters: [
-				buildDateFilter(
-					encodeCustomDateFilterValue( {
-						operator: 'before',
-						value: '2026-03-31',
-					} )
-				),
-			],
+			filters: [ buildDateFilter( 'before', '2026-03-31' ) ],
 		} );
 
 		expectNoRecordedTracksEvent( 'wcpay_reports_fees_filter_change' );
-		// Date telemetry is owned by useDateFilterChipInterceptor; useFeesView
-		// must not emit it directly, or the event would be double-tracked.
-		expectNoRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change' );
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'custom',
+			range_days: null,
+			is_initial_apply: true,
+		} );
+	} );
+
+	it( 'records date filter changes from an existing URL filter as non-initial applies', () => {
+		mockGetQuery.mockReturnValue( {
+			date_before: '2026-03-31',
+		} );
+		const { result } = renderUseFeesView();
+
+		updateFeesView( result, {
+			filters: [ buildDateFilter( 'after', '2026-04-01' ) ],
+		} );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'custom',
+			range_days: null,
+			is_initial_apply: false,
+		} );
+		expect(
+			countRecordedTracksEvents( 'wcpay_reports_fees_date_filter_change' )
+		).toBe( 1 );
+	} );
+
+	it( 'records date preset changes against the injected stable date', () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+		const { result } = renderUseFeesView(
+			new Date( '2026-05-15T12:00:00.000Z' )
+		);
+
+		updateFeesView( result, {
+			filters: [
+				buildDateFilter( 'between', [ '2026-04-01', '2026-04-30' ] ),
+			],
+		} );
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'last_month',
+			range_days: 29,
+			is_initial_apply: true,
+		} );
+	} );
+
+	it( 'records date preset changes against an override reference date', () => {
+		const { result } = renderUseFeesView(
+			new Date( '2026-05-15T12:00:00.000Z' )
+		);
+
+		updateFeesView(
+			result,
+			{
+				filters: [
+					buildDateFilter( 'between', [
+						'2026-05-01',
+						'2026-05-31',
+					] ),
+				],
+			},
+			{
+				dateFilterNow: new Date( '2026-06-15T12:00:00.000Z' ),
+			}
+		);
+
+		expectRecordedTracksEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'last_month',
+			range_days: 30,
+			is_initial_apply: true,
+		} );
 	} );
 
 	it( 'records a date filter reset when an applied date filter is removed', () => {
 		mockGetQuery.mockReturnValue( {
-			date_preset: 'month_to_date',
+			date_before: '2026-03-31',
 		} );
 		const { result } = renderUseFeesView();
 
@@ -435,7 +514,7 @@ describe( 'useFeesView', () => {
 		const { result } = renderUseFeesView();
 
 		updateFeesView( result, {
-			filters: [ buildDateFilter( undefined ) ],
+			filters: [ buildDateFilter( 'between', undefined ) ],
 		} );
 		mockRecordEvent.mockClear();
 

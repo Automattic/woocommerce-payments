@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Record the correct failure reason and avoid a PHP warning when a refund fails because of insufficient account balance.

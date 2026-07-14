@@ -7,6 +7,7 @@
 
 use WCPay\WC_Payments_Checkout;
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -108,7 +109,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway->id = 'woocommerce_payments';
 		$this->mock_wcpay_gateway
 			->method( 'get_account_domestic_currency' )
-			->willReturn( 'USD' );
+			->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->mock_woopay_utilities = $this->createMock( WooPay_Utilities::class );
 		$this->mock_woopay_utilities = $this->getMockBuilder( WooPay_Utilities::class )
