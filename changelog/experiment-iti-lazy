@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-refactor: make the iti tel input lazy-loaded, so that bundles are more optimized for the majority of scenarios
