@@ -1,0 +1,91 @@
+name: "Compare release files between trunk and develop"
+description: "Diffs changelog.txt and readme.txt between trunk and develop. Posts a Step Summary and sends a Slack notification when drift is detected."
+
+inputs:
+  slack-webhook:
+    description: "Slack incoming-webhook URL."
+    required: true
+
+outputs:
+  has-drift:
+    description: "'true' if changelog.txt or readme.txt differ between trunk and develop."
+    value: ${{ steps.compare.outputs.has-drift }}
+
+runs:
+  using: composite
+  steps:
+    - name: "Fetch trunk and develop"
+      shell: bash
+      run: git fetch origin trunk develop
+
+    - name: "Diff release files"
+      id: compare
+      shell: bash
+      run: |
+        set -euo pipefail
+        HAS_DRIFT=false
+        SUMMARY=""
+
+        for FILE in changelog.txt readme.txt; do
+          DIFF=$(git diff origin/trunk origin/develop -- "$FILE" || true)
+          if [ -n "$DIFF" ]; then
+            HAS_DRIFT=true
+            SUMMARY+="### \`$FILE\`"$'\n'
+            SUMMARY+="\`\`\`diff"$'\n'
+            SUMMARY+="$DIFF"$'\n'
+            SUMMARY+="\`\`\`"$'\n\n'
+          fi
+        done
+
+        echo "has-drift=$HAS_DRIFT" >> "$GITHUB_OUTPUT"
+
+        if [ "$HAS_DRIFT" = "true" ]; then
+          {
+            echo "## :warning: Release file drift detected between \`trunk\` and \`develop\`"
+            echo ""
+            printf '%s' "$SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo ":white_check_mark: \`changelog.txt\` and \`readme.txt\` are in sync between \`trunk\` and \`develop\`." >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: "Slack notification"
+      if: ${{ steps.compare.outputs.has-drift == 'true' }}
+      uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+      with:
+        webhook: ${{ inputs.slack-webhook }}
+        webhook-type: incoming-webhook
+        payload: |
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": ":warning: Release file drift: trunk vs develop",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "`changelog.txt` or `readme.txt` differ between `trunk` and `develop`. The release lead should review and manually sync them."
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
+                  { "type": "mrkdwn", "text": "*Triggered by:*\n${{ github.workflow }}" }
+                ]
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View diff in Step Summary> | <https://github.com/${{ github.repository }}/compare/develop...trunk|Compare branches>"
+                }
+              }
+            ]
+          }
