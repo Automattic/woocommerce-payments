@@ -2234,19 +2234,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// The provider redirect returns here as a top-level GET. The block checkout "Create
-		// Account" form on this same order-received page POSTs back with its own nonce; treating
-		// that POST as a return runs the nonce check below against the wrong nonce and, via
-		// check_admin_referer(), fatals the whole request with "The link you followed has
-		// expired" instead of creating the account (WOOPMNT-6279).
+		// The redirect return is always a top-level GET. Other requests to this page (e.g. the
+		// block "Create Account" form, which POSTs back with its own nonce) must not be treated
+		// as returns, or the nonce check below would fatal them via wp_nonce_ays(). See WOOPMNT-6279.
 		if ( 'GET' !== strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) ) {
 			return;
 		}
 
-		// Verify softly and bail on failure. A stale or refreshed return URL should quietly
-		// no-op rather than fatal the page via check_admin_referer()/wp_nonce_ays().
+		// Verify softly so a stale/refreshed return URL no-ops instead of fatalling.
 		$is_nonce_valid = wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wcpay_process_redirect_order_nonce' );
-		if ( ! $is_nonce_valid || empty( $_GET['wc_payment_method'] ) ) {
+		if ( ! $is_nonce_valid ) {
 			return;
 		}
 
