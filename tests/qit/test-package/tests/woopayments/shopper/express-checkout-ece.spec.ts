@@ -18,14 +18,14 @@ import { BrowserContext, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { test, expect, getAuthState } from '../fixtures/auth';
-import { describeif, getAnonymousShopper } from '../utils/helpers';
+import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { describeif, getAnonymousShopper } from '../../../utils/helpers';
 import {
 	enableExpressCheckout,
 	disableExpressCheckout,
-} from '../utils/merchant';
-import { goToProductPageBySlug } from '../utils/shopper-navigation';
-import { eceStripeCalls, lastCall, EceCall } from '../utils/ece-stripe-proxy';
+} from '../../../utils/merchant';
+import { goToProductPageBySlug } from '../../../utils/shopper-navigation';
+import { eceStripeCalls, lastCall, EceCall } from '../../../utils/ece-stripe-proxy';
 
 // No shared constant exists in the QIT package, so mirror the local gate the
 // other QIT subscription specs use.
@@ -144,31 +144,30 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 		}
 	);
 
-	for ( const wallet of [ 'applePay', 'amazonPay' ] ) {
-		test( `${ wallet } completes a purchase`, async ( { browser } ) => {
-			const { shopperPage, shopperContext } = await getAnonymousShopper(
-				browser
-			);
-			await goToProductPageBySlug( shopperPage, 'belt' );
+	test( 'Amazon Pay completes a purchase', async ( { browser } ) => {
+		const { shopperPage, shopperContext } = await getAnonymousShopper(
+			browser
+		);
+		await goToProductPageBySlug( shopperPage, 'belt' );
 
-			// The wallet type is just a label on the button; the fake sheet always
-			// charges tok_visa regardless of which wallet was clicked.
-			const button = walletButton( shopperPage, wallet );
-			await expect( button ).toBeVisible();
-			await button.click();
+		// Amazon Pay is a separate gateway, not a card wallet, so it's worth its
+		// own case. The fake sheet still charges tok_visa, so this proves the
+		// button drives the flow, not real wallet credentials.
+		const button = walletButton( shopperPage, 'amazonPay' );
+		await expect( button ).toBeVisible();
+		await button.click();
 
-			await expect(
-				shopperPage.getByTestId( 'ece-fake-wallet-sheet' )
-			).toBeVisible();
-			await shopperPage.getByTestId( 'ece-fake-wallet-pay' ).click();
+		await expect(
+			shopperPage.getByTestId( 'ece-fake-wallet-sheet' )
+		).toBeVisible();
+		await shopperPage.getByTestId( 'ece-fake-wallet-pay' ).click();
 
-			await expect( shopperPage ).toHaveURL( /order-received/, {
-				timeout: orderReceivedTimeout,
-			} );
-
-			await shopperContext.close();
+		await expect( shopperPage ).toHaveURL( /order-received/, {
+			timeout: orderReceivedTimeout,
 		} );
-	}
+
+		await shopperContext.close();
+	} );
 
 	test( 'virtual product declares no shipping to Stripe', async ( {
 		browser,

@@ -20,13 +20,13 @@ import { BrowserContext, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { test, expect, getAuthState } from '../fixtures/auth';
-import { getAnonymousShopper } from '../utils/helpers';
+import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { getAnonymousShopper } from '../../../utils/helpers';
 import {
 	enableExpressCheckout,
 	disableExpressCheckout,
-} from '../utils/merchant';
-import { goToProductPageBySlug } from '../utils/shopper-navigation';
+} from '../../../utils/merchant';
+import { goToProductPageBySlug } from '../../../utils/shopper-navigation';
 
 // WooPayments reveals the container with `is-ready` once the mount → `ready`
 // handshake completes. Assert its PRESENCE (the reveal fired); absence would

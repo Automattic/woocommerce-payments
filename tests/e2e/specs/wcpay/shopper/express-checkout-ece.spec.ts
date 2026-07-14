@@ -142,27 +142,26 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 		}
 	);
 
-	for ( const wallet of [ 'applePay', 'amazonPay' ] ) {
-		test( `${ wallet } completes a purchase`, async ( { browser } ) => {
-			const { shopperPage } = await getShopper( browser );
-			await goToProductPageBySlug( shopperPage, 'belt' );
+	test( 'Amazon Pay completes a purchase', async ( { browser } ) => {
+		const { shopperPage } = await getShopper( browser );
+		await goToProductPageBySlug( shopperPage, 'belt' );
 
-			// The wallet type is just a label on the button; the fake sheet always
-			// charges tok_visa regardless of which wallet was clicked.
-			const button = walletButton( shopperPage, wallet );
-			await expect( button ).toBeVisible();
-			await button.click();
+		// Amazon Pay is a separate gateway, not a card wallet, so it's worth its
+		// own case. The fake sheet still charges tok_visa, so this proves the
+		// button drives the flow, not real wallet credentials.
+		const button = walletButton( shopperPage, 'amazonPay' );
+		await expect( button ).toBeVisible();
+		await button.click();
 
-			await expect(
-				shopperPage.getByTestId( 'ece-fake-wallet-sheet' )
-			).toBeVisible();
-			await shopperPage.getByTestId( 'ece-fake-wallet-pay' ).click();
+		await expect(
+			shopperPage.getByTestId( 'ece-fake-wallet-sheet' )
+		).toBeVisible();
+		await shopperPage.getByTestId( 'ece-fake-wallet-pay' ).click();
 
-			await expect( shopperPage ).toHaveURL( /order-received/, {
-				timeout: orderReceivedTimeout,
-			} );
+		await expect( shopperPage ).toHaveURL( /order-received/, {
+			timeout: orderReceivedTimeout,
 		} );
-	}
+	} );
 
 	test( 'virtual product declares no shipping to Stripe', async ( {
 		browser,
