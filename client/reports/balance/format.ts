@@ -8,7 +8,10 @@ import { generateCSVDataFromTable } from '@woocommerce/csv-export';
 /**
  * Internal dependencies
  */
-import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+import {
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'multi-currency/interface/functions';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import type { BalanceRow } from './rows';
 import { getBalanceReportIdentity, getRowLabel } from './utils';
@@ -67,7 +70,13 @@ export const getBalanceCSV = ( {
 				},
 				{ value: row.key, display: row.key },
 				{ value: rowLabel, display: rowLabel },
-				{ value: row.getAmount( summary ), display: '' },
+				{
+					value: formatExportAmount(
+						row.getAmount( summary ),
+						currency
+					),
+					display: '',
+				},
 				{ value: count ?? '', display: '' },
 				{ value: currency, display: currency },
 				{ value: periodStart, display: periodStart },

@@ -55,6 +55,8 @@ jest.mock( 'multi-currency/interface/functions', () => ( {
 		skipSymbol?: boolean
 	) =>
 		skipSymbol ? `${ amount } ${ currency }` : `${ currency } ${ amount }`,
+	// The production helper converts minor units to major units for CSV export.
+	formatExportAmount: ( amount: number ) => amount / 100,
 } ) );
 
 jest.mock( 'wcpay/utils/date-time', () => ( {
