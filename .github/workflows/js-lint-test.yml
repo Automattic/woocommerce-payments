@@ -15,7 +15,9 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: pnpm/action-setup@v4
+      # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
+      # blocked by the Automattic enterprise Actions allowlist.
+      - run: corepack enable
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: '.nvmrc'
@@ -34,7 +36,9 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: pnpm/action-setup@v4
+      # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
+      # blocked by the Automattic enterprise Actions allowlist.
+      - run: corepack enable
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: '.nvmrc'

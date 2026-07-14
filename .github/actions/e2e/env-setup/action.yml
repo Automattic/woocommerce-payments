@@ -18,9 +18,12 @@ runs:
       shell: bash
       run: composer self-update
 
-    # Install pnpm
+    # Corepack (bundled with Node) provisions pnpm from package.json's
+    # `packageManager` field; pnpm/action-setup is blocked by the Automattic
+    # enterprise Actions allowlist.
     - name: Install pnpm
-      uses: pnpm/action-setup@v4
+      shell: bash
+      run: corepack enable
 
     # Use node version from .nvmrc
     - name: Setup NodeJS
