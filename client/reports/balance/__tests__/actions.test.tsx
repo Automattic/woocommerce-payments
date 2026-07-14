@@ -49,13 +49,10 @@ jest.mock( '../use-balance-date-filter', () => {
 // Mirror the existing Balance report tests so Balance amount formatting remains
 // deterministic when CSV generation touches row labels/values.
 jest.mock( 'multi-currency/interface/functions', () => ( {
-	formatExplicitCurrency: (
-		amount: number,
-		currency: string,
-		skipSymbol?: boolean
-	) =>
-		skipSymbol ? `${ amount } ${ currency }` : `${ currency } ${ amount }`,
-	// The production helper converts minor units to major units for CSV export.
+	formatExplicitCurrency: ( amount: number, currency: string ) =>
+		`${ amount < 0 ? '-' : '' }$${ Math.abs( amount / 100 ).toFixed(
+			2
+		) } ${ currency.toUpperCase() }`,
 	formatExportAmount: ( amount: number ) => amount / 100,
 } ) );
 

@@ -129,18 +129,17 @@ jest.mock( '../balance-dataview', () => {
 	};
 } );
 
-// Mirror the production helper's contract: `skipSymbol = true` returns the
-// formatted amount followed by the ISO code (no `$`). `formatBalanceAmount`
-// then strips the trailing code and prepends `±USD ` for the code-first layout
-// the Figma uses.
+// Stand-ins for the production helpers, which both take minor units and are
+// covered by their own tests. They mirror the real contracts closely enough to
+// pin `formatBalanceAmount`'s sign handling and the CSV's major-unit scale:
+// `formatExplicitCurrency` renders `-$80.00 USD` (symbol first, ISO code last,
+// sign outside the symbol) and `formatExportAmount` converts to major units.
+// Thousands separators are omitted — they belong to the currency utility.
 jest.mock( 'multi-currency/interface/functions', () => ( {
-	formatExplicitCurrency: (
-		amount: number,
-		currency: string,
-		skipSymbol?: boolean
-	) =>
-		skipSymbol ? `${ amount } ${ currency }` : `${ currency } ${ amount }`,
-	// The production helper converts minor units to major units for CSV export.
+	formatExplicitCurrency: ( amount: number, currency: string ) =>
+		`${ amount < 0 ? '-' : '' }$${ Math.abs( amount / 100 ).toFixed(
+			2
+		) } ${ currency.toUpperCase() }`,
 	formatExportAmount: ( amount: number ) => amount / 100,
 } ) );
 
@@ -841,16 +840,17 @@ describe( 'BalanceReport', () => {
 			expectBalanceText( label );
 		}
 
-		// formatBalanceAmount renders sign + code + space + amount.
+		// formatBalanceAmount renders the standard WooPayments explicit currency
+		// format, with a `+` marking inflows.
 		expect(
-			within( getVisibleBalanceTable() ).getByText( '+USD 162672' )
+			within( getVisibleBalanceTable() ).getByText( '+$1626.72 USD' )
 		).toBeInTheDocument();
 		expect(
-			within( getVisibleBalanceTable() ).getByText( '-USD 6064' )
+			within( getVisibleBalanceTable() ).getByText( '-$60.64 USD' )
 		).toBeInTheDocument();
 		// Payouts is forced negative even when the raw value is positive.
 		expect(
-			within( getVisibleBalanceTable() ).getByText( '-USD 1102608' )
+			within( getVisibleBalanceTable() ).getByText( '-$11026.08 USD' )
 		).toBeInTheDocument();
 		const chargesRow = screen.getByRole( 'row', {
 			name: /Total charges captured/,
