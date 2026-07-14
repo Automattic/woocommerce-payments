@@ -151,7 +151,7 @@ jobs:
         run: |
           PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR after the code freeze process is done successfully.\n\nApplies the changelog entries from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge.\n\nRelated release PR: #${RELEASE_PR_ID}")
           DEVELOP_PR_URL=$(gh pr create \
-            --title "Changelog for $RELEASE_VERSION → develop" \
+            --title "Changelog for develop from version $RELEASE_VERSION" \
             --body "$PR_BODY" \
             --base develop \
             --head "$DEVELOP_BRANCH")
