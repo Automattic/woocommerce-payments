@@ -30,7 +30,11 @@ jobs:
                   # The action installs both this branch and the base branch
                   # under the Node version from this branch's .nvmrc. Let the
                   # base comparison install old package engine metadata.
-                  install-script: pnpm install --no-frozen-lockfile --config.engine-strict=false
+                  # --ignore-scripts: the base branch has no pnpm-lock.yaml, so
+                  # its install would trip pnpm 10's CI hard-fail on un-approved
+                  # dependency build scripts (ERR_PNPM_IGNORED_BUILDS). The
+                  # webpack bundle build doesn't need those scripts, so skip them.
+                  install-script: pnpm install --no-frozen-lockfile --ignore-scripts --config.engine-strict=false
                   pattern: '{release/**/*.js,release/**/*.css}'
                   exclude: '{release/vendor/**}'
                   package-manager: pnpm
