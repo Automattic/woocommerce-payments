@@ -153,10 +153,10 @@ jobs:
             git --no-pager diff -- woocommerce-payments.php package.json readme.txt
             echo '```'
             echo ''
-            echo '### package-lock.json'
+            echo '### pnpm-lock.yaml'
             echo ''
             echo '```'
-            git --no-pager diff --stat -- package-lock.json
+            git --no-pager diff --stat -- pnpm-lock.yaml
             echo '```'
             echo ''
             echo '### Untracked files'
