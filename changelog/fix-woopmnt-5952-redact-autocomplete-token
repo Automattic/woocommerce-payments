@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: redact the address autocomplete token from API response logs.

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Reuse the React root for the WooPay save-user section on Blocks checkout so its state is no longer reset on cart/checkout updates.

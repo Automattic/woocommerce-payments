@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.3
-Stable tag: 10.9.0
+Stable tag: 0.1.97
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,56 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 0.1.97 - 2026-07-15 =
+* Add - Add A/B/C design variants to the in-app review prompt, assigned per-store via ExPlat (prompt remains disabled pending eligibility criteria)
+* Add - Add a client-side origin assertion that blocks checkout when Stripe.js is loaded from an unexpected origin, as defense-in-depth against skimmers that repoint the script handle to a look-alike domain.
+* Add - Multi-Currency: add the `wcpay_multi_currency_should_output_explicit_price` filter so merchants can force the currency code suffix on totals (e.g. "765 Kč CZK") on or off.
+* Add - Multi-Currency: auto-detect page caching to enable or recommend the cache-optimized rendering mode
+* Fix - Add direct file access protection to PHP files flagged by Plugin Check.
+* Fix - Attach WooPayments subscription tokens when webhook payment completion runs without checkout AJAX finalization.
+* Fix - Avoid invalidating multi-currency rate cache for visitor-filtered currencies
+* Fix - Display transaction detail timeline dates in the site timezone.
+* Fix - fix: adding scope to checkout style extraction
+* Fix - fix: ensure file purpose cache key value is consistent
+* Fix - fix: redact the address autocomplete token from API response logs.
+* Fix - Fix Affirm BNPL name validation checking wrong field path, which caused billing address to be stripped on order-pay pages
+* Fix - Fix changelog formatter PCRE JIT stack exhaustion causing changelogger --amend to wipe all existing entries
+* Fix - Fix doubled spacing between express checkout buttons on the Cart block with WooCommerce 10.8+
+* Fix - Fixed the one-and-done and test-to-live notice eligibility checks running a slow, unbounded order query that could block admin order pages on large stores.
+* Fix - Fix inconsistent card brand SVG styling: add missing rounded corners to Mastercard, correct Discover rendered width from 61px to 64px, and add explicit white background fill to Discover.
+* Fix - Fix PHP 8.5 deprecation notice when selecting a currency before any currency is stored for the user or session
+* Fix - Fix REST API routes not being registered for internal REST requests made from admin pages
+* Fix - Fix the dispute notification "View and respond to dispute" link intermittently landing on an error or broken page by redirecting to the disputes list when the dispute's transaction details cannot be resolved.
+* Fix - Fix WooPay express checkout button showing an infinite spinner on classic variable product pages
+* Fix - Forward structured error details (error code, type, and HTTP status) in the test drive account init REST error response, so consumers can distinguish non-recoverable errors.
+* Fix - Hide optional business structure selection during onboarding
+* Fix - Hide WooPay and Apple Pay / Google Pay express checkout buttons on the product page when the product cannot be added to the cart
+* Fix - Preserve decimal product quantities when adding to cart via Express Checkout
+* Fix - Preserve the express checkouts a merchant enabled in a sandbox account (such as Link by Stripe) when transitioning to a live account, instead of resetting them, while keeping Link and WooPay mutually exclusive.
+* Fix - Record the correct failure reason and avoid a PHP warning when a refund fails because of insufficient account balance.
+* Fix - Redact data from GET request URL in API log context
+* Fix - Remove giropay and sofort from payment method registry to prevent incompatible block checkout warnings
+* Fix - Request unrequested payment method capabilities (e.g. BNPL) on settings save when the capability is absent from cached account data
+* Fix - Reuse the React root for the WooPay save-user section on Blocks checkout so its state is no longer reset on cart/checkout updates.
+* Fix - Show all disputes on a transaction that has more than one, instead of only the first
+* Fix - Soften and clarify the VAT registration warning in the tax details modal; link to documentation instead of stating region-specific legal requirements.
+* Fix - Store the payment intent ID on orders when a payment fails, improving transaction traceability and webhook matching.
+* Fix - update: ECE to allow pay-for-order flow when customer billing email is missing
+* Update - Harden the client-side Stripe.js origin assertion: ignore non-script elements sharing the Stripe.js script id, and make the blocked-payment error message translatable.
+* Update - refactor: make the iti tel input lazy-loaded, so that bundles are more optimized for the majority of scenarios
+* Dev - Fix flaky shopper-multi-currency-widget E2E test by verifying the currency switcher widget is assigned to the sidebar before the test runs
+* Dev - Fix multi-currency widget E2E test timing out on WP nightly by waiting for the block editor canvas to mount before inserting the currency switcher block.
+* Dev - Look up webhook IDs in WooPay order status sync tests instead of hardcoding them, fixing order-dependent failures in full suite runs
+* Dev - Make the shopper free-trial subscription E2E tests (standard and QIT suites) resilient to WooCommerce Subscriptions price-string copy/layout changes (fixes the 9.0.0 "Free trial: 14 days" rendering).
+* Dev - Pass agent-pipeline workflow inputs through environment variables instead of interpolating them directly into shell steps.
+* Dev - Remove trunk→develop auto-merge from post-release workflow; add a composite action and weekly scheduled job to detect changelog.txt and readme.txt drift between trunk and develop.
+* Dev - Resolve repeated Database_Cache::get_or_add() calls from memory within a request, skipping redundant validation of hot keys like account data
+* Dev - Restore $_SERVER['REQUEST_URI'] after WC_Payments_Utils tests so leaked wp-json URIs don't send later tests down REST-only WooCommerce code paths
+* Dev - Retry transient QIT E2E environment-provisioning failures (corrupt downloads, network blips) so CI flakes no longer fail the run
+* Dev - Skip express checkout button handler construction on cron and XML-RPC requests, where the handlers' hooks can never fire
+* Dev - tweak: added a `should_convert_shipping_amount` filter to MCCY
+* Dev - Update Node support and WooCommerce package dependencies.
 
 = 10.9.0 - 2026-06-24 =
 * Add - Add a Balance reconciliation report to the WooPayments Reports area (behind a feature flag)
