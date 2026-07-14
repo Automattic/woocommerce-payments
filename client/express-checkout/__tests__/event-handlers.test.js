@@ -494,6 +494,7 @@ describe( 'Express checkout event handlers', () => {
 				} );
 				expect( elements.update ).toHaveBeenCalledWith( {
 					amount: 1000,
+					setupFutureUsage: null,
 				} );
 				expect( event.resolve ).toHaveBeenCalledWith(
 					expect.objectContaining( {
@@ -545,6 +546,7 @@ describe( 'Express checkout event handlers', () => {
 				expect( event.reject ).not.toHaveBeenCalled();
 				expect( elements.update ).toHaveBeenCalledWith( {
 					amount: 1000,
+					setupFutureUsage: null,
 				} );
 				expect( event.resolve ).toHaveBeenCalledWith(
 					expect.objectContaining( {
@@ -604,7 +606,6 @@ describe( 'Express checkout event handlers', () => {
 			} );
 		} );
 	} );
-
 
 	describe( 'shippingRateChangeHandler', () => {
 		let event;
