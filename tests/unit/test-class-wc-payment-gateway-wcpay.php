@@ -415,6 +415,52 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
 	}
 
+	public function test_maybe_process_upe_redirect_ignores_create_account_form_post() {
+		$order = WC_Helper_Order::create_order();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// The block checkout "Create Account" form POSTs back to the order-received URL, which
+		// for a non-card payment still carries wc_payment_method in the query string, but with
+		// the form's own nonce rather than the redirect nonce.
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_GET['wc_payment_method'] = 'woocommerce_payments';
+		$_POST['create-account']   = '1';
+		$_REQUEST['_wpnonce']      = wp_create_nonce( 'wc_create_account' );
+		$_POST['_wpnonce']         = $_REQUEST['_wpnonce'];
+
+		// Must bail without treating the POST as a redirect return, and without a fatal
+		// "the link you followed has expired" nonce die.
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset( $_SERVER['REQUEST_METHOD'], $_GET['wc_payment_method'], $_POST['create-account'] );
+	}
+
+	public function test_maybe_process_upe_redirect_does_not_fatal_on_stale_nonce() {
+		$order = WC_Helper_Order::create_order();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+		$_GET['wc_payment_method'] = 'woocommerce_payments';
+		$_GET['_wpnonce']          = 'not-a-valid-nonce';
+
+		// A stale or refreshed return URL should quietly no-op rather than hard-die.
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset( $_SERVER['REQUEST_METHOD'], $_GET['wc_payment_method'], $_GET['_wpnonce'] );
+	}
+
 	public function test_process_redirect_payment_intent_succeded() {
 		$order = WC_Helper_Order::create_order();
 
