@@ -2,13 +2,13 @@
 
 ```bash
 # 1. Install dependencies
-npm install
+pnpm install
 
 # 2. Start WordPress container and set up the site (auto-starts infrastructure if needed)
-npm run up:recreate
+pnpm run up:recreate
 
-# 3. Build JS assets (or use `npm start` to watch for changes)
-npm run build:client
+# 3. Build JS assets (or use `pnpm start` to watch for changes)
+pnpm run build:client
 ```
 
 After these steps, your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port).
@@ -22,7 +22,7 @@ Login credentials: `admin` / `admin`
 #### Step 1: Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 #### Step 2: Start WordPress and set up the site
@@ -30,7 +30,7 @@ npm install
 For first-time setup (creates container AND configures WordPress/WooPayments):
 
 ```bash
-npm run up:recreate
+pnpm run up:recreate
 ```
 
 This will:
@@ -38,14 +38,14 @@ This will:
 2. Create/recreate the WordPress container (uses port 8082 and container ID "default" if `.env` doesn't exist)
 3. Run the setup script to install WordPress, WooCommerce, and WooPayments
 
-**Note:** The shared infrastructure (database and phpMyAdmin) is started automatically from your main checkout when needed. If you're in a worktree, the infrastructure will be started from the main checkout directory. You can also start it manually with `npm run infra:up` if you prefer explicit control.
+**Note:** The shared infrastructure (database and phpMyAdmin) is started automatically from your main checkout when needed. If you're in a worktree, the infrastructure will be started from the main checkout directory. You can also start it manually with `pnpm run infra:up` if you prefer explicit control.
 
-**Note:** For custom port/container configuration, copy `.env.example` to `.env` and edit it, or run `npm run worktree:setup` to auto-generate one.
+**Note:** For custom port/container configuration, copy `.env.example` to `.env` and edit it, or run `pnpm run worktree:setup` to auto-generate one.
 
 For subsequent startups (container already configured):
 
 ```bash
-npm run up
+pnpm run up
 ```
 
 #### Step 3: Build JS assets
@@ -53,19 +53,19 @@ npm run up
 Build once for production:
 
 ```bash
-npm run build:client
+pnpm run build:client
 ```
 
 Or watch for changes during development:
 
 ```bash
-npm start
+pnpm start
 ```
 
 You can also combine container startup with watch mode:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 #### Checking your port
@@ -76,9 +76,9 @@ Your WordPress port is saved in `.env`. Check it with:
 cat .env
 ```
 
-Or it's displayed when you run `npm run up`.
+Or it's displayed when you run `pnpm run up`.
 
-**Note:** If `.env` doesn't exist, Docker Compose uses defaults (port 8082, container ID "default"). Copy `.env.example` to `.env` and customize, or run `npm run worktree:setup` to auto-generate one.
+**Note:** If `.env` doesn't exist, Docker Compose uses defaults (port 8082, container ID "default"). Copy `.env.example` to `.env` and customize, or run `pnpm run worktree:setup` to auto-generate one.
 
 ### WordPress Admin
 
@@ -107,7 +107,7 @@ The Docker setup is designed to work seamlessly with git worktrees. Each worktre
 To see all worktrees and their Docker status:
 
 ```bash
-npm run worktree:status
+pnpm run worktree:status
 ```
 
 This shows:
@@ -126,13 +126,13 @@ git worktree add ../my-feature-branch feature-branch
 cd ../my-feature-branch
 
 # Install dependencies
-npm install
+pnpm install
 
 # Configure port and worktree ID (creates .env file)
-npm run worktree:setup
+pnpm run worktree:setup
 
 # Start WordPress
-npm run up:recreate
+pnpm run up:recreate
 ```
 
 The `worktree:setup` command scans for an available port (8180-8199), derives a `WORKTREE_ID` from the directory name, and creates a `.env` file with both values.
@@ -143,7 +143,7 @@ Before removing a worktree, clean up its Docker resources:
 
 ```bash
 cd /path/to/worktree
-npm run worktree:cleanup
+pnpm run worktree:cleanup
 cd ..
 git worktree remove /path/to/worktree
 ```
@@ -168,10 +168,10 @@ WORKTREE_ID=my_feature
 
 ```bash
 # Stop this worktree's WordPress container
-npm run down
+pnpm run down
 
 # Stop all shared infrastructure (DB, phpMyAdmin)
-npm run infra:down
+pnpm run infra:down
 ```
 
 ### Shared vs Per-Worktree Resources
@@ -220,7 +220,7 @@ Jurassic Tube is a tunneling service for a12s.
 **First-time setup:**
 
 ```bash
-npm run tube:setup
+pnpm run tube:setup
 ```
 
 This will:
@@ -232,13 +232,13 @@ This will:
 **Starting the tunnel:**
 
 ```bash
-npm run tube:start
+pnpm run tube:start
 ```
 
 **Stopping the tunnel:**
 
 ```bash
-npm run tube:stop
+pnpm run tube:stop
 ```
 
 Your site will be available at `https://<your-subdomain>.jurassic.tube/`
@@ -271,7 +271,7 @@ services:
         - XDEBUG_REMOTE_PORT=9003 # IDE/Editor's listener port
 ```
 I used port `9003` as an example.
-To apply the change, restart your containers using `npm run down && npm run up`
+To apply the change, restart your containers using `pnpm run down && pnpm run up`
 
 ### IDE setup for xDebug
 
@@ -301,7 +301,7 @@ services:
       - /path/to/your/repo/woocommerce/plugins/woocommerce:/var/www/html/wp-content/plugins/woocommerce
 ```
 
-To apply the change, restart your containers using `npm run down && npm run up`. In case, it's not working properly yet, ensure that you follow the WooCommerce code README.md and build the plugin there.
+To apply the change, restart your containers using `pnpm run down && pnpm run up`. In case, it's not working properly yet, ensure that you follow the WooCommerce code README.md and build the plugin there.
 
 ### Adding local helper scripts/hacks
 

@@ -50,9 +50,9 @@ Since `qit-cli` requires PHP 7.4+ but the project has `config.platform.php: 7.3`
 #### Security and PHPStan tests
 
 ```bash
-npm run test:qit-security
-npm run test:qit-phpstan
-npm run test:qit-phpstan-local  # Against local development build
+pnpm run test:qit-security
+pnpm run test:qit-phpstan
+pnpm run test:qit-phpstan-local  # Against local development build
 ```
 
 #### E2E Tests
@@ -62,7 +62,7 @@ E2E tests use the [QIT Test Packages](https://qit.woo.com/docs/test-packages/) a
 Before running E2E tests, build the plugin package:
 
 ```bash
-npm run build:release
+pnpm run build:release
 ```
 
 This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests with the required environment variables.
@@ -71,33 +71,33 @@ This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests
 
 | Command | Description |
 |---------|-------------|
-| `npm run test:qit-e2e` | Run all E2E tests |
-| `npm run test:qit-e2e:shopper` | Run shopper tests only |
-| `npm run test:qit-e2e:merchant` | Run merchant tests only |
-| `npm run test:qit-e2e:subscriptions` | Run subscription tests (installs WC Subscriptions automatically) |
-| `npm run test:qit-e2e:ci` | Run tests locally the same way CI does (sets `CI=true`) |
+| `pnpm run test:qit-e2e` | Run all E2E tests |
+| `pnpm run test:qit-e2e:shopper` | Run shopper tests only |
+| `pnpm run test:qit-e2e:merchant` | Run merchant tests only |
+| `pnpm run test:qit-e2e:subscriptions` | Run subscription tests (installs WC Subscriptions automatically) |
+| `pnpm run test:qit-e2e:ci` | Run tests locally the same way CI does (sets `CI=true`) |
 
 ##### Usage Examples
 
 ```bash
 # Run all E2E tests (prepend with env vars from local.env)
-E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' pnpm run test:qit-e2e
 
 # Run only shopper tests
-E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:shopper
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' pnpm run test:qit-e2e:shopper
 
 # Run only merchant tests
-E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:merchant
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' pnpm run test:qit-e2e:merchant
 
 # Run subscription tests (automatically installs WooCommerce Subscriptions)
-E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:subscriptions
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' pnpm run test:qit-e2e:subscriptions
 
 # Run specific test file (passthrough to Playwright)
-E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- shopper-checkout-purchase.spec.ts
-# The first -- passes args to npm script, second -- passes to Playwright
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' pnpm run test:qit-e2e -- -- shopper-checkout-purchase.spec.ts
+# The first -- passes args to pnpm script, second -- passes to Playwright
 
 # Run tests filtered by tag (e.g., @blocks, @shopper)
-E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --grep "@blocks"
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' pnpm run test:qit-e2e -- -- --grep "@blocks"
 ```
 
 > [!TIP]
@@ -105,7 +105,7 @@ E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>'
 
 ```bash
 set -a && source tests/qit/config/local.env && set +a
-npm run test:qit-e2e
+pnpm run test:qit-e2e
 ```
 
 ### Analyzing Results

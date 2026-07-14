@@ -14,11 +14,11 @@ We adopt the L-2 version support policy for WordPress core strictly, and a loose
 
 ### Install dependencies & build
 
--   `npm install`
+-   `pnpm install`
 -   `composer install`
--   `npm run build:client`, or if you're developing the client you can have it auto-update when changes are made: `npm start`
+-   `pnpm run build:client`, or if you're developing the client you can have it auto-update when changes are made: `pnpm start`
 
-If you run into errors with `npm install` it may be due to node version, try `nvm install` followed by `nvm use` then try again.
+If you run into errors with `pnpm install` it may be due to node version, try `nvm install` followed by `nvm use` then try again.
 
 When running the `composer install/update`, composer may prompt you for a GitHub OAuth token before it can fetch the `subscriptions-core` package from github.
 
@@ -43,8 +43,8 @@ For detailed Docker setup instructions, see [docker/README.md](docker/README.md)
 
 Quick start:
 ```bash
-npm install                  # Install dependencies
-npm run up:recreate          # Start WordPress and run setup (auto-starts infrastructure if needed)
+pnpm install                  # Install dependencies
+pnpm run up:recreate          # Start WordPress and run setup (auto-starts infrastructure if needed)
 ```
 
 Your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port; default is 8082).
@@ -80,7 +80,7 @@ See: [CONTRIBUTING.md](CONTRIBUTING.md) for more development details.
 WooPayments has PHP unit, JavaScript unit, E2E, and QIT test suites. Once your [Docker environment](docker/README.md) is running:
 
 ```bash
-npm test          # Run JS and PHP unit tests
+pnpm test          # Run JS and PHP unit tests
 ```
 
 See [tests/README.md](tests/README.md) for how to run each suite, and [docs/test-matrix.md](docs/test-matrix.md) for the full inventory of suites and what they gate.

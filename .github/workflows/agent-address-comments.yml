@@ -99,7 +99,7 @@ jobs:
           model: ${{ inputs.model }}
           prompt: ${{ steps.prompt.outputs.content }}
           max_turns: "30"
-          allowed_tools: "Read,Glob,Grep,Edit,Write,Bash(git diff*),Bash(git log*),Bash(git blame*),Bash(git show*),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(gh api *),Bash(gh pr *),Bash(npm run lint:*),Bash(npm run test:*),Bash(vendor/bin/phpcs *),Bash(npx eslint *)"
+          allowed_tools: "Read,Glob,Grep,Edit,Write,Bash(git diff*),Bash(git log*),Bash(git blame*),Bash(git show*),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(gh api *),Bash(gh pr *),Bash(pnpm run lint:*),Bash(pnpm run test:*),Bash(vendor/bin/phpcs *),Bash(pnpm exec eslint *)"
 
       - name: Write job summary
         if: always()
