@@ -235,6 +235,15 @@
 		"whatwg-fetch": "3.6.20"
 	},
 	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild",
+			"@parcel/watcher"
+		],
+		"ignoredBuiltDependencies": [
+			"core-js",
+			"core-js-pure",
+			"msw"
+		],
 		"overrides": {
 			"@woocommerce/components>@woocommerce/csv-export": "1.11.0",
 			"@woocommerce/components>@woocommerce/currency": "6.0.0",
