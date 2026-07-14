@@ -41,6 +41,10 @@ module.exports = {
 	testPathIgnorePatterns: [
 		'/node_modules/',
 		'/vendor/',
+		// Nested git worktrees (gitignored, developer-local) carry their own
+		// copies of every test; without this Jest runs all of them against the
+		// current branch's node_modules and reports other branches' failures.
+		'/\\.worktrees/',
 		'<rootDir>/.*/build/',
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/docker/',
@@ -48,6 +52,7 @@ module.exports = {
 		'<rootDir>/tests/qit',
 	],
 	modulePathIgnorePatterns: [
+		'<rootDir>/\\.worktrees/',
 		'<rootDir>/docker/',
 		'<rootDir>/vendor/',
 		'<rootDir>/.*/build/',
