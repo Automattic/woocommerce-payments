@@ -149,7 +149,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           RELEASE_PR_ID: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
         run: |
-          PR_BODY=$(echo -e "Applies the changelog entries from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge.\n\nRelated release PR: #${RELEASE_PR_ID}")
+          PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR after the code freeze process is done successfully.\n\nApplies the changelog entries from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge.\n\nRelated release PR: #${RELEASE_PR_ID}")
           DEVELOP_PR_URL=$(gh pr create \
             --title "Changelog for $RELEASE_VERSION → develop" \
             --body "$PR_BODY" \
