@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Multi-Currency: add the `wcpay_multi_currency_should_output_explicit_price` filter so merchants can force the currency code suffix on totals (e.g. "765 Kč CZK") on or off.
