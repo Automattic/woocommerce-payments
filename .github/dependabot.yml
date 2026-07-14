@@ -1,7 +1,23 @@
 version: 2
 updates:
-    # Note: npm/pnpm dependency updates are handled by Renovate (see renovate.json).
-    # Dependabot does not support pnpm.
+    # Enable version updates for npm
+    - package-ecosystem: 'npm'
+      # Look for `package.json` and `lock` files in the `root` directory
+      directory: '/'
+      # Check for updates once a week
+      schedule:
+        interval: 'weekly'
+      cooldown:
+        default-days: 7
+      ignore:
+        # For @wordpress dependencies, ignore all updates as most of them need to be synced to the min WP version
+        - dependency-name: "@wordpress/*"
+        # For @woocommerce dependencies, ignore all updates as most of them need to be synced to the min WC version
+        - dependency-name: "@woocommerce/*"
+      # Reviewers for issues created
+      reviewers:
+        - 'Automattic/gamma'
+        - 'Automattic/moltres'
 
     # Enable version updates for composer
     - package-ecosystem: 'composer'

@@ -11,12 +11,5 @@
   "rebaseWhen": "conflicted",
   "schedule": [
     "before 3am on Sunday"
-  ],
-  "packageRules": [
-    {
-      "matchPackagePatterns": ["^@wordpress/", "^@woocommerce/"],
-      "enabled": false,
-      "description": "Ignore @wordpress/* and @woocommerce/* updates — these need to be synced to min WP/WC versions"
-    }
   ]
 }
