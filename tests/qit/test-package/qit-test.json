@@ -20,12 +20,11 @@
                 "./bootstrap/setup.sh"
             ],
             "setup": [
-                "[ -d node_modules ] || pnpm install --frozen-lockfile",
-                "pnpm exec playwright install chromium --with-deps",
+                "[ -d node_modules ] || npm ci",
                 "mkdir -p ./test-results"
             ],
             "run": [
-                "pnpm exec playwright test"
+                "npx playwright test"
             ],
             "teardown": [],
             "globalTeardown": []
@@ -42,7 +41,7 @@
             "tags": ["woopayments", "shopper", "checkout", "critical"],
             "test": {
                 "phases": {
-                    "run": ["pnpm exec playwright test --project=shopper"]
+                    "run": ["npx playwright test --project=shopper"]
                 }
             }
         },
@@ -51,7 +50,7 @@
             "tags": ["woopayments", "merchant", "admin"],
             "test": {
                 "phases": {
-                    "run": ["pnpm exec playwright test --project=merchant"]
+                    "run": ["npx playwright test --project=merchant"]
                 }
             }
         },
@@ -63,7 +62,7 @@
             },
             "test": {
                 "phases": {
-                    "run": ["pnpm exec playwright test --project=subscriptions"]
+                    "run": ["npx playwright test --project=subscriptions"]
                 }
             }
         }
