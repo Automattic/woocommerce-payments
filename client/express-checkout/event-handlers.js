@@ -112,7 +112,9 @@ const isLocalPickupRate = ( rate ) =>
  * chosen method when the package's rate set changes, so when pickup and a
  * delivery rate are both available before the address arrives, this reselect
  * is the only thing that moves the selection off pickup. Keep it until core
- * also re-evaluates auto-defaulted choices on unchanged rate sets.
+ * also re-evaluates auto-defaulted choices on unchanged rate sets. When core
+ * reports the selection's provenance (`selected_rate_origin`), a pickup the
+ * customer explicitly chose ('manual') is never overridden.
  *
  * @param {Object} cartData Cart response from `updateCustomer`.
  * @return {Promise<Object>} Cart data with a non-pickup rate selected when applicable.
@@ -140,14 +142,36 @@ const preferDeliveryOverLocalPickup = async ( cartData ) => {
 		return cartData;
 	}
 
+	const packageId = applyFilters(
+		'wcpay.express-checkout.shipping-package-id',
+		0,
+		cartData,
+		firstDeliveryRate.rate_id
+	);
+
+	// WC core ≥ the origin-tracking fix (woocommerce/woocommerce#64795) exposes
+	// how the selected rate was chosen. A pickup the customer explicitly selected
+	// ('manual') must stay selected — overriding it would silently convert a free
+	// pickup order into a paid delivery one. Only an explicit 'manual' blocks the
+	// reselect: 'auto', null, and absent (older WC without the core fix, or a
+	// filtered package not present in shipping_rates) proceed, preserving the
+	// mitigation for merchants on WC versions without the field. Note: sessions
+	// predating origin tracking report 'manual' (core's conservative BC default),
+	// so those skip too until the session naturally expires.
+	const selectedRateOrigin = ( cartData.shipping_rates || [] ).find(
+		( shippingPackage ) => shippingPackage.package_id === packageId
+	)?.selected_rate_origin;
+	if ( selectedRateOrigin === 'manual' ) {
+		return cartData;
+	}
+
 	try {
+		// Core records this reselect as a 'manual' origin (it goes through the
+		// same select-shipping-rate route customers use). That's acceptable:
+		// the gate above guarantees it only ever replaces an auto-defaulted
+		// pickup, and origin-based stickiness only protects pickup rates.
 		return await cartApi.selectShippingRate( {
-			package_id: applyFilters(
-				'wcpay.express-checkout.shipping-package-id',
-				0,
-				cartData,
-				firstDeliveryRate.rate_id
-			),
+			package_id: packageId,
 			rate_id: firstDeliveryRate.rate_id,
 		} );
 	} catch ( e ) {

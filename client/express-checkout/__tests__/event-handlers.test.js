@@ -425,7 +425,11 @@ describe( 'Express checkout event handlers', () => {
 		} );
 
 		describe( 'when wallet address triggers Local Pickup → delivery switch', () => {
-			const buildCart = ( shippingRates, totalPrice = 1000 ) => ( {
+			const buildCart = (
+				shippingRates,
+				totalPrice = 1000,
+				selectedRateOrigin
+			) => ( {
 				items: [],
 				shipping_rates: [
 					{
@@ -434,6 +438,9 @@ describe( 'Express checkout event handlers', () => {
 						destination: {},
 						items: [],
 						shipping_rates: shippingRates,
+						...( selectedRateOrigin !== undefined
+							? { selected_rate_origin: selectedRateOrigin }
+							: {} ),
 					},
 				],
 				totals: {
@@ -618,6 +625,100 @@ describe( 'Express checkout event handlers', () => {
 				);
 
 				consoleWarnSpy.mockRestore();
+			} );
+
+			it( 'leaves a manually chosen Local Pickup selected (selected_rate_origin: manual)', async () => {
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart( [ pickupRate, deliveryRate ], 0, 'manual' )
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).not.toHaveBeenCalled();
+				expect( event.resolve ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						shippingRates: [
+							expect.objectContaining( {
+								id: 'pickup_location:0',
+							} ),
+							expect.objectContaining( { id: 'flat_rate:14' } ),
+						],
+					} )
+				);
+				// The shopper chose free pickup — the charged amount must stay 0.
+				expect( elements.update ).toHaveBeenCalledWith(
+					expect.objectContaining( { amount: 0 } )
+				);
+			} );
+
+			it( 'reselects delivery when the pickup was auto-defaulted (selected_rate_origin: auto)', async () => {
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart( [ pickupRate, deliveryRate ], 0, 'auto' )
+				);
+				cartApiSelectShippingRateMock.mockResolvedValue(
+					buildCart(
+						[
+							{ ...pickupRate, selected: false },
+							{ ...deliveryRate, selected: true },
+						],
+						1000,
+						'manual'
+					)
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).toHaveBeenCalledWith( {
+					package_id: 0,
+					rate_id: 'flat_rate:14',
+				} );
+			} );
+
+			it( 'reselects delivery when the origin field is absent (WC without origin tracking)', async () => {
+				// buildCart without the third argument emits no selected_rate_origin —
+				// the shape every WC release without the core origin-tracking fix sends.
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart( [ pickupRate, deliveryRate ], 0 )
+				);
+				cartApiSelectShippingRateMock.mockResolvedValue(
+					buildCart(
+						[
+							{ ...pickupRate, selected: false },
+							{ ...deliveryRate, selected: true },
+						],
+						1000
+					)
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).toHaveBeenCalledWith( {
+					package_id: 0,
+					rate_id: 'flat_rate:14',
+				} );
+			} );
+
+			it( 'reselects delivery when the origin is explicitly null (no prior selection recorded)', async () => {
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart( [ pickupRate, deliveryRate ], 0, null )
+				);
+				cartApiSelectShippingRateMock.mockResolvedValue(
+					buildCart(
+						[
+							{ ...pickupRate, selected: false },
+							{ ...deliveryRate, selected: true },
+						],
+						1000,
+						'manual'
+					)
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).toHaveBeenCalledWith( {
+					package_id: 0,
+					rate_id: 'flat_rate:14',
+				} );
 			} );
 
 			it( 'resolves rates and package id through the express-checkout filters (deferred-shipping carts)', async () => {
