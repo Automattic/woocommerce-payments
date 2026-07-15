@@ -417,48 +417,80 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_process_upe_redirect_ignores_create_account_form_post() {
 		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
 
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
-		// The block checkout "Create Account" form POSTs back to the order-received URL, which
-		// for a non-card payment still carries wc_payment_method in the query string, but with
-		// the form's own nonce rather than the redirect nonce.
-		$_SERVER['REQUEST_METHOD'] = 'POST';
-		$_GET['wc_payment_method'] = 'woocommerce_payments';
-		$_POST['create-account']   = '1';
-		$_REQUEST['_wpnonce']      = wp_create_nonce( 'wc_create_account' );
-		$_POST['_wpnonce']         = $_REQUEST['_wpnonce'];
+		// The block checkout "Create Account" form POSTs back to the very URL the shopper was
+		// returned to, so the query string still carries a valid redirect return: everything
+		// below would be processed if this were a GET. The request-method gate is the only
+		// thing that may stop it.
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
 
-		// Must bail without treating the POST as a redirect return, and without a fatal
-		// "the link you followed has expired" nonce die.
+		// ...but submitted by the form, which posts its own nonce.
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_POST['create-account']   = '1';
+		$_POST['_wpnonce']         = wp_create_nonce( 'wc_create_account' );
+		$_REQUEST['_wpnonce']      = $_POST['_wpnonce'];
+
 		$this->card_gateway->maybe_process_upe_redirect();
 
+		// The POST is not a return: the order is left untouched, and there's no fatal
+		// "the link you followed has expired" nonce die.
 		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
 
 		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
-		unset( $_SERVER['REQUEST_METHOD'], $_GET['wc_payment_method'], $_POST['create-account'] );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
+			$_GET['key'],
+			$_POST['create-account']
+		);
 	}
 
 	public function test_maybe_process_upe_redirect_does_not_fatal_on_stale_nonce() {
 		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
 
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
-		$_SERVER['REQUEST_METHOD'] = 'GET';
-		$_GET['wc_payment_method'] = 'woocommerce_payments';
-		$_GET['_wpnonce']          = 'not-a-valid-nonce';
+		// An otherwise processable return, so the nonce is the only thing that may stop it.
+		$_SERVER['REQUEST_METHOD']            = 'GET';
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = 'not-a-valid-nonce';
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
 
-		// A stale or refreshed return URL should quietly no-op rather than hard-die.
 		$this->card_gateway->maybe_process_upe_redirect();
 
+		// A stale or refreshed return URL quietly no-ops rather than hard-dying.
 		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
 
 		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
-		unset( $_SERVER['REQUEST_METHOD'], $_GET['wc_payment_method'], $_GET['_wpnonce'] );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
+			$_GET['key']
+		);
 	}
 
 	public function test_process_redirect_payment_intent_succeded() {
