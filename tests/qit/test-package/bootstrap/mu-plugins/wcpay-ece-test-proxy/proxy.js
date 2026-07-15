@@ -542,24 +542,30 @@
 				);
 			}
 
-			if ( shippingRequired ) {
-				[
-					'name',
-					'address_1',
-					'city',
-					'state',
-					'postcode',
-					'country',
-					'phone',
-				].forEach( function ( field ) {
-					const input = el( 'input', 'ece-fake-address-' + field );
-					input.value = DEFAULT_ADDRESS[ field ] || '';
-					addressInputs[ field ] = input;
+			// Build the address fields unconditionally so the confirm carries a
+			// billing address. A no-shipping product skips the shipping round-trip,
+			// but the order still needs a billing country or the Store API rejects
+			// it, so only the visible fields are gated on shipping, not the data.
+			[
+				'name',
+				'address_1',
+				'city',
+				'state',
+				'postcode',
+				'country',
+				'phone',
+			].forEach( function ( field ) {
+				const input = el( 'input', 'ece-fake-address-' + field );
+				input.value = DEFAULT_ADDRESS[ field ] || '';
+				addressInputs[ field ] = input;
+				if ( shippingRequired ) {
 					sheet.appendChild(
 						labelField( ADDRESS_LABELS[ field ] || field, input )
 					);
-				} );
+				}
+			} );
 
+			if ( shippingRequired ) {
 				const applyBtn = el( 'button', 'ece-fake-apply-address', {
 					type: 'button',
 				} );
@@ -592,7 +598,7 @@
 			} );
 			payBtn.textContent = 'Pay';
 			payBtn.addEventListener( 'click', function () {
-				pay( wallet, readAddress() );
+				pay( wallet, readAddress(), shippingRequired );
 			} );
 			sheet.appendChild( payBtn );
 
@@ -626,7 +632,7 @@
 			}
 		}
 
-		function pay( wallet, address ) {
+		function pay( wallet, address, shippingRequired ) {
 			const billingAddress = {
 				line1: address.address_1,
 				city: address.city,
@@ -638,7 +644,7 @@
 				// Arm the credential fakery just for the mint the app's confirm
 				// handler is about to make (consumed by the first mint).
 				eceConfirmInFlight = true;
-				handlers.confirm( {
+				const confirmEvent = {
 					expressPaymentType: wallet,
 					billingDetails: {
 						name: address.name,
@@ -646,11 +652,16 @@
 						phone: address.phone,
 						address: billingAddress,
 					},
-					shippingAddress: {
+				};
+				// Real ECE only carries a shippingAddress when the product needs
+				// shipping; a virtual product's confirm omits it, so mirror that.
+				if ( shippingRequired ) {
+					confirmEvent.shippingAddress = {
 						name: address.name,
 						address: billingAddress,
-					},
-				} );
+					};
+				}
+				handlers.confirm( confirmEvent );
 			}
 			// Hide the sheet: the success path navigates away; on decline the
 			// app renders a notice on the underlying page.
