@@ -23,6 +23,18 @@
  * nothing pointing back here. The warning below turns that silent rot into a
  * loud install-time signal; the real fix (auto-detect, or drop it once the repo
  * moves off @wordpress/data 6.6.1) is tracked separately — see the migration PR.
+ *
+ * Careful: @wordpress/private-apis needs the exact opposite treatment, so don't
+ * reach for the trick above when it misbehaves. It keeps a lock/unlock registry
+ * that only works while every consumer shares one module instance — npm's
+ * hoisting gives that for free, pnpm's isolation doesn't. What currently keeps
+ * it to a single copy is the `@wordpress/dataviews>*` pin block in package.json,
+ * which is why those pins are load-bearing rather than cosmetic: repinning them
+ * (or pinning dataviews itself back to an older line) splits the instance and
+ * Jest dies with `Cannot unlock an object that was not locked before`, from a
+ * stack that points into node_modules and explains nothing. Giving private-apis
+ * its own copy per package is the wrong direction — it is the failure, not the
+ * fix.
  */
 const PACKAGES_NEEDING_OWN_WP_DATA = [
 	'@woocommerce/components',
