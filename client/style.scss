@@ -154,10 +154,12 @@
 img {
 	&.payment-method__icon {
 		border: 1px solid rgba( 0, 0, 0, 0.07 );
-		// 2px hugs the brand badges' baked ~2px rounded corners; a wider
-		// radius exposes their transparent corners as a thin white line
-		// inside the stroke (matches the settings-strip treatment).
-		border-radius: 2px;
+		// Match the design-library badges' baked corner radius (rx=3 in the
+		// 64×40 artwork) so the stroke hugs them at ANY rendered size. A fixed
+		// px radius can't: the badge's corner scales with size (3 × width/64),
+		// so the wrong px leaves a white gap at the corners. Percentages track
+		// it — 4.6875% = 3/64 (horizontal), 7.5% = 3/40 (vertical).
+		border-radius: 4.6875% / 7.5%;
 		display: block;
 
 		&.no-border {
