@@ -71,6 +71,11 @@ export const getBalanceCSV = ( {
 				{ value: row.key, display: row.key },
 				{ value: rowLabel, display: rowLabel },
 				{
+					// Export the raw amount, only rescaled from minor to major
+					// units. Unlike the on-screen and print tables, the CSV does
+					// not apply the `displayNegative` sign flip (e.g. Payouts) —
+					// it deliberately carries each row's stored sign so the file
+					// stays machine-readable. See the row contract in rows.ts.
 					value: formatExportAmount(
 						row.getAmount( summary ),
 						currency
