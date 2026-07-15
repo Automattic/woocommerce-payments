@@ -49,13 +49,16 @@
 					// Admin-only stroke so white-background brand logos read
 					// as defined chips instead of floating (settings-only
 					// stylesheet; checkout stays strokeless). Use a box-shadow
-					// ring, not a `border`: the ring takes no layout space and
-					// follows border-radius exactly, so it hugs the badge with
-					// no hairline gap. Match the badges' baked corner radius
-					// (rx=3 in the 64×40 artwork) with a percentage so it
-					// tracks them at any size — 4.6875% = 3/64, 7.5% = 3/40.
+					// ring, not a `border`, so it takes no layout space and
+					// follows the chip's border-radius exactly.
 					box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.07 );
 					border-radius: 4.6875% / 7.5%;
+					// Inset every logo a touch so the full-bleed badges (Amex,
+					// JCB, CB, …) don't overpower the smaller wordmarks — this
+					// evens the visual weight across the row and matches the
+					// padded chips on the main WC → Payments settings page.
+					box-sizing: border-box;
+					padding: 1.5px;
 				}
 			}
 		}
