@@ -232,7 +232,7 @@ jobs:
           fi
 
   compare-release-files:
-    name: "Check changelog.txt and readme.txt drift between trunk and develop"
+    name: "Check release files and version fields drift between trunk and develop"
     needs: [ create-gh-release, trigger-translations, cleanup-testing-branches, update-wiki ]
     runs-on: ubuntu-latest
     # Run even if earlier jobs failed so drift is always checked after a release attempt.

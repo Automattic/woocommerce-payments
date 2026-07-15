@@ -1,5 +1,5 @@
 name: "Compare release files between trunk and develop"
-description: "Diffs changelog.txt and readme.txt between trunk and develop. Posts a Step Summary and sends a Slack notification when drift is detected."
+description: "Checks changelog.txt, readme.txt, and version fields (woocommerce-payments.php, package.json, package-lock.json) between trunk and develop. Posts a Step Summary and sends a Slack notification when drift is detected."
 
 inputs:
   slack-webhook:
@@ -8,7 +8,7 @@ inputs:
 
 outputs:
   has-drift:
-    description: "'true' if changelog.txt or readme.txt differ between trunk and develop."
+    description: "'true' if changelog.txt, readme.txt, or version fields differ between trunk and develop."
     value: ${{ steps.compare.outputs.has-drift }}
 
 runs:
@@ -37,6 +37,47 @@ runs:
           fi
         done
 
+        # Check version fields between trunk and develop.
+        # Extract the plugin header version from woocommerce-payments.php.
+        PHP_TRUNK=$(git show origin/trunk:woocommerce-payments.php \
+          | grep -E '^\s*\*\s*Version:' | head -n1 \
+          | sed -E 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*//')
+        PHP_DEV=$(git show origin/develop:woocommerce-payments.php \
+          | grep -E '^\s*\*\s*Version:' | head -n1 \
+          | sed -E 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*//')
+        if [ "$PHP_TRUNK" != "$PHP_DEV" ]; then
+          HAS_DRIFT=true
+          SUMMARY+="### \`woocommerce-payments.php\` (plugin header version)"$'\n'
+          SUMMARY+="- trunk: \`$PHP_TRUNK\`"$'\n'
+          SUMMARY+="- develop: \`$PHP_DEV\`"$'\n\n'
+        fi
+
+        # Check package.json version.
+        PKG_TRUNK=$(git show origin/trunk:package.json | jq -r .version)
+        PKG_DEV=$(git show origin/develop:package.json | jq -r .version)
+        if [ "$PKG_TRUNK" != "$PKG_DEV" ]; then
+          HAS_DRIFT=true
+          SUMMARY+="### \`package.json\` (version)"$'\n'
+          SUMMARY+="- trunk: \`$PKG_TRUNK\`"$'\n'
+          SUMMARY+="- develop: \`$PKG_DEV\`"$'\n\n'
+        fi
+
+        # Check package-lock.json — both the top-level .version field and the
+        # .packages[""].version entry (both are written by npm and bump-version.sh).
+        # Check each independently so a partial-update is also caught.
+        for LOCK_FIELD in '.version' '.packages[""].version'; do
+          LOCK_TRUNK=$(git show origin/trunk:package-lock.json 2>/dev/null \
+            | jq -r "$LOCK_FIELD // \"\"" || true)
+          LOCK_DEV=$(git show origin/develop:package-lock.json 2>/dev/null \
+            | jq -r "$LOCK_FIELD // \"\"" || true)
+          if [ -n "$LOCK_TRUNK" ] && [ -n "$LOCK_DEV" ] && [ "$LOCK_TRUNK" != "$LOCK_DEV" ]; then
+            HAS_DRIFT=true
+            SUMMARY+="### \`package-lock.json\` (\`$LOCK_FIELD\`)"$'\n'
+            SUMMARY+="- trunk: \`$LOCK_TRUNK\`"$'\n'
+            SUMMARY+="- develop: \`$LOCK_DEV\`"$'\n\n'
+          fi
+        done
+
         echo "has-drift=$HAS_DRIFT" >> "$GITHUB_OUTPUT"
 
         if [ "$HAS_DRIFT" = "true" ]; then
@@ -46,7 +87,7 @@ runs:
             printf '%s' "$SUMMARY"
           } >> "$GITHUB_STEP_SUMMARY"
         else
-          echo ":white_check_mark: \`changelog.txt\` and \`readme.txt\` are in sync between \`trunk\` and \`develop\`." >> "$GITHUB_STEP_SUMMARY"
+          echo ":white_check_mark: \`changelog.txt\`, \`readme.txt\`, and version fields are in sync between \`trunk\` and \`develop\`." >> "$GITHUB_STEP_SUMMARY"
         fi
 
     - name: "Slack notification"
@@ -70,7 +111,7 @@ runs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "`changelog.txt` or `readme.txt` differ between `trunk` and `develop`. The release lead should review and manually sync them."
+                  "text": "`changelog.txt`, `readme.txt`, or version fields (`woocommerce-payments.php`, `package.json`, `package-lock.json`) differ between `trunk` and `develop`. The release lead should review and manually sync them."
                 }
               },
               {
