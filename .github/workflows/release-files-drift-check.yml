@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   compare-release-files:
-    name: "Compare changelog.txt and readme.txt between trunk and develop"
+    name: "Compare release files and version fields between trunk and develop"
     # Only the upstream repo carries the webhook secret; skip on forks.
     if: github.repository == 'Automattic/woocommerce-payments'
     runs-on: ubuntu-latest
