@@ -120,4 +120,22 @@ describe( 'getBalanceCSV', () => {
 			',"Total charges captured",162672,'
 		);
 	} );
+
+	it( 'flips the sign of displayNegative outflow rows to match the screen', () => {
+		const payouts: BalanceRow = {
+			key: 'payouts',
+			label: 'Payouts',
+			displayNegative: true,
+			getAmount: () => 1102608,
+		};
+
+		const csv = getBalanceCSV( {
+			visibleRows: [ payouts ],
+			summary: {} as Parameters< BalanceRow[ 'getAmount' ] >[ 0 ],
+			displayPeriod,
+			currency: 'usd',
+		} );
+
+		expect( csv ).toContain( ',Payouts,-11026.08,' );
+	} );
 } );

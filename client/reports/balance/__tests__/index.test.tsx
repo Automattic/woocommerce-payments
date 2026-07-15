@@ -925,6 +925,11 @@ describe( 'BalanceReport', () => {
 		expect( csv ).toContain(
 			'"Aperture Science LLC",acct_wcpay_123,refunds,Refunds,-215,3,usd,2026-05-01,2026-05-14'
 		);
+		// `payouts` is the only `displayNegative` row: the fixture stores it
+		// positive (1102608) but the screen and the CSV both show it negative.
+		expect( csv ).toContain(
+			'"Aperture Science LLC",acct_wcpay_123,payouts,Payouts,-11026.08,3,usd,2026-05-01,2026-05-14'
+		);
 		expect( csv ).toContain(
 			'"Aperture Science LLC",acct_wcpay_123,ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
 		);

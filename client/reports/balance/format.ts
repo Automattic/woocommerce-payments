@@ -13,6 +13,7 @@ import {
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
+import { getDisplayedAmount } from './rows';
 import type { BalanceRow } from './rows';
 import { getBalanceReportIdentity, getRowLabel } from './utils';
 
@@ -71,13 +72,12 @@ export const getBalanceCSV = ( {
 				{ value: row.key, display: row.key },
 				{ value: rowLabel, display: rowLabel },
 				{
-					// Export the raw amount, only rescaled from minor to major
-					// units. Unlike the on-screen and print tables, the CSV does
-					// not apply the `displayNegative` sign flip (e.g. Payouts) —
-					// it deliberately carries each row's stored sign so the file
-					// stays machine-readable. See the row contract in rows.ts.
+					// Rescaled from minor to major units, with the same
+					// `displayNegative` sign flip the on-screen and print tables
+					// apply (e.g. Payouts), so a summed CSV column matches what
+					// the merchant sees. See the row contract in rows.ts.
 					value: formatExportAmount(
-						row.getAmount( summary ),
+						getDisplayedAmount( row, row.getAmount( summary ) ),
 						currency
 					),
 					display: '',
