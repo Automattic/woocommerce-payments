@@ -141,6 +141,12 @@ describe( 'BalanceActions Tracks', () => {
 			expectedPayload
 		);
 		expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+
+		// The export path runs `getBalanceCSV`, which rescales minor units to
+		// major units via `formatExportAmount`. Assert the exported cell so the
+		// stub earns its place instead of only proving that a download fired.
+		const csv = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ] as string;
+		expect( csv ).toContain( ',"Total charges captured",1626.72,' );
 	} );
 
 	it( 'records export errors with the failure message and preserves notice behavior', async () => {
