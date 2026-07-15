@@ -40,6 +40,12 @@
 				flex-wrap: wrap;
 				align-items: center;
 				gap: 8px;
+				// The shared component sets `overflow: hidden` here to
+				// truncate the non-wrapping checkout strip. This settings
+				// strip wraps instead, and the icons' box-shadow ring is
+				// painted outside the box — so the hidden overflow clips
+				// parts of the ring. Restore `visible` so it renders in full.
+				overflow: visible;
 
 				img {
 					width: 32px;
