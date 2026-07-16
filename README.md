@@ -14,11 +14,16 @@ We adopt the L-2 version support policy for WordPress core strictly, and a loose
 
 ### Install dependencies & build
 
+This repo pins its pnpm version via the `packageManager` field in `package.json`. The simplest way to get the matching version is [Corepack](https://nodejs.org/api/corepack.html) (bundled with Node), which is also what CI uses:
+
+-   `corepack enable pnpm`
 -   `pnpm install`
 -   `composer install`
 -   `pnpm run build:client`, or if you're developing the client you can have it auto-update when changes are made: `pnpm start`
 
 If you run into errors with `pnpm install` it may be due to node version, try `nvm install` followed by `nvm use` then try again.
+
+If you installed pnpm standalone (e.g. via Homebrew) and see an error like `The packageManager dependency "pnpm@..." in pnpm-lock.yaml must use a registry package path and an integrity-only resolution`, you're on a newer pnpm than the repo pins. Run `corepack enable pnpm` to use the pinned version instead.
 
 When running the `composer install/update`, composer may prompt you for a GitHub OAuth token before it can fetch the `subscriptions-core` package from github.
 
