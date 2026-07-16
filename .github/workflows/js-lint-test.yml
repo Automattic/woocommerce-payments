@@ -15,20 +15,20 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
+      # blocked by the Automattic enterprise Actions allowlist.
+      - run: corepack enable
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
       # enable dependencies caching
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.npm/
-          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # install dependencies and run linter
-      - run: npm ci && npm run lint:js && npm run lint:css
+      - run: pnpm install --frozen-lockfile && pnpm run lint:js && pnpm run lint:css
 
   test:
     name:    JS testing
@@ -36,17 +36,17 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
+      # blocked by the Automattic enterprise Actions allowlist.
+      - run: corepack enable
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
       # enable dependencies caching
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.npm/
-          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # install dependencies and run linter
-      - run: npm ci && npm run test:js
+      - run: pnpm install --frozen-lockfile && pnpm run test:js

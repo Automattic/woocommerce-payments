@@ -14,9 +14,9 @@ WooPayments has several test suites, each documented alongside the tests it cove
 Once your [Docker environment](../docker/README.md) is running:
 
 ```bash
-npm test          # Run JS and PHP unit tests
-npm run test:js   # JavaScript unit tests only
-npm run test:php  # PHP unit tests only
+pnpm test          # Run JS and PHP unit tests
+pnpm run test:js   # JavaScript unit tests only
+pnpm run test:php  # PHP unit tests only
 ```
 
 See the per-suite guides above for setup, watch mode, coverage, and how to run a single test.

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Switch the package manager from npm to pnpm.

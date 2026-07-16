@@ -1169,8 +1169,9 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -1566,8 +1567,9 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -1977,8 +1979,9 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -2429,8 +2432,9 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -2863,8 +2867,9 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -4025,8 +4030,9 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -4436,8 +4442,9 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -4847,8 +4854,9 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
@@ -5330,8 +5338,9 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
                 <svg
                   aria-hidden="true"
                   focusable="false"
-                  size="24"
+                  height="24"
                   viewBox="0 0 24 24"
+                  width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
