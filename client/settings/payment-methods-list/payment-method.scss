@@ -50,13 +50,16 @@
 				img {
 					width: 32px;
 					height: 20px;
-					object-fit: contain;
+					// Framed card badges fill their box; `cover` avoids the
+					// letterbox `contain` leaves when the box aspect differs from
+					// the art (matches the checkout treatment).
+					object-fit: cover;
 					margin-right: 0;
-					// Admin-only stroke so white-background brand logos read
-					// as defined chips instead of floating (settings-only
-					// stylesheet; checkout stays strokeless). Use a box-shadow
-					// ring, not a `border`, so it takes no layout space and
-					// follows the chip's border-radius exactly.
+					// Gray stroke so white-background brand logos read as defined
+					// chips instead of floating. Use a box-shadow ring, not a
+					// `border`, so it takes no layout space and follows the chip's
+					// border-radius exactly — the checkout strips use the same
+					// ring, each in its own scoped stylesheet.
 					box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.07 );
 					border-radius: 4.6875% / 7.5%;
 				}

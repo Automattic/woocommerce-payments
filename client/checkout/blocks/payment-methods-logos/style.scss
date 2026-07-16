@@ -14,6 +14,11 @@
 			flex-shrink: 1;
 			min-width: 0;
 			max-width: 100%;
+			// NOTE: no stroke here. This stylesheet ships with the shared
+			// PaymentMethodsLogos component, which is also rendered on the
+			// settings page (with its own stroke) — an unscoped stroke here
+			// would leak in and double up. The checkout strip stroke lives in
+			// the checkout-scoped rule in ../style.scss instead.
 		}
 	}
 
@@ -63,5 +68,12 @@
 .payment-methods--logos-popover {
 	> img {
 		object-position: center !important;
+		// These are framed card badges (baked rounded background) that should
+		// fill the box, but WooCommerce Blocks core forces `object-fit: contain`,
+		// which letterboxes the 64×40 badges (JCB, UnionPay) inside the 38×24
+		// popover — a white line on their colored background. `cover` fills with
+		// no letterbox (needs !important to beat the WC core rule, same as
+		// object-position above).
+		object-fit: cover !important;
 	}
 }

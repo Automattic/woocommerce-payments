@@ -21,6 +21,27 @@
 		.payment-methods--logos {
 			float: right;
 
+			// The block checkout's shared stylesheet also loads on this page
+			// and sets `overflow: hidden` on this inner flex container (strip
+			// truncation), which clips the badges' box-shadow ring top/bottom.
+			// Restore `visible` so the ring shows in full; the counter badge
+			// already caps how many logos render, so nothing overflows.
+			> div {
+				overflow: visible;
+			}
+
+			// Gray chip stroke on the strip badges only. Scoped to the strip
+			// container (`> div img`) so it doesn't reach the sibling
+			// `.logo-popover` imgs (which have their own box-shadow ring) or the
+			// payment method icon — matching the block checkout. Uses a box-shadow
+			// ring, not a border, so it follows the badges' baked rounded corners
+			// exactly with no hairline gap. Radius tracks the rx=3 corner
+			// (4.6875% = 3/64, 7.5% = 3/40).
+			> div img {
+				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+				border-radius: 4.6875% / 7.5%;
+			}
+
 			img:last-of-type {
 				margin-right: 0;
 			}
@@ -36,6 +57,11 @@
 		}
 		img {
 			float: right;
+			// Reset borders on all label imgs (method icon, popover imgs). The
+			// strip badges get their stroke from the scoped rule below, not
+			// here — a `border` on this broad selector would also hit the
+			// popover imgs (which carry their own box-shadow ring) and the
+			// method icon, doubling their borders.
 			border: 0;
 			padding: 0;
 			height: 24px !important;
