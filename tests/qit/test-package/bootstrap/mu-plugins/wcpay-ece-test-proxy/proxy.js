@@ -182,6 +182,16 @@
 
 	const WALLETS = [ 'googlePay', 'applePay', 'amazonPay' ];
 
+	// Stripe's paymentMethods config and availablePaymentMethods use camelCase
+	// wallet keys, but the click/confirm events report expressPaymentType in
+	// snake_case. Map to the real event shape when firing so the app sees what it
+	// would from genuine ECE.
+	const EXPRESS_PAYMENT_TYPES = {
+		googlePay: 'google_pay',
+		applePay: 'apple_pay',
+		amazonPay: 'amazon_pay',
+	};
+
 	const DEFAULT_ADDRESS = {
 		name: 'John Doe',
 		address_1: '60 29th Street #343',
@@ -316,7 +326,7 @@
 
 			fireAndWait(
 				'click',
-				{ expressPaymentType: wallet },
+				{ expressPaymentType: EXPRESS_PAYMENT_TYPES[ wallet ] },
 				function ( opts ) {
 					clickOptions = opts || {};
 				}
@@ -677,7 +687,7 @@
 				// handler is about to make (consumed by the first mint).
 				eceConfirmInFlight = true;
 				const confirmEvent = {
-					expressPaymentType: wallet,
+					expressPaymentType: EXPRESS_PAYMENT_TYPES[ wallet ],
 					billingDetails: {
 						name: address.name,
 						email: 'john.doe@example.com',

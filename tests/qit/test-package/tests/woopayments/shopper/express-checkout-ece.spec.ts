@@ -220,18 +220,18 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 	} );
 
 	describeif( shouldRunSubscriptionsTests )( 'Subscriptions', () => {
-		// Skipped in QIT: the off_session purchase saves a card to the shared
-		// customer, and QIT can't isolate it - there's no dedicated subscriptions
-		// customer or recreate-customer helper, and WCS blocks deleting a
-		// subscription-linked card. The leftover breaks the later saved-card tests.
-		// The Playwright e2e run covers this flow with a recreated customer.
-		test.skip( 'subscription purchase sets up an off-session payment', async ( {
+		test( 'subscription purchase sets up an off-session payment', async ( {
 			browser,
 		} ) => {
-			// Subscriptions need a logged-in customer, so reuse the shared
-			// `customer`. A fresh context still isolates the proxy's recorder.
+			// The off_session purchase saves a card, so use the dedicated
+			// subscriptions customer - the saved-card tests assert a clean slate on
+			// the shared `customer` and WCS blocks deleting a subscription-linked
+			// card, so we can't clean up after.
 			const shopperContext = await browser.newContext( {
-				storageState: await getAuthState( browser, 'customer' ),
+				storageState: await getAuthState(
+					browser,
+					'subscriptions-customer'
+				),
 			} );
 			const shopperPage = await shopperContext.newPage();
 			await goToProductPageBySlug(
