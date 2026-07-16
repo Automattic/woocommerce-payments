@@ -59,12 +59,6 @@
 					// follows the chip's border-radius exactly.
 					box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.07 );
 					border-radius: 4.6875% / 7.5%;
-					// Inset every logo a touch so the full-bleed badges (Amex,
-					// JCB, CB, …) don't overpower the smaller wordmarks — this
-					// evens the visual weight across the row and matches the
-					// padded chips on the main WC → Payments settings page.
-					box-sizing: border-box;
-					padding: 1.5px;
 				}
 			}
 		}
