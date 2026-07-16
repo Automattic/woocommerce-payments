@@ -57,6 +57,11 @@
 				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
 				width: 38px;
 				height: 24px;
+				// Round the ring to match the badges' baked rounded corners
+				// (rx=3 in the 64×40 artwork), so the square ring doesn't
+				// leave white at a rounded badge's corners — same fix as the
+				// block checkout popover (4.6875% = 3/64, 7.5% = 3/40).
+				border-radius: 4.6875% / 7.5%;
 			}
 		}
 	}
