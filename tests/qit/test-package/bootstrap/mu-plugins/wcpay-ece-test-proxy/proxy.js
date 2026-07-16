@@ -54,6 +54,12 @@
 	// selectedToken; Amazon Pay is its own method and mints a real amazon_pay.
 	let pendingMethodType = 'card';
 
+	// Mirrors the Elements setupFutureUsage onto the minted confirmation token.
+	// Subscriptions set off_session on the intent, and Stripe rejects the confirm
+	// when the token's setup_future_usage doesn't match the intent's. The real SDK
+	// copies it off the Elements; minting directly, we have to carry it ourselves.
+	let pendingSetupFutureUsage = null;
+
 	// True only while the fake sheet is confirming, consumed by the first mint
 	// that follows. Scopes the credential fakery to the ECE confirm flow: a
 	// normal card checkout on the same page (deferred-intent Payment Element also
@@ -148,6 +154,21 @@
 						'payment_method_data[type]': 'card',
 						'payment_method_data[card][token]': cardToken,
 				  };
+		if ( pendingSetupFutureUsage ) {
+			params.setup_future_usage = pendingSetupFutureUsage;
+			// amazon_pay needs a mandate to set up off_session. The real flow
+			// captures it during the Amazon authorization; minting directly, we
+			// supply an online acceptance like WCPay does for its mandate methods.
+			if ( methodType === 'amazon_pay' ) {
+				params[ 'mandate_data[customer_acceptance][type]' ] = 'online';
+				params[
+					'mandate_data[customer_acceptance][online][ip_address]'
+				] = '127.0.0.1';
+				params[
+					'mandate_data[customer_acceptance][online][user_agent]'
+				] = navigator.userAgent;
+			}
+		}
 		return stripePost( ctx, 'confirmation_tokens', params );
 	}
 
@@ -833,6 +854,10 @@
 							currency: opts && opts.currency,
 							onUpdate: null,
 						};
+						// Subscriptions configure the Elements with off_session; the
+						// minted confirmation token has to match or the confirm fails.
+						pendingSetupFutureUsage =
+							( opts && opts.setupFutureUsage ) || null;
 						return wrapElements(
 							targetStripe.elements( opts ),
 							ctx,
