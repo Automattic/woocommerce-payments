@@ -498,6 +498,34 @@ export const disableExpressCheckout = async ( page: Page ) => {
 	}
 };
 
+// Amazon Pay is a separate express-checkout method with its own toggle, not part
+// of the Apple Pay / Google Pay switch. Needs the account's amazon_pay capability
+// for the checkbox to be actionable.
+const amazonPayLabel = 'Amazon Pay';
+
+export const enableAmazonPay = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const wasInitiallyEnabled = await page
+		.getByLabel( amazonPayLabel )
+		.isChecked();
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByLabel( amazonPayLabel ).check();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const disableAmazonPay = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	if ( await page.getByLabel( amazonPayLabel ).isChecked() ) {
+		await page.getByLabel( amazonPayLabel ).uncheck();
+		await saveWooPaymentsSettings( page );
+	}
+};
+
 export const ensureBlockSettingsPanelIsOpen = async ( page: Page ) => {
 	const settingsButton = page.locator(
 		'.interface-pinned-items > button[aria-label="Settings"]'

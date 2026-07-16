@@ -23,6 +23,8 @@ import { describeif, getAnonymousShopper } from '../../../utils/helpers';
 import {
 	enableExpressCheckout,
 	disableExpressCheckout,
+	enableAmazonPay,
+	disableAmazonPay,
 } from '../../../utils/merchant';
 import { goToProductPageBySlug } from '../../../utils/shopper-navigation';
 import { eceStripeCalls, lastCall, EceCall } from '../../../utils/ece-stripe-proxy';
@@ -94,6 +96,7 @@ const orderReceivedTotalCents = async ( page: Page ): Promise< number > => {
 let merchantContext: BrowserContext;
 let merchantPage: Page;
 let priorEceState: boolean;
+let priorAmazonPayState: boolean;
 
 test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 	test.beforeAll( async ( { browser } ) => {
@@ -101,12 +104,17 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 			storageState: await getAuthState( browser, 'admin' ),
 		} );
 		merchantPage = await merchantContext.newPage();
-		// enableExpressCheckout returns whether it was ALREADY enabled, so we
-		// only tear it back down in afterAll if we were the ones who turned it on.
+		// The enable helpers return whether it was ALREADY on, so we only tear
+		// each back down in afterAll if we were the ones who turned it on. Amazon
+		// Pay is a separate method, so it needs its own toggle for its button.
 		priorEceState = await enableExpressCheckout( merchantPage );
+		priorAmazonPayState = await enableAmazonPay( merchantPage );
 	} );
 
 	test.afterAll( async () => {
+		if ( ! priorAmazonPayState ) {
+			await disableAmazonPay( merchantPage );
+		}
 		if ( ! priorEceState ) {
 			await disableExpressCheckout( merchantPage );
 		}
@@ -150,9 +158,9 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 		);
 		await goToProductPageBySlug( shopperPage, 'belt' );
 
-		// Amazon Pay is a separate gateway, not a card wallet, so it's worth its
-		// own case. The fake sheet still charges tok_visa, so this proves the
-		// button drives the flow, not real wallet credentials.
+		// Amazon Pay is its own method, not a card wallet, so the fake mints a
+		// real amazon_pay credential and confirms through Stripe's redirect
+		// authorization, the same as the other redirect methods (Alipay/Klarna).
 		const button = walletButton( shopperPage, 'amazonPay' );
 		await expect( button ).toBeVisible();
 		await button.click();
@@ -161,6 +169,8 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 			shopperPage.getByTestId( 'ece-fake-wallet-sheet' )
 		).toBeVisible();
 		await shopperPage.getByTestId( 'ece-fake-wallet-pay' ).click();
+
+		await shopperPage.getByText( 'Authorize Test Payment' ).click();
 
 		await expect( shopperPage ).toHaveURL( /order-received/, {
 			timeout: orderReceivedTimeout,

@@ -49,6 +49,11 @@
 	// <select>. Defaults to an approved Visa.
 	let selectedToken = 'tok_visa';
 
+	// The payment method the app is about to mint, set by pay() from the clicked
+	// wallet. Google/Apple Pay are card wallets so they mint a card from
+	// selectedToken; Amazon Pay is its own method and mints a real amazon_pay.
+	let pendingMethodType = 'card';
+
 	// True only while the fake sheet is confirming, consumed by the first mint
 	// that follows. Scopes the credential fakery to the ECE confirm flow: a
 	// normal card checkout on the same page (deferred-intent Payment Element also
@@ -135,18 +140,23 @@
 		} );
 	}
 
-	function mintConfirmationToken( ctx, cardToken ) {
-		return stripePost( ctx, 'confirmation_tokens', {
-			'payment_method_data[type]': 'card',
-			'payment_method_data[card][token]': cardToken,
-		} );
+	function mintConfirmationToken( ctx, methodType, cardToken ) {
+		const params =
+			methodType === 'amazon_pay'
+				? { 'payment_method_data[type]': 'amazon_pay' }
+				: {
+						'payment_method_data[type]': 'card',
+						'payment_method_data[card][token]': cardToken,
+				  };
+		return stripePost( ctx, 'confirmation_tokens', params );
 	}
 
-	function mintPaymentMethod( ctx, cardToken ) {
-		return stripePost( ctx, 'payment_methods', {
-			type: 'card',
-			'card[token]': cardToken,
-		} );
+	function mintPaymentMethod( ctx, methodType, cardToken ) {
+		const params =
+			methodType === 'amazon_pay'
+				? { type: 'amazon_pay' }
+				: { type: 'card', 'card[token]': cardToken };
+		return stripePost( ctx, 'payment_methods', params );
 	}
 
 	const WALLETS = [ 'googlePay', 'applePay', 'amazonPay' ];
@@ -633,6 +643,7 @@
 		}
 
 		function pay( wallet, address, shippingRequired ) {
+			pendingMethodType = wallet === 'amazonPay' ? 'amazon_pay' : 'card';
 			const billingAddress = {
 				line1: address.address_1,
 				city: address.city,
@@ -843,11 +854,13 @@
 							[ options ],
 							ctx.instanceId
 						);
-						return mintConfirmationToken( ctx, selectedToken ).then(
-							function ( id ) {
-								return { confirmationToken: { id: id } };
-							}
-						);
+						return mintConfirmationToken(
+							ctx,
+							pendingMethodType,
+							selectedToken
+						).then( function ( id ) {
+							return { confirmationToken: { id: id } };
+						} );
 					};
 				}
 				if ( prop === 'createPaymentMethod' ) {
@@ -862,11 +875,13 @@
 							[ options ],
 							ctx.instanceId
 						);
-						return mintPaymentMethod( ctx, selectedToken ).then(
-							function ( id ) {
-								return { paymentMethod: { id: id } };
-							}
-						);
+						return mintPaymentMethod(
+							ctx,
+							pendingMethodType,
+							selectedToken
+						).then( function ( id ) {
+							return { paymentMethod: { id: id } };
+						} );
 					};
 				}
 				const value = Reflect.get( targetStripe, prop );
