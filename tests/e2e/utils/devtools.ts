@@ -1,49 +1,63 @@
 /**
  * External dependencies
  */
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 // The dev-tools settings page (served by the woocommerce-payments-dev-tools
 // plugin, pulled from its own trunk during E2E setup) is intermittently truncated
 // mid-render by a PHP fatal, which drops its "Save Changes" submit button. A bare
 // click on the missing button would wait out the full 120s test timeout, so we
 // verify the page rendered fully, reload-and-retry when it didn't, and fail fast
-// with a clear message otherwise.
+// with a clear message otherwise. A save is a full POST -> redirect -> re-render
+// round trip through the same fragile page, so the retry wraps the whole
+// toggle-and-save sequence.
 const devToolsRenderTimeoutMs = 15 * 1000;
 const devToolsMaxLoadAttempts = 3;
 
 const goToDevToolsSettings = async ( page: Page ) => {
-	for ( let attempt = 1; attempt <= devToolsMaxLoadAttempts; attempt++ ) {
-		await page.goto( '/wp-admin/admin.php?page=wcpaydev', {
-			waitUntil: 'load',
-		} );
+	await page.goto( '/wp-admin/admin.php?page=wcpaydev', {
+		waitUntil: 'load',
+	} );
 
-		// The submit button renders after every settings section, so its presence
-		// is proof the page was not truncated before it.
-		const renderedFully = await page
-			.getByRole( 'button', { name: 'Save Changes' } )
-			.waitFor( { state: 'visible', timeout: devToolsRenderTimeoutMs } )
-			.then( () => true )
-			.catch( () => false );
-
-		if ( renderedFully ) {
-			return;
-		}
-	}
-
-	throw new Error(
-		`WCPay Dev Tools settings page did not render its "Save Changes" button after ${ devToolsMaxLoadAttempts } attempts; ` +
-			'it was likely truncated by a PHP fatal during render. See the "PHP fatals" group in the E2E run log.'
-	);
+	// The submit button renders after every settings section, so its presence
+	// is proof the page was not truncated before it.
+	return page
+		.getByRole( 'button', { name: 'Save Changes' } )
+		.waitFor( { state: 'visible', timeout: devToolsRenderTimeoutMs } )
+		.then( () => true )
+		.catch( () => false );
 };
 
 const saveDevToolsSettings = async ( page: Page ) => {
-	await page
+	const clicked = await page
 		.getByRole( 'button', { name: 'Save Changes' } )
-		.click( { timeout: devToolsRenderTimeoutMs } );
-	// Wait for the save request to complete and verify success.
+		.click( { timeout: devToolsRenderTimeoutMs } )
+		.then( () => true )
+		.catch( () => false );
+
+	if ( ! clicked ) {
+		return false;
+	}
+
 	await page.waitForLoadState( 'load' );
-	await expect( page.getByText( /Settings saved/ ) ).toBeVisible();
+
+	// The "Settings saved" notice alone isn't proof the whole page rendered.
+	// The submit button comes after every settings section, so checking it
+	// again tells us the post-save render isn't truncated either.
+	const [ savedNoticeVisible, renderedFully ] = await Promise.all( [
+		page
+			.getByText( /Settings saved/ )
+			.waitFor( { state: 'visible', timeout: devToolsRenderTimeoutMs } )
+			.then( () => true )
+			.catch( () => false ),
+		page
+			.getByRole( 'button', { name: 'Save Changes' } )
+			.waitFor( { state: 'visible', timeout: devToolsRenderTimeoutMs } )
+			.then( () => true )
+			.catch( () => false ),
+	] );
+
+	return savedNoticeVisible && renderedFully;
 };
 
 const getIsCardTestingProtectionEnabled = ( page: Page ) =>
@@ -64,38 +78,78 @@ const setActAsDisconnectedFromWCPay = ( page: Page, enabled: boolean ) =>
 		.getByLabel( 'act as disconnected from the Transact Platform Server' )
 		.setChecked( enabled );
 
-export const enableCardTestingProtection = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
+// The PHP fatal can hit any step, so a failure anywhere restarts the whole
+// sequence from navigation. Re-reading the checkbox after saving catches a
+// save that showed the notice but didn't actually persist the new value.
+const setDevToolsSetting = async (
+	page: Page,
+	settingName: string,
+	enabled: boolean,
+	getIsEnabled: ( page: Page ) => Promise< boolean >,
+	setEnabled: ( page: Page, enabled: boolean ) => Promise< void >
+) => {
+	for ( let attempt = 1; attempt <= devToolsMaxLoadAttempts; attempt++ ) {
+		const renderedFully = await goToDevToolsSettings( page );
 
-	if ( ! ( await getIsCardTestingProtectionEnabled( page ) ) ) {
-		await setCardTestingProtection( page, true );
-		await saveDevToolsSettings( page );
+		if ( ! renderedFully ) {
+			continue;
+		}
+
+		if ( ( await getIsEnabled( page ) ) === enabled ) {
+			return;
+		}
+
+		await setEnabled( page, enabled );
+
+		const saved = await saveDevToolsSettings( page );
+
+		if ( saved && ( await getIsEnabled( page ) ) === enabled ) {
+			return;
+		}
 	}
+
+	throw new Error(
+		`WCPay Dev Tools failed to set "${ settingName }" to ${ enabled } after ${ devToolsMaxLoadAttempts } attempts; ` +
+			'the settings page was likely truncated by a PHP fatal during render or save. See the "PHP fatals" group in the E2E run log.'
+	);
+};
+
+export const enableCardTestingProtection = async ( page: Page ) => {
+	await setDevToolsSetting(
+		page,
+		'Card testing mitigations enabled',
+		true,
+		getIsCardTestingProtectionEnabled,
+		setCardTestingProtection
+	);
 };
 
 export const disableCardTestingProtection = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
-
-	if ( await getIsCardTestingProtectionEnabled( page ) ) {
-		await setCardTestingProtection( page, false );
-		await saveDevToolsSettings( page );
-	}
+	await setDevToolsSetting(
+		page,
+		'Card testing mitigations enabled',
+		false,
+		getIsCardTestingProtectionEnabled,
+		setCardTestingProtection
+	);
 };
 
 export const enableActAsDisconnectedFromWCPay = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
-
-	if ( ! ( await getIsActAsDisconnectedFromWCPayEnabled( page ) ) ) {
-		await setActAsDisconnectedFromWCPay( page, true );
-		await saveDevToolsSettings( page );
-	}
+	await setDevToolsSetting(
+		page,
+		'act as disconnected from the Transact Platform Server',
+		true,
+		getIsActAsDisconnectedFromWCPayEnabled,
+		setActAsDisconnectedFromWCPay
+	);
 };
 
 export const disableActAsDisconnectedFromWCPay = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
-
-	if ( await getIsActAsDisconnectedFromWCPayEnabled( page ) ) {
-		await setActAsDisconnectedFromWCPay( page, false );
-		await saveDevToolsSettings( page );
-	}
+	await setDevToolsSetting(
+		page,
+		'act as disconnected from the Transact Platform Server',
+		false,
+		getIsActAsDisconnectedFromWCPayEnabled,
+		setActAsDisconnectedFromWCPay
+	);
 };

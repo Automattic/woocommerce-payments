@@ -2234,8 +2234,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$is_nonce_valid = check_admin_referer( 'wcpay_process_redirect_order_nonce' );
-		if ( ! $is_nonce_valid || empty( $_GET['wc_payment_method'] ) ) {
+		// The redirect return is always a top-level GET. Other requests to this page (e.g. the
+		// block "Create Account" form, which POSTs back with its own nonce) must not be treated
+		// as returns, or the nonce check below would fatal them via wp_nonce_ays(). See WOOPMNT-6279.
+		if ( 'GET' !== strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) ) {
+			return;
+		}
+
+		// Verify softly so a stale/refreshed return URL no-ops instead of fatalling.
+		$is_nonce_valid = wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wcpay_process_redirect_order_nonce' );
+		if ( ! $is_nonce_valid ) {
 			return;
 		}
 
