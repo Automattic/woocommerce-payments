@@ -169,7 +169,7 @@ export interface TimelineItem {
 	/** Stripe `fraud_type` enum reported with an early fraud warning. */
 	fraud_type?: string;
 	loan_id?: string;
-	/** Payment intent ID carried by early fraud warning events to deep-link to the payment. */
+	/** Payment intent ID carried by early fraud warning events. */
 	payment_intent?: string;
 	reason?: string;
 	transaction_details?: TimelineTransactionDetails;

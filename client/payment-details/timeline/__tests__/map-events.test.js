@@ -2,7 +2,8 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import React from 'react';
+import { render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -183,7 +184,27 @@ describe( 'mapTimelineEvents', () => {
 
 	test( 'formats actionable early_fraud_warning events', () => {
 		expect(
-			mapTimelineEvents( [
+			mapTimelineEvents(
+				[
+					{
+						datetime: 1585859207,
+						type: 'early_fraud_warning',
+						actionable: true,
+						fraud_type: 'made_with_stolen_card',
+						payment_intent: 'pi_1',
+					},
+				],
+				null,
+				undefined,
+				jest.fn()
+			)
+		).toMatchSnapshot();
+	} );
+
+	test( 'invokes the refund handler when the early_fraud_warning CTA is clicked', () => {
+		const onRefund = jest.fn();
+		const items = mapTimelineEvents(
+			[
 				{
 					datetime: 1585859207,
 					type: 'early_fraud_warning',
@@ -191,8 +212,22 @@ describe( 'mapTimelineEvents', () => {
 					fraud_type: 'made_with_stolen_card',
 					payment_intent: 'pi_1',
 				},
-			] )
-		).toMatchSnapshot();
+			],
+			null,
+			undefined,
+			onRefund
+		);
+
+		// The second item is the main timeline entry; its body carries the CTA.
+		// Children are passed positionally to avoid array-key warnings.
+		const { getByRole } = render(
+			React.createElement( 'div', null, ...items[ 1 ].body )
+		);
+		fireEvent.click(
+			getByRole( 'button', { name: 'Refund this payment' } )
+		);
+
+		expect( onRefund ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	test( 'formats actionable early_fraud_warning events with an unknown fraud type', () => {

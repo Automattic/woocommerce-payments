@@ -432,11 +432,12 @@ exports[`mapTimelineEvents formats actionable early_fraud_warning events 1`] = `
       "Reported reason: Made with stolen card",
       <React.Fragment>
         Refunding this payment now can prevent a dispute. 
-        <Link
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_1"
+        <ForwardRef(UnforwardedButton)
+          onClick={[MockFunction]}
+          variant="link"
         >
           Refund this payment
-        </Link>
+        </ForwardRef(UnforwardedButton)>
       </React.Fragment>,
     ],
     "date": 2020-04-02T20:26:47.000Z,
@@ -465,14 +466,7 @@ exports[`mapTimelineEvents formats actionable early_fraud_warning events with an
   {
     "body": [
       "The card issuer flagged this payment as likely fraudulent.",
-      <React.Fragment>
-        Refunding this payment now can prevent a dispute. 
-        <Link
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_1"
-        >
-          Refund this payment
-        </Link>
-      </React.Fragment>,
+      "Refunding this payment now can prevent a dispute.",
     ],
     "date": 2020-04-02T20:26:47.000Z,
     "headline": "Payment received an early fraud warning",

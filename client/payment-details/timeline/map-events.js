@@ -7,6 +7,7 @@ import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { createInterpolateElement } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import SyncIcon from 'gridicons/dist/sync';
 import PlusIcon from 'gridicons/dist/plus';
@@ -780,7 +781,12 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
  *
  * @return {Array} Payment timeline items
  */
-const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
+const mapEventToTimelineItems = (
+	event,
+	bankName = null,
+	disputeOrder,
+	onRefund
+) => {
 	const { type } = event;
 
 	// A charge can accrue more than one dispute, and their event groups are
@@ -1335,7 +1341,11 @@ const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
 				];
 			}
 
-			const refundCta = event.payment_intent
+			// The timeline renders on the payment details page itself, so a link
+			// back to that page would be a no-op. Instead the CTA asks the page
+			// (via the callback threaded from the payment details parent) to open
+			// the refund modal that already lives in the summary card.
+			const refundCta = onRefund
 				? createInterpolateElement(
 						__(
 							'Refunding this payment now can prevent a dispute. <link>Refund this payment</link>',
@@ -1343,13 +1353,7 @@ const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
 						),
 						{
 							link: (
-								<Link
-									href={ getAdminUrl( {
-										page: 'wc-admin',
-										path: '/payments/transactions/details',
-										id: event.payment_intent,
-									} ) }
-								/>
+								<Button variant="link" onClick={ onRefund } />
 							),
 						}
 				  )
@@ -1400,15 +1404,16 @@ const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
  * @param {Array}         timelineEvents array of events
  * @param {string | null} bankName       The name of the bank
  * @param {Object}        disputeOrder   Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]     Opens the payment details refund modal; when omitted, refund CTAs render as plain text
  *
  * @return {Array} Array of view items
  */
-export default ( timelineEvents, bankName = null, disputeOrder ) => {
+export default ( timelineEvents, bankName = null, disputeOrder, onRefund ) => {
 	if ( ! timelineEvents ) {
 		return [];
 	}
 
 	return flatMap( timelineEvents, ( event ) =>
-		mapEventToTimelineItems( event, bankName, disputeOrder )
+		mapEventToTimelineItems( event, bankName, disputeOrder, onRefund )
 	).filter( Boolean );
 };
