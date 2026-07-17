@@ -738,7 +738,6 @@ class WC_Payments_Order_Service {
 		}
 
 		$order->add_order_note( $note );
-		$order->save();
 	}
 
 	/**
