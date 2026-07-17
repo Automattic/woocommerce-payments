@@ -15,7 +15,7 @@
  * Careful: @wordpress/private-apis needs the opposite — one shared instance, or
  * its registry throws `Cannot unlock an object that was not locked before`. npm
  * hoists it to a single copy; pnpm doesn't, so the `@wordpress/dataviews>*` pins
- * in package.json are load-bearing. A copy per package is the failure, not the
+ * in pnpm-workspace.yaml are load-bearing. A copy per package is the failure, not the
  * fix.
  */
 const PACKAGES_NEEDING_OWN_WP_DATA = [
