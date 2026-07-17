@@ -1315,7 +1315,7 @@ class WC_Payments_Utils {
 	/**
 	 * Returns a merchant-friendly description of an early fraud warning fraud type.
 	 *
-	 * This mapping is duplicated in client/payment-details/timeline/map-events.js.
+	 * This mapping is duplicated in client/payment-details/timeline/mappings.ts.
 	 *
 	 * @param string $fraud_type The fraud type reported by the card network.
 	 *
