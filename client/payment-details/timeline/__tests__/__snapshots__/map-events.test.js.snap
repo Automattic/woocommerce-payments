@@ -466,6 +466,43 @@ exports[`mapTimelineEvents formats actionable early_fraud_warning events with an
   {
     "body": [
       "The card issuer flagged this payment as likely fraudulent.",
+      <React.Fragment>
+        Refunding this payment now can prevent a dispute. 
+        <ForwardRef(UnforwardedButton)
+          onClick={[MockFunction]}
+          variant="link"
+        >
+          Refund this payment
+        </ForwardRef(UnforwardedButton)>
+      </React.Fragment>,
+    ],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": "Payment received an early fraud warning",
+    "icon": <NoticeOutlineIcon
+      className="is-warning"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents formats actionable early_fraud_warning events without a refund handler 1`] = `
+[
+  {
+    "body": [],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Early fraud warning
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [
+      "The card issuer flagged this payment as likely fraudulent.",
+      "Reported reason: Made with stolen card",
       "Refunding this payment now can prevent a dispute.",
     ],
     "date": 2020-04-02T20:26:47.000Z,

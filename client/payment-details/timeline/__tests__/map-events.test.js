@@ -232,12 +232,31 @@ describe( 'mapTimelineEvents', () => {
 
 	test( 'formats actionable early_fraud_warning events with an unknown fraud type', () => {
 		expect(
+			mapTimelineEvents(
+				[
+					{
+						datetime: 1585859207,
+						type: 'early_fraud_warning',
+						actionable: true,
+						fraud_type: 'brand_new_stripe_enum',
+						payment_intent: 'pi_1',
+					},
+				],
+				null,
+				undefined,
+				jest.fn()
+			)
+		).toMatchSnapshot();
+	} );
+
+	test( 'formats actionable early_fraud_warning events without a refund handler', () => {
+		expect(
 			mapTimelineEvents( [
 				{
 					datetime: 1585859207,
 					type: 'early_fraud_warning',
 					actionable: true,
-					fraud_type: 'brand_new_stripe_enum',
+					fraud_type: 'made_with_stolen_card',
 					payment_intent: 'pi_1',
 				},
 			] )
