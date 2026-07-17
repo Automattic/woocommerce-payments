@@ -330,9 +330,13 @@ class Order_Fraud_And_Risk_Meta_Box {
 		echo '<p>' . esc_html( $description ) . '</p>';
 
 		if ( $actionable ) {
+			// The refund is managed on this same screen, so admin JS intercepts the
+			// click and opens WooCommerce's inline refund panel instead (see
+			// client/order/index.js). The payment details href is the fallback for
+			// when the panel is unavailable (e.g. refunds locked during a dispute).
 			$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 			if ( '' !== $transaction_url ) {
-				echo '<p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund to avoid a dispute', 'woocommerce-payments' ) . '</a></p>';
+				echo '<p><a href="' . esc_url( $transaction_url ) . '" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund to avoid a dispute', 'woocommerce-payments' ) . '</a></p>';
 			}
 		}
 
