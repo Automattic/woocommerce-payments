@@ -6,16 +6,8 @@ if [ -f "$(pwd)/local.env" ]; then
 	. "$(pwd)/local.env"
 fi
 
-# Check if pnpm-lock.yaml changed and remind developer to run pnpm install.
-# Warn only (don't auto-install) to stay consistent with post-checkout and
-# post-rewrite — auto-installing on some lockfile-changing events but not
-# others leaves node_modules stale in a surprising, event-dependent way.
-changed_files="$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)"
-if echo "$changed_files" | grep --quiet "pnpm-lock.yaml"; then
-    echo ""
-    echo "pnpm-lock.yaml has changed. You may need to run 'pnpm install' to update dependencies."
-    echo ""
-fi
+# Auto-install if pnpm-lock.yaml changed
+pnpm exec yarnhook
 
 # make sure composer packages are installed and the autoload files are regenerated
 # --ignore-platform-req=php allows dev-only packages (like qit-cli) that need PHP 7.4+

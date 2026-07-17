@@ -9,13 +9,8 @@ if [ "$1" = "$NULL_SHA" ]; then
     exit 0
 fi
 
-# Check if pnpm-lock.yaml changed and remind developer to run pnpm install
-changed_files="$(git diff-tree -r --name-only --no-commit-id "$1" "$2")"
-if echo "$changed_files" | grep --quiet "pnpm-lock.yaml"; then
-    echo ""
-    echo "pnpm-lock.yaml has changed. You may need to run 'pnpm install' to update dependencies."
-    echo ""
-fi
+# Auto-install if pnpm-lock.yaml changed
+pnpm exec yarnhook
 
 # make sure composer packages are installed and the autoload files are regenerated
 # --ignore-platform-req=php allows dev-only packages (like qit-cli) that need PHP 7.4+
