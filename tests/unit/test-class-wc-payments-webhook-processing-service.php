@@ -2560,6 +2560,34 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
+	/**
+	 * Tests that an early fraud warning payload missing a required field throws. Unlike the
+	 * optional `fraud_type`, the `charge` reference is load-bearing — without it the order
+	 * cannot be resolved, so processing must abort with the standard exception.
+	 */
+	public function test_early_fraud_warning_throws_exception_when_charge_missing() {
+		// Setup test request data — note the absent `charge` key.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'charge not found in array' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
 	public function test_process_full_refund_succeeded(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;

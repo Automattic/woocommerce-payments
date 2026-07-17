@@ -1827,7 +1827,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Act: Mark the early fraud warning on the order.
 		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
 
-		// Assert: Check that the early fraud warning meta was stored.
+		// Assert: Check that the early fraud warning meta was persisted (read back from the database).
 		$this->assertSame(
 			[
 				'efw_id'     => 'issfr_123',
@@ -1835,7 +1835,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'fraud_type' => 'made_with_stolen_card',
 				'created'    => 1719800000,
 			],
-			$this->order->get_meta( '_wcpay_early_fraud_warning', true )
+			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
 		);
 
 		// Assert: Check that the note was added with the reason and a link to the payment details.
@@ -1843,7 +1843,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 1, $notes );
 		$this->assertStringContainsString( 'Payment has received an early fraud warning with reason', $notes[0]->content );
 		$this->assertStringContainsString( 'Made with stolen card', $notes[0]->content );
-		$this->assertStringContainsString( 'class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refunding the payment now</a> can prevent a dispute', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refunding the payment now</a> can prevent a dispute', $notes[0]->content );
 		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">payment details', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate notes.
@@ -1862,7 +1862,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Act: Mark the same early fraud warning as no longer actionable.
 		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', false, 'made_with_stolen_card', 1719800000 );
 
-		// Assert: Check that the early fraud warning meta was overwritten with the latest state.
+		// Assert: Check that the persisted early fraud warning meta was overwritten with the latest state.
 		$this->assertSame(
 			[
 				'efw_id'     => 'issfr_123',
@@ -1870,7 +1870,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'fraud_type' => 'made_with_stolen_card',
 				'created'    => 1719800000,
 			],
-			$this->order->get_meta( '_wcpay_early_fraud_warning', true )
+			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
 		);
 
 		// Assert: Check that a resolved note was added on top of the actionable one.
