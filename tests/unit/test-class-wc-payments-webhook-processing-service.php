@@ -2386,6 +2386,55 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a created event with no `fraud_type` key still stores the warning and adds a
+	 * note (without a reason line), rather than aborting webhook processing. `fraud_type` only
+	 * drives a descriptive label, so a missing value must degrade gracefully.
+	 */
+	public function test_early_fraud_warning_created_stores_warning_when_fraud_type_missing() {
+		// Setup test request data — note the absent `fraud_type` key.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_meta_data' )
+			->with(
+				'_wcpay_early_fraud_warning',
+				[
+					'efw_id'     => 'issfr_123',
+					'actionable' => true,
+					'fraud_type' => '',
+					'created'    => 1719800000,
+				]
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'/Payment has received an early fraud warning\. Refunding/'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that an early fraud warning updated event resolves a previously stored warning.
 	 */
 	public function test_early_fraud_warning_updated_resolves_existing_warning() {

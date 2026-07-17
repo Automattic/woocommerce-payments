@@ -871,8 +871,12 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$efw_id       = $this->read_webhook_property( $event_object, 'id' );
 		$actionable   = $this->read_webhook_property( $event_object, 'actionable' );
-		$fraud_type   = $this->read_webhook_property( $event_object, 'fraud_type' );
 		$created      = $this->read_webhook_property( $event_object, 'created' );
+
+		// Unlike the fields above, `fraud_type` only drives a descriptive label that already
+		// degrades to an empty reason when the value is unknown, so a missing key must not
+		// abort storing the warning — read it optionally and default to an empty string.
+		$fraud_type = $event_object['fraud_type'] ?? '';
 
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 
