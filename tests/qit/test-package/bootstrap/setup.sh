@@ -116,56 +116,6 @@ wp option set woocommerce_checkout_company_field "optional" --quiet 2>/dev/null 
 wp option set woocommerce_coming_soon "no" --quiet 2>/dev/null || true
 wp option set woocommerce_store_pages_only "no" --quiet 2>/dev/null || true
 
-# Give the ECE fake-sheet real shipping choices: a US zone (Free + $11 flat rate)
-# and the rest-of-world zone (Free + $22 flat rate). Zones and per-instance costs
-# need the WC shipping API, not plain `wp option`. Guarded against duplicate runs.
-# [bisect] Shipping provisioning disabled to isolate wc-blocks E2E failures. Revert after this run.
-if false; then
-echo "Provisioning shipping methods..."
-wp eval-file - <<'PHP'
-<?php
-if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
-	WP_CLI::error( 'WooCommerce shipping API is unavailable' );
-}
-
-function wcpay_e2e_set_flat_rate_cost( $instance_id, $cost ) {
-	update_option(
-		'woocommerce_flat_rate_' . $instance_id . '_settings',
-		array(
-			'title'      => 'Flat rate',
-			'tax_status' => 'taxable',
-			'cost'       => (string) $cost,
-		)
-	);
-}
-
-$has_us_zone = false;
-foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
-	if ( 'United States' === $zone['zone_name'] ) {
-		$has_us_zone = true;
-		break;
-	}
-}
-
-if ( ! $has_us_zone ) {
-	$us_zone = new WC_Shipping_Zone();
-	$us_zone->set_zone_name( 'United States' );
-	$us_zone->add_location( 'US', 'country' );
-	$us_zone->save();
-	$us_zone->add_shipping_method( 'free_shipping' );
-	wcpay_e2e_set_flat_rate_cost( $us_zone->add_shipping_method( 'flat_rate' ), 11 );
-	WP_CLI::log( 'Created United States shipping zone (Free + $11 flat rate).' );
-}
-
-$row_zone = new WC_Shipping_Zone( 0 );
-if ( 0 === count( $row_zone->get_shipping_methods() ) ) {
-	$row_zone->add_shipping_method( 'free_shipping' );
-	wcpay_e2e_set_flat_rate_cost( $row_zone->add_shipping_method( 'flat_rate' ), 22 );
-	WP_CLI::log( 'Configured rest-of-world shipping zone (Free + $22 flat rate).' );
-}
-PHP
-fi
-
 # Create test users.
 echo "Creating test users..."
 

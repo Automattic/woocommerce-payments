@@ -14,6 +14,7 @@
  * External dependencies
  */
 import { BrowserContext, Page } from '@playwright/test';
+import qit from '@qit/helpers';
 
 /**
  * Internal dependencies
@@ -98,6 +99,73 @@ let merchantPage: Page;
 let priorEceState: boolean;
 let priorAmazonPayState: boolean;
 
+// QIT has no WC REST client, so provision shipping the same way the old global
+// setup.sh did - a PHP eval through the qit exec bridge. Shipping only exists
+// while these specs run so the no-shipping checkout other suites assume stays
+// intact. `wp eval` runs a fresh PHP process per call, so the helper function is
+// safe to (re)declare each time.
+const provisionShippingPhp = `
+if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
+	return;
+}
+function wcpay_e2e_set_flat_rate_cost( $instance_id, $cost ) {
+	update_option(
+		'woocommerce_flat_rate_' . $instance_id . '_settings',
+		array(
+			'title'      => 'Flat rate',
+			'tax_status' => 'taxable',
+			'cost'       => (string) $cost,
+		)
+	);
+}
+$has_us_zone = false;
+foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
+	if ( 'United States' === $zone['zone_name'] ) {
+		$has_us_zone = true;
+		break;
+	}
+}
+if ( ! $has_us_zone ) {
+	$us_zone = new WC_Shipping_Zone();
+	$us_zone->set_zone_name( 'United States' );
+	$us_zone->add_location( 'US', 'country' );
+	$us_zone->save();
+	$us_zone->add_shipping_method( 'free_shipping' );
+	wcpay_e2e_set_flat_rate_cost( $us_zone->add_shipping_method( 'flat_rate' ), 11 );
+}
+$row_zone = new WC_Shipping_Zone( 0 );
+if ( 0 === count( $row_zone->get_shipping_methods() ) ) {
+	$row_zone->add_shipping_method( 'free_shipping' );
+	wcpay_e2e_set_flat_rate_cost( $row_zone->add_shipping_method( 'flat_rate' ), 22 );
+}
+`;
+
+// Reverse of the above: delete the US zone by name and strip the flat_rate /
+// free_shipping methods we added to the built-in rest-of-world zone 0 (which
+// can't itself be deleted).
+const teardownShippingPhp = `
+if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
+	return;
+}
+foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
+	if ( 'United States' === $zone['zone_name'] ) {
+		$zone_obj = WC_Shipping_Zones::get_zone( (int) $zone['zone_id'] );
+		if ( $zone_obj ) {
+			$zone_obj->delete( true );
+		}
+	}
+}
+$row_zone = new WC_Shipping_Zone( 0 );
+foreach ( $row_zone->get_shipping_methods() as $method ) {
+	if ( in_array( $method->id, array( 'flat_rate', 'free_shipping' ), true ) ) {
+		$row_zone->delete_shipping_method( $method->get_instance_id() );
+	}
+}
+`;
+
+const runEval = ( php: string ) =>
+	qit.wp( `eval '${ php.replace( /'/g, `'"'"'` ) }'`, true );
+
 test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 	test.beforeAll( async ( { browser } ) => {
 		merchantContext = await browser.newContext( {
@@ -109,9 +177,16 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 		// Pay is a separate method, so it needs its own toggle for its button.
 		priorEceState = await enableExpressCheckout( merchantPage );
 		priorAmazonPayState = await enableAmazonPay( merchantPage );
+
+		await runEval( provisionShippingPhp );
 	} );
 
 	test.afterAll( async () => {
+		try {
+			await runEval( teardownShippingPhp );
+		} catch ( e ) {
+			// Best-effort cleanup - a teardown failure shouldn't fail the suite.
+		}
 		if ( ! priorAmazonPayState ) {
 			await disableAmazonPay( merchantPage );
 		}

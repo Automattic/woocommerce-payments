@@ -19,6 +19,7 @@ import { test, expect, Page } from '@playwright/test';
  * Internal dependencies
  */
 import { describeif, getMerchant, getShopper } from '../../../utils/helpers';
+import RestAPI, { EceShippingZoneHandles } from '../../../utils/rest-api';
 import {
 	enableExpressCheckout,
 	disableExpressCheckout,
@@ -96,6 +97,7 @@ const orderReceivedTotalCents = async ( page: Page ): Promise< number > => {
 let merchantPage: Page;
 let priorEceState: boolean;
 let priorAmazonPayState: boolean;
+let shippingHandles: EceShippingZoneHandles | undefined;
 
 test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 	// The fake-sheet mu-plugin isn't installed on Atomic, so the proxy never
@@ -105,16 +107,26 @@ test.describe( 'Express Checkout (ECE) wallet buttons', () => {
 		'ECE specs need the fake-sheet mu-plugin, absent on Atomic'
 	);
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
 		( { merchantPage } = await getMerchant( browser ) );
 		// The enable helpers return whether it was ALREADY on, so we only tear
 		// each back down in afterAll if we were the ones who turned it on. Amazon
 		// Pay is a separate method, so it needs its own toggle for its button.
 		priorEceState = await enableExpressCheckout( merchantPage );
 		priorAmazonPayState = await enableAmazonPay( merchantPage );
+
+		// Shipping only exists while these specs run, so the no-shipping checkout
+		// the wc-blocks/Alipay specs assume stays intact for everyone else.
+		const restApi = new RestAPI( project.use.baseURL );
+		shippingHandles = await restApi.createEceShippingZones();
 	} );
 
-	test.afterAll( async () => {
+	test.afterAll( async ( {}, { project } ) => {
+		if ( shippingHandles ) {
+			await new RestAPI( project.use.baseURL ).deleteEceShippingZones(
+				shippingHandles
+			);
+		}
 		if ( ! priorAmazonPayState ) {
 			await disableAmazonPay( merchantPage );
 		}
