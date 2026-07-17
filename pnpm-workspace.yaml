@@ -1,6 +1,56 @@
-# pnpm settings (not a workspace definition — no `packages:` key, so this
-# does not turn the repo into a pnpm workspace).
-#
+# pnpm settings (not a workspace definition — no `packages:` key, so this does
+# not turn the repo into a pnpm workspace). Since pnpm 11 this file is the home
+# for all pnpm settings: the package.json "pnpm" field and non-auth .npmrc
+# settings are no longer read.
+
 # Supply-chain hardening against fast-moving npm attacks (Shai-Hulud-style):
 minimumReleaseAge: 1440      # 1 day — packages must be published this many minutes ago before pnpm will resolve them, closing the fast-attack window between a malicious publish and its detection/unpublish. Under Dependabot's 7-day cooldown, and matches pnpm 11's default.
 blockExoticSubdeps: true     # Refuse non-registry (git/tarball/etc.) transitive deps. The lockfile has zero exotic resolutions today, so this is free to enable and prevents new ones from sneaking in.
+
+# Migrated from .npmrc — pnpm 11 reads only auth/registry settings from .npmrc.
+strictPeerDependencies: false
+engineStrict: true
+saveExact: true
+
+# Build-script allowlist. Replaces the package.json pnpm.onlyBuiltDependencies +
+# ignoredBuiltDependencies keys (both removed in pnpm 11). strictDepBuilds
+# defaults to true in pnpm 11, so a dependency that ships a build script and is
+# not listed here fails the install — this map is the allow (true) / deny (false)
+# gate. Scoped names must be quoted (YAML rejects a bare leading `@`).
+allowBuilds:
+  esbuild: true
+  '@parcel/watcher': true
+  core-js: false
+  core-js-pure: false
+  msw: false
+
+# Migrated verbatim from package.json pnpm.overrides. The '@wordpress/dataviews>*'
+# pins are load-bearing: they keep @wordpress/private-apis a single shared copy so
+# its lock/unlock registry singleton works — pinning them away fails 14 Jest suites
+# with "Cannot unlock an object that was not locked before". Keys/values are quoted
+# because many contain characters YAML treats specially (`@`, `>`, leading `^`).
+overrides:
+  '@woocommerce/components>@woocommerce/csv-export': '1.11.0'
+  '@woocommerce/components>@woocommerce/currency': '6.0.0'
+  '@woocommerce/dependency-extraction-webpack-plugin>@wordpress/dependency-extraction-webpack-plugin': '6.45.0'
+  '@wordpress/dataviews>@wordpress/data': '10.46.0'
+  '@wordpress/dataviews>@wordpress/element': '6.46.0'
+  '@wordpress/dataviews>@wordpress/compose': '7.46.0'
+  '@wordpress/dataviews>@wordpress/primitives': '4.46.0'
+  '@wordpress/dataviews>@wordpress/keycodes': '4.46.0'
+  '@wordpress/dataviews>@wordpress/deprecated': '4.46.0'
+  '@wordpress/dataviews>@wordpress/warning': '3.46.0'
+  '@wordpress/dataviews>@wordpress/date': '5.46.0'
+  '@wordpress/dataviews>@wordpress/private-apis': '1.46.0'
+  '@wordpress/dataviews>@wordpress/icons': '13.1.0'
+  '@wordpress/dataviews>@wordpress/rich-text': '7.46.0'
+  '@wordpress/scripts>@wordpress/eslint-plugin': '15.1.0'
+  '@woocommerce/eslint-plugin>@wordpress/eslint-plugin': '15.1.0'
+  'nwsapi': '2.2.12'
+  'serialize-javascript': '^7.0.5'
+  'i18n-calypso': '7.4.0'
+  'markdownlint-cli>minimatch': '^3.1.3'
+  'd3-color': '^3.1.0'
+  'd3-interpolate': '^3.0.1'
+  'd3-scale': '^4.0.2'
+  'd3-scale-chromatic': '^3.1.0'
