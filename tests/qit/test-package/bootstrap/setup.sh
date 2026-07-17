@@ -119,6 +119,8 @@ wp option set woocommerce_store_pages_only "no" --quiet 2>/dev/null || true
 # Give the ECE fake-sheet real shipping choices: a US zone (Free + $11 flat rate)
 # and the rest-of-world zone (Free + $22 flat rate). Zones and per-instance costs
 # need the WC shipping API, not plain `wp option`. Guarded against duplicate runs.
+# [bisect] Shipping provisioning disabled to isolate wc-blocks E2E failures. Revert after this run.
+if false; then
 echo "Provisioning shipping methods..."
 wp eval-file - <<'PHP'
 <?php
@@ -162,6 +164,7 @@ if ( 0 === count( $row_zone->get_shipping_methods() ) ) {
 	WP_CLI::log( 'Configured rest-of-world shipping zone (Free + $22 flat rate).' );
 }
 PHP
+fi
 
 # Create test users.
 echo "Creating test users..."
