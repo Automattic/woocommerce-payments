@@ -2420,7 +2420,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'/Payment has received an early fraud warning\. Refunding/'
+					'/Payment has received an early fraud warning\. <a [^>]+>Refunding/'
 				)
 			);
 

@@ -1843,7 +1843,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 1, $notes );
 		$this->assertStringContainsString( 'Payment has received an early fraud warning with reason', $notes[0]->content );
 		$this->assertStringContainsString( 'Made with stolen card', $notes[0]->content );
-		$this->assertStringContainsString( 'Refunding the payment now can prevent a dispute', $notes[0]->content );
+		$this->assertStringContainsString( 'class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refunding the payment now</a> can prevent a dispute', $notes[0]->content );
 		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">payment details', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate notes.
@@ -1889,7 +1889,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the note was added without the reason clause.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Payment has received an early fraud warning. Refunding the payment now can prevent a dispute', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment has received an early fraud warning. <a', $notes[0]->content );
+		$this->assertStringContainsString( '>Refunding the payment now</a> can prevent a dispute', $notes[0]->content );
 		$this->assertStringNotContainsString( 'with reason', $notes[0]->content );
 	}
 

@@ -2585,12 +2585,16 @@ class WC_Payments_Order_Service {
 		// Get merchant-friendly fraud type description.
 		$reason = WC_Payments_Utils::get_early_fraud_warning_fraud_type_description( $fraud_type );
 
+		// The refund phrase carries the `wcpay-efw-refund-link` class so admin
+		// order JS can open WooCommerce's inline refund panel in place (see
+		// client/order/index.js); the payment details href is its fallback.
 		if ( '' === $reason ) {
 			return sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					__( 'Payment has received an early fraud warning. Refunding the payment now can prevent a dispute. See <a>payment details</a> for more information.', 'woocommerce-payments' ),
+					__( 'Payment has received an early fraud warning. <refund>Refunding the payment now</refund> can prevent a dispute. See <a>payment details</a> for more information.', 'woocommerce-payments' ),
 					[
-						'a' => '<a href="%1$s" target="_blank" rel="noopener noreferrer">',
+						'refund' => '<a href="%1$s" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">',
+						'a'      => '<a href="%1$s" target="_blank" rel="noopener noreferrer">',
 					]
 				),
 				$transaction_url
@@ -2600,9 +2604,10 @@ class WC_Payments_Order_Service {
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the early fraud warning reason, e.g. "Made with stolen card" */
-				__( 'Payment has received an early fraud warning with reason "%1$s". Refunding the payment now can prevent a dispute. See <a>payment details</a> for more information.', 'woocommerce-payments' ),
+				__( 'Payment has received an early fraud warning with reason "%1$s". <refund>Refunding the payment now</refund> can prevent a dispute. See <a>payment details</a> for more information.', 'woocommerce-payments' ),
 				[
-					'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
+					'refund' => '<a href="%2$s" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">',
+					'a'      => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
 				]
 			),
 			$reason,
