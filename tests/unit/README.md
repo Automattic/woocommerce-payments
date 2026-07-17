@@ -6,12 +6,12 @@ For JavaScript unit tests, see [tests/js/README.md](../js/README.md). For an ove
 
 ## Running tests in the Docker containers
 
-1. Start the WordPress container: `npm run up` (or `npm run up:recreate` for first-time setup)
+1. Start the WordPress container: `pnpm run up` (or `pnpm run up:recreate` for first-time setup)
    - This auto-starts shared infrastructure (database, phpMyAdmin) if not already running
 2. Once the containers are up, run tests from the plugin root directory:
-   - `npm run test:php` - Run PHP unit tests
-   - `npm run test:php-watch` - PHP tests in watch mode
-   - `npm run test:php-coverage` - PHP tests with coverage
+   - `pnpm run test:php` - Run PHP unit tests
+   - `pnpm run test:php-watch` - PHP tests in watch mode
+   - `pnpm run test:php-coverage` - PHP tests with coverage
 3. Run a single test class or method:
 
 ```

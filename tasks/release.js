@@ -29,7 +29,7 @@ const filesToCopy = [
 
 // run npm dist
 rm( '-rf', 'dist' );
-exec( 'SOURCEMAP=hidden npm run build:client' );
+exec( 'SOURCEMAP=hidden pnpm run build:client' );
 
 // start with a clean release folder
 rm( '-rf', releaseFolder );

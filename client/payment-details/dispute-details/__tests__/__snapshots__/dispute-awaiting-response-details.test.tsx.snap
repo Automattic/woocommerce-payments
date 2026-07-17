@@ -298,8 +298,9 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                     aria-hidden="true"
                     class="wcpay-accordion__arrow"
                     focusable="false"
-                    size="24"
+                    height="24"
                     viewBox="0 0 24 24"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
@@ -338,8 +339,9 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       <svg
                         aria-hidden="true"
                         focusable="false"
-                        size="24"
+                        height="24"
                         viewBox="0 0 24 24"
+                        width="24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
@@ -388,8 +390,9 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       <svg
                         aria-hidden="true"
                         focusable="false"
-                        size="24"
+                        height="24"
                         viewBox="0 0 24 24"
+                        width="24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
