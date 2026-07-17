@@ -6,13 +6,6 @@ if [ -f "$(pwd)/local.env" ]; then
 	. "$(pwd)/local.env"
 fi
 
-# Auto-install if pnpm-lock.yaml changed
-pnpm exec yarnhook
-
-# make sure composer packages are installed and the autoload files are regenerated
-# --ignore-platform-req=php allows dev-only packages (like qit-cli) that need PHP 7.4+
-composer install --ignore-platform-req=php
-
 # Auto-update WCPay Dev Tools plugin (for non-Docker setups or custom paths)
 # With Docker shared volumes, the plugin is managed via docker-setup.sh
 DEV_TOOLS_PLUGIN_PATH=${LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH:-""}
@@ -61,3 +54,5 @@ if [ -n "$DEV_TOOLS_PLUGIN_PATH" ] && [ -d "$DEV_TOOLS_PLUGIN_PATH" ]; then
 		fi
 	fi
 fi
+
+. "$(dirname "$0")/install-deps.sh" ORIG_HEAD HEAD

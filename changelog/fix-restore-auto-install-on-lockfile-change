@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Restore auto-install of pnpm dependencies when pnpm-lock.yaml changes in git hooks

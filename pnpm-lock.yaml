@@ -442,9 +442,6 @@ importers:
       whatwg-fetch:
         specifier: 3.6.20
         version: 3.6.20
-      yarnhook:
-        specifier: 0.6.2
-        version: 0.6.2
 
 packages:
 
@@ -10864,10 +10861,6 @@ packages:
   yargs@17.7.3:
     resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==, tarball: https://registry.npmjs.org/yargs/-/yargs-17.7.3.tgz}
     engines: {node: '>=12'}
-
-  yarnhook@0.6.2:
-    resolution: {integrity: sha512-+vrULrVsgYbLd0ie1Ba087xYK4rzB6m2TQNgVen3pXZsm/FRl6GeYzsXttJ4Q9I/MmcK142wMaSFUPlBFASYHQ==, tarball: https://registry.npmjs.org/yarnhook/-/yarnhook-0.6.2.tgz}
-    hasBin: true
 
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==, tarball: https://registry.npmjs.org/yauzl/-/yauzl-2.10.0.tgz}
@@ -25977,11 +25970,6 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-
-  yarnhook@0.6.2:
-    dependencies:
-      execa: 4.1.0
-      find-parent-dir: 0.3.1
 
   yauzl@2.10.0:
     dependencies:
