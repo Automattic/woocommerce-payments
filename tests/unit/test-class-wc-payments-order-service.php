@@ -1911,6 +1911,66 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that only orders with an actionable early fraud warning are returned.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_filters_resolved_and_unaffected() {
+		// Arrange: One actionable, one resolved, and one unaffected order ($this->order).
+		$actionable_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Fetch the orders with an actionable warning.
+		$result = $this->order_service->get_actionable_early_fraud_warning_orders();
+
+		// Assert: Only the actionable order is returned.
+		$this->assertSame(
+			[
+				[
+					'order_id'  => $actionable_order->get_id(),
+					'charge_id' => 'ch_actionable',
+					'created'   => 1719800000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
+	 * Tests that the warning query inspects at most $limit orders, newest first.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_respects_limit() {
+		// Arrange: Two actionable orders created two weeks apart.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch with a limit of one.
+		$result = $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+
+		// Assert: Only the newest order is inspected.
+		$this->assertSame(
+			[
+				[
+					'order_id'  => $newer_order->get_id(),
+					'charge_id' => 'ch_newer',
+					'created'   => 1719900000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
 	 * Tests if the order was completed successfully.
 	 */
 	public function test_mark_terminal_payment_completed() {

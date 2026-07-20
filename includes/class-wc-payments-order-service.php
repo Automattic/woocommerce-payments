@@ -1310,6 +1310,45 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Returns orders whose latest early fraud warning is still actionable.
+	 *
+	 * Inspects the $limit most recent orders that ever received a warning, so
+	 * the result is a lower bound on very large stores. Callers should cache
+	 * the result — the meta query is too slow to run on every admin request.
+	 *
+	 * @param int $limit Maximum number of warning-carrying orders to inspect.
+	 *
+	 * @return array[] Arrays with `order_id`, `charge_id` and `created` keys.
+	 */
+	public function get_actionable_early_fraud_warning_orders( int $limit = 50 ): array {
+		$orders = wc_get_orders(
+			[
+				'limit'    => $limit,
+				'orderby'  => 'date',
+				'order'    => 'DESC',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key' => self::WCPAY_EARLY_FRAUD_WARNING_META_KEY,
+			]
+		);
+
+		$actionable_orders = [];
+		foreach ( $orders as $order ) {
+			$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
+			if ( empty( $early_fraud_warning['actionable'] ) ) {
+				continue;
+			}
+
+			$actionable_orders[] = [
+				'order_id'  => $order->get_id(),
+				'charge_id' => $this->get_charge_id_for_order( $order ),
+				'created'   => (int) ( $early_fraud_warning['created'] ?? 0 ),
+			];
+		}
+
+		return $actionable_orders;
+	}
+
+	/**
 	 * Set the IPP channel for an order.
 	 *
 	 * @param mixed  $order   The order ID or order object.
