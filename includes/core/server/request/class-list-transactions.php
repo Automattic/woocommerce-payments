@@ -9,6 +9,7 @@ namespace WCPay\Core\Server\Request;
 
 use WC_Payments_API_Client;
 use WC_Payments_DB;
+use WC_Payments_Order_Service;
 use WC_Payments_Utils;
 use WCPay\Core\Server\Response;
 use WCPay\Core\Server\Request\Request_Utils;
@@ -304,6 +305,15 @@ class List_Transactions extends Paginated {
 						$order                            = $order_with_charge_id['order'];
 						$transaction['order']             = $this->build_order_info( $order );
 						$transaction['payment_intent_id'] = $order->get_meta( '_intent_id' );
+
+						// The key is omitted entirely when the order never received a warning.
+						$early_fraud_warning = $order->get_meta( WC_Payments_Order_Service::WCPAY_EARLY_FRAUD_WARNING_META_KEY, true );
+						if ( is_array( $early_fraud_warning ) && [] !== $early_fraud_warning ) {
+							$transaction['early_fraud_warning'] = [
+								'actionable' => (bool) ( $early_fraud_warning['actionable'] ?? false ),
+								'fraud_type' => (string) ( $early_fraud_warning['fraud_type'] ?? '' ),
+							];
+						}
 					}
 				}
 			}
