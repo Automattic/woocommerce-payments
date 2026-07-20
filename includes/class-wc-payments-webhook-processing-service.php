@@ -898,6 +898,8 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$this->order_service->mark_payment_early_fraud_warning( $order, $charge_id, $efw_id, (bool) $actionable, (string) $fraud_type, (int) $created );
+
+		$this->database_cache->delete_early_fraud_warning_caches();
 	}
 
 	/**

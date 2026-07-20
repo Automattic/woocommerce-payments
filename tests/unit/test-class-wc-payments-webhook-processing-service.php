@@ -2521,11 +2521,45 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'add_order_note' );
 
+		$this->mock_database_cache
+			->expects( $this->never() )
+			->method( 'delete_early_fraud_warning_caches' );
+
 		$this->mock_db_wrapper
 			->expects( $this->once() )
 			->method( 'order_from_charge_id' )
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that storing an early fraud warning invalidates the cached warning list.
+	 */
+	public function test_early_fraud_warning_created_invalidates_warning_orders_cache() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete_early_fraud_warning_caches' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
