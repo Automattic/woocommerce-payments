@@ -28,6 +28,7 @@ import {
 } from 'wcpay/data/transactions';
 import { Transaction } from 'wcpay/data/transactions/hooks';
 import OrderLink from 'wcpay/components/order-link';
+import EarlyFraudWarningChip from 'wcpay/components/early-fraud-warning-chip';
 import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
 import ClickableCell from 'wcpay/components/clickable-cell';
 import { getDetailsURL } from 'wcpay/components/details-link';
@@ -467,7 +468,15 @@ export const TransactionsList = (
 			type: {
 				value: displayType[ dataType ],
 				display: clickable(
-					displayType[ dataType ] || formatStringValue( dataType )
+					<Fragment>
+						{ displayType[ dataType ] ||
+							formatStringValue( dataType ) }
+						{ txn.type === 'charge' && (
+							<EarlyFraudWarningChip
+								earlyFraudWarning={ txn.early_fraud_warning }
+							/>
+						) }
+					</Fragment>
 				),
 			},
 			source: {
