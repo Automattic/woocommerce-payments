@@ -197,6 +197,16 @@ pnpm run changelog:add -- --type=add --entry="Added feature" --significance=mino
 ```
 Types: `add`, `fix`, `update`, `dev`. Significances: `patch` (default), `minor`, `major`. Entries go in `changelog/`.
 
+### Dependencies & supply-chain cooldown
+
+All pnpm settings live in `pnpm-workspace.yaml` — since pnpm 11 the `package.json` `pnpm` field and non-auth `.npmrc` settings are no longer read. Three supply-chain guards are on:
+
+- **`minimumReleaseAge: 1440`** — pnpm won't resolve an npm version until it is 1 day old, closing the window between a malicious publish and its detection. It gates *resolution* (`pnpm add`/`update`, lockfile regeneration); on pnpm ≥ 11.1.3 `pnpm install --frozen-lockfile` also re-validates existing lockfile entries and aborts on a too-young pin (`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`). Dependabot's 7-day cooldown keeps its PRs clear of this.
+- **`blockExoticSubdeps: true`** — transitive dependencies must resolve from the registry; a transitive git/tarball URL fails the install.
+- **`allowBuilds`** — the build-script allowlist (`strictDepBuilds` is on by default, so a dependency whose install script is not listed here fails the install). List a package as `true` to let it build, `false` to silence it.
+
+**Pushing an urgent security bump through the cooldown:** add the package to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` (bare name or exact `pkg@version`), or run `pnpm audit --fix`, which auto-exempts advisory-patched versions. Remove the exclude once the version ages past the window.
+
 ### Other
 ```bash
 pnpm run i18n:pot                    # Generate translations
