@@ -778,6 +778,7 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
  * @param {Object}        event        An event data
  * @param {string | null} bankName     The name of the bank
  * @param {Object}        disputeOrder Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]   Opens the payment details refund modal; when omitted, refund CTAs render as plain text
  *
  * @return {Array} Payment timeline items
  */
