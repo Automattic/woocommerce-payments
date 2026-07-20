@@ -109,10 +109,10 @@ class Order_Fraud_And_Risk_Meta_Box {
 		$risk_filters_url              = WC_Payments_Admin_Settings::get_settings_url( [ 'anchor' => '%23fp-settings' ] );
 		$show_adjust_risk_filters_link = true;
 
-		// Early fraud warnings are orthogonal to the fraud outcome below — an approved
-		// charge can still receive one — so this renders as its own additive block. It
-		// leads the metabox because the warning postdates the checkout-time risk level:
-		// the actionable signal must not be buried under a reassuring "Normal" score.
+		// Early fraud warnings are independent of the fraud outcome below — an approved
+		// charge can still receive one — so this renders as its own additive block. The
+		// warning goes first: it arrives after the risk level was assessed at checkout,
+		// and a reassuring "Normal" score at the top could make merchants overlook it.
 		$this->maybe_print_early_fraud_warning_block( $order, $intent_id, $charge_id );
 
 		$this->maybe_print_risk_level_block( $risk_level );

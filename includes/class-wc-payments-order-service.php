@@ -704,7 +704,7 @@ class WC_Payments_Order_Service {
 	/**
 	 * Stores the latest early fraud warning on the order and adds a private note about it.
 	 *
-	 * Early fraud warnings are orthogonal to the fraud outcome: an approved charge can still
+	 * Early fraud warnings are independent of the fraud outcome: an approved charge can still
 	 * receive one. The meta always reflects the latest warning; the note is only added once
 	 * per warning state.
 	 *
