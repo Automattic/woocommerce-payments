@@ -116,17 +116,7 @@ class WC_Payments_Test_To_Live_Notice extends WC_Payments_Abstract_Admin_Notice 
 	 * @return bool
 	 */
 	protected function compute_eligibility(): bool {
-		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
-			return false;
-		}
-
-		$account_status = $this->account->get_account_status_data();
-
-		if ( ! empty( $account_status['testDrive'] ) ) {
-			return false;
-		}
-
-		if ( empty( $account_status['paymentsEnabled'] ) ) {
+		if ( ! $this->has_active_payments_account() ) {
 			return false;
 		}
 

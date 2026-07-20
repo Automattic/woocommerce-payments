@@ -801,7 +801,7 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
-		$admin_notices = new WC_Payments_Admin_Notices( self::get_gateway(), self::$account, self::$order_service );
+		$admin_notices = new WC_Payments_Admin_Notices( self::get_gateway(), self::$account );
 		$admin_notices->init_global_hooks();
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {

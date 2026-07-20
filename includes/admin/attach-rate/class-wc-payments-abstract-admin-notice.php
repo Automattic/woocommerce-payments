@@ -243,6 +243,28 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	abstract protected function compute_eligibility(): bool;
 
 	/**
+	 * Whether the store has a connected, valid, non-test-drive account with
+	 * payments enabled. Every notice gates on this before applying its own
+	 * mode and cohort checks, so compute_eligibility() implementations should
+	 * open with it.
+	 *
+	 * @return bool
+	 */
+	protected function has_active_payments_account(): bool {
+		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
+			return false;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+
+		if ( ! empty( $account_status['testDrive'] ) ) {
+			return false;
+		}
+
+		return ! empty( $account_status['paymentsEnabled'] );
+	}
+
+	/**
 	 * Whether this notice exposes a snooze flow. Override to return false for
 	 * notices that only support dismiss (e.g. the post-KYC notice).
 	 *
