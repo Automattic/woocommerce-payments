@@ -1,0 +1,30 @@
+/**
+ * WOOPMNT-6211 spike — full-page treatment for the SDK settings screen.
+ *
+ * The Modernised WooPayments Settings i1 design is a full page: no gray
+ * "Settings" header bar, no WC settings tab rows, no admin notices. The
+ * Settings UI SDK has no sanctioned full-page mode yet (upstream ask — see
+ * the spike findings), so this hides the legacy chrome on the spike screen
+ * only, scoped by the `wcpay-settings-ui-spike-page` body class. This is a
+ * deliberate exception to the spike's otherwise SDK-native, no-custom-CSS
+ * stance.
+ */
+
+body.wcpay-settings-ui-spike-page {
+	// wc-admin gray header bar ("Settings").
+	.woocommerce-layout__header,
+	// Legacy WC settings tab rows (General / Products / … / Advanced).
+	#mainform > nav.nav-tab-wrapper,
+	// Admin notices that survive the PHP-side suppression.
+	.woocommerce-layout__notice-list,
+	#wpbody-content .notice {
+		display: none;
+	}
+
+	// Without the gray header bar the content starts right under the admin
+	// bar, like the design.
+	.woocommerce-layout__primary,
+	#wpbody-content .wrap.woocommerce {
+		margin-top: 0;
+	}
+}

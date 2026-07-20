@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Spike: render WooPayments settings through the WooCommerce Settings UI SDK behind the settings-ui feature flag (WC 10.9+), with classic settings fallback
