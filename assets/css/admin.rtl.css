@@ -36,12 +36,9 @@
 	background-position: center;
 	background-repeat: no-repeat;
 	/*
-	 * Match the refreshed design-library badges (settings + checkout strips):
-	 * a box-shadow ring rather than an `outline` so the stroke follows the
-	 * rounded corner in every browser (outline only tracks border-radius in
-	 * Safari 16.4+), plus the badges' percentage radius -- 4.6875% = 3/64,
-	 * 7.5% = 3/40 -- which resolves to their baked ~1.5px corner at this 32x20
-	 * sprite size.
+	 * Match the refreshed badges: a box-shadow ring (not an `outline`, which
+	 * only tracks border-radius in Safari 16.4+) at the badges' baked corner
+	 * radius (4.6875% = 3/64, 7.5% = 3/40).
 	 */
 	border-radius: 4.6875% / 7.5%;
 	box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.07 );

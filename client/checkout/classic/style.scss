@@ -21,30 +21,16 @@
 		.payment-methods--logos {
 			float: right;
 
-			// The block checkout's shared stylesheet also loads on this page
-			// and sets `overflow: hidden` on this inner flex container (strip
-			// truncation), which clips the badges' box-shadow ring top/bottom.
-			// Restore `visible` so the ring shows in full; the counter badge
-			// already caps how many logos render, so nothing overflows.
+			// Undo the shared block stylesheet's `overflow: hidden`
+			// (truncation), which clips the badges' ring on this page.
 			> div {
 				overflow: visible;
 			}
 
-			// Gray chip stroke on the strip badges only. Scoped to the strip
-			// container (`> div img`) so it doesn't reach the sibling
-			// `.logo-popover` imgs (which have their own box-shadow ring) or the
-			// payment method icon — matching the block checkout. Uses a box-shadow
-			// ring, not a border, so it follows the badges' baked rounded corners
-			// exactly with no hairline gap. Radius rounds the ring to those corners
-			// (4.6875% = 3/64, 7.5% = 3/40).
-			//
-			// `object-fit: cover` is essential here: the design-library SVGs bake a
-			// white background rect behind the colored art, and the default
-			// `object-fit: fill` (which the block/settings strips override, but this
-			// classic rule previously did not) renders that white margin flush
-			// inside the ring as a thin white line on colored badges (e.g. Amex).
-			// `cover` scales the art to fill the box and crops the margin so the
-			// color reaches the ring — the same treatment the block checkout uses.
+			// Strip badges only (scoped off the sibling popover + method icon).
+			// box-shadow ring hugs the baked corners; `object-fit: cover` crops
+			// the SVGs' baked white background so it doesn't show as a white line
+			// inside the ring (default `fill` does — matches the block checkout).
 			> div img {
 				object-fit: cover;
 				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
@@ -66,11 +52,8 @@
 		}
 		img {
 			float: right;
-			// Reset borders on all label imgs (method icon, popover imgs). The
-			// strip badges get their stroke from the scoped rule below, not
-			// here — a `border` on this broad selector would also hit the
-			// popover imgs (which carry their own box-shadow ring) and the
-			// method icon, doubling their borders.
+			// Reset the default border on all label imgs; the strip badges get
+			// their ring from the scoped rule above.
 			border: 0;
 			padding: 0;
 			height: 24px !important;
@@ -92,16 +75,10 @@
 				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
 				width: 38px;
 				height: 24px;
-				// `cover` fills the box so the badges' baked white background
-				// isn't rendered as a thin white line inside the ring (default
-				// `object-fit: fill` leaves that margin) and framed 64×40 cards
-				// (JCB, UnionPay) don't letterbox — same treatment as the strip
-				// above and the block checkout popover.
+				// `cover` crops the baked white background and stops 64×40 cards
+				// (JCB, UnionPay) letterboxing; radius rounds the ring to the
+				// baked corner (3/64, 3/40). Same as the strip and block popover.
 				object-fit: cover;
-				// Round the ring to match the badges' baked rounded corners
-				// (rx=3 in the 64×40 artwork), so the square ring doesn't
-				// leave white at a rounded badge's corners — same fix as the
-				// block checkout popover (4.6875% = 3/64, 7.5% = 3/40).
 				border-radius: 4.6875% / 7.5%;
 			}
 		}

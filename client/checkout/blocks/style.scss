@@ -63,35 +63,21 @@
 			order: 2;
 			margin-left: auto;
 
-			// Gray chip stroke on the strip badges. The design-library artwork
-			// is strokeless, so white-background logos (Visa, Amex) would float
-			// without it. Scoped to the block checkout here — NOT in the shared
-			// PaymentMethodsLogos stylesheet — because that component also
-			// renders on the settings page (which has its own stroke); an
-			// unscoped rule there stacks a double border.
-			//
-			// Uses a box-shadow ring (like the popover and settings strip), not
-			// a `border`: a border-box border shrinks the image 1px and re-clips
-			// its baked rounded corner, leaving a hairline white gap on colored
-			// badges (Amex). The ring takes no layout space and follows the
-			// border-radius exactly, so it hugs the badge with no gap. The inner
-			// `> div` normally has `overflow: hidden` (strip truncation) which
-			// would clip the 1px ring top/bottom — override it to `visible`; the
-			// JS element cap + flex-shrink already keep the strip from
-			// overflowing. Radius tracks the badges' rx=3 corner
-			// (4.6875% = 3/64, 7.5% = 3/40).
+			// Gray chip ring on the strip badges (the strokeless artwork would
+			// otherwise let white-bg logos float). Scoped here, not in the shared
+			// PaymentMethodsLogos stylesheet — that also renders the settings
+			// strip and would double the border. box-shadow ring, not a `border`,
+			// so it hugs the baked corners without shifting layout; the inner
+			// div's `overflow: hidden` (truncation) would clip it, so restore it.
 			> div {
 				overflow: visible;
 			}
 
 			> div img {
-				// These are framed card badges (baked rounded background) that
-				// should fill the box. WooCommerce Blocks core applies
-				// `object-fit: contain`, which letterboxes them whenever the box
-				// aspect differs from the art (Amex 38×24, JCB 64×40) — a
-				// transparent strip that reads as a white gap on colored badges.
-				// `cover` fills the box with no letterbox; `width: 38px` matches
-				// the popover so badges stay a consistent size.
+				// `cover` fills the box so framed badges don't letterbox (WC
+				// Blocks core forces `contain`) and the SVGs' baked white
+				// background isn't shown as a white line; `width: 38px` matches
+				// the popover. Radius tracks the baked corner (3/64, 3/40).
 				width: 38px;
 				object-fit: cover;
 				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );

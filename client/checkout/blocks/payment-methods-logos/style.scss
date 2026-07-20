@@ -14,11 +14,9 @@
 			flex-shrink: 1;
 			min-width: 0;
 			max-width: 100%;
-			// NOTE: no stroke here. This stylesheet ships with the shared
-			// PaymentMethodsLogos component, which is also rendered on the
-			// settings page (with its own stroke) — an unscoped stroke here
-			// would leak in and double up. The checkout strip stroke lives in
-			// the checkout-scoped rule in ../style.scss instead.
+			// No stroke here: this shared component also renders on the settings
+			// strip (which strokes its own imgs), so a stroke would double up.
+			// The checkout strip stroke lives in the checkout-scoped stylesheets.
 		}
 	}
 
@@ -29,10 +27,8 @@
 		color: var( --wp--preset--color--contrast, $gray-900 );
 		text-align: center;
 		line-height: 24px;
-		// Match the badge chips: this is the same 38×24 box as the badges, but
-		// the badges carry a 1px box-shadow ring that extends them ~1px on each
-		// side — without it, the "+N" chip renders ~2px smaller. Add the same
-		// ring and corner radius so it's the same visual size as the badges.
+		// The badges carry a 1px ring that makes them ~2px wider than this box;
+		// add the same ring + radius so the "+N" chip matches their size.
 		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
 		border-radius: 4.6875% / 7.5%;
 		font-size: 11px;
@@ -61,11 +57,8 @@
 		width: 38px;
 		height: 24px;
 		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
-		// The design-library badges bake rounded corners (rx=3 in the 64×40
-		// artwork) into their background, so round this ring to match —
-		// otherwise the square ring leaves white at the badge's corners.
-		// Percentages track rx=3 at the rendered size (4.6875% = 3/64,
-		// 7.5% = 3/40).
+		// Round the ring to the badges' baked corners so it doesn't leave
+		// white at a corner (3/64, 3/40).
 		border-radius: 4.6875% / 7.5%;
 	}
 }
@@ -73,12 +66,9 @@
 .payment-methods--logos-popover {
 	> img {
 		object-position: center !important;
-		// These are framed card badges (baked rounded background) that should
-		// fill the box, but WooCommerce Blocks core forces `object-fit: contain`,
-		// which letterboxes the 64×40 badges (JCB, UnionPay) inside the 38×24
-		// popover — a white line on their colored background. `cover` fills with
-		// no letterbox (needs !important to beat the WC core rule, same as
-		// object-position above).
+		// Framed 64×40 cards (JCB, UnionPay) letterbox under WC Blocks core's
+		// forced `object-fit: contain`, leaving a white line; `cover` fills.
+		// `!important` beats the core rule, like object-position above.
 		object-fit: cover !important;
 	}
 }
