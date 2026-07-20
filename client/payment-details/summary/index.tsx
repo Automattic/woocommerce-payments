@@ -445,12 +445,23 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// resulting click handler, never during render or the effect itself.
 	useEffect( () => {
 		onRegisterRefundOpener?.( () => {
+			// The timeline fetches independently and can render its refund CTA
+			// while the charge is still loading; the modal would render broken
+			// amounts from the incomplete charge, so ignore clicks until then.
+			if ( isLoading || ! charge.id ) {
+				return;
+			}
 			setRefundTarget( {} );
 			recordEvent( 'payments_transactions_details_refund_modal_open', {
 				payment_intent_id: charge.payment_intent,
 			} );
 		} );
-	}, [ onRegisterRefundOpener, charge.payment_intent ] );
+	}, [
+		onRegisterRefundOpener,
+		charge.id,
+		charge.payment_intent,
+		isLoading,
+	] );
 
 	const bankName = getBankName( charge );
 
