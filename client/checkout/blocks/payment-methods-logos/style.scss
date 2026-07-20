@@ -29,7 +29,12 @@
 		color: var( --wp--preset--color--contrast, $gray-900 );
 		text-align: center;
 		line-height: 24px;
-		border-radius: 3px;
+		// Match the badge chips: this is the same 38×24 box as the badges, but
+		// the badges carry a 1px box-shadow ring that extends them ~1px on each
+		// side — without it, the "+N" chip renders ~2px smaller. Add the same
+		// ring and corner radius so it's the same visual size as the badges.
+		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+		border-radius: 4.6875% / 7.5%;
 		font-size: 11px;
 		font-weight: 600;
 		white-space: nowrap;
