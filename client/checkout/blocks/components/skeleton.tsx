@@ -67,9 +67,7 @@ const LocalSkeleton = ( {
 
 export const Skeleton = ( props: SkeletonProps ): JSX.Element => {
 	const CoreSkeleton = useContext( SkeletonContext );
-	return CoreSkeleton ? (
-		<CoreSkeleton { ...props } />
-	) : (
-		<LocalSkeleton { ...props } />
-	);
+	return CoreSkeleton
+		? React.createElement( CoreSkeleton, props )
+		: React.createElement( LocalSkeleton, props );
 };
