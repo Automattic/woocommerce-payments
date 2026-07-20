@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Balance report: export CSV amounts in major units instead of cents.
