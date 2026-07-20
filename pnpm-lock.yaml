@@ -30,7 +30,7 @@ overrides:
   d3-scale: ^4.0.2
   d3-scale-chromatic: ^3.1.0
 
-pnpmfileChecksum: sha256-xRxu356s4Z1sOi+zk7EoUU8EGPaKpwlG2618EeF7xjA=
+pnpmfileChecksum: sha256-U+gZPrmrFy5zRdE8K7tIgZTqnM8+wLR/R7S3IkpwhQo=
 
 importers:
 

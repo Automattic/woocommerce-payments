@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Balance report: export the Payouts CSV amount with the same negative sign shown on screen.
