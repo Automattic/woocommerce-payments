@@ -16,11 +16,16 @@ export type FeesFieldId =
 	| 'deposit_date'
 	| 'deposit_id';
 
+// Column order mirrors the design (Design i1): Date & time, Method, Type,
+// Order ID, Transaction ID, Currency, Gross amount, Fees total. `date` is the
+// DataViews titleField and renders first, so it is not listed here.
+// Transaction ID keeps `enableHiding: false` in fields.tsx regardless of its
+// position, so it stays the always-visible, single keyboard-reachable row link.
 const defaultVisibleFields: FeesFieldId[] = [
-	'transaction_id',
 	'payment_method',
 	'type',
 	'order_id',
+	'transaction_id',
 	'transaction_currency',
 	'amount',
 	'fees',
