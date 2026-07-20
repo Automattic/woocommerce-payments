@@ -354,6 +354,56 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_all_filters( 'wcpay_payment_request_total_label_suffix' );
 	}
 
+	public function test_get_quantity_preserves_decimal_on_decimal_stores() {
+		// Stores that sell in fractional units (e.g. fabric by the metre) swap the
+		// default integer stock-amount filter for a float one; mirror that here so
+		// wc_stock_amount() keeps the fraction instead of truncating it.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+
+		try {
+			$_POST['qty'] = '0.25';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+			unset( $_POST['qty'] );
+		}
+
+		$this->assertEqualsWithDelta( 0.25, $result, 0.0001 );
+	}
+
+	public function test_get_quantity_preserves_decimal_from_woopay_quantity_key() {
+		// WooPay posts the quantity as `quantity`; it must be preserved the same way.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+
+		try {
+			$_POST['quantity'] = '0.25';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+			unset( $_POST['quantity'] );
+		}
+
+		$this->assertEqualsWithDelta( 0.25, $result, 0.0001 );
+	}
+
+	public function test_get_quantity_returns_integer_on_default_stores() {
+		try {
+			$_POST['qty'] = '3';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			unset( $_POST['qty'] );
+		}
+
+		$this->assertSame( 3, $result );
+	}
+
 	public function test_should_show_express_checkout_button_for_tokenized_ece_with_billing_email() {
 		global $wp;
 		global $wp_query;
@@ -366,6 +416,39 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
 		$order                = WC_Helper_Order::create_order( 1, 100 );
+		$order_id             = $order->get_id();
+		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
+
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+	}
+
+	public function test_should_show_express_checkout_button_for_pay_for_order_without_billing_email() {
+		global $wp;
+		global $wp_query;
+
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+		WC_Payments::mode()->dev();
+		$_GET['pay_for_order'] = true;
+
+		// Order created without a billing email (e.g. by the merchant). The email is captured
+		// from the wallet at payment time, so the button should still be offered.
+		$order = WC_Helper_Order::create_order( 1, 100 );
+		$order->set_billing_email( '' );
+		$order->save();
 		$order_id             = $order->get_id();
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
@@ -925,6 +1008,107 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$this->assertFalse( $helper->should_show_express_checkout_button() );
+	}
+
+	public function test_is_product_purchasable_returns_false_when_no_product() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_product' ] )
+			->getMock();
+		$helper->method( 'get_product' )->willReturn( null );
+
+		// No resolvable product (e.g. off a product page, where get_product()
+		// returns null) -> not purchasable. Callers still guard with is_product(),
+		// so this never gates the cart or checkout.
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_true_for_purchasable_in_stock_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'instock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		$this->assertTrue( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_false_for_out_of_stock_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'outofstock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_true_for_backorder_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( 0 );
+		$product->set_backorders( 'yes' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		// is_in_stock() returns true for backorder products, so they remain purchasable.
+		$this->assertTrue( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_false_for_non_purchasable_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '' );
+		$product->set_price( '' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		// A product with no price is not purchasable.
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	public function test_should_not_show_express_checkout_button_when_product_not_purchasable() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+
+		// A supported, priced product that is out of stock: every other gate in
+		// should_show_express_checkout_button() passes, so the purchasability gate
+		// is the only thing that makes it return false — exercising the real
+		// is_product_purchasable() through the full flow.
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'outofstock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product', 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}

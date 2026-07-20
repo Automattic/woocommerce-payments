@@ -148,6 +148,19 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
 		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->onboarding_service, 'clear_cached_onboarding_fields_data' ] ) );
+	}
+
+	public function test_clear_cached_onboarding_fields_data() {
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ Database_Cache::ONBOARDING_FIELDS_DATA_KEY ],
+				[ Database_Cache::BUSINESS_TYPES_KEY ]
+			);
+
+		$this->onboarding_service->clear_cached_onboarding_fields_data();
 	}
 
 	public function test_create_embedded_kyc_session() {

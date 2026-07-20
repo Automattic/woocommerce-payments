@@ -221,6 +221,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
 
 		parent::tear_down();
 	}
@@ -329,6 +330,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( $this->return_url, $result['redirect'] );
+
+		// Assert: The paid intent id is remembered in the session for the order confirmation page.
+		$this->assertSame( 'pi_mock', WC()->session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY ) );
 	}
 
 	/**
@@ -599,6 +603,50 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
 		$this->assertStringContainsString( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such payment_method: pm_123.', strip_tags( $notes[0]->content, '' ) );
+	}
+
+	public function test_intent_id_saved_on_failed_payment() {
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		// Arrange: Throw a card-decline exception that carries the failed intent ID,
+		// mirroring how the API client surfaces the intent embedded in the error response.
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						'Error: Your card was declined.',
+						'card_declined',
+						402,
+						'card_error',
+						'expired_card',
+						0,
+						null,
+						null,
+						'pi_mock_failed_123'
+					)
+				)
+			);
+
+		// Assert: The failed intent ID is persisted on the order.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'set_intent_id_for_order' )
+			->with( $this->anything(), 'pi_mock_failed_123' );
+
+		// Act: process payment.
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// Assert: Order failed.
+		$this->assertEquals( 'fail', $result['result'] );
+		$this->assertEquals( 'failed', $result_order->get_status() );
 	}
 
 	public function test_failure_result_returned_if_phone_number_is_invalid() {

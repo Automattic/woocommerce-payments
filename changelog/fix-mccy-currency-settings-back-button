@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: tweak MCCY page to ensure the selected currency is in the URL, so the browser back button returns to the currency list

@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: test: use Currency_Code constants instead of hardcoded currency strings in unit tests (#8120)

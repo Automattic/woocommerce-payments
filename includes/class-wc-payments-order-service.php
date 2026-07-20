@@ -35,6 +35,20 @@ class WC_Payments_Order_Service {
 	const INTENT_ID_META_KEY = '_intent_id';
 
 	/**
+	 * WC session key holding the payment intent the current session just paid. Written by the gateway
+	 * when a payment completes, read on the order confirmation page to recognise the genuine payer
+	 * (any WooPayments payment, not only wallets) without trusting query-string params.
+	 *
+	 * Holds a single intent id, so back-to-back payments in one session keep only the latest: after
+	 * paying order B, visiting order A's order-received page no longer matches and falls back to email
+	 * verification. Acceptable because the fallback is safe (we ask to verify, never wrongly waive) and
+	 * the sequence is rare; a per-order map would be more state to prune for little gain.
+	 *
+	 * @const string
+	 */
+	const PAID_INTENT_ID_SESSION_KEY = 'wcpay_paid_intent_id';
+
+	/**
 	 * Meta key used to store payment method Id.
 	 *
 	 * @const string

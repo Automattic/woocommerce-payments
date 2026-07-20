@@ -208,14 +208,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Gets quantity from request.
 	 *
-	 * @return int
+	 * @return float|int
 	 */
 	public function get_quantity() {
 		// Express Checkout Element sends the quantity as qty. WooPay sends it as quantity.
+		// wc_stock_amount() respects the store's decimal-quantity setting; wc_format_decimal()
+		// normalizes localized separators ("0,25") before the cast so fractions survive.
 		if ( isset( $_POST['quantity'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			return absint( $_POST['quantity'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return max( 0, wc_stock_amount( (float) wc_format_decimal( wc_clean( wp_unslash( $_POST['quantity'] ) ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		} elseif ( isset( $_POST['qty'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			return absint( $_POST['qty'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return max( 0, wc_stock_amount( (float) wc_format_decimal( wc_clean( wp_unslash( $_POST['qty'] ) ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		} else {
 			return 1;
 		}
@@ -515,6 +517,34 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Whether the resolvable product can be added to the cart.
+	 *
+	 * Returns false when no product can be resolved (e.g. off a product page,
+	 * where get_product() returns null), so callers must gate with
+	 * `is_product() && ! is_product_purchasable()` to avoid affecting the cart
+	 * or checkout contexts. On a product page, a product that is not purchasable
+	 * or out of stock can't be added to the cart, so the express buttons should
+	 * not show.
+	 *
+	 * Variable products report the parent's aggregate status: is_purchasable()
+	 * and is_in_stock() are true when at least one variation is buyable, so this
+	 * only filters out wholly-unavailable products. A specific out-of-stock or
+	 * unavailable variation is still handled at click time, where the express
+	 * button prompts the shopper to pick a valid combination.
+	 *
+	 * @return bool
+	 */
+	public function is_product_purchasable(): bool {
+		$product = $this->get_product();
+
+		if ( ! $product instanceof WC_Product ) {
+			return false;
+		}
+
+		return $product->is_purchasable() && $product->is_in_stock();
+	}
+
+	/**
 	 * Checks whether Express Checkout Element Button should be available on this page.
 	 *
 	 * @return bool
@@ -552,6 +582,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Product page, but has unsupported product type.
 		if ( $this->is_product() && ! $this->is_product_supported() ) {
 			Logger::log( 'Product page has unsupported product type ( Express Checkout Element button disabled )' );
+			return false;
+		}
+
+		// Product page, but the product can't be added to the cart (not purchasable or out of stock).
+		if ( $this->is_product() && ! $this->is_product_purchasable() ) {
+			Logger::log( 'Product is not purchasable ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
@@ -793,8 +829,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * The Store API doesn't allow checkout without the billing email address present on the order data.
-	 * https://github.com/woocommerce/woocommerce/issues/48540
+	 * Determines whether the current Pay for Order page can be paid via the Express Checkout button.
+	 *
+	 * An order can be created without a billing email (e.g. by the merchant). The Store API requires
+	 * one to process the payment, but the email is captured from the wallet (Apple Pay / Google Pay)
+	 * and forwarded to the checkout request, so a pre-existing order email is not required to offer
+	 * the button. See https://github.com/woocommerce/woocommerce/issues/48540
 	 *
 	 * @return bool
 	 */
@@ -809,15 +849,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// we don't need to check its validity or value, we just need to ensure a billing email is present.
-		$billing_email = $order->get_billing_email();
-		if ( ! empty( $billing_email ) ) {
-			return true;
-		}
-
-		Logger::log( 'Billing email not present ( Express Checkout Element button disabled )' );
-
-		return false;
+		return true;
 	}
 
 	/**

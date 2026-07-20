@@ -86,7 +86,7 @@ cmd_up() {
         --env_file "$QIT_ROOT/config/local.env"
 
     echo ""
-    echo "When finished, run: npm run test:qit-e2e-down"
+    echo "When finished, run: pnpm run test:qit-e2e-down"
     echo ""
 }
 

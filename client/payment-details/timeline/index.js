@@ -15,11 +15,15 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
 
-const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
+const PaymentDetailsTimeline = ( {
+	paymentIntentId,
+	bankName,
+	disputeOrder,
+} ) => {
 	const { timeline, timelineError, isLoading } =
 		useTimeline( paymentIntentId );
 
-	const items = mapTimelineEvents( timeline, bankName );
+	const items = mapTimelineEvents( timeline, bankName, disputeOrder );
 
 	return (
 		<Card size="large">
@@ -37,7 +41,8 @@ const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
 							'woocommerce-payments'
 						)
 					) : (
-						<Timeline items={ items } />
+						// Older WooCommerce versions ignore the timezone prop and keep the previous browser-timezone behavior.
+						<Timeline items={ items } timezone="site" />
 					) }
 				</LoadableBlock>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 } />

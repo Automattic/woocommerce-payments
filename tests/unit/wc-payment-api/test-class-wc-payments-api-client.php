@@ -1171,6 +1171,59 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_api_merchant_exception_includes_payment_intent_id() {
+		$mock_response                                  = [];
+		$mock_response['error']['code']                 = 'card_declined';
+		$mock_response['error']['payment_intent']['id'] = 'pi_mock_failed_123';
+		$mock_response['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] = 'Bank declined';
+		$this->set_http_mock_response(
+			401,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Merchant_Exception was not thrown.' );
+		} catch ( API_Merchant_Exception $e ) {
+			$this->assertSame( 'pi_mock_failed_123', $e->get_intent_id() );
+		}
+	}
+
+	public function test_api_exception_includes_payment_intent_id() {
+		$mock_response                                  = [];
+		$mock_response['error']['code']                 = 'incorrect_cvc';
+		$mock_response['error']['type']                 = 'card_error';
+		$mock_response['error']['payment_intent']['id'] = 'pi_mock_failed_456';
+		$this->set_http_mock_response(
+			402,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Exception was not thrown.' );
+		} catch ( API_Exception $e ) {
+			$this->assertSame( 'pi_mock_failed_456', $e->get_intent_id() );
+		}
+	}
+
+	public function test_api_exception_intent_id_is_null_when_no_payment_intent() {
+		$mock_response                     = [];
+		$mock_response['error']['code']    = 'resource_missing';
+		$mock_response['error']['message'] = 'No such payment_method: pm_123.';
+		$this->set_http_mock_response(
+			400,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Exception was not thrown.' );
+		} catch ( API_Exception $e ) {
+			$this->assertNull( $e->get_intent_id() );
+		}
+	}
+
 	/**
 	 * Test sending store setup data.
 	 */
@@ -1882,5 +1935,100 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'YmFzZTY0ZGF0YQ==', (string) $captured_body );
 		$this->assertStringContainsString( 'receipt.pdf', (string) $captured_body );
 		$this->assertStringContainsString( 'dispute_evidence', (string) $captured_body );
+	}
+
+	/**
+	 * A charge can have more than one dispute, so the additive `disputes` array
+	 * on the server response must survive deserialization onto the charge model.
+	 */
+	public function test_deserialize_payment_intention_carries_charge_disputes() {
+		$disputes = [
+			[
+				'id'     => 'dp_1',
+				'status' => 'needs_response',
+			],
+			[
+				'id'     => 'dp_2',
+				'status' => 'under_review',
+			],
+		];
+
+		$intention_array = [
+			'id'            => 'pi_mock',
+			'amount'        => 1500,
+			'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
+			'created'       => ( new DateTime() )->getTimestamp(),
+			'status'        => Intent_Status::SUCCEEDED,
+			'client_secret' => 'pi_mock_secret',
+			'metadata'      => [],
+			'charges'       => [
+				'total_count' => 1,
+				'data'        => [
+					[
+						'id'       => 'ch_mock',
+						'amount'   => 1500,
+						'created'  => ( new DateTime() )->getTimestamp(),
+						'dispute'  => [ 'id' => 'dp_1' ],
+						'disputed' => true,
+						'disputes' => $disputes,
+					],
+				],
+			],
+		];
+
+		$intent = $this->payments_api_client->deserialize_payment_intention_object_from_array( $intention_array );
+		$charge = $intent->get_charge();
+
+		$this->assertSame(
+			[
+				[
+					'id'     => 'dp_1',
+					'status' => 'needs_response',
+				],
+				[
+					'id'     => 'dp_2',
+					'status' => 'under_review',
+				],
+			],
+			$charge->get_disputes()
+		);
+
+		$this->assertSame( [ 'id' => 'dp_1' ], $charge->get_dispute() );
+
+		$this->assertTrue( $charge->get_disputed() );
+	}
+
+	/**
+	 * Back-compat: a charge with no `disputes` array still deserializes, and the
+	 * singular dispute fields are untouched.
+	 */
+	public function test_deserialize_payment_intention_without_charge_disputes() {
+		$intention_array = [
+			'id'            => 'pi_mock',
+			'amount'        => 1500,
+			'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
+			'created'       => ( new DateTime() )->getTimestamp(),
+			'status'        => Intent_Status::SUCCEEDED,
+			'client_secret' => 'pi_mock_secret',
+			'metadata'      => [],
+			'charges'       => [
+				'total_count' => 1,
+				'data'        => [
+					[
+						'id'      => 'ch_mock',
+						'amount'  => 1500,
+						'created' => ( new DateTime() )->getTimestamp(),
+						'dispute' => [ 'id' => 'dp_1' ],
+					],
+				],
+			],
+		];
+
+		$intent = $this->payments_api_client->deserialize_payment_intention_object_from_array( $intention_array );
+		$charge = $intent->get_charge();
+
+		$this->assertNull( $charge->get_disputes() );
+
+		$this->assertSame( [ 'id' => 'dp_1' ], $charge->get_dispute() );
 	}
 }

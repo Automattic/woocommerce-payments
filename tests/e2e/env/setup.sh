@@ -310,7 +310,7 @@ if [[ -d "node_modules" ]]; then
 	success "node_modules exists"
 else
 	fail "node_modules is missing"
-	info "Run: npm install"
+	info "Run: pnpm install"
 	PREFLIGHT_OK=false
 fi
 
@@ -419,8 +419,8 @@ if [[ -z "$CI" && "$WCPAY_USE_BUILD_ARTIFACT" != true ]]; then
 
 	if [[ "$BUILD_NEEDED" == true ]]; then
 		section "Building client"
-		info "$BUILD_REASON — running npm run build:client"
-		npm run build:client
+		info "$BUILD_REASON — running pnpm run build:client"
+		pnpm run build:client
 		success "Client built"
 	else
 		success "Client build is up to date"
@@ -823,6 +823,6 @@ if [[ -z $CI ]]; then
 	echo -e "  ${DIM}phpMyAdmin${NC}  http://localhost:8085"
 fi
 echo ""
-echo -e "  Run tests:  ${BOLD}npm run test:e2e${NC}"
-echo -e "  UI mode:    ${BOLD}npm run test:e2e-ui${NC}"
+echo -e "  Run tests:  ${BOLD}pnpm run test:e2e${NC}"
+echo -e "  UI mode:    ${BOLD}pnpm run test:e2e-ui${NC}"
 echo ""

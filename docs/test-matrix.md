@@ -326,7 +326,7 @@ Exit codes: 0 = pass, 1 = fail, 2 = warning only (warnings do NOT fail CI).
 | **Category** | Performance |
 | **Specs** | 1 spec file (`tests/e2e/specs/performance/payment-methods.spec.ts`) |
 | **Config** | `tests/e2e/playwright.performance.config.ts` |
-| **Trigger** | Manual (`npm run test:e2e-performance`) |
+| **Trigger** | Manual (`pnpm run test:e2e-performance`) |
 | **Required** | No |
 | **Status** | Active |
 
@@ -650,6 +650,6 @@ Multiple specs have screenshot assertions commented out due to flakiness. These 
 
 - **Compatibility matrix beta tolerance:** The WC/WP compatibility workflow allows beta matrix combinations to fail without blocking PRs. This prevents unreleased WooCommerce changes from blocking WooPayments development.
 
-- **Performance tests are manual-only:** The single performance spec (`payment-methods.spec.ts`) is not part of any automated CI workflow. It must be triggered manually via `npm run test:e2e-performance`.
+- **Performance tests are manual-only:** The single performance spec (`payment-methods.spec.ts`) is not part of any automated CI workflow. It must be triggered manually via `pnpm run test:e2e-performance`.
 
 - **Apple Pay cannot be automated:** Apple Pay requires real device biometric authentication, making it impossible to include in automated E2E suites. This remains a manual testing requirement for every release.

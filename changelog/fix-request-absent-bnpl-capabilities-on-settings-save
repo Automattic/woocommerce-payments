@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Request unrequested payment method capabilities (e.g. BNPL) on settings save when the capability is absent from cached account data

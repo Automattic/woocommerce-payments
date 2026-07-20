@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Skip express checkout button handler construction on cron and XML-RPC requests, where the handlers' hooks can never fire

@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: fix: restore Payments Overview card spacing lost to the unreleased route code-splitting in #11776 (not user-facing).
