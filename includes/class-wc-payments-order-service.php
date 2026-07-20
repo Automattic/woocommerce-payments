@@ -276,7 +276,6 @@ class WC_Payments_Order_Service {
 
 		if ( Order_Mode::PRODUCTION === $order->get_meta( self::WCPAY_MODE_META_KEY ) ) {
 			update_option( self::HAS_LIVE_SALE_OPTION, '1', true );
-			delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 
 			if ( class_exists( 'WC_Tracks' ) ) {
 				WC_Tracks::record_event( 'wcpay_first_live_sale' );
@@ -323,10 +322,10 @@ class WC_Payments_Order_Service {
 	/**
 	 * Returns whether the store has had at least one live (production) WooPayments sale.
 	 *
-	 * Reads the one-way `HAS_LIVE_SALE_OPTION` flag set by `maybe_record_first_live_sale()`;
-	 * falls back to a single `wc_get_orders` meta query when the option hasn't been
-	 * populated yet (e.g., for stores that took their first live sale before this
-	 * feature shipped). Writes the option on hit so subsequent reads short-circuit.
+	 * Reads the one-way `HAS_LIVE_SALE_OPTION` flag; falls back to a `wc_get_orders` lookup
+	 * for `_wcpay_mode = production` orders and writes the flag on hit. The mode filter is
+	 * required (it excludes completed test-mode orders), so live orders created before that
+	 * meta existed aren't detected.
 	 *
 	 * @return bool
 	 */

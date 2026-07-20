@@ -117,7 +117,7 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 
 		/**
 		 * Returns the absolute URL the email CTA button links to.
-		 * Mirrors the in-app banner's "Promote my store" destination, plus
+		 * Mirrors the in-app notice's "Promote my store" destination, plus
 		 * referrer params consumed by the click handler on admin_init.
 		 *
 		 * @return string
@@ -135,7 +135,7 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		}
 
 		/**
-		 * Label for the email CTA button. Matches the in-app banner's CTA label.
+		 * Label for the email CTA button. Matches the in-app notice's CTA label.
 		 *
 		 * @return string
 		 */
