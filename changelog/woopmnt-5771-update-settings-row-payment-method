@@ -1,4 +1,4 @@
 Significance: patch
 Type: update
 
-Updated payment method icons to the latest design-library artwork. The settings-page icon stroke is applied via admin-only CSS, so the public checkout logos are unchanged.
+Updated the payment method card brand icons to the latest design-library artwork, with a consistent outline across the settings, checkout, and transactions screens.
