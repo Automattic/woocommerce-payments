@@ -111,8 +111,9 @@ export const paymentFailureMapping = {
 
 /**
  * Human-readable labels for Stripe's `fraud_type` enum on the early fraud
- * warning object. Mirrors
- * `WC_Payments_Utils::get_early_fraud_warning_fraud_type_description()`.
+ * warning object. The order-screen half of this feature (PR #11915) adds a
+ * PHP counterpart, `WC_Payments_Utils::get_early_fraud_warning_fraud_type_description()`
+ * — keep the two mappings in sync.
  * See https://docs.stripe.com/api/radar/early_fraud_warnings/object
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
