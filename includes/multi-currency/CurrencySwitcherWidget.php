@@ -106,7 +106,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 			<select
 				name="currency"
 				class="js-woopayments-currency-switcher"
-				aria-label="<?php echo esc_attr( $title ); ?>"
+				aria-label="<?php echo esc_attr( ! empty( $title ) ? $title : __( 'Select your currency', 'woocommerce-payments' ) ); ?>"
 				onchange="this.form.submit()"
 			>
 				<?php
