@@ -11,10 +11,12 @@ import clsx from 'clsx';
  */
 import './styles.scss';
 
+const NullIcon = () => null;
+
 const PaymentDeleteIllustration: React.FunctionComponent< {
 	hasBorder?: boolean;
 	icon?: ReactImgFuncComponent;
-} > = ( { hasBorder, icon: Icon = () => null } ): JSX.Element => {
+} > = ( { hasBorder, icon: Icon = NullIcon } ): JSX.Element => {
 	return (
 		<div className="payment-delete-illustration__wrapper">
 			<div className="payment-delete-illustration__illustrations">
