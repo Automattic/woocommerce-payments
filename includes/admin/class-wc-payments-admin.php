@@ -1043,6 +1043,7 @@ class WC_Payments_Admin {
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
+			'activeEarlyFraudWarnings'           => $this->get_active_early_fraud_warnings(),
 			'currentUserEmail'                   => $current_user_email,
 			'currencyData'                       => $currency_data,
 			'restUrl'                            => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
@@ -1491,6 +1492,26 @@ class WC_Payments_Admin {
 		}
 
 		return $authorization_summary['count'];
+	}
+
+	/**
+	 * Gets the cached list of orders with an actionable early fraud warning.
+	 *
+	 * Cached for a day; the webhook processing service deletes the cache
+	 * whenever a warning arrives or resolves.
+	 *
+	 * @return array Arrays with `order_id`, `charge_id` and `created` keys.
+	 */
+	private function get_active_early_fraud_warnings(): array {
+		$early_fraud_warnings = $this->database_cache->get_or_add(
+			Database_Cache::EARLY_FRAUD_WARNING_ORDERS_KEY,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			},
+			'is_array'
+		);
+
+		return is_array( $early_fraud_warnings ) ? $early_fraud_warnings : [];
 	}
 
 	/**
