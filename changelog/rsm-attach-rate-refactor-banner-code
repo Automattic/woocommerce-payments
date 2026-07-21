@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Refactor: extract the admin notice lifecycle into an abstract base plus one concrete class per notice, under includes/admin/attach-rate/.
