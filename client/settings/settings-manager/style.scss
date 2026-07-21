@@ -4,6 +4,10 @@ body {
 		&.woocommerce-payments-checkout-section {
 			background: #fff;
 
+			.woocommerce-layout__header {
+				border-bottom: 0;
+			}
+
 			.nav-tab-wrapper {
 				background: $wp-gray-2;
 				border-bottom-color: #f0f0f0;
