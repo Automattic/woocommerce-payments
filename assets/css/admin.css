@@ -85,6 +85,12 @@
 	box-shadow: none;
 }
 
+.payment-method__brand--discover,
+.payment-method__brand--diners {
+	/* Art carries its own brand frame. */
+	box-shadow: none;
+}
+
 .payment-method__brand--alipay {
 	background-image: url( '../images/payment-methods/alipay-logo.svg' );
 }
