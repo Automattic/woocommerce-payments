@@ -106,6 +106,7 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
+		activeEarlyFraudWarnings: wcpaySettings.activeEarlyFraudWarnings,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );

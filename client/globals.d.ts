@@ -97,6 +97,11 @@ declare global {
 			has_past_loans: boolean;
 			loans: Array< string >;
 		};
+		activeEarlyFraudWarnings?: Array< {
+			order_id: number;
+			charge_id: string;
+			created: number;
+		} >;
 		accountDetails: AccountDetailsType;
 		connect: {
 			country: string;
