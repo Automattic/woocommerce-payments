@@ -15,7 +15,11 @@ interface BreakpointConfig {
 
 interface PaymentMethodsLogosProps {
 	maxElements: number;
-	paymentMethods: { name: string; component: string }[];
+	paymentMethods: {
+		name: string;
+		component: string;
+		hasBrandFrame?: boolean;
+	}[];
 	breakpointConfigs?: BreakpointConfig[];
 }
 
@@ -141,6 +145,8 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 								src={ pm.component }
 								width={ 38 }
 								height={ 24 }
+								// Lets surface CSS skip the UI ring on marks whose art carries its own frame.
+								className={ pm.hasBrandFrame ? 'has-brand-frame' : undefined }
 							/>
 						) ) }
 					{ shouldHavePopover && (
@@ -166,6 +172,8 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 							src={ pm.component }
 							width={ 38 }
 							height={ 24 }
+							// Lets surface CSS skip the UI ring on marks whose art carries its own frame.
+							className={ pm.hasBrandFrame ? 'has-brand-frame' : undefined }
 						/>
 					) ) }
 				</LogoPopover>
