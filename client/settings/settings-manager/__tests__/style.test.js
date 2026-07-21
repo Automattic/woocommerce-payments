@@ -13,13 +13,13 @@ describe( 'Settings manager styles', () => {
 			'utf8'
 		);
 
-	// WooCommerce leaves gateway settings tabs transparent, so the WooPayments
-	// white content background would otherwise show through the tab strip.
-	it( 'keeps the settings tabs on the WordPress admin gray background', () => {
+	// WooCommerce leaves gateway settings tabs transparent and uses a stronger
+	// separator than the refreshed settings UI.
+	it( 'matches the refreshed WooCommerce settings tab colors', () => {
 		const styles = readSettingsManagerStyles();
 
 		expect( styles ).toMatch(
-			/\.nav-tab-wrapper\s*{\s*background:\s*\$wp-gray-2;/
+			/\.nav-tab-wrapper\s*{\s*background:\s*\$wp-gray-2;\s*border-bottom-color:\s*#f0f0f0;/
 		);
 	} );
 } );
