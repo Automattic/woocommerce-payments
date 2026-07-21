@@ -146,7 +146,11 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 								width={ 38 }
 								height={ 24 }
 								// Lets surface CSS skip the UI ring on marks whose art carries its own frame.
-								className={ pm.hasBrandFrame ? 'has-brand-frame' : undefined }
+								className={
+									pm.hasBrandFrame
+										? 'has-brand-frame'
+										: undefined
+								}
 							/>
 						) ) }
 					{ shouldHavePopover && (
@@ -173,7 +177,9 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 							width={ 38 }
 							height={ 24 }
 							// Lets surface CSS skip the UI ring on marks whose art carries its own frame.
-							className={ pm.hasBrandFrame ? 'has-brand-frame' : undefined }
+							className={
+								pm.hasBrandFrame ? 'has-brand-frame' : undefined
+							}
 						/>
 					) ) }
 				</LogoPopover>
