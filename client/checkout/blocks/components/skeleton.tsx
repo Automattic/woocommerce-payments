@@ -65,9 +65,13 @@ const LocalSkeleton = ( {
 	);
 };
 
+// eslint-disable-next-line react-hooks/static-components -- CoreSkeleton is a stable reference injected via context, not a component created during render.
 export const Skeleton = ( props: SkeletonProps ): JSX.Element => {
 	const CoreSkeleton = useContext( SkeletonContext );
-	return CoreSkeleton
-		? React.createElement( CoreSkeleton, props )
-		: React.createElement( LocalSkeleton, props );
+	return CoreSkeleton ? (
+		// eslint-disable-next-line react-hooks/static-components
+		<CoreSkeleton { ...props } />
+	) : (
+		<LocalSkeleton { ...props } />
+	);
 };
