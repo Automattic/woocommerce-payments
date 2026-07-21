@@ -671,7 +671,7 @@ describe( 'Transactions list', () => {
 		} );
 	} );
 
-	describe( 'early fraud warning chip', () => {
+	describe( 'early fraud warning pill', () => {
 		beforeEach( () => {
 			mockUseTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
@@ -704,7 +704,7 @@ describe( 'Transactions list', () => {
 			return render( <TransactionsList /> );
 		}
 
-		test( 'renders the chip for a charge with an actionable warning', () => {
+		test( 'renders the pill for a charge with an actionable warning', () => {
 			renderWithEarlyFraudWarning( {
 				actionable: true,
 				fraud_type: 'made_with_stolen_card',
@@ -713,7 +713,7 @@ describe( 'Transactions list', () => {
 			expect( screen.getByText( 'Fraud warning' ) ).toBeInTheDocument();
 		} );
 
-		test( 'renders no chip when the warning is no longer actionable', () => {
+		test( 'renders no pill when the warning is no longer actionable', () => {
 			renderWithEarlyFraudWarning( {
 				actionable: false,
 				fraud_type: 'made_with_stolen_card',
@@ -724,7 +724,7 @@ describe( 'Transactions list', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		test( 'renders no chip on non-charge rows', () => {
+		test( 'renders no pill on non-charge rows', () => {
 			renderWithEarlyFraudWarning(
 				{ actionable: true, fraud_type: 'made_with_stolen_card' },
 				'refund'
