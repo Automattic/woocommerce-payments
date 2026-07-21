@@ -52,6 +52,7 @@ const PaymentMethods = [
 	{
 		name: 'discover',
 		component: Discover,
+		hasBrandFrame: true,
 	},
 	{
 		name: 'woopay',
@@ -88,6 +89,7 @@ const PaymentMethods = [
 	{
 		name: 'diners',
 		component: Diners,
+		hasBrandFrame: true,
 	},
 	{
 		name: 'eftpos',
@@ -215,6 +217,9 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 							src={ pm.component }
 							width={ 38 }
 							height={ 24 }
+							className={
+								pm.hasBrandFrame ? 'has-brand-frame' : undefined
+							}
 						/>
 					);
 				} ) }
@@ -255,6 +260,11 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 											src={ pm.component }
 											width={ 38 }
 											height={ 24 }
+											className={
+												pm.hasBrandFrame
+													? 'has-brand-frame'
+													: undefined
+											}
 										/>
 									);
 								} ) }
