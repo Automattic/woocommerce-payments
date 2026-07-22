@@ -22,6 +22,9 @@ on:
       release-pr-id:
         description: "ID of the release PR created"
         value: ${{ jobs.prepare-release.outputs.release-pr-id }}
+      develop-pr-url:
+        description: "URL of the develop sync PR created"
+        value: ${{ jobs.prepare-release.outputs.develop-pr-url }}
 
 
   workflow_dispatch:
@@ -62,6 +65,7 @@ jobs:
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
       release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
+      develop-pr-url: ${{ steps.open-develop-pr.outputs.DEVELOP_PR_URL }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
@@ -143,6 +147,7 @@ jobs:
           echo "DEVELOP_BRANCH=$DEVELOP_BRANCH" >> "$GITHUB_ENV"
 
       - name: "Open PR against develop"
+        id: open-develop-pr
         if: ${{ ! inputs.dry-run }}
         env:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
@@ -156,6 +161,7 @@ jobs:
             --base develop \
             --head "$DEVELOP_BRANCH")
           echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_ENV"
+          echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_OUTPUT"
 
       - name: "Add comment to PR to trunk"
         if: ${{ ! inputs.dry-run }}
