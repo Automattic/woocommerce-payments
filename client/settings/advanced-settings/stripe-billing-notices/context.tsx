@@ -7,7 +7,6 @@ const StripeBillingMigrationNoticeContext = createContext( {
 	isStripeBillingEnabled: false,
 	savedIsStripeBillingEnabled: false,
 	isMigrationOptionShown: false,
-	isMigrationInProgressShown: false,
 	isMigrationInProgress: false,
 	hasSavedSettings: false,
 	subscriptionCount: 0,
@@ -15,11 +14,12 @@ const StripeBillingMigrationNoticeContext = createContext( {
 	startMigration: () => null,
 	isResolvingMigrateRequest: false,
 	hasResolvedMigrateRequest: false,
+	setIsMigrationOptionShown: ( _value: boolean ) => null,
+	setIsMigrationInProgress: ( _value: boolean ) => null,
 } as {
 	isStripeBillingEnabled: boolean;
 	savedIsStripeBillingEnabled: boolean;
 	isMigrationOptionShown: boolean;
-	isMigrationInProgressShown: boolean;
 	isMigrationInProgress: boolean;
 	hasSavedSettings: boolean;
 	subscriptionCount: number;
@@ -27,6 +27,8 @@ const StripeBillingMigrationNoticeContext = createContext( {
 	startMigration: () => void;
 	isResolvingMigrateRequest: boolean;
 	hasResolvedMigrateRequest: boolean;
+	setIsMigrationOptionShown: ( value: boolean ) => void;
+	setIsMigrationInProgress: ( value: boolean ) => void;
 } );
 
 export default StripeBillingMigrationNoticeContext;

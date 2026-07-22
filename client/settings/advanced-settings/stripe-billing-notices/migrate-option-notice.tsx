@@ -78,31 +78,29 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 		}
 	}, [ context.savedIsStripeBillingEnabled ] );
 
-	// Once the request is resolved, hide the notice and mark the migration as in progress.
-	if ( hasResolved ) {
-		context.isMigrationInProgress = true;
-		context.isMigrationOptionShown = false;
+	// Once the request is resolved, mark the migration as in progress and hide this notice.
+	useEffect( () => {
+		if ( hasResolved ) {
+			context.setIsMigrationInProgress( true );
+			context.setIsMigrationOptionShown( false );
+		}
+	}, [ hasResolved, context.setIsMigrationInProgress, context.setIsMigrationOptionShown ] );
+
+	const isShowing =
+		! hasResolved &&
+		! context.isMigrationInProgress &&
+		stripeBillingSubscriptionCount > 0 &&
+		isEligible &&
+		! context.isStripeBillingEnabled;
+
+	// Track whether this notice is currently shown so siblings can coordinate.
+	useEffect( () => {
+		context.setIsMigrationOptionShown( isShowing );
+	}, [ isShowing, context.setIsMigrationOptionShown ] );
+
+	if ( ! isShowing ) {
 		return null;
 	}
-
-	if ( context.isMigrationInProgress ) {
-		return null;
-	}
-
-	if ( stripeBillingSubscriptionCount === 0 ) {
-		return null;
-	}
-
-	if ( ! isEligible ) {
-		return null;
-	}
-
-	if ( context.isStripeBillingEnabled ) {
-		return null;
-	}
-
-	// Update the context to note the Option Notice is being shown.
-	context.isMigrationOptionShown = true;
 
 	return (
 		<InlineNotice
