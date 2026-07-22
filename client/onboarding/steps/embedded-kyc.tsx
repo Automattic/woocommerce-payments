@@ -29,6 +29,13 @@ const EmbeddedKyc: React.FC< Props > = ( {
 	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
 	const [ loadError, setLoadError ] = useState< LoadError | null >( null );
+	const [ navigateTo, setNavigateTo ] = useState< string | null >( null );
+
+	useEffect( () => {
+		if ( navigateTo ) {
+			window.location.href = navigateTo;
+		}
+	}, [ navigateTo ] );
 
 	const urlParams = new URLSearchParams( window.location.search );
 	const urlSource =
@@ -44,29 +51,35 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		try {
 			const response = await finalizeOnboarding( urlSource );
 			if ( response.success ) {
-				window.location.href = getOverviewUrl(
-					{
-						...response.params,
-						'wcpay-connection-success': '1',
-					},
-					'WCPAY_ONBOARDING_WIZARD'
+				setNavigateTo(
+					getOverviewUrl(
+						{
+							...response.params,
+							'wcpay-connection-success': '1',
+						},
+						'WCPAY_ONBOARDING_WIZARD'
+					)
 				);
 			} else {
-				window.location.href = getConnectUrl(
-					{
-						...response.params,
-						'wcpay-connection-error': '1',
-					},
-					'WCPAY_ONBOARDING_WIZARD'
+				setNavigateTo(
+					getConnectUrl(
+						{
+							...response.params,
+							'wcpay-connection-error': '1',
+						},
+						'WCPAY_ONBOARDING_WIZARD'
+					)
 				);
 			}
 		} catch ( error ) {
-			window.location.href = getConnectUrl(
-				{
-					'wcpay-connection-error': '1',
-					source: urlSource,
-				},
-				'WCPAY_ONBOARDING_WIZARD'
+			setNavigateTo(
+				getConnectUrl(
+					{
+						'wcpay-connection-error': '1',
+						source: urlSource,
+					},
+					'WCPAY_ONBOARDING_WIZARD'
+				)
 			);
 		}
 	};
