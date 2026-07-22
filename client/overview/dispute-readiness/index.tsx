@@ -56,6 +56,13 @@ const DisputeReadinessCard = () => {
 	const viewedRef = useRef( false );
 	const [ statementDescriptorSignal, setStatementDescriptorSignal ] =
 		useState< DisputeReadinessSignal | null >( null );
+	const [ navigateTo, setNavigateTo ] = useState< string | null >( null );
+
+	useEffect( () => {
+		if ( navigateTo ) {
+			window.location.href = navigateTo;
+		}
+	}, [ navigateTo ] );
 	const overview = disputeReadiness?.overview;
 
 	useEffect( () => {
@@ -118,7 +125,7 @@ const DisputeReadinessCard = () => {
 		}
 
 		if ( signal.actionUrl ) {
-			window.location.href = signal.actionUrl;
+			setNavigateTo( signal.actionUrl );
 		}
 	};
 
