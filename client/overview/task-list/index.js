@@ -111,7 +111,6 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 				...updatedRemindMeLaterTasks
 			} = remindMeLaterTodoTasks;
 
-			delete remindMeLaterTodoTasks[ key ];
 			setVisibleTasks( getVisibleTasks() );
 
 			saveOption(
@@ -125,13 +124,16 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const remindTaskLater = useCallback(
 		async ( { key, onDismiss } ) => {
 			const dismissTime = Date.now() + TIME.DAY_IN_MS;
-			remindMeLaterTodoTasks[ key ] = dismissTime;
-			setVisibleTasks( getVisibleTasks() );
-
-			saveOption( 'woocommerce_remind_me_later_todo_tasks', {
+			const updatedTasks = {
 				...remindMeLaterTodoTasks,
 				[ key ]: dismissTime,
-			} );
+			};
+			setVisibleTasks( getVisibleTasks() );
+
+			saveOption(
+				'woocommerce_remind_me_later_todo_tasks',
+				updatedTasks
+			);
 
 			createNotice(
 				'success',
