@@ -98,7 +98,7 @@ const ConnectAccountPage: React.FC = () => {
 	loaderProgressRef.current = testDriveLoaderProgress;
 
 	// Use a timer to track the elapsed time for the test drive mode setup.
-	let testDriveSetupStartTime: number;
+	const testDriveSetupStartTimeRef = useRef< number >( 0 );
 	// The test drive setup will be forced finished after 40 seconds
 	// (10 seconds for the initial calls plus 30 for checking the account status in a loop).
 	const testDriveSetupMaxDuration = 40;
@@ -198,7 +198,7 @@ const ConnectAccountPage: React.FC = () => {
 						'pending'
 					) ) ||
 				loaderProgressRef.current > 95 ||
-				elapsed( testDriveSetupStartTime ) > testDriveSetupMaxDuration
+				elapsed( testDriveSetupStartTimeRef.current ) > testDriveSetupMaxDuration
 			) {
 				setTestDriveLoaderProgress( 100 );
 				const queryArgs = {
@@ -226,7 +226,7 @@ const ConnectAccountPage: React.FC = () => {
 
 	const handleSetupTestDriveMode = async () => {
 		// Record the start time of the test drive setup.
-		testDriveSetupStartTime = Date.now();
+		testDriveSetupStartTimeRef.current = Date.now();
 		// Initialize the progress bar.
 		setTestDriveLoaderProgress( 5 );
 		setTestDriveModeSubmitted( true );
