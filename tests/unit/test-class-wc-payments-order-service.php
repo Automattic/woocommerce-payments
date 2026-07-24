@@ -1141,6 +1141,77 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 
 	/**
+	 * A charge can carry several disputes with identical amount, reason and
+	 * deadline. The dispute ID keeps their notes distinct so they are not
+	 * collapsed into one, while a re-delivered webhook for the same dispute
+	 * still de-duplicates.
+	 */
+	public function test_mark_payment_dispute_created_distinguishes_disputes_by_id() {
+		$charge_id = 'ch_123';
+		$amount    = '$123.45';
+		$reason    = 'product_not_received';
+		$deadline  = 'June 7, 2023';
+
+		$dispute_notes = function () {
+			$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+			return array_values(
+				array_filter(
+					$notes,
+					function ( $note ) {
+						return false !== strpos( $note->content, 'Payment has been disputed' );
+					}
+				)
+			);
+		};
+
+		// Act: Two disputes sharing everything but their ID.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_first' );
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_second' );
+
+		// Assert: Both disputes produced a note, each carrying its own ID.
+		$this->assertCount( 2, $dispute_notes() );
+		$contents = implode( "\n", wp_list_pluck( $dispute_notes(), 'content' ) );
+		$this->assertStringContainsString( '(Dispute ID: dp_first)', $contents );
+		$this->assertStringContainsString( '(Dispute ID: dp_second)', $contents );
+
+		// Assert: Re-delivering the same dispute does not add another note.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_first' );
+		$this->assertCount( 2, $dispute_notes() );
+	}
+
+	/**
+	 * A replayed dispute-created webhook restores on-hold even when the note
+	 * already exists, without adding a duplicate note.
+	 */
+	public function test_mark_payment_dispute_created_reapplies_on_hold_when_note_exists() {
+		$charge_id = 'ch_123';
+		$amount    = '$123.45';
+		$reason    = 'product_not_received';
+		$deadline  = 'June 7, 2023';
+
+		// First delivery: order goes on-hold with a note.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_1' );
+		$this->assertTrue( $this->order->has_status( [ Order_Status::ON_HOLD ] ) );
+
+		// The order is moved back off hold while the dispute note is still present.
+		$this->order->update_status( Order_Status::PROCESSING );
+		$this->order->save();
+
+		// Act: the same dispute is delivered again.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_1' );
+
+		// Assert: the hold is restored and the note is not duplicated.
+		$this->assertTrue( $this->order->has_status( [ Order_Status::ON_HOLD ] ) );
+		$dispute_notes = array_filter(
+			wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ),
+			function ( $note ) {
+				return false !== strpos( $note->content, 'Payment has been disputed' );
+			}
+		);
+		$this->assertCount( 1, $dispute_notes );
+	}
+
+	/**
 	 * Tests if the payment was updated to show inquiry created.
 	 */
 	public function test_mark_payment_dispute_created_for_inquiry() {

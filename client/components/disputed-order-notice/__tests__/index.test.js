@@ -109,4 +109,94 @@ describe( 'DisputedOrderNoticeHandler', () => {
 			screen.queryByText( /Please resolve the dispute on this order of/ )
 		).not.toBeInTheDocument();
 	} );
+
+	test( 'consolidates multiple awaiting-response disputes into one notice, using the summed amount and earliest due date', () => {
+		const fixedDate = new Date( '2023-10-20T00:00:00Z' );
+		jest.useFakeTimers();
+		jest.setSystemTime( fixedDate );
+
+		useCharge.mockReturnValue( {
+			data: {
+				disputes: [
+					{
+						id: 'dp_1',
+						status: 'needs_response',
+						reason: 'fraudulent',
+						amount: 1000,
+						currency: 'USD',
+						// Oct 30, 2023 — the later deadline.
+						evidence_details: { due_by: 1698672000 },
+					},
+					{
+						id: 'dp_2',
+						status: 'needs_response',
+						reason: 'product_not_received',
+						amount: 1550,
+						currency: 'USD',
+						// Oct 28, 2023 — the earliest deadline, so the one shown.
+						evidence_details: { due_by: 1698500219 },
+					},
+				],
+			},
+		} );
+
+		render(
+			<DisputedOrderNoticeHandler
+				chargeId="ch_123"
+				onDisableOrderRefund={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.getByText(
+				'This order has 2 payment disputes totaling $25.50.'
+			)
+		).toBeInTheDocument();
+
+		// The earliest of the two deadlines is surfaced.
+		expect(
+			screen.getAllByText( /Please respond before Oct 28, 2023/ ).length
+		).toBeGreaterThan( 0 );
+
+		// A single consolidated notice, not one per dispute.
+		expect( screen.getAllByRole( 'button' ) ).toHaveLength( 1 );
+		expect( screen.getByRole( 'button' ) ).toHaveTextContent(
+			'Respond now'
+		);
+	} );
+
+	test( 'disables order refunds when any dispute is not refundable, even behind a refundable one', () => {
+		const onDisableOrderRefund = jest.fn();
+		useCharge.mockReturnValue( {
+			data: {
+				disputes: [
+					{
+						id: 'dp_1',
+						status: 'won',
+						reason: 'fraudulent',
+						amount: 1000,
+						currency: 'USD',
+						evidence_details: { due_by: 1698500219 },
+					},
+					{
+						id: 'dp_2',
+						status: 'needs_response',
+						reason: 'fraudulent',
+						amount: 1550,
+						currency: 'USD',
+						evidence_details: { due_by: 1698500219 },
+					},
+				],
+			},
+		} );
+
+		render(
+			<DisputedOrderNoticeHandler
+				chargeId="ch_123"
+				onDisableOrderRefund={ onDisableOrderRefund }
+			/>
+		);
+
+		expect( onDisableOrderRefund ).toHaveBeenCalledWith( 'needs_response' );
+	} );
 } );

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure a disputed order is placed on hold even when its dispute note already exists, and avoid a fatal when a dispute webhook references an unknown charge.
