@@ -222,6 +222,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'No real funds were collected', $notes[0]->content );
 		// Assert: The transaction link is preserved.
 		$this->assertStringContainsString( 'pi_mock', $notes[0]->content );
+		// Assert: The transaction URL is well-formed — path must contain the real slash-separated
+		// path, not the corrupted "0.000000" that sprintf produces when %2F is misread as a
+		// printf float specifier (%2F → 0.000000).
+		$this->assertStringContainsString( 'path=%2Fpayments%2Ftransactions%2Fdetails', $notes[0]->content );
+		$this->assertStringNotContainsString( '0.000000', $notes[0]->content );
 		// Assert: It does NOT use the standard "successfully charged" wording.
 		$this->assertStringNotContainsString( 'successfully charged', $notes[0]->content );
 	}
