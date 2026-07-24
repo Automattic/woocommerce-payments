@@ -142,10 +142,17 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 		( sum, dispute ) => sum + dispute.amount,
 		0
 	);
+	// `awaitingDisputes` can include inquiries (warning_* statuses). Only call
+	// them inquiries when every one is; a single real dispute in the mix is the
+	// more urgent framing, so the notice speaks of "disputes".
+	const allInquiries = awaitingDisputes.every( ( dispute ) =>
+		isInquiry( dispute.status )
+	);
 
 	return (
 		<MultipleDisputesNeedsResponseNotice
 			disputeCount={ awaitingDisputes.length }
+			isPreDisputeInquiry={ allInquiries }
 			formattedAmount={ formatExplicitCurrency(
 				totalAmount,
 				awaitingDisputes[ 0 ].currency
@@ -314,6 +321,7 @@ const DisputeNeedsResponseNotice = ( {
 // breaks the disputes down individually.
 const MultipleDisputesNeedsResponseNotice = ( {
 	disputeCount,
+	isPreDisputeInquiry,
 	formattedAmount,
 	dueBy,
 	countdownDays,
@@ -321,27 +329,37 @@ const MultipleDisputesNeedsResponseNotice = ( {
 } ) => {
 	useEffect( () => {
 		recordEvent( 'wcpay_order_dispute_notice_view', {
-			is_inquiry: false,
+			is_inquiry: isPreDisputeInquiry,
 			dispute_reason: 'multiple',
 			due_by_days: countdownDays,
 			dispute_count: disputeCount,
 		} );
-	}, [ countdownDays, disputeCount ] );
+	}, [ countdownDays, disputeCount, isPreDisputeInquiry ] );
 
 	const buttonLabel =
 		countdownDays < 1
 			? __( 'Respond today', 'woocommerce-payments' )
 			: __( 'Respond now', 'woocommerce-payments' );
 
-	const message = sprintf(
-		// Translators: %1$d is the number of disputes on the order, %2$s is the combined disputed amount.
-		__(
-			'This order has %1$d payment disputes totaling %2$s.',
-			'woocommerce-payments'
-		),
-		disputeCount,
-		formattedAmount
-	);
+	const message = isPreDisputeInquiry
+		? sprintf(
+				// Translators: %1$d is the number of inquiries on the order, %2$s is the combined amount.
+				__(
+					'This order has %1$d payment inquiries totaling %2$s.',
+					'woocommerce-payments'
+				),
+				disputeCount,
+				formattedAmount
+		  )
+		: sprintf(
+				// Translators: %1$d is the number of disputes on the order, %2$s is the combined disputed amount.
+				__(
+					'This order has %1$d payment disputes totaling %2$s.',
+					'woocommerce-payments'
+				),
+				disputeCount,
+				formattedAmount
+		  );
 
 	let suffix = sprintf(
 		// Translators: %1$s is the earliest dispute due date.

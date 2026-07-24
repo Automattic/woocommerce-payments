@@ -165,6 +165,48 @@ describe( 'DisputedOrderNoticeHandler', () => {
 		);
 	} );
 
+	test( 'calls the consolidated notice inquiries when every awaiting item is an inquiry', () => {
+		const fixedDate = new Date( '2023-10-20T00:00:00Z' );
+		jest.useFakeTimers();
+		jest.setSystemTime( fixedDate );
+
+		useCharge.mockReturnValue( {
+			data: {
+				disputes: [
+					{
+						id: 'dp_1',
+						status: 'warning_needs_response',
+						reason: 'fraudulent',
+						amount: 1000,
+						currency: 'USD',
+						evidence_details: { due_by: 1698672000 },
+					},
+					{
+						id: 'dp_2',
+						status: 'warning_needs_response',
+						reason: 'product_not_received',
+						amount: 1550,
+						currency: 'USD',
+						evidence_details: { due_by: 1698500219 },
+					},
+				],
+			},
+		} );
+
+		render(
+			<DisputedOrderNoticeHandler
+				chargeId="ch_123"
+				onDisableOrderRefund={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.getByText(
+				'This order has 2 payment inquiries totaling $25.50.'
+			)
+		).toBeInTheDocument();
+	} );
+
 	test( 'disables order refunds when any dispute is not refundable, even behind a refundable one', () => {
 		const onDisableOrderRefund = jest.fn();
 		useCharge.mockReturnValue( {
