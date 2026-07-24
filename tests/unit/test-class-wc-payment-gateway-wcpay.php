@@ -3627,6 +3627,107 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
 	}
 
+	public function test_mandate_data_is_skipped_when_no_valid_ip_is_available() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		// Neither source has an IP: an imported or admin-created subscription renewing
+		// under CLI cron. Sending mandate data here is a guaranteed Stripe rejection.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_is_sent_for_sepa_without_a_valid_ip() {
+		// Omitting mandate data is verified safe for card and Link only. For SEPA the
+		// mandate is the instrument being created, so the guard must never fire on it.
+		$gateway = $this->get_gateway( Payment_Method::SEPA );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments_sepa_debit';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' );
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_mandate_data_is_skipped_for_setup_intent_when_no_valid_ip_is_available() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 0 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_12345' ) );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->must_save_payment_method_to_store();
+
+		// Neither the order nor the request has an IP on the $0 setup-intent path either.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'id' => 'seti_mock_123' ] ) );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' );
+
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
 	public function test_non_reusable_gateways_not_available_when_changing_payment_method_for_card() {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;

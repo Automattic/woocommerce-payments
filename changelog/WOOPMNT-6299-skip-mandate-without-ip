@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Skip Stripe mandate data instead of sending an invalid IP address when no customer IP is available

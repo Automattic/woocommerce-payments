@@ -1860,7 +1860,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( $this->is_mandate_data_required() ) {
+				if ( $this->is_mandate_data_required() && $this->should_send_mandate_data( $order ) ) {
 					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
 
@@ -1975,7 +1975,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
 						$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
-						$request->set_mandate_data( $this->get_mandate_data( $order ) );
+
+						if ( $this->should_send_mandate_data( $order ) ) {
+							$request->set_mandate_data( $this->get_mandate_data( $order ) );
+						}
 					}
 				}
 
@@ -2602,6 +2605,45 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return WC_Geolocation::get_ip_address();
+	}
+
+	/**
+	 * Determines whether mandate data can be sent to Stripe for this payment.
+	 *
+	 * Stripe rejects any request whose mandate_data.customer_acceptance.online.ip_address
+	 * is not a valid IP address. That happens when no HTTP request is available and the
+	 * order carries no stored customer IP, and when a proxy sends a malformed forwarding
+	 * header. Stripe accepts a card and Link confirmation with no mandate data at all, so
+	 * omitting it is preferable to sending a payload that is certain to be rejected.
+	 *
+	 * SEPA is excluded: there the mandate is the instrument being created, and omitting it
+	 * has not been verified as safe.
+	 *
+	 * Note that rest_is_ip_address() is a format check and accepts private and loopback
+	 * addresses. That is deliberate. Stripe accepts them too, and stores whose cron runs
+	 * over a loopback request rely on it.
+	 *
+	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 *
+	 * @return bool True when mandate data should be sent.
+	 */
+	private function should_send_mandate_data( ?WC_Order $order = null ): bool {
+		if ( Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id() ) {
+			return true;
+		}
+
+		if ( rest_is_ip_address( $this->get_mandate_ip_address( $order ) ) ) {
+			return true;
+		}
+
+		Logger::warning(
+			sprintf(
+				'Skipping mandate data for order %s: no valid customer IP address is available.',
+				$order ? $order->get_id() : 'unknown'
+			)
+		);
+
+		return false;
 	}
 
 	/**
