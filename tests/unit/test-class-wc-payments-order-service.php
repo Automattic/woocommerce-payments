@@ -1093,7 +1093,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'blocked</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -1102,6 +1102,100 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Intent_Status::CANCELED );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 1, $notes_2 );
+	}
+
+	/**
+	 * Tests that a rule engine block, which fires before an intent exists, links the note to the order.
+	 */
+	public function test_mark_order_blocked_for_fraud_without_intent_links_to_order() {
+		// Act: Block the order with no intent id, as happens for rule engine blocks.
+		$this->order_service->mark_order_blocked_for_fraud( $this->order, '', Intent_Status::CANCELED );
+
+		// Assert: With no intent to link to, the note falls back to the order id.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+	}
+
+	/**
+	 * Tests that the blocked note names the risk filters that fired when ruleset results are available.
+	 */
+	public function test_mark_order_blocked_for_fraud_with_ruleset_results() {
+		// Act: Attempt to mark the payment/order blocked, with the rule engine results.
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_mock',
+			Intent_Status::CANCELED,
+			[
+				'international_ip_address' => 'block',
+				'some_unknown_rule'        => 'block',
+			]
+		);
+
+		// Assert: Check that the note lists the fired risk filters, with a humanized fallback for the unknown rule key.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'blocked</strong> by the following risk filters', $notes[0]->content );
+		$this->assertStringContainsString( 'Block if the country resolved from customer IP is not listed in your selling countries', $notes[0]->content );
+		$this->assertStringContainsString( 'Some unknown rule', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+
+		// Assert: Check that the ruleset results were persisted on the order.
+		$this->assertSame(
+			[
+				'international_ip_address' => 'block',
+				'some_unknown_rule'        => 'block',
+			],
+			$this->order_service->get_fraud_ruleset_results_for_order( $this->order )
+		);
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_mock',
+			Intent_Status::CANCELED,
+			[
+				'international_ip_address' => 'block',
+				'some_unknown_rule'        => 'block',
+			]
+		);
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 1, $notes_2 );
+	}
+
+	/**
+	 * Tests that the held for review note names the risk filters that fired when the intent
+	 * metadata carries the ruleset results.
+	 */
+	public function test_mark_order_held_for_review_for_fraud_with_ruleset_results() {
+		// Arrange: Create intention with the fraud outcome and ruleset results in the metadata.
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'fraud_outcome'         => Rule::FRAUD_OUTCOME_REVIEW,
+					'fraud_ruleset_results' => wp_json_encode( [ 'order_items_threshold' => 'review' ] ),
+				],
+			]
+		);
+
+		// Act: Attempt to mark the payment held for review.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: Check that the note lists the fired risk filter.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'held for review</strong> by the following risk filters', $notes[0]->content );
+		$this->assertStringContainsString( 'Place in review if the items count is not in your defined range', $notes[0]->content );
+
+		// Assert: Check that the ruleset results were persisted on the order.
+		$this->assertSame( [ 'order_items_threshold' => 'review' ], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status and meta box type were set correctly.
+		$this->assertEquals( 'review', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( 'review', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
 	}
 
 	/**
