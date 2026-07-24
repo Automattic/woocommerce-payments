@@ -1861,7 +1861,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
 				if ( $this->is_mandate_data_required() ) {
-					$request->set_mandate_data( $this->get_mandate_data() );
+					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
 
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
@@ -1975,7 +1975,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
 						$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
-						$request->set_mandate_data( $this->get_mandate_data() );
+						$request->set_mandate_data( $this->get_mandate_data( $order ) );
 					}
 				}
 
@@ -2564,18 +2564,44 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Get values for Stripe mandate_data parameter
 	 *
+	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 *
 	 * @return array mandate_data values to use in request.
 	 */
-	private function get_mandate_data() {
+	private function get_mandate_data( ?WC_Order $order = null ) {
 		return [
 			'customer_acceptance' => [
 				'type'   => 'online',
 				'online' => [
-					'ip_address' => WC_Geolocation::get_ip_address(),
+					'ip_address' => $this->get_mandate_ip_address( $order ),
 					'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
 				],
 			],
 		];
+	}
+
+	/**
+	 * Resolves the customer IP address to record on the mandate.
+	 *
+	 * The order is the primary source. It stores the IP captured while the customer was
+	 * present, which is the moment they accepted the mandate terms, and WooCommerce
+	 * Subscriptions copies it onto every renewal order. Live request state is only a
+	 * fallback: scheduled renewals run with no HTTP request (CLI cron, WP-CLI), where
+	 * WC_Geolocation::get_ip_address() returns an empty string and Stripe rejects the
+	 * whole intent with "Invalid IP address".
+	 *
+	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 *
+	 * @return string Customer IP address, or an empty string when neither source has one.
+	 */
+	private function get_mandate_ip_address( ?WC_Order $order = null ): string {
+		$order_ip_address = $order ? $order->get_customer_ip_address() : '';
+
+		if ( ! empty( $order_ip_address ) ) {
+			return $order_ip_address;
+		}
+
+		return WC_Geolocation::get_ip_address();
 	}
 
 	/**

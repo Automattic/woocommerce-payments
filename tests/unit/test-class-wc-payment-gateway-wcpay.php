@@ -345,6 +345,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_REQUEST = [];
 
+		// Restore the request IP address that WC_Helper_Order::create_order() depends on,
+		// in case a test simulated a context with no HTTP request.
+		$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 		wcpay_get_test_container()->reset_all_replacements();
 		WC()->session->set( 'wc_notices', [] );
 		WC()->countries->locale = $this->locale_backup;
@@ -3468,6 +3472,161 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_mandate_data_uses_order_customer_ip_address() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		// $_SERVER['REMOTE_ADDR'] is 127.0.0.1 here, set by WC_Helper_Order::create_order().
+		// The order's IP must win over it.
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '203.0.113.10' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_uses_order_customer_ip_when_request_has_no_ip() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		// This is the reported bug: a scheduled renewal running outside an HTTP request.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '203.0.113.10' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_falls_back_to_request_ip_when_order_has_no_ip() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		// Regression guard for the on-session checkout path: with no order IP, the live
+		// request is still the correct source.
+		$_SERVER['REMOTE_ADDR'] = '198.51.100.20';
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '198.51.100.20' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_uses_order_customer_ip_for_setup_intent() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 0 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_12345' ) );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->must_save_payment_method_to_store();
+
+		// The $0 setup-intent call site has the same defect as the payment-intent one.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'id' => 'seti_mock_123' ] ) );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '203.0.113.10' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
 	public function test_non_reusable_gateways_not_available_when_changing_payment_method_for_card() {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
@@ -5801,5 +5960,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$product->save();
 
 		return wc_get_product( $product->get_id() );
+	}
+
+	/**
+	 * Removes every $_SERVER key WC_Geolocation::get_ip_address() reads, simulating an
+	 * execution context with no HTTP request, such as CLI cron or WP-CLI.
+	 *
+	 * WC_Helper_Order::create_order() sets REMOTE_ADDR, so this must be called *after*
+	 * the order is created. tear_down() restores it.
+	 */
+	private function simulate_no_request_ip_address() {
+		unset( $_SERVER['HTTP_X_REAL_IP'], $_SERVER['HTTP_X_FORWARDED_FOR'], $_SERVER['REMOTE_ADDR'] );
 	}
 }
