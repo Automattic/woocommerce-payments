@@ -1881,7 +1881,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * A dispute created event for an unknown charge throws a handled exception
-	 * rather than fataling on a null order.
+	 * rather than fatalling on a null order.
 	 */
 	public function test_dispute_created_with_unknown_charge_id_throws() {
 		$this->event_body['type']           = 'charge.dispute.created';
