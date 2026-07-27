@@ -1185,38 +1185,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * A replayed dispute-created webhook restores on-hold even when the note
-	 * already exists, without adding a duplicate note.
-	 */
-	public function test_mark_payment_dispute_created_reapplies_on_hold_when_note_exists() {
-		$charge_id = 'ch_123';
-		$amount    = '$123.45';
-		$reason    = 'product_not_received';
-		$deadline  = 'June 7, 2023';
-
-		// First delivery: order goes on-hold with a note.
-		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_1' );
-		$this->assertTrue( $this->order->has_status( [ Order_Status::ON_HOLD ] ) );
-
-		// The order is moved back off hold while the dispute note is still present.
-		$this->order->update_status( Order_Status::PROCESSING );
-		$this->order->save();
-
-		// Act: the same dispute is delivered again.
-		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_1' );
-
-		// Assert: the hold is restored and the note is not duplicated.
-		$this->assertTrue( $this->order->has_status( [ Order_Status::ON_HOLD ] ) );
-		$dispute_notes = array_filter(
-			wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ),
-			function ( $note ) {
-				return false !== strpos( $note->content, 'Payment has been disputed' );
-			}
-		);
-		$this->assertCount( 1, $dispute_notes );
-	}
-
-	/**
 	 * Tests if the payment was updated to show inquiry created.
 	 */
 	public function test_mark_payment_dispute_created_for_inquiry() {

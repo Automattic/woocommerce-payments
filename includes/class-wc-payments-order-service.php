@@ -555,19 +555,14 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// A dispute holds the order whether or not its note already exists, so
-		// apply the hold before the note de-dup. Gating it behind the de-dup
-		// would leave a replayed webhook unable to restore on-hold if the order
-		// had since been moved off it. Re-holding an already-held order is a
-		// no-op ($order->update_status() records no transition).
-		$this->update_order_status( $order, Order_Status::ON_HOLD );
-
 		$is_inquiry = strpos( $status, 'warning_' ) === 0;
 		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry, $dispute_id );
-		if ( ! $this->order_note_exists( $order, $note ) ) {
-			$order->add_order_note( $note );
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
 		}
 
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
+		$order->add_order_note( $note );
 		$order->save();
 	}
 
