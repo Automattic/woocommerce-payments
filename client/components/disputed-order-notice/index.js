@@ -145,14 +145,14 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	// `awaitingDisputes` can include inquiries (warning_* statuses). Only call
 	// them inquiries when every one is; a single real dispute in the mix is the
 	// more urgent framing, so the notice speaks of "disputes".
-	const allInquiries = awaitingDisputes.every( ( dispute ) =>
+	const isAllInquiries = awaitingDisputes.every( ( dispute ) =>
 		isInquiry( dispute.status )
 	);
 
 	return (
 		<MultipleDisputesNeedsResponseNotice
 			disputeCount={ awaitingDisputes.length }
-			isPreDisputeInquiry={ allInquiries }
+			isPreDisputeInquiry={ isAllInquiries }
 			formattedAmount={ formatExplicitCurrency(
 				totalAmount,
 				awaitingDisputes[ 0 ].currency
