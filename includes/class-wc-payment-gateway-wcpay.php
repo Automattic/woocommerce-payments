@@ -2608,20 +2608,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Determines whether mandate data can be sent to Stripe for this payment.
+	 * Determines whether mandate data should be sent to Stripe for this payment.
 	 *
-	 * Stripe rejects any request whose mandate_data.customer_acceptance.online.ip_address
-	 * is not a valid IP address. That happens when no HTTP request is available and the
-	 * order carries no stored customer IP, and when a proxy sends a malformed forwarding
-	 * header. Stripe accepts a card and Link confirmation with no mandate data at all, so
-	 * omitting it is preferable to sending a payload that is certain to be rejected.
+	 * The rule differs by payment method:
 	 *
-	 * SEPA is excluded: there the mandate is the instrument being created, and omitting it
-	 * has not been verified as safe.
+	 * - SEPA always sends it. The mandate is the payment instrument being created, so it is
+	 *   required, and omitting it has not been verified as safe.
+	 * - Card and Link send it only when a valid customer IP is available. Stripe rejects any
+	 *   request whose mandate_data.customer_acceptance.online.ip_address is not a valid IP,
+	 *   which happens when there is no HTTP request and the order carries no stored IP, or
+	 *   when a proxy sends a malformed forwarding header. Stripe accepts a card or Link
+	 *   confirmation with no mandate data at all, so omitting it is preferable to sending a
+	 *   payload that is certain to be rejected.
 	 *
-	 * Note that rest_is_ip_address() is a format check and accepts private and loopback
-	 * addresses. That is deliberate. Stripe accepts them too, and stores whose cron runs
-	 * over a loopback request rely on it.
+	 * rest_is_ip_address() is only a format check and accepts private and loopback addresses
+	 * on purpose: Stripe accepts them too, and stores whose cron runs over a loopback request
+	 * rely on that.
 	 *
 	 * @param WC_Order|null $order Order the mandate is being created for, when available.
 	 *
