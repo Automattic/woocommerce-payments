@@ -1962,8 +1962,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
-				$this->matchesRegularExpression(
-					'/Payment dispute has been updated/'
+				$this->logicalAnd(
+					$this->stringContains( 'Payment dispute has been updated' ),
+					$this->stringContains( '(Dispute ID: test_dispute_id)' )
 				)
 			);
 
@@ -2036,6 +2037,105 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( $this->mock_order );
 
 		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Two disputes on one charge produce the same message, so without the dispute ID
+	 * their notes are identical and only the first one is ever recorded.
+	 */
+	public function test_dispute_updated_records_a_note_per_dispute() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->event_body['type']     = 'charge.dispute.funds_withdrawn';
+		$this->event_body['livemode'] = true;
+
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $order );
+
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_first',
+			'charge' => 'test_charge_id',
+		];
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_second',
+			'charge' => 'test_charge_id',
+		];
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 2, preg_grep( '/deducted from your next payout/', $contents ) );
+		$this->assertCount( 1, preg_grep( '/\(Dispute ID: dp_first\)/', $contents ) );
+		$this->assertCount( 1, preg_grep( '/\(Dispute ID: dp_second\)/', $contents ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * A re-delivered event still has to be a no-op for the order timeline, while the
+	 * dispute caches get cleared either way — the event fired because data changed.
+	 */
+	public function test_dispute_updated_redelivery_does_not_duplicate_the_note() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->event_body['type']           = 'charge.dispute.funds_withdrawn';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_first',
+			'charge' => 'test_charge_id',
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $order );
+
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete_dispute_caches' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 1, preg_grep( '/deducted from your next payout/', $contents ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * The dispute ID is only there to keep notes apart, so an event without one still
+	 * has to record its note rather than fail.
+	 */
+	public function test_dispute_updated_without_dispute_id_still_adds_note() {
+		$this->event_body['type']           = 'charge.dispute.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'charge' => 'test_charge_id',
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->logicalAnd(
+					$this->stringContains( 'Payment dispute has been updated' ),
+					$this->logicalNot( $this->stringContains( 'Dispute ID' ) )
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
