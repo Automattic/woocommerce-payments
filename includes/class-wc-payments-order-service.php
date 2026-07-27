@@ -1959,16 +1959,17 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A test payment of %1$s was processed using %2$s in <strong>test mode</strong> (<a>%3$s</a>). No real funds were collected.', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 	}
 
