@@ -143,8 +143,8 @@ class Experimental_Abtest {
 		// Bail if there were no results or there is no test variation returned.
 		if ( ! is_array( $results ) || empty( $results['variations'] ) ) {
 			// Cache it: an empty variations list is an answer, not a failure, and carries a TTL.
-			if ( is_array( $results ) && ! empty( $results['ttl'] ) ) {
-				set_transient( $cache_key, self::NO_ASSIGNMENT, $results['ttl'] );
+			if ( is_array( $results ) && $this->has_usable_ttl( $results ) ) {
+				set_transient( $cache_key, self::NO_ASSIGNMENT, (int) $results['ttl'] );
 			}
 
 			return $this->no_assignment_error();
@@ -156,8 +156,8 @@ class Experimental_Abtest {
 		$variation = $results['variations'][ $test_name ] ?? 'control';
 
 		// Store the variation in our external cache.
-		if ( ! empty( $results['ttl'] ) ) {
-			set_transient( $cache_key, $variation, $results['ttl'] );
+		if ( $this->has_usable_ttl( $results ) ) {
+			set_transient( $cache_key, $variation, (int) $results['ttl'] );
 		}
 
 		return $variation;
@@ -201,6 +201,18 @@ class Experimental_Abtest {
 		$get = wp_remote_get( $url );
 
 		return $get;
+	}
+
+	/**
+	 * Whether the response TTL can be cached against.
+	 *
+	 * A non-numeric TTL casts to 0, which set_transient() reads as no expiry.
+	 *
+	 * @param array $results Decoded ExPlat response.
+	 * @return bool
+	 */
+	private function has_usable_ttl( array $results ): bool {
+		return is_numeric( $results['ttl'] ?? null ) && $results['ttl'] > 0;
 	}
 
 	/**
