@@ -122,7 +122,8 @@
 	font-weight: 600;
 	letter-spacing: 0.5px;
 	color: $studio-gray-60;
-	margin: $grid-unit-15 $grid-unit-20 0;
+	// Match the padding of the "Dispute details" heading below.
+	margin: $grid-unit-15 $grid-unit-30 0;
 }
 
 .woocommerce-list--horizontal {

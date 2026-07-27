@@ -1880,6 +1880,36 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A dispute created event for an unknown charge throws a handled exception
+	 * rather than fatalling on a null order.
+	 */
+	public function test_dispute_created_with_unknown_charge_id_throws() {
+		$this->event_body['type']           = 'charge.dispute.created';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'               => 'test_dispute_id',
+			'charge'           => 'unknown_charge_id',
+			'reason'           => 'test_reason',
+			'amount'           => 9900,
+			'status'           => 'test_status',
+			'evidence_details' => [
+				'due_by' => 'test_due_by',
+			],
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'unknown_charge_id' )
+			->willReturn( false );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via charge ID: unknown_charge_id' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that a dispute closed event adds a respective order note.
 	 */
 	public function test_dispute_closed_order_note() {
