@@ -112,6 +112,19 @@ class Experimental_Abtest_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_a_fractional_ttl_is_not_cached() {
+		$requests = $this->stub_explat_response( '{"variations":{"some_test":"treatment"},"ttl":0.5}' );
+
+		( new \WCPay\Experimental_Abtest( 'jetpack:anonE', 'woocommerce', true ) )->get_variation( 'some_test' );
+		( new \WCPay\Experimental_Abtest( 'jetpack:anonE', 'woocommerce', true ) )->get_variation( 'some_test' );
+
+		$this->assertSame(
+			2,
+			$requests->count,
+			'A sub-second ttl casts to 0, which set_transient() reads as no expiry.'
+		);
+	}
+
 	public function test_transport_failure_is_not_cached() {
 		$requests = $this->stub_explat_response( new WP_Error( 'http_request_failed', 'Timed out.' ) );
 

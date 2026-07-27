@@ -206,13 +206,13 @@ class Experimental_Abtest {
 	/**
 	 * Whether the response TTL can be cached against.
 	 *
-	 * A non-numeric TTL casts to 0, which set_transient() reads as no expiry.
+	 * A non-numeric or sub-second TTL casts to 0, which set_transient() reads as no expiry.
 	 *
 	 * @param array $results Decoded ExPlat response.
 	 * @return bool
 	 */
 	private function has_usable_ttl( array $results ): bool {
-		return is_numeric( $results['ttl'] ?? null ) && $results['ttl'] > 0;
+		return is_numeric( $results['ttl'] ?? null ) && (int) $results['ttl'] > 0;
 	}
 
 	/**
