@@ -1359,10 +1359,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
 
 		// Assert: Check that both the skipped completion note and the dispute closed note were added.
-		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'Dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $notes[1]->content );
-		$this->assertStringContainsString( 'On hold to Refunded', $notes[2]->content );
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+		$this->assertStringContainsString( 'On hold to Refunded', $contents );
 		$this->assertCount( 4, $notes );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
@@ -1394,9 +1395,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
 
 		// Assert: Check that both the skipped completion note and the inquiry closed note were added.
-		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'inquiry', $notes[0]->content );
-		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $notes[1]->content );
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'inquiry', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
 		$this->assertCount( 4, $notes );
 	}
 
@@ -1425,10 +1427,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
 
 		// Assert: Check that both the skipped completion note and the dispute closed note were added.
-		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'Dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $notes[1]->content );
-		$this->assertStringContainsString( 'On hold to Refunded', $notes[2]->content );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+		$this->assertStringContainsString( 'On hold to Refunded', $contents );
 	}
 
 	/**
@@ -1454,9 +1456,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
 
 		// Assert: Check that both the skipped completion note and the inquiry closed note were added.
-		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'inquiry', $notes[0]->content );
-		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $notes[1]->content );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'inquiry', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
 	}
 
 	/**
@@ -1483,9 +1485,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'completed' ] ) );
 
 		// Assert: Check that the notes were updated, and no skip note was added.
-		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'Dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( 'On hold to Completed', $notes[1]->content );
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'On hold to Completed', $contents );
 		$this->assertCount( 3, $notes );
 	}
 
@@ -1507,9 +1510,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'completed' ] ) );
 
 		// Assert: Check that the notes were updated, and no skip note was added.
-		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'Dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( 'On hold to Completed', $notes[1]->content );
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'On hold to Completed', $contents );
 		$this->assertCount( 3, $notes );
 	}
 
@@ -1531,9 +1535,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
 
 		// Assert: Check that both the skipped completion note and the dispute closed note were added.
-		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'Dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $notes[1]->content );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
 	}
 
 	/**

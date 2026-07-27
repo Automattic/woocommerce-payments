@@ -221,10 +221,11 @@ class WC_Payments_Order_Service {
 	const IPP_CHANNEL_META_KEY = '_wcpay_ipp_channel';
 
 	/**
-	 * Meta key holding the IDs of the charge's disputes that have not closed yet.
+	 * Meta key holding the IDs of the disputes recorded against this order that have
+	 * not closed yet. The list is order-wide; it is not keyed or scoped per charge.
 	 *
-	 * A charge can carry several disputes at once (AmEx and Klarna raise one per
-	 * separately shipped item), and nothing in the close webhook says whether the
+	 * A single charge can carry several disputes at once (AmEx and Klarna raise one
+	 * per separately shipped item), and nothing in the close webhook says whether the
 	 * others are still running, so the plugin has to keep its own tally.
 	 *
 	 * @const string
