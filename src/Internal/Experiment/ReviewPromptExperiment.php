@@ -22,9 +22,7 @@ final class ReviewPromptExperiment extends Experiment {
 	public const EXPERIMENT_NAME = 'woopayments_review_prompt_design_v1';
 
 	/**
-	 * User meta key holding the Jetpack Tracks anon-ID.
-	 *
-	 * Shared with Jetpack and Onboarding_Experiment. Never delete it.
+	 * User meta key holding the Jetpack Tracks anon-ID. Shared with Jetpack, never delete it.
 	 *
 	 * @var string
 	 */
@@ -56,11 +54,8 @@ final class ReviewPromptExperiment extends Experiment {
 	/**
 	 * The merchant's Jetpack Tracks anon-ID.
 	 *
-	 * ExPlat attributes metrics by joining assignments to Tracks events on identity,
-	 * so the assignment must use the same anon-ID that Tracks stamps on the prompt's
-	 * events. A synthetic key never appears in Tracks and leaves the arms unattributed.
-	 *
-	 * Mirrors Onboarding_Experiment::get_anon_id() and WooPay_Tracker::tracks_get_identity().
+	 * ExPlat joins assignments to Tracks events on identity, so this has to match what
+	 * Tracks stamps on the events. Mirrors Onboarding_Experiment::get_anon_id().
 	 *
 	 * @return string Empty string when no anon-ID can be resolved.
 	 */

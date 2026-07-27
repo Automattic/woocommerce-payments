@@ -22,9 +22,7 @@ namespace WCPay;
  */
 class Experimental_Abtest {
 	/**
-	 * Cached marker for "ExPlat answered, and there is no assignment".
-	 *
-	 * Truthy so the `! empty()` cache read treats it as a hit.
+	 * Marks a cached no-assignment. Truthy so the `! empty()` cache read hits.
 	 *
 	 * @var string
 	 */
@@ -144,9 +142,7 @@ class Experimental_Abtest {
 
 		// Bail if there were no results or there is no test variation returned.
 		if ( ! is_array( $results ) || empty( $results['variations'] ) ) {
-			// An empty variations list is ExPlat's answer for an experiment that is not
-			// running, has ended, or does not target this participant, and it carries a
-			// TTL. Cache it so we stop re-requesting on every page load.
+			// Cache it: an empty variations list is an answer, not a failure, and carries a TTL.
 			if ( is_array( $results ) && ! empty( $results['ttl'] ) ) {
 				set_transient( $cache_key, self::NO_ASSIGNMENT, $results['ttl'] );
 			}
@@ -170,9 +166,7 @@ class Experimental_Abtest {
 	/**
 	 * Build the transient key for a cached variation.
 	 *
-	 * Scoped to the anon-ID: the transient is a site-wide option, so a store with
-	 * more than one admin would otherwise serve the first admin's variation to
-	 * everyone, without ExPlat having assigned them.
+	 * Scoped to the anon-ID because the transient is a site-wide option.
 	 *
 	 * @param string $test_name Name of the A/B test.
 	 * @return string
@@ -210,9 +204,8 @@ class Experimental_Abtest {
 	/**
 	 * The error returned when ExPlat has no assignment for this participant.
 	 *
-	 * Callers must not be able to tell a cached "no assignment" from a fresh one:
-	 * Onboarding_Experiment_Abtest relies on this staying a WP_Error so a missing
-	 * assignment is never persisted as a real 'control' allocation.
+	 * Onboarding_Experiment_Abtest turns this into null, so cached and fresh
+	 * no-assignments must stay indistinguishable.
 	 *
 	 * @return \WP_Error
 	 */
