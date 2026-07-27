@@ -7,6 +7,7 @@
 
 namespace WCPay;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use Exception;
 use WC_Order;
 use WC_Payment_Gateway_WCPay;
@@ -206,6 +207,45 @@ class Duplicate_Payment_Prevention_Service {
 	}
 
 	/**
+	 * Checks whether the order has already been paid, and stops a second payment for it.
+	 *
+	 * Last-resort guard for a resubmission that reuses the same order.
+	 * `check_payment_intent_attached_to_order_succeeded()` covers that case with a richer response,
+	 * but it needs `_intent_id` to have been written and the `Get_Intention` lookup to succeed, and
+	 * returns silently otherwise — including on an API timeout, which is when shoppers resubmit.
+	 * This reads the stored order status instead, so it holds when the server does not respond.
+	 *
+	 * @param WC_Order $order Current order in process_payment.
+	 *
+	 * @return array|void A successful response when the order was already paid, null if not.
+	 */
+	public function check_order_already_paid( WC_Order $order ) {
+		// A subscription payment method change re-runs payment processing against an entity
+		// that was already paid once, so it must not be treated as a duplicate.
+		if ( $this->gateway->is_changing_payment_method_for_subscription() ) {
+			return;
+		}
+
+		if ( ! $this->is_order_paid_in_database( $order ) ) {
+			return;
+		}
+
+		$order->add_order_note(
+			__( 'WooCommerce Payments: detected and prevented a second payment for this order, which had already been paid.', 'woocommerce-payments' )
+		);
+
+		$this->remove_session_processing_order( $order->get_id() );
+
+		$return_url = $this->gateway->get_return_url( $order );
+		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
+
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
+			'result'   => 'success',
+			'redirect' => $return_url,
+		];
+	}
+
+	/**
 	 * Update the processing order ID for the current session.
 	 *
 	 * @param  int $order_id Order ID.
@@ -245,5 +285,53 @@ class Duplicate_Payment_Prevention_Service {
 
 		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
 		return null === $val ? null : absint( $val );
+	}
+
+	/**
+	 * Checks whether the order holds a paid status, consulting the database directly.
+	 *
+	 * Both checkout surfaces only begin payment while `needs_payment()` is true, so a second request
+	 * that reaches `process_payment()` loaded the order while it was still unpaid. The request that
+	 * pays it runs in a different PHP process, so nothing invalidates this one's caches, and the
+	 * loaded instance stays stale for the rest of the request.
+	 *
+	 * @param WC_Order $order Order to check.
+	 *
+	 * @return bool True when the order holds a paid status.
+	 */
+	private function is_order_paid_in_database( WC_Order $order ): bool {
+		if ( $order->has_status( wc_get_is_paid_statuses() ) ) {
+			return true;
+		}
+
+		$stored_status = $this->get_stored_order_status( $order->get_id() );
+
+		return null !== $stored_status && in_array( $stored_status, wc_get_is_paid_statuses(), true );
+	}
+
+	/**
+	 * Reads an order's status straight from the orders table.
+	 *
+	 * Deliberately bypasses every cache layer. Going through the data store would consult the
+	 * `orders_data` cache under HPOS, which only a write invalidates, and the write happened in
+	 * another process.
+	 *
+	 * @param int $order_id Order to read.
+	 *
+	 * @return string|null Status without the `wc-` prefix, or null when the order is not found.
+	 */
+	private function get_stored_order_status( int $order_id ): ?string {
+		global $wpdb;
+
+		if ( \WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+			$orders_table = OrderUtil::get_table_for_orders();
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Uncached by design; the table name comes from OrderUtil, not from input.
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$orders_table} WHERE id = %d", $order_id ) );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uncached by design.
+			$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", $order_id ) );
+		}
+
+		return null === $status ? null : OrderUtil::remove_status_prefix( (string) $status );
 	}
 }
