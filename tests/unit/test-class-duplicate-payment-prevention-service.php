@@ -449,6 +449,35 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Deposit and partial-payment extensions add a status that is both paid and still payable,
+	 * collecting the balance through pay-for-order. Blocking that would break a legitimate payment.
+	 */
+	public function test_check_order_already_paid_skips_a_paid_status_the_store_declares_payable() {
+		// Assert: a payable status never short-circuits the payment.
+		$this->mock_gateway->expects( $this->never() )->method( 'get_return_url' );
+
+		// Arrange a store that treats a paid status as still awaiting payment.
+		$declare_payable = function ( $statuses ) {
+			$statuses[] = Order_Status::PROCESSING;
+			return $statuses;
+		};
+		add_filter( 'woocommerce_valid_order_statuses_for_payment', $declare_payable );
+
+		// Arrange an order in that status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::PROCESSING );
+		$order->save();
+
+		// Act: the balance payment must be allowed through.
+		$result = $this->service->check_order_already_paid( $order );
+
+		remove_filter( 'woocommerce_valid_order_statuses_for_payment', $declare_payable );
+
+		// Assert: processing continues so the balance can be collected.
+		$this->assertNull( $result );
+	}
+
+	/**
 	 * Changing a subscription's payment method legitimately re-runs payment processing
 	 * against an entity that was already paid once, so it must not be blocked.
 	 */

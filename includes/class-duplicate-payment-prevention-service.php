@@ -13,6 +13,7 @@ use WC_Order;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Process_Payment_Exception;
 
@@ -226,7 +227,25 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
-		if ( ! $this->is_order_paid_in_database( $order ) ) {
+		// The instance loaded by process_payment() may be stale, so the stored status decides.
+		$status = $this->get_stored_order_status( $order->get_id() ) ?? $order->get_status();
+
+		if ( ! in_array( $status, wc_get_is_paid_statuses(), true ) ) {
+			return;
+		}
+
+		/**
+		 * A store can declare one of its paid statuses still payable — deposit and partial-payment
+		 * extensions do exactly that, collecting the balance through pay-for-order. Defer to that
+		 * declaration rather than blocking a payment the store expects.
+		 *
+		 * `WC_Order::needs_payment()` cannot answer this: it reads the in-memory status, which is
+		 * the stale value this guard exists to look past.
+		 */
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+		$payable_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', [ Order_Status::PENDING, Order_Status::FAILED ], $order );
+
+		if ( in_array( $status, $payable_statuses, true ) ) {
 			return;
 		}
 
@@ -288,29 +307,12 @@ class Duplicate_Payment_Prevention_Service {
 	}
 
 	/**
-	 * Checks whether the order holds a paid status, consulting the database directly.
+	 * Reads an order's status straight from the orders table.
 	 *
 	 * Both checkout surfaces only begin payment while `needs_payment()` is true, so a second request
 	 * that reaches `process_payment()` loaded the order while it was still unpaid. The request that
 	 * pays it runs in a different PHP process, so nothing invalidates this one's caches, and the
 	 * loaded instance stays stale for the rest of the request.
-	 *
-	 * @param WC_Order $order Order to check.
-	 *
-	 * @return bool True when the order holds a paid status.
-	 */
-	private function is_order_paid_in_database( WC_Order $order ): bool {
-		if ( $order->has_status( wc_get_is_paid_statuses() ) ) {
-			return true;
-		}
-
-		$stored_status = $this->get_stored_order_status( $order->get_id() );
-
-		return null !== $stored_status && in_array( $stored_status, wc_get_is_paid_statuses(), true );
-	}
-
-	/**
-	 * Reads an order's status straight from the orders table.
 	 *
 	 * Deliberately bypasses every cache layer. Going through the data store would consult the
 	 * `orders_data` cache under HPOS, which only a write invalidates, and the write happened in
