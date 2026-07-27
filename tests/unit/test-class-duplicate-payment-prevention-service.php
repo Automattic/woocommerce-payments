@@ -421,8 +421,14 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 
 		// Arrange a concurrent request marking the order paid, without touching our caches.
 		if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+			// Mirrors the fallback in the code under test: get_table_for_orders() only exists
+			// from WooCommerce 7.9, and the plugin supports 7.6.
+			$orders_table = method_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class, 'get_table_for_orders' )
+				? \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders()
+				: $wpdb->prefix . 'wc_orders';
+
 			$wpdb->update(
-				\Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders(),
+				$orders_table,
 				[ 'status' => 'wc-processing' ],
 				[ 'id' => $order_id ]
 			);
