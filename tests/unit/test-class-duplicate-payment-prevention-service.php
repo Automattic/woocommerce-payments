@@ -356,6 +356,13 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'success', $result['result'] );
 		$this->assertStringContainsString( $return_url, $result['redirect'] );
 		$this->assertStringContainsString( 'wcpay_previous_successful_intent', $result['redirect'] );
+
+		// Assert: the merchant is told why, under the current brand name.
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertStringContainsString(
+			'WooPayments: detected and prevented a second payment for this order',
+			$notes[0]->content
+		);
 	}
 
 	public function provider_check_order_already_paid_returns_redirection(): array {

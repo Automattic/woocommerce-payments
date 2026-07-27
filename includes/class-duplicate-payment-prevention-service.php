@@ -250,7 +250,7 @@ class Duplicate_Payment_Prevention_Service {
 		}
 
 		$order->add_order_note(
-			__( 'WooCommerce Payments: detected and prevented a second payment for this order, which had already been paid.', 'woocommerce-payments' )
+			__( 'WooPayments: detected and prevented a second payment for this order, which had already been paid.', 'woocommerce-payments' )
 		);
 
 		$this->remove_session_processing_order( $order->get_id() );
