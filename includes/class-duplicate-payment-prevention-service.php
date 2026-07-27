@@ -324,7 +324,11 @@ class Duplicate_Payment_Prevention_Service {
 		global $wpdb;
 
 		if ( \WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
-			$orders_table = OrderUtil::get_table_for_orders();
+			// OrderUtil::get_table_for_orders() only exists from WooCommerce 7.9, and the plugin supports 7.6.
+			$orders_table = method_exists( OrderUtil::class, 'get_table_for_orders' )
+				? OrderUtil::get_table_for_orders()
+				: $wpdb->prefix . 'wc_orders';
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Uncached by design; the table name comes from OrderUtil, not from input.
 			$status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$orders_table} WHERE id = %d", $order_id ) );
 		} else {
@@ -332,6 +336,14 @@ class Duplicate_Payment_Prevention_Service {
 			$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", $order_id ) );
 		}
 
-		return null === $status ? null : OrderUtil::remove_status_prefix( (string) $status );
+		if ( null === $status ) {
+			return null;
+		}
+
+		// Stripped inline rather than through OrderUtil::remove_status_prefix(), which only exists from
+		// WooCommerce 9.2. This runs on every checkout, so an undefined method here is a checkout outage.
+		$status = (string) $status;
+
+		return 0 === strpos( $status, 'wc-' ) ? substr( $status, 3 ) : $status;
 	}
 }
