@@ -111,8 +111,10 @@ class Experimental_Abtest {
 		}
 
 		// Return external-cached test variations.
-		if ( ! empty( get_transient( 'abtest_variation_' . $test_name ) ) ) {
-			return get_transient( 'abtest_variation_' . $test_name );
+		$cache_key = $this->get_cache_key( $test_name );
+
+		if ( ! empty( get_transient( $cache_key ) ) ) {
+			return get_transient( $cache_key );
 		}
 
 		// Make the request to the WP.com API.
@@ -138,10 +140,24 @@ class Experimental_Abtest {
 
 		// Store the variation in our external cache.
 		if ( ! empty( $results['ttl'] ) ) {
-			set_transient( 'abtest_variation_' . $test_name, $variation, $results['ttl'] );
+			set_transient( $cache_key, $variation, $results['ttl'] );
 		}
 
 		return $variation;
+	}
+
+	/**
+	 * Build the transient key for a cached variation.
+	 *
+	 * Scoped to the anon-ID: the transient is a site-wide option, so a store with
+	 * more than one admin would otherwise serve the first admin's variation to
+	 * everyone, without ExPlat having assigned them.
+	 *
+	 * @param string $test_name Name of the A/B test.
+	 * @return string
+	 */
+	protected function get_cache_key( $test_name ) {
+		return 'abtest_variation_' . $test_name . '_' . md5( $this->anon_id );
 	}
 
 	/**
