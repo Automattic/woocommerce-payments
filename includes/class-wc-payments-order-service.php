@@ -573,16 +573,17 @@ class WC_Payments_Order_Service {
 	 * @param string   $charge_id       The ID of the disputed charge associated with this order.
 	 * @param string   $status          The status of the dispute.
 	 * @param array    $dispute_summary Dispute summary information.
+	 * @param string   $dispute_id      The ID of the dispute. Keeps the note (and its refund) distinct when a charge carries more than one dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [] ): void {
+	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [], $dispute_id = '' ): void {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
 		$is_inquiry = strpos( $status, 'warning_' ) === 0;
-		$note       = $this->generate_dispute_closed_note( $charge_id, $status, $is_inquiry );
+		$note       = $this->generate_dispute_closed_note( $charge_id, $status, $is_inquiry, $dispute_id );
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
@@ -2303,14 +2304,15 @@ class WC_Payments_Order_Service {
 	 * @param string $charge_id The ID of the disputed charge associated with this order.
 	 * @param string $status    The status of the dispute.
 	 * @param bool   $is_inquiry Whether the dispute is an inquiry or not.
+	 * @param string $dispute_id The ID of the dispute, appended so a charge's several disputes each get a distinct note.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_closed_note( $charge_id, $status, $is_inquiry = false ) {
+	private function generate_dispute_closed_note( $charge_id, $status, $is_inquiry = false, $dispute_id = '' ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		if ( $is_inquiry ) {
-			return sprintf(
+			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute status */
 					__( 'Payment inquiry has been closed with status %1$s. See <a>payment status</a> for more details.', 'woocommerce-payments' ),
@@ -2321,19 +2323,33 @@ class WC_Payments_Order_Service {
 				$status,
 				$dispute_url
 			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the dispute status */
+					__( 'Dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$status,
+				$dispute_url
+			);
 		}
 
-		return sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the dispute status */
-				__( 'Dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
-				[
-					'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
-				]
-			),
-			$status,
-			$dispute_url
-		);
+		// Two disputes that close with the same status make identical note text, and
+		// order_note_exists() dedups on it. That check also gates the refund, so without
+		// the dispute ID the second lost dispute's refund just gets skipped. The ID keeps
+		// each note (and its refund) distinct; a re-delivered webhook still de-dupes.
+		if ( '' !== $dispute_id ) {
+			$note .= ' ' . sprintf(
+				/* translators: %s: the dispute ID */
+				esc_html__( '(Dispute ID: %s)', 'woocommerce-payments' ),
+				esc_html( $dispute_id )
+			);
+		}
+
+		return $note;
 	}
 
 	/**
