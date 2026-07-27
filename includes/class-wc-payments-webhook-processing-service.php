@@ -767,7 +767,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary, $dispute_id );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete_dispute_caches();
