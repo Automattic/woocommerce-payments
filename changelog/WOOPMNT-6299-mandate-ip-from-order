@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Use the order's stored customer IP address for Stripe mandate data, fixing subscription renewals that failed with "Invalid IP address" when cron ran without an HTTP request
+Fix subscription renewals failing with "Invalid IP address" when cron runs without an HTTP request
