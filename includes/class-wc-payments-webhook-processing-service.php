@@ -688,24 +688,20 @@ class WC_Payments_Webhook_Processing_Service {
 	private function process_webhook_dispute_created( $event_body ) {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
-		$reason       = $this->read_webhook_property( $event_object, 'reason' );
-		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
-		$evidence     = $this->read_webhook_property( $event_object, 'evidence_details' );
-		$status       = $this->read_webhook_property( $event_object, 'status' );
-		$due_by       = $this->read_webhook_property( $evidence, 'due_by' );
+		// Read the dispute ID defensively: only used to keep notes distinct, so a
+		// (theoretical) event without it should still create the note, not fatal.
+		$dispute_id = $this->has_webhook_property( $event_object, 'id' ) ? $this->read_webhook_property( $event_object, 'id' ) : '';
+		$charge_id  = $this->read_webhook_property( $event_object, 'charge' );
+		$reason     = $this->read_webhook_property( $event_object, 'reason' );
+		$amount_raw = $this->read_webhook_property( $event_object, 'amount' );
+		$evidence   = $this->read_webhook_property( $event_object, 'evidence_details' );
+		$status     = $this->read_webhook_property( $event_object, 'status' );
+		$due_by     = $this->read_webhook_property( $evidence, 'due_by' );
 
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 
-		$currency      = $order->get_currency();
-		$amount_string = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
-
-		// Explicitly add currency info if needed (multi-currency stores).
-		$amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount_string, $currency );
-
-		// Convert due_by to a date string in the store timezone.
-		$due_by = date_i18n( wc_date_format(), $due_by );
-
+		// order_from_charge_id() returns false when no order matches, so guard
+		// before dereferencing $order below.
 		if ( ! $order ) {
 			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
@@ -716,7 +712,16 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status );
+		$currency      = $order->get_currency();
+		$amount_string = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
+
+		// Explicitly add currency info if needed (multi-currency stores).
+		$amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount_string, $currency );
+
+		// Convert due_by to a date string in the store timezone.
+		$due_by = date_i18n( wc_date_format(), $due_by );
+
+		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status, $dispute_id );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete_dispute_caches();
