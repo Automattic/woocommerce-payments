@@ -17,10 +17,10 @@ export type FeesFieldId =
 	| 'deposit_id';
 
 const defaultVisibleFields: FeesFieldId[] = [
-	'transaction_id',
 	'payment_method',
 	'type',
 	'order_id',
+	'transaction_id',
 	'transaction_currency',
 	'amount',
 	'fees',

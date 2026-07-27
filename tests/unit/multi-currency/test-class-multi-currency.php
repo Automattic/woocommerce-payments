@@ -1128,7 +1128,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 						<select
 				name="currency"
 				class="js-woopayments-currency-switcher"
-				aria-label=""
+				aria-label="Select your currency"
 				onchange="this.form.submit()"
 			>
 				<option value="USD" selected>&#36; USD</option><option value="BIF">Fr BIF</option><option value="CAD">&#36; CAD</option><option value="GBP">&pound; GBP</option>			</select>

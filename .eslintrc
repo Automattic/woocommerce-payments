@@ -94,13 +94,13 @@
 		"@typescript-eslint/no-unused-vars": [ "error", { "varsIgnorePattern": "^(React|createElement)$", "ignoreRestSiblings": true, "argsIgnorePattern": "^_" } ],
 		"react-hooks/exhaustive-deps": [ "error", { "additionalHooks": "(^useSelect$|^useSuspenseSelect$)" } ],
 		"react-hooks/rules-of-hooks": "error",
+		"react-hooks/static-components": "error",
+		"react-hooks/purity": "error",
+		"react-hooks/use-memo": "error",
 		/* BEGIN WOOPMNT-6292 — react-hooks v7 new rules, temporarily set to warn until violations are fixed */
 		"react-hooks/refs": "warn",
 		"react-hooks/set-state-in-effect": "warn",
 		"react-hooks/immutability": "warn",
-		"react-hooks/static-components": "warn",
-		"react-hooks/purity": "warn",
-		"react-hooks/use-memo": "warn",
 		/* END WOOPMNT-6292 */
 		"jest/no-conditional-expect": "off",
 		"jest/valid-title": "off",

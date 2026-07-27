@@ -195,6 +195,7 @@ export const useFeesData = ( view: View ): UseFeesDataResult => {
 		);
 		return typeof f?.value === 'string' ? f.value : undefined;
 	}, [ view.filters ] );
+	const sourcesKey = sources.join( '|' );
 	const methodElements = useMemo(
 		() => {
 			const fromSources = buildMethodElements( sources );
@@ -211,7 +212,7 @@ export const useFeesData = ( view: View ): UseFeesDataResult => {
 			return fromSources;
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ sources.join( '|' ), activeMethodValue ]
+		[ sourcesKey, activeMethodValue ]
 	);
 	const typeElements = useMemo(
 		() => buildTypeElements( [ ...feeBearingTypes ] ),

@@ -222,6 +222,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'No real funds were collected', $notes[0]->content );
 		// Assert: The transaction link is preserved.
 		$this->assertStringContainsString( 'pi_mock', $notes[0]->content );
+		// Assert: The transaction URL is well-formed — path must contain the real slash-separated
+		// path, not the corrupted "0.000000" that sprintf produces when %2F is misread as a
+		// printf float specifier (%2F → 0.000000).
+		$this->assertStringContainsString( 'path=%2Fpayments%2Ftransactions%2Fdetails', $notes[0]->content );
+		$this->assertStringNotContainsString( '0.000000', $notes[0]->content );
 		// Assert: It does NOT use the standard "successfully charged" wording.
 		$this->assertStringNotContainsString( 'successfully charged', $notes[0]->content );
 	}
@@ -2276,34 +2281,34 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_record_first_live_sale_short_circuits_when_option_already_set(): void {
 		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
-		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
 		$this->order->save();
 
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
-		$this->assertSame( '1', get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
 
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_short_circuits_when_order_id_invalid(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->order_service->maybe_record_first_live_sale( 99999999 );
 
 		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertSame( '1', get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
 
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_skips_test_mode_order(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
 		$this->order->save();
@@ -2311,14 +2316,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
 		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertSame( '1', get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
 
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_records_for_production_order(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
 		$this->order->save();
@@ -2326,10 +2330,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
 		$this->assertSame( '1', get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertFalse( get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
 
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
 	}
+
+	// -------------------------------------------------------------------------
+	// has_live_sale()
+	// -------------------------------------------------------------------------
 
 	public function test_has_live_sale_returns_true_when_option_is_set(): void {
 		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
