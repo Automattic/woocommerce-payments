@@ -559,16 +559,17 @@ class WC_Payments_Order_Service {
 	 * @param string   $reason     The reason for the dispute – human-readable text.
 	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 * @param string   $status     The status of the dispute.
+	 * @param string   $dispute_id The ID of the dispute. Distinguishes the notes when a charge carries more than one dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status = '' ) {
+	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status = '', $dispute_id = '' ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
 		$is_inquiry = strpos( $status, 'warning_' ) === 0;
-		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry );
+		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry, $dispute_id );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -2327,17 +2328,18 @@ class WC_Payments_Order_Service {
 	 * @param string $reason     The reason for the dispute – human-readable text.
 	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 * @param bool   $is_inquiry  Whether the dispute is an inquiry or not.
+	 * @param string $dispute_id The ID of the dispute, appended so a charge's several disputes each get a distinct note.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry = false ) {
+	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry = false, $dispute_id = '' ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		// Get merchant-friendly dispute reason description.
 		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
 
 		if ( $is_inquiry ) {
-			return sprintf(
+			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to the inquiry */
 					__( 'A payment inquiry has been raised for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
@@ -2350,21 +2352,35 @@ class WC_Payments_Order_Service {
 				$due_by,
 				$dispute_url
 			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
+					__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$amount,
+				$reason,
+				$due_by,
+				$dispute_url
+			);
 		}
 
-		return sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
-				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
-				[
-					'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
-				]
-			),
-			$amount,
-			$reason,
-			$due_by,
-			$dispute_url
-		);
+		// A charge can carry several disputes with identical amount, reason and
+		// deadline; without the dispute ID their notes are byte-identical and
+		// order_note_exists() collapses them into one. It also keeps a
+		// re-delivered webhook for the same dispute de-duplicated.
+		if ( '' !== $dispute_id ) {
+			$note .= ' ' . sprintf(
+				/* translators: %s: the dispute ID */
+				esc_html__( '(Dispute ID: %s)', 'woocommerce-payments' ),
+				esc_html( $dispute_id )
+			);
+		}
+
+		return $note;
 	}
 
 	/**
