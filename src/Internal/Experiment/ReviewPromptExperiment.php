@@ -10,8 +10,8 @@ namespace WCPay\Internal\Experiment;
 /**
  * A/B/C experiment for the in-app review prompt designs (WOOPMNT-6080).
  *
- * Assignment is per-merchant (Jetpack Tracks anon-ID), and variant strings must
- * match the ExPlat registration exactly.
+ * Assignment is per admin user, because the Tracks anon-ID belongs to a user. Variant
+ * strings must match the ExPlat registration exactly.
  */
 final class ReviewPromptExperiment extends Experiment {
 	/**
@@ -20,13 +20,6 @@ final class ReviewPromptExperiment extends Experiment {
 	 * @var string
 	 */
 	public const EXPERIMENT_NAME = 'woopayments_review_prompt_design_v1';
-
-	/**
-	 * User meta key holding the Jetpack Tracks anon-ID. Shared with Jetpack, never delete it.
-	 *
-	 * @var string
-	 */
-	public const USER_META_ANON_ID_KEY = 'jetpack_tracks_anon_id';
 
 	/**
 	 * Variant B.
@@ -52,10 +45,10 @@ final class ReviewPromptExperiment extends Experiment {
 	}
 
 	/**
-	 * The merchant's Jetpack Tracks anon-ID.
+	 * The merchant's Tracks anon-ID.
 	 *
-	 * ExPlat joins assignments to Tracks events on identity, so this has to match what
-	 * Tracks stamps on the events. Mirrors Onboarding_Experiment::get_anon_id().
+	 * ExPlat joins assignments to Tracks events on identity, so this uses the same
+	 * get_identity() that stamps the events. It persists a new anon-ID to user meta.
 	 *
 	 * @return string Empty string when no anon-ID can be resolved.
 	 */
@@ -66,25 +59,20 @@ final class ReviewPromptExperiment extends Experiment {
 			return '';
 		}
 
-		$anon_id = $this->legacy_proxy->call_function( 'get_user_meta', $user_id, self::USER_META_ANON_ID_KEY, true );
-
-		if ( is_string( $anon_id ) && '' !== $anon_id ) {
-			return $anon_id;
-		}
-
-		if ( ! $this->legacy_proxy->call_function( 'class_exists', '\Jetpack_Tracks_Client' ) ) {
+		if ( ! $this->legacy_proxy->call_function( 'class_exists', '\WC_Tracks_Client' ) ) {
 			return '';
 		}
 
-		$anon_id = $this->legacy_proxy->call_static( '\Jetpack_Tracks_Client', 'get_anon_id' );
+		$identity = $this->legacy_proxy->call_static( '\WC_Tracks_Client', 'get_identity', $user_id );
 
-		if ( ! is_string( $anon_id ) || '' === $anon_id ) {
+		// ExPlat keys on the anon-ID, so a wpcom:user_id identity has nothing to join on.
+		if ( ! is_array( $identity ) || 'anon' !== ( $identity['_ut'] ?? '' ) ) {
 			return '';
 		}
 
-		$this->legacy_proxy->call_function( 'update_user_meta', $user_id, self::USER_META_ANON_ID_KEY, $anon_id );
+		$anon_id = $identity['_ui'] ?? '';
 
-		return $anon_id;
+		return is_string( $anon_id ) ? $anon_id : '';
 	}
 
 	/**
