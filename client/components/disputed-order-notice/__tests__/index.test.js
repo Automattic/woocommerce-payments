@@ -568,4 +568,33 @@ describe( 'DisputedOrderNoticeHandler', () => {
 
 		expect( onDisableOrderRefund ).toHaveBeenCalledWith( 'lost' );
 	} );
+
+	test( 'reports charge_refunded as the lock reason when it is the only blocking dispute', () => {
+		const onDisableOrderRefund = jest.fn();
+		useCharge.mockReturnValue( {
+			data: {
+				disputes: [
+					{
+						id: 'dp_1',
+						status: 'charge_refunded',
+						reason: 'fraudulent',
+						amount: 1000,
+						currency: 'USD',
+						evidence_details: { due_by: 1698500219 },
+					},
+				],
+			},
+		} );
+
+		render(
+			<DisputedOrderNoticeHandler
+				chargeId="ch_123"
+				onDisableOrderRefund={ onDisableOrderRefund }
+			/>
+		);
+
+		expect( onDisableOrderRefund ).toHaveBeenCalledWith(
+			'charge_refunded'
+		);
+	} );
 } );

@@ -24,11 +24,12 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 // Which dispute gets to explain the refund lock when several block refunds at
 // once. Ordered most to least severe, and exhaustive over the non-refundable
-// statuses. `charge_refunded` sorts last because `disableWooOrderRefundButton`
-// has no wording for it and would leave the tooltip blank. `lost` outranks
-// `under_review` here even though the notice below leads with the under-review
-// wording: the button never comes back once a dispute is lost, so a permanent
-// reason explains a permanently disabled control better than a temporary one.
+// statuses, so `disableWooOrderRefundButton` always has wording to show. `lost`
+// outranks `under_review` here even though the notice below leads with the
+// under-review wording: the button never comes back once a dispute is lost, so a
+// permanent reason explains a permanently disabled control better than a
+// temporary one. `charge_refunded` is last — the money is already back with the
+// customer, so it is the least pressing thing to tell the merchant about.
 const lockReasonPriority = [
 	'lost',
 	'under_review',
