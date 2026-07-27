@@ -69,6 +69,36 @@ class Experimental_Abtest_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $second->get_variation( 'some_test' ), 'A cached no-assignment must stay indistinguishable from a fresh one.' );
 	}
 
+	public function test_the_anon_id_reaches_explat_unmangled() {
+		$captured = null;
+
+		add_filter(
+			'pre_http_request',
+			function ( $pre, $args, $url ) use ( &$captured ) {
+				if ( false === strpos( $url, 'experiments/0.1.0/assignments' ) ) {
+					return $pre;
+				}
+
+				$captured = $url;
+
+				return [ 'body' => '{"variations":{},"assignments":{},"ttl":7200}' ];
+			},
+			10,
+			3
+		);
+
+		( new \WCPay\Experimental_Abtest( 'woo:aB+c/dEfGhIjKlMnOpQr', 'woocommerce', true ) )->get_variation( 'some_test' );
+
+		$query = [];
+		parse_str( (string) wp_parse_url( (string) $captured, PHP_URL_QUERY ), $query );
+
+		$this->assertSame(
+			'woo:aB+c/dEfGhIjKlMnOpQr',
+			$query['anon_id'] ?? null,
+			'A + must not arrive as a space, or the assignment is keyed on a different identity.'
+		);
+	}
+
 	public function test_transport_failure_is_not_cached() {
 		$requests = $this->stub_explat_response( new WP_Error( 'http_request_failed', 'Timed out.' ) );
 

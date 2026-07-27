@@ -182,10 +182,12 @@ class Experimental_Abtest {
 	 * @return array|\WP_Error A/B test variation error on failure.
 	 */
 	protected function request_variation( $test_name ) {
+		// Values are encoded here because add_query_arg() appends them as-is, and a '+' in
+		// the base64 anon-ID would arrive as a space.
 		$args = [
 			'experiment_name'  => $test_name,
-			'anon_id'          => $this->anon_id,
-			'woo_country_code' => get_option( 'woocommerce_default_country' ),
+			'anon_id'          => rawurlencode( $this->anon_id ),
+			'woo_country_code' => rawurlencode( (string) get_option( 'woocommerce_default_country' ) ),
 		];
 
 		$url = add_query_arg(
