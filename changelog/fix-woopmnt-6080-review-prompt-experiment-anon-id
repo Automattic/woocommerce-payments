@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Key the in-app review prompt experiment on the Tracks anon-ID so ExPlat can attribute the results
+Fix ExPlat assignment for the in-app review prompt experiment, and stop re-requesting it on every page load

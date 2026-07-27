@@ -22,6 +22,15 @@ namespace WCPay;
  */
 class Experimental_Abtest {
 	/**
+	 * Cached marker for "ExPlat answered, and there is no assignment".
+	 *
+	 * Truthy so the `! empty()` cache read treats it as a hit.
+	 *
+	 * @var string
+	 */
+	private const NO_ASSIGNMENT = '__wcpay_no_assignment__';
+
+	/**
 	 * A variable to hold the tests we fetched, and their variations for the current user.
 	 *
 	 * @var array
@@ -112,9 +121,14 @@ class Experimental_Abtest {
 
 		// Return external-cached test variations.
 		$cache_key = $this->get_cache_key( $test_name );
+		$cached    = get_transient( $cache_key );
 
-		if ( ! empty( get_transient( $cache_key ) ) ) {
-			return get_transient( $cache_key );
+		if ( self::NO_ASSIGNMENT === $cached ) {
+			return $this->no_assignment_error();
+		}
+
+		if ( ! empty( $cached ) ) {
+			return $cached;
 		}
 
 		// Make the request to the WP.com API.
@@ -130,7 +144,14 @@ class Experimental_Abtest {
 
 		// Bail if there were no results or there is no test variation returned.
 		if ( ! is_array( $results ) || empty( $results['variations'] ) ) {
-			return new \WP_Error( 'unexpected_data_format', 'Data was not returned in the expected format.' );
+			// An empty variations list is ExPlat's answer for an experiment that is not
+			// running, has ended, or does not target this participant, and it carries a
+			// TTL. Cache it so we stop re-requesting on every page load.
+			if ( is_array( $results ) && ! empty( $results['ttl'] ) ) {
+				set_transient( $cache_key, self::NO_ASSIGNMENT, $results['ttl'] );
+			}
+
+			return $this->no_assignment_error();
 		}
 
 		// Store the variation in our internal cache.
@@ -184,5 +205,18 @@ class Experimental_Abtest {
 		$get = wp_remote_get( $url );
 
 		return $get;
+	}
+
+	/**
+	 * The error returned when ExPlat has no assignment for this participant.
+	 *
+	 * Callers must not be able to tell a cached "no assignment" from a fresh one:
+	 * Onboarding_Experiment_Abtest relies on this staying a WP_Error so a missing
+	 * assignment is never persisted as a real 'control' allocation.
+	 *
+	 * @return \WP_Error
+	 */
+	private function no_assignment_error() {
+		return new \WP_Error( 'unexpected_data_format', 'Data was not returned in the expected format.' );
 	}
 }
