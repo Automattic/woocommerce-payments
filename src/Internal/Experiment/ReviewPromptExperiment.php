@@ -10,8 +10,8 @@ namespace WCPay\Internal\Experiment;
 /**
  * A/B/C experiment for the in-app review prompt designs (WOOPMNT-6080).
  *
- * Assignment is per-store (Jetpack blog ID), and variant strings must match
- * the ExPlat registration exactly.
+ * Assignment is per-merchant (Jetpack Tracks anon-ID), and variant strings must
+ * match the ExPlat registration exactly.
  */
 final class ReviewPromptExperiment extends Experiment {
 	/**
@@ -20,6 +20,15 @@ final class ReviewPromptExperiment extends Experiment {
 	 * @var string
 	 */
 	public const EXPERIMENT_NAME = 'woopayments_review_prompt_design_v1';
+
+	/**
+	 * User meta key holding the Jetpack Tracks anon-ID.
+	 *
+	 * Shared with Jetpack and Onboarding_Experiment. Never delete it.
+	 *
+	 * @var string
+	 */
+	public const USER_META_ANON_ID_KEY = 'jetpack_tracks_anon_id';
 
 	/**
 	 * Variant B.
@@ -45,22 +54,42 @@ final class ReviewPromptExperiment extends Experiment {
 	}
 
 	/**
-	 * Store-derived assignment key so assignment is per-store, not per-admin.
+	 * The merchant's Jetpack Tracks anon-ID.
 	 *
-	 * @return string Empty string when no Jetpack connection exists.
+	 * ExPlat attributes metrics by joining assignments to Tracks events on identity,
+	 * so the assignment must use the same anon-ID that Tracks stamps on the prompt's
+	 * events. A synthetic key never appears in Tracks and leaves the arms unattributed.
+	 *
+	 * Mirrors Onboarding_Experiment::get_anon_id() and WooPay_Tracker::tracks_get_identity().
+	 *
+	 * @return string Empty string when no anon-ID can be resolved.
 	 */
 	protected function assignment_key(): string {
-		if ( ! $this->legacy_proxy->call_function( 'class_exists', '\Jetpack_Options' ) ) {
+		$user_id = $this->legacy_proxy->call_function( 'get_current_user_id' );
+
+		if ( ! $user_id ) {
 			return '';
 		}
 
-		$blog_id = $this->legacy_proxy->call_static( '\Jetpack_Options', 'get_option', 'id' );
+		$anon_id = $this->legacy_proxy->call_function( 'get_user_meta', $user_id, self::USER_META_ANON_ID_KEY, true );
 
-		if ( empty( $blog_id ) || ! is_numeric( $blog_id ) ) {
+		if ( is_string( $anon_id ) && '' !== $anon_id ) {
+			return $anon_id;
+		}
+
+		if ( ! $this->legacy_proxy->call_function( 'class_exists', '\Jetpack_Tracks_Client' ) ) {
 			return '';
 		}
 
-		return 'woopayments_store_' . $blog_id;
+		$anon_id = $this->legacy_proxy->call_static( '\Jetpack_Tracks_Client', 'get_anon_id' );
+
+		if ( ! is_string( $anon_id ) || '' === $anon_id ) {
+			return '';
+		}
+
+		$this->legacy_proxy->call_function( 'update_user_meta', $user_id, self::USER_META_ANON_ID_KEY, $anon_id );
+
+		return $anon_id;
 	}
 
 	/**
