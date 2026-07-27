@@ -59,6 +59,8 @@ abstract class Experiment {
 	 * Return an empty string when no stable identity exists; the caller
 	 * then receives control.
 	 *
+	 * Implementations may persist identity state, so this runs after the consent check.
+	 *
 	 * @return string
 	 */
 	abstract protected function assignment_key(): string;
@@ -120,9 +122,14 @@ abstract class Experiment {
 	 * @return string
 	 */
 	private function resolve_variant(): string {
+		// assignment_key() can persist identity state, so it must not run without consent.
+		if ( ! $this->has_consent() ) {
+			return self::VARIANT_CONTROL;
+		}
+
 		$assignment_key = $this->assignment_key();
 
-		if ( '' === $assignment_key || ! $this->has_consent() ) {
+		if ( '' === $assignment_key ) {
 			return self::VARIANT_CONTROL;
 		}
 

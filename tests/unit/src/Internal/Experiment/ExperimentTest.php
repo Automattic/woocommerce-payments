@@ -44,6 +44,13 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 
 		return new class( $this->mock_legacy_proxy, $mock_abtest, $assignment_key, $captured_anon_id, $abtest_calls ) extends Experiment {
 			/**
+			 * Number of times assignment_key() has been resolved.
+			 *
+			 * @var int
+			 */
+			public $assignment_key_calls = 0;
+
+			/**
 			 * Stubbed abtest client.
 			 *
 			 * @var Experimental_Abtest
@@ -84,6 +91,7 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 			}
 
 			protected function assignment_key(): string {
+				++$this->assignment_key_calls;
 				return $this->key;
 			}
 
@@ -144,6 +152,18 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'treatment_a', $experiment->get_variant() );
 		$this->assertSame( 'store_123', $captured );
+	}
+
+	public function test_consent_is_checked_before_the_assignment_key_is_resolved() {
+		$this->set_consent( false );
+		$experiment = $this->build_experiment( 'treatment_a', 'store_123' );
+
+		$this->assertSame( 'control', $experiment->get_variant() );
+		$this->assertSame(
+			0,
+			$experiment->assignment_key_calls,
+			'assignment_key() can persist identity state, so it must not run without consent.'
+		);
 	}
 
 	public function test_validates_variants() {
