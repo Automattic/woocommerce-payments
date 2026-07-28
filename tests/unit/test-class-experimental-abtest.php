@@ -125,13 +125,78 @@ class Experimental_Abtest_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_transport_failure_is_not_cached() {
+	public function test_a_transport_failure_is_not_re_requested_within_the_backoff_window() {
 		$requests = $this->stub_explat_response( new WP_Error( 'http_request_failed', 'Timed out.' ) );
 
-		( new \WCPay\Experimental_Abtest( 'jetpack:anonC', 'woocommerce', true ) )->get_variation( 'some_test' );
-		( new \WCPay\Experimental_Abtest( 'jetpack:anonC', 'woocommerce', true ) )->get_variation( 'some_test' );
+		$first  = ( new \WCPay\Experimental_Abtest( 'jetpack:anonC', 'woocommerce', true ) )->get_variation( 'some_test' );
+		$second = ( new \WCPay\Experimental_Abtest( 'jetpack:anonC', 'woocommerce', true ) )->get_variation( 'some_test' );
 
-		$this->assertSame( 2, $requests->count, 'An outage must not be cached as a no-assignment answer.' );
+		$this->assertSame( 'control', $first );
+		$this->assertSame( 'control', $second );
+		$this->assertSame( 1, $requests->count, 'An outage must not add a blocking request to every page load.' );
+	}
+
+	public function test_a_transport_failure_backs_off_briefly_not_for_the_assignment_ttl() {
+		$this->stub_explat_response( new WP_Error( 'http_request_failed', 'Timed out.' ) );
+		$abtest = new \WCPay\Experimental_Abtest( 'jetpack:anonF', 'woocommerce', true );
+
+		$abtest->get_variation( 'some_test' );
+
+		$timeout = (int) get_option( '_transient_timeout_' . $this->get_cache_key( $abtest, 'some_test' ) );
+		$this->assertGreaterThan( time(), $timeout );
+		$this->assertLessThanOrEqual(
+			time() + 60,
+			$timeout,
+			'A failure must expire quickly so recovery is picked up, not pin the merchant for hours.'
+		);
+	}
+
+	public function test_a_cached_transport_failure_is_not_mistaken_for_an_answer() {
+		$this->stub_explat_response( new WP_Error( 'http_request_failed', 'Timed out.' ) );
+
+		// Onboarding_Experiment_Abtest persists assignments, so a cached failure
+		// must stay an error for it, exactly like a fresh one.
+		$first  = new \WCPay\Onboarding_Experiment_Abtest( 'jetpack:anonG', 'woocommerce', true );
+		$second = new \WCPay\Onboarding_Experiment_Abtest( 'jetpack:anonG', 'woocommerce', true );
+
+		$this->assertNull( $first->get_variation( 'some_test' ) );
+		$this->assertNull( $second->get_variation( 'some_test' ), 'A cached failure must stay indistinguishable from a fresh one.' );
+	}
+
+	public function test_an_undecodable_body_is_treated_as_a_failed_request() {
+		$requests = $this->stub_explat_response( '<html>Too many requests</html>' );
+
+		( new \WCPay\Experimental_Abtest( 'jetpack:anonH', 'woocommerce', true ) )->get_variation( 'some_test' );
+		( new \WCPay\Experimental_Abtest( 'jetpack:anonH', 'woocommerce', true ) )->get_variation( 'some_test' );
+
+		$this->assertSame( 1, $requests->count, 'A rate-limiter page is an outage, not an answer, and must back off the same way.' );
+	}
+
+	public function test_the_explat_request_shortens_the_default_timeout() {
+		$captured = null;
+
+		add_filter(
+			'pre_http_request',
+			function ( $pre, $args, $url ) use ( &$captured ) {
+				if ( false === strpos( $url, 'experiments/0.1.0/assignments' ) ) {
+					return $pre;
+				}
+
+				$captured = $args;
+
+				return [ 'body' => '{"variations":{},"assignments":{},"ttl":7200}' ];
+			},
+			10,
+			3
+		);
+
+		( new \WCPay\Experimental_Abtest( 'jetpack:anonI', 'woocommerce', true ) )->get_variation( 'some_test' );
+
+		$this->assertSame(
+			3,
+			$captured['timeout'] ?? null,
+			'The request blocks admin page render, so it must not wait the default 5 seconds.'
+		);
 	}
 
 	/**

@@ -29,6 +29,14 @@ class Experimental_Abtest {
 	private const NO_ASSIGNMENT = '__wcpay_no_assignment__';
 
 	/**
+	 * Marks a briefly cached failed request, so an ExPlat outage does not add
+	 * a blocking request to every page load.
+	 *
+	 * @var string
+	 */
+	private const REQUEST_FAILED = '__wcpay_request_failed__';
+
+	/**
 	 * A variable to hold the tests we fetched, and their variations for the current user.
 	 *
 	 * @var array
@@ -125,6 +133,10 @@ class Experimental_Abtest {
 			return $this->no_assignment_error();
 		}
 
+		if ( self::REQUEST_FAILED === $cached ) {
+			return $this->fetch_failed_error();
+		}
+
 		if ( ! empty( $cached ) ) {
 			return $cached;
 		}
@@ -134,16 +146,26 @@ class Experimental_Abtest {
 
 		// Bail if there was an error or malformed response.
 		if ( is_wp_error( $response ) || ! is_array( $response ) || ! isset( $response['body'] ) ) {
-			return new \WP_Error( 'failed_to_fetch_data', 'Unable to fetch the requested data.' );
+			set_transient( $cache_key, self::REQUEST_FAILED, MINUTE_IN_SECONDS );
+
+			return $this->fetch_failed_error();
 		}
 
 		// Decode the results.
 		$results = json_decode( $response['body'], true );
 
-		// Bail if there were no results or there is no test variation returned.
-		if ( ! is_array( $results ) || empty( $results['variations'] ) ) {
+		// A body that does not decode is an outage-shaped response, such as a
+		// rate-limiter page, not an answer.
+		if ( ! is_array( $results ) ) {
+			set_transient( $cache_key, self::REQUEST_FAILED, MINUTE_IN_SECONDS );
+
+			return $this->fetch_failed_error();
+		}
+
+		// Bail if there is no test variation returned.
+		if ( empty( $results['variations'] ) ) {
 			// Cache it: an empty variations list is an answer, not a failure, and carries a TTL.
-			if ( is_array( $results ) && $this->has_usable_ttl( $results ) ) {
+			if ( $this->has_usable_ttl( $results ) ) {
 				set_transient( $cache_key, self::NO_ASSIGNMENT, (int) $results['ttl'] );
 			}
 
@@ -198,7 +220,8 @@ class Experimental_Abtest {
 			)
 		);
 
-		$get = wp_remote_get( $url );
+		// The request blocks admin page render, so it must not wait the default 5 seconds.
+		$get = wp_remote_get( $url, [ 'timeout' => 3 ] );
 
 		return $get;
 	}
@@ -225,5 +248,17 @@ class Experimental_Abtest {
 	 */
 	private function no_assignment_error() {
 		return new \WP_Error( 'unexpected_data_format', 'Data was not returned in the expected format.' );
+	}
+
+	/**
+	 * The error returned when the request itself failed.
+	 *
+	 * Cached and fresh failures must stay indistinguishable, so callers that
+	 * persist assignments never treat an outage as an answer.
+	 *
+	 * @return \WP_Error
+	 */
+	private function fetch_failed_error() {
+		return new \WP_Error( 'failed_to_fetch_data', 'Unable to fetch the requested data.' );
 	}
 }

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Shorten the ExPlat request timeout and stop retrying a failed request on every page load
