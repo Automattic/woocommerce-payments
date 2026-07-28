@@ -198,7 +198,8 @@ const ConnectAccountPage: React.FC = () => {
 						'pending'
 					) ) ||
 				loaderProgressRef.current > 95 ||
-				elapsed( testDriveSetupStartTimeRef.current ) > testDriveSetupMaxDuration
+				elapsed( testDriveSetupStartTimeRef.current ) >
+					testDriveSetupMaxDuration
 			) {
 				setTestDriveLoaderProgress( 100 );
 				const queryArgs = {

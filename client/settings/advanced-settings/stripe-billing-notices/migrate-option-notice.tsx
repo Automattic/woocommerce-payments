@@ -42,6 +42,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 	hasResolved,
 } ) => {
 	const context = useContext( StripeBillingMigrationNoticeContext );
+	const { setIsMigrationInProgress, setIsMigrationOptionShown } = context;
 
 	/**
 	 * Whether the notice is eligible to be shown.
@@ -81,10 +82,10 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 	// Once the request is resolved, mark the migration as in progress and hide this notice.
 	useEffect( () => {
 		if ( hasResolved ) {
-			context.setIsMigrationInProgress( true );
-			context.setIsMigrationOptionShown( false );
+			setIsMigrationInProgress( true );
+			setIsMigrationOptionShown( false );
 		}
-	}, [ hasResolved, context.setIsMigrationInProgress, context.setIsMigrationOptionShown ] );
+	}, [ hasResolved, setIsMigrationInProgress, setIsMigrationOptionShown ] );
 
 	const isShowing =
 		! hasResolved &&
@@ -95,8 +96,8 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 
 	// Track whether this notice is currently shown so siblings can coordinate.
 	useEffect( () => {
-		context.setIsMigrationOptionShown( isShowing );
-	}, [ isShowing, context.setIsMigrationOptionShown ] );
+		setIsMigrationOptionShown( isShowing );
+	}, [ isShowing, setIsMigrationOptionShown ] );
 
 	if ( ! isShowing ) {
 		return null;

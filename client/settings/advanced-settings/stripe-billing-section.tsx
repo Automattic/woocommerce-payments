@@ -65,13 +65,10 @@ const StripeBillingSection: React.FC = () => {
 	}, [ hasFinishedSavingSettings, isStripeBillingEnabled ] );
 
 	// Set up the context to be shared between the notices and the toggle.
-	const [ isMigrationOptionShown, setIsMigrationOptionShown ] = useState(
-		false
-	);
-	const [
-		isMigrationInProgressLocal,
-		setIsMigrationInProgressLocal,
-	] = useState( false );
+	const [ isMigrationOptionShown, setIsMigrationOptionShown ] =
+		useState( false );
+	const [ isMigrationInProgressLocal, setIsMigrationInProgressLocal ] =
+		useState( false );
 
 	const noticeContext = {
 		isStripeBillingEnabled: isStripeBillingEnabled,
@@ -82,7 +79,8 @@ const StripeBillingSection: React.FC = () => {
 		setIsMigrationOptionShown: setIsMigrationOptionShown,
 
 		// Migration logic.
-		isMigrationInProgress: isMigrationInProgress || isMigrationInProgressLocal,
+		isMigrationInProgress:
+			isMigrationInProgress || isMigrationInProgressLocal,
 		setIsMigrationInProgress: setIsMigrationInProgressLocal,
 		hasSavedSettings: hasFinishedSavingSettings,
 

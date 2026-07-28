@@ -14,8 +14,8 @@ const StripeBillingMigrationNoticeContext = createContext( {
 	startMigration: () => null,
 	isResolvingMigrateRequest: false,
 	hasResolvedMigrateRequest: false,
-	setIsMigrationOptionShown: ( _value: boolean ) => null,
-	setIsMigrationInProgress: ( _value: boolean ) => null,
+	setIsMigrationOptionShown: () => null,
+	setIsMigrationInProgress: () => null,
 } as {
 	isStripeBillingEnabled: boolean;
 	savedIsStripeBillingEnabled: boolean;
