@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure order note is recorded for multi-dispute refund
