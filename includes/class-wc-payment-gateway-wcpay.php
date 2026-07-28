@@ -1860,7 +1860,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( $this->is_mandate_data_required() && $this->should_send_mandate_data( $order ) ) {
+				if ( $this->is_mandate_data_required() && $this->should_send_mandate_data( $payment_information ) ) {
 					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
 
@@ -1976,7 +1976,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					) {
 						$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
 
-						if ( $this->should_send_mandate_data( $order ) ) {
+						if ( $this->should_send_mandate_data( $payment_information ) ) {
 							$request->set_mandate_data( $this->get_mandate_data( $order ) );
 						}
 					}
@@ -2593,6 +2593,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * WC_Geolocation::get_ip_address() returns an empty string and Stripe rejects the
 	 * whole intent with "Invalid IP address".
 	 *
+	 * Only SEPA renewals still depend on that, since card and Link no longer send mandate
+	 * data when the payment is merchant-initiated. See should_send_mandate_data().
+	 *
 	 * @param WC_Order|null $order Order the mandate is being created for, when available.
 	 *
 	 * @return string Customer IP address, or an empty string when neither source has one.
@@ -2614,25 +2617,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * - SEPA always sends it. The mandate is the payment instrument being created, so it is
 	 *   required, and omitting it has not been verified as safe.
-	 * - Card and Link send it only when a valid customer IP is available. Stripe rejects any
-	 *   request whose mandate_data.customer_acceptance.online.ip_address is not a valid IP,
-	 *   which happens when there is no HTTP request and the order carries no stored IP, or
-	 *   when a proxy sends a malformed forwarding header. Stripe accepts a card or Link
-	 *   confirmation with no mandate data at all, so omitting it is preferable to sending a
-	 *   payload that is certain to be rejected.
+	 * - Card and Link never send it on a merchant-initiated payment. Stripe authorises those
+	 *   through the MIT / network transaction ID framework established at the original
+	 *   checkout, not through mandate_data: the standard off-session pattern is
+	 *   `off_session` plus a saved payment method. Link's own mandate acceptance is recorded
+	 *   at that first checkout and stored on the payment method, so it is not re-created per
+	 *   renewal. SCA exemptions and dispute liability both derive from the original
+	 *   authentication, so nothing downstream depends on repeating it (confirmed with
+	 *   Stripe, WOOPMNT-6299).
+	 * - Card and Link otherwise send it only when a valid customer IP is available. Stripe
+	 *   rejects any request whose mandate_data.customer_acceptance.online.ip_address is not a
+	 *   valid IP, which happens when a proxy sends a malformed forwarding header. Stripe
+	 *   accepts a card or Link confirmation with no mandate data at all, so omitting it is
+	 *   preferable to sending a payload that is certain to be rejected.
 	 *
 	 * rest_is_ip_address() is only a format check and accepts private and loopback addresses
 	 * on purpose: Stripe accepts them too, and stores whose cron runs over a loopback request
 	 * rely on that.
 	 *
-	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 * @param Payment_Information $payment_information Payment information for the transaction.
 	 *
 	 * @return bool True when mandate data should be sent.
 	 */
-	private function should_send_mandate_data( ?WC_Order $order = null ): bool {
+	private function should_send_mandate_data( Payment_Information $payment_information ): bool {
 		if ( Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id() ) {
 			return true;
 		}
+
+		if ( $payment_information->is_merchant_initiated() ) {
+			return false;
+		}
+
+		$order = $payment_information->get_order();
 
 		if ( rest_is_ip_address( $this->get_mandate_ip_address( $order ) ) ) {
 			return true;

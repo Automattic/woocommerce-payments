@@ -17,7 +17,9 @@ use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -3673,6 +3675,60 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
 
 		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' );
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_mandate_data_is_skipped_for_merchant_initiated_card_renewal() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, Payment_Type::RECURRING(), null, Payment_Initiated_By::MERCHANT(), null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		// Off-session card and Link renewals are authorised through the MIT framework, not
+		// mandate data, so it must be omitted even though this order carries a usable IP.
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_is_sent_for_merchant_initiated_sepa_renewal() {
+		// The merchant-initiated exemption is verified for card and Link only, so it must
+		// not reach SEPA, where the mandate is the instrument being charged.
+		$gateway = $this->get_gateway( Payment_Method::SEPA );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments_sepa_debit';
+		$pi                                    = new Payment_Information( 'pm_test', $order, Payment_Type::RECURRING(), null, Payment_Initiated_By::MERCHANT(), null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
