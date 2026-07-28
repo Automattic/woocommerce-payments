@@ -100,9 +100,17 @@ abstract class Experiment {
 	/**
 	 * Whether the store has consented to tracking.
 	 *
+	 * Delegates to the predicate that gates the Tracks events, so an assignment
+	 * is never recorded for an admin whose events cannot fire. The raw option
+	 * misses the woocommerce_apply_user_tracking kill-switch filters.
+	 *
 	 * @return bool
 	 */
 	protected function has_consent(): bool {
+		if ( $this->legacy_proxy->call_function( 'class_exists', '\WC_Site_Tracking' ) ) {
+			return (bool) $this->legacy_proxy->call_static( '\WC_Site_Tracking', 'is_tracking_enabled' );
+		}
+
 		return 'yes' === $this->legacy_proxy->call_function( 'get_option', 'woocommerce_allow_tracking' );
 	}
 

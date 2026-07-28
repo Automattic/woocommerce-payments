@@ -173,6 +173,8 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 				[
 					[ 'get_current_user_id', $user_id ],
 					[ 'class_exists', '\WC_Tracks_Client', $tracks_client ],
+					// Consent falls back to the option, keeping call_static free for get_identity.
+					[ 'class_exists', '\WC_Site_Tracking', false ],
 					[ 'get_option', 'woocommerce_allow_tracking', 'yes' ],
 				]
 			);

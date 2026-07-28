@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Check the tracking kill-switch filters, not just the tracking option, before requesting an ExPlat assignment
