@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid a fatal when a dispute webhook references an unknown charge.
