@@ -1511,7 +1511,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated, and no skip note was added.
 		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$contents = $this->order_note_contents();
+		$contents = $this->order_note_contents( $order );
 		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
 		$this->assertStringContainsString( 'On hold to Completed', $contents );
 		$this->assertCount( 3, $notes );
@@ -1535,7 +1535,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
 
 		// Assert: Check that both the skipped completion note and the dispute closed note were added.
-		$contents = $this->order_note_contents();
+		$contents = $this->order_note_contents( $order );
 		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
 		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
 	}
@@ -2895,13 +2895,16 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Collects every note on the test order into one string, so assertions can look for a note
+	 * Collects every note on an order into one string, so assertions can look for a note
 	 * without depending on how many notes the surrounding status changes happened to add.
+	 *
+	 * @param WC_Order|null $order The order to read. Defaults to the shared test order.
 	 *
 	 * @return string
 	 */
-	private function order_note_contents(): string {
-		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+	private function order_note_contents( ?WC_Order $order = null ): string {
+		$order = $order ?? $this->order;
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
 
 		return implode( "\n", wp_list_pluck( $notes, 'content' ) );
 	}
