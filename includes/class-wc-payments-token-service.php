@@ -430,11 +430,19 @@ class WC_Payments_Token_Service {
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
 
 		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
-			if ( $customer_id ) {
-				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
-				// Clear cached payment methods.
-				$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
+			try {
+				$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
+				if ( $customer_id ) {
+					$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
+					// Clear cached payment methods.
+					$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
+				}
+			} catch ( Exception $e ) {
+				// This runs inside a WooCommerce action during checkout and My Account requests,
+				// and the local token can be stale on the server side (e.g. the payment method
+				// was detached via the Stripe dashboard); failing to mirror the default must not
+				// take the request down. The next payment methods sync prunes stale tokens.
+				Logger::error( 'Failed to set the default payment method for customer: ' . $e );
 			}
 		}
 	}

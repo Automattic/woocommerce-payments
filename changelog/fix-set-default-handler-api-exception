@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Catch API errors when mirroring a new default payment method to the server, so a token that is stale on the server side (e.g. detached via the Stripe dashboard) logs an error instead of taking down the request that set it as default.

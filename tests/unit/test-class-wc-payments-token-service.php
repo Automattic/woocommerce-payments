@@ -467,6 +467,29 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
 	}
 
+	public function test_woocommerce_payment_token_set_default_swallows_api_exception() {
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( 1 )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'set_default_payment_method_for_customer' )
+			->with( 'cus_12345', 'pm_mock' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'No such PaymentMethod: pm_mock', 'resource_missing', 400 ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
+
+		// The handler runs inside a WooCommerce action during checkout and My Account
+		// requests; a token that is stale on the server side must not escalate to a fatal.
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+	}
+
 	public function test_woocommerce_payment_token_set_default_other_gateway() {
 		$this->mock_customer_service
 			->expects( $this->never() )
