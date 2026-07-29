@@ -439,10 +439,16 @@ class WC_Payments_Token_Service {
 				}
 			} catch ( Exception $e ) {
 				// This runs inside a WooCommerce action during checkout and My Account requests,
-				// and the local token can be stale on the server side (e.g. the payment method
-				// was detached via the Stripe dashboard); failing to mirror the default must not
-				// take the request down. The next payment methods sync prunes stale tokens.
-				Logger::error( 'Failed to set the default payment method for customer: ' . $e );
+				// and failing to mirror the default must not take the request down. The local
+				// default is already written at this point. When the token is stale on the server
+				// side (e.g. the payment method was detached via the Stripe dashboard) the next
+				// payment methods sync prunes it; transient API failures are logged but not
+				// retried. Logged via wc_get_logger() rather than the WCPay logger so the failure
+				// is recorded even when the gateway's debug logging toggle is off.
+				wc_get_logger()->error(
+					'Failed to set the default payment method for customer: ' . $e,
+					[ 'source' => 'woocommerce-payments' ]
+				);
 			}
 		}
 	}
