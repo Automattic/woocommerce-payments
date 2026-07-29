@@ -249,6 +249,25 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
+		/**
+		 * Filters whether a payment for an already-paid order should be prevented.
+		 *
+		 * Escape hatch for a flow that legitimately re-runs payment against an entity that was
+		 * already paid, and cannot say so through the order's status — the subscription
+		 * payment-method change exempted above is one such flow. Returning false lets the payment
+		 * through, so only do it for a specific flow you recognise: a blanket false restores the
+		 * double-charge this guard exists to stop.
+		 *
+		 * @since 11.0.0
+		 *
+		 * @param bool     $should_prevent Whether to stop the payment. Default true.
+		 * @param WC_Order $order          The order about to be paid a second time.
+		 * @param string   $status         The order's stored status.
+		 */
+		if ( ! apply_filters( 'wcpay_should_prevent_payment_for_paid_order', true, $order, $status ) ) {
+			return;
+		}
+
 		$order->add_order_note(
 			__( 'WooPayments: detected and prevented a second payment for this order, which had already been paid.', 'woocommerce-payments' )
 		);

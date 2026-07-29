@@ -512,6 +512,40 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->service->check_order_already_paid( $order ) );
 	}
 
+	/**
+	 * Not every legitimate re-run of payment against a paid entity is expressible as an order
+	 * status — the subscription payment-method change above is one such flow. This lets an
+	 * extension declare the ones we have not anticipated.
+	 */
+	public function test_check_order_already_paid_defers_to_an_extension_opting_out() {
+		// Assert: an opted-out payment never short-circuits.
+		$this->mock_gateway->expects( $this->never() )->method( 'get_return_url' );
+
+		// Arrange a paid order, which would otherwise be blocked.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::PROCESSING );
+		$order->save();
+
+		// Arrange an extension that lets this payment through, recording what it was handed.
+		$received = [];
+		$opt_out  = function ( $should_prevent, $filtered_order, $status ) use ( &$received ) {
+			$received = [ $should_prevent, $filtered_order, $status ];
+			return false;
+		};
+		add_filter( 'wcpay_should_prevent_payment_for_paid_order', $opt_out, 10, 3 );
+
+		// Act: attempt to pay for the order a second time.
+		$result = $this->service->check_order_already_paid( $order );
+
+		remove_filter( 'wcpay_should_prevent_payment_for_paid_order', $opt_out, 10 );
+
+		// Assert: processing continues.
+		$this->assertNull( $result );
+
+		// Assert: the extension is handed what it needs to decide, and the guard is on by default.
+		$this->assertSame( [ true, $order, 'processing' ], $received );
+	}
+
 	public function test_check_order_already_paid_clears_the_session_processing_order() {
 		$this->mock_gateway->method( 'get_return_url' )->willReturn( 'https://example.com' );
 
