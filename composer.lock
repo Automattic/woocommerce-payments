@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8223b9980ac471b2ce0b7f6e781dccc5",
+    "content-hash": "1a6512b546aad633e1b048a2f08823a0",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1934,24 +1934,24 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v10.7.0",
+            "version": "v10.9.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "7251902ebc048626aff04855c333afa9f3bae2d5"
+                "reference": "a569e43283b86178628beb7aa22cc34b4076b435"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/7251902ebc048626aff04855c333afa9f3bae2d5",
-                "reference": "7251902ebc048626aff04855c333afa9f3bae2d5",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/a569e43283b86178628beb7aa22cc34b4076b435",
+                "reference": "a569e43283b86178628beb7aa22cc34b4076b435",
                 "shasum": ""
             },
             "require": {
-                "php-stubs/wordpress-stubs": "^5.3 || ^6.0"
+                "php-stubs/wordpress-stubs": "^5.3 || ^6.0 || ^7.0"
             },
             "require-dev": {
                 "php": "~7.1 || ~8.0",
-                "php-stubs/generator": "^0.8.0"
+                "php-stubs/generator": "^0.9.0"
             },
             "suggest": {
                 "symfony/polyfill-php73": "Symfony polyfill backporting some PHP 7.3+ features to lower PHP versions",
@@ -1972,9 +1972,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.7.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.9.4"
             },
-            "time": "2026-04-14T15:19:28+00:00"
+            "time": "2026-07-16T18:17:41+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
