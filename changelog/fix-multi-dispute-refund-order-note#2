@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: record a dispute updated order note for every dispute on a charge

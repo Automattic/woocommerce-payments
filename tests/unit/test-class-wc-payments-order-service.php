@@ -222,6 +222,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'No real funds were collected', $notes[0]->content );
 		// Assert: The transaction link is preserved.
 		$this->assertStringContainsString( 'pi_mock', $notes[0]->content );
+		// Assert: The transaction URL is well-formed — path must contain the real slash-separated
+		// path, not the corrupted "0.000000" that sprintf produces when %2F is misread as a
+		// printf float specifier (%2F → 0.000000).
+		$this->assertStringContainsString( 'path=%2Fpayments%2Ftransactions%2Fdetails', $notes[0]->content );
+		$this->assertStringNotContainsString( '0.000000', $notes[0]->content );
 		// Assert: It does NOT use the standard "successfully charged" wording.
 		$this->assertStringNotContainsString( 'successfully charged', $notes[0]->content );
 	}
@@ -1139,6 +1144,45 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 2, $notes_2 );
 	}
 
+
+	/**
+	 * A charge can carry several disputes with identical amount, reason and
+	 * deadline. The dispute ID keeps their notes distinct so they are not
+	 * collapsed into one, while a re-delivered webhook for the same dispute
+	 * still de-duplicates.
+	 */
+	public function test_mark_payment_dispute_created_distinguishes_disputes_by_id() {
+		$charge_id = 'ch_123';
+		$amount    = '$123.45';
+		$reason    = 'product_not_received';
+		$deadline  = 'June 7, 2023';
+
+		$dispute_notes = function () {
+			$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+			return array_values(
+				array_filter(
+					$notes,
+					function ( $note ) {
+						return false !== strpos( $note->content, 'Payment has been disputed' );
+					}
+				)
+			);
+		};
+
+		// Act: Two disputes sharing everything but their ID.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_first' );
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_second' );
+
+		// Assert: Both disputes produced a note, each carrying its own ID.
+		$this->assertCount( 2, $dispute_notes() );
+		$contents = implode( "\n", wp_list_pluck( $dispute_notes(), 'content' ) );
+		$this->assertStringContainsString( '(Dispute ID: dp_first)', $contents );
+		$this->assertStringContainsString( '(Dispute ID: dp_second)', $contents );
+
+		// Assert: Re-delivering the same dispute does not add another note.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, '', 'dp_first' );
+		$this->assertCount( 2, $dispute_notes() );
+	}
 
 	/**
 	 * Tests if the payment was updated to show inquiry created.
@@ -2110,6 +2154,73 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $refunds[0]->get_items(), 'Partial dispute refund should have empty line items.' );
 
 		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Two lost disputes on one charge should each record a refund. The dedup keyed
+	 * on charge + status, so the second was skipped — refund and all.
+	 */
+	public function test_mark_payment_dispute_closed_records_a_refund_per_lost_dispute(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Act: two lost disputes on the same charge, each disputing part of the order.
+		$this->order_service->mark_payment_dispute_closed(
+			$order,
+			$charge_id,
+			$status,
+			[
+				'disputed_amount' => 3000,
+				'currency'        => 'usd',
+			],
+			'dp_first'
+		);
+		$this->order_service->mark_payment_dispute_closed(
+			$order,
+			$charge_id,
+			$status,
+			[
+				'disputed_amount' => 7000,
+				'currency'        => 'usd',
+			],
+			'dp_second'
+		);
+
+		// Assert: each lost dispute recorded its own refund.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 2, $refunds );
+		$refund_totals = array_map(
+			function ( $refund ) {
+				return (float) $refund->get_total();
+			},
+			$refunds
+		);
+		$this->assertEqualsCanonicalizing( [ -30.00, -70.00 ], $refund_totals );
+
+		// Assert: each dispute produced its own closed note, distinguished by ID.
+		$contents = implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
+		$this->assertStringContainsString( '(Dispute ID: dp_first)', $contents );
+		$this->assertStringContainsString( '(Dispute ID: dp_second)', $contents );
+
+		// Assert: re-delivering the same dispute's close does not double-refund.
+		$this->order_service->mark_payment_dispute_closed(
+			$order,
+			$charge_id,
+			$status,
+			[
+				'disputed_amount' => 3000,
+				'currency'        => 'usd',
+			],
+			'dp_first'
+		);
+		$this->assertCount( 2, $order->get_refunds() );
+
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 
