@@ -8,7 +8,6 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { assertStripeJsOrigin } from '../utils/verify-stripe-origin';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -28,10 +27,6 @@ export default class WCPayAPI {
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
-		// Single choke point for `new Stripe()` — covers every caller, including
-		// confirmIntent's WooPay path that bypasses getStripe().
-		assertStripeJsOrigin();
-
 		const options = { locale };
 
 		if ( accountId ) {
@@ -60,10 +55,6 @@ export default class WCPayAPI {
 	}
 
 	async getStripe( forceAccountRequest = false ) {
-		// Fail fast: a present, wrong-origin tag blocks now rather than waiting on
-		// a window.Stripe that may never load. createStripe() is authoritative.
-		assertStripeJsOrigin( { failFast: true } );
-
 		const maxWaitTime = 600 * 1000; // 600 seconds
 		const waitInterval = 100;
 		let currentWaitTime = 0;
@@ -127,11 +118,9 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
 	async loadStripeForExpressCheckout() {
-		// Force Stripe to be loaded with the connected account.
+		// Force Stripe to be loadded with the connected account.
 		try {
-			// `await` so getStripe()'s async rejection (origin assertion or
-			// window.Stripe timeout) is caught here and returned as `{ error }`.
-			return await this.getStripe( true );
+			return this.getStripe( true );
 		} catch ( error ) {
 			// In order to avoid showing console error publicly to users,
 			// we resolve instead of rejecting when there is an error.
