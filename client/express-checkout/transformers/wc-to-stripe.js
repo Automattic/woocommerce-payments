@@ -13,21 +13,30 @@ import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/shippin
 
 /**
  * GooglePay/ApplePay expect the prices to be formatted in the smallest unit Stripe bills in.
- * The expected count of decimals for the active currency is computed server-side and bridged
- * through the express-checkout payload as `stripe_minor_unit`.
+ * The expected count of decimals for the active currency is derived from the
+ * currency returned with the price. The localized Stripe zero-decimal currency
+ * list keeps this correct when the Store API resolves a different currency than
+ * the one used when the page was rendered.
  *
  * Stripe rejects non-integer amounts. When WC stores prices at a finer precision than Stripe
  * expects (e.g. JPY configured with WC decimals = 2 against Stripe's 0-decimal yen), the
  * conversion produces a fractional value that must be rounded before being sent.
  *
- * @param {number}                        price       the price to format.
- * @param {{currency_minor_unit: number}} priceObject the price object returned by the Store API
+ * @param {number}                                                price       the price to format.
+ * @param {{currency_minor_unit: number, currency_code?: string}} priceObject the price object returned by the Store API
  *
  * @return {number} the price amount for GooglePay/ApplePay, in the unit Stripe expects.
  */
 export const transformPrice = ( price, priceObject ) => {
-	const stripeMinorUnit =
-		getExpressCheckoutData( 'checkout' )?.stripe_minor_unit ?? 2;
+	const checkoutData = getExpressCheckoutData( 'checkout' );
+	const currencyCode = priceObject.currency_code?.toLowerCase();
+	const zeroDecimalCurrencies = checkoutData?.zero_decimal_currencies;
+	let stripeMinorUnit = checkoutData?.stripe_minor_unit ?? 2;
+	if ( currencyCode && Array.isArray( zeroDecimalCurrencies ) ) {
+		stripeMinorUnit = zeroDecimalCurrencies.includes( currencyCode )
+			? 0
+			: 2;
+	}
 
 	const converted =
 		price * 10 ** ( stripeMinorUnit - priceObject.currency_minor_unit );

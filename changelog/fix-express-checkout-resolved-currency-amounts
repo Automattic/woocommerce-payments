@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Calculate Express Checkout amounts using the cart's resolved currency
