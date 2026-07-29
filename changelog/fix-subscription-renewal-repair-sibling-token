@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop a subscription renewal token repair from silently re-pointing the other subscriptions created by the same checkout at the original order's card.
