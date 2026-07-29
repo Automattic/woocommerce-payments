@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { __, sprintf } from '@wordpress/i18n';
-import { render } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -14,6 +14,11 @@ import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-det
 import { recordEvent } from 'wcpay/tracks';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getAdminUrl } from 'utils';
+
+const updateBusinessDetailsRoots = new WeakMap<
+	Element,
+	ReturnType< typeof createRoot >
+>();
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -92,15 +97,20 @@ export const getUpdateBusinessDetailsTask = (
 			document.body.appendChild( container );
 		}
 
-		render(
+		let root = updateBusinessDetailsRoots.get( container );
+		if ( ! root ) {
+			root = createRoot( container );
+			updateBusinessDetailsRoots.set( container, root );
+		}
+
+		root.render(
 			<UpdateBusinessDetailsModal
 				key={ Date.now() }
 				errorMessages={ errorMessages }
 				accountStatus={ status }
 				accountLink={ accountLink }
 				currentDeadline={ currentDeadline }
-			/>,
-			container
+			/>
 		);
 	};
 
