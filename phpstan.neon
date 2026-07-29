@@ -128,3 +128,32 @@ parameters:
         - { identifier: ternary.alwaysTrue }
         - { identifier: variable.undefined }
         - { identifier: varTag.differentVariable }
+
+        # Added with the PHPStan 1.x -> 2.x upgrade. Like the list above, to be reduced over time.
+        #
+        # The `*.internal*` family below is newly enforced in 2.x: it reports any use of a
+        # symbol annotated `@internal` from outside its declaring root namespace. Every hit is
+        # a call into WordPress/WooCommerce internals we have no public alternative for
+        # (`wc_admin_record_tracks_event()`, `_wp_array_get()`, `StoreApi::container()`,
+        # Blocks' `DraftOrders`) or into our own `WCPay\Onboarding_Experiment`.
+        - { identifier: classConstant.internalClass }
+        - { identifier: function.internal }
+        - { identifier: method.internalClass }
+        - { identifier: new.internalClass }
+        - { identifier: parameter.internalClass }
+        - { identifier: property.internalClass }
+        - { identifier: return.internalClass }
+        - { identifier: staticMethod.internal }
+
+        # New in 2.x. PHPStan now infers exact literal types out of the
+        # Express_Checkout_Element_States::STATES constant and so proves offsets 0 and 1 are
+        # always set and non-falsy, making those empty() guards redundant. They are kept
+        # deliberately: STATES is hand-maintained data and the guards keep a future entry with
+        # a missing code or name from throwing.
+        - { identifier: empty.offset }
+
+        # New in 2.x. Base_Constant::__callStatic() uses `new static()`, which would fatal if
+        # called directly on the abstract base rather than a concrete subclass. The rule is
+        # structural, so no runtime guard satisfies it -- fixing it properly means moving
+        # __callStatic() into a trait so it is analysed in concrete context (14 subclasses).
+        - { identifier: new.staticInAbstractClassStaticMethod }
