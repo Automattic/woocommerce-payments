@@ -258,7 +258,7 @@ class Duplicate_Payment_Prevention_Service {
 		 * through, so only do it for a specific flow you recognise: a blanket false restores the
 		 * double-charge this guard exists to stop.
 		 *
-		 * @since 11.0.0
+		 * @since 11.1.0
 		 *
 		 * @param bool     $should_prevent Whether to stop the payment. Default true.
 		 * @param WC_Order $order          The order about to be paid a second time.
