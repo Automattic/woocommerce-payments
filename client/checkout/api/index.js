@@ -118,9 +118,11 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
 	async loadStripeForExpressCheckout() {
-		// Force Stripe to be loadded with the connected account.
+		// Force Stripe to be loaded with the connected account.
 		try {
-			return this.getStripe( true );
+			// `await` so getStripe()'s async rejection (e.g. the window.Stripe
+			// timeout) is caught here and returned as `{ error }`.
+			return await this.getStripe( true );
 		} catch ( error ) {
 			// In order to avoid showing console error publicly to users,
 			// we resolve instead of rejecting when there is an error.
