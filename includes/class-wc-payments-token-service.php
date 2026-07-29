@@ -443,12 +443,9 @@ class WC_Payments_Token_Service {
 				// default is already written at this point. When the token is stale on the server
 				// side (e.g. the payment method was detached via the Stripe dashboard) the next
 				// payment methods sync prunes it; transient API failures are logged but not
-				// retried. Logged via wc_get_logger() rather than the WCPay logger so the failure
-				// is recorded even when the gateway's debug logging toggle is off.
-				wc_get_logger()->error(
-					'Failed to set the default payment method for customer: ' . $e,
-					[ 'source' => 'woocommerce-payments' ]
-				);
+				// retried. Logged via log_to_wc() rather than the WCPay logger so the failure is
+				// recorded even when the gateway's debug logging toggle is off.
+				WC_Payments_Utils::log_to_wc( 'Failed to set the default payment method for customer: ' . $e->getMessage() );
 			}
 		}
 	}

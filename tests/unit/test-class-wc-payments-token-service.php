@@ -491,32 +491,21 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_woocommerce_payment_token_set_default_failure_is_logged_without_debug_toggle() {
-		// The WCPay logger is gated behind the enable_logging toggle (default off); a failed
-		// default-method mirror must reach the WooCommerce logs even with the toggle off.
+		// Regression guard: with the WCPay debug toggle off (and no dev mode in the test
+		// bootstrap), the gated WCPay logger produces nothing, so this test fails if the
+		// catch ever reverts to Logger::error().
 		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enable_logging' => 'no' ] );
 
-		$spy = new class() extends WC_Logger {
-			/**
-			 * Captured error messages.
-			 *
-			 * @var array
-			 */
-			public $errors = [];
-
-			public function error( $message, $context = [] ) { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found
-				$this->errors[] = $message;
-				parent::error( $message, $context );
-			}
+		$captured = [];
+		$capture  = function ( $message, $level, $context ) use ( &$captured ) {
+			$captured[] = [
+				'message' => $message,
+				'level'   => $level,
+				'source'  => $context['source'] ?? '',
+			];
+			return $message;
 		};
-
-		$spy_class = get_class( $spy );
-		add_filter(
-			'woocommerce_logging_class',
-			function () use ( $spy_class ) {
-				return $spy_class;
-			}
-		);
-		$logger = wc_get_logger();
+		add_filter( 'woocommerce_logger_log_message', $capture, 10, 3 );
 
 		$this->mock_customer_service
 			->method( 'get_customer_id_by_user_id' )
@@ -532,10 +521,16 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
 
-		remove_all_filters( 'woocommerce_logging_class' );
+		remove_filter( 'woocommerce_logger_log_message', $capture );
 
-		$this->assertNotEmpty( $logger->errors, 'The failed default-method mirror should be logged even with the debug toggle off' );
-		$this->assertStringContainsString( 'default payment method', $logger->errors[0] );
+		$this->assertNotEmpty( $captured, 'The failed default-method mirror should be logged even with the debug toggle off' );
+		$this->assertSame( 'error', $captured[0]['level'] );
+		$this->assertSame(
+			'woopayments',
+			$captured[0]['source'],
+			'The failure must log under the woopayments source so it lands in the log file support pulls'
+		);
+		$this->assertStringContainsString( 'default payment method', $captured[0]['message'] );
 	}
 
 	public function test_woocommerce_payment_token_set_default_skips_cache_clear_on_failure() {
