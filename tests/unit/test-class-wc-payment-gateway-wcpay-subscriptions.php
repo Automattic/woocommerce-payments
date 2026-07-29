@@ -466,9 +466,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service->set_payment_method_id_for_order( $parent_order, self::PAYMENT_METHOD_ID );
 
-		$renewing_subscription = new WC_Subscription();
+		$renewing_subscription = $this->getMockBuilder( WC_Subscription::class )
+			->onlyMethods( [ 'add_order_note' ] )
+			->getMock();
 		$renewing_subscription->set_parent( $parent_order );
 		$renewing_subscription->set_customer_id( $user->ID );
+		$renewing_subscription
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				sprintf(
+					'The saved payment method for this subscription was missing, so WooPayments restored %s from the original order to complete the renewal.',
+					$token->get_display_name()
+				)
+			);
 
 		// A sibling subscription from the same checkout, deliberately pointed at another card.
 		$sibling_subscription = new WC_Subscription();
@@ -503,16 +514,29 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$request->method( 'set_currency_code' )->willReturn( $request );
 		$request->method( 'format_response' )->willReturn( WC_Helper_Intention::create_intention() );
 
+		$parent_tokens_before = $parent_order->get_payment_tokens();
+
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
 		// The repair itself must still happen, otherwise the sibling assertion below is vacuous.
 		$this->assertContains( $token->get_id(), $renewal_order->get_payment_tokens() );
 		$this->assertContains( $token->get_id(), $renewing_subscription->get_payment_tokens() );
+		$this->assertSame(
+			$parent_tokens_before,
+			$parent_order->get_payment_tokens(),
+			'The historical parent order must remain a read-only recovery source.'
+		);
 
 		$this->assertSame(
 			[ $sibling_token->get_id() ],
 			$sibling_subscription->get_payment_tokens(),
 			'The sibling subscription must keep the card the customer chose for it.'
+		);
+
+		$renewal_notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $renewal_order->get_id() ] ), 'content' );
+		$this->assertContains(
+			'Recovered missing subscription payment method token from the parent order.',
+			$renewal_notes
 		);
 	}
 
