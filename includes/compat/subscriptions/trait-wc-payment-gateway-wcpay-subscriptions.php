@@ -515,8 +515,24 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		try {
-			$token = $this->ensure_payment_method_token_for_order( $parent_order, $payment_method_id, get_user_by( 'id', $subscription->get_customer_id() ) );
-			$this->add_token_to_order( $renewal_order, $token );
+			// The parent order is only a source for the payment method ID, never a write target:
+			// attaching the token to it would fan the token out to every subscription that order
+			// created (see maybe_add_token_to_subscription_order()), silently re-pointing sibling
+			// subscriptions the customer has since moved to a different card.
+			$token = $this->ensure_payment_method_token_for_order( $renewal_order, $payment_method_id, get_user_by( 'id', $subscription->get_customer_id() ) );
+
+			$subscription_token = $this->get_payment_token( $subscription );
+			if ( is_null( $subscription_token ) || $token->get_id() !== $subscription_token->get_id() ) {
+				$subscription->add_payment_token( $token );
+				$subscription->add_order_note(
+					sprintf(
+						/* translators: %s: the recovered payment method, e.g. "Visa ending in 4242 (expires 01/26)" */
+						__( 'The saved payment method for this subscription was missing, so WooPayments restored %s from the original order to complete the renewal.', 'woocommerce-payments' ),
+						$token->get_display_name()
+					)
+				);
+			}
+
 			$renewal_order->add_order_note( __( 'Recovered missing subscription payment method token from the parent order.', 'woocommerce-payments' ) );
 			return $token;
 		} catch ( Exception $e ) {
