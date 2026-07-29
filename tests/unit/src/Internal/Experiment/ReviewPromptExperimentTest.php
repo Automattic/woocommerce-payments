@@ -41,21 +41,24 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'woopayments_review_prompt_design_v1', $this->sut->name() );
 	}
 
-	public function test_assignment_key_derives_from_blog_id() {
+	public function test_assignment_key_defers_to_the_helper_that_stamps_tracks_events() {
+		$this->stub_call_function();
 		$this->mock_legacy_proxy
-			->method( 'call_function' )
-			->with( 'class_exists', '\Jetpack_Options' )
-			->willReturn( true );
-		$this->mock_legacy_proxy
+			->expects( $this->once() )
 			->method( 'call_static' )
-			->with( '\Jetpack_Options', 'get_option', 'id' )
-			->willReturn( 123456 );
+			->with( '\WC_Tracks_Client', 'get_identity', 7 )
+			->willReturn(
+				[
+					'_ut' => 'anon',
+					'_ui' => 'woo:cJ8kL2mN',
+				]
+			);
 
-		// The key format is a live experiment contract.
-		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'assignment_key' );
-		$method->setAccessible( true );
-
-		$this->assertSame( 'woopayments_store_123456', $method->invoke( $this->sut ) );
+		$this->assertSame(
+			'woo:cJ8kL2mN',
+			$this->invoke_assignment_key(),
+			'ExPlat must be keyed on the anon-ID Tracks stamps on the events.'
+		);
 	}
 
 	public function test_variants_match_the_explat_registration() {
@@ -76,7 +79,7 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 
 		$this->assertInstanceOf(
 			Experimental_Abtest::class,
-			$method->invoke( $this->sut, 'woopayments_store_123456' )
+			$method->invoke( $this->sut, 'woo:cJ8kL2mN' )
 		);
 	}
 
@@ -87,40 +90,105 @@ class ReviewPromptExperimentTest extends WCPAY_UnitTestCase {
 	 */
 	public function provider_invalid_assignment_keys() {
 		return [
-			'Jetpack_Options missing' => [ false, null ],
-			'empty blog ID'           => [ true, false ],
-			'non-numeric blog ID'     => [ true, 'not-a-blog-id' ],
+			'no current user'          => [
+				0,
+				true,
+				[
+					'_ut' => 'anon',
+					'_ui' => 'woo:cJ8kL2mN',
+				],
+			],
+			'WC_Tracks_Client missing' => [
+				7,
+				false,
+				[
+					'_ut' => 'anon',
+					'_ui' => 'woo:cJ8kL2mN',
+				],
+			],
+			'wpcom identity'           => [
+				7,
+				true,
+				[
+					'_ut' => 'wpcom:user_id',
+					'_ui' => '12345',
+				],
+			],
+			'malformed identity'       => [ 7, true, false ],
+			'non-string anon-ID'       => [
+				7,
+				true,
+				[
+					'_ut' => 'anon',
+					'_ui' => 12345,
+				],
+			],
 		];
 	}
 
 	/**
 	 * @dataProvider provider_invalid_assignment_keys
 	 *
-	 * @param bool  $jetpack_options_exists Whether Jetpack_Options exists.
-	 * @param mixed $blog_id                Blog ID returned by Jetpack_Options.
+	 * @param int   $user_id       Current user ID.
+	 * @param bool  $tracks_client Whether WC_Tracks_Client exists.
+	 * @param mixed $identity      Identity returned by WC_Tracks_Client::get_identity().
 	 */
-	public function test_get_variant_returns_control_when_assignment_key_unavailable( bool $jetpack_options_exists, $blog_id ) {
+	public function test_get_variant_returns_control_when_assignment_key_unavailable( int $user_id, bool $tracks_client, $identity ) {
+		$this->stub_call_function( $user_id, $tracks_client );
+		$this->mock_legacy_proxy
+			->method( 'call_static' )
+			->willReturn( $identity );
+
+		$this->assertSame( Experiment::VARIANT_CONTROL, $this->sut->get_variant() );
+	}
+
+	public function test_a_wpcom_identity_sits_the_experiment_out() {
+		$this->stub_call_function();
+		$this->mock_legacy_proxy
+			->method( 'call_static' )
+			->willReturn(
+				[
+					'_ut' => 'wpcom:user_id',
+					'_ui' => '12345',
+				]
+			);
+
+		$this->assertSame(
+			'',
+			$this->invoke_assignment_key(),
+			'A wpcom identity has no anon-ID for ExPlat to key on.'
+		);
+	}
+
+	/**
+	 * Stub the LegacyProxy function calls made while resolving a variant.
+	 *
+	 * @param int  $user_id       Current user ID.
+	 * @param bool $tracks_client Whether WC_Tracks_Client exists.
+	 */
+	private function stub_call_function( int $user_id = 7, bool $tracks_client = true ) {
 		$this->mock_legacy_proxy
 			->method( 'call_function' )
 			->willReturnMap(
 				[
-					[ 'class_exists', '\Jetpack_Options', $jetpack_options_exists ],
+					[ 'get_current_user_id', $user_id ],
+					[ 'class_exists', '\WC_Tracks_Client', $tracks_client ],
+					// Consent falls back to the option, keeping call_static free for get_identity.
+					[ 'class_exists', '\WC_Site_Tracking', false ],
 					[ 'get_option', 'woocommerce_allow_tracking', 'yes' ],
 				]
 			);
+	}
 
-		if ( $jetpack_options_exists ) {
-			$this->mock_legacy_proxy
-				->expects( $this->once() )
-				->method( 'call_static' )
-				->with( '\Jetpack_Options', 'get_option', 'id' )
-				->willReturn( $blog_id );
-		} else {
-			$this->mock_legacy_proxy
-				->expects( $this->never() )
-				->method( 'call_static' );
-		}
+	/**
+	 * Invoke the protected assignment_key() on the system under test.
+	 *
+	 * @return string
+	 */
+	private function invoke_assignment_key(): string {
+		$method = new \ReflectionMethod( ReviewPromptExperiment::class, 'assignment_key' );
+		$method->setAccessible( true );
 
-		$this->assertSame( Experiment::VARIANT_CONTROL, $this->sut->get_variant() );
+		return $method->invoke( $this->sut );
 	}
 }

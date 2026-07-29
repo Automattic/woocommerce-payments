@@ -2252,6 +2252,73 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Two lost disputes on one charge should each record a refund. The dedup keyed
+	 * on charge + status, so the second was skipped — refund and all.
+	 */
+	public function test_mark_payment_dispute_closed_records_a_refund_per_lost_dispute(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Act: two lost disputes on the same charge, each disputing part of the order.
+		$this->order_service->mark_payment_dispute_closed(
+			$order,
+			$charge_id,
+			$status,
+			[
+				'disputed_amount' => 3000,
+				'currency'        => 'usd',
+			],
+			'dp_first'
+		);
+		$this->order_service->mark_payment_dispute_closed(
+			$order,
+			$charge_id,
+			$status,
+			[
+				'disputed_amount' => 7000,
+				'currency'        => 'usd',
+			],
+			'dp_second'
+		);
+
+		// Assert: each lost dispute recorded its own refund.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 2, $refunds );
+		$refund_totals = array_map(
+			function ( $refund ) {
+				return (float) $refund->get_total();
+			},
+			$refunds
+		);
+		$this->assertEqualsCanonicalizing( [ -30.00, -70.00 ], $refund_totals );
+
+		// Assert: each dispute produced its own closed note, distinguished by ID.
+		$contents = implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
+		$this->assertStringContainsString( '(Dispute ID: dp_first)', $contents );
+		$this->assertStringContainsString( '(Dispute ID: dp_second)', $contents );
+
+		// Assert: re-delivering the same dispute's close does not double-refund.
+		$this->order_service->mark_payment_dispute_closed(
+			$order,
+			$charge_id,
+			$status,
+			[
+				'disputed_amount' => 3000,
+				'currency'        => 'usd',
+			],
+			'dp_first'
+		);
+		$this->assertCount( 2, $order->get_refunds() );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
 	 * Tests that mark_payment_dispute_closed handles missing amount in refund.
 	 */
 	public function test_mark_payment_dispute_closed_with_missing_amount_in_summary(): void {
