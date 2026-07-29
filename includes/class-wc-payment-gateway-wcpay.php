@@ -2593,8 +2593,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * WC_Geolocation::get_ip_address() returns an empty string and Stripe rejects the
 	 * whole intent with "Invalid IP address".
 	 *
-	 * Only SEPA renewals still depend on that, since card and Link no longer send mandate
-	 * data when the payment is merchant-initiated. See should_send_mandate_data().
+	 * Merchant-initiated payments no longer send mandate data at all, so the order is now
+	 * only consulted for customer-present payments whose live request state is unusable.
+	 * See should_send_mandate_data().
 	 *
 	 * @param WC_Order|null $order Order the mandate is being created for, when available.
 	 *
@@ -2613,23 +2614,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Determines whether mandate data should be sent to Stripe for this payment.
 	 *
-	 * The rule differs by payment method:
+	 * The caller has already established that the payment method needs a mandate at all, via
+	 * is_mandate_data_required(). Two rules then apply, neither of them method-specific:
 	 *
-	 * - SEPA always sends it. The mandate is the payment instrument being created, so it is
-	 *   required, and omitting it has not been verified as safe.
-	 * - Card and Link never send it on a merchant-initiated payment. Stripe authorises those
-	 *   through the MIT / network transaction ID framework established at the original
-	 *   checkout, not through mandate_data: the standard off-session pattern is
-	 *   `off_session` plus a saved payment method. Link's own mandate acceptance is recorded
-	 *   at that first checkout and stored on the payment method, so it is not re-created per
-	 *   renewal. SCA exemptions and dispute liability both derive from the original
-	 *   authentication, so nothing downstream depends on repeating it (confirmed with
-	 *   Stripe, WOOPMNT-6299).
-	 * - Card and Link otherwise send it only when a valid customer IP is available. Stripe
+	 * - A merchant-initiated payment never sends it. Stripe authorises those through the MIT
+	 *   / network transaction ID framework established at the original checkout, not through
+	 *   mandate_data: the standard off-session pattern is `off_session` plus a saved payment
+	 *   method. Link's own mandate acceptance is recorded at that first checkout and stored on
+	 *   the payment method, so it is not re-created per renewal. SCA exemptions and dispute
+	 *   liability both derive from the original authentication, so nothing downstream depends
+	 *   on repeating it (confirmed with Stripe, WOOPMNT-6299).
+	 * - A customer-present payment sends it only when a valid customer IP is available. Stripe
 	 *   rejects any request whose mandate_data.customer_acceptance.online.ip_address is not a
 	 *   valid IP, which happens when a proxy sends a malformed forwarding header. Stripe
-	 *   accepts a card or Link confirmation with no mandate data at all, so omitting it is
-	 *   preferable to sending a payload that is certain to be rejected.
+	 *   accepts a confirmation with no mandate data at all, so omitting it is preferable to
+	 *   sending a payload that is certain to be rejected.
+	 *
+	 * SEPA needs no carve-out here. It is not reusable (SepaDefinition declares no
+	 * TOKENIZATION capability), so maybe_force_subscription_to_manual() puts every SEPA
+	 * subscription on manual renewal and the customer is present for each payment. SEPA
+	 * therefore always reaches the second rule and keeps sending mandate data, which is what
+	 * its initial checkout requires: there the mandate is the instrument being created.
 	 *
 	 * rest_is_ip_address() is only a format check and accepts private and loopback addresses
 	 * on purpose: Stripe accepts them too, and stores whose cron runs over a loopback request
@@ -2640,10 +2645,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool True when mandate data should be sent.
 	 */
 	private function should_send_mandate_data( Payment_Information $payment_information ): bool {
-		if ( Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id() ) {
-			return true;
-		}
-
 		if ( $payment_information->is_merchant_initiated() ) {
 			return false;
 		}

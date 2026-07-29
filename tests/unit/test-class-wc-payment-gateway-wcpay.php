@@ -3659,9 +3659,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
 	}
 
-	public function test_mandate_data_is_sent_for_sepa_without_a_valid_ip() {
-		// Omitting mandate data is verified safe for card and Link only. For SEPA the
-		// mandate is the instrument being created, so the guard must never fire on it.
+	public function test_mandate_data_is_skipped_for_sepa_without_a_valid_ip() {
+		// The IP guard is uniform across payment methods. Sending mandate data with an
+		// unusable IP is a guaranteed Stripe rejection for SEPA as much as for card, so the
+		// request is omitted and logged rather than sent to fail. SEPA's normal path still
+		// sends it: see test_set_mandate_data_to_payment_intent_if_required().
 		$gateway = $this->get_gateway( Payment_Method::SEPA );
 
 		$order = WC_Helper_Order::create_order();
@@ -3681,7 +3683,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
 
-		$request->expects( $this->once() )
+		$request->expects( $this->never() )
 			->method( 'set_mandate_data' );
 
 		$gateway->process_payment_for_order( WC()->cart, $pi );
@@ -3715,9 +3717,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
 	}
 
-	public function test_mandate_data_is_sent_for_merchant_initiated_sepa_renewal() {
-		// The merchant-initiated exemption is verified for card and Link only, so it must
-		// not reach SEPA, where the mandate is the instrument being charged.
+	public function test_mandate_data_is_skipped_for_merchant_initiated_sepa() {
+		// The merchant-initiated rule is uniform: no payment method sends mandate data
+		// off-session. SEPA cannot actually reach this state in production, because it is
+		// not reusable and maybe_force_subscription_to_manual() puts every SEPA subscription
+		// on manual renewal, keeping the customer present for each payment. This pins the
+		// rule as method-agnostic so no per-method carve-out creeps back in.
 		$gateway = $this->get_gateway( Payment_Method::SEPA );
 
 		$order = WC_Helper_Order::create_order();
@@ -3735,7 +3740,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
 
-		$request->expects( $this->once() )
+		$request->expects( $this->never() )
 			->method( 'set_mandate_data' );
 
 		$gateway->process_payment_for_order( WC()->cart, $pi );
