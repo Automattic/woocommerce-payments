@@ -22,13 +22,11 @@ use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 use WCPay\PaymentMethods\Configs\Definitions\SepaDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\Session_Rate_Limiter;
 
@@ -169,13 +167,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			BancontactDefinition::class,
 			BecsDefinition::class,
 			EpsDefinition::class,
-			GiropayDefinition::class,
 			GooglePayDefinition::class,
 			IdealDefinition::class,
 			LinkDefinition::class,
 			P24Definition::class,
 			SepaDefinition::class,
-			SofortDefinition::class,
 		];
 
 		$mock_cc_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
@@ -296,11 +292,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Payment_Method::BECS,
 			Payment_Method::BANCONTACT,
 			Payment_Method::EPS,
-			Payment_Method::GIROPAY,
 			Payment_Method::IDEAL,
 			Payment_Method::SEPA,
 			Payment_Method::P24,
-			Payment_Method::SOFORT,
 			Payment_Method::LINK,
 			Payment_Method::APPLE_PAY,
 			Payment_Method::GOOGLE_PAY,

@@ -26,13 +26,13 @@ jobs:
 
     steps:
       - name: Checkout WooPayments
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ inputs.target_branch }}
           fetch-depth: 0
 
       - name: Checkout WooCommerce (context)
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: woocommerce/woocommerce
           path: woocommerce
@@ -42,7 +42,7 @@ jobs:
             plugins/woocommerce-blocks
 
       - name: Checkout gamma-ai-tools (prompt templates)
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: Automattic/gamma-ai-tools
           github-server-url: https://github.a8c.com
@@ -78,7 +78,7 @@ jobs:
 
       - name: Run Plan Agent
         id: plan
-        uses: anthropics/claude-code-action@521136812280ae7ef256e06045655b9da02793f0 # v1.0.158
+        uses: anthropics/claude-code-action@1298632ce7736903d02a1435002705aa2a594a6c # v1.0.175
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: ${{ inputs.model }}

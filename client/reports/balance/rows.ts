@@ -58,7 +58,8 @@ export interface BalanceRow {
 	 * the raw value is positive. Used for rows that always represent an outflow
 	 * (e.g. Payouts), so the visual sign communicates direction-of-flow rather
 	 * than the storage sign of the underlying datum. Zero amounts are still
-	 * rendered without a sign. The CSV export uses the raw value.
+	 * rendered without a sign. The CSV export applies the same flip so a summed
+	 * column matches the on-screen table.
 	 */
 	displayNegative?: boolean;
 	getAmount: ( summary: ReportsBalanceSummary ) => number;
@@ -73,8 +74,8 @@ export const getRowDepth = ( row: BalanceRow ): BalanceRowDepth =>
  * rows (e.g. Payouts) render with a leading minus even when the underlying
  * datum is stored as a positive magnitude. Zero amounts pass through unchanged
  * so reconciliation reports don't pin a misleading sign onto an empty line.
- * The CSV export uses the raw value — only the on-screen and print tables
- * apply this transform.
+ * The on-screen table, the print view, and the CSV export all apply this
+ * transform so their signs agree.
  */
 export const getDisplayedAmount = (
 	row: BalanceRow,

@@ -9,15 +9,15 @@ For PHP unit tests, see [tests/unit/README.md](../unit/README.md). For an overvi
 From the plugin root directory:
 
 ```bash
-npm run test:js                 # Run all JS unit tests
-npm run test:watch              # Watch mode (re-runs on change)
-npm run test:debug              # Debug mode (attach an inspector)
-npm run test:update-snapshots   # Update Jest snapshots
+pnpm run test:js                 # Run all JS unit tests
+pnpm run test:watch              # Watch mode (re-runs on change)
+pnpm run test:debug              # Debug mode (attach an inspector)
+pnpm run test:update-snapshots   # Update Jest snapshots
 ```
 
 To run a single file or match tests by name, pass Jest arguments through:
 
 ```bash
-npm run test:js -- path/to/file.test.tsx
-npm run test:js -- -t "renders the deposit schedule"
+pnpm run test:js -- path/to/file.test.tsx
+pnpm run test:js -- -t "renders the deposit schedule"
 ```

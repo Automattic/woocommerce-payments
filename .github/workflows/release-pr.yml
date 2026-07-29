@@ -1,4 +1,4 @@
-name: "Release - Create PR to trunk"
+name: "Release - Create release PRs"
 
 # This action will run inside the release code freeze workflow or when it is triggered manually
 on:
@@ -22,6 +22,9 @@ on:
       release-pr-id:
         description: "ID of the release PR created"
         value: ${{ jobs.prepare-release.outputs.release-pr-id }}
+      develop-pr-url:
+        description: "URL of the develop sync PR created"
+        value: ${{ jobs.prepare-release.outputs.develop-pr-url }}
 
 
   workflow_dispatch:
@@ -62,13 +65,14 @@ jobs:
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
       release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
+      develop-pr-url: ${{ steps.open-develop-pr.outputs.DEVELOP_PR_URL }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
 
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
@@ -129,7 +133,37 @@ jobs:
             echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
           fi
 
-      - name: Add comment to PR
+      - name: "Cherry-pick changelog commit onto develop branch"
+        if: ${{ ! inputs.dry-run }}
+        env:
+          RELEASE_BRANCH: ${{ steps.create_branch.outputs.branch-name }}
+        run: |
+          git fetch origin develop "$RELEASE_BRANCH"
+          CHANGELOG_COMMIT=$(git rev-parse origin/"$RELEASE_BRANCH")
+          DEVELOP_BRANCH="changelog-for-develop/${RELEASE_BRANCH#release/}"
+          git checkout -b "$DEVELOP_BRANCH" origin/develop
+          git cherry-pick "$CHANGELOG_COMMIT"
+          git push origin "$DEVELOP_BRANCH"
+          echo "DEVELOP_BRANCH=$DEVELOP_BRANCH" >> "$GITHUB_ENV"
+
+      - name: "Open PR against develop"
+        id: open-develop-pr
+        if: ${{ ! inputs.dry-run }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
+          RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
+          RELEASE_PR_ID: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
+        run: |
+          PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR after the code freeze process is done successfully.\n\nApplies the changelog entries from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge.\n\nRelated release PR: #${RELEASE_PR_ID}")
+          DEVELOP_PR_URL=$(gh pr create \
+            --title "Changelog for develop from version $RELEASE_VERSION" \
+            --body "$PR_BODY" \
+            --base develop \
+            --head "$DEVELOP_BRANCH")
+          echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_ENV"
+          echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: "Add comment to PR to trunk"
         if: ${{ ! inputs.dry-run }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -137,7 +171,9 @@ jobs:
         run: |
           gh pr comment https://github.com/Automattic/woocommerce-payments/pull/$RELEASE_PR_ID --body="### Release zip build & Smoke tests
 
-          Check status of zip file build & smoke tests at https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}"
+          Check status of zip file build & smoke tests at https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}
+
+          Related develop sync PR: $DEVELOP_PR_URL"
 
       - name: "Dry-run summary"
         # Run even if an earlier step failed, so the diff is always reported
@@ -153,10 +189,10 @@ jobs:
             git --no-pager diff -- woocommerce-payments.php package.json readme.txt
             echo '```'
             echo ''
-            echo '### package-lock.json'
+            echo '### pnpm-lock.yaml'
             echo ''
             echo '```'
-            git --no-pager diff --stat -- package-lock.json
+            git --no-pager diff --stat -- pnpm-lock.yaml
             echo '```'
             echo ''
             echo '### Untracked files'

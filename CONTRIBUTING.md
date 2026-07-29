@@ -25,20 +25,20 @@ You can also set up linting hints in your editor. Here are some useful instructi
 WooPayments has several test suites. Once your [Docker environment](docker/README.md) is running:
 
 ```bash
-npm test          # Run JS and PHP unit tests
-npm run test:js   # JavaScript unit tests only
-npm run test:php  # PHP unit tests only
+pnpm test          # Run JS and PHP unit tests
+pnpm run test:js   # JavaScript unit tests only
+pnpm run test:php  # PHP unit tests only
 ```
 
 See the [tests README](tests/README.md) for an overview of all suites, and the per-suite guides for setup and details: [PHP unit](tests/unit/README.md), [JavaScript unit](tests/js/README.md), [E2E](tests/e2e/README.md), and [QIT](tests/qit/README.md).
 
 ## Development
 
-After cloning the repo, install dependencies using `npm install`. You can build the files using one of these npm scripts:
+After cloning the repo, install dependencies using `pnpm install`. You can build the files using one of these pnpm scripts:
 
-- `$ npm run build:client`: Build a production version
-- `$ npm run watch`: Build a development version, and watch for file changes
-- `$ npm run hmr`: Instantiate a webpack server with HMR in development mode. Requires WordPress +6.0. If you see errors trying to connect to the HMR server, try trusting the generated SSL certificate.
+- `$ pnpm run build:client`: Build a production version
+- `$ pnpm run watch`: Build a development version, and watch for file changes
+- `$ pnpm run hmr`: Instantiate a webpack server with HMR in development mode. Requires WordPress +6.0. If you see errors trying to connect to the HMR server, try trusting the generated SSL certificate.
 
 When enqueuing the app JavaScript, `wordpress` and `woocommerce` dependencies are handled by `@wordpress/dependency-extraction-webpack-plugin`. WordPress dependencies don't need to be added manually anywhere, including the `$deps` parameter in `wp_enqueue_script` or in `webpack.config`.
 
@@ -65,7 +65,7 @@ When running webpack `index.asset.php` will be created, listing all the needed d
 
 ## Changelog entries
 
-In order to add a changelog entry, please run following command (it'll guide you with necessary steps): `npm run changelog`.
+In order to add a changelog entry, please run following command (it'll guide you with necessary steps): `pnpm run changelog`.
 
 Types of changes:
 
@@ -89,19 +89,19 @@ Docker can be used to setup a local development environment:
 
 * Ensure Docker is installed ([Docker Desktop](https://www.docker.com/products/docker-desktop) is a good option for developers)
 * Follow the steps above in the Development section to build the project's JavaScript
-* Start WordPress and run setup: `npm run up:recreate` (auto-starts infrastructure if needed)
+* Start WordPress and run setup: `pnpm run up:recreate` (auto-starts infrastructure if needed)
 * The fully configured site can now be accessed at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port, default is 8082)
 * The prompt to run the setup wizard can be dismissed unless there is something specific you would like to configure
 
 To shutdown:
 
-* Use `npm run down` to stop this worktree's WordPress container
-* Use `npm run infra:down` to stop shared infrastructure (database, phpMyAdmin)
-* The state of the environment will be persisted in `docker/data` (database) and shared Docker volumes (plugins, themes, uploads, mu-plugins). To restart the environment simply run `npm run up` again. To start completely fresh, delete `docker/data` and remove the shared volumes:
+* Use `pnpm run down` to stop this worktree's WordPress container
+* Use `pnpm run infra:down` to stop shared infrastructure (database, phpMyAdmin)
+* The state of the environment will be persisted in `docker/data` (database) and shared Docker volumes (plugins, themes, uploads, mu-plugins). To restart the environment simply run `pnpm run up` again. To start completely fresh, delete `docker/data` and remove the shared volumes:
   ```bash
   docker volume rm wcpay-plugins wcpay-themes wcpay-uploads wcpay-mu-plugins
   ```
-  Then re-run `npm run up:recreate`.
+  Then re-run `pnpm run up:recreate`.
 
 For more details, including git worktree support, see [docker/README.md](docker/README.md).
 

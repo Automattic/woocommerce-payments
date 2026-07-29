@@ -415,6 +415,84 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
 	}
 
+	public function test_maybe_process_upe_redirect_ignores_create_account_form_post() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// The block checkout "Create Account" form POSTs back to the very URL the shopper was
+		// returned to, so the query string still carries a valid redirect return: everything
+		// below would be processed if this were a GET. The request-method gate is the only
+		// thing that may stop it.
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
+
+		// ...but submitted by the form, which posts its own nonce.
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_POST['create-account']   = '1';
+		$_POST['_wpnonce']         = wp_create_nonce( 'wc_create_account' );
+		$_REQUEST['_wpnonce']      = $_POST['_wpnonce'];
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		// The POST is not a return: the order is left untouched, and there's no fatal
+		// "the link you followed has expired" nonce die.
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
+			$_GET['key'],
+			$_POST['create-account']
+		);
+	}
+
+	public function test_maybe_process_upe_redirect_does_not_fatal_on_stale_nonce() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// An otherwise processable return, so the nonce is the only thing that may stop it.
+		$_SERVER['REQUEST_METHOD']            = 'GET';
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = 'not-a-valid-nonce';
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		// A stale or refreshed return URL quietly no-ops rather than hard-dying.
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
+			$_GET['key']
+		);
+	}
+
 	public function test_process_redirect_payment_intent_succeded() {
 		$order = WC_Helper_Order::create_order();
 
@@ -527,16 +605,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				],
 				'expected_title'   => 'Mastercard credit card',
 				'expected_gateway' => 'woocommerce_payments',
-			],
-			'giropay'                => [
-				'payment_details'  => [ 'type' => 'giropay' ],
-				'expected_title'   => 'giropay',
-				'expected_gateway' => 'woocommerce_payments_giropay',
-			],
-			'Sofort'                 => [
-				'payment_details'  => [ 'type' => 'sofort' ],
-				'expected_title'   => 'Sofort',
-				'expected_gateway' => 'woocommerce_payments_sofort',
 			],
 			'Bancontact'             => [
 				'payment_details'  => [ 'type' => 'bancontact' ],
@@ -950,14 +1018,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'funding' => 'credit',
 			],
 		];
-		$mock_giropay_details    = [
-			'type' => 'giropay',
-		];
 		$mock_p24_details        = [
 			'type' => 'p24',
-		];
-		$mock_sofort_details     = [
-			'type' => 'sofort',
 		];
 		$mock_bancontact_details = [
 			'type' => 'bancontact',
@@ -985,9 +1047,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		];
 
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
 		$p24_method        = $this->payment_methods['p24'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1004,23 +1064,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $card_method->is_reusable() );
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
-		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title( 'US', $mock_giropay_details ) );
-		$this->assertTrue( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_reusable() );
-
 		$this->assertEquals( 'p24', $p24_method->get_id() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( 'US', $mock_p24_details ) );
 		$this->assertTrue( $p24_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $p24_method->is_reusable() );
-
-		$this->assertEquals( 'sofort', $sofort_method->get_id() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title( 'US', $mock_sofort_details ) );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_reusable() );
 
 		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
 		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
@@ -1093,8 +1141,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1106,8 +1152,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$grabpay_method    = $this->payment_methods['grabpay'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $eps_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $sepa_method->is_enabled_at_checkout( 'US' ) );
@@ -1203,8 +1247,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1219,8 +1261,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$account_domestic_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1235,8 +1275,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1266,8 +1304,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_payment_method_compares_correct_currency() {
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1281,8 +1317,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$account_domestic_currency                   = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1297,8 +1331,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -4815,7 +4847,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GrabPayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
@@ -4823,7 +4854,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
 		];

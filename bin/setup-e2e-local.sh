@@ -386,7 +386,7 @@ fi
 
 # --- Post-setup: handle gitignored server code ---
 # The transact-platform-server has server/ and missioncontrol/ gitignored — these are
-# populated via 'npm run pull' from the WPCOM sandbox. When the E2E setup clones
+# populated via 'pnpm run pull' from the WPCOM sandbox. When the E2E setup clones
 # the server via git, only the local tooling (bin/, docker/, etc.) is included.
 # We rsync the full directories from the original local repo.
 E2E_SERVER_DEPS_PATH="$PROJECT_ROOT/tests/e2e/deps/transact-platform-server-e2e"
@@ -408,7 +408,7 @@ if [[ "$MODE" == "local" && -n "$SERVER_PATH" ]]; then
                 fi
             done
         else
-            info "After 'npm run test:e2e-setup' clones the server, run:"
+            info "After 'pnpm run test:e2e-setup' clones the server, run:"
             echo ""
             for dir in "${SERVER_GITIGNORED_DIRS[@]}"; do
                 echo "  rsync -a --delete '$SERVER_PATH/$dir/' '$E2E_SERVER_DEPS_PATH/$dir/'"
@@ -417,7 +417,7 @@ if [[ "$MODE" == "local" && -n "$SERVER_PATH" ]]; then
         fi
     else
         warn "Server code (server/, missioncontrol/) not found in $SERVER_PATH"
-        warn "E2E setup will try a one-shot 'npm run pull -- -s' in its clone if sandbox access is configured."
+        warn "E2E setup will try a one-shot 'pnpm run pull -- -s' in its clone if sandbox access is configured."
     fi
 fi
 
@@ -429,18 +429,18 @@ echo ""
 success "local.env written to: $LOCAL_ENV_PATH"
 echo ""
 info "Next steps:"
-echo "  1. npm install && composer install  (if not done)"
-echo "  2. npm run build:client             (build JS assets)"
-echo "  3. npm run test:e2e-setup           (spin up E2E Docker environment)"
-echo "  4. npm run test:e2e                 (run all E2E tests)"
+echo "  1. pnpm install && composer install  (if not done)"
+echo "  2. pnpm run build:client             (build JS assets)"
+echo "  3. pnpm run test:e2e-setup           (spin up E2E Docker environment)"
+echo "  4. pnpm run test:e2e                 (run all E2E tests)"
 echo ""
 info "Useful commands:"
-echo "  npm run test:e2e -- -g 'test name'  (run by grep)"
-echo "  npm run test:e2e tests/e2e/specs/wcpay/merchant/file.spec.ts  (run specific)"
-echo "  npm run test:e2e-ui                 (interactive UI mode)"
-echo "  npm run test:e2e-down               (stop E2E containers)"
+echo "  pnpm run test:e2e -- -g 'test name'  (run by grep)"
+echo "  pnpm run test:e2e tests/e2e/specs/wcpay/merchant/file.spec.ts  (run specific)"
+echo "  pnpm run test:e2e-ui                 (interactive UI mode)"
+echo "  pnpm run test:e2e-down               (stop E2E containers)"
 echo ""
 info "Notes:"
-echo "  - If 'npm run test:e2e-setup' fails with 'already linked', run 'npm run test:e2e-reset' first."
+echo "  - If 'pnpm run test:e2e-setup' fails with 'already linked', run 'pnpm run test:e2e-reset' first."
 echo "  - Dev tools need 'composer install' in their clone. The setup script handles this automatically."
 echo ""

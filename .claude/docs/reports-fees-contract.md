@@ -1,10 +1,10 @@
 # WooPayments Reports - Fees Contract
 
-**Last updated:** 2026-05-22
+**Last updated:** 2026-07-14
 
 ## Scope
 
-This document describes the current Phase 1 implementation contract for the WooPayments Reports Fees tab behind the `_wcpay_feature_reports_area` feature flag.
+This document describes the current Phase 1 implementation contract for the WooPayments Reports Fees tab behind `WC_Payments_Features::is_reports_area_enabled()`, which resolves the per-account server flag before falling back to the local `_wcpay_feature_reports_area` option.
 
 The implementation has two halves:
 
@@ -19,6 +19,10 @@ The implementation has two halves:
 -   REST base: `payments/reports/fees`.
 -   Registration: include and instantiate the controller next to the existing reports controllers in `includes/class-wc-payments.php`.
 -   Feature gate: `register_routes()` returns immediately when `! WC_Payments_Features::is_reports_area_enabled()`.
+    That method resolves in two steps: the per-account `reports_area_enabled` flag from the cached account
+    payload wins when the server has an opinion (`false` is an explicit kill switch and beats the local
+    option); otherwise the local `_wcpay_feature_reports_area` option decides, which is the publicly
+    documented snippet / WP CLI opt-in.
 -   Test bootstrap: `tests/unit/bootstrap.php` requires the controller after `class-wc-rest-payments-reports-transactions-controller.php`.
 
 When the flag is on, the controller registers:

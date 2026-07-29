@@ -192,6 +192,32 @@ class Compatibility extends BaseCompatibility {
 	}
 
 	/**
+	 * Checks to see if the shipping cost should be converted.
+	 *
+	 * @param object $shipping_method Shipping method object to test.
+	 *
+	 * @return bool True if it should be converted.
+	 */
+	public function should_convert_shipping_amount( $shipping_method = null ): bool {
+		if ( ! $shipping_method ) {
+			return true;
+		}
+
+		/**
+		 * Filters whether a shipping rate's cost should be converted to the selected currency.
+		 *
+		 * Some shipping methods (such as live-rate plugins) return costs that are already
+		 * converted to the customer's currency. Converting again would double-convert the cost.
+		 *
+		 * @since 10.10.0
+		 *
+		 * @param bool   $convert         Whether the shipping cost should be converted. Default true.
+		 * @param object $shipping_method The shipping method object adding the rate.
+		 */
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_shipping_amount', true, $shipping_method );
+	}
+
+	/**
 	 * Determines if the store currency should be returned or not.
 	 *
 	 * @return bool

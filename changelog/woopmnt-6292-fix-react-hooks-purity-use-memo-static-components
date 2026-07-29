@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix react-hooks/purity, use-memo, and static-components ESLint rule violations (WOOPMNT-6292)

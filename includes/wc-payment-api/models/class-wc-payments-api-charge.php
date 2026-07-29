@@ -127,6 +127,17 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	private $disputed;
 
 	/**
+	 * All dispute objects associated with this charge.
+	 *
+	 * A single charge can be disputed more than once, so the server returns the
+	 * full set here in addition to the singular `$dispute`. Kept additive so the
+	 * existing `$dispute` consumers stay untouched.
+	 *
+	 * @var array|null
+	 */
+	private $disputes;
+
+	/**
 	 * Charge order object
 	 *
 	 * @var array
@@ -206,6 +217,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	 * @param bool|null   $refunded               - Flag indicating whether the charge has been refunded or not.
 	 * @param array       $refunds                - Charge refunds object.
 	 * @param string|null $status                 - Charge status.
+	 * @param array|null  $disputes               - All dispute objects associated with this charge.
 	 */
 	public function __construct(
 		$id,
@@ -228,7 +240,8 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 		$payment_intent = null,
 		$refunded = null,
 		$refunds = [],
-		$status = null
+		$status = null,
+		$disputes = null
 	) {
 		$this->id                     = $id;
 		$this->amount                 = $amount;
@@ -251,6 +264,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 		$this->refunded               = $refunded;
 		$this->refunds                = $refunds;
 		$this->status                 = $status;
+		$this->disputes               = $disputes;
 
 		// Set default properties.
 		$this->captured = false;
@@ -414,6 +428,15 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns all dispute objects associated with this charge
+	 *
+	 * @return array|null
+	 */
+	public function get_disputes() {
+		return $this->disputes;
+	}
+
+	/**
 	 * Returns the order object associated with this charge
 	 *
 	 * @return array
@@ -504,6 +527,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 			'currency'               => $this->get_currency(),
 			'dispute'                => $this->get_dispute(),
 			'disputed'               => $this->get_disputed(),
+			'disputes'               => $this->get_disputes(),
 			'order'                  => $this->get_order(),
 			'outcome'                => $this->get_outcome(),
 			'paid'                   => $this->get_paid(),

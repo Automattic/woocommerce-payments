@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix ExPlat assignment for the in-app review prompt experiment, and stop re-requesting it on every page load

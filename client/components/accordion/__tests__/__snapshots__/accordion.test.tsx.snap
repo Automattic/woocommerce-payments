@@ -22,8 +22,9 @@ exports[`Accordion renders with custom className 1`] = `
               aria-hidden="true"
               class="wcpay-accordion__arrow"
               focusable="false"
-              size="24"
+              height="24"
               viewBox="0 0 24 24"
+              width="24"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
@@ -65,8 +66,9 @@ exports[`Accordion renders with default expanded 1`] = `
               aria-hidden="true"
               class="wcpay-accordion__arrow"
               focusable="false"
-              size="24"
+              height="24"
               viewBox="0 0 24 24"
+              width="24"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
@@ -113,8 +115,9 @@ exports[`Accordion renders with default props 1`] = `
               aria-hidden="true"
               class="wcpay-accordion__arrow"
               focusable="false"
-              size="24"
+              height="24"
               viewBox="0 0 24 24"
+              width="24"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
@@ -156,8 +159,9 @@ exports[`Accordion renders with high density 1`] = `
               aria-hidden="true"
               class="wcpay-accordion__arrow"
               focusable="false"
-              size="24"
+              height="24"
               viewBox="0 0 24 24"
+              width="24"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path

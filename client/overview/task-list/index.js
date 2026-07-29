@@ -103,48 +103,59 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissSelectedTask( params );
 	};
 
-	const undoRemindTaskLater = async ( key ) => {
-		const {
-			// eslint-disable-next-line no-unused-vars
-			[ key ]: oldValue,
-			...updatedRemindMeLaterTasks
-		} = remindMeLaterTodoTasks;
+	const undoRemindTaskLater = useCallback(
+		async ( key ) => {
+			const {
+				// eslint-disable-next-line no-unused-vars
+				[ key ]: oldValue,
+				...updatedRemindMeLaterTasks
+			} = remindMeLaterTodoTasks;
 
-		delete remindMeLaterTodoTasks[ key ];
-		setVisibleTasks( getVisibleTasks() );
+			delete remindMeLaterTodoTasks[ key ];
+			setVisibleTasks( getVisibleTasks() );
 
-		saveOption(
-			'woocommerce_remind_me_later_todo_tasks',
-			updatedRemindMeLaterTasks
-		);
-	};
+			saveOption(
+				'woocommerce_remind_me_later_todo_tasks',
+				updatedRemindMeLaterTasks
+			);
+		},
+		[ remindMeLaterTodoTasks, getVisibleTasks ]
+	);
 
-	const remindTaskLater = async ( { key, onDismiss } ) => {
-		const dismissTime = Date.now() + TIME.DAY_IN_MS;
-		remindMeLaterTodoTasks[ key ] = dismissTime;
-		setVisibleTasks( getVisibleTasks() );
+	const remindTaskLater = useCallback(
+		async ( { key, onDismiss } ) => {
+			const dismissTime = Date.now() + TIME.DAY_IN_MS;
+			remindMeLaterTodoTasks[ key ] = dismissTime;
+			setVisibleTasks( getVisibleTasks() );
 
-		saveOption( 'woocommerce_remind_me_later_todo_tasks', {
-			...remindMeLaterTodoTasks,
-			[ key ]: dismissTime,
-		} );
+			saveOption( 'woocommerce_remind_me_later_todo_tasks', {
+				...remindMeLaterTodoTasks,
+				[ key ]: dismissTime,
+			} );
 
-		createNotice(
-			'success',
-			__( 'Task postponed until tomorrow', 'woocommerce-payments' ),
-			{
-				actions: [
-					{
-						label: __( 'Undo', 'woocommerce-payments' ),
-						onClick: () => undoRemindTaskLater( key ),
-					},
-				],
+			createNotice(
+				'success',
+				__( 'Task postponed until tomorrow', 'woocommerce-payments' ),
+				{
+					actions: [
+						{
+							label: __( 'Undo', 'woocommerce-payments' ),
+							onClick: () => undoRemindTaskLater( key ),
+						},
+					],
+				}
+			);
+			if ( onDismiss ) {
+				onDismiss();
 			}
-		);
-		if ( onDismiss ) {
-			onDismiss();
-		}
-	};
+		},
+		[
+			remindMeLaterTodoTasks,
+			getVisibleTasks,
+			createNotice,
+			undoRemindTaskLater,
+		]
+	);
 
 	if ( ! visibleTasks.length ) {
 		return <div></div>;

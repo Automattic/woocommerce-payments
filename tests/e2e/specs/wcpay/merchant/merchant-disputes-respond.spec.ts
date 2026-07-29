@@ -15,6 +15,26 @@ import {
 } from '../../../utils/merchant-navigation';
 
 /**
+ * Polls the payment details page until the dispute is visible.
+ *
+ * The dispute is only created merchant-side once Stripe's charge.dispute.created
+ * webhook is processed, which can trail the shopper checkout by tens of seconds.
+ * The page fetches its data once on load, so we reload until the dispute is there.
+ */
+async function waitForDisputeToAppear( merchantPage: Page, url: string ) {
+	await expect( async () => {
+		await merchantPage.goto( url );
+		await merchantPage.waitForLoadState( 'load' );
+
+		// not `accept-dispute-button` - that one is the modal's confirm
+		// button, which only exists while the modal is open.
+		await expect(
+			merchantPage.getByTestId( 'open-accept-dispute-modal-button' )
+		).toBeVisible( { timeout: 2000 } );
+	} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
+}
+
+/**
  * Navigates to the payment details page for a given disputed order.
  */
 async function goToPaymentDetailsForOrder(
@@ -41,6 +61,9 @@ async function goToPaymentDetailsForOrder(
 			const currentUrl = merchantPage.url();
 			return currentUrl;
 		} );
+
+	await test.step( 'Wait for the dispute to be created by the async webhook', () =>
+		waitForDisputeToAppear( merchantPage, paymentDetailsLink ) );
 
 	return paymentDetailsLink;
 }
@@ -88,6 +111,9 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			const orderId = await createDisputedOrder( browser );
 
 			await goToPaymentDetails( merchantPage, orderId );
+
+			await test.step( 'Wait for the dispute to be created by the async webhook', () =>
+				waitForDisputeToAppear( merchantPage, merchantPage.url() ) );
 
 			await test.step( 'Click the dispute accept button to open the accept dispute modal', async () => {
 				// View the modal.
@@ -471,6 +497,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
+		// Stripe can take a while to return the saved evidence, and the
+		// save-and-restore retries below need the extra room.
+		test.slow();
+
 		const { merchantPage } = await getMerchant( browser );
 
 		const orderId = await createDisputedOrder( browser );
@@ -510,33 +540,27 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			).toBeVisible();
 		} );
 
-		await test.step( 'Select product type and fill description', async () => {
-			await merchantPage
-				.getByTestId( 'dispute-challenge-product-type-selector' )
-				.selectOption( 'offline_service' );
+		const descriptionField = () =>
+			merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' );
 
+		const fillProductDescription = async () => {
 			// The product description field is auto-populated asynchronously.
 			// An async React effect may overwrite user input after initial load,
 			// so we retry the fill+verify cycle until the value sticks.
 			await expect( async () => {
-				await merchantPage
-					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-					.fill( 'my product description' );
+				await descriptionField().fill( 'my product description' );
 
 				// Blur the field to ensure value is committed to state
-				await merchantPage
-					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-					.press( 'Tab' );
+				await descriptionField().press( 'Tab' );
 
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-				).toHaveValue( 'my product description', {
-					timeout: 2000,
-				} );
+				await expect( descriptionField() ).toHaveValue(
+					'my product description',
+					{ timeout: 2000 }
+				);
 			} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
-		} );
+		};
 
-		await test.step( 'Save the dispute challenge for later', async () => {
+		const saveForLater = async () => {
 			const waitResponse = merchantPage.waitForResponse(
 				( r ) =>
 					r.url().includes( '/wc/v3/payments/disputes/' ) &&
@@ -564,47 +588,83 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				// Non-fatal: continue to UI confirmation
 			}
 
-			// Wait for the success snackbar to confirm UI acknowledged the save.
-			// Stripe doesn't guarantee immediate read-after-write consistency,
-			// but the toPass() retry loop in the next step polls until the saved
-			// value is visible, so no extra wait is needed here.
 			await expect(
 				merchantPage.locator( '.components-snackbar__content', {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
+		};
+
+		// Reloads the challenge page and polls until the saved description is
+		// restored. Returns false instead of throwing, so the caller can save
+		// again. Ends on the challenge screen either way.
+		const restoredAfterReload = async () => {
+			try {
+				await expect( async () => {
+					await merchantPage.goto( paymentDetailsLink );
+					await merchantPage.waitForLoadState( 'load' );
+
+					await merchantPage
+						.getByTestId( 'challenge-dispute-button' )
+						.click();
+
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
+
+					await expect(
+						merchantPage.getByText( "Let's gather the basics", {
+							exact: true,
+						} )
+					).toBeVisible();
+
+					await expect( descriptionField() ).toHaveValue(
+						'my product description',
+						{ timeout: 5000 }
+					);
+				} ).toPass( { timeout: 40000, intervals: [ 3000 ] } );
+
+				return true;
+			} catch {
+				return false;
+			}
+		};
+
+		await test.step( 'Select product type and fill description', async () => {
+			await merchantPage
+				.getByTestId( 'dispute-challenge-product-type-selector' )
+				.selectOption( 'offline_service' );
+
+			await fillProductDescription();
 		} );
 
+		await test.step( 'Save the dispute challenge for later', () =>
+			saveForLater() );
+
 		await test.step( 'Navigate back and verify previously saved values are restored', async () => {
-			// Poll by reloading the challenge page on each retry.
-			// The Stripe API may not return the saved evidence immediately,
-			// so we retry the full navigation cycle until the saved value
-			// appears. This follows the same polling pattern used by the
-			// dispute status checks in the winning/losing evidence tests.
-			await expect( async () => {
-				await merchantPage.goto( paymentDetailsLink );
-				await merchantPage.waitForLoadState( 'load' );
+			// The save request can come back 200 with the "Evidence saved!"
+			// notice and the draft still never shows up on later reads - seen
+			// in CI, where only a fresh save fixed it. So when the restore
+			// poll doesn't converge, retry the write, not just the read.
+			const maxSaveAttempts = 3;
 
-				await merchantPage
-					.getByTestId( 'challenge-dispute-button' )
-					.click();
+			for ( let attempt = 1; attempt <= maxSaveAttempts; attempt++ ) {
+				if ( await restoredAfterReload() ) {
+					return;
+				}
 
-				await expect(
-					merchantPage.getByTestId( 'new-evidence-loading' )
-				).toBeHidden( { timeout: 20000 } );
+				if ( attempt === maxSaveAttempts ) {
+					throw new Error(
+						`Saved dispute evidence was not restored after ${ maxSaveAttempts } save attempts; ` +
+							'the evidence draft looks dropped server-side.'
+					);
+				}
 
-				await expect(
-					merchantPage.getByText( "Let's gather the basics", {
-						exact: true,
-					} )
-				).toBeVisible();
-
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-				).toHaveValue( 'my product description', {
-					timeout: 5000,
-				} );
-			} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
+				// The restore check leaves us on the challenge screen with the
+				// stale value - fill and save again.
+				await fillProductDescription();
+				await saveForLater();
+			}
 		} );
 	} );
 } );

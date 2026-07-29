@@ -25,12 +25,14 @@ export const goToPaymentDetails = async (
 	await page.goto(
 		`/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=${ paymentIntentId }`
 	);
+	await dataHasLoaded( page );
 };
 
 export const goToWooPaymentsSettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments'
 	);
+	await dataHasLoaded( page );
 };
 
 export const goToWooCommerceSettings = async ( page: Page, tab?: string ) => {

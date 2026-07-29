@@ -1082,6 +1082,24 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertEquals( '0.724', $refund->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) );
 	}
 
+	public function test_init_rest_api_registers_routes_when_admin_screen_is_set() {
+		global $wp_rest_server, $current_screen;
+		$previous_server = $wp_rest_server;
+		$previous_screen = $current_screen;
+		$wp_rest_server  = null;
+
+		set_current_screen( 'edit-page' );
+
+		try {
+			$routes = rest_get_server()->get_routes( 'wc/v3' );
+			$this->assertArrayHasKey( '/wc/v3/payments/multi-currency/currencies', $routes );
+		} finally {
+			$wp_rest_server = $previous_server;
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the screen snapshot taken above.
+			$current_screen = $previous_screen;
+		}
+	}
+
 	public function test_enabled_currencies_option_as_string_does_not_fatal() {
 		update_option( 'wcpay_multi_currency_enabled_currencies', '' );
 		$this->multi_currency->init();
@@ -1110,7 +1128,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 						<select
 				name="currency"
 				class="js-woopayments-currency-switcher"
-				aria-label=""
+				aria-label="Select your currency"
 				onchange="this.form.submit()"
 			>
 				<option value="USD" selected>&#36; USD</option><option value="BIF">Fr BIF</option><option value="CAD">&#36; CAD</option><option value="GBP">&pound; GBP</option>			</select>
