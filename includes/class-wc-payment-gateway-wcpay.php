@@ -1860,7 +1860,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( $this->is_mandate_data_required() && $this->should_send_mandate_data( $payment_information ) ) {
+				if ( $this->should_send_mandate_data( $payment_information ) ) {
 					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
 
@@ -2614,37 +2614,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Determines whether mandate data should be sent to Stripe for this payment.
 	 *
-	 * The caller has already established that the payment method needs a mandate at all, via
-	 * is_mandate_data_required(). Two rules then apply, neither of them method-specific:
+	 * Three conditions, none of them method-specific:
 	 *
-	 * - A merchant-initiated payment never sends it. Stripe authorises those through the MIT
-	 *   / network transaction ID framework established at the original checkout, not through
-	 *   mandate_data: the standard off-session pattern is `off_session` plus a saved payment
-	 *   method. Link's own mandate acceptance is recorded at that first checkout and stored on
-	 *   the payment method, so it is not re-created per renewal. SCA exemptions and dispute
-	 *   liability both derive from the original authentication, so nothing downstream depends
-	 *   on repeating it (confirmed with Stripe, WOOPMNT-6299).
-	 * - A customer-present payment sends it only when a valid customer IP is available. Stripe
-	 *   rejects any request whose mandate_data.customer_acceptance.online.ip_address is not a
-	 *   valid IP, which happens when a proxy sends a malformed forwarding header. Stripe
-	 *   accepts a confirmation with no mandate data at all, so omitting it is preferable to
-	 *   sending a payload that is certain to be rejected.
+	 * - The payment method needs a mandate at all (is_mandate_data_required()).
+	 * - The payment is not merchant-initiated. Stripe authorises those through the MIT /
+	 *   network transaction ID framework established at the original checkout, so SCA
+	 *   exemptions and dispute liability derive from that authentication rather than from
+	 *   repeating acceptance per renewal (confirmed with Stripe, WOOPMNT-6299).
+	 * - A valid customer IP is available. Stripe rejects a malformed ip_address outright but
+	 *   accepts a confirmation carrying no mandate data, so omitting beats sending a payload
+	 *   certain to fail. rest_is_ip_address() is a format check that allows private and
+	 *   loopback addresses on purpose, since Stripe accepts them and loopback cron needs it.
 	 *
-	 * SEPA needs no carve-out here. It is not reusable (SepaDefinition declares no
-	 * TOKENIZATION capability), so maybe_force_subscription_to_manual() puts every SEPA
-	 * subscription on manual renewal and the customer is present for each payment. SEPA
-	 * therefore always reaches the second rule and keeps sending mandate data, which is what
-	 * its initial checkout requires: there the mandate is the instrument being created.
-	 *
-	 * rest_is_ip_address() is only a format check and accepts private and loopback addresses
-	 * on purpose: Stripe accepts them too, and stores whose cron runs over a loopback request
-	 * rely on that.
+	 * SEPA needs no carve-out: it is not reusable, so every SEPA subscription renews manually
+	 * with the customer present and always reaches the last condition.
 	 *
 	 * @param Payment_Information $payment_information Payment information for the transaction.
 	 *
 	 * @return bool True when mandate data should be sent.
 	 */
 	private function should_send_mandate_data( Payment_Information $payment_information ): bool {
+		if ( ! $this->is_mandate_data_required() ) {
+			return false;
+		}
+
 		if ( $payment_information->is_merchant_initiated() ) {
 			return false;
 		}
