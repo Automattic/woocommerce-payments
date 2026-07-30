@@ -87,6 +87,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 11.0.0-test-2 - unreleased =
+
+
 = 11.0.0 - 2026-07-30 =
 * Add - Add A/B/C design variants to the in-app review prompt, assigned per-store via ExPlat (prompt remains disabled pending eligibility criteria)
 * Add - Add a client-side origin assertion that blocks checkout when Stripe.js is loaded from an unexpected origin, as defense-in-depth against skimmers that repoint the script handle to a look-alike domain.
