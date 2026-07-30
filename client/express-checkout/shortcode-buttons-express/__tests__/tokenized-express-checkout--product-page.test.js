@@ -19,24 +19,10 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 	default: jest.fn( () => Promise.resolve() ),
 } ) );
 
-// A non-compromised page has the legit Stripe.js tag, so the assertion passes.
-const addStripeScript = () => {
-	const script = document.createElement( 'script' );
-	script.id = 'stripe-js';
-	script.src = 'https://js.stripe.com/v3/?ver=3.0';
-	document.head.appendChild( script );
-};
-
-const clearScripts = () =>
-	document.head
-		.querySelectorAll( 'script' )
-		.forEach( ( script ) => script.remove() );
-
 describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
 		apiFetch.mockReset();
-		addStripeScript();
 		// ensuring jQuery is available globally.
 		global.$ = global.jQuery = $;
 		// ensuring that `callback` is immediately invoked on document.ready.
@@ -137,7 +123,6 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	afterEach( () => {
 		delete global.Stripe;
-		clearScripts();
 	} );
 
 	it( 'should not initialize Stripe if there is no publishable key', async () => {
