@@ -22,6 +22,21 @@ import { recordEvent } from 'tracks';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
+// Which dispute gets to explain the refund lock when several block refunds at
+// once. Ordered most to least severe, and exhaustive over the non-refundable
+// statuses, so `disableWooOrderRefundButton` always has wording to show. `lost`
+// outranks `under_review` here even though the notice below leads with the
+// under-review wording: the button never comes back once a dispute is lost, so a
+// permanent reason explains a permanently disabled control better than a
+// temporary one. `charge_refunded` is last — the money is already back with the
+// customer, so it is the least pressing thing to tell the merchant about.
+const lockReasonPriority = [
+	'lost',
+	'under_review',
+	'needs_response',
+	'charge_refunded',
+];
+
 const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	const { data: charge } = useCharge( chargeId );
 	const disputeDetailsUrl = getDetailsURL( chargeId, 'transactions' );
@@ -31,11 +46,20 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	// single `charge.dispute` for payloads without the array.
 	const disputes = charge ? getChargeDisputes( charge ) : [];
 
-	// Disable the refund button if any dispute blocks refunds.
+	// Disable the refund button if any dispute blocks refunds. The status drives
+	// the tooltip wording, so pick by severity rather than by array order —
+	// otherwise a charge with both a lost and an unanswered dispute explains the
+	// lock as temporary depending on how the server happened to order them.
 	useEffect( () => {
-		const blocking = ( charge ? getChargeDisputes( charge ) : [] ).find(
+		const blockers = ( charge ? getChargeDisputes( charge ) : [] ).filter(
 			( dispute ) => ! isRefundable( dispute.status )
 		);
+		const blocking =
+			lockReasonPriority
+				.map( ( status ) =>
+					blockers.find( ( dispute ) => dispute.status === status )
+				)
+				.find( Boolean ) ?? blockers[ 0 ];
 		if ( blocking ) {
 			onDisableOrderRefund( blocking.status );
 		}
@@ -43,46 +67,6 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 
 	if ( ! disputes.length ) {
 		return null;
-	}
-
-	// Refund/edit locking and the "under review" / "lost" states are
-	// charge-wide, so surface them if ANY dispute is in that state before
-	// considering the respond-by notices below.
-
-	// Special case the dispute "under review" notice which is much simpler.
-	if (
-		disputes.some(
-			( dispute ) =>
-				isUnderReview( dispute.status ) && ! isInquiry( dispute.status )
-		)
-	) {
-		return (
-			<DisputeOrderLockedNotice
-				message={ __(
-					'This order has an active payment dispute. Refunds and order editing are disabled.',
-					'woocommerce-payments'
-				) }
-				disputeDetailsUrl={ disputeDetailsUrl }
-			/>
-		);
-	}
-
-	// Special case lost disputes.
-	// I suspect this is unnecessary, as any lost disputes will have already been
-	// refunded as part of `charge.dispute.closed` webhook handler.
-	// This may be dead code. Leaving in for now as this is consistent with
-	// the logic before this PR.
-	// https://github.com/Automattic/woocommerce-payments/pull/7557
-	if ( disputes.some( ( dispute ) => dispute.status === 'lost' ) ) {
-		return (
-			<DisputeOrderLockedNotice
-				message={ __(
-					'Refunds and order editing have been disabled as a result of a lost dispute.',
-					'woocommerce-payments'
-				) }
-				disputeDetailsUrl={ disputeDetailsUrl }
-			/>
-		);
 	}
 
 	// Get current time in UTC for consistent timezone-independent comparison.
@@ -102,7 +86,50 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 		);
 	} );
 
+	// There is only one notice slot, and a charge can be locked by one dispute
+	// while another still needs evidence. The deadline wins: miss it and the
+	// money is gone for good, whereas the lock doesn't expire and is already
+	// carried by the disabled refund button and its tooltip. Every locked notice
+	// therefore belongs inside this guard; one placed outside it would hide a
+	// live deadline.
 	if ( ! awaitingDisputes.length ) {
+		// Special case the dispute "under review" notice which is much simpler.
+		if (
+			disputes.some(
+				( dispute ) =>
+					isUnderReview( dispute.status ) &&
+					! isInquiry( dispute.status )
+			)
+		) {
+			return (
+				<DisputeOrderLockedNotice
+					message={ __(
+						'This order has an active payment dispute. Refunds and order editing are disabled.',
+						'woocommerce-payments'
+					) }
+					disputeDetailsUrl={ disputeDetailsUrl }
+				/>
+			);
+		}
+
+		// Special case lost disputes.
+		// I suspect this is unnecessary, as any lost disputes will have already
+		// been refunded as part of `charge.dispute.closed` webhook handler.
+		// This may be dead code. Leaving in for now as this is consistent with
+		// the logic before this PR.
+		// https://github.com/Automattic/woocommerce-payments/pull/7557
+		if ( disputes.some( ( dispute ) => dispute.status === 'lost' ) ) {
+			return (
+				<DisputeOrderLockedNotice
+					message={ __(
+						'Refunds and order editing have been disabled as a result of a lost dispute.',
+						'woocommerce-payments'
+					) }
+					disputeDetailsUrl={ disputeDetailsUrl }
+				/>
+			);
+		}
+
 		return null;
 	}
 
