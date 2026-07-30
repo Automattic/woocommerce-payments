@@ -1257,6 +1257,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_existing_intention;
 			}
 
+			// Runs after the intent check so that a reachable intent still produces the richer
+			// response, including the amount mismatch message. This catches the same-order
+			// resubmission when that check returns empty-handed.
+			$check_order_paid = $this->duplicate_payment_prevention_service->check_order_already_paid( $order );
+			if ( is_array( $check_order_paid ) ) {
+				return $check_order_paid;
+			}
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
