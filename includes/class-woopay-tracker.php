@@ -347,7 +347,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return $event_obj;
 		}
 
-		$pixel = $event_obj->build_pixel_url( $event_obj );
+		$pixel = $event_obj->build_pixel_url();
 
 		if ( ! $pixel ) {
 			return new WP_Error( 'invalid_pixel', 'cannot generate tracks pixel for given input', 400 );

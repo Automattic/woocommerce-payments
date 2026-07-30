@@ -137,9 +137,9 @@ class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method ID
+	 * Returns whether this is an express checkout payment method.
 	 *
-	 * @return string
+	 * @return bool
 	 */
 	public function is_express_checkout() {
 		if ( null !== $this->definition ) {
@@ -331,7 +331,7 @@ class UPE_Payment_Method {
 	 * @param WP_User $user User to get payment token from.
 	 * @param string  $payment_method_id Stripe payment method ID string.
 	 *
-	 * @return WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA WC object for payment token.
+	 * @return \WC_Payment_Token WC object for payment token.
 	 */
 	public function get_payment_token_for_user( $user, $payment_method_id ) {
 		return $this->token_service->add_payment_method_to_user( $payment_method_id, $user );

@@ -1,0 +1,2185 @@
+parameters:
+	ignoreErrors:
+		-
+			rawMessage: Action callback returns bool but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/admin/class-wc-payments-admin.php
+
+		-
+			rawMessage: 'Call to function in_array() with arguments ''wc-payments…'', list{0: ''wc-payments-overview'', 1: ''wc-payments-deposits'', 2: ''wc-payments…'', 3: ''wc-payments-disputes'', 4?: ''wc-payments-capital''|''wc-payments-card…''|''wc-payments…''|''wc-payments-reports'', 5?: ''wc-payments-capital''|''wc-payments-card…''|''wc-payments…'', 6?: ''wc-payments-capital''|''wc-payments…'', 7?: ''wc-payments…''} and true will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/admin/class-wc-payments-admin.php
+
+		-
+			rawMessage: 'Call to function is_scalar() with string will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/admin/class-wc-payments-admin.php
+
+		-
+			rawMessage: Left side of && is always true.
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: includes/admin/class-wc-payments-admin.php
+
+		-
+			rawMessage: 'Parameter #1 $price of function wc_price expects float, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/admin/class-wc-payments-admin.php
+
+		-
+			rawMessage: 'Parameter #1 $text of function esc_html expects string, int<1, max> given.'
+			identifier: argument.type
+			count: 2
+			path: includes/admin/class-wc-payments-admin.php
+
+		-
+			rawMessage: 'Call to function property_exists() with WP_REST_Response and ''data'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/admin/class-wc-rest-payments-connection-tokens-controller.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/admin/class-wc-rest-payments-customer-controller.php
+
+		-
+			rawMessage: 'Call to internal function wc_admin_record_tracks_event().'
+			identifier: function.internal
+			count: 1
+			path: includes/admin/class-wc-rest-payments-documents-controller.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/admin/class-wc-rest-payments-documents-controller.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/admin/class-wc-rest-payments-onboarding-controller.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::SINGLE().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/admin/class-wc-rest-payments-payment-intents-controller.php
+
+		-
+			rawMessage: Instanceof between WC_Order_Refund|false|null and WC_Order will always evaluate to false.
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: includes/admin/class-wc-rest-payments-refunds-controller.php
+
+		-
+			rawMessage: 'Method WC_REST_Payments_Refunds_Controller::process_order_refund() never returns false so it can be removed from the return type.'
+			identifier: return.unusedType
+			count: 1
+			path: includes/admin/class-wc-rest-payments-refunds-controller.php
+
+		-
+			rawMessage: Result of && is always false.
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: includes/admin/class-wc-rest-payments-refunds-controller.php
+
+		-
+			rawMessage: 'Call to function is_array() with non-empty-array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/admin/class-wc-rest-payments-settings-controller.php
+
+		-
+			rawMessage: 'Call to internal function wc_admin_record_tracks_event().'
+			identifier: function.internal
+			count: 1
+			path: includes/admin/class-wc-rest-payments-settings-controller.php
+
+		-
+			rawMessage: If condition is always true.
+			identifier: if.alwaysTrue
+			count: 1
+			path: includes/admin/class-wc-rest-payments-settings-controller.php
+
+		-
+			rawMessage: Left side of && is always true.
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: includes/admin/class-wc-rest-payments-settings-controller.php
+
+		-
+			rawMessage: 'Method WC_REST_Payments_Settings_Controller::schedule_stripe_billing_migration() should return WP_REST_Response|null but return statement is missing.'
+			identifier: return.missing
+			count: 1
+			path: includes/admin/class-wc-rest-payments-settings-controller.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/admin/class-wc-rest-payments-settings-controller.php
+
+		-
+			rawMessage: Dead catch - Exception is never thrown in the try block.
+			identifier: catch.neverThrown
+			count: 1
+			path: includes/admin/class-wc-rest-payments-webhook-controller.php
+
+		-
+			rawMessage: If condition is always true.
+			identifier: if.alwaysTrue
+			count: 1
+			path: includes/admin/tasks/class-wc-payments-task-disputes.php
+
+		-
+			rawMessage: Unreachable statement - code above always terminates.
+			identifier: deadCode.unreachable
+			count: 1
+			path: includes/admin/tasks/class-wc-payments-task-disputes.php
+
+		-
+			rawMessage: 'Static property WCPay\Tracker::$admin_events (array) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/admin/tracks/class-tracker.php
+
+		-
+			rawMessage: 'Parameter #3 $autoload of function update_option expects bool|null, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-database-cache.php
+
+		-
+			rawMessage: If condition is always true.
+			identifier: if.alwaysTrue
+			count: 1
+			path: includes/class-duplicate-payment-prevention-service.php
+
+		-
+			rawMessage: Right side of && is always true.
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: includes/class-duplicate-payment-prevention-service.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and WC_Session will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/class-duplicate-payment-prevention-service.php
+
+		-
+			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-duplicates-detection-service.php
+
+		-
+			rawMessage: Cannot access property $id on class-string|object.
+			identifier: property.nonObject
+			count: 1
+			path: includes/class-duplicates-detection-service.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-experimental-abtest.php
+
+		-
+			rawMessage: 'Call to function is_string() with string will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-onboarding-experiment.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::AUTOMATIC().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-payment-information.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::MANUAL().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-payment-information.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Initiated_By::CUSTOMER().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-payment-information.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Initiated_By::MERCHANT().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-payment-information.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::SINGLE().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-payment-information.php
+
+		-
+			rawMessage: 'Parameter #1 $token_id of static method WC_Payment_Tokens::get() expects int, array|string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-payment-information.php
+
+		-
+			rawMessage: 'Parameter #2 $value of method WC_Data::add_meta_data() expects array|string, true given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-payment-information.php
+
+		-
+			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
+			identifier: isset.property
+			count: 2
+			path: includes/class-session-rate-limiter.php
+
+		-
+			rawMessage: Access to protected property Automattic\WooCommerce\StoreApi\Payments\PaymentResult::$payment_details.
+			identifier: property.protected
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Action callback returns array but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::AUTOMATIC().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Capture_Type::MANUAL().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Initiated_By::CUSTOMER().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::RECURRING().'
+			identifier: staticMethod.notFound
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to an undefined static method WCPay\Constants\Payment_Type::SINGLE().'
+			identifier: staticMethod.notFound
+			count: 2
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to function is_string() with string will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to function method_exists() with WCPay\Payment_Methods\UPE_Payment_Method and ''get_title'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Call to function property_exists() with $this(WC_Payment_Gateway_WCPay) and ''has_custom_place…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 3.'
+			identifier: arguments.count
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 2
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: If condition is always true.
+			identifier: if.alwaysTrue
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Instanceof between WC_Cart and WC_Cart will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Instanceof between WC_Payment_Token and WC_Payment_Token will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Left side of && is always true.
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 3
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Method WC_Payment_Gateway_WCPay::create_token_from_setup_intent() should return WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA|null but return statement is missing.'
+			identifier: return.missing
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Method WC_Payment_Gateway_WCPay::create_token_from_setup_intent() should return WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA|null but returns WC_Payment_Token.'
+			identifier: return.type
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Parameter #1 $arr1 of function array_merge expects array, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Parameter #1 $order_id of method WC_Payment_Gateway_WCPay::get_payment_method_ids_enabled_at_checkout() expects string|null, int|null given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Parameter #1 $subscription of static method WC_Subscriptions_Change_Payment_Gateway::update_payment_method() expects WC_Subscription, WC_Order|null given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Parameter #1 $text of function esc_attr expects string, int given.'
+			identifier: argument.type
+			count: 2
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Parameter #2 $order_id of method WCPay\Payment_Methods\UPE_Payment_Method<WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface>::is_currency_valid() expects int|null, string|null given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: 'Parameter #2 $value of method WC_Data::update_meta_data() expects array|string, float given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Variable $response might not be defined.
+			identifier: variable.undefined
+			count: 1
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Variable $setup_intent in PHPDoc tag @var does not match assigned variable $intent.
+			identifier: varTag.differentVariable
+			count: 2
+			path: includes/class-wc-payment-gateway-wcpay.php
+
+		-
+			rawMessage: Access to an undefined property WP_Theme::$Name.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: Access to an undefined property WP_Theme::$Version.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: Access to constant VARIATION_TREATMENT of internal class WCPay\Onboarding_Experiment from outside its root namespace WCPay.
+			identifier: classConstant.internalClass
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: Action callback returns bool but should not return anything.
+			identifier: return.void
+			count: 6
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Call to function is_callable() with array{Automattic\WooCommerce\Utilities\PluginUtil, ''get_all_active…''} will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Call to function is_callable() with array{Automattic\WooCommerce\Utilities\PluginUtil, ''is_woocommerce…''} will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Call to internal function wc_admin_record_tracks_event().'
+			identifier: function.internal
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Call to method get_variation() of internal class WCPay\Onboarding_Experiment from outside its root namespace WCPay.'
+			identifier: method.internalClass
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: Instanceof between WC_Payment_Gateway_WCPay and WC_Payment_Gateway_WCPay will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Method WC_Payments_Account::update_stripe_account() should return WP_Error|null but empty return statement found.'
+			identifier: return.empty
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Method WC_Payments_Account::update_stripe_account() should return WP_Error|null but return statement is missing.'
+			identifier: return.missing
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Parameter #1 $post of function get_edit_post_link expects int|WP_Post, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: Result of || is always false.
+			identifier: booleanOr.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and array|bool|string will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: 'Variable $gateway in empty() always exists and is not falsy.'
+			identifier: empty.variable
+			count: 1
+			path: includes/class-wc-payments-account.php
+
+		-
+			rawMessage: Action callback returns bool but should not return anything.
+			identifier: return.void
+			count: 2
+			path: includes/class-wc-payments-action-scheduler-service.php
+
+		-
+			rawMessage: Access to an undefined property WC_Payments_Address_Provider::$id.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments-address-provider.php
+
+		-
+			rawMessage: Access to an undefined property WC_Payments_Address_Provider::$name.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments-address-provider.php
+
+		-
+			rawMessage: 'WC_Payments_Address_Provider::__construct() calls parent::__construct() but WC_Payments_Address_Provider does not extend any class.'
+			identifier: class.noParent
+			count: 1
+			path: includes/class-wc-payments-address-provider.php
+
+		-
+			rawMessage: 'WC_Payments_Address_Provider::load_scripts() calls parent::load_scripts() but WC_Payments_Address_Provider does not extend any class.'
+			identifier: class.noParent
+			count: 1
+			path: includes/class-wc-payments-address-provider.php
+
+		-
+			rawMessage: 'Parameter #1 $amount of static method WC_Payments_Utils::interpret_stripe_amount() expects int, float given.'
+			identifier: argument.type
+			count: 2
+			path: includes/class-wc-payments-captured-event-note.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/class-wc-payments-checkout.php
+
+		-
+			rawMessage: 'Property WooCommerce::$cart (WC_Cart) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/class-wc-payments-checkout.php
+
+		-
+			rawMessage: 'Strict comparison using !== between false and string will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-checkout.php
+
+		-
+			rawMessage: 'Strict comparison using !== between null and string will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-checkout.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-checkout.php
+
+		-
+			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/class-wc-payments-customer-service.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: includes/class-wc-payments-customer-service.php
+
+		-
+			rawMessage: 'Variable $orders in empty() always exists and is not falsy.'
+			identifier: empty.variable
+			count: 1
+			path: includes/class-wc-payments-db.php
+
+		-
+			rawMessage: 'Call to function is_countable() with array<WC_Subscription> will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-features.php
+
+		-
+			rawMessage: 'Call to function is_callable() with ''\\Automattic…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-fraud-service.php
+
+		-
+			rawMessage: 'Found usage of constant DOING_AJAX. Use wp_doing_ajax() instead.'
+			identifier: phpstanWP.wpConstant.fetch
+			count: 1
+			path: includes/class-wc-payments-fraud-service.php
+
+		-
+			rawMessage: 'Method WC_Payments_Fraud_Service::prepare_sift_config() never returns null so it can be removed from the return type.'
+			identifier: return.unusedType
+			count: 1
+			path: includes/class-wc-payments-fraud-service.php
+
+		-
+			rawMessage: Right side of && is always false.
+			identifier: booleanAnd.rightAlwaysFalse
+			count: 1
+			path: includes/class-wc-payments-fraud-service.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and array|bool|string will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-fraud-service.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-onboarding-service.php
+
+		-
+			rawMessage: 'Call to internal function wc_admin_record_tracks_event().'
+			identifier: function.internal
+			count: 1
+			path: includes/class-wc-payments-onboarding-service.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/class-wc-payments-onboarding-service.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and array|bool|string will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-onboarding-service.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-onboarding-service.php
+
+		-
+			rawMessage: 'Call to function is_a() with WC_Order and ''WC_Order'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Parameter #1 $primary_id of static method WC_Payments_Utils::compose_transaction_url() expects string, int given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Parameter #2 $intent of method WC_Payments_Order_Service::mark_payment_capture_completed() expects WC_Payments_API_Payment_Intention, WC_Payments_API_Abstract_Intention given.'
+			identifier: argument.type
+			count: 2
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Parameter #2 $value of method WC_Data::update_meta_data() expects array|string, float given.'
+			identifier: argument.type
+			count: 3
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Parameter #2 $value of method WC_Data::update_meta_data() expects array|string, int given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: Result of || is always false.
+			identifier: booleanOr.alwaysFalse
+			count: 2
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Strict comparison using !== between null and WC_Order will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Strict comparison using !== between null and string will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and string will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: Variable $intent_id on left side of ?? always exists and is not nullable.
+			identifier: nullCoalesce.variable
+			count: 1
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Variable $payment_transaction_id in isset() always exists and is not nullable.'
+			identifier: isset.variable
+			count: 1
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Variable $risk_level in isset() always exists and is not nullable.'
+			identifier: isset.variable
+			count: 1
+			path: includes/class-wc-payments-order-service.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and WC_Session will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-order-success-page.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$total.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments-payment-method-messaging-element.php
+
+		-
+			rawMessage: Left side of && is always true.
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 2
+			path: includes/class-wc-payments-payment-method-messaging-element.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: includes/class-wc-payments-payment-method-messaging-element.php
+
+		-
+			rawMessage: 'Parameter #1 $_unused_customer_id (int) of method WC_Payments_Payment_Request_Session_Handler::delete_session() should be compatible with parameter $customer_id (string) of method WC_Session_Handler::delete_session()'
+			identifier: method.childParameterType
+			count: 1
+			path: includes/class-wc-payments-payment-request-session-handler.php
+
+		-
+			rawMessage: Access to an undefined property WC_Session::$session_id.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments-payment-request-session.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Session::delete_session().'
+			identifier: method.notFound
+			count: 1
+			path: includes/class-wc-payments-payment-request-session.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-pm-promotions-service.php
+
+		-
+			rawMessage: 'Call to function is_array() with array<string> will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: includes/class-wc-payments-pm-promotions-service.php
+
+		-
+			rawMessage: 'Call to function method_exists() with WCPay\Payment_Methods\UPE_Payment_Method and ''get_title'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-pm-promotions-service.php
+
+		-
+			rawMessage: 'Call to internal function wc_admin_record_tracks_event().'
+			identifier: function.internal
+			count: 1
+			path: includes/class-wc-payments-pm-promotions-service.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 3
+			path: includes/class-wc-payments-pm-promotions-service.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-pm-promotions-service.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-post-kyc-activation-email-service.php
+
+		-
+			rawMessage: 'Call to function is_a() with WC_Session and ''WC_Session'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-session-service.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-session-service.php
+
+		-
+			rawMessage: 'Parameter #1 $text of function esc_html expects string, int given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-status.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-status.php
+
+		-
+			rawMessage: 'Call to function is_string() with string will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-styles-cache.php
+
+		-
+			rawMessage: 'Call to internal function _wp_array_get().'
+			identifier: function.internal
+			count: 1
+			path: includes/class-wc-payments-styles-cache.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-styles-cache.php
+
+		-
+			rawMessage: 'Variable $path in empty() always exists and is not falsy.'
+			identifier: empty.variable
+			count: 1
+			path: includes/class-wc-payments-styles-cache.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/class-wc-payments-tasks.php
+
+		-
+			rawMessage: Action callback returns array but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Payment_Token::get_email().'
+			identifier: method.notFound
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Payment_Token::get_last4().'
+			identifier: method.notFound
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Payment_Token::get_redacted_email().'
+			identifier: method.notFound
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Call to function method_exists() with WCPay\Payment_Methods\UPE_Payment_Method and ''get_title'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Parameter #1 $user_id of function get_user_meta expects int, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Parameter #1 $user_id of function update_user_meta expects int, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Parameter #1 $user_id of method WC_Payments_Customer_Service::get_customer_id_by_user_id() expects int|null, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-token-service.php
+
+		-
+			rawMessage: 'Call to function is_a() with WC_Order and ''WC_Order_Refund'' will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/class-wc-payments-utils.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-utils.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments-webhook-processing-service.php
+
+		-
+			rawMessage: Instanceof between WC_Payment_Token and WC_Payment_Token will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments-webhook-processing-service.php
+
+		-
+			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments-woopay-button-handler.php
+
+		-
+			rawMessage: 'Call to function method_exists() with ''WC_Pre_Orders…'' and ''product_is_charged…'' will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/class-wc-payments-woopay-button-handler.php
+
+		-
+			rawMessage: 'Call to method get_requires_confirmation() on an unknown class WC_Product_Booking.'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-wc-payments-woopay-button-handler.php
+
+		-
+			rawMessage: 'Parameter #1 $text of function esc_attr expects string, bool given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments-woopay-button-handler.php
+
+		-
+			rawMessage: 'Property WC_Payments_WooPay_Button_Handler::$account is never read, only written.'
+			identifier: property.onlyWritten
+			count: 1
+			path: includes/class-wc-payments-woopay-button-handler.php
+
+		-
+			rawMessage: Unreachable statement - code above always terminates.
+			identifier: deadCode.unreachable
+			count: 1
+			path: includes/class-wc-payments-woopay-button-handler.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$total.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: Access to an undefined property WooCommerce::$checkout.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: Access to constant on internal class Automattic\WooCommerce\Blocks\Domain\Services\DraftOrders.
+			identifier: classConstant.internalClass
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: 'Call to function is_countable() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: 'Call to method __construct() of internal class WCPay\Onboarding_Experiment from outside its root namespace WCPay.'
+			identifier: method.internalClass
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: Instanceof between WC_Order and WC_Order will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: Instantiation of internal class WCPay\Onboarding_Experiment.
+			identifier: new.internalClass
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: 'Parameter #2 $http_client of class WC_Payments_API_Client constructor expects WC_Payments_Http, WC_Payments_Http_Interface given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: 'Parameter $onboarding_experiment of method WC_Payments::set_onboarding_experiment() has typehint with internal class WCPay\Onboarding_Experiment.'
+			identifier: parameter.internalClass
+			count: 2
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: Property $onboarding_experiment references internal class WCPay\Onboarding_Experiment in its type.
+			identifier: property.internalClass
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: 'Return type of method WC_Payments::get_onboarding_experiment() has typehint with internal class WCPay\Onboarding_Experiment.'
+			identifier: return.internalClass
+			count: 2
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: 'Static method WC_Payments::should_load_stripe_billing_integration() is unused.'
+			identifier: method.unused
+			count: 1
+			path: includes/class-wc-payments.php
+
+		-
+			rawMessage: 'Call to function is_null() with WC_Payments_Account will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/class-woopay-tracker.php
+
+		-
+			rawMessage: 'Call to function is_string() with float will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/class-woopay-tracker.php
+
+		-
+			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 2.'
+			identifier: arguments.count
+			count: 2
+			path: includes/class-woopay-tracker.php
+
+		-
+			rawMessage: Instanceof between WP_User and WP_User will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/class-woopay-tracker.php
+
+		-
+			rawMessage: 'Method WCPay\WooPay_Tracker::tracks_build_event_obj() never returns WP_Error so it can be removed from the return type.'
+			identifier: return.unusedType
+			count: 1
+			path: includes/class-woopay-tracker.php
+
+		-
+			rawMessage: 'Parameter #1 $event of class Jetpack_Tracks_Event constructor expects object, array<mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: includes/class-woopay-tracker.php
+
+		-
+			rawMessage: 'Call to internal static method Automattic\WooCommerce\StoreApi\StoreApi::container() from outside its root namespace Automattic.'
+			identifier: staticMethod.internal
+			count: 1
+			path: includes/compat/blocks/class-blocks-data-extractor.php
+
+		-
+			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\DI\ContainerWrapper.'
+			identifier: class.notFound
+			count: 1
+			path: includes/compat/blocks/class-blocks-data-extractor.php
+
+		-
+			rawMessage: 'Call to static method getInstance() on an unknown class MailPoet\Settings\SettingsController.'
+			identifier: class.notFound
+			count: 1
+			path: includes/compat/blocks/class-blocks-data-extractor.php
+
+		-
+			rawMessage: Class MailPoet\WooCommerce\Subscription not found.
+			identifier: class.notFound
+			count: 1
+			path: includes/compat/blocks/class-blocks-data-extractor.php
+
+		-
+			rawMessage: Instantiated class Automatewoo\Blocks\Marketing_Optin_Block not found.
+			identifier: class.notFound
+			count: 1
+			path: includes/compat/blocks/class-blocks-data-extractor.php
+
+		-
+			rawMessage: Action callback returns WCPay\MultiCurrency\MultiCurrency but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/compat/multi-currency/wc-payments-multi-currency.php
+
+		-
+			rawMessage: Instanceof between string and WCPay\Constants\Base_Constant will always evaluate to false.
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: includes/constants/class-base-constant.php
+
+		-
+			rawMessage: 'Unsafe usage of new static() in abstract class WCPay\Constants\Base_Constant in static method __callStatic().'
+			identifier: new.staticInAbstractClassStaticMethod
+			count: 1
+			path: includes/constants/class-base-constant.php
+
+		-
+			rawMessage: 'Call to method WCPay\Core\Mode::maybe_init() on a separate line has no effect.'
+			identifier: method.resultUnused
+			count: 5
+			path: includes/core/class-mode.php
+
+		-
+			rawMessage: 'Property WCPay\Core\Mode::$dev_mode (bool) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/core/class-mode.php
+
+		-
+			rawMessage: 'Property WCPay\Core\Mode::$test_mode (bool) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/core/class-mode.php
+
+		-
+			rawMessage: 'Property WCPay\Core\Mode::$test_mode_onboarding (bool) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/core/class-mode.php
+
+		-
+			rawMessage: Result of && is always true.
+			identifier: booleanAnd.alwaysTrue
+			count: 2
+			path: includes/core/class-mode.php
+
+		-
+			rawMessage: Unreachable statement - code above always terminates.
+			identifier: deadCode.unreachable
+			count: 1
+			path: includes/core/class-mode.php
+
+		-
+			rawMessage: 'Method WCPay\Core\Server\Request::apply_filters() should return static(WCPay\Core\Server\Request) but returns WCPay\Core\Server\Request.'
+			identifier: return.type
+			count: 2
+			path: includes/core/server/class-request.php
+
+		-
+			rawMessage: 'Method WCPay\Core\Server\Request::create() should return static(WCPay\Core\Server\Request) but returns WCPay\Core\Server\Request.'
+			identifier: return.type
+			count: 1
+			path: includes/core/server/class-request.php
+
+		-
+			rawMessage: 'Property WCPay\Core\Server\Request::$base_class (string) on left side of ?? is not nullable.'
+			identifier: nullCoalesce.property
+			count: 1
+			path: includes/core/server/class-request.php
+
+		-
+			rawMessage: 'Call to function is_array() with non-empty-array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/core/server/request/class-capture-intention.php
+
+		-
+			rawMessage: 'Call to function is_array() with non-empty-array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: includes/core/server/request/class-create-intention.php
+
+		-
+			rawMessage: Offset 'order_number' on non-empty-array on left side of ?? always exists and is not nullable.
+			identifier: nullCoalesce.offset
+			count: 1
+			path: includes/core/server/request/class-create-intention.php
+
+		-
+			rawMessage: 'Call to function is_array() with array<string> will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/core/server/request/class-list-disputes.php
+
+		-
+			rawMessage: Result of && is always false.
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: includes/core/server/request/class-list-disputes.php
+
+		-
+			rawMessage: 'Property WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions::$status (string) on left side of ?? is not nullable.'
+			identifier: nullCoalesce.property
+			count: 1
+			path: includes/core/server/request/class-list-fraud-outcome-transactions.php
+
+		-
+			rawMessage: 'Call to function is_array() with non-empty-array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/core/server/request/class-update-intention.php
+
+		-
+			rawMessage: 'Strict comparison using !== between 0 and string will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/core/server/request/class-update-intention.php
+
+		-
+			rawMessage: Instanceof between WC_Order and WC_Order will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/emails/class-wc-payments-email-ipp-receipt.php
+
+		-
+			rawMessage: 'Parameter #1 $date of function wc_format_datetime expects WC_DateTime, DateTime given.'
+			identifier: argument.type
+			count: 1
+			path: includes/emails/class-wc-payments-email-ipp-receipt.php
+
+		-
+			rawMessage: Access to an undefined property WooCommerce::$shipping.
+			identifier: property.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Data_Store::find_matching_product_variation().'
+			identifier: method.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
+
+		-
+			rawMessage: 'Offset 0 on array{''A Coruña''|''AB''|''Abia''|''Abra''|''AC''|''Aceh''|''ACT''|''Adana''|''AG''|''AK''|''AL''|''Alexandria…''|''AM''|''Amnat Charoen''|''Andhra Pradesh''|''AP''|''Arunachal Pradesh''|''BA''|''BC''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''CDMX''|''CE''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Co. Carlow''|''Corrientes''|''Córdoba''|''DF''|''Entre Ríos''|''ES''|''Federal Capital…''|''Formosa''|''GO''|''Hokkaido''|''Hong Kong Island''|''Jal.''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''MA''|''MB''|''Mendoza''|''MG''|''Misiones''|''MS''|''MT''|''NB''|''Neuquén''|''NSW''|''NT''|''PA''|''PB''|''PE''|''PI''|''PR''|''QLD''|''RJ''|''RN''|''RO''|''RR''|''RS''|''Río Negro''|''SA''|''Salta''|''San Juan''|''San Luis''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''SC''|''SE''|''SP''|''Sumatera Utara''|''TAS''|''Tierra del Fuego''|''TO''|''Tucumán''|''VIC''|''WA''|''Yunnan Sheng''|''Álava'', ''A Coruña''|''Abia''|''Abra''|''Aceh''|''Acre''|''Adana''|''Agrigento''|''Alabama''|''Alagoas''|''Alaska''|''Alberta''|''Alexandria…''|''Amapá''|''Amazonas''|''Amnat Charoen''|''Andhra Pradesh''|''Arunachal Pradesh''|''Australian Capital…''|''Bahia''|''British Columbia''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''Ceará''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Ciudad de México''|''Co. Carlow''|''Corrientes''|''Córdoba''|''Distrito Federal''|''Entre Ríos''|''Espírito Santo''|''Federal Capital…''|''Formosa''|''Goiás''|''Hokkaido''|''Hong Kong Island''|''Jalisco''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''Manitoba''|''Maranhão''|''Mato Grosso''|''Mato Grosso do Sul''|''Mendoza''|''Minas Gerais''|''Misiones''|''Neuquén''|''New Brunswick''|''New South Wales''|''Northern Territory''|''Paraná''|''Paraíba''|''Pará''|''Pernambuco''|''Piauí''|''Queensland''|''Rio de Janeiro''|''Rio Grande do Norte''|''Rio Grande do Sul''|''Rondônia''|''Roraima''|''Río Negro''|''Salta''|''San Juan''|''San Luis''|''Santa Catarina''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''Sergipe''|''South Australia''|''Sumatera Utara''|''São Paulo''|''Tasmania''|''Tierra del Fuego''|''Tocantins''|''Tucumán''|''Victoria''|''Western Australia''|''Yunnan Sheng''|''Álava'', ''Alberta''|''Colombie-Britannique''|''Manitoba''|''Nouveau-Brunswick''|''استان خوزستان''|''الإسكندرية''|''อำนาจเจริญ''|''云南省''|''北海道''|''香港島''|null} in empty() always exists and is not falsy.'
+			identifier: empty.offset
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
+
+		-
+			rawMessage: 'Offset 1 on array{''A Coruña''|''AB''|''Abia''|''Abra''|''AC''|''Aceh''|''ACT''|''Adana''|''AG''|''AK''|''AL''|''Alexandria…''|''AM''|''Amnat Charoen''|''Andhra Pradesh''|''AP''|''Arunachal Pradesh''|''BA''|''BC''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''CDMX''|''CE''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Co. Carlow''|''Corrientes''|''Córdoba''|''DF''|''Entre Ríos''|''ES''|''Federal Capital…''|''Formosa''|''GO''|''Hokkaido''|''Hong Kong Island''|''Jal.''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''MA''|''MB''|''Mendoza''|''MG''|''Misiones''|''MS''|''MT''|''NB''|''Neuquén''|''NSW''|''NT''|''PA''|''PB''|''PE''|''PI''|''PR''|''QLD''|''RJ''|''RN''|''RO''|''RR''|''RS''|''Río Negro''|''SA''|''Salta''|''San Juan''|''San Luis''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''SC''|''SE''|''SP''|''Sumatera Utara''|''TAS''|''Tierra del Fuego''|''TO''|''Tucumán''|''VIC''|''WA''|''Yunnan Sheng''|''Álava'', ''A Coruña''|''Abia''|''Abra''|''Aceh''|''Acre''|''Adana''|''Agrigento''|''Alabama''|''Alagoas''|''Alaska''|''Alberta''|''Alexandria…''|''Amapá''|''Amazonas''|''Amnat Charoen''|''Andhra Pradesh''|''Arunachal Pradesh''|''Australian Capital…''|''Bahia''|''British Columbia''|''Buenos Aires''|''Cabo Delgado''|''Callao''|''Catamarca''|''Ceará''|''Chaco''|''Chubut''|''Ciudad Autónoma de…''|''Ciudad de México''|''Co. Carlow''|''Corrientes''|''Córdoba''|''Distrito Federal''|''Entre Ríos''|''Espírito Santo''|''Federal Capital…''|''Formosa''|''Goiás''|''Hokkaido''|''Hong Kong Island''|''Jalisco''|''Johor''|''Jujuy''|''Khuzestan Province''|''Kingston''|''La Pampa''|''La Rioja''|''Manitoba''|''Maranhão''|''Mato Grosso''|''Mato Grosso do Sul''|''Mendoza''|''Minas Gerais''|''Misiones''|''Neuquén''|''New Brunswick''|''New South Wales''|''Northern Territory''|''Paraná''|''Paraíba''|''Pará''|''Pernambuco''|''Piauí''|''Queensland''|''Rio de Janeiro''|''Rio Grande do Norte''|''Rio Grande do Sul''|''Rondônia''|''Roraima''|''Río Negro''|''Salta''|''San Juan''|''San Luis''|''Santa Catarina''|''Santa Cruz''|''Santa Fe''|''Santiago del Estero''|''Sergipe''|''South Australia''|''Sumatera Utara''|''São Paulo''|''Tasmania''|''Tierra del Fuego''|''Tocantins''|''Tucumán''|''Victoria''|''Western Australia''|''Yunnan Sheng''|''Álava'', ''Alberta''|''Colombie-Britannique''|''Manitoba''|''Nouveau-Brunswick''|''استان خوزستان''|''الإسكندرية''|''อำนาจเจริญ''|''云南省''|''北海道''|''香港島''|null} in empty() always exists and is not falsy.'
+			identifier: empty.offset
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
+
+		-
+			rawMessage: Unreachable statement - code above always terminates.
+			identifier: deadCode.unreachable
+			count: 2
+			path: includes/express-checkout/class-wc-payments-express-checkout-ajax-handler.php
+
+		-
+			rawMessage: 'Call to function is_a() with WC_Session and ''WC_Session'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-display-handler.php
+
+		-
+			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
+			identifier: property.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
+
+		-
+			rawMessage: Action callback returns mixed but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Session::has_session().'
+			identifier: method.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
+			identifier: method.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
+
+		-
+			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 3.'
+			identifier: arguments.count
+			count: 2
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
+
+		-
+			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$cart_contents_total.
+			identifier: property.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$dp.
+			identifier: property.notFound
+			count: 6
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$fees.
+			identifier: property.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$shipping_tax_total.
+			identifier: property.notFound
+			count: 2
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$shipping_total.
+			identifier: property.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Access to an undefined property WC_Cart::$tax_total.
+			identifier: property.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Binary operation "+" between string and string results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Data_Store::find_matching_product_variation().'
+			identifier: method.notFound
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: 'Call to function is_countable() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: Negated boolean expression is always true.
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: 'Parameter #1 $amount of static method WC_Payments_Utils::prepare_amount() expects float, string given.'
+			identifier: argument.type
+			count: 2
+			path: includes/express-checkout/class-wc-payments-express-checkout-button-helper.php
+
+		-
+			rawMessage: 'Parameter #2 $callback of function array_filter expects (callable(mixed): bool)|null, ''strlen'' given.'
+			identifier: argument.type
+			count: 1
+			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
+
+		-
+			rawMessage: Ternary operator condition is always true.
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/fraud-prevention/class-buyer-fingerprinting-service.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/fraud-prevention/class-fraud-prevention-service.php
+
+		-
+			rawMessage: 'Parameter #4 $ver of function wp_register_script expects bool|string|null, int<1, max> given.'
+			identifier: argument.type
+			count: 1
+			path: includes/fraud-prevention/class-fraud-prevention-service.php
+
+		-
+			rawMessage: Variable $gateway on left side of ?? always exists and is always null.
+			identifier: nullCoalesce.variable
+			count: 1
+			path: includes/fraud-prevention/class-fraud-prevention-service.php
+
+		-
+			rawMessage: Variable $session on left side of ?? always exists and is always null.
+			identifier: nullCoalesce.variable
+			count: 1
+			path: includes/fraud-prevention/class-fraud-prevention-service.php
+
+		-
+			rawMessage: 'Variable $default_currency in empty() always exists and is not falsy.'
+			identifier: empty.variable
+			count: 1
+			path: includes/fraud-prevention/class-fraud-risk-tools.php
+
+		-
+			rawMessage: 'Parameter #1 $primary_id of method WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box::compose_transaction_url_with_tracking() expects string, int given.'
+			identifier: argument.type
+			count: 1
+			path: includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php
+
+		-
+			rawMessage: Action callback returns WCPay\Fraud_Prevention\Fraud_Risk_Tools but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/fraud-prevention/wc-payments-fraud-risk-tools.php
+
+		-
+			rawMessage: 'Strict comparison using !== between ''short'' and mixed~''short'' will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/migrations/class-allowed-payment-request-button-types-update.php
+
+		-
+			rawMessage: 'Call to function is_null() with string will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/multi-currency/Analytics.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/multi-currency/Analytics.php
+
+		-
+			rawMessage: Offset 0 on non-empty-list<string> on left side of ?? always exists and is not nullable.
+			identifier: nullCoalesce.offset
+			count: 2
+			path: includes/multi-currency/Analytics.php
+
+		-
+			rawMessage: 'Parameter #1 $text of function esc_attr expects string, float given.'
+			identifier: argument.type
+			count: 1
+			path: includes/multi-currency/AsyncPriceRenderer.php
+
+		-
+			rawMessage: Result of && is always false.
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: includes/multi-currency/CachingEnvironment.php
+
+		-
+			rawMessage: Right side of && is always false.
+			identifier: booleanAnd.rightAlwaysFalse
+			count: 1
+			path: includes/multi-currency/CachingEnvironment.php
+
+		-
+			rawMessage: 'Call to function is_array() with array<WC_Order|WC_Order_Refund> will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/multi-currency/Compatibility.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 2
+			path: includes/multi-currency/Compatibility.php
+
+		-
+			rawMessage: 'Call to function is_countable() with array<WC_Order_Item> will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
+
+		-
+			rawMessage: If condition is always false.
+			identifier: if.alwaysFalse
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
+
+		-
+			rawMessage: Action callback returns array but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceNameYourPrice.php
+
+		-
+			rawMessage: Offset 0 on non-empty-list<string> on left side of ?? always exists and is not nullable.
+			identifier: nullCoalesce.offset
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommercePointsAndRewards.php
+
+		-
+			rawMessage: 'Property WCPay\MultiCurrency\Compatibility\WooCommercePointsAndRewards::$selected_currency (WCPay\MultiCurrency\Currency) in empty() is not falsy.'
+			identifier: empty.property
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommercePointsAndRewards.php
+
+		-
+			rawMessage: 'Binary operation "*" between string and (float|int) results in an error.'
+			identifier: binaryOp.invalid
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
+
+		-
+			rawMessage: 'Callback expects 3 parameters, $accepted_args is set to 4.'
+			identifier: arguments.count
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
+
+		-
+			rawMessage: 'Parameter #2 $value of method WC_Data::update_meta_data() expects array|string, int given.'
+			identifier: argument.type
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
+
+		-
+			rawMessage: Right side of && is always false.
+			identifier: booleanAnd.rightAlwaysFalse
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
+
+		-
+			rawMessage: Right side of && is always true.
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 4
+			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
+
+		-
+			rawMessage: Variable $price might not be defined.
+			identifier: variable.undefined
+			count: 3
+			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
+
+		-
+			rawMessage: 'Property WooCommerce::$cart (WC_Cart) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
+
+		-
+			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
+
+		-
+			rawMessage: Result of && is always true.
+			identifier: booleanAnd.alwaysTrue
+			count: 1
+			path: includes/multi-currency/Compatibility/WooCommerceSubscriptions.php
+
+		-
+			rawMessage: 'Parameter #2 $args of function register_block_type expects array{api_version?: string, title?: string, category?: string|null, parent?: array<string>|null, ancestor?: array<string>|null, allowed_blocks?: array<string>|null, icon?: string|null, description?: string, ...}, array{api_version: ''3'', editor_script: ''woocommerce…'', render_callback: array{$this(WCPay\MultiCurrency\CurrencySwitcherBlock), ''render_block_widget''}, attributes: array{symbol: array{type: ''boolean'', default: true}, flag: array{type: ''boolean'', default: false}, fontSize: array{type: ''integer'', default: 14}, fontLineHeight: array{type: ''number'', default: 1.5}, fontColor: array{type: ''string'', default: ''#000000''}, border: array{type: ''boolean'', default: true}, borderRadius: array{type: ''integer'', default: 3}, borderColor: array{type: ''string'', default: ''#000000''}, ...}} given.'
+			identifier: argument.type
+			count: 1
+			path: includes/multi-currency/CurrencySwitcherBlock.php
+
+		-
+			rawMessage: Action callback returns mixed but should not return anything.
+			identifier: return.void
+			count: 1
+			path: includes/multi-currency/FrontendCurrencies.php
+
+		-
+			rawMessage: 'Property WCPay\MultiCurrency\FrontendCurrencies::$selected_currency_code (string) does not accept null.'
+			identifier: assign.propertyType
+			count: 1
+			path: includes/multi-currency/FrontendCurrencies.php
+
+		-
+			rawMessage: 'Property WCPay\MultiCurrency\FrontendCurrencies::$store_currency (WCPay\MultiCurrency\Currency) does not accept null.'
+			identifier: assign.propertyType
+			count: 1
+			path: includes/multi-currency/FrontendCurrencies.php
+
+		-
+			rawMessage: 'Property WCPay\MultiCurrency\FrontendCurrencies::$store_currency (WCPay\MultiCurrency\Currency) in empty() is not falsy.'
+			identifier: empty.property
+			count: 1
+			path: includes/multi-currency/FrontendCurrencies.php
+
+		-
+			rawMessage: 'Property WCPay\MultiCurrency\FrontendCurrencies::$woocommerce_currency (string) does not accept null.'
+			identifier: assign.propertyType
+			count: 1
+			path: includes/multi-currency/FrontendCurrencies.php
+
+		-
+			rawMessage: 'Call to function is_numeric() with float will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: includes/multi-currency/FrontendPrices.php
+
+		-
+			rawMessage: 'Parameter #2 $value of method WC_Data::update_meta_data() expects array|string, float given.'
+			identifier: argument.type
+			count: 1
+			path: includes/multi-currency/FrontendPrices.php
+
+		-
+			rawMessage: Access to an undefined property WC_Countries::$countries.
+			identifier: property.notFound
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Call to function is_array() with array<string> will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Call to function is_numeric() with float will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: If condition is always true.
+			identifier: if.alwaysTrue
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Method WCPay\MultiCurrency\MultiCurrency::instance() should return WCPay\MultiCurrency\MultiCurrency|null but return statement is missing.'
+			identifier: return.missing
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Parameter #1 $text of function esc_html expects string, int given.'
+			identifier: argument.type
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Parameter #2 $code of class WCPay\MultiCurrency\Exceptions\InvalidCurrencyException constructor expects int, string given.'
+			identifier: argument.type
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Parameter #3 $args of function the_widget expects array{before_widget?: string, after_widget?: string, before_title?: string, after_title?: string}, array given.'
+			identifier: argument.type
+			count: 1
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
+			identifier: isset.property
+			count: 2
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: Right side of && is always true.
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 2
+			path: includes/multi-currency/MultiCurrency.php
+
+		-
+			rawMessage: 'Call to function is_null() with WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/multi-currency/Notes/NoteMultiCurrencyAvailable.php
+
+		-
+			rawMessage: Expression on left side of ?? is not nullable.
+			identifier: nullCoalesce.expr
+			count: 1
+			path: includes/multi-currency/StorefrontIntegration.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
+			identifier: method.notFound
+			count: 1
+			path: includes/multi-currency/Utils.php
+
+		-
+			rawMessage: 'Call to function method_exists() with WooCommerce and ''is_store_api_request'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/multi-currency/Utils.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Data_Store::get_notes_with_name().'
+			identifier: method.notFound
+			count: 1
+			path: includes/notes/class-wc-payments-notes-loan-approved.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Data_Store::get_notes_with_name().'
+			identifier: method.notFound
+			count: 1
+			path: includes/notes/class-wc-payments-remote-note-service.php
+
+		-
+			rawMessage: 'Method WC_Payments_Remote_Note_Service::create_note() never returns Automattic\WooCommerce\Admin\Notes\WC_Admin_Note so it can be removed from the return type.'
+			identifier: return.unusedType
+			count: 1
+			path: includes/notes/class-wc-payments-remote-note-service.php
+
+		-
+			rawMessage: 'Property WCPay\Payment_Methods\UPE_Payment_Method<T of WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface>::$dark_icon_url (string) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/payment-methods/class-upe-payment-method.php
+
+		-
+			rawMessage: 'Property WCPay\Payment_Methods\UPE_Payment_Method<T of WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface>::$icon_url (string) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/payment-methods/class-upe-payment-method.php
+
+		-
+			rawMessage: 'Property WooCommerce::$cart (WC_Cart) in isset() is not nullable.'
+			identifier: isset.property
+			count: 2
+			path: includes/payment-methods/class-upe-payment-method.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and int will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: includes/payment-methods/class-upe-payment-method.php
+
+		-
+			rawMessage: 'Method WCPay\Core\Server\Request::handle_rest_request() invoked with 1 parameter, 0 required.'
+			identifier: arguments.count
+			count: 2
+			path: includes/reports/class-wc-rest-payments-reports-authorizations-controller.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 6
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Call to function is_wp_error() with array will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 5
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Method WC_Payments_API_Client::get_fingerprint_metadata() is unused.'
+			identifier: method.unused
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Method WC_Payments_API_Client::get_intent_description() is unused.'
+			identifier: method.unused
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Parameter #2 $context of static method WCPay\Logger::info() expects array<string, mixed>, array<int|string, array<string, array|bool|int|string>> given.'
+			identifier: argument.type
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: Right side of && is always true.
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Strict comparison using !== between 0 and string will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Strict comparison using !== between false and int|string will always evaluate to true.'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Strict comparison using === between null and string will always evaluate to false.'
+			identifier: identical.alwaysFalse
+			count: 3
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Variable $address in isset() always exists and is not nullable.'
+			identifier: isset.variable
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Variable $display_name in isset() always exists and is not nullable.'
+			identifier: isset.variable
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-api-client.php
+
+		-
+			rawMessage: 'Call to function is_array() with Automattic\Jetpack\Connection\_WP_Remote_Response_Array will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-http.php
+
+		-
+			rawMessage: 'Call to method get_error_message() on an unknown class Automattic\Jetpack\Connection\_WP_Remote_Response_Array.'
+			identifier: class.notFound
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-http.php
+
+		-
+			rawMessage: Result of || is always true.
+			identifier: booleanOr.alwaysTrue
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-http.php
+
+		-
+			rawMessage: Unreachable statement - code above always terminates.
+			identifier: deadCode.unreachable
+			count: 1
+			path: includes/wc-payment-api/class-wc-payments-http.php
+
+		-
+			rawMessage: Access to an undefined property WooCommerce::$payment_gateways.
+			identifier: property.notFound
+			count: 1
+			path: includes/woopay-user/class-woopay-save-user.php
+
+		-
+			rawMessage: 'Callback expects 0 parameters, $accepted_args is set to 2.'
+			identifier: arguments.count
+			count: 1
+			path: includes/woopay-user/class-woopay-save-user.php
+
+		-
+			rawMessage: 'Call to function method_exists() with ''AFWC_API'' and ''get_instance'' will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/woopay/class-woopay-adapted-extensions.php
+
+		-
+			rawMessage: 'Call to function method_exists() with ''AFWC_API'' and ''track_conversion'' will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/woopay/class-woopay-adapted-extensions.php
+
+		-
+			rawMessage: 'Call to function method_exists() with ''AutomateWoo\\Referrals\\Referral_Manager'' and ''get_advocate_key…'' will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/woopay/class-woopay-adapted-extensions.php
+
+		-
+			rawMessage: 'Call to function method_exists() with ''WC_Points_Rewards…'' and ''get_users_points'' will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/woopay/class-woopay-adapted-extensions.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Data_Store::search_webhooks().'
+			identifier: method.notFound
+			count: 1
+			path: includes/woopay/class-woopay-order-status-sync.php
+
+		-
+			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 2.'
+			identifier: arguments.count
+			count: 1
+			path: includes/woopay/class-woopay-order-status-sync.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/woopay/class-woopay-scheduler.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Session::has_session().'
+			identifier: method.notFound
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
+			identifier: method.notFound
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Call to function is_array() with Automattic\Jetpack\Connection\_WP_Remote_Response_Array will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Call to function is_null() with WC_Payment_Gateway_WCPay will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Call to internal static method Automattic\WooCommerce\StoreApi\StoreApi::container() from outside its root namespace Automattic.'
+			identifier: staticMethod.internal
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: Instanceof between WC_Order and WC_Order will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Method WCPay\WooPay\WooPay_Session::create_woopay_nonce() never returns false so it can be removed from the return type.'
+			identifier: return.unusedType
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Method WCPay\WooPay\WooPay_Session::get_inner_block() never returns null so it can be removed from the return type.'
+			identifier: return.unusedType
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Method WCPay\WooPay\WooPay_Session::get_inner_block() should return array|null but empty return statement found.'
+			identifier: return.empty
+			count: 2
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Parameter #1 $str of function rawurlencode expects string, int|null given.'
+			identifier: argument.type
+			count: 2
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Parameter #2 $value of method WC_Data::add_meta_data() expects array|string, int given.'
+			identifier: argument.type
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Property WooCommerce::$customer (WC_Customer) in empty() is not falsy.'
+			identifier: empty.property
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: Result of || is always true.
+			identifier: booleanOr.alwaysTrue
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: Right side of && is always true.
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: Unreachable statement - code above always terminates.
+			identifier: deadCode.unreachable
+			count: 2
+			path: includes/woopay/class-woopay-session.php
+
+		-
+			rawMessage: 'Property WooCommerce::$session (WC_Session) in isset() is not nullable.'
+			identifier: isset.property
+			count: 1
+			path: includes/woopay/class-woopay-utilities.php
+
+		-
+			rawMessage: 'Callback expects 2 parameters, $accepted_args is set to 3.'
+			identifier: arguments.count
+			count: 1
+			path: includes/woopay/services/class-checkout-service.php
+
+		-
+			rawMessage: Instanceof between WP_REST_Response and WP_REST_Response will always evaluate to true.
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Internal/Abilities/AbilitiesRegistrar.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Internal/Abilities/Domain/GetCharge.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Internal/Abilities/Domain/GetDispute.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Internal/Abilities/Domain/GetPaymentIntent.php
+
+		-
+			rawMessage: Negated boolean expression is always false.
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Internal/Abilities/Domain/GetTimeline.php
+
+		-
+			rawMessage: 'Offset ''idempotency_key'' on non-empty-array<string, mixed> in isset() always exists and is not nullable.'
+			identifier: isset.offset
+			count: 1
+			path: src/Internal/Abilities/Domain/RefundCharge.php
+
+		-
+			rawMessage: Right side of && is always true.
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: src/Internal/Abilities/Domain/RefundCharge.php
+
+		-
+			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Internal/LoggerContext.php
+
+		-
+			rawMessage: 'Found usage of constant DOING_AJAX. Use wp_doing_ajax() instead.'
+			identifier: phpstanWP.wpConstant.fetch
+			count: 1
+			path: src/Internal/LoggerContext.php
+
+		-
+			rawMessage: 'Found usage of constant DOING_CRON. Use wp_doing_cron() instead.'
+			identifier: phpstanWP.wpConstant.fetch
+			count: 1
+			path: src/Internal/LoggerContext.php
+
+		-
+			rawMessage: 'Property WCPay\Internal\LoggerContext::$context_updated is never read, only written.'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Internal/LoggerContext.php
+
+		-
+			rawMessage: Right side of && is always false.
+			identifier: booleanAnd.rightAlwaysFalse
+			count: 2
+			path: src/Internal/LoggerContext.php
+
+		-
+			rawMessage: 'Call to function is_wp_error() with array will always evaluate to false.'
+			identifier: function.impossibleType
+			count: 2
+			path: src/Internal/Service/DisputeService.php
+
+		-
+			rawMessage: 'Method WCPay\Internal\Service\ExampleServiceWithDependencies::handle_exception() should return bool|null but return statement is missing.'
+			identifier: return.missing
+			count: 1
+			path: src/Internal/Service/ExampleServiceWithDependencies.php
+
+		-
+			rawMessage: 'Property WCPay\Internal\Service\ExampleServiceWithDependencies::$plugin_util is never read, only written.'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Internal/Service/ExampleServiceWithDependencies.php
+
+		-
+			rawMessage: '@@param WCPay\Internal\Service\WC_Order $order does not accept actual type of parameter: WC_Order.'
+			identifier: parameter.phpDocType
+			count: 1
+			path: src/Internal/Service/Level3Service.php
+
+		-
+			rawMessage: Binary operation "-" between string and string results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Internal/Service/Level3Service.php
+
+		-
+			rawMessage: Binary operation "/" between string and float results in an error.
+			identifier: binaryOp.invalid
+			count: 2
+			path: src/Internal/Service/Level3Service.php
+
+		-
+			rawMessage: 'Parameter #1 $amount of method WCPay\Internal\Service\Level3Service::prepare_amount() expects float, string given.'
+			identifier: argument.type
+			count: 2
+			path: src/Internal/Service/Level3Service.php
+
+		-
+			rawMessage: 'Parameter #1 $item of method WCPay\Internal\Service\Level3Service::process_item() expects WC_Order_Item_Fee|WC_Order_Item_Product, WC_Order_Item given.'
+			identifier: argument.type
+			count: 1
+			path: src/Internal/Service/Level3Service.php
+
+		-
+			rawMessage: 'Parameter #1 $string of function substr expects string, int given.'
+			identifier: argument.type
+			count: 1
+			path: src/Internal/Service/Level3Service.php
+
+		-
+			rawMessage: 'Call to function method_exists() with ''Automattic\\Jetpack\\Sync\\Actions'' and ''do_only_first…'' will always evaluate to true.'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: woocommerce-payments.php

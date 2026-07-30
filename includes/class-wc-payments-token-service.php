@@ -130,7 +130,7 @@ class WC_Payments_Token_Service {
 	 *
 	 * @param string  $payment_method_id Payment method to be added.
 	 * @param WP_User $user              User to attach payment method to.
-	 * @return WC_Payment_Token_CC       The newly created token.
+	 * @return WC_Payment_Token          The newly created token.
 	 */
 	public function add_payment_method_to_user( $payment_method_id, $user ) {
 		$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
@@ -230,7 +230,7 @@ class WC_Payments_Token_Service {
 		}
 
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
-		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10 );
 
 		foreach ( $payment_methods as $payment_method ) {
 			if ( ! isset( $payment_method['type'] ) ) {
@@ -246,7 +246,7 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 
 		// Remove the payment methods that no longer exist in Stripe's side.
-		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10 );
 		foreach ( $stored_tokens as $token ) {
 			unset( $tokens[ $token->get_id() ] );
 			$token->delete();
