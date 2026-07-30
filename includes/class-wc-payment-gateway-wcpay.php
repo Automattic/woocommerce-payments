@@ -2586,16 +2586,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Resolves the customer IP address to record on the mandate.
 	 *
-	 * The order is the primary source. It stores the IP captured while the customer was
-	 * present, which is the moment they accepted the mandate terms, and WooCommerce
-	 * Subscriptions copies it onto every renewal order. Live request state is only a
-	 * fallback: scheduled renewals run with no HTTP request (CLI cron, WP-CLI), where
-	 * WC_Geolocation::get_ip_address() returns an empty string and Stripe rejects the
-	 * whole intent with "Invalid IP address".
+	 * Prefers the order, which holds the IP captured while the customer was present, the
+	 * moment they accepted the mandate terms. Falls back to live request state, which is
+	 * empty when no HTTP request exists (CLI cron, WP-CLI) and Stripe then rejects the
+	 * intent with "Invalid IP address".
 	 *
-	 * Merchant-initiated payments no longer send mandate data at all, so the order is now
-	 * only consulted for customer-present payments whose live request state is unusable.
-	 * See should_send_mandate_data().
+	 * Only customer-present payments reach here: should_send_mandate_data() sends nothing
+	 * for merchant-initiated ones.
 	 *
 	 * @param WC_Order|null $order Order the mandate is being created for, when available.
 	 *
