@@ -229,7 +229,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_product() {
-		return is_product() || wc_post_content_has_shortcode( 'product_page' );
+		return is_product() || null !== $this->get_product_page_shortcode_host();
 	}
 
 	/**
@@ -472,12 +472,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return wc_get_product( $post->ID );
 		}
 
-		if ( wc_post_content_has_shortcode( 'product_page' ) ) {
+		$host = $this->get_product_page_shortcode_host();
+		if ( null !== $host ) {
 			// Extract all [product_page ...] tags and parse their attributes.
 			// This handles id/sku, unquoted values, single-quoted values, and extra
 			// attributes. We try each shortcode instance in order and return the
 			// first one that resolves to a product.
-			preg_match_all( '/\[product_page\b([^\]]*)\]/', $post->post_content, $shortcode_matches );
+			preg_match_all( '/\[product_page\b([^\]]*)\]/', $host->post_content, $shortcode_matches );
 			if ( isset( $shortcode_matches[1] ) && is_array( $shortcode_matches[1] ) ) {
 				foreach ( $shortcode_matches[1] as $attrs_str ) {
 					$atts = shortcode_parse_atts( $attrs_str );
@@ -845,6 +846,32 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 * @param WC_Product $product The product object.
 		 */
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * Returns the singular post whose content embeds a [product_page] shortcode, if any.
+	 *
+	 * Read from the main query, not the `$post` / `$wp_query` globals: the shortcode renders
+	 * its product in its own loop, so by the time the button markup is emitted on
+	 * `woocommerce_after_add_to_cart_form` those globals point at the embedded product. The
+	 * `sku` syntax is where that bites — WooCommerce queries it via `meta_query` with no post
+	 * ID, so the inner query never derives `is_singular` the way the `id` syntax does.
+	 *
+	 * @return WP_Post|null The host post, or null when this request isn't one.
+	 */
+	private function get_product_page_shortcode_host() {
+		// Not every context has a main query (REST, cron, CLI, webhooks).
+		$main_query = $GLOBALS['wp_the_query'] ?? null;
+		if ( ! $main_query instanceof WP_Query || ! $main_query->is_singular() ) {
+			return null;
+		}
+
+		$host = $main_query->get_queried_object();
+		if ( ! $host instanceof WP_Post || ! has_shortcode( $host->post_content, 'product_page' ) ) {
+			return null;
+		}
+
+		return $host;
 	}
 
 	/**

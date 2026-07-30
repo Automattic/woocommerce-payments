@@ -1110,54 +1110,82 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Creates a product with a known SKU plus a page embedding it via the given shortcode
+	 * syntax, then navigates to that page. Returns the product and its SKU.
+	 *
+	 * @param string $shortcode_template Template with a single %s placeholder.
+	 * @param bool   $use_sku            Substitute the SKU instead of the product ID.
+	 * @return array{0: WC_Product, 1: string}
+	 */
+	private function go_to_page_embedding_product( string $shortcode_template, bool $use_sku ): array {
+		$product = WC_Helper_Product::create_simple_product();
+		$sku     = 'test-sku-' . $product->get_id();
+		$product->set_sku( $sku );
+		$product->save();
+
+		$page_id = wp_insert_post(
+			[
+				'post_title'   => 'Test page',
+				'post_content' => sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ),
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+			]
+		);
+
+		$this->go_to( get_permalink( $page_id ) );
+
+		return [ $product, $sku ];
+	}
+
+	/**
 	 * @dataProvider get_product_shortcode_syntaxes_provider
 	 */
 	public function test_get_product_from_product_page_shortcode( string $shortcode_template, bool $use_sku ) {
-		global $post, $wp_query;
+		list( $product ) = $this->go_to_page_embedding_product( $shortcode_template, $use_sku );
 
-		// Save original global state.
-		$original_post        = $post;
-		$original_is_singular = isset( $wp_query->is_singular ) ? $wp_query->is_singular : null;
-		$original_is_page     = isset( $wp_query->is_page ) ? $wp_query->is_page : null;
+		$resolved = $this->system_under_test->get_product();
 
-		try {
-			$product = WC_Helper_Product::create_simple_product();
-			$sku     = 'test-sku-' . $product->get_id();
-			$product->set_sku( $sku );
-			$product->save();
+		$this->assertInstanceOf( WC_Product::class, $resolved );
+		$this->assertSame( $product->get_id(), $resolved->get_id() );
+	}
 
-			$placeholder  = $use_sku ? $sku : $product->get_id();
-			$post_content = sprintf( $shortcode_template, $placeholder );
+	/**
+	 * The express checkout markup is emitted from `woocommerce_after_add_to_cart_form`, which
+	 * fires inside the shortcode's own WP_Query loop — so by then the `$post` and `$wp_query`
+	 * globals point at the embedded product rather than the host page. The helper has to keep
+	 * recognising the page there, or the buttons are never rendered.
+	 *
+	 * The `sku` attribute is what exposes this: WooCommerce queries it via `meta_query` with no
+	 * post ID, so the inner query never derives `is_singular` the way the `id` attribute does.
+	 *
+	 * @dataProvider get_product_shortcode_syntaxes_provider
+	 */
+	public function test_get_product_while_product_page_shortcode_renders( string $shortcode_template, bool $use_sku ) {
+		list( $product, $sku ) = $this->go_to_page_embedding_product( $shortcode_template, $use_sku );
 
-			// Create a real WP page containing the shortcode so wc_post_content_has_shortcode()
-			// (which checks is_singular() and is_a($post, 'WP_Post')) returns true.
-			$page_id = wp_insert_post(
-				[
-					'post_title'   => 'Test page',
-					'post_content' => $post_content,
-					'post_status'  => 'publish',
-					'post_type'    => 'page',
-				]
-			);
-			$post    = get_post( $page_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$observed = [];
+		add_action(
+			'woocommerce_after_add_to_cart_form',
+			function () use ( &$observed ) {
+				$resolved               = $this->system_under_test->get_product();
+				$observed['is_product'] = $this->system_under_test->is_product();
+				$observed['product_id'] = $resolved instanceof WC_Product ? $resolved->get_id() : null;
+			}
+		);
 
-			// Simulate a non-product singular page.
-			$wp_query->is_singular = true;
-			$wp_query->is_page     = true;
+		// The single-product template renders reviews, and the default test theme ships no
+		// comments.php.
+		$this->setExpectedDeprecated( 'Theme without comments.php' );
 
-			$resolved = $this->system_under_test->get_product();
+		// Render through WooCommerce's real shortcode rather than emulating its query, so this
+		// keeps testing the actual conditions the button markup is emitted under.
+		ob_start();
+		do_shortcode( sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ) );
+		ob_end_clean();
 
-			// Clean up.
-			wp_delete_post( $page_id, true );
-
-			$this->assertInstanceOf( WC_Product::class, $resolved );
-			$this->assertSame( $product->get_id(), $resolved->get_id() );
-		} finally {
-			// Restore original global state.
-			$post                  = $original_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-			$wp_query->is_singular = $original_is_singular;
-			$wp_query->is_page     = $original_is_page;
-		}
+		$this->assertArrayHasKey( 'is_product', $observed, 'woocommerce_after_add_to_cart_form did not fire.' );
+		$this->assertTrue( $observed['is_product'] );
+		$this->assertSame( $product->get_id(), $observed['product_id'] );
 	}
 
 	public function test_should_not_show_express_checkout_button_when_product_not_purchasable() {
