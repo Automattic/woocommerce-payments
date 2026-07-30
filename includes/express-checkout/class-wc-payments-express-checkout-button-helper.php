@@ -473,21 +473,27 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		if ( wc_post_content_has_shortcode( 'product_page' ) ) {
-			// Extract the full [product_page ...] tag and parse its attributes so that
-			// id/sku, unquoted values, single-quoted values, and extra attributes are
-			// all handled correctly.
-			preg_match( '/\[product_page\b([^\]]*)\]/', $post->post_content, $shortcode_match );
-			if ( isset( $shortcode_match[1] ) ) {
-				$atts = shortcode_parse_atts( $shortcode_match[1] );
+			// Extract all [product_page ...] tags and parse their attributes.
+			// This handles id/sku, unquoted values, single-quoted values, and extra
+			// attributes. We try each shortcode instance in order and return the
+			// first one that resolves to a product.
+			preg_match_all( '/\[product_page\b([^\]]*)\]/', $post->post_content, $shortcode_matches );
+			if ( isset( $shortcode_matches[1] ) && is_array( $shortcode_matches[1] ) ) {
+				foreach ( $shortcode_matches[1] as $attrs_str ) {
+					$atts = shortcode_parse_atts( $attrs_str );
 
-				if ( ! empty( $atts['id'] ) ) {
-					return wc_get_product( (int) $atts['id'] );
-				}
+					if ( ! empty( $atts['id'] ) ) {
+						$product = wc_get_product( (int) $atts['id'] );
+						if ( $product ) {
+							return $product;
+						}
+					}
 
-				if ( ! empty( $atts['sku'] ) ) {
-					$product_id = wc_get_product_id_by_sku( $atts['sku'] );
-					if ( $product_id ) {
-						return wc_get_product( $product_id );
+					if ( ! empty( $atts['sku'] ) ) {
+						$product_id = wc_get_product_id_by_sku( $atts['sku'] );
+						if ( $product_id ) {
+							return wc_get_product( $product_id );
+						}
 					}
 				}
 			}

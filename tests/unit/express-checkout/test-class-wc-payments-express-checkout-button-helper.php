@@ -1115,39 +1115,49 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	public function test_get_product_from_product_page_shortcode( string $shortcode_template, bool $use_sku ) {
 		global $post, $wp_query;
 
-		$product = WC_Helper_Product::create_simple_product();
-		$sku     = 'test-sku-' . $product->get_id();
-		$product->set_sku( $sku );
-		$product->save();
+		// Save original global state.
+		$original_post        = $post;
+		$original_is_singular = isset( $wp_query->is_singular ) ? $wp_query->is_singular : null;
+		$original_is_page     = isset( $wp_query->is_page ) ? $wp_query->is_page : null;
 
-		$placeholder  = $use_sku ? $sku : $product->get_id();
-		$post_content = sprintf( $shortcode_template, $placeholder );
+		try {
+			$product = WC_Helper_Product::create_simple_product();
+			$sku     = 'test-sku-' . $product->get_id();
+			$product->set_sku( $sku );
+			$product->save();
 
-		// Create a real WP page containing the shortcode so wc_post_content_has_shortcode()
-		// (which checks is_singular() and is_a($post, 'WP_Post')) returns true.
-		$page_id = wp_insert_post(
-			[
-				'post_title'   => 'Test page',
-				'post_content' => $post_content,
-				'post_status'  => 'publish',
-				'post_type'    => 'page',
-			]
-		);
-		$post    = get_post( $page_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$placeholder  = $use_sku ? $sku : $product->get_id();
+			$post_content = sprintf( $shortcode_template, $placeholder );
 
-		// Simulate a non-product singular page.
-		$wp_query->is_singular = true;
-		$wp_query->is_page     = true;
+			// Create a real WP page containing the shortcode so wc_post_content_has_shortcode()
+			// (which checks is_singular() and is_a($post, 'WP_Post')) returns true.
+			$page_id = wp_insert_post(
+				[
+					'post_title'   => 'Test page',
+					'post_content' => $post_content,
+					'post_status'  => 'publish',
+					'post_type'    => 'page',
+				]
+			);
+			$post    = get_post( $page_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
-		$resolved = $this->system_under_test->get_product();
+			// Simulate a non-product singular page.
+			$wp_query->is_singular = true;
+			$wp_query->is_page     = true;
 
-		// Clean up.
-		wp_delete_post( $page_id, true );
-		$wp_query->is_singular = false;
-		$wp_query->is_page     = false;
+			$resolved = $this->system_under_test->get_product();
 
-		$this->assertInstanceOf( WC_Product::class, $resolved );
-		$this->assertSame( $product->get_id(), $resolved->get_id() );
+			// Clean up.
+			wp_delete_post( $page_id, true );
+
+			$this->assertInstanceOf( WC_Product::class, $resolved );
+			$this->assertSame( $product->get_id(), $resolved->get_id() );
+		} finally {
+			// Restore original global state.
+			$post                  = $original_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			$wp_query->is_singular = $original_is_singular;
+			$wp_query->is_page     = $original_is_page;
+		}
 	}
 
 	public function test_should_not_show_express_checkout_button_when_product_not_purchasable() {
