@@ -37,7 +37,7 @@ class Dispute_Ledger_Backfill_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_queues_the_backfill_for_an_existing_install() {
-		update_option( self::VERSION_OPTION, '11.0.0' );
+		update_option( self::VERSION_OPTION, '10.9.0' );
 
 		$this->migration->maybe_migrate();
 
@@ -57,7 +57,7 @@ class Dispute_Ledger_Backfill_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_does_nothing_when_already_on_this_version() {
-		update_option( self::VERSION_OPTION, '11.1.0' );
+		update_option( self::VERSION_OPTION, '11.0.0' );
 
 		$this->migration->maybe_migrate();
 
@@ -76,7 +76,7 @@ class Dispute_Ledger_Backfill_Test extends WCPAY_UnitTestCase {
 	 * A backfill already under way must not be rewound to page zero by a second upgrade.
 	 */
 	public function test_leaves_an_existing_state_untouched() {
-		update_option( self::VERSION_OPTION, '11.0.0' );
+		update_option( self::VERSION_OPTION, '10.9.0' );
 		update_option(
 			self::STATE_OPTION,
 			[

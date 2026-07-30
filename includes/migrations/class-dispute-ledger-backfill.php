@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * not reliably initialised while a plugin update runs, so this records only that the backfill is
  * due; WC_Payments_Dispute_Ledger_Backfill_Service does the work, and documents why it is needed.
  *
- * @since 11.1.0
+ * @since 11.0.0
  */
 class Dispute_Ledger_Backfill {
 
@@ -26,7 +26,7 @@ class Dispute_Ledger_Backfill {
 	 *
 	 * @var string
 	 */
-	const VERSION_SINCE = '11.1.0';
+	const VERSION_SINCE = '11.0.0';
 
 	/**
 	 * Option holding the backfill progress.
