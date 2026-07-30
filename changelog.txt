@@ -29,6 +29,7 @@
 * Fix - Fix inconsistent card brand SVG styling: add missing rounded corners to Mastercard, correct Discover rendered width from 61px to 64px, and add explicit white background fill to Discover.
 * Fix - Fix PHP 8.5 deprecation notice when selecting a currency before any currency is stored for the user or session
 * Fix - Fix REST API routes not being registered for internal REST requests made from admin pages
+* Fix - Fix subscription renewals failing with "Invalid IP address" when cron runs without an HTTP request
 * Fix - Fix the dispute notification "View and respond to dispute" link intermittently landing on an error or broken page by redirecting to the disputes list when the dispute's transaction details cannot be resolved.
 * Fix - Fix WooPay express checkout button showing an infinite spinner on classic variable product pages
 * Fix - Forward structured error details (error code, type, and HTTP status) in the test drive account init REST error response, so consumers can distinguish non-recoverable errors.
