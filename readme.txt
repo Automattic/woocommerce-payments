@@ -89,7 +89,6 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 = 11.0.0 - 2026-07-30 =
 * Add - Add A/B/C design variants to the in-app review prompt, assigned per-store via ExPlat (prompt remains disabled pending eligibility criteria)
-* Add - Add a client-side origin assertion that blocks checkout when Stripe.js is loaded from an unexpected origin, as defense-in-depth against skimmers that repoint the script handle to a look-alike domain.
 * Add - Multi-Currency: add the `wcpay_multi_currency_should_output_explicit_price` filter so merchants can force the currency code suffix on totals (e.g. "765 Kč CZK") on or off.
 * Add - Multi-Currency: auto-detect page caching to enable or recommend the cache-optimized rendering mode
 * Fix - Add direct file access protection to PHP files flagged by Plugin Check.
@@ -138,7 +137,6 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 * Fix - Store the payment intent ID on orders when a payment fails, improving transaction traceability and webhook matching.
 * Fix - update: ECE to allow pay-for-order flow when customer billing email is missing
 * Update - Allow the Reports area to be enabled per account from the server.
-* Update - Harden the client-side Stripe.js origin assertion: ignore non-script elements sharing the Stripe.js script id, and make the blocked-payment error message translatable.
 * Update - refactor: make the iti tel input lazy-loaded, so that bundles are more optimized for the majority of scenarios
 * Update - Updated the payment method card brand icons to the latest design-library artwork, with a consistent outline across the settings, checkout, and transactions screens.
 * Dev - Add job to open a release sync PR against develop at code freeze time
