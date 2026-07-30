@@ -473,10 +473,23 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		if ( wc_post_content_has_shortcode( 'product_page' ) ) {
-			// Get id from product_page shortcode.
-			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
-			if ( isset( $shortcode_match['id'] ) ) {
-				return wc_get_product( $shortcode_match['id'] );
+			// Extract the full [product_page ...] tag and parse its attributes so that
+			// id/sku, unquoted values, single-quoted values, and extra attributes are
+			// all handled correctly.
+			preg_match( '/\[product_page\b([^\]]*)\]/', $post->post_content, $shortcode_match );
+			if ( isset( $shortcode_match[1] ) ) {
+				$atts = shortcode_parse_atts( $shortcode_match[1] );
+
+				if ( ! empty( $atts['id'] ) ) {
+					return wc_get_product( (int) $atts['id'] );
+				}
+
+				if ( ! empty( $atts['sku'] ) ) {
+					$product_id = wc_get_product_id_by_sku( $atts['sku'] );
+					if ( $product_id ) {
+						return wc_get_product( $product_id );
+					}
+				}
 			}
 		}
 

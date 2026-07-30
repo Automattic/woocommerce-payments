@@ -1090,6 +1090,66 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $helper->is_product_purchasable() );
 	}
 
+	/**
+	 * Data provider for get_product() shortcode-parsing tests.
+	 *
+	 * Each entry is [ post_content_template, use_sku ].
+	 * "use_sku" tells the test whether to substitute the product ID or its SKU.
+	 */
+	public function get_product_shortcode_syntaxes_provider(): array {
+		return [
+			'double-quoted id'           => [ '[product_page id="%s"]', false ],
+			'single-quoted id'           => [ "[product_page id='%s']", false ],
+			'unquoted id'                => [ '[product_page id=%s]', false ],
+			'extra attributes after id'  => [ '[product_page id="%s" show_title="false"]', false ],
+			'extra attributes before id' => [ '[product_page show_title="false" id="%s"]', false ],
+			'sku double-quoted'          => [ '[product_page sku="%s"]', true ],
+			'sku single-quoted'          => [ "[product_page sku='%s']", true ],
+			'sku unquoted'               => [ '[product_page sku=%s]', true ],
+		];
+	}
+
+	/**
+	 * @dataProvider get_product_shortcode_syntaxes_provider
+	 */
+	public function test_get_product_from_product_page_shortcode( string $shortcode_template, bool $use_sku ) {
+		global $post, $wp_query;
+
+		$product = WC_Helper_Product::create_simple_product();
+		$sku     = 'test-sku-' . $product->get_id();
+		$product->set_sku( $sku );
+		$product->save();
+
+		$placeholder  = $use_sku ? $sku : $product->get_id();
+		$post_content = sprintf( $shortcode_template, $placeholder );
+
+		// Create a real WP page containing the shortcode so wc_post_content_has_shortcode()
+		// (which checks is_singular() and is_a($post, 'WP_Post')) returns true.
+		$page_id = wp_insert_post(
+			[
+				'post_title'   => 'Test page',
+				'post_content' => $post_content,
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+			]
+		);
+		$post    = get_post( $page_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		// Simulate a non-product singular page.
+		$wp_query->is_singular = true;
+		$wp_query->is_page     = true;
+
+		$resolved = $this->system_under_test->get_product();
+
+		// Clean up.
+		wp_delete_post( $page_id, true );
+		$wp_query->is_singular = false;
+		$wp_query->is_page     = false;
+
+		$this->assertInstanceOf( WC_Product::class, $resolved );
+		$this->assertSame( $product->get_id(), $resolved->get_id() );
+	}
+
 	public function test_should_not_show_express_checkout_button_when_product_not_purchasable() {
 		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
 		WC_Payments::mode()->dev();
