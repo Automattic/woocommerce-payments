@@ -86,10 +86,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
-		add_action( 'wcpay_payment_fields_js_config', [ $this, 'payment_fields_js_config' ] );
+		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'payment_fields_js_config' ] );
 		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
-		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
-		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 1 );
+		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 1 );
 		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );

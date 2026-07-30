@@ -33,7 +33,6 @@ parameters:
     scanFiles:
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
-        - dev/phpstan-wordpress-constants.php
         - dev/phpstan-wcpay-constants.php
         - dev/phpstan-abilities-stubs.php
 

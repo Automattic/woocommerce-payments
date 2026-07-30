@@ -313,12 +313,6 @@ parameters:
 			path: includes/class-wc-payment-gateway-wcpay.php
 
 		-
-			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 3.'
-			identifier: arguments.count
-			count: 1
-			path: includes/class-wc-payment-gateway-wcpay.php
-
-		-
 			rawMessage: Expression on left side of ?? is not nullable.
 			identifier: nullCoalesce.expr
 			count: 2
@@ -613,12 +607,6 @@ parameters:
 			path: includes/class-wc-payments-fraud-service.php
 
 		-
-			rawMessage: Right side of && is always false.
-			identifier: booleanAnd.rightAlwaysFalse
-			count: 1
-			path: includes/class-wc-payments-fraud-service.php
-
-		-
 			rawMessage: 'Strict comparison using === between null and array|bool|string will always evaluate to false.'
 			identifier: identical.alwaysFalse
 			count: 1
@@ -871,12 +859,6 @@ parameters:
 			path: includes/class-wc-payments-tasks.php
 
 		-
-			rawMessage: Action callback returns array but should not return anything.
-			identifier: return.void
-			count: 1
-			path: includes/class-wc-payments-token-service.php
-
-		-
 			rawMessage: 'Call to an undefined method WC_Payment_Token::get_email().'
 			identifier: method.notFound
 			count: 1
@@ -1066,12 +1048,6 @@ parameters:
 			rawMessage: 'Call to function is_string() with float will always evaluate to false.'
 			identifier: function.impossibleType
 			count: 1
-			path: includes/class-woopay-tracker.php
-
-		-
-			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 2.'
-			identifier: arguments.count
-			count: 2
 			path: includes/class-woopay-tracker.php
 
 		-
@@ -1297,12 +1273,6 @@ parameters:
 			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
 
 		-
-			rawMessage: Action callback returns mixed but should not return anything.
-			identifier: return.void
-			count: 1
-			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
-
-		-
 			rawMessage: 'Call to an undefined method WC_Session::has_session().'
 			identifier: method.notFound
 			count: 1
@@ -1312,12 +1282,6 @@ parameters:
 			rawMessage: 'Call to an undefined method WC_Session::set_customer_session_cookie().'
 			identifier: method.notFound
 			count: 1
-			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
-
-		-
-			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 3.'
-			identifier: arguments.count
-			count: 2
 			path: includes/express-checkout/class-wc-payments-express-checkout-button-handler.php
 
 		-
@@ -1489,18 +1453,6 @@ parameters:
 			path: includes/multi-currency/AsyncPriceRenderer.php
 
 		-
-			rawMessage: Result of && is always false.
-			identifier: booleanAnd.alwaysFalse
-			count: 1
-			path: includes/multi-currency/CachingEnvironment.php
-
-		-
-			rawMessage: Right side of && is always false.
-			identifier: booleanAnd.rightAlwaysFalse
-			count: 1
-			path: includes/multi-currency/CachingEnvironment.php
-
-		-
 			rawMessage: 'Call to function is_array() with array<WC_Order|WC_Order_Refund> will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -1525,12 +1477,6 @@ parameters:
 			path: includes/multi-currency/Compatibility/WooCommerceDeposits.php
 
 		-
-			rawMessage: Action callback returns array but should not return anything.
-			identifier: return.void
-			count: 1
-			path: includes/multi-currency/Compatibility/WooCommerceNameYourPrice.php
-
-		-
 			rawMessage: Offset 0 on non-empty-list<string> on left side of ?? always exists and is not nullable.
 			identifier: nullCoalesce.offset
 			count: 1
@@ -1545,12 +1491,6 @@ parameters:
 		-
 			rawMessage: 'Binary operation "*" between string and (float|int) results in an error.'
 			identifier: binaryOp.invalid
-			count: 1
-			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
-
-		-
-			rawMessage: 'Callback expects 3 parameters, $accepted_args is set to 4.'
-			identifier: arguments.count
 			count: 1
 			path: includes/multi-currency/Compatibility/WooCommerceProductAddOns.php
 
@@ -1783,12 +1723,6 @@ parameters:
 			path: includes/payment-methods/class-upe-payment-method.php
 
 		-
-			rawMessage: 'Method WCPay\Core\Server\Request::handle_rest_request() invoked with 1 parameter, 0 required.'
-			identifier: arguments.count
-			count: 2
-			path: includes/reports/class-wc-rest-payments-reports-authorizations-controller.php
-
-		-
 			rawMessage: 'Call to function is_array() with array will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 6
@@ -1885,12 +1819,6 @@ parameters:
 			path: includes/woopay-user/class-woopay-save-user.php
 
 		-
-			rawMessage: 'Callback expects 0 parameters, $accepted_args is set to 2.'
-			identifier: arguments.count
-			count: 1
-			path: includes/woopay-user/class-woopay-save-user.php
-
-		-
 			rawMessage: 'Call to function method_exists() with ''AFWC_API'' and ''get_instance'' will always evaluate to false.'
 			identifier: function.impossibleType
 			count: 1
@@ -1917,12 +1845,6 @@ parameters:
 		-
 			rawMessage: 'Call to an undefined method WC_Data_Store::search_webhooks().'
 			identifier: method.notFound
-			count: 1
-			path: includes/woopay/class-woopay-order-status-sync.php
-
-		-
-			rawMessage: 'Callback expects 1 parameter, $accepted_args is set to 2.'
-			identifier: arguments.count
 			count: 1
 			path: includes/woopay/class-woopay-order-status-sync.php
 
@@ -2047,12 +1969,6 @@ parameters:
 			path: includes/woopay/class-woopay-utilities.php
 
 		-
-			rawMessage: 'Callback expects 2 parameters, $accepted_args is set to 3.'
-			identifier: arguments.count
-			count: 1
-			path: includes/woopay/services/class-checkout-service.php
-
-		-
 			rawMessage: Instanceof between WP_REST_Response and WP_REST_Response will always evaluate to true.
 			identifier: instanceof.alwaysTrue
 			count: 1
@@ -2116,12 +2032,6 @@ parameters:
 			rawMessage: 'Property WCPay\Internal\LoggerContext::$context_updated is never read, only written.'
 			identifier: property.onlyWritten
 			count: 1
-			path: src/Internal/LoggerContext.php
-
-		-
-			rawMessage: Right side of && is always false.
-			identifier: booleanAnd.rightAlwaysFalse
-			count: 2
 			path: src/Internal/LoggerContext.php
 
 		-
