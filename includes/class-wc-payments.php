@@ -229,6 +229,13 @@ class WC_Payments {
 	private static $webhook_reliability_service;
 
 	/**
+	 * Instance of WC_Payments_Dispute_Ledger_Backfill_Service, created in init function
+	 *
+	 * @var WC_Payments_Dispute_Ledger_Backfill_Service
+	 */
+	private static $dispute_ledger_backfill_service;
+
+	/**
 	 * Holds WCPay's working mode.
 	 *
 	 * @var Mode
@@ -526,6 +533,7 @@ class WC_Payments {
 		include_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
+		include_once __DIR__ . '/class-wc-payments-dispute-ledger-backfill-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-risk-tools.php';
@@ -655,6 +663,9 @@ class WC_Payments {
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 		self::$webhook_reliability_service->init_hooks();
 
+		self::$dispute_ledger_backfill_service = new WC_Payments_Dispute_Ledger_Backfill_Service( self::$order_service, self::$action_scheduler_service, self::$db_helper );
+		self::$dispute_ledger_backfill_service->init_hooks();
+
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service, self::$token_service );
 
 		self::$currency_manager = new WC_Payments_Currency_Manager( self::get_gateway() );
@@ -756,6 +767,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
+		require_once __DIR__ . '/migrations/class-dispute-ledger-backfill.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -781,6 +793,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Dispute_Ledger_Backfill(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';

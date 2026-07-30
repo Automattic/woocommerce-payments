@@ -2225,6 +2225,160 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A closure applied by a version that wrote ID-less notes is re-delivered after the upgrade. The
+	 * note no longer matches, so the ledger is the only thing standing between the order and a second
+	 * refund.
+	 */
+	public function test_mark_payment_dispute_closed_skips_a_redelivered_closure_recorded_in_the_ledger(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$dispute_summary = [
+			'disputed_amount' => 5000,
+			'currency'        => 'usd',
+		];
+
+		// Arrange: the closure as an earlier version applied it — an ID-less note, no ledger entry.
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', $dispute_summary );
+
+		// Arrange: the backfill attributes that note to the dispute it came from.
+		$order = wc_get_order( $order->get_id() );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX . 'dp_redelivered', gmdate( 'Y-m-d H:i:s' ) );
+		$order->save_meta_data();
+
+		// Act: the platform redelivers the event, now carrying the dispute ID.
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', $dispute_summary, 'dp_redelivered' );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertCount( 1, $order->get_refunds() );
+		$this->assertEquals( 50.00, $order->get_total_refunded() );
+		$this->assertTrue( $order->has_status( [ 'on-hold' ] ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * A second, genuinely new dispute on the same charge is indistinguishable from the first by
+	 * amount, status and note text. Its refund must still be applied.
+	 */
+	public function test_mark_payment_dispute_closed_refunds_a_second_dispute_on_the_same_charge(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$dispute_summary = [
+			'disputed_amount' => 3000,
+			'currency'        => 'usd',
+		];
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', $dispute_summary, 'dp_first' );
+		$this->order_service->mark_payment_dispute_closed( wc_get_order( $order->get_id() ), 'ch_123', 'lost', $dispute_summary, 'dp_second' );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertCount( 2, $order->get_refunds() );
+		$this->assertEquals( 60.00, $order->get_total_refunded() );
+	}
+
+	/**
+	 * A crash between the side effects and the note leaves the ledger entry as the only record. It
+	 * has to be enough on its own.
+	 */
+	public function test_mark_payment_dispute_closed_skips_side_effects_when_only_the_ledger_is_present(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX . 'dp_crashed', gmdate( 'Y-m-d H:i:s' ) );
+		$order->save();
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', [], 'dp_crashed' );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertCount( 0, $order->get_refunds() );
+		$this->assertTrue( $order->has_status( [ 'on-hold' ] ) );
+
+		$contents = implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
+		$this->assertStringNotContainsString( 'Dispute has been closed', $contents );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * wc_create_refund() loads and saves its own instance of the order, so the ledger write has to
+	 * avoid pushing the caller's pre-refund copy back over it.
+	 */
+	public function test_mark_payment_dispute_closed_ledger_write_preserves_the_refunded_order(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', [], 'dp_full' );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
+		$this->assertEquals( 100.00, $order->get_total_refunded() );
+		$this->assertEquals( 0.00, $order->get_remaining_refund_amount() );
+		$this->assertTrue( $order->meta_exists( '_wcpay_dispute_closed_dp_full' ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that the refund a lost dispute creates records which dispute it came from.
+	 */
+	public function test_mark_payment_dispute_closed_links_the_refund_to_the_dispute(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', [], 'dp_linked' );
+
+		$refunds = wc_get_order( $order->get_id() )->get_refunds();
+		$this->assertEquals( 'dp_linked', $refunds[0]->get_meta( '_wcpay_dispute_id' ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that a re-delivered dispute creation recorded in the ledger does not force the order back
+	 * to on-hold.
+	 */
+	public function test_mark_payment_dispute_created_skips_a_redelivered_event_recorded_in_the_ledger(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::COMPLETED );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_DISPUTE_CREATED_META_KEY_PREFIX . 'dp_created', gmdate( 'Y-m-d H:i:s' ) );
+		$order->save();
+
+		$this->order_service->mark_payment_dispute_created( $order, 'ch_123', '$10.00', 'fraudulent', '1 Jan 2026', '', 'dp_created' );
+
+		$this->assertTrue( wc_get_order( $order->get_id() )->has_status( [ 'completed' ] ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that a dispute creation records its ledger entry, so a later re-delivery is recognised.
+	 */
+	public function test_mark_payment_dispute_created_records_a_ledger_entry(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$this->order_service->mark_payment_dispute_created( $order, 'ch_123', '$10.00', 'fraudulent', '1 Jan 2026', '', 'dp_created' );
+
+		$this->assertTrue( wc_get_order( $order->get_id() )->meta_exists( '_wcpay_dispute_created_dp_created' ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
 	 * Tests that mark_payment_dispute_closed handles missing amount in refund.
 	 */
 	public function test_mark_payment_dispute_closed_with_missing_amount_in_summary(): void {

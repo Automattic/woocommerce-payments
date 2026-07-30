@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: dedupe dispute webhook side effects on a dispute-scoped ledger instead of order note text
