@@ -2309,10 +2309,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * wc_create_refund() loads and saves its own instance of the order, so the ledger write has to
-	 * avoid pushing the caller's pre-refund copy back over it.
+	 * The whole of a lost closure, end to end: the refund empties the order, the order lands on
+	 * `refunded`, and the ledger records the dispute that got it there.
 	 */
-	public function test_mark_payment_dispute_closed_ledger_write_preserves_the_refunded_order(): void {
+	public function test_mark_payment_dispute_closed_records_the_ledger_on_a_fully_refunded_order(): void {
 		$order = WC_Helper_Order::create_order();
 		$order->set_total( 100.00 );
 		$order->set_status( Order_Status::ON_HOLD );
@@ -2326,6 +2326,36 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 100.00, $order->get_total_refunded() );
 		$this->assertEquals( 0.00, $order->get_remaining_refund_amount() );
 		$this->assertTrue( $order->meta_exists( '_wcpay_dispute_closed_dp_full' ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * The ledger is durable, so recording a refund that failed would strand the amount owed: nothing
+	 * would ever retry it. Leaving both the ledger and the note unwritten keeps the event replayable.
+	 */
+	public function test_mark_payment_dispute_closed_does_not_record_the_ledger_when_the_refund_fails(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$reject_the_refund = function () {
+			throw new Exception( 'the refund was rejected' );
+		};
+		add_action( 'woocommerce_create_refund', $reject_the_refund );
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', [], 'dp_refund_failed' );
+
+		remove_action( 'woocommerce_create_refund', $reject_the_refund );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertCount( 0, $order->get_refunds() );
+		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_closed_dp_refund_failed' ) );
+
+		$contents = implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
+		$this->assertStringNotContainsString( 'Dispute has been closed', $contents );
 
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}

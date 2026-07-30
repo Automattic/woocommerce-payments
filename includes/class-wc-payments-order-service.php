@@ -637,6 +637,8 @@ class WC_Payments_Order_Service {
 		add_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
 		add_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
+		$refund_failed = false;
+
 		if ( 'lost' === $status ) {
 			// Use dispute summary data if available to determine refund amount.
 			$refund_amount = $order->get_remaining_refund_amount();
@@ -668,11 +670,12 @@ class WC_Payments_Order_Service {
 				]
 			);
 
-			if ( $refund instanceof WC_Order_Refund && '' !== $dispute_id ) {
+			if ( is_wp_error( $refund ) ) {
+				$refund_failed = true;
+				Logger::error( 'Failed to refund order ' . $order->get_id() . ' for lost dispute ' . $dispute_id . ': ' . $refund->get_error_message() );
+			} elseif ( $refund instanceof WC_Order_Refund && '' !== $dispute_id ) {
 				$refund->update_meta_data( self::WCPAY_REFUND_DISPUTE_ID_META_KEY, $dispute_id );
 				$refund->save();
-			} elseif ( is_wp_error( $refund ) ) {
-				Logger::error( 'Failed to refund order ' . $order->get_id() . ' for lost dispute ' . $dispute_id . ': ' . $refund->get_error_message() );
 			}
 		} else {
 			// TODO: This should revert to the status the order was in before the dispute was created.
@@ -684,6 +687,12 @@ class WC_Payments_Order_Service {
 		remove_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
 		remove_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
 		remove_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
+
+		// The ledger is durable and permanent, so it must never claim a refund that did not happen:
+		// recording one would leave the amount owed and nothing left to retry against.
+		if ( $refund_failed ) {
+			return;
+		}
 
 		// Recorded before the note so that a crash between the two leaves the side effects marked as
 		// done rather than replayable; a missing note is cosmetic, a repeated refund is not.
@@ -2459,15 +2468,9 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// wc_create_refund() works through its own instance of the order, and moves it to `refunded`
-		// once nothing is left to refund. The caller's instance predates all of that, so the ledger is
-		// written on a fresh read and with save_meta_data() rather than save(): whatever the refund
-		// left on the order is never rewritten from a copy taken before it.
-		$order = wc_get_order( $order->get_id() );
-		if ( ! $order instanceof WC_Order ) {
-			return;
-		}
-
+		// save_meta_data() rather than save(): wc_create_refund() moves the order to `refunded` through
+		// its own instance, and the caller's copy predates that, so a full save would write the
+		// pre-refund props back over it.
 		$order->update_meta_data( $meta_key_prefix . $dispute_id, gmdate( 'Y-m-d H:i:s' ) );
 		$order->save_meta_data();
 	}

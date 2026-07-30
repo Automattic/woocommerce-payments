@@ -12,14 +12,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Queues the one-time backfill of the dispute closure ledger for existing installations.
  *
- * Dispute closures used to be de-duplicated on the order note text alone, and that text now carries
- * the dispute ID. A closure this store applied under an earlier version therefore no longer matches
- * when the platform redelivers its event, and the side effects — for a lost dispute, a refund — run
- * a second time. WC_Payments_Dispute_Ledger_Backfill_Service records ledger meta for those older
- * closures so they are recognised again.
- *
- * ActionScheduler is not reliably initialised while a plugin update runs, so this only records that
- * the backfill is due; the service schedules the work from a later hook.
+ * Only installs that upgrade across this version have closures predating the ledger, which is what
+ * makes this a migration rather than something the service decides for itself. ActionScheduler is
+ * not reliably initialised while a plugin update runs, so this records only that the backfill is
+ * due; WC_Payments_Dispute_Ledger_Backfill_Service does the work, and documents why it is needed.
  *
  * @since 11.1.0
  */
@@ -38,7 +34,7 @@ class Dispute_Ledger_Backfill {
 	 * Same value as WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION, intentionally
 	 * duplicated as a literal rather than referencing the live constant: a migration is a frozen
 	 * historical step and must keep writing the same option name even if the service later renames
-	 * or removes it. test_option_name_matches_service_constant() fails if the two ever drift apart.
+	 * or removes it.
 	 *
 	 * @var string
 	 */
