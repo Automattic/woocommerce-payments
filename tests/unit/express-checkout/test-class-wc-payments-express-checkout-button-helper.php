@@ -1138,6 +1138,24 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Puts the main query back to the unparsed state a request has on `init`.
+	 *
+	 * WordPress 6.0's test teardown resets $wp_query but not $wp_the_query, so an earlier
+	 * test's go_to() otherwise leaves the main query pointing at its page for the rest of
+	 * the run. Mirrors what go_to() itself does.
+	 *
+	 * @return void
+	 */
+	private function reset_main_query() {
+		unset( $GLOBALS['wp_query'], $GLOBALS['wp_the_query'] );
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
+		$GLOBALS['wp_the_query'] = new WP_Query();
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
+		$GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
+	}
+
+	/**
 	 * Publishes a page with the given content and navigates to it.
 	 *
 	 * @param string $content The page content.
@@ -1216,7 +1234,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * checkout for the rest of the request.
 	 */
 	public function test_early_call_does_not_pin_the_shortcode_context() {
-		// The main query is unparsed at this point, exactly as it is on `init`.
+		$this->reset_main_query();
+
 		$this->assertFalse( $this->system_under_test->is_product() );
 		$this->assertNull( $this->system_under_test->get_product() );
 
