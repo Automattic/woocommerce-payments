@@ -330,4 +330,240 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->service->check_payment_intent_attached_to_order_succeeded( $order );
 	}
+
+	/**
+	 * @dataProvider provider_check_order_already_paid_returns_redirection
+	 * @param string $paid_status An order status that counts as paid.
+	 */
+	public function test_check_order_already_paid_returns_redirection( string $paid_status ) {
+		$return_url = 'https://example.com';
+
+		// Arrange the redirect URL.
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_return_url' )
+			->willReturn( $return_url );
+
+		// Arrange an order that has already been paid.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( $paid_status );
+		$order->save();
+
+		// Act: attempt to pay for the order a second time.
+		$result = $this->service->check_order_already_paid( $order );
+
+		// Assert: the shopper is sent to the order received page instead of being charged.
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertStringContainsString( $return_url, $result['redirect'] );
+		$this->assertStringContainsString( 'wcpay_previous_successful_intent', $result['redirect'] );
+
+		// Assert: the merchant is told why, under the current brand name. Searched across every
+		// note rather than a fixed index, since WooCommerce has changed how many notes it adds,
+		// and in what order, between versions.
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertStringContainsString(
+			'WooPayments: detected and prevented a second payment for this order',
+			implode( "\n", wp_list_pluck( $notes, 'content' ) )
+		);
+	}
+
+	public function provider_check_order_already_paid_returns_redirection(): array {
+		return [
+			'Order is processing' => [ Order_Status::PROCESSING ],
+			'Order is completed'  => [ Order_Status::COMPLETED ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_check_order_already_paid_returns_null
+	 * @param string $unpaid_status An order status that does not count as paid.
+	 */
+	public function test_check_order_already_paid_returns_null_for_unpaid_order( string $unpaid_status ) {
+		// Assert: an unpaid order never short-circuits the payment.
+		$this->mock_gateway->expects( $this->never() )->method( 'get_return_url' );
+
+		// Arrange an order that has not been paid.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( $unpaid_status );
+		$order->save();
+
+		// Act & Assert: processing continues.
+		$this->assertNull( $this->service->check_order_already_paid( $order ) );
+	}
+
+	public function provider_check_order_already_paid_returns_null(): array {
+		return [
+			'Order is pending'   => [ Order_Status::PENDING ],
+			'Order is failed'    => [ Order_Status::FAILED ],
+			'Order is on hold'   => [ Order_Status::ON_HOLD ],
+			'Order is cancelled' => [ Order_Status::CANCELLED ],
+		];
+	}
+
+	/**
+	 * Both checkout surfaces only start payment when `needs_payment()` is true, so a second
+	 * request that reaches `process_payment()` at all must have loaded the order while it was
+	 * still unpaid. The concurrent request then marks it paid in a separate PHP process, which
+	 * leaves this process's caches untouched. Only a read that reaches the database sees it.
+	 *
+	 * The write here goes straight to the orders table for that reason: saving through WooCommerce
+	 * would invalidate the order cache and hide the very staleness this covers.
+	 */
+	public function test_check_order_already_paid_detects_payment_written_by_a_concurrent_request() {
+		global $wpdb;
+
+		$return_url = 'https://example.com';
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_return_url' )
+			->willReturn( $return_url );
+
+		// Arrange an unpaid order, as process_payment() would have loaded it.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::PENDING );
+		$order->save();
+		$order_id = $order->get_id();
+
+		// Arrange the caches this request would have warmed on the way in.
+		wc_get_order( $order_id );
+
+		// Arrange a concurrent request marking the order paid, without touching our caches.
+		if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+			// Mirrors the fallback in the code under test: get_table_for_orders() only exists
+			// from WooCommerce 7.9, and the plugin supports 7.6.
+			$orders_table = method_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class, 'get_table_for_orders' )
+				? \Automattic\WooCommerce\Utilities\OrderUtil::get_table_for_orders()
+				: $wpdb->prefix . 'wc_orders';
+
+			$wpdb->update(
+				$orders_table,
+				[ 'status' => 'wc-processing' ],
+				[ 'id' => $order_id ]
+			);
+		} else {
+			$wpdb->update(
+				$wpdb->posts,
+				[ 'post_status' => 'wc-processing' ],
+				[ 'ID' => $order_id ]
+			);
+		}
+
+		// Assert the premise: without this, the test could pass without reaching the database.
+		$this->assertFalse(
+			$order->has_status( wc_get_is_paid_statuses() ),
+			'The in-memory order should still be stale for this test to be meaningful.'
+		);
+
+		// Act: attempt to charge the order.
+		$result = $this->service->check_order_already_paid( $order );
+
+		// Assert: the concurrent payment is seen and the second charge is stopped.
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertStringContainsString( $return_url, $result['redirect'] );
+	}
+
+	/**
+	 * Deposit and partial-payment extensions add a status that is both paid and still payable,
+	 * collecting the balance through pay-for-order. Blocking that would break a legitimate payment.
+	 */
+	public function test_check_order_already_paid_skips_a_paid_status_the_store_declares_payable() {
+		// Assert: a payable status never short-circuits the payment.
+		$this->mock_gateway->expects( $this->never() )->method( 'get_return_url' );
+
+		// Arrange a store that treats a paid status as still awaiting payment.
+		$declare_payable = function ( $statuses ) {
+			$statuses[] = Order_Status::PROCESSING;
+			return $statuses;
+		};
+		add_filter( 'woocommerce_valid_order_statuses_for_payment', $declare_payable );
+
+		// Arrange an order in that status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::PROCESSING );
+		$order->save();
+
+		// Act: the balance payment must be allowed through.
+		$result = $this->service->check_order_already_paid( $order );
+
+		remove_filter( 'woocommerce_valid_order_statuses_for_payment', $declare_payable );
+
+		// Assert: processing continues so the balance can be collected.
+		$this->assertNull( $result );
+	}
+
+	/**
+	 * Changing a subscription's payment method legitimately re-runs payment processing
+	 * against an entity that was already paid once, so it must not be blocked.
+	 */
+	public function test_check_order_already_paid_skips_subscription_payment_method_change() {
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'is_changing_payment_method_for_subscription' )
+			->willReturn( true );
+		$this->mock_gateway->expects( $this->never() )->method( 'get_return_url' );
+
+		// Arrange a paid order, which would otherwise be blocked.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::PROCESSING );
+		$order->save();
+
+		// Act & Assert: processing continues.
+		$this->assertNull( $this->service->check_order_already_paid( $order ) );
+	}
+
+	/**
+	 * Not every legitimate re-run of payment against a paid entity is expressible as an order
+	 * status — the subscription payment-method change above is one such flow. This lets an
+	 * extension declare the ones we have not anticipated.
+	 */
+	public function test_check_order_already_paid_defers_to_an_extension_opting_out() {
+		// Assert: an opted-out payment never short-circuits.
+		$this->mock_gateway->expects( $this->never() )->method( 'get_return_url' );
+
+		// Arrange a paid order, which would otherwise be blocked.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::PROCESSING );
+		$order->save();
+
+		// Arrange an extension that lets this payment through, recording what it was handed.
+		$received = [];
+		$opt_out  = function ( $should_prevent, $filtered_order, $status ) use ( &$received ) {
+			$received = [ $should_prevent, $filtered_order, $status ];
+			return false;
+		};
+		add_filter( 'wcpay_should_prevent_payment_for_paid_order', $opt_out, 10, 3 );
+
+		// Act: attempt to pay for the order a second time.
+		$result = $this->service->check_order_already_paid( $order );
+
+		remove_filter( 'wcpay_should_prevent_payment_for_paid_order', $opt_out, 10 );
+
+		// Assert: processing continues.
+		$this->assertNull( $result );
+
+		// Assert: the extension is handed what it needs to decide, and the guard is on by default.
+		$this->assertSame( [ true, $order, 'processing' ], $received );
+	}
+
+	public function test_check_order_already_paid_clears_the_session_processing_order() {
+		$this->mock_gateway->method( 'get_return_url' )->willReturn( 'https://example.com' );
+
+		// Arrange a paid order that is also the session's processing order.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::PROCESSING );
+		$order->save();
+		WC()->session->set(
+			Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER,
+			$order->get_id()
+		);
+
+		// Act: attempt to pay for the order a second time.
+		$this->service->check_order_already_paid( $order );
+
+		// Assert: the stale session entry is cleared so it cannot mislead a later submission.
+		$this->assertNull(
+			WC()->session->get( Duplicate_Payment_Prevention_Service::SESSION_KEY_PROCESSING_ORDER )
+		);
+	}
 }

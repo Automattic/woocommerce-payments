@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix subscription renewals failing with "Invalid IP address" when cron runs without an HTTP request
