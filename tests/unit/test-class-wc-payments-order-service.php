@@ -2331,8 +2331,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * The ledger is durable, so recording a refund that failed would strand the amount owed: nothing
-	 * would ever retry it. Leaving both the ledger and the note unwritten keeps the event replayable.
+	 * The ledger is durable, so recording a refund that failed would strand the amount owed. Nothing
+	 * comes back for it either — the webhook still answers 200, and the platform only replays what it
+	 * recorded as failed — so the one thing the merchant gets is a note saying so.
 	 */
 	public function test_mark_payment_dispute_closed_does_not_record_the_ledger_when_the_refund_fails(): void {
 		$order = WC_Helper_Order::create_order();
@@ -2356,6 +2357,78 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$contents = implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
 		$this->assertStringNotContainsString( 'Dispute has been closed', $contents );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * A lost dispute the store cannot refund still has to leave a trace, or the order shows no sign
+	 * the dispute closed at all.
+	 */
+	public function test_mark_payment_dispute_closed_notes_a_refund_it_could_not_create(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$reject_the_refund = function () {
+			throw new Exception( 'the refund was rejected' );
+		};
+		add_action( 'woocommerce_create_refund', $reject_the_refund );
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', [], 'dp_refund_noted' );
+		// A redelivery of the same closure fails the same way and must not stack up notes.
+		$this->order_service->mark_payment_dispute_closed( wc_get_order( $order->get_id() ), 'ch_123', 'lost', [], 'dp_refund_noted' );
+
+		remove_action( 'woocommerce_create_refund', $reject_the_refund );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount(
+			1,
+			array_filter(
+				$contents,
+				function ( $content ) {
+					return false !== strpos( $content, 'Dispute closed as lost, but the refund it should have created failed.' );
+				}
+			)
+		);
+		$this->assertStringContainsString( '(Dispute ID: dp_refund_noted)', implode( "\n", $contents ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * wc_create_refund() hands back the refund object even when saving it returned 0, because
+	 * WC_Abstract_Order::save() swallows its own exceptions. Treating that as a success would write
+	 * meta to the object and save it, creating the row core had just decided to abandon — and without
+	 * the restock, the status transition or the `woocommerce_order_refunded` hook that wrap a real
+	 * refund.
+	 */
+	public function test_mark_payment_dispute_closed_treats_an_unsaved_refund_as_a_failure(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$break_the_save = function () {
+			throw new Exception( 'the refund could not be written' );
+		};
+		add_action( 'woocommerce_before_order_refund_object_save', $break_the_save );
+
+		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', [], 'dp_unsaved_refund' );
+
+		remove_action( 'woocommerce_before_order_refund_object_save', $break_the_save );
+
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertCount( 0, $order->get_refunds() );
+		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_closed_dp_unsaved_refund' ) );
+
+		$contents = implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' ) );
+
+		$this->assertStringNotContainsString( 'Dispute has been closed', $contents );
+		$this->assertStringContainsString( 'Dispute closed as lost, but the refund it should have created failed.', $contents );
 
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}

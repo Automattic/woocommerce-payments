@@ -66,7 +66,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 
 	public function test_records_the_ledger_for_a_closure_with_a_legacy_note() {
 		$order = $this->create_disputed_order( 'ch_backfill_1' );
-		$this->apply_legacy_closure( $order, 'ch_backfill_1', 'won' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_1', 'won' );
 
 		$this->mock_disputes_page(
 			[
@@ -77,6 +77,26 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 		$this->service->run_backfill_batch();
 
 		$this->assertTrue( $this->reload( $order )->meta_exists( '_wcpay_dispute_closed_dp_backfill_1' ) );
+	}
+
+	/**
+	 * A closure the store applied is one whose creation it applied first, so the same note settles
+	 * both. Without the creation entry a legacy creation redelivered from the platform's queue puts a
+	 * closed dispute's order back on hold.
+	 */
+	public function test_records_the_creation_ledger_on_the_same_evidence() {
+		$order = $this->create_disputed_order( 'ch_backfill_10' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_10', 'won' );
+
+		$this->mock_disputes_page(
+			[
+				$this->dispute_row( 'dp_backfill_10', 'ch_backfill_10', 'won' ),
+			]
+		);
+
+		$this->service->run_backfill_batch();
+
+		$this->assertTrue( $this->reload( $order )->meta_exists( '_wcpay_dispute_created_dp_backfill_10' ) );
 	}
 
 	/**
@@ -98,13 +118,52 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	}
 
 	/**
+	 * 8.7.0 changed the opening of the sentence, so a note an earlier version wrote no longer
+	 * reconstructs. The scan has no way to tell that note from one the store never wrote at all, and
+	 * both resolve the same way.
+	 */
+	public function test_skips_a_closure_noted_before_the_wording_changed() {
+		$order = $this->create_disputed_order( 'ch_backfill_11' );
+		$this->add_note_as_written_by_8_6_0( $order, 'ch_backfill_11', 'won' );
+
+		$this->mock_disputes_page(
+			[
+				$this->dispute_row( 'dp_backfill_11', 'ch_backfill_11', 'won' ),
+			]
+		);
+
+		$this->service->run_backfill_batch();
+
+		$this->assertFalse( $this->reload( $order )->meta_exists( '_wcpay_dispute_closed_dp_backfill_11' ) );
+	}
+
+	/**
+	 * 6.6.0 moved the link from the disputes page to the transaction page and swapped the ID in it
+	 * from the dispute's to the charge's, so notes from before it cannot be reconstructed either.
+	 */
+	public function test_skips_a_closure_noted_before_the_link_changed() {
+		$order = $this->create_disputed_order( 'ch_backfill_12' );
+		$this->add_note_as_written_by_6_5_0( $order, 'dp_backfill_12', 'won' );
+
+		$this->mock_disputes_page(
+			[
+				$this->dispute_row( 'dp_backfill_12', 'ch_backfill_12', 'won' ),
+			]
+		);
+
+		$this->service->run_backfill_batch();
+
+		$this->assertFalse( $this->reload( $order )->meta_exists( '_wcpay_dispute_closed_dp_backfill_12' ) );
+	}
+
+	/**
 	 * A charge's same-status closures were collapsed into one note, and the note belongs to whichever
 	 * of them closed first — which the list cannot say. Attributing it to the wrong one would suppress
 	 * a refund that is still owed, so none of them are marked.
 	 */
 	public function test_marks_nothing_when_a_charge_has_several_same_status_closures() {
 		$order = $this->create_disputed_order( 'ch_backfill_3' );
-		$this->apply_legacy_closure( $order, 'ch_backfill_3', 'won' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_3', 'won' );
 
 		$this->mock_disputes_page(
 			[
@@ -119,16 +178,20 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 
 		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_closed_dp_backfill_3_first' ) );
 		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_closed_dp_backfill_3_second' ) );
-		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_backfill_claim_won' ) );
+
+		// And nothing may claim the note later either, however the rest of the group is paginated.
+		$this->assertSame( 'ambiguous', $order->get_meta( '_wcpay_dispute_backfill_claim_won' ) );
 	}
 
 	/**
 	 * The scan is paginated, so a charge's second same-status closure can turn up in a later batch,
-	 * long after the note it would otherwise match has been claimed.
+	 * long after the first claimed the single note the earlier version wrote. Leaving the first marked
+	 * would rest the attribution on nothing better than the order the scan happened to walk in, so the
+	 * claim is given back and neither ends up in the ledger.
 	 */
-	public function test_leaves_a_same_status_closure_from_a_later_page_unmarked() {
+	public function test_retracts_a_claim_when_a_same_status_sibling_turns_up_on_a_later_page() {
 		$order = $this->create_disputed_order( 'ch_backfill_6' );
-		$this->apply_legacy_closure( $order, 'ch_backfill_6', 'won' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_6', 'won' );
 
 		$this->mock_disputes_page(
 			[
@@ -147,8 +210,34 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 
 		$order = $this->reload( $order );
 
-		$this->assertTrue( $order->meta_exists( '_wcpay_dispute_closed_dp_backfill_6_first' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_closed_dp_backfill_6_first' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_created_dp_backfill_6_first' ) );
 		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_closed_dp_backfill_6_second' ) );
+		$this->assertSame( 'ambiguous', $order->get_meta( '_wcpay_dispute_backfill_claim_won' ) );
+	}
+
+	/**
+	 * Once a group is known to be ambiguous, a third member arriving later must not be able to claim
+	 * the note the first two gave up.
+	 */
+	public function test_leaves_a_retracted_group_unmarkable() {
+		$order = $this->create_disputed_order( 'ch_backfill_13' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_13', 'won' );
+		$order->update_meta_data( '_wcpay_dispute_backfill_claim_won', 'ambiguous' );
+		$order->save();
+
+		$this->mock_disputes_page(
+			[
+				$this->dispute_row( 'dp_backfill_13', 'ch_backfill_13', 'won' ),
+			]
+		);
+
+		$this->service->run_backfill_batch();
+
+		$order = $this->reload( $order );
+
+		$this->assertFalse( $order->meta_exists( '_wcpay_dispute_closed_dp_backfill_13' ) );
+		$this->assertSame( 'ambiguous', $order->get_meta( '_wcpay_dispute_backfill_claim_won' ) );
 	}
 
 	/**
@@ -156,8 +245,8 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	 */
 	public function test_marks_closures_of_different_statuses_on_one_charge() {
 		$order = $this->create_disputed_order( 'ch_backfill_4' );
-		$this->apply_legacy_closure( $order, 'ch_backfill_4', 'won' );
-		$this->apply_legacy_closure( $order, 'ch_backfill_4', 'warning_closed' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_4', 'won' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_4', 'warning_closed' );
 
 		$this->mock_disputes_page(
 			[
@@ -176,7 +265,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 
 	public function test_ignores_disputes_that_are_still_open() {
 		$order = $this->create_disputed_order( 'ch_backfill_5' );
-		$this->apply_legacy_closure( $order, 'ch_backfill_5', 'won' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_5', 'won' );
 
 		$this->mock_disputes_page(
 			[
@@ -189,6 +278,73 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 		$this->assertFalse( $this->reload( $order )->meta_exists( '_wcpay_dispute_closed_dp_backfill_5' ) );
 	}
 
+	/**
+	 * Test mode selects a different account and a different table on the server, so a scan that
+	 * inherited it reads an empty first page and records itself as done having examined nothing.
+	 */
+	public function test_reads_the_live_account_whatever_mode_the_job_inherited() {
+		$request = $this->mock_disputes_page( [] );
+		$request
+			->expects( $this->once() )
+			->method( 'set_filters' )
+			->with( [ 'test_mode' => false ] );
+
+		$this->service->run_backfill_batch();
+	}
+
+	/**
+	 * The notes were written by a webhook, in the site locale. ActionScheduler's async runner reaches
+	 * PHP through admin-ajax.php, which defines WP_ADMIN and forwards the dispatching admin's cookies,
+	 * so `determine_locale()` can hand back that admin's personal locale — and a reconstruction in a
+	 * language the store never wrote a note in matches nothing at all.
+	 */
+	public function test_reconstructs_the_note_in_the_site_locale() {
+		$order = $this->create_disputed_order( 'ch_backfill_14' );
+		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_14', 'won' );
+
+		// Priority 9 so the locale switcher's own callback, registered at 10, still wins while a
+		// switch is in force.
+		$admin_locale = function () {
+			return 'de_DE';
+		};
+		add_filter( 'determine_locale', $admin_locale, 9 );
+
+		// Stands in for the catalogue that locale would load.
+		$translate = function ( $translation, $text ) {
+			if ( 0 !== strpos( $text, 'Dispute has been closed with status' ) || 'de_DE' !== determine_locale() ) {
+				return $translation;
+			}
+
+			return 'Streitfall wurde mit dem Status %1$s geschlossen. Siehe <a>Streitfall-Übersicht</a>.';
+		};
+		add_filter( 'gettext', $translate, 10, 2 );
+
+		$this->mock_disputes_page(
+			[
+				$this->dispute_row( 'dp_backfill_14', 'ch_backfill_14', 'won' ),
+			]
+		);
+
+		$this->service->run_backfill_batch();
+
+		remove_filter( 'gettext', $translate, 10 );
+		remove_filter( 'determine_locale', $admin_locale, 9 );
+
+		$this->assertTrue( $this->reload( $order )->meta_exists( '_wcpay_dispute_closed_dp_backfill_14' ) );
+	}
+
+	/**
+	 * Only closures noted by 8.7.0 and later can be reconstructed, so the scan walks the newest
+	 * disputes first: oldest-first would spend its page budget on a population that can never match.
+	 */
+	public function test_walks_the_newest_disputes_first() {
+		$request = $this->mock_disputes_page( [] );
+		$request->expects( $this->once() )->method( 'set_sort_by' )->with( 'created' );
+		$request->expects( $this->once() )->method( 'set_sort_direction' )->with( 'desc' );
+
+		$this->service->run_backfill_batch();
+	}
+
 	public function test_marks_the_backfill_done_when_a_page_comes_back_empty() {
 		$this->mock_disputes_page( [] );
 
@@ -197,6 +353,31 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 		$state = get_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
 
 		$this->assertSame( 'done', $state['status'] );
+	}
+
+	/**
+	 * The backfill is one-shot and nothing can re-run it to find out what it did, and logging is off
+	 * on a default install, so the finished state is the only durable record of the outcome.
+	 */
+	public function test_keeps_the_counters_when_the_backfill_finishes() {
+		$this->set_state(
+			[
+				'page'  => 4,
+				'stats' => array_merge(
+					WC_Payments_Dispute_Ledger_Backfill_Service::STATS_TEMPLATE,
+					[ 'entries_recorded' => 7 ]
+				),
+			]
+		);
+		$this->mock_disputes_page( [] );
+
+		$this->service->run_backfill_batch();
+
+		$state = get_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
+
+		$this->assertSame( 7, $state['stats']['entries_recorded'] );
+		$this->assertSame( 4, $state['page'] );
+		$this->assertNotEmpty( $state['finished_at'] );
 	}
 
 	/**
@@ -230,17 +411,21 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 
 	/**
 	 * Without the timestamp there is nothing to bound the scan to, and every closure the store has
-	 * ever seen would be a candidate.
+	 * ever seen would be a candidate. That is a broken state rather than a finished scan, so it is
+	 * recorded as one.
 	 */
-	public function test_finishes_when_the_upgrade_timestamp_is_missing() {
+	public function test_fails_when_the_upgrade_timestamp_is_missing() {
 		$this->set_state( [ 'created_before' => '' ] );
-		$this->mock_wcpay_request( List_Disputes::class, 0 );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
 
 		$this->service->run_backfill_batch();
 
 		$state = get_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
 
-		$this->assertSame( 'done', $state['status'] );
+		$this->assertSame( 'failed', $state['status'] );
 	}
 
 	/**
@@ -249,7 +434,6 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	 */
 	public function test_stops_when_the_page_ceiling_is_reached() {
 		$this->set_state( [ 'page' => WC_Payments_Dispute_Ledger_Backfill_Service::MAX_PAGES ] );
-		$this->mock_wcpay_request( List_Disputes::class, 0 );
 
 		$this->mock_action_scheduler_service
 			->expects( $this->never() )
@@ -278,6 +462,39 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 		$this->assertSame( 'pending', $state['status'] );
 		$this->assertSame( 1, $state['attempts'] );
 		$this->assertSame( 3, $state['page'] );
+	}
+
+	/**
+	 * A page that blows up while it is being processed leaves ActionScheduler holding a `failed`
+	 * action, which the scheduling check cannot see — so the attempt has to be on record before the
+	 * work starts, or the same page is queued again with the retry budget untouched.
+	 */
+	public function test_banks_the_attempt_before_processing_a_page() {
+		$mock_wcpay_db = $this->createMock( WC_Payments_DB::class );
+		$mock_wcpay_db
+			->method( 'orders_with_charge_id_from_charge_ids' )
+			->willThrowException( new TypeError( 'Argument #1 ($order) must be of type WC_Order, bool given' ) );
+
+		$service = new WC_Payments_Dispute_Ledger_Backfill_Service(
+			$this->order_service,
+			$this->mock_action_scheduler_service,
+			$mock_wcpay_db
+		);
+
+		$this->set_state( [ 'page' => 3 ] );
+		$this->mock_disputes_page(
+			[
+				$this->dispute_row( 'dp_backfill_9', 'ch_backfill_9', 'won' ),
+			]
+		);
+
+		$service->run_backfill_batch();
+
+		$state = get_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
+
+		$this->assertSame( 1, $state['attempts'] );
+		$this->assertSame( 3, $state['page'] );
+		$this->assertSame( 'pending', $state['status'] );
 	}
 
 	/**
@@ -323,10 +540,23 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	}
 
 	public function test_does_nothing_once_the_backfill_is_done() {
-		update_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION, [ 'status' => 'done' ] );
-		$this->mock_wcpay_request( List_Disputes::class, 0 );
+		$done_state = [
+			'status'         => 'done',
+			'page'           => 4,
+			'created_before' => '2026-01-01 00:00:00',
+			'attempts'       => 0,
+		];
+		update_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION, $done_state );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
 
 		$this->service->run_backfill_batch();
+
+		$state = get_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
+
+		$this->assertSame( $done_state, $state );
 	}
 
 	/**
@@ -334,25 +564,34 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	 * already queued when it failed.
 	 */
 	public function test_does_nothing_once_the_backfill_has_failed() {
-		$this->set_state( [ 'status' => WC_Payments_Dispute_Ledger_Backfill_Service::STATUS_FAILED ] );
-		$this->mock_wcpay_request( List_Disputes::class, 0 );
+		$failed_state = [
+			'status'         => 'failed',
+			'page'           => 4,
+			'created_before' => '2026-01-01 00:00:00',
+			'attempts'       => 8,
+		];
+		update_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION, $failed_state );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
 
 		$this->service->run_backfill_batch();
 
 		$state = get_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
 
-		$this->assertSame( 'failed', $state['status'] );
+		$this->assertSame( $failed_state, $state );
 	}
 
 	/**
-	 * The check behind this queries the ActionScheduler tables uncached, so it must not sit on a hook
-	 * that every front-end request runs.
+	 * A store whose admin is never opened — headless, or driven over REST and WP-CLI — still has to
+	 * start the scan, so the scheduling check cannot sit behind an admin-only hook.
 	 */
-	public function test_checks_for_a_queued_job_off_the_front_end_path() {
+	public function test_schedules_from_a_hook_that_runs_in_every_context() {
 		$this->service->init_hooks();
 
-		$this->assertFalse( has_action( 'init', [ $this->service, 'maybe_schedule_backfill' ] ) );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->service, 'maybe_schedule_backfill' ] ) );
+		$this->assertFalse( has_action( 'admin_init', [ $this->service, 'maybe_schedule_backfill' ] ) );
+		$this->assertNotFalse( has_action( 'init', [ $this->service, 'maybe_schedule_backfill' ] ) );
 	}
 
 	public function test_schedules_the_first_job_when_the_backfill_is_pending() {
@@ -428,17 +667,82 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	}
 
 	/**
-	 * Applies a dispute closure the way a version predating the ledger did: a note without a dispute
-	 * ID, and no ledger meta.
+	 * Adds the closure note verbatim as 8.7.0 wrote it — the earliest wording the scan can still
+	 * reconstruct, so these are the closures it is expected to recognise.
 	 *
-	 * @param WC_Order $order     Order to apply the closure to.
+	 * The historical notes below are spelled out rather than produced by the note generator: asking
+	 * the current generator for the "legacy" note would compare current code against itself, and the
+	 * comparison would keep passing however far the wording drifts away from what stores actually
+	 * have on their orders.
+	 *
+	 * @param WC_Order $order     Order to note.
 	 * @param string   $charge_id The disputed charge.
 	 * @param string   $status    The status the dispute closed with.
 	 *
 	 * @return void
 	 */
-	private function apply_legacy_closure( WC_Order $order, string $charge_id, string $status ) {
-		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+	private function add_note_as_written_by_8_7_0( WC_Order $order, string $charge_id, string $status ) {
+		if ( 0 === strpos( $status, 'warning_' ) ) {
+			$order->add_order_note(
+				'Payment inquiry has been closed with status ' . $status . '. See <a href="'
+				. $this->transaction_details_url( $charge_id )
+				. '" target="_blank" rel="noopener noreferrer">payment status</a> for more details.'
+			);
+
+			return;
+		}
+
+		$order->add_order_note(
+			'Dispute has been closed with status ' . $status . '. See <a href="'
+			. $this->transaction_details_url( $charge_id )
+			. '" target="_blank" rel="noopener noreferrer">dispute overview</a> for more details.'
+		);
+	}
+
+	/**
+	 * Adds the closure note verbatim as 8.6.0 wrote it, before the sentence was reworded.
+	 *
+	 * @param WC_Order $order     Order to note.
+	 * @param string   $charge_id The disputed charge.
+	 * @param string   $status    The status the dispute closed with.
+	 *
+	 * @return void
+	 */
+	private function add_note_as_written_by_8_6_0( WC_Order $order, string $charge_id, string $status ) {
+		$order->add_order_note(
+			'Payment dispute has been closed with status ' . $status . '. See <a href="'
+			. $this->transaction_details_url( $charge_id )
+			. '" target="_blank" rel="noopener noreferrer">dispute overview</a> for more details.'
+		);
+	}
+
+	/**
+	 * Adds the closure note verbatim as 6.5.0 wrote it, before the link moved to the transaction page
+	 * and started carrying the charge ID instead of the dispute's.
+	 *
+	 * @param WC_Order $order      Order to note.
+	 * @param string   $dispute_id The dispute, which is what the link carried back then.
+	 * @param string   $status     The status the dispute closed with.
+	 *
+	 * @return void
+	 */
+	private function add_note_as_written_by_6_5_0( WC_Order $order, string $dispute_id, string $status ) {
+		$order->add_order_note(
+			'Payment dispute has been closed with status ' . $status . '. See <a href="'
+			. admin_url( 'admin.php' ) . '?page=wc-admin&path=/payments/disputes/details&id=' . $dispute_id
+			. '" target="_blank" rel="noopener noreferrer">dispute overview</a> for more details.'
+		);
+	}
+
+	/**
+	 * The transaction details link the closure notes have carried since 8.6.0.
+	 *
+	 * @param string $charge_id The disputed charge.
+	 *
+	 * @return string
+	 */
+	private function transaction_details_url( string $charge_id ): string {
+		return admin_url( 'admin.php' ) . '?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=' . $charge_id;
 	}
 
 	/**
