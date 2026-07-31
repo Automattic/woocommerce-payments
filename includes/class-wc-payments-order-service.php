@@ -255,6 +255,18 @@ class WC_Payments_Order_Service {
 	const WCPAY_REFUND_DISPUTE_ID_META_KEY = '_wcpay_dispute_id';
 
 	/**
+	 * Meta key holding the IDs of the disputes recorded against this order that have
+	 * not closed yet. The list is order-wide; it is not keyed or scoped per charge.
+	 *
+	 * A single charge can carry several disputes at once (AmEx and Klarna raise one
+	 * per separately shipped item), and nothing in the close webhook says whether the
+	 * others are still running, so the plugin has to keep its own tally.
+	 *
+	 * @const string
+	 */
+	const WCPAY_OPEN_DISPUTE_IDS_META_KEY = '_wcpay_open_dispute_ids';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -596,6 +608,8 @@ class WC_Payments_Order_Service {
 		// Holding an order for a dispute that has already closed suspends the subscription the order
 		// is the parent of, which stops its renewals. A creation arriving after the closure is always
 		// stale, so record it and leave the order alone; the closure already noted the dispute.
+		// It must not join the open list either: its close has already been and gone, so nothing
+		// would ever take it back out, and the order would stay held for a dispute that is over.
 		if ( $this->dispute_ledger_entry_exists( $order, self::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX, $dispute_id ) ) {
 			$this->record_dispute_ledger_entry( $order, self::WCPAY_DISPUTE_CREATED_META_KEY_PREFIX, $dispute_id );
 			return;
@@ -610,6 +624,7 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$this->record_dispute_ledger_entry( $order, self::WCPAY_DISPUTE_CREATED_META_KEY_PREFIX, $dispute_id );
 		$order->add_order_note( $note );
+		$this->add_open_dispute_id( $order, $dispute_id );
 		$order->save();
 	}
 
@@ -645,7 +660,8 @@ class WC_Payments_Order_Service {
 		add_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
 		add_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
-		$refund_failed = false;
+		$refund_failed    = false;
+		$open_dispute_ids = $this->close_open_dispute_id( $order, $dispute_id );
 
 		if ( 'lost' === $status ) {
 			// Use dispute summary data if available to determine refund amount.
@@ -692,8 +708,36 @@ class WC_Payments_Order_Service {
 				$refund->update_meta_data( self::WCPAY_REFUND_DISPUTE_ID_META_KEY, $dispute_id );
 				$refund->save();
 			}
+		} elseif ( ! empty( $open_dispute_ids ) ) {
+			// Another dispute on the same charge is still running its evidence deadline, and
+			// the hold it put on the order has to outlive this one. Leave the status alone
+			// rather than picking a new one: the sibling's own close will resolve it.
+			$order->add_order_note(
+				sprintf(
+					/* translators: %d: the number of disputes on this payment that are still open */
+					_n(
+						'The order was not marked as completed because %d other dispute on this payment is still open.',
+						'The order was not marked as completed because %d other disputes on this payment are still open.',
+						count( $open_dispute_ids ),
+						'woocommerce-payments'
+					),
+					count( $open_dispute_ids )
+				)
+			);
+		} elseif ( $this->is_order_fully_refunded( $order ) ) {
+			// Promoting a fully refunded order to completed would make Analytics count it
+			// as revenue again. It still has to leave the dispute hold, though: no other
+			// webhook will arrive to move it off on-hold.
+			if ( ! $order->has_status( Order_Status::REFUNDED ) ) {
+				$this->update_order_status( $order, Order_Status::REFUNDED );
+			}
+
+			$order->add_order_note(
+				__( 'The order was not marked as completed because it has already been fully refunded.', 'woocommerce-payments' )
+			);
 		} else {
-			// TODO: This should revert to the status the order was in before the dispute was created.
+			// TODO: Revert to the status the order held before the dispute. Nothing records
+			// the pre-dispute status, so completed is the best guess available here.
 			$this->update_order_status( $order, Order_Status::COMPLETED );
 			$order->save();
 		}
@@ -2668,6 +2712,96 @@ class WC_Payments_Order_Service {
 		$this->lock_order_payment( $order, $intent_id );
 
 		return true;
+	}
+
+	/**
+	 * Checks whether the order has already been refunded in full.
+	 *
+	 * @param WC_Order $order The order being checked.
+	 *
+	 * @return bool True if the whole order total has been refunded, false otherwise.
+	 */
+	private function is_order_fully_refunded( WC_Order $order ): bool {
+		// Two independent clauses: has_status() catches WooCommerce's standard
+		// fully-refunded transition, the remaining-amount check catches stores that
+		// redirect it via woocommerce_order_fully_refunded_status, plus over-refunds.
+		// The total clamp guards only the second clause, since on a zero-total order
+		// (free / 100% coupon) the remaining amount is trivially 0.
+		return $order->has_status( Order_Status::REFUNDED )
+			|| ( (float) $order->get_total() > 0 && (float) $order->get_remaining_refund_amount() <= 0 );
+	}
+
+	/**
+	 * Reads the IDs of the charge's disputes that have not closed yet.
+	 *
+	 * @param WC_Order $order The order the disputed charge belongs to.
+	 *
+	 * @return string[] The open dispute IDs, empty when none were ever recorded.
+	 */
+	private function get_open_dispute_ids( WC_Order $order ): array {
+		$open_dispute_ids = $order->get_meta( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY, true );
+
+		return is_array( $open_dispute_ids ) ? array_values( $open_dispute_ids ) : [];
+	}
+
+	/**
+	 * Records a dispute as open on the order. Does not save the order.
+	 *
+	 * @param WC_Order $order      The order the disputed charge belongs to.
+	 * @param string   $dispute_id The ID of the dispute that was created.
+	 *
+	 * @return void
+	 */
+	private function add_open_dispute_id( WC_Order $order, string $dispute_id ) {
+		if ( empty( $dispute_id ) ) {
+			return;
+		}
+
+		$open_dispute_ids = $this->get_open_dispute_ids( $order );
+		if ( in_array( $dispute_id, $open_dispute_ids, true ) ) {
+			return;
+		}
+
+		$open_dispute_ids[] = $dispute_id;
+		$order->update_meta_data( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY, $open_dispute_ids );
+	}
+
+	/**
+	 * Drops a dispute from the order's open list and reports which disputes are left.
+	 *
+	 * @param WC_Order $order      The order the disputed charge belongs to.
+	 * @param string   $dispute_id The ID of the dispute that closed.
+	 *
+	 * @return string[] The disputes still open on the charge.
+	 */
+	private function close_open_dispute_id( WC_Order $order, string $dispute_id ): array {
+		// Without an ID there is no telling which of the charge's disputes just closed, so
+		// leave the record untouched and report nothing open. Callers still on the older
+		// signature — and orders whose disputes predate this bookkeeping — keep the
+		// behaviour they had before.
+		if ( '' === $dispute_id ) {
+			return [];
+		}
+
+		$open_dispute_ids = $this->get_open_dispute_ids( $order );
+		$remaining        = array_values( array_diff( $open_dispute_ids, [ $dispute_id ] ) );
+
+		if ( $remaining === $open_dispute_ids ) {
+			return $remaining;
+		}
+
+		if ( empty( $remaining ) ) {
+			$order->delete_meta_data( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY );
+		} else {
+			$order->update_meta_data( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY, $remaining );
+		}
+
+		// Nothing further down this method is guaranteed to save the order: the lost branch
+		// refunds through a separate order instance and the sibling-open branch changes no
+		// status at all.
+		$order->save();
+
+		return $remaining;
 	}
 
 	/**
