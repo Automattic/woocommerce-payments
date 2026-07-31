@@ -15,19 +15,19 @@ use WCPay\Logger;
 /**
  * Records the dispute closure ledger for disputes that closed before the store upgraded.
  *
- * Dispute closures used to be de-duplicated on the order note text alone. That text now carries the
- * dispute ID, so a closure the store already applied under an earlier version is no longer
- * recognised when the platform redelivers its event, and the side effects — for a lost dispute, a
- * refund — run again. Writing the ledger meta for those older closures closes that window.
+ * Closures used to be de-duplicated on the order note text alone. That text now carries the dispute
+ * ID, so a closure the store already applied under an earlier version stops being recognised when
+ * the platform redelivers the event, and a lost dispute refunds twice. Writing the ledger meta for
+ * those older closures shuts that window.
  *
- * The evidence the ledger is written on is the note the earlier version left on the order. That note
- * says the closure handler ran to the end, not that every side effect it attempted landed: 10.9.0
- * discarded what `wc_create_refund()` returned and wrote the note regardless. So a marked closure is
- * one the store processed, which is the property that makes suppressing its redelivery correct, and
- * no stronger claim than that. Marking a closure the store never processed would be worse than the
- * bug, because a genuine redelivery from the platform's failed-event queue would then be suppressed
- * and the refund never applied. Every ambiguity in this class resolves the same way — leave the
- * closure unmarked, and log enough to tell a scan that found nothing from one that matched nothing.
+ * The evidence is the note the earlier version left on the order. It proves the handler ran to the
+ * end, not that every side effect landed: 10.9.0 threw away what `wc_create_refund()` returned and
+ * wrote the note anyway. Enough to suppress a redelivery, and no stronger claim than that.
+ *
+ * Marking a closure the store never processed would be worse than the bug, since a genuine
+ * redelivery would then be suppressed and the refund never applied. So every ambiguity here resolves
+ * the same way: leave the closure unmarked, and log enough to tell a scan that found nothing from
+ * one that matched nothing.
  */
 class WC_Payments_Dispute_Ledger_Backfill_Service {
 
@@ -40,18 +40,16 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 
 	const PAGE_SIZE = 100;
 
-	// Nothing resumes a scan that gave up, so the retry budget has to outlast a plausible platform
-	// incident rather than a transient blip: these values give one page just over a day to come back
-	// before the whole backfill is abandoned.
+	// Nothing resumes a scan that gave up, so the budget has to outlast a platform incident, not just
+	// a blip. One page gets a little over a day to come back before the backfill is abandoned.
 	const MAX_ATTEMPTS = 8;
 	const RETRY_DELAY  = 3 * HOUR_IN_SECONDS;
 
 	/**
 	 * Ceiling on the pages one scan will walk.
 	 *
-	 * The scan stops on an empty page, which relies on the endpoint eventually returning one. This
-	 * bounds the damage if it never does — an endpoint that ignores the page parameter would
-	 * otherwise queue itself forever.
+	 * The scan stops on an empty page, which relies on the endpoint eventually returning one. An
+	 * endpoint that ignored the page parameter would otherwise queue itself forever.
 	 *
 	 * @const int
 	 */
@@ -61,14 +59,13 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 * Meta key prefix, suffixed with the dispute status, naming the dispute a backfilled closure note
 	 * was attributed to.
 	 *
-	 * The earlier version collapsed same-status closures on a charge into a single note, so a charge
-	 * with several of them carries evidence for only one. Within a page they are recognised as
-	 * ambiguous and none are marked; across a page boundary there is nothing to compare against, so
-	 * this records which dispute claimed the evidence, and a later member of the same group retracts
-	 * that claim rather than merely stepping around it.
+	 * The earlier version collapsed a charge's same-status closures into one note, so a charge with
+	 * several of them carries evidence for only one. Within a page they are spotted as ambiguous and
+	 * none are marked. Across a page boundary there is nothing to compare against, so this records
+	 * which dispute claimed the evidence, and a later member of the group retracts that claim.
 	 *
-	 * Deliberately outside the ledger's own `_wcpay_dispute_closed_` namespace: a key there would
-	 * read as a ledger entry for a dispute called after the status.
+	 * Kept outside the ledger's own `_wcpay_dispute_closed_` namespace, where it would read as an
+	 * entry for a dispute named after the status.
 	 *
 	 * @const string
 	 */
@@ -86,7 +83,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 
 	/**
 	 * Dispute statuses that reach WC_Payments_Order_Service::mark_payment_dispute_closed(), inquiry
-	 * closures included — they run through the same note generator.
+	 * closures included, since they run through the same note generator.
 	 *
 	 * @const string[]
 	 */
@@ -98,11 +95,11 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	];
 
 	/**
-	 * The counters a scan accumulates, so its outcome can be read off a single log line.
+	 * The counters a scan accumulates, so its outcome reads off a single log line.
 	 *
-	 * Nothing being marked is a legitimate result — every note is reconstructed and compared
-	 * verbatim, and a store that changed domain or site language no longer matches any of them —
-	 * but so is nothing being examined. These tell the two apart.
+	 * Marking nothing is a legitimate result: notes are reconstructed and compared verbatim, and a
+	 * store that changed domain or site language matches none of them. Examining nothing is not.
+	 * These tell the two apart.
 	 *
 	 * @const array<string, int>
 	 */
@@ -163,11 +160,10 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 * @return void
 	 */
 	public function init_hooks() {
-		// ActionScheduler is not up yet when the plugin update runs, so the migration only records
-		// that the backfill is due and the first job is scheduled from a later hook. It has to be a
-		// hook that runs in every context: a store whose admin is never opened — headless, or driven
-		// entirely over REST and WP-CLI — would otherwise never start the scan. Priority 20 puts this
-		// after ActionScheduler's own `init` callbacks, which run at 1.
+		// ActionScheduler is not up when the plugin update runs, so the migration only records that the
+		// backfill is due and the first job is scheduled here. `init` because it has to fire in every
+		// context: a headless store, or one driven over REST and WP-CLI, never opens the admin.
+		// Priority 20 puts this after ActionScheduler's own `init` callbacks, which run at 1.
 		add_action( 'init', [ $this, 'maybe_schedule_backfill' ], 20 );
 		add_action( self::BACKFILL_ACTION, [ $this, 'run_backfill_batch' ] );
 	}
@@ -179,7 +175,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 */
 	public function maybe_schedule_backfill() {
 		// The ActionScheduler lookup below queries its tables uncached, so it sits behind the option
-		// read: on every store but the handful mid-scan, this costs one autoloaded option and stops.
+		// read. On every store but the few mid-scan, this costs one autoloaded option and stops.
 		$state = get_option( self::STATE_OPTION );
 
 		if ( ! is_array( $state ) || self::STATUS_PENDING !== ( $state['status'] ?? '' ) ) {
@@ -218,11 +214,10 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			return;
 		}
 
-		// The attempt is banked before the work, not after it. ActionScheduler records an action that
-		// threw as `failed`, and `as_has_scheduled_action()` only sees RUNNING and PENDING ones, so
-		// the next scheduling pass cannot tell a page that blew up from one that was never queued and
-		// re-queues it. Counting the attempt up front is what makes the cap, and the delay behind it,
-		// bite on a page that fails outside the request.
+		// The attempt is banked before the work, not after. ActionScheduler marks an action that threw
+		// as `failed`, and `as_has_scheduled_action()` only sees RUNNING and PENDING, so the next
+		// scheduling pass re-queues a page that blew up as if it had never run. Counting up front is
+		// what makes the cap and the retry delay bite on a page that fails outside the request.
 		$state['attempts'] = (int) ( $state['attempts'] ?? 0 ) + 1;
 		update_option( self::STATE_OPTION, $state );
 
@@ -230,31 +225,29 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			$request = List_Disputes::create();
 			$request->set_page( $page );
 			$request->set_page_size( self::PAGE_SIZE );
-			// An explicit order is what keeps the pages of one scan disjoint. Without it the server
-			// picks its own, and rows can repeat or be skipped as the scan walks. Newest first,
-			// because only closures written by 8.7.0 and later produce a note this scan can still
-			// reconstruct — walking oldest first would spend the whole page budget on disputes that
-			// can never match and reach the matchable ones last, where every truncation cuts them off.
+			// An explicit order keeps the pages of one scan disjoint. Without it the server picks its
+			// own, and rows repeat or get skipped as the scan walks.
+			// Newest first, because only 8.7.0 and later wrote a note this scan can reconstruct. Oldest
+			// first would reach those last, where any truncation cuts them off.
 			$request->set_sort_by( 'created' );
 			$request->set_sort_direction( 'desc' );
-			// The list carries no closed-at value, and a dispute cannot close before it was created,
-			// so bounding on creation is the available way to keep the scan on the closures that
-			// predate the upgrade. Anything newer is skipped further down for want of a legacy note.
+			// The list carries no closed-at value, and a dispute cannot close before it was created, so
+			// creation is the only bound available for keeping the scan on pre-upgrade closures.
 			$request->set_created_before( $created_before );
-			// The scan runs from a scheduled job, which inherits whatever mode the request that
-			// dispatched it was in. Test mode selects a different account and a different table, so an
-			// ambient test mode returns an empty first page, and the empty page below is absorbing —
-			// the backfill would record itself as done having read nothing.
+			// A scheduled job inherits whatever mode the request that dispatched it was in. Test mode
+			// selects a different account and a different table, so an ambient test mode returns an
+			// empty first page, and the check below would record the backfill as done having read
+			// nothing.
 			$request->set_filters( [ 'test_mode' => false ] );
 
 			$response = $request->send();
 
 			$disputes = isset( $response['data'] ) && is_array( $response['data'] ) ? $response['data'] : [];
 
-			// Deliberately an empty page rather than a short one: neither the page the server counts
-			// from nor the page size it is willing to serve is guaranteed to match what is asked for
-			// here, and a short first page would end the scan having read nothing. A page that repeats
-			// work already done is harmless, since every write below is idempotent.
+			// An empty page rather than a short one: neither the page the server counts from nor the
+			// size it will serve is guaranteed to match what is asked for here, and a short first page
+			// would end the scan having read nothing. Repeating a page is harmless, every write below
+			// is idempotent.
 			if ( empty( $disputes ) ) {
 				$this->finish( $state, 'reached the end of the disputes list' );
 				return;
@@ -262,10 +255,9 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 
 			$page_stats = $this->backfill_page_in_site_locale( $disputes );
 		} catch ( Throwable $e ) {
-			// Throwable rather than Exception: the notes are reconstructed from list rows, and
-			// `List_Disputes::format_response()` feeds a `WC_Order|WC_Order_Refund|false` into a
-			// parameter typed `WC_Order`, so a TypeError escapes from inside `send()` as readily as an
-			// API failure does.
+			// Throwable rather than Exception: `List_Disputes::format_response()` feeds a
+			// `WC_Order|WC_Order_Refund|false` into a parameter typed `WC_Order`, so a TypeError can
+			// escape `send()` as readily as an API failure does.
 			$this->handle_failure( $state, $e->getMessage() );
 			return;
 		}
@@ -281,11 +273,11 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	/**
 	 * Process a page with the site locale in force.
 	 *
-	 * The notes this scan matches against were translated when they were written, by a webhook, in
-	 * the site locale. `determine_locale()` hands back the current user's personal locale in admin
-	 * context, and ActionScheduler's async runner reaches PHP through `admin-ajax.php`, which defines
-	 * `WP_ADMIN` and forwards the dispatching admin's cookies — so without this the reconstruction
-	 * can come out in a language the store never wrote a note in, and match nothing.
+	 * The notes were written by a webhook, so they were translated in the site locale. In admin
+	 * context `determine_locale()` hands back the current user's own locale instead, and
+	 * ActionScheduler's async runner reaches PHP through `admin-ajax.php`, which defines `WP_ADMIN`
+	 * and forwards the dispatching admin's cookies. Without this the reconstruction can come out in a
+	 * language the store never wrote a note in, and match nothing.
 	 *
 	 * @param array $disputes Rows from the disputes list response.
 	 *
@@ -347,10 +339,9 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			foreach ( $candidates[ $charge_id ] ?? [] as $status => $dispute_ids ) {
 				if ( count( $dispute_ids ) > 1 ) {
 					// The earlier version wrote one note for a charge's same-status closures and
-					// returned, so the note belongs to whichever of them closed first — and the list
-					// carries no closed-at value to work that out. Attributing it to the wrong dispute
-					// would suppress a refund that is still owed, so none of them are marked and the
-					// charge keeps the double-refund exposure this backfill exists to narrow.
+					// returned, so the note belongs to whichever of them closed first, and the list
+					// carries no closed-at value to work that out. Guessing wrong would suppress a
+					// refund that is still owed, so none of them are marked.
 					++$stats['groups_skipped'];
 					$this->retract_group( $order, $charge_id, $status, $dispute_ids );
 					continue;
@@ -365,9 +356,8 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			$stats['charges_without_order'] = count( $unresolved_charge_ids );
 
 			// Either the charge never reached an order on this store, or the shared lookup dropped it:
-			// that query caps its result at the number of charge IDs it was given, so a charge held by
-			// several orders pushes another charge's order out of the set. Both leave closures
-			// unmarked, so they are logged rather than passed over.
+			// that query caps its result at the number of charge IDs given, so a charge held by several
+			// orders pushes another charge's order out of the set. Both leave closures unmarked.
 			Logger::info(
 				'Dispute ledger backfill: no order found for charges ' . implode( ', ', array_keys( $unresolved_charge_ids ) ) . '.'
 			);
@@ -401,20 +391,18 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			return 'groups_retracted';
 		}
 
-		// An empty dispute ID reproduces the note the earlier version wrote. Its absence means the
-		// closure never reached this store, so the ledger stays unwritten and a redelivery is free to
-		// apply it. The comparison is exact, so a note whose wording has since been re-translated, or
-		// which links to a domain the store has since left, no longer matches either — the same safe
-		// direction, and the reason the scan reports how many notes it failed to match.
+		// An empty dispute ID reproduces the note the earlier version wrote. No note means the closure
+		// never reached this store, so the ledger stays unwritten and a redelivery is free to apply it.
+		// The comparison is exact, so a re-translated note, or one linking to a domain the store has
+		// since left, misses too. Same safe direction, and the reason the scan counts what it missed.
 		if ( ! $this->order_service->order_note_exists( $order, $this->order_service->get_dispute_closed_note( $charge_id, $status ) ) ) {
 			return 'notes_not_matched';
 		}
 
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX . $dispute_id, gmdate( 'Y-m-d H:i:s' ) );
-		// The same evidence settles the creation: a dispute whose closure this store applied is one
-		// whose creation it applied first. Without the entry, a legacy creation redelivered from the
-		// platform's queue puts a closed dispute's order back on hold, which suspends the subscription
-		// the order is the parent of.
+		// The same evidence settles the creation: a store that applied the closure applied the creation
+		// first. Without the entry, a redelivered legacy creation puts a closed dispute's order back on
+		// hold and suspends the subscription it is the parent of.
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_DISPUTE_CREATED_META_KEY_PREFIX . $dispute_id, gmdate( 'Y-m-d H:i:s' ) );
 		$order->update_meta_data( $claim_meta_key, $dispute_id );
 		$this->save_order_meta_without_touching_the_order( $order );
@@ -428,14 +416,14 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 * Take a (charge, status) group out of the backfill's reach, undoing anything already written for
 	 * it.
 	 *
-	 * A group is ambiguous the moment it has a second member, and the members can arrive pages apart,
-	 * so the retraction has to work backwards as well as forwards: whichever dispute already claimed
-	 * the note gives its ledger entries back, and the claim key keeps a value no dispute ID can equal
-	 * so a third member arriving later cannot claim it either.
+	 * A group turns ambiguous the moment it has a second member, and members can arrive pages apart,
+	 * so the retraction works backwards as well as forwards: whichever dispute already claimed the
+	 * note gives its entries back, and the claim key keeps a value no dispute ID can equal, so a third
+	 * member cannot claim it later.
 	 *
-	 * Both ledger entries are safe to remove because this scan wrote them together, and it cannot
-	 * have written over the live path's: the live path records a creation only alongside or after the
-	 * matching closure, and a dispute whose closure is already in the ledger never reaches here.
+	 * Removing both entries is safe because this scan wrote them together. It cannot have written over
+	 * the live path's: that path records a creation only alongside or after the matching closure, and
+	 * a dispute whose closure is already in the ledger never reaches here.
 	 *
 	 * @param WC_Order $order       Order the disputed charge belongs to.
 	 * @param string   $charge_id   The ID of the disputed charge.
@@ -537,9 +525,9 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 * @return void
 	 */
 	private function finish( array $state, string $reason ) {
-		// The counters stay in the option rather than only in the log line below: logging is off by
-		// default, and this is a one-shot migration nobody can re-run to find out what it did. The
-		// option is the only durable record of whether it marked nothing or ten thousand entries.
+		// The counters stay in the option, not only in the log line below: logging is off by default,
+		// and nobody can re-run a one-shot migration to find out what it did.
+		// The option is the only durable record of whether it marked nothing or ten thousand entries.
 		$state['status']      = self::STATUS_DONE;
 		$state['attempts']    = 0;
 		$state['stats']       = $this->merge_stats( $state['stats'] ?? [], [] );
@@ -559,9 +547,9 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 */
 	private function fail( array $state, string $reason ) {
 		// Distinct from `done`, and keeps `created_before`, `page` and the counters: a store that lost
-		// its connection mid-scan is half-applied, and the state says exactly how far it got. Nothing
-		// picks it back up on its own — there is no notice, no REST route and no command that re-arms
-		// it — so resuming means editing the option's status back to `pending` by hand.
+		// its connection mid-scan is half-applied, and the state says how far it got.
+		// Nothing picks it back up on its own, so resuming means setting the option's status back to
+		// `pending` by hand.
 		$state['status']    = self::STATUS_FAILED;
 		$state['stats']     = $this->merge_stats( $state['stats'] ?? [], [] );
 		$state['failed_at'] = gmdate( 'Y-m-d H:i:s' );

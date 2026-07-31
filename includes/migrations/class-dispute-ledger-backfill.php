@@ -31,10 +31,9 @@ class Dispute_Ledger_Backfill {
 	/**
 	 * Option holding the backfill progress.
 	 *
-	 * Same value as WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION, intentionally
-	 * duplicated as a literal rather than referencing the live constant: a migration is a frozen
-	 * historical step and must keep writing the same option name even if the service later renames
-	 * or removes it.
+	 * Same value as WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION, duplicated as a
+	 * literal on purpose: a migration is a frozen historical step, and has to keep writing the same
+	 * option name even if the service later renames or removes it.
 	 *
 	 * @var string
 	 */

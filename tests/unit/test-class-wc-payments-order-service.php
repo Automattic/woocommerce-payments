@@ -2611,7 +2611,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'currency'        => 'usd',
 		];
 
-		// Arrange: the closure as an earlier version applied it — an ID-less note, no ledger entry.
+		// Arrange: the closure as an earlier version applied it, an ID-less note and no ledger entry.
 		$this->order_service->mark_payment_dispute_closed( $order, 'ch_123', 'lost', $dispute_summary );
 
 		// Arrange: the backfill attributes that note to the dispute it came from.

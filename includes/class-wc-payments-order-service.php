@@ -224,10 +224,10 @@ class WC_Payments_Order_Service {
 	 * Meta key prefix, suffixed with the dispute ID, marking a dispute closure as already applied
 	 * to the order.
 	 *
-	 * Order note text cannot serve as the idempotency key for a dispute webhook: the wording is
-	 * translated and evolves between releases, so an event redelivered after an upgrade no longer
-	 * matches the note the previous version wrote and the side effects — a refund, for a lost
-	 * dispute — run a second time. Meta keyed on the dispute ID survives both.
+	 * The order note used to be the only guard against a redelivered webhook, but its wording is
+	 * translated and changes between releases. After an upgrade the note no longer matches, so the
+	 * side effects run again, and on a lost dispute that means a second refund. The dispute ID
+	 * changes with neither.
 	 *
 	 * Only the presence of the key is meaningful; the value records when it was applied.
 	 *
@@ -246,9 +246,10 @@ class WC_Payments_Order_Service {
 	const WCPAY_DISPUTE_CREATED_META_KEY_PREFIX = '_wcpay_dispute_created_';
 
 	/**
-	 * Meta key set on the refund a lost dispute creates, holding the ID of the dispute that caused
-	 * it. A charge can lose more than one dispute, so the link is what tells the refunds apart when
-	 * reconciling an order against the platform.
+	 * Meta key on the refund a lost dispute creates, holding that dispute's ID.
+	 *
+	 * A charge can lose more than one dispute, so without the link there is no way to tell the
+	 * refunds apart when reconciling an order against the platform.
 	 *
 	 * @const string
 	 */
@@ -605,11 +606,9 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// Holding an order for a dispute that has already closed suspends the subscription the order
-		// is the parent of, which stops its renewals. A creation arriving after the closure is always
-		// stale, so record it and leave the order alone; the closure already noted the dispute.
-		// It must not join the open list either: its close has already been and gone, so nothing
-		// would ever take it back out, and the order would stay held for a dispute that is over.
+		// A creation arriving after the closure is stale, so record it and leave the order alone.
+		// Holding the order again would suspend the subscription it is the parent of and stop the
+		// renewals, and the dispute would never leave the open list, since its close has been and gone.
 		if ( $this->dispute_ledger_entry_exists( $order, self::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX, $dispute_id ) ) {
 			$this->record_dispute_ledger_entry( $order, self::WCPAY_DISPUTE_CREATED_META_KEY_PREFIX, $dispute_id );
 			return;
@@ -694,12 +693,12 @@ class WC_Payments_Order_Service {
 				]
 			);
 
-			// A WP_Error is not the only way this fails. wc_create_refund() hands the refund object back
-			// even when saving it returned 0, because WC_Abstract_Order::save() catches its own
-			// exceptions and logs them, so an abandoned refund is only distinguishable by its ID being
-			// zero. Writing meta to that object and saving it would create the row core had just
-			// decided not to keep, without any of the wrapping wc_create_refund() does around it — no
-			// fully-refunded transition, no restock, no `woocommerce_order_refunded`.
+			// A WP_Error is not the only failure. wc_create_refund() hands the refund object back even
+			// when the save returned 0, since WC_Abstract_Order::save() swallows and logs its own
+			// exceptions, so a dropped refund shows up only as a zero ID.
+			// Writing meta to that object and saving it would recreate the row core had just decided
+			// not to keep, without the restock, the fully-refunded transition or
+			// `woocommerce_order_refunded` that wc_create_refund() wraps around it.
 			if ( is_wp_error( $refund ) || ! $refund instanceof WC_Order_Refund || ! $refund->get_id() ) {
 				$refund_failed = true;
 				$failure       = is_wp_error( $refund ) ? $refund->get_error_message() : 'the refund could not be saved';
@@ -747,11 +746,10 @@ class WC_Payments_Order_Service {
 		remove_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
 		remove_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
-		// The ledger is durable and permanent, so it must never claim a refund that did not happen:
-		// recording one would leave the amount owed and nothing left to retry against. Nothing comes
-		// back for this on its own either — the webhook still answers 200, and the platform only
-		// replays what it recorded as failed — so the merchant has to be told, and told which dispute,
-		// rather than left with an order carrying no sign the dispute closed at all.
+		// The ledger must never claim a refund that did not happen, or the amount stays owed with
+		// nothing left to retry against.
+		// Nothing comes back for this on its own: the webhook still answers 200, and the platform only
+		// replays what it recorded as failed. The note is the only way the merchant hears about it.
 		if ( $refund_failed ) {
 			$failure_note = $this->generate_dispute_closed_refund_failure_note( $dispute_id );
 
@@ -762,8 +760,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// Recorded before the note so that a crash between the two leaves the side effects marked as
-		// done rather than replayable; a missing note is cosmetic, a repeated refund is not.
+		// Recorded before the note. A crash between the two then costs a missing note, which is
+		// cosmetic, rather than a replayable refund, which is not.
 		$this->record_dispute_ledger_entry( $order, self::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX, $dispute_id );
 
 		$order->add_order_note( $note );
@@ -852,11 +850,11 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Reproduces the note a dispute closure records on the order, so a caller can test an order for
-	 * the note a given closure would have written.
+	 * Reproduces the note a dispute closure writes, so a caller can check whether an order already
+	 * carries it.
 	 *
-	 * Passing an empty dispute ID reproduces the note shape used before the ID was appended, which
-	 * is how a closure processed by an earlier plugin version can still be recognised.
+	 * An empty dispute ID reproduces the note as it looked before the ID was appended, which is how
+	 * a closure processed by an earlier plugin version can still be recognised.
 	 *
 	 * @param string $charge_id  The ID of the disputed charge associated with this order.
 	 * @param string $status     The status of the dispute.
@@ -2558,9 +2556,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// save_meta_data() rather than save(): the callers run alongside side effects — a refund, a
-		// status transition — that save the order themselves, and the ledger entry has no business
-		// deciding when the rest of the order gets written.
+		// save_meta_data() rather than save(): the callers already save the order around their own
+		// side effects, and the ledger entry has no business deciding when the rest of it gets written.
 		$order->update_meta_data( $meta_key_prefix . $dispute_id, gmdate( 'Y-m-d H:i:s' ) );
 		$order->save_meta_data();
 	}
