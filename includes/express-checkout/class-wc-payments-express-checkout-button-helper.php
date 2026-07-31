@@ -474,27 +474,32 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		$host = $this->get_product_page_shortcode_host();
 		if ( null !== $host ) {
-			// Extract all [product_page ...] tags and parse their attributes.
-			// This handles id/sku, unquoted values, single-quoted values, and extra
-			// attributes. We try each shortcode instance in order and return the
-			// first one that resolves to a product.
-			preg_match_all( '/\[product_page\b([^\]]*)\]/', $host->post_content, $shortcode_matches );
-			if ( isset( $shortcode_matches[1] ) && is_array( $shortcode_matches[1] ) ) {
-				foreach ( $shortcode_matches[1] as $attrs_str ) {
-					$atts = shortcode_parse_atts( $attrs_str );
+			// WordPress's own shortcode regex, narrowed to this tag: it hands back the raw
+			// attributes in the same pass and marks escaped tags, so id/sku, unquoted and
+			// single-quoted values and extra attributes all come out without a regex of our
+			// own to keep in step with core. We try each instance in order and return the
+			// first that resolves to a product.
+			preg_match_all( '/' . get_shortcode_regex( [ 'product_page' ] ) . '/', $host->post_content, $shortcode_matches, PREG_SET_ORDER );
 
-					if ( ! empty( $atts['id'] ) ) {
-						$product = wc_get_product( (int) $atts['id'] );
-						if ( $product ) {
-							return $product;
-						}
+			foreach ( $shortcode_matches as $shortcode_match ) {
+				// An escaped [[product_page]] renders as literal text, so it embeds no product.
+				if ( '[' === $shortcode_match[1] && ']' === $shortcode_match[6] ) {
+					continue;
+				}
+
+				$atts = shortcode_parse_atts( $shortcode_match[3] );
+
+				if ( ! empty( $atts['id'] ) ) {
+					$product = wc_get_product( (int) $atts['id'] );
+					if ( $product ) {
+						return $product;
 					}
+				}
 
-					if ( ! empty( $atts['sku'] ) ) {
-						$product_id = wc_get_product_id_by_sku( $atts['sku'] );
-						if ( $product_id ) {
-							return wc_get_product( $product_id );
-						}
+				if ( ! empty( $atts['sku'] ) ) {
+					$product_id = wc_get_product_id_by_sku( $atts['sku'] );
+					if ( $product_id ) {
+						return wc_get_product( $product_id );
 					}
 				}
 			}

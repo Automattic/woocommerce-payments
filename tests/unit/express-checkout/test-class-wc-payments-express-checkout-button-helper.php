@@ -1123,10 +1123,22 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$product->set_sku( $sku );
 		$product->save();
 
+		$this->go_to_page_embedding_product_content( sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ) );
+
+		return [ $product, $sku ];
+	}
+
+	/**
+	 * Publishes a page with the given content and navigates to it.
+	 *
+	 * @param string $content The page content.
+	 * @return int The page ID.
+	 */
+	private function go_to_page_embedding_product_content( string $content ): int {
 		$page_id = wp_insert_post(
 			[
 				'post_title'   => 'Test page',
-				'post_content' => sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ),
+				'post_content' => $content,
 				'post_status'  => 'publish',
 				'post_type'    => 'page',
 			]
@@ -1134,7 +1146,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->go_to( get_permalink( $page_id ) );
 
-		return [ $product, $sku ];
+		return $page_id;
 	}
 
 	/**
@@ -1142,6 +1154,27 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 */
 	public function test_get_product_from_product_page_shortcode( string $shortcode_template, bool $use_sku ) {
 		list( $product ) = $this->go_to_page_embedding_product( $shortcode_template, $use_sku );
+
+		$resolved = $this->system_under_test->get_product();
+
+		$this->assertInstanceOf( WC_Product::class, $resolved );
+		$this->assertSame( $product->get_id(), $resolved->get_id() );
+	}
+
+	/**
+	 * An escaped [[product_page]] renders as literal text, so the page embeds no product and
+	 * there is nothing to offer express checkout for. Relies on parsing with core's shortcode
+	 * regex, which marks the escaped form.
+	 */
+	public function test_get_product_ignores_escaped_product_page_shortcode() {
+		list( $product ) = $this->go_to_page_embedding_product( '[[product_page id="%s"]]', false );
+
+		$this->assertNull( $this->system_under_test->get_product() );
+
+		// A real shortcode alongside the escaped one still resolves.
+		$this->go_to_page_embedding_product_content(
+			sprintf( '[[product_page id="%1$d"]] [product_page id="%1$d"]', $product->get_id() )
+		);
 
 		$resolved = $this->system_under_test->get_product();
 
