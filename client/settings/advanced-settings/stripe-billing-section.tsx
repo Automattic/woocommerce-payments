@@ -65,10 +65,37 @@ const StripeBillingSection: React.FC = () => {
 	}, [ hasFinishedSavingSettings, isStripeBillingEnabled ] );
 
 	// Set up the context to be shared between the notices and the toggle.
-	const [ isMigrationOptionShown, setIsMigrationOptionShown ] =
-		useState( false );
 	const [ isMigrationInProgressLocal, setIsMigrationInProgressLocal ] =
 		useState( false );
+
+	/**
+	 * Whether the migrate-option notice is eligible to be shown.
+	 *
+	 * Note: We use `useState` here to snapshot the setting value on load.
+	 * The option notice should only be shown if Stripe Billing was disabled on load.
+	 */
+	const [ isMigrationOptionEligible, setIsMigrationOptionEligible ] =
+		useState( ! isStripeBillingEnabled );
+
+	// Once settings are saved with Stripe Billing enabled, the option notice is no longer eligible.
+	useEffect( () => {
+		if ( savedIsStripeBillingEnabled ) {
+			setIsMigrationOptionEligible( false );
+		}
+	}, [ savedIsStripeBillingEnabled ] );
+
+	// Derive `isMigrationOptionShown` synchronously so all children (the toggle and sibling
+	// notices) read the same value in the first render — otherwise the toggle's help text
+	// flickers because <Notices /> renders before <StripeBillingToggle /> and can't update
+	// the context until after its first commit.
+	const isMigrationInProgressCombined =
+		isMigrationInProgress || isMigrationInProgressLocal;
+	const isMigrationOptionShown =
+		! hasResolved &&
+		! isMigrationInProgressCombined &&
+		subscriptionCount > 0 &&
+		isMigrationOptionEligible &&
+		! isStripeBillingEnabled;
 
 	const noticeContext = {
 		isStripeBillingEnabled: isStripeBillingEnabled,
@@ -76,11 +103,9 @@ const StripeBillingSection: React.FC = () => {
 
 		// Notice logic.
 		isMigrationOptionShown: isMigrationOptionShown,
-		setIsMigrationOptionShown: setIsMigrationOptionShown,
 
 		// Migration logic.
-		isMigrationInProgress:
-			isMigrationInProgress || isMigrationInProgressLocal,
+		isMigrationInProgress: isMigrationInProgressCombined,
 		setIsMigrationInProgress: setIsMigrationInProgressLocal,
 		hasSavedSettings: hasFinishedSavingSettings,
 
