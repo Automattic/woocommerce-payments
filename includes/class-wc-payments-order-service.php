@@ -2277,9 +2277,9 @@ class WC_Payments_Order_Service {
 			$order,
 			$transaction_url,
 			$ruleset_results,
-			/* translators: %1: the amount held for review, %2: the list of risk filters that held the payment for review, %3: transaction details URL */
+			/* translators: %1: the amount held for review, %2: the list of risk filters that held the payment for review */
 			__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by the following risk filters:<br>%2$s<br><br><a>View more details</a>.', 'woocommerce-payments' ),
-			/* translators: %1: the amount held for review, %2: transaction details URL */
+			/* translators: %1: the amount held for review */
 			__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' )
 		);
 	}
@@ -2309,9 +2309,9 @@ class WC_Payments_Order_Service {
 			$order,
 			$transaction_url,
 			$ruleset_results,
-			/* translators: %1: the blocked amount, %2: the list of risk filters that blocked the payment, %3: transaction details URL */
+			/* translators: %1: the blocked amount, %2: the list of risk filters that blocked the payment */
 			__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by the following risk filters:<br>%2$s<br><br><a>View more details</a>.', 'woocommerce-payments' ),
-			/* translators: %1: the blocked amount, %2: transaction details URL */
+			/* translators: %1: the blocked amount */
 			__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' )
 		);
 	}
