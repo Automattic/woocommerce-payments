@@ -593,6 +593,14 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		// Holding an order for a dispute that has already closed suspends any subscription on it,
+		// which stops renewals. A creation arriving after the closure is always stale, so record it
+		// and leave the order alone; the closure already noted the dispute.
+		if ( $this->dispute_ledger_entry_exists( $order, self::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX, $dispute_id ) ) {
+			$this->record_dispute_ledger_entry( $order, self::WCPAY_DISPUTE_CREATED_META_KEY_PREFIX, $dispute_id );
+			return;
+		}
+
 		$is_inquiry = strpos( $status, 'warning_' ) === 0;
 		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry, $dispute_id );
 		if ( $this->order_note_exists( $order, $note ) ) {

@@ -2409,6 +2409,49 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A creation arriving after its own closure must not re-hold the order: holding a subscription's
+	 * parent order suspends the subscription and stops renewals.
+	 */
+	public function test_mark_payment_dispute_created_leaves_the_order_alone_once_the_dispute_has_closed(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::COMPLETED );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX . 'dp_closed', gmdate( 'Y-m-d H:i:s' ) );
+		$order->save();
+
+		$notes_before = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+
+		$this->order_service->mark_payment_dispute_created( $order, 'ch_123', '$10.00', 'fraudulent', '1 Jan 2026', '', 'dp_closed' );
+
+		$refreshed = wc_get_order( $order->get_id() );
+
+		$this->assertTrue( $refreshed->has_status( [ 'completed' ] ) );
+
+		$this->assertCount( $notes_before, wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+
+		// Recorded anyway, so a further re-delivery short-circuits on the creation ledger.
+		$this->assertTrue( $refreshed->meta_exists( '_wcpay_dispute_created_dp_closed' ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * The guard is scoped to the dispute's own closure, so a second, still-open dispute on the same
+	 * charge is not silently swallowed.
+	 */
+	public function test_mark_payment_dispute_created_still_holds_the_order_for_a_different_open_dispute(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::COMPLETED );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_DISPUTE_CLOSED_META_KEY_PREFIX . 'dp_first', gmdate( 'Y-m-d H:i:s' ) );
+		$order->save();
+
+		$this->order_service->mark_payment_dispute_created( $order, 'ch_123', '$10.00', 'fraudulent', '1 Jan 2026', '', 'dp_second' );
+
+		$this->assertTrue( wc_get_order( $order->get_id() )->has_status( [ 'on-hold' ] ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
 	 * Tests that mark_payment_dispute_closed handles missing amount in refund.
 	 */
 	public function test_mark_payment_dispute_closed_with_missing_amount_in_summary(): void {
