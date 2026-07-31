@@ -1947,6 +1947,54 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a dispute closed event leaves the order alone while another dispute on the same
+	 * charge is still open, which requires the event's dispute ID to reach the order service.
+	 */
+	public function test_dispute_closed_leaves_order_alone_while_sibling_dispute_open() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.dispute.closed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'     => 'dp_first',
+			'charge' => 'test_charge_id',
+			'status' => 'won',
+		];
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( [ 'dp_first', 'dp_second' ] );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'update_status' );
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'add_order_note' )
+			->withConsecutive(
+				[
+					$this->matchesRegularExpression(
+						'/was not marked as completed because 1 other dispute on this payment is still open/'
+					),
+				],
+				[
+					$this->matchesRegularExpression(
+						'/Dispute has been closed with status won.*\(Dispute ID: dp_first\)/'
+					),
+				]
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that a dispute updated event adds a respective order note.
 	 */
 	public function test_dispute_updated_order_note() {
