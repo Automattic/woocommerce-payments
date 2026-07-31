@@ -37,14 +37,28 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private $account;
 
 	/**
-	 * The product a [product_page] shortcode embeds on the current page.
+	 * Whether the [product_page] shortcode context has been worked out for this request.
 	 *
-	 * Resolving it walks the host post's content, so the answer is kept for the
-	 * request: is_product() alone is consulted dozens of times per page render.
+	 * Only ever set once the main query and its host post are available, so a caller that
+	 * asks before WordPress has parsed the request cannot pin a "no" for the whole request.
 	 *
-	 * @var WC_Product|null|false False until resolved.
+	 * @var bool
 	 */
-	private $shortcode_product = false;
+	private $shortcode_context_resolved = false;
+
+	/**
+	 * Whether the host post embeds a [product_page] shortcode, however it resolves.
+	 *
+	 * @var bool
+	 */
+	private $has_product_page_shortcode = false;
+
+	/**
+	 * The product that shortcode embeds, or null when it names one that no longer exists.
+	 *
+	 * @var WC_Product|null
+	 */
+	private $shortcode_product = null;
 
 	/**
 	 * Initialize class actions.
@@ -239,7 +253,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_product() {
-		return is_product() || null !== $this->get_shortcode_product();
+		$this->resolve_shortcode_context();
+
+		return is_product() || $this->has_product_page_shortcode;
 	}
 
 	/**
@@ -478,10 +494,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function get_product() {
 		global $post;
 
-		// WooCommerce sets up the global product for whatever it is rendering - the single
-		// product template and the [product_page] loop alike - so once a loop is running it
-		// already holds the product the shopper is looking at.
-		if ( isset( $GLOBALS['product'] ) && $GLOBALS['product'] instanceof WC_Product && $this->is_product() ) {
+		// The button markup goes out on woocommerce_after_add_to_cart_form, which only fires
+		// from inside a single-product loop - the product template's and the [product_page]
+		// shortcode's alike. WooCommerce has already set up the global product by then, so
+		// take its answer rather than deriving a second one. Narrow to that hook: elsewhere
+		// the global can be left over from an archive, cross-sell or [products] loop.
+		if ( doing_action( 'woocommerce_after_add_to_cart_form' ) && isset( $GLOBALS['product'] ) && $GLOBALS['product'] instanceof WC_Product ) {
 			return $GLOBALS['product'];
 		}
 
@@ -489,7 +507,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return wc_get_product( $post->ID );
 		}
 
-		return $this->get_shortcode_product();
+		$this->resolve_shortcode_context();
+
+		return $this->shortcode_product;
 	}
 
 	/**
@@ -838,58 +858,71 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Resolves the product embedded by a [product_page] shortcode on the current page.
+	 * Works out, once per request, whether the current page embeds a [product_page]
+	 * shortcode and which product it names.
 	 *
-	 * @return WC_Product|null
+	 * Reads the host post off the main query rather than the $post / $wp_query globals:
+	 * the shortcode renders in its own loop, so by the time the button markup goes out
+	 * those globals point at the embedded product instead of at the page.
+	 *
+	 * @return void
 	 */
-	private function get_shortcode_product() {
-		if ( false !== $this->shortcode_product ) {
-			return $this->shortcode_product;
+	private function resolve_shortcode_context() {
+		if ( $this->shortcode_context_resolved ) {
+			return;
 		}
 
-		$this->shortcode_product = null;
-
-		// Read the host post off the main query: [product_page] renders in its own loop, so
-		// by the time the button markup goes out on woocommerce_after_add_to_cart_form the
-		// $post and $wp_query globals point at the embedded product, not at the page.
+		// A caller can reach this before WordPress has parsed the request - is_product() is
+		// public, so anything on init can - and the answer would be a meaningless "no".
+		// Leave the context unresolved so the next caller works it out for real.
 		$main_query = $GLOBALS['wp_the_query'] ?? null;
 		if ( ! $main_query instanceof WP_Query || ! $main_query->is_singular() ) {
-			return null;
+			return;
 		}
 
 		$host = $main_query->get_queried_object();
 		if ( ! $host instanceof WP_Post ) {
-			return null;
+			return;
 		}
 
-		// WordPress's own shortcode regex, narrowed to this one tag: it hands back the raw
-		// attributes in the same pass and honours escaped [[product_page]] tags, which
-		// do_shortcode() skips too.
-		preg_match_all( '/' . get_shortcode_regex( [ 'product_page' ] ) . '/', $host->post_content, $matches, PREG_SET_ORDER );
+		$this->shortcode_context_resolved = true;
 
+		// WordPress's own shortcode regex, narrowed to this one tag: it hands back the raw
+		// attributes in the same pass and marks escaped [[product_page]] tags, which
+		// do_shortcode() skips too.
+		if ( ! preg_match_all( '/' . get_shortcode_regex( [ 'product_page' ] ) . '/', $host->post_content, $matches, PREG_SET_ORDER ) ) {
+			return;
+		}
+
+		$atts = null;
 		foreach ( $matches as $match ) {
 			if ( '[' === $match[1] && ']' === $match[6] ) {
 				continue;
 			}
 
-			$atts       = shortcode_parse_atts( $match[3] );
-			$product_id = 0;
-
-			if ( ! empty( $atts['id'] ) ) {
-				$product_id = (int) $atts['id'];
-			} elseif ( ! empty( $atts['sku'] ) ) {
-				$product_id = wc_get_product_id_by_sku( $atts['sku'] );
-			}
-
-			$product = $product_id ? wc_get_product( $product_id ) : null;
-
-			if ( $product instanceof WC_Product ) {
-				$this->shortcode_product = $product;
-				break;
-			}
+			$atts = shortcode_parse_atts( $match[3] );
+			break;
 		}
 
-		return $this->shortcode_product;
+		if ( null === $atts ) {
+			return;
+		}
+
+		// Presence is recorded whatever the attributes point at: is_product() has always
+		// answered "does this page embed the shortcode", and a shortcode naming a product
+		// that no longer exists must not turn that into a "no".
+		$this->has_product_page_shortcode = true;
+
+		$product_id = 0;
+		if ( ! empty( $atts['id'] ) ) {
+			$product_id = absint( $atts['id'] );
+		} elseif ( ! empty( $atts['sku'] ) ) {
+			$product_id = wc_get_product_id_by_sku( $atts['sku'] );
+		}
+
+		$product = $product_id ? wc_get_product( $product_id ) : null;
+
+		$this->shortcode_product = $product instanceof WC_Product ? $product : null;
 	}
 
 	/**
