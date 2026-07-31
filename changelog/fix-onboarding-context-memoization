@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Memoize the onboarding context value so consumers stop re-rendering on every parent render.

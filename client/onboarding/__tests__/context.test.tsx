@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
@@ -93,5 +93,65 @@ describe( 'OnboardingContext', () => {
 		expect(
 			screen.getByText( 'errors: {"firstName":"Required"}' )
 		).toBeInTheDocument();
+	} );
+
+	it( 'returns the same context value when a parent re-renders', async () => {
+		const values: ReturnType< typeof useOnboardingContext >[] = [];
+
+		const TestComponent: React.FC = () => {
+			values.push( useOnboardingContext() );
+			return null;
+		};
+
+		const Parent: React.FC = () => {
+			const [ count, setCount ] = useState( 0 );
+			return (
+				<>
+					<button onClick={ () => setCount( count + 1 ) }>
+						Re-render parent
+					</button>
+					<OnboardingContextProvider>
+						<TestComponent />
+					</OnboardingContextProvider>
+				</>
+			);
+		};
+
+		render( <Parent /> );
+
+		await user.click( screen.getByText( 'Re-render parent' ) );
+
+		expect( values ).toHaveLength( 2 );
+		expect( values[ 1 ] ).toBe( values[ 0 ] );
+	} );
+
+	it( 'returns the same setters when onboarding state changes', async () => {
+		const setters: ReturnType< typeof useOnboardingContext >[] = [];
+
+		const TestComponent: React.FC = () => {
+			const context = useOnboardingContext();
+			const { data, setData } = context;
+			setters.push( context );
+			return (
+				<button
+					onClick={ () => setData( { business_type: 'Individual' } ) }
+				>
+					data: { JSON.stringify( data ) }
+				</button>
+			);
+		};
+
+		render(
+			<OnboardingContextProvider>
+				<TestComponent />
+			</OnboardingContextProvider>
+		);
+
+		await user.click( screen.getByText( 'data: {}' ) );
+
+		expect( setters ).toHaveLength( 2 );
+		expect( setters[ 1 ].setData ).toBe( setters[ 0 ].setData );
+		expect( setters[ 1 ].setErrors ).toBe( setters[ 0 ].setErrors );
+		expect( setters[ 1 ].setTouched ).toBe( setters[ 0 ].setTouched );
 	} );
 } );
