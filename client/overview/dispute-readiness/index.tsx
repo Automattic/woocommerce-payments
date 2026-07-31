@@ -30,6 +30,7 @@ import {
 } from 'wcpay/data/dispute-readiness';
 import { recordEvent } from 'wcpay/tracks';
 import { DisputeReadinessSignal } from 'wcpay/data/dispute-readiness/types';
+import { redirectTo } from 'wcpay/utils';
 import './style.scss';
 
 const learnMoreUrl =
@@ -56,13 +57,6 @@ const DisputeReadinessCard = () => {
 	const viewedRef = useRef( false );
 	const [ statementDescriptorSignal, setStatementDescriptorSignal ] =
 		useState< DisputeReadinessSignal | null >( null );
-	const [ navigateTo, setNavigateTo ] = useState< string | null >( null );
-
-	useEffect( () => {
-		if ( navigateTo ) {
-			window.location.href = navigateTo;
-		}
-	}, [ navigateTo ] );
 	const overview = disputeReadiness?.overview;
 
 	useEffect( () => {
@@ -125,7 +119,7 @@ const DisputeReadinessCard = () => {
 		}
 
 		if ( signal.actionUrl ) {
-			setNavigateTo( signal.actionUrl );
+			redirectTo( signal.actionUrl );
 		}
 	};
 

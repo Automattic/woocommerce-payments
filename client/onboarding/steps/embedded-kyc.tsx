@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 import { LoadError } from '@stripe/connect-js';
@@ -12,7 +12,12 @@ import { LoadError } from '@stripe/connect-js';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { finalizeOnboarding } from 'wcpay/onboarding/utils';
-import { getConnectUrl, getOverviewUrl, isInDevMode } from 'wcpay/utils';
+import {
+	getConnectUrl,
+	getOverviewUrl,
+	isInDevMode,
+	redirectTo,
+} from 'wcpay/utils';
 import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
 import { EmbeddedAccountOnboarding } from 'wcpay/embedded-components';
 import BannerNotice from 'wcpay/components/banner-notice';
@@ -29,13 +34,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
 	const [ loadError, setLoadError ] = useState< LoadError | null >( null );
-	const [ navigateTo, setNavigateTo ] = useState< string | null >( null );
-
-	useEffect( () => {
-		if ( navigateTo ) {
-			window.location.href = navigateTo;
-		}
-	}, [ navigateTo ] );
 
 	const urlParams = new URLSearchParams( window.location.search );
 	const urlSource =
@@ -51,7 +49,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		try {
 			const response = await finalizeOnboarding( urlSource );
 			if ( response.success ) {
-				setNavigateTo(
+				redirectTo(
 					getOverviewUrl(
 						{
 							...response.params,
@@ -61,7 +59,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					)
 				);
 			} else {
-				setNavigateTo(
+				redirectTo(
 					getConnectUrl(
 						{
 							...response.params,
@@ -72,7 +70,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				);
 			}
 		} catch ( error ) {
-			setNavigateTo(
+			redirectTo(
 				getConnectUrl(
 					{
 						'wcpay-connection-error': '1',
