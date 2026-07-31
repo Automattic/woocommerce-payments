@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import EmbeddedKyc from '../embedded-kyc';
-import { useOnboardingContext } from 'wcpay/onboarding/context';
+import { useOnboardingContext } from 'wcpay/onboarding/use-onboarding-context';
 import { isInDevMode } from 'wcpay/utils';
 
 /**
@@ -19,7 +19,7 @@ jest.mock( 'wcpay/embedded-components', () => {
 		),
 	};
 } );
-jest.mock( 'wcpay/onboarding/context', () => ( {
+jest.mock( 'wcpay/onboarding/use-onboarding-context', () => ( {
 	useOnboardingContext: jest.fn(),
 } ) );
 

@@ -9,7 +9,8 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import BusinessDetails from '../business-details';
-import { OnboardingContextProvider, useOnboardingContext } from '../../context';
+import { OnboardingContextProvider } from '../../context-provider';
+import { useOnboardingContext } from '../../use-onboarding-context';
 import {
 	getAvailableCountries,
 	getBusinessTypes,

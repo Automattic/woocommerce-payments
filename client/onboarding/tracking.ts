@@ -8,7 +8,7 @@ import { useEffect } from 'react';
  */
 
 import { useStepperContext } from 'components/stepper';
-import { useOnboardingContext } from './context';
+import { useOnboardingContext } from './use-onboarding-context';
 import { OnboardingFields } from './types';
 import { recordEvent } from 'tracks';
 

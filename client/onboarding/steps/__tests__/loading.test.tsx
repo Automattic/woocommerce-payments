@@ -22,7 +22,7 @@ declare const global: {
 let data = {};
 const setData = jest.fn();
 
-jest.mock( '../../context', () => ( {
+jest.mock( '../../use-onboarding-context', () => ( {
 	useOnboardingContext: jest.fn( () => ( {
 		data,
 		setData,

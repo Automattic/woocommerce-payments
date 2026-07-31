@@ -7,7 +7,7 @@ import { renderHook, act } from '@testing-library/react-hooks';
  * Internal dependencies
  */
 import { useValidation } from '../validation';
-import { OnboardingContextProvider } from '../context';
+import { OnboardingContextProvider } from '../context-provider';
 
 describe( 'useValidation', () => {
 	it( 'uses correct string for error', () => {

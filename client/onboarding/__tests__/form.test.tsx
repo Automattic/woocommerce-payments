@@ -32,7 +32,7 @@ let setTemp = jest.fn();
 let validate = jest.fn();
 let error = jest.fn();
 
-jest.mock( '../context', () => ( {
+jest.mock( '../use-onboarding-context', () => ( {
 	useOnboardingContext: jest.fn( () => ( {
 		data,
 		errors,

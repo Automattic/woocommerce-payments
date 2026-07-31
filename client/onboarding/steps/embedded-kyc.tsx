@@ -10,7 +10,7 @@ import { LoadError } from '@stripe/connect-js';
  * Internal dependencies
  */
 import StripeSpinner from 'wcpay/components/stripe-spinner';
-import { useOnboardingContext } from 'wcpay/onboarding/context';
+import { useOnboardingContext } from 'wcpay/onboarding/use-onboarding-context';
 import { finalizeOnboarding } from 'wcpay/onboarding/utils';
 import { getConnectUrl, getOverviewUrl, isInDevMode } from 'wcpay/utils';
 import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';

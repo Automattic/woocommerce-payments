@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
  * Internal dependencies
  */
 import Page from 'components/page';
-import { OnboardingContextProvider } from './context';
+import { OnboardingContextProvider } from './context-provider';
 import { Stepper } from 'components/stepper';
 import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';

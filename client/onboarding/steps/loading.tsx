@@ -7,7 +7,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-import { useOnboardingContext } from '../context';
+import { useOnboardingContext } from '../use-onboarding-context';
 import { fromDotNotation } from '../utils';
 import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';

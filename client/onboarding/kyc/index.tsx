@@ -8,7 +8,7 @@ import React, { useEffect } from 'react';
  */
 import WooLogo from 'assets/images/woo-logo.svg';
 import Page from 'components/page';
-import { OnboardingContextProvider } from 'onboarding/context';
+import { OnboardingContextProvider } from 'onboarding/context-provider';
 import EmbeddedKyc from 'onboarding/steps/embedded-kyc';
 import { getConnectUrl } from 'utils';
 import { trackKycExit } from 'wcpay/onboarding/tracking';

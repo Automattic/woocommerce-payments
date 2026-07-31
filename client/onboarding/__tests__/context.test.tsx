@@ -8,7 +8,9 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import { OnboardingContextProvider, useOnboardingContext } from '../context';
+import { OnboardingContextProvider } from '../context-provider';
+import { useOnboardingContext } from '../use-onboarding-context';
+import { OnboardingContextValue } from '../types';
 
 describe( 'OnboardingContext', () => {
 	it( 'sets initial values and updates correctly', async () => {
@@ -96,10 +98,10 @@ describe( 'OnboardingContext', () => {
 	} );
 
 	it( 'returns the same context value when a parent re-renders', async () => {
-		const values: ReturnType< typeof useOnboardingContext >[] = [];
+		const contexts: OnboardingContextValue[] = [];
 
 		const TestComponent: React.FC = () => {
-			values.push( useOnboardingContext() );
+			contexts.push( useOnboardingContext() );
 			return null;
 		};
 
@@ -107,8 +109,8 @@ describe( 'OnboardingContext', () => {
 			const [ count, setCount ] = useState( 0 );
 			return (
 				<>
-					<button onClick={ () => setCount( count + 1 ) }>
-						Re-render parent
+					<button onClick={ () => setCount( ( prev ) => prev + 1 ) }>
+						count: { count }
 					</button>
 					<OnboardingContextProvider>
 						<TestComponent />
@@ -119,24 +121,29 @@ describe( 'OnboardingContext', () => {
 
 		render( <Parent /> );
 
-		await user.click( screen.getByText( 'Re-render parent' ) );
+		await user.click( screen.getByText( 'count: 0' ) );
 
-		expect( values ).toHaveLength( 2 );
-		expect( values[ 1 ] ).toBe( values[ 0 ] );
+		expect( screen.getByText( 'count: 1' ) ).toBeInTheDocument();
+		expect( contexts.length ).toBeGreaterThan( 1 );
+
+		contexts.forEach( ( context ) =>
+			expect( context ).toBe( contexts[ 0 ] )
+		);
 	} );
 
 	it( 'returns the same setters when onboarding state changes', async () => {
-		const setters: ReturnType< typeof useOnboardingContext >[] = [];
+		const contexts: OnboardingContextValue[] = [];
 
 		const TestComponent: React.FC = () => {
 			const context = useOnboardingContext();
-			const { data, setData } = context;
-			setters.push( context );
+			contexts.push( context );
 			return (
 				<button
-					onClick={ () => setData( { business_type: 'Individual' } ) }
+					onClick={ () =>
+						context.setData( { business_type: 'Individual' } )
+					}
 				>
-					data: { JSON.stringify( data ) }
+					data: { JSON.stringify( context.data ) }
 				</button>
 			);
 		};
@@ -149,9 +156,14 @@ describe( 'OnboardingContext', () => {
 
 		await user.click( screen.getByText( 'data: {}' ) );
 
-		expect( setters ).toHaveLength( 2 );
-		expect( setters[ 1 ].setData ).toBe( setters[ 0 ].setData );
-		expect( setters[ 1 ].setErrors ).toBe( setters[ 0 ].setErrors );
-		expect( setters[ 1 ].setTouched ).toBe( setters[ 0 ].setTouched );
+		expect(
+			screen.getByText( 'data: {"business_type":"Individual"}' )
+		).toBeInTheDocument();
+
+		contexts.forEach( ( context ) => {
+			expect( context.setData ).toBe( contexts[ 0 ].setData );
+			expect( context.setErrors ).toBe( contexts[ 0 ].setErrors );
+			expect( context.setTouched ).toBe( contexts[ 0 ].setTouched );
+		} );
 	} );
 } );

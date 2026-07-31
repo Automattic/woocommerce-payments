@@ -7,7 +7,7 @@ import { useEffect } from 'react';
  * Internal dependencies
  */
 import strings from './strings';
-import { useOnboardingContext } from './context';
+import { useOnboardingContext } from './use-onboarding-context';
 import { OnboardingFields } from './types';
 
 const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {

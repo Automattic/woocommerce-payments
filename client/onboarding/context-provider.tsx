@@ -1,24 +1,21 @@
 /**
  * External dependencies
  */
-import React, {
-	createContext,
-	useCallback,
-	useContext,
-	useMemo,
-	useState,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { isNil, omitBy } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import { OnboardingFields } from './types';
+import { OnboardingContext } from './context';
+import { OnboardingContextValue, OnboardingFields } from './types';
 
-const useContextValue = ( initialState = {} as OnboardingFields ) => {
+const useContextValue = (
+	initialState = {} as OnboardingFields
+): OnboardingContextValue => {
 	const [ data, setData ] = useState( initialState );
 	const [ errors, setErrors ] = useState( {} as OnboardingFields );
-	const [ touched, setTouched ] = useState( {} as OnboardingFields );
+	const [ touched, setTouched ] = useState< Record< string, boolean > >( {} );
 
 	const updateData = useCallback(
 		( value: Record< string, string | undefined > ) =>
@@ -51,28 +48,16 @@ const useContextValue = ( initialState = {} as OnboardingFields ) => {
 	);
 };
 
-type ContextValue = ReturnType< typeof useContextValue >;
-
-const OnboardingContext = createContext< ContextValue | null >( null );
-
 export const OnboardingContextProvider: React.FC<
 	React.PropsWithChildren< {
 		initialData?: OnboardingFields;
 	} >
 > = ( { children, initialData } ) => {
+	const value = useContextValue( initialData );
+
 	return (
-		<OnboardingContext.Provider value={ useContextValue( initialData ) }>
+		<OnboardingContext.Provider value={ value }>
 			{ children }
 		</OnboardingContext.Provider>
 	);
-};
-
-export const useOnboardingContext = (): ContextValue => {
-	const context = useContext( OnboardingContext );
-	if ( ! context ) {
-		throw new Error(
-			'useOnboardingContext() must be used within <OnboardingContextProvider>'
-		);
-	}
-	return context;
 };

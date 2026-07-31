@@ -6,7 +6,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { useOnboardingContext } from '../context';
+import { useOnboardingContext } from '../use-onboarding-context';
 import { Item } from 'components/custom-select-control';
 import { OnboardingFields } from '../types';
 import { OnboardingGroupedSelectField, OnboardingSelectField } from '../form';

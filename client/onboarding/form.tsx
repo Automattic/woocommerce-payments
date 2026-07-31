@@ -19,7 +19,7 @@ import {
 	TextField,
 	TextFieldProps,
 } from 'components/form/fields';
-import { useOnboardingContext } from './context';
+import { useOnboardingContext } from './use-onboarding-context';
 import { OnboardingFields } from './types';
 import { useValidation } from './validation';
 import { trackStepCompleted } from './tracking';

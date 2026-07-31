@@ -12,6 +12,15 @@ export type OnboardingFields = {
 	mcc?: string;
 };
 
+export type OnboardingContextValue = {
+	data: OnboardingFields;
+	setData: ( value: Record< string, string | undefined > ) => void;
+	errors: OnboardingFields;
+	setErrors: ( value: Record< string, string | undefined > ) => void;
+	touched: Record< string, boolean >;
+	setTouched: ( value: Record< string, boolean > ) => void;
+};
+
 export interface Country {
 	key: string;
 	name: string;
