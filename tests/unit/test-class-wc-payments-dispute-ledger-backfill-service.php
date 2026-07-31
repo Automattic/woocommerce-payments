@@ -302,7 +302,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 		$order = $this->create_disputed_order( 'ch_backfill_14' );
 		$this->add_note_as_written_by_8_7_0( $order, 'ch_backfill_14', 'won' );
 
-		// Priority 9 so the locale switcher's own callback, registered at 10, still wins while a
+		// Priority 9 so the callbacks that hold the site locale, registered at 10, still win while a
 		// switch is in force.
 		$admin_locale = function () {
 			return 'de_DE';

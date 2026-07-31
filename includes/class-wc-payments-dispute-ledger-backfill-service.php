@@ -284,13 +284,37 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 * @return array<string, int> The counters for this page.
 	 */
 	private function backfill_page_in_site_locale( array $disputes ): array {
-		$switched = switch_to_locale( get_locale() );
+		$site_locale = get_locale();
+
+		// A text domain is loaded from `determine_locale()`, which the locale switcher only started
+		// filtering in WordPress 6.2. On 6.0 and 6.1 the switch alone reloads the catalogue in the
+		// admin's language — the language this exists to keep out. Drop this once the minimum supported
+		// version reaches 6.2; leaving it on there would also override a locale another plugin switched
+		// to from a hook inside the loop, which 6.2 respects.
+		$needs_locale_filter = version_compare( get_bloginfo( 'version' ), '6.2', '<' );
+
+		// Only while a switch is in force, which is what 6.2 does and has to be done: filtering
+		// unconditionally leaves `switch_to_locale()` with nothing to switch to, and it skips the
+		// reload the filter exists to steer.
+		$force_site_locale = function ( $locale ) use ( $site_locale ) {
+			return is_locale_switched() ? $site_locale : $locale;
+		};
+
+		if ( $needs_locale_filter ) {
+			add_filter( 'determine_locale', $force_site_locale );
+		}
+
+		$switched = switch_to_locale( $site_locale );
 
 		try {
 			return $this->backfill_page( $disputes );
 		} finally {
 			if ( $switched ) {
 				restore_previous_locale();
+			}
+
+			if ( $needs_locale_filter ) {
+				remove_filter( 'determine_locale', $force_site_locale );
 			}
 		}
 	}
