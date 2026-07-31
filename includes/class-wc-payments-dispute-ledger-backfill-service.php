@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Core\Server\Request\List_Disputes;
-use WCPay\Logger;
 
 /**
  * Records the dispute closure ledger for disputes that closed before the store upgraded.
@@ -197,6 +196,10 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 		}
 
 		$this->action_scheduler_service->schedule_job( time(), self::BACKFILL_ACTION );
+
+		// A page normally queues its own successor, so reaching here twice means a job died without
+		// rescheduling itself. The page number is what says which one, and that it is being retried.
+		$this->log( 'Queued the dispute ledger backfill from page ' . max( 1, (int) ( $state['page'] ?? 1 ) ) . '.' );
 	}
 
 	/**
@@ -392,8 +395,8 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			// Either the charge never reached an order on this store, or the shared lookup dropped it:
 			// that query caps its result at the number of charge IDs given, so a charge held by several
 			// orders pushes another charge's order out of the set. Both leave closures unmarked.
-			Logger::info(
-				'Dispute ledger backfill: no order found for charges ' . implode( ', ', array_keys( $unresolved_charge_ids ) ) . '.'
+			$this->log(
+				'No order found for charges ' . implode( ', ', array_keys( $unresolved_charge_ids ) ) . '.'
 			);
 		}
 
@@ -441,7 +444,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 		$order->update_meta_data( $claim_meta_key, $dispute_id );
 		$this->save_order_meta_without_touching_the_order( $order );
 
-		Logger::info( 'Recorded the closure of dispute ' . $dispute_id . ' on order ' . $order->get_id() . ' from an order note predating the dispute ledger.' );
+		$this->log( 'Recorded the closure of dispute ' . $dispute_id . ' on order ' . $order->get_id() . ' from an order note predating the dispute ledger.' );
 
 		return 'entries_recorded';
 	}
@@ -483,8 +486,8 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 		$order->update_meta_data( $claim_meta_key, self::BACKFILL_CLAIM_AMBIGUOUS );
 		$this->save_order_meta_without_touching_the_order( $order );
 
-		Logger::info(
-			'Dispute ledger backfill: leaving charge ' . $charge_id . ' unmarked for status ' . $status
+		$this->log(
+			'Leaving charge ' . $charge_id . ' unmarked for status ' . $status
 			. ', its closure note cannot be attributed to one of ' . implode( ', ', array_unique( $dispute_ids ) ) . '.'
 		);
 	}
@@ -559,16 +562,17 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 * @return void
 	 */
 	private function finish( array $state, string $reason ) {
-		// The counters stay in the option, not only in the log line below: logging is off by default,
-		// and nobody can re-run a one-shot migration to find out what it did.
-		// The option is the only durable record of whether it marked nothing or ten thousand entries.
+		// The counters stay in the option, not only in the log line below. Nobody can re-run a one-shot
+		// migration to find out what it did, and WooCommerce prunes its logs after 30 days, so on a
+		// store that upgraded months ago the option is the only surviving record of whether the scan
+		// marked nothing or ten thousand entries.
 		$state['status']      = self::STATUS_DONE;
 		$state['attempts']    = 0;
 		$state['stats']       = $this->merge_stats( $state['stats'] ?? [], [] );
 		$state['finished_at'] = gmdate( 'Y-m-d H:i:s' );
 		update_option( self::STATE_OPTION, $state );
 
-		Logger::info( 'Finished the dispute ledger backfill: ' . $reason . '. ' . $this->describe_stats( $state['stats'] ?? [] ) );
+		$this->log( 'Finished the dispute ledger backfill: ' . $reason . '. ' . $this->describe_stats( $state['stats'] ?? [] ) );
 	}
 
 	/**
@@ -589,7 +593,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 		$state['failed_at'] = gmdate( 'Y-m-d H:i:s' );
 		update_option( self::STATE_OPTION, $state );
 
-		Logger::error( 'Stopped the dispute ledger backfill: ' . $reason . '. ' . $this->describe_stats( $state['stats'] ?? [] ) );
+		$this->log( 'Stopped the dispute ledger backfill: ' . $reason . '. ' . $this->describe_stats( $state['stats'] ?? [] ), 'error' );
 	}
 
 	/**
@@ -609,8 +613,25 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			return;
 		}
 
-		Logger::error( 'Could not process a page of disputes for the ledger backfill (attempt ' . $attempts . '). Error: ' . $message );
+		$this->log( 'Could not process a page of disputes for the ledger backfill (attempt ' . $attempts . '). Error: ' . $message, 'error' );
 
 		$this->action_scheduler_service->schedule_job( time() + self::RETRY_DELAY, self::BACKFILL_ACTION );
+	}
+
+	/**
+	 * Write a line to the scan's log.
+	 *
+	 * Straight to WC_Logger rather than through WCPay\Logger, which stays quiet unless the merchant
+	 * turned WooPayments logging on. Nobody turns it on for a job they were never told about, and this
+	 * one runs once and cannot be repeated to find out what it did, so the record has to be written
+	 * the first time or not at all.
+	 *
+	 * @param string $message The line to write.
+	 * @param string $level   A WC_Log_Levels level.
+	 *
+	 * @return void
+	 */
+	private function log( string $message, string $level = 'info' ) {
+		wc_get_logger()->log( $level, $message, [ 'source' => self::LOG_SOURCE ] );
 	}
 }

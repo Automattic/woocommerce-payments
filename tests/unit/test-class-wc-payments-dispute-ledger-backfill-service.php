@@ -356,8 +356,8 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	}
 
 	/**
-	 * The backfill is one-shot and nothing can re-run it to find out what it did, and logging is off
-	 * on a default install, so the finished state is the only durable record of the outcome.
+	 * The backfill is one-shot and nothing can re-run it to find out what it did, and WooCommerce
+	 * prunes the log it wrote to, so the finished state is the record of the outcome that lasts.
 	 */
 	public function test_keeps_the_counters_when_the_backfill_finishes() {
 		$this->set_state(
