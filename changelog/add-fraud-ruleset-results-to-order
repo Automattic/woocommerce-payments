@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Show which risk filters fired when a payment is blocked or held for review, in the order note and the Fraud & Risk meta box.

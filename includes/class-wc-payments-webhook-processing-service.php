@@ -608,6 +608,13 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		// A paid order already had its token saved at checkout, so this is a redelivered event.
+		// Saving again could re-point sibling subscriptions to a card the customer has since replaced.
+		if ( $order->is_paid() ) {
+			Logger::log( 'Skipping webhook token save for paid order #' . $order->get_id() . '.' );
+			return;
+		}
+
 		$previous_token_id = $this->get_order_last_payment_token_id( $order );
 
 		try {
