@@ -43,7 +43,11 @@ class Dispute_Ledger_Backfill_Test extends WCPAY_UnitTestCase {
 
 		$state = get_option( self::STATE_OPTION );
 		$this->assertSame( 'pending', $state['status'] );
-		$this->assertSame( 0, $state['page'] );
+
+		// The platform's pages start at 1; asking for a page it does not have reads as an empty
+		// scan, which is indistinguishable from having finished.
+		$this->assertSame( 1, $state['page'] );
+
 		$this->assertSame( 0, $state['attempts'] );
 		$this->assertNotEmpty( $state['created_before'] );
 	}

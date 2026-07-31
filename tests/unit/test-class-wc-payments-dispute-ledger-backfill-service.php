@@ -200,7 +200,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 		);
 		$this->service->run_backfill_batch();
 
-		$this->set_state( [ 'page' => 1 ] );
+		$this->set_state( [ 'page' => 2 ] );
 		$this->mock_disputes_page(
 			[
 				$this->dispute_row( 'dp_backfill_6_second', 'ch_backfill_6', 'won' ),
@@ -639,7 +639,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 			array_merge(
 				[
 					'status'         => WC_Payments_Dispute_Ledger_Backfill_Service::STATUS_PENDING,
-					'page'           => 0,
+					'page'           => 1,
 					'created_before' => gmdate( 'Y-m-d H:i:s' ),
 					'attempts'       => 0,
 				],

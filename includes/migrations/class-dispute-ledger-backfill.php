@@ -61,7 +61,10 @@ class Dispute_Ledger_Backfill {
 			self::STATE_OPTION,
 			[
 				'status'         => 'pending',
-				'page'           => 0,
+				// The platform's pages are 1-based. Paginated::DEFAULT_PARAMS carries 0 as "unset"
+				// rather than as a first page, and asking for one it does not have would return
+				// nothing, which this scan cannot tell apart from having reached the end.
+				'page'           => 1,
 				// Closures after this point are recorded in the ledger as they happen, so the scan
 				// only needs what came before.
 				'created_before' => gmdate( 'Y-m-d H:i:s' ),

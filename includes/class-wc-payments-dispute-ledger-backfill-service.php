@@ -34,6 +34,16 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	const BACKFILL_ACTION = 'wcpay_dispute_ledger_backfill';
 	const STATE_OPTION    = 'wcpay_dispute_ledger_backfill_state';
 
+	/**
+	 * Log source for the scan, kept apart from the gateway's own log.
+	 *
+	 * A scan can run for days, and its lines would otherwise be scattered through whatever checkout
+	 * traffic the store had at the time.
+	 *
+	 * @const string
+	 */
+	const LOG_SOURCE = 'wcpay-dispute-ledger-backfill';
+
 	const STATUS_PENDING = 'pending';
 	const STATUS_DONE    = 'done';
 	const STATUS_FAILED  = 'failed';
@@ -201,7 +211,7 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			return;
 		}
 
-		$page           = (int) ( $state['page'] ?? 0 );
+		$page           = max( 1, (int) ( $state['page'] ?? 1 ) );
 		$created_before = (string) ( $state['created_before'] ?? '' );
 
 		if ( '' === $created_before ) {
