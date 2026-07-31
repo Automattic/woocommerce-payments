@@ -2583,7 +2583,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function add_open_dispute_id( WC_Order $order, string $dispute_id ) {
-		if ( '' === $dispute_id ) {
+		if ( empty( $dispute_id ) ) {
 			return;
 		}
 
