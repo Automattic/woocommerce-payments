@@ -85,7 +85,8 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 	 * Claim value standing in for a dispute ID once a (charge, status) group is known to be
 	 * ambiguous, so no member of it can be marked on a later page either.
 	 *
-	 * Dispute IDs are `dp_`-prefixed, so this cannot be mistaken for one.
+	 * Dispute IDs carry a Stripe prefix (`du_`, or `dp_` on older ones), so this cannot be mistaken
+	 * for one.
 	 *
 	 * @const string
 	 */
