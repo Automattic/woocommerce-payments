@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Core\Server\Request\List_Disputes;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * Records the dispute closure ledger for disputes that closed before the store upgraded.
@@ -247,11 +248,15 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			// The list carries no closed-at value, and a dispute cannot close before it was created, so
 			// creation is the only bound available for keeping the scan on pre-upgrade closures.
 			$request->set_created_before( $created_before );
-			// A scheduled job inherits whatever mode the request that dispatched it was in. Test mode
-			// selects a different account and a different table, so an ambient test mode returns an
-			// empty first page, and the check below would record the backfill as done having read
-			// nothing.
-			$request->set_filters( [ 'test_mode' => false ] );
+			// This picks which side of the account the list is read from, not whether the data is real.
+			// Reading the wrong side returns an empty first page, which the check below cannot tell
+			// from having reached the end of the list, so it cannot be left to the mode the dispatching
+			// request happened to be in. Onboarding mode is what names the side holding the store's
+			// history: a sandbox store has no live side at all, and a live store's own history is live.
+			// A live store that has also sold through the gateway's test toggle has closures on the
+			// test side too, and those go unscanned — the cheaper miss, since a redelivery there
+			// re-refunds a test-mode order rather than a live one.
+			$request->set_filters( [ 'test_mode' => WC_Payments::mode()->is_test_mode_onboarding() ] );
 
 			$response = $request->send();
 
@@ -271,6 +276,15 @@ class WC_Payments_Dispute_Ledger_Backfill_Service {
 			// Throwable rather than Exception: `List_Disputes::format_response()` feeds a
 			// `WC_Order|WC_Order_Refund|false` into a parameter typed `WC_Order`, so a TypeError can
 			// escape `send()` as readily as an API failure does.
+			if ( $e instanceof API_Exception && 'wcpay_account_not_found' === $e->get_error_code() ) {
+				// A store with no account has no dispute history to read, and waiting will not give it
+				// one, so the retry budget would only spend a day arriving at the same answer. Failed
+				// rather than done, because a store that connects an account later has closures this
+				// scan never saw, and only the state says so.
+				$this->fail( $state, 'the site has no connected account to read disputes from' );
+				return;
+			}
+
 			$this->handle_failure( $state, $e->getMessage() );
 			return;
 		}

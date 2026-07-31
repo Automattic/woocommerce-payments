@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Order_Status;
+use WCPay\Core\Mode;
 use WCPay\Core\Server\Request\List_Disputes;
 use WCPay\Exceptions\API_Exception;
 
@@ -38,6 +39,13 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	 */
 	private $orders = [];
 
+	/**
+	 * The mode WC_Payments held before a test swapped it out.
+	 *
+	 * @var Mode|null
+	 */
+	private $mode_before;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -55,6 +63,11 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 
 	public function tear_down() {
 		delete_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
+
+		if ( $this->mode_before ) {
+			$this->write_mode( $this->mode_before );
+			$this->mode_before = null;
+		}
 
 		foreach ( $this->orders as $order ) {
 			WC_Helper_Order::delete_order( $order->get_id() );
@@ -279,15 +292,34 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	}
 
 	/**
-	 * Test mode selects a different account and a different table on the server, so a scan that
-	 * inherited it reads an empty first page and records itself as done having examined nothing.
+	 * Test mode selects a different account and a different table on the server, so a scan that read
+	 * the wrong one records itself as done having examined nothing. A live store keeps its history in
+	 * the live account even while the gateway's own test toggle is on.
 	 */
-	public function test_reads_the_live_account_whatever_mode_the_job_inherited() {
+	public function test_reads_the_live_account_for_a_live_onboarded_store() {
+		$this->set_onboarding_mode( false );
+
 		$request = $this->mock_disputes_page( [] );
 		$request
 			->expects( $this->once() )
 			->method( 'set_filters' )
 			->with( [ 'test_mode' => false ] );
+
+		$this->service->run_backfill_batch();
+	}
+
+	/**
+	 * A sandbox store has no live account at all, so asking for one gets `wcpay_account_not_found`
+	 * rather than the dispute history sitting in the account it did onboard.
+	 */
+	public function test_reads_the_sandbox_account_for_a_test_onboarded_store() {
+		$this->set_onboarding_mode( true );
+
+		$request = $this->mock_disputes_page( [] );
+		$request
+			->expects( $this->once() )
+			->method( 'set_filters' )
+			->with( [ 'test_mode' => true ] );
 
 		$this->service->run_backfill_batch();
 	}
@@ -522,6 +554,30 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 		$this->assertSame( 'failed', $state['status'] );
 		$this->assertSame( 3, $state['page'] );
 		$this->assertSame( '2026-01-01 00:00:00', $state['created_before'] );
+	}
+
+	/**
+	 * A store with no connected account will not grow one inside the retry window, so spending the
+	 * budget on it only delays the same answer by a day.
+	 */
+	public function test_stops_at_once_when_the_site_has_no_connected_account() {
+		$this->set_state( [ 'page' => 3 ] );
+
+		$request = $this->mock_wcpay_request( List_Disputes::class );
+		$request
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Error: No account found for this site.', 'wcpay_account_not_found', 401 ) );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->service->run_backfill_batch();
+
+		$state = get_option( WC_Payments_Dispute_Ledger_Backfill_Service::STATE_OPTION );
+
+		$this->assertSame( 'failed', $state['status'] );
+		$this->assertSame( 3, $state['page'] );
 	}
 
 	public function test_resets_the_attempt_count_after_a_page_succeeds() {
@@ -807,5 +863,38 @@ class WC_Payments_Dispute_Ledger_Backfill_Service_Test extends WCPAY_UnitTestCas
 	 */
 	private function reload( WC_Order $order ): WC_Order {
 		return wc_get_order( $order->get_id() );
+	}
+
+	/**
+	 * Puts a mode reporting the given onboarding mode in front of WC_Payments, until tear_down.
+	 *
+	 * The real Mode caches its flags on first read, so the `wcpay_test_mode_onboarding` filter has
+	 * usually stopped being consulted by the time a test runs.
+	 *
+	 * @param bool $test_mode_onboarding Whether the store onboarded in test mode.
+	 *
+	 * @return void
+	 */
+	private function set_onboarding_mode( bool $test_mode_onboarding ) {
+		$mock_mode = $this->createMock( Mode::class );
+		$mock_mode
+			->method( 'is_test_mode_onboarding' )
+			->willReturn( $test_mode_onboarding );
+
+		$this->mode_before = WC_Payments::mode();
+		$this->write_mode( $mock_mode );
+	}
+
+	/**
+	 * Sets the mode WC_Payments hands out.
+	 *
+	 * @param Mode $mode The mode to install.
+	 *
+	 * @return void
+	 */
+	private function write_mode( Mode $mode ) {
+		$property = new ReflectionProperty( WC_Payments::class, 'mode' );
+		$property->setAccessible( true );
+		$property->setValue( null, $mode );
 	}
 }
