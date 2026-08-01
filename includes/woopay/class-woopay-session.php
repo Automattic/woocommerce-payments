@@ -36,6 +36,21 @@ class WooPay_Session {
 	const WOOPAY_SESSION_KEY = 'woopay-user-data';
 
 	/**
+	 * Request was signed with the store's Jetpack blog token.
+	 */
+	const AUTH_BLOG_TOKEN = 'blog_token';
+
+	/**
+	 * Request carries a valid Cart-Token but no blog token signature.
+	 */
+	const AUTH_CART_TOKEN = 'cart_token';
+
+	/**
+	 * Request carries neither. Not authorized.
+	 */
+	const AUTH_NONE = 'none';
+
+	/**
 	 * Order ID used for error handling.
 	 *
 	 * @var int|null
@@ -107,8 +122,9 @@ class WooPay_Session {
 			return $user;
 		}
 
-		// Validate that the request is signed properly.
-		if ( ! self::has_valid_request_signature() ) {
+		// Validate that the request is authenticated, by blog token signature or, when
+		// enabled, by a valid Cart-Token.
+		if ( self::AUTH_NONE === self::get_request_auth_level() ) {
 			Logger::log( __( 'WooPay request is not signed correctly.', 'woocommerce-payments' ) );
 			wp_die( esc_html__( 'WooPay request is not signed correctly.', 'woocommerce-payments' ), 401 );
 		}
@@ -154,6 +170,22 @@ class WooPay_Session {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
+				/**
+				 * This branch resolves an arbitrary registered user from a request header, so
+				 * it needs the header to be trustworthy. A blog token signature proves it came
+				 * from WooPay on WordPress.com. Without one the header is caller-supplied, so
+				 * fall back to requiring the nonce this store minted for this specific user
+				 * (email_verified_session_nonce), which a caller cannot forge.
+				 */
+				if (
+					self::AUTH_BLOG_TOKEN !== self::get_request_auth_level() &&
+					! self::has_store_minted_nonce_for_user( (int) $user->ID )
+				) {
+					Logger::log( 'WooPay verified email header rejected: no store-minted nonce bound to the requested user.' );
+
+					return null;
+				}
+
 				// Remove Gift Cards session cache to load account gift cards.
 				add_filter( 'woocommerce_gc_account_session_timeout_minutes', '__return_false' );
 
@@ -581,6 +613,10 @@ class WooPay_Session {
 			'font_rules'           => $font_rules,
 		];
 
+		// Tells WooPay whether this store accepts Cart-Token authenticated requests, and so
+		// whether it can stop signing them with the blog token. See WOOPAY-463.
+		$request['supports_cart_token_auth'] = self::is_cart_token_auth_allowed();
+
 		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
 		$request['extension_data'] = $woopay_adapted_extensions->get_extension_data();
 
@@ -827,12 +863,13 @@ class WooPay_Session {
 		}
 
 		$data = [
-			'wcpay_version'     => WCPAY_VERSION_NUMBER,
-			'blog_id'           => $blog_id,
-			'blog_rest_url'     => get_rest_url(),
-			'blog_checkout_url' => wc_get_checkout_url(),
-			'session_nonce'     => self::create_woopay_nonce( get_current_user_id() ),
-			'store_api_token'   => self::init_store_api_token(),
+			'wcpay_version'            => WCPAY_VERSION_NUMBER,
+			'blog_id'                  => $blog_id,
+			'blog_rest_url'            => get_rest_url(),
+			'blog_checkout_url'        => wc_get_checkout_url(),
+			'session_nonce'            => self::create_woopay_nonce( get_current_user_id() ),
+			'store_api_token'          => self::init_store_api_token(),
+			'supports_cart_token_auth' => self::is_cart_token_auth_allowed(),
 		];
 
 		return WooPay_Utilities::encrypt_and_sign_data( $data );
@@ -862,6 +899,54 @@ class WooPay_Session {
 		 * @param bool $is_signed Whether the request signature was verified against the blog token.
 		 */
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+	}
+
+	/**
+	 * Whether a valid Cart-Token may stand in for a blog token signature on proxied
+	 * WooPay requests.
+	 *
+	 * On by default. This is what lets WooPay stop signing proxied shopper requests with
+	 * the store's Jetpack blog token — a site-wide credential that has no business riding
+	 * along on shopper-originated traffic. Stores that have not updated keep receiving
+	 * signed requests, because WooPay decides per merchant from the capability advertised
+	 * in the session payload. See WOOPAY-463.
+	 *
+	 * Filter it to false to require the signature on this store.
+	 *
+	 * @return bool True if Cart-Token authentication is accepted.
+	 */
+	public static function is_cart_token_auth_allowed(): bool {
+		/**
+		 * Filters whether a valid Cart-Token is accepted in place of a blog token signature
+		 * for proxied WooPay Store API requests.
+		 *
+		 * @since 10.10.0
+		 *
+		 * @param bool $allowed Whether Cart-Token authentication is accepted.
+		 */
+		return (bool) apply_filters( 'wcpay_woopay_allow_cart_token_auth', true );
+	}
+
+	/**
+	 * Determines how the current request authenticated itself.
+	 *
+	 * A blog token signature proves the request came from WooPay on WordPress.com. A
+	 * Cart-Token only proves the caller holds that cart, which any shopper legitimately
+	 * does for their own — so the two are not interchangeable and callers that need the
+	 * stronger property must check for AUTH_BLOG_TOKEN specifically.
+	 *
+	 * @return string One of the AUTH_* constants.
+	 */
+	public static function get_request_auth_level(): string {
+		if ( self::has_valid_request_signature() ) {
+			return self::AUTH_BLOG_TOKEN;
+		}
+
+		if ( self::is_cart_token_auth_allowed() && null !== self::get_payload_from_cart_token() ) {
+			return self::AUTH_CART_TOKEN;
+		}
+
+		return self::AUTH_NONE;
 	}
 
 	/**
@@ -932,6 +1017,55 @@ class WooPay_Session {
 		$i      = wp_nonce_tick( $action );
 
 		return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
+	}
+
+	/**
+	 * Verifies a nonce minted by create_woopay_nonce() against a specific user ID.
+	 *
+	 * Mirrors wp_verify_nonce()'s two-tick tolerance, but pins the user ID instead of
+	 * reading it from the current session — the point is to prove the store itself
+	 * issued this nonce for this user.
+	 *
+	 * Note the Store API's own nonce check does not do this for us: requires_nonce() in
+	 * AbstractCartRoute skips verification entirely whenever a valid Cart-Token is
+	 * present, which is always the case for WooPay traffic.
+	 *
+	 * @param string $nonce The nonce to verify.
+	 * @param int    $uid   The user ID the nonce must be bound to.
+	 *
+	 * @return bool True if the nonce was issued by this store for this user.
+	 */
+	private static function verify_woopay_nonce( string $nonce, int $uid ): bool {
+		$action = 'wc_store_api';
+		$token  = '';
+		$i      = wp_nonce_tick( $action );
+
+		foreach ( [ $i, $i - 1 ] as $tick ) {
+			$expected = substr( wp_hash( $tick . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
+
+			if ( hash_equals( $expected, $nonce ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether the request carries a store-minted nonce bound to the given user ID.
+	 *
+	 * @param int $uid The user ID the nonce must be bound to.
+	 *
+	 * @return bool True if the Nonce header is valid for that user.
+	 */
+	private static function has_store_minted_nonce_for_user( int $uid ): bool {
+		$nonce = isset( $_SERVER['HTTP_NONCE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_NONCE'] ) ) : '';
+
+		if ( '' === $nonce ) {
+			return false;
+		}
+
+		return self::verify_woopay_nonce( $nonce, $uid );
 	}
 
 	/**

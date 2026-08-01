@@ -8,7 +8,6 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\WooPay\WooPay_Session;
-use Automattic\Jetpack\Connection\Rest_Authentication;
 use WCPay\Logger;
 
 /**
@@ -75,26 +74,10 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	/**
 	 * Check permission confirms that the request is from WooPay.
 	 *
-	 * @return bool True if request is from WooPay and has a valid signature.
+	 * @return bool True if the request is from WooPay and is authenticated.
 	 */
 	public function check_permission() {
-		return $this->is_request_from_woopay() && $this->has_valid_request_signature();
-	}
-
-	/**
-	 * Returns true if the request that's currently being processed is signed with the blog token.
-	 *
-	 * @return bool True if the request signature is valid.
-	 */
-	private function has_valid_request_signature(): bool {
-		/**
-		 * Filters whether the current request is signed with the store's blog token.
-		 *
-		 * @since 5.9.0
-		 *
-		 * @param bool $is_signed Whether the request signature was verified against the blog token.
-		 */
-		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+		return $this->is_request_from_woopay() && WooPay_Session::AUTH_NONE !== WooPay_Session::get_request_auth_level();
 	}
 
 	/**

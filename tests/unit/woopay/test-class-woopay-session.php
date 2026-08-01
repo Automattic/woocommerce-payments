@@ -91,6 +91,14 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
+		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
+
+		unset(
+			$_SERVER['HTTP_NONCE'],
+			$_SERVER['HTTP_CART_TOKEN'],
+			$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS']
+		);
 
 		parent::tear_down();
 	}
@@ -355,6 +363,136 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), $woopay_user->ID );
 
 		unset( $_REQUEST['rest_route'] );
+	}
+
+	public function test_get_request_auth_level_returns_blog_token_when_signed() {
+		$this->assertSame( WooPay_Session::AUTH_BLOG_TOKEN, WooPay_Session::get_request_auth_level() );
+	}
+
+	public function test_get_request_auth_level_returns_none_without_signature_when_cart_token_auth_disabled() {
+		$this->unsign_request();
+		$this->deny_cart_token_auth();
+
+		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
+		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
+
+		$this->assertSame( WooPay_Session::AUTH_NONE, WooPay_Session::get_request_auth_level() );
+	}
+
+	public function test_get_request_auth_level_returns_cart_token_by_default() {
+		$this->unsign_request();
+
+		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
+		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
+
+		$this->assertSame( WooPay_Session::AUTH_CART_TOKEN, WooPay_Session::get_request_auth_level() );
+	}
+
+	public function test_store_advertises_cart_token_auth_support_by_default() {
+		$this->assertTrue( WooPay_Session::is_cart_token_auth_allowed() );
+	}
+
+	public function test_get_request_auth_level_returns_none_when_cart_token_is_invalid() {
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$_SERVER['HTTP_CART_TOKEN'] = 'not-a-valid-cart-token';
+
+		$this->assertSame( WooPay_Session::AUTH_NONE, WooPay_Session::get_request_auth_level() );
+	}
+
+	public function test_verified_email_is_rejected_under_cart_token_auth_without_store_minted_nonce() {
+		$verified_user = self::factory()->user->create_and_get();
+
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$woopay_store_api_token = WooPay_Store_Api_Token::init();
+
+		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
+		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
+
+		$this->setup_session( 0, $verified_user->user_email );
+		$this->setup_adapted_extensions();
+
+		$this->assertNull( WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	public function test_verified_email_is_rejected_under_cart_token_auth_with_nonce_for_another_user() {
+		$verified_user = self::factory()->user->create_and_get();
+		$other_user    = self::factory()->user->create_and_get();
+
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$woopay_store_api_token = WooPay_Store_Api_Token::init();
+
+		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
+		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
+		$_SERVER['HTTP_NONCE']                           = $this->create_woopay_nonce( $other_user->ID );
+
+		$this->setup_session( 0, $verified_user->user_email );
+		$this->setup_adapted_extensions();
+
+		$this->assertNull( WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	public function test_verified_email_is_accepted_under_cart_token_auth_with_store_minted_nonce() {
+		$verified_user = self::factory()->user->create_and_get();
+
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$woopay_store_api_token = WooPay_Store_Api_Token::init();
+
+		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
+		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
+		$_SERVER['HTTP_NONCE']                           = $this->create_woopay_nonce( $verified_user->ID );
+
+		$this->setup_session( 0, $verified_user->user_email );
+		$this->setup_adapted_extensions();
+
+		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	public function test_verified_email_does_not_require_nonce_when_request_is_signed() {
+		$verified_user = self::factory()->user->create_and_get();
+
+		$woopay_store_api_token = WooPay_Store_Api_Token::init();
+
+		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
+		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
+
+		$this->setup_session( 0, $verified_user->user_email );
+		$this->setup_adapted_extensions();
+
+		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	/**
+	 * Drops the blog token signature that set_up() installs.
+	 */
+	private function unsign_request() {
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+	}
+
+	private function allow_cart_token_auth() {
+		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
+	}
+
+	private function deny_cart_token_auth() {
+		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
+	}
+
+	/**
+	 * Mints a nonce the same way the store does, via the private producer, so these
+	 * tests fail if the producer and verifier ever drift apart.
+	 */
+	private function create_woopay_nonce( int $uid ): string {
+		$method = new ReflectionMethod( WooPay_Session::class, 'create_woopay_nonce' );
+		$method->setAccessible( true );
+
+		return $method->invoke( null, $uid );
 	}
 
 	private function setup_session( $customer_id, $customer_email = null ) {
