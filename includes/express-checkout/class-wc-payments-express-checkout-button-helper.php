@@ -829,6 +829,109 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Full Store API response for the current context, localized so the classic Express Checkout
+	 * button first-paints without a blocking `GET`. On cart/checkout this is the `/cart` response;
+	 * on pay-for-order it's the `/order/{id}` response (see get_order_render_data). Same
+	 * `hydrate_from_api` strategy the blocks use, so the payload is the exact shape the client
+	 * already consumes from the live fetch (totals, items, `extensions`) and seeds straight into
+	 * its cart cache.
+	 *
+	 * @return array|false False off cart/checkout, on block-based cart/checkout (they hydrate
+	 *                      themselves), or for an empty cart — the client then fetches instead.
+	 */
+	public function get_express_checkout_render_data() {
+		// get_button_context() is the canonical context check. Pay-for-order paints from
+		// the order (its own endpoint), not the cart; product pages render from product data.
+		$context = $this->get_button_context();
+
+		if ( 'pay_for_order' === $context ) {
+			return $this->get_order_render_data();
+		}
+
+		if ( ! in_array( $context, [ 'cart', 'checkout' ], true ) ) {
+			return false;
+		}
+
+		// Block cart/checkout hydrate their own Store API data; the shortcode button bails there.
+		if ( has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ) ) {
+			return false;
+		}
+
+		if ( is_null( WC()->cart ) || WC()->cart->is_empty() ) {
+			return false;
+		}
+
+		// Zero-total/free-trial carts are kept on purpose: their recurring totals and
+		// eligibility live in `extensions`, which the client's cart-data path reads.
+		$preloaded = rest_preload_api_request( [], '/wc/store/v1/cart' );
+
+		return $this->normalize_preloaded_body( $preloaded['/wc/store/v1/cart']['body'] ?? false );
+	}
+
+	/**
+	 * Full Store API order response for a pay-for-order page, localized like get_express_checkout_render_data()
+	 * so the button first-paints without the blocking `GET /wc/store/v1/order/{id}`.
+	 *
+	 * Gated on the order key from the pay-for-order URL — the credential the visitor presents, since
+	 * the `pay_for_order` cap is permissive for guest orders and can't gate this. The preload runs
+	 * the order route's own permission callback, which returns the order only to its logged-in owner
+	 * (account orders) or a matching key + billing email (guest orders); any other case is a non-200
+	 * the preload drops, so another customer's order is never localized.
+	 *
+	 * @return array|false False when the order or key is missing or invalid.
+	 */
+	private function get_order_render_data() {
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		if ( 0 === $order_id ) {
+			return false;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return false;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The order key is a bearer credential, not a form submission.
+		$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : '';
+		if ( '' === $order_key || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+			return false;
+		}
+
+		$path = add_query_arg(
+			[
+				'key'           => $order_key,
+				'billing_email' => $order->get_billing_email(),
+			],
+			'/wc/store/v1/order/' . $order_id
+		);
+
+		$preloaded = rest_preload_api_request( [], $path );
+		$body      = $this->normalize_preloaded_body( $preloaded[ $path ]['body'] ?? false );
+
+		// The preload only populates on a 200, so an auth failure leaves nothing; the id check
+		// is a final guard that we're seeding an order, never an error body.
+		return isset( $body['id'] ) ? $body : false;
+	}
+
+	/**
+	 * `rest_preload_api_request()` only casts the top level of the response to an array, so nested
+	 * nodes (e.g. `totals`) can stay `stdClass` depending on the Store API schema. Recurse into a
+	 * plain associative array so the returned shape matches the `@return array` contract regardless
+	 * of WooCommerce version — the payload is JSON-encoded downstream, so the localized output is
+	 * unchanged either way.
+	 *
+	 * @param array|false $body Preloaded response body, or false when the preload didn't populate.
+	 * @return array|false Fully associative array, or false when there's no body.
+	 */
+	private function normalize_preloaded_body( $body ) {
+		if ( ! is_array( $body ) ) {
+			return false;
+		}
+
+		return json_decode( wp_json_encode( $body ), true );
+	}
+
+	/**
 	 * Determines whether the current Pay for Order page can be paid via the Express Checkout button.
 	 *
 	 * An order can be created without a billing email (e.g. by the merchant). The Store API requires

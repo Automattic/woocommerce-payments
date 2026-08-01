@@ -1112,4 +1112,210 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}
+
+	public function test_get_express_checkout_render_data_returns_false_when_not_cart_or_checkout() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
+	}
+
+	public function test_get_express_checkout_render_data_returns_false_on_pay_for_order() {
+		// Core treats the pay-for-order page as the checkout page, so is_checkout() is
+		// true there; get_button_context() still resolves it to pay_for_order, which
+		// uses its own Order API and must not seed from the customer's cart.
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( true );
+
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
+	}
+
+	public function test_get_express_checkout_render_data_returns_false_on_block_cart_or_checkout() {
+		// Block cart/checkout hydrate their own Store API data and the shortcode
+		// button bails there, so no snapshot should be localized.
+		$original_post = $GLOBALS['post'] ?? null;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- has_block() reads the global post; restored below.
+		$GLOBALS['post'] = $this->factory()->post->create_and_get(
+			[ 'post_content' => '<!-- wp:woocommerce/checkout /-->' ]
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+
+		$result = $helper->get_express_checkout_render_data();
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the global post.
+		$GLOBALS['post'] = $original_post;
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_get_express_checkout_render_data_returns_false_for_empty_cart() {
+		WC()->cart->empty_cart();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
+	}
+
+	public function test_get_express_checkout_render_data_returns_store_api_cart_response_for_populated_cart() {
+		update_option( 'woocommerce_currency', 'USD' );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$data = $helper->get_express_checkout_render_data();
+
+		// The payload is the live Store API cart response the client already consumes,
+		// so it carries the same top-level shape a `GET /wc/store/v1/cart` returns —
+		// including `extensions`, which the subscriptions compat and method list read.
+		$this->assertIsArray( $data );
+		$this->assertNotEmpty( $data['items'] );
+		$this->assertSame( 'USD', $data['totals']['currency_code'] );
+		$this->assertArrayHasKey( 'extensions', $data );
+	}
+
+	public function test_get_express_checkout_render_data_returns_store_api_response_for_zero_total_cart() {
+		// A zero-total cart (here a virtual $0 product) is no longer withheld. The old
+		// guard punted free-trial subscriptions to the fetch path because the bespoke
+		// snapshot lacked their recurring data; the full response carries it in
+		// `extensions`, so the client's cart-data path handles $0 carts directly.
+		$free_product = WC_Helper_Product::create_simple_product();
+		$free_product->set_virtual( true );
+		$free_product->set_regular_price( 0 );
+		$free_product->set_price( 0 );
+		$free_product->save();
+
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $free_product->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$data = $helper->get_express_checkout_render_data();
+
+		$this->assertIsArray( $data );
+		$this->assertSame( '0', $data['totals']['total_price'] );
+	}
+
+	public function test_get_express_checkout_render_data_returns_false_for_pay_for_order_without_order() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_button_context' ] )
+			->getMock();
+		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
+
+		// No `order-pay` query var, so there is no order to hydrate.
+		$this->assertFalse( $helper->get_express_checkout_render_data() );
+	}
+
+	public function test_get_express_checkout_render_data_returns_false_for_pay_for_order_with_wrong_key() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->set_billing_email( 'shopper@example.com' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = 'wc_order_wrongkey';
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_button_context' ] )
+			->getMock();
+		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
+
+		$result = $helper->get_express_checkout_render_data();
+
+		unset( $_GET['key'] );
+		set_query_var( 'order-pay', '' );
+
+		// A visitor without the order's key must never receive its contents.
+		$this->assertFalse( $result );
+	}
+
+	public function test_get_express_checkout_render_data_returns_false_for_account_order_viewed_by_non_owner() {
+		// The security-critical case: an account order is guarded by the Store API route's
+		// ownership check (logged-in owner only), not by the key. A different logged-in user
+		// holding the correct key must still receive nothing.
+		$owner_id = self::factory()->user->create();
+		$order    = WC_Helper_Order::create_order( $owner_id );
+		$order->save();
+
+		wp_set_current_user( self::factory()->user->create() );
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = $order->get_order_key();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_button_context' ] )
+			->getMock();
+		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
+
+		$result = $helper->get_express_checkout_render_data();
+
+		unset( $_GET['key'] );
+		set_query_var( 'order-pay', '' );
+		wp_set_current_user( 0 );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_get_express_checkout_render_data_hydrates_order_when_key_matches() {
+		// The Store API order route (WooCommerce > 7.6) is what makes the hydration possible.
+		// On older WooCommerce the preload finds no route and the button falls back to the fetch,
+		// so there's nothing to hydrate to assert here.
+		if ( ! class_exists( \Automattic\WooCommerce\StoreApi\Routes\V1\Order::class ) ) {
+			$this->markTestSkipped( 'Store API order route is unavailable on this WooCommerce version.' );
+		}
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->set_billing_email( 'shopper@example.com' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = $order->get_order_key();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_button_context' ] )
+			->getMock();
+		$helper->method( 'get_button_context' )->willReturn( 'pay_for_order' );
+
+		$data = $helper->get_express_checkout_render_data();
+
+		unset( $_GET['key'] );
+		set_query_var( 'order-pay', '' );
+
+		$this->assertIsArray( $data );
+		$this->assertSame( $order->get_id(), $data['id'] );
+	}
 }

@@ -141,6 +141,51 @@ describe( 'ExpressCheckoutOrderApi', () => {
 		);
 	} );
 
+	it( 'replays addresses from server-hydrated order data at placement, without an initial fetch', async () => {
+		const api = new ExpressCheckoutOrderApi( {
+			orderId: '1',
+			key: 'key_123',
+		} );
+
+		// Seeded from the page-render hydration instead of a GET /order/{id} fetch.
+		api.prefillCart( {
+			id: 1,
+			billing_address: {
+				first_name: 'Merchant',
+				last_name: 'Set',
+				email: '',
+				phone: '',
+			},
+			shipping_address: { first_name: 'Merchant', last_name: 'Set' },
+		} );
+
+		apiFetch.mockResolvedValueOnce( {} );
+
+		await api.placeOrder( {
+			billing_address: { email: 'buyer@wallet.com', phone: '5551234567' },
+		} );
+
+		// Only the placement POST — the seeded data supplied the addresses, so no GET fired.
+		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+		expect( apiFetch ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				method: 'POST',
+				path: '/wc/store/v1/checkout/1',
+				data: expect.objectContaining( {
+					billing_address: expect.objectContaining( {
+						first_name: 'Merchant',
+						email: 'buyer@wallet.com',
+						phone: '5551234567',
+					} ),
+					shipping_address: expect.objectContaining( {
+						first_name: 'Merchant',
+						phone: '5551234567',
+					} ),
+				} ),
+			} )
+		);
+	} );
+
 	it( 'authorizes a later attempt (e.g. switching express method) once the order has been placed', async () => {
 		const api = new ExpressCheckoutOrderApi( {
 			orderId: '1',

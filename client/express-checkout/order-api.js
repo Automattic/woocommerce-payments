@@ -118,6 +118,16 @@ export default class ExpressCheckoutOrderApi {
 	}
 
 	/**
+	 * Seeds the order response from server-hydrated data, so a first paint can skip the
+	 * initial fetch while `placeOrder` still has the order's addresses to replay.
+	 *
+	 * @param {Object} orderData Store API order response.
+	 */
+	prefillCart( orderData ) {
+		this.cachedCartData = orderData;
+	}
+
+	/**
 	 * Returns the customer's order object.
 	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/order.md
 	 *

@@ -501,7 +501,27 @@ jQuery( ( $ ) => {
 				isProductContext &&
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
 
-			if (
+			// Cart/checkout render at the session's resolved currency (and
+			// pay-for-order at the order's), so the localized Store API response
+			// (see get_express_checkout_render_data) is authoritative for first
+			// paint. Consumed once — the charge is always the live server-side
+			// total placed at confirm, and any drift self-corrects on the re-init
+			// below, which reads a now-empty param and fetches fresh.
+			const buttonContext = getExpressCheckoutData( 'button_context' );
+			const bootstrapCartData = ! cachedCartData
+				? getExpressCheckoutData( 'cart' ) || null
+				: null;
+
+			if ( bootstrapCartData ) {
+				cachedCartData = bootstrapCartData;
+				wcpayExpressCheckoutParams.cart = undefined;
+
+				// pay-for-order places through the Order API handler, which replays the
+				// order's addresses from its own cached copy — seed it so the fetch is skipped.
+				if ( buttonContext === 'pay_for_order' ) {
+					getCartApiHandler().prefillCart( bootstrapCartData );
+				}
+			} else if (
 				! cachedCartData &&
 				( ! getExpressCheckoutData( 'product' ) ||
 					needsMethodsReevaluation )
