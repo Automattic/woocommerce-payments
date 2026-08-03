@@ -1,6 +1,6 @@
 *** WooPayments Changelog ***
 
-= 11.0.0 - 2026-07-30 =
+= 11.0.0 - 2026-08-03 =
 * Add - Add A/B/C design variants to the in-app review prompt, assigned per-store via ExPlat (prompt remains disabled pending eligibility criteria)
 * Add - Multi-Currency: add the `wcpay_multi_currency_should_output_explicit_price` filter so merchants can force the currency code suffix on totals (e.g. "765 Kč CZK") on or off.
 * Add - Multi-Currency: auto-detect page caching to enable or recommend the cache-optimized rendering mode
@@ -22,11 +22,13 @@
 * Fix - Fix changelog formatter PCRE JIT stack exhaustion causing changelogger --amend to wipe all existing entries
 * Fix - Fix doubled spacing between express checkout buttons on the Cart block with WooCommerce 10.8+
 * Fix - Fixed broken payment intent link in test mode order notes.
+* Fix - Fixed Express Checkout (Apple Pay / Google Pay) buttons not appearing on pages that use the [product_page] shortcode with SKU, unquoted, single-quoted, or multi-attribute syntax.
 * Fix - Fixed the one-and-done and test-to-live notice eligibility checks running a slow, unbounded order query that could block admin order pages on large stores.
 * Fix - Fixed the WooPayments settings tabs background.
 * Fix - Fix ExPlat assignment for the in-app review prompt experiment, and stop re-requesting it on every page load
 * Fix - Fix inconsistent card brand SVG styling: add missing rounded corners to Mastercard, correct Discover rendered width from 61px to 64px, and add explicit white background fill to Discover.
 * Fix - Fix PHP 8.5 deprecation notice when selecting a currency before any currency is stored for the user or session
+* Fix - Fix redelivered payment webhooks re-attaching the original checkout card to subscriptions that have since been changed to a different payment method.
 * Fix - Fix REST API routes not being registered for internal REST requests made from admin pages
 * Fix - Fix subscription renewals failing with "Invalid IP address" when cron runs without an HTTP request
 * Fix - Fix the dispute notification "View and respond to dispute" link intermittently landing on an error or broken page by redirecting to the disputes list when the dispute's transaction details cannot be resolved.
