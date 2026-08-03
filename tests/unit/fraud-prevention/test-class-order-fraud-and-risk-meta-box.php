@@ -174,6 +174,79 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Red shield outline"> Blocked</p><p>The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.</p><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=' . $this->order->get_id() . '&#038;status_is=block&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">View more details</a></p>' ) );
 	}
 
+	public function test_display_order_fraud_and_risk_meta_box_message_block_with_ruleset_results() {
+		// Arrange: Set the return results for the order service methods, including the stored ruleset results.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::BLOCK );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_ruleset_results_for_order' )
+			->willReturn(
+				[
+					'international_ip_address' => 'block',
+					'purchase_price_threshold' => 'block',
+				]
+			);
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the expected string, including the fired risk filters, has been output.
+		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Red shield outline"> Blocked</p><p>The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.</p><p>Triggered risk filters:</p><ul class="wcpay-fraud-risk-triggered-filters"><li>Block if the country resolved from customer IP is not listed in your selling countries</li><li>Block if the purchase price is not in your defined range</li></ul><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=' . $this->order->get_id() . '&#038;status_is=block&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">View more details</a></p>' ) );
+	}
+
+	public function test_display_order_fraud_and_risk_meta_box_message_review_with_ruleset_results() {
+		// Arrange: Set the return results for the order service methods, including the stored ruleset results.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::REVIEW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_ruleset_results_for_order' )
+			->willReturn( [ 'order_items_threshold' => 'review' ] );
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the expected string, including the fired risk filter, has been output.
+		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.</p><p>Triggered risk filters:</p><ul class="wcpay-fraud-risk-triggered-filters"><li>Place in review if the items count is not in your defined range</li></ul><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=pi_mock&#038;status_is=review&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">Review payment</a></p>' ) );
+	}
+
 	/**
 	 * Simulates different possibilities for when legacy or split UPE are used and the method is not a card.
 	 *
