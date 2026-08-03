@@ -108,19 +108,18 @@ class OrderService {
 		) {
 			$is_renewal = $this->legacy_proxy->call_function( 'wcs_order_contains_renewal', $order );
 
-			// Whether *this* subscription is billed by Stripe Billing, not whether the store has the
-			// feature enabled. The additional Stripe Billing fee follows this value, so a store-level
-			// check surcharges on-site renewals that Stripe Billing never touched.
+			// The additional Stripe Billing fee follows this value, so a store-level feature check
+			// would surcharge on-site renewals that Stripe Billing never touched.
 			//
 			// The service is only loaded while Stripe Billing is in use, so its absence already means
 			// the subscription is billed on-site. See WC_Payments::should_load_stripe_billing_integration().
 			// Referenced by name rather than ::class because includes/subscriptions is excluded from
 			// static analysis, matching is_wcpay_subscription_renewal_order() in the subscriptions trait.
-			$use_stripe_billing = $this->legacy_proxy->call_function( 'class_exists', self::SUBSCRIPTION_SERVICE_CLASS )
+			$is_stripe_billed_subscription = $this->legacy_proxy->call_function( 'class_exists', self::SUBSCRIPTION_SERVICE_CLASS )
 				&& $this->legacy_proxy->call_static( self::SUBSCRIPTION_SERVICE_CLASS, 'is_wcpay_subscription_order', $order );
 
 			$metadata['subscription_payment'] = $is_renewal ? 'renewal' : 'initial';
-			$metadata['payment_context']      = $use_stripe_billing ? 'wcpay_subscription' : 'regular_subscription';
+			$metadata['payment_context']      = $is_stripe_billed_subscription ? 'wcpay_subscription' : 'regular_subscription';
 		}
 
 		/**
