@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Stop requiring a Jetpack blog token signature on proxied WooPay Store API requests, authorizing them on the Cart-Token the store already validates instead, so shopper checkout traffic no longer carries a site-wide credential
+Add opt-in support for authorizing proxied WooPay Store API requests on the Cart-Token the store already validates, and accept an encrypted attested-email envelope on the WooPay session route, so neither channel needs a Jetpack blog token signature

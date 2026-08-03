@@ -83,6 +83,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_customer_service( $this->mock_customer_service );
 
 		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		// Needed as the key for attested-email envelopes; see build_envelope().
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
 	}
 
 	public function tear_down() {
@@ -97,7 +100,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		unset(
 			$_SERVER['HTTP_NONCE'],
 			$_SERVER['HTTP_CART_TOKEN'],
-			$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS']
+			$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'],
+			$_GET['encrypted_data'],
+			$_POST['encrypted_data']
 		);
 
 		parent::tear_down();
@@ -366,7 +371,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_request_auth_level_returns_blog_token_when_signed() {
-		$this->assertSame( WooPay_Session::AUTH_BLOG_TOKEN, WooPay_Session::get_request_auth_level() );
+		$this->assertSame( 'blog_token', WooPay_Session::get_request_auth_level() );
 	}
 
 	public function test_get_request_auth_level_returns_none_without_signature_when_cart_token_auth_disabled() {
@@ -376,19 +381,35 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
 
-		$this->assertSame( WooPay_Session::AUTH_NONE, WooPay_Session::get_request_auth_level() );
+		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_get_request_auth_level_returns_cart_token_by_default() {
+	public function test_get_request_auth_level_returns_cart_token_when_opted_in() {
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
+		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
+
+		$this->assertSame( 'cart_token', WooPay_Session::get_request_auth_level() );
+	}
+
+	public function test_get_request_auth_level_returns_none_for_cart_token_by_default() {
 		$this->unsign_request();
 
 		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
 
-		$this->assertSame( WooPay_Session::AUTH_CART_TOKEN, WooPay_Session::get_request_auth_level() );
+		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_store_advertises_cart_token_auth_support_by_default() {
+	public function test_store_does_not_advertise_cart_token_auth_support_by_default() {
+		$this->assertFalse( WooPay_Session::is_cart_token_auth_allowed() );
+	}
+
+	public function test_store_advertises_cart_token_auth_support_when_opted_in() {
+		$this->allow_cart_token_auth();
+
 		$this->assertTrue( WooPay_Session::is_cart_token_auth_allowed() );
 	}
 
@@ -398,7 +419,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$_SERVER['HTTP_CART_TOKEN'] = 'not-a-valid-cart-token';
 
-		$this->assertSame( WooPay_Session::AUTH_NONE, WooPay_Session::get_request_auth_level() );
+		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
 	}
 
 	public function test_verified_email_is_rejected_under_cart_token_auth_without_store_minted_nonce() {
@@ -467,6 +488,84 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->setup_adapted_extensions();
 
 		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	public function test_email_is_attested_when_the_request_is_signed() {
+		// A signed request is WooPay by definition, so the email it names needs no envelope.
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	public function test_email_is_not_attested_without_a_signature_or_envelope() {
+		$this->unsign_request();
+
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	public function test_email_is_attested_by_a_fresh_envelope_for_that_email() {
+		$this->unsign_request();
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	public function test_envelope_does_not_attest_to_a_different_email() {
+		$this->unsign_request();
+
+		// The envelope is valid, but names someone else, so it vouches only for that address.
+		$_GET['encrypted_data'] = $this->build_envelope( 'other@example.com' );
+
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	public function test_stale_envelope_does_not_attest() {
+		$this->unsign_request();
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	public function test_attested_email_outranks_a_caller_supplied_email() {
+		$this->unsign_request();
+
+		$_GET['email']          = 'other@example.com';
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		$this->assertSame( 'shopper@example.com', WooPay_Session::get_user_email( wp_get_current_user() ) );
+
+		unset( $_GET['email'] );
+	}
+
+	/**
+	 * Seals an envelope the way WooPay does, so these tests fail if the two ends drift.
+	 *
+	 * Mirrors what decrypt_signed_data() expects, which is not the shape
+	 * encrypt_and_sign_data() produces — the two directions are separate protocols.
+	 *
+	 * @param string   $email     The email to attest to.
+	 * @param int|null $timestamp Envelope timestamp. Defaults to now.
+	 *
+	 * @return array The base64-encoded envelope.
+	 */
+	private function build_envelope( string $email, ?int $timestamp = null ): array {
+		$key = \WCPay\WooPay\WooPay_Utilities::get_store_blog_token();
+
+		$payload = wp_json_encode(
+			[
+				'user_email' => $email,
+				'timestamp'  => $timestamp ?? time(),
+			]
+		);
+
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$ciphertext = openssl_encrypt( $payload, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		return [
+			'data' => base64_encode( $ciphertext ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			'iv'   => base64_encode( $iv ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		];
 	}
 
 	/**

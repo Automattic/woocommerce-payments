@@ -1,0 +1,129 @@
+<?php
+/**
+ * Class WC_REST_WooPay_Session_Controller_Test
+ *
+ * @package WooCommerce\Payments\Tests
+ */
+
+use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
+use WCPay\WooPay\WooPay_Utilities;
+
+/**
+ * WC_REST_WooPay_Session_Controller unit tests.
+ *
+ * This route carries the store's own session material and creates a Stripe customer as a
+ * side effect, so it must stay closed to callers who cannot prove they are WooPay — even
+ * while proxied Store API traffic moves to Cart-Token authorization. See WOOPAY-463.
+ */
+class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
+
+	const BLOG_TOKEN = 'test.blog.token';
+
+	/**
+	 * The system under test.
+	 *
+	 * @var WC_REST_WooPay_Session_Controller
+	 */
+	private $controller;
+
+	public function set_up() {
+		parent::set_up();
+
+		$this->controller = new WC_REST_WooPay_Session_Controller();
+
+		Jetpack_Options::update_option( 'blog_token', self::BLOG_TOKEN );
+
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+	}
+
+	public function tear_down() {
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
+
+		unset(
+			$_SERVER['HTTP_USER_AGENT'],
+			$_SERVER['HTTP_CART_TOKEN'],
+			$_GET['encrypted_data'],
+			$_POST['encrypted_data']
+		);
+
+		parent::tear_down();
+	}
+
+	public function test_permission_is_granted_for_a_signed_woopay_request() {
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$this->assertTrue( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_granted_for_an_attested_email_without_a_signature() {
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		$this->assertTrue( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_for_an_unauthenticated_request() {
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_for_a_cart_token_only_request() {
+		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+
+		// A Cart-Token authorizes proxied Store API traffic, but never this route: any
+		// visitor can obtain one for their own cart, so it establishes too little here.
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_for_an_envelope_sealed_with_the_wrong_key() {
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', null, 'not.the.blog.token' );
+
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_for_a_stale_envelope() {
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_when_the_user_agent_is_not_woopay() {
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0';
+
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	/**
+	 * Seals an envelope the way WooPay does, so these tests fail if the two ends drift.
+	 *
+	 * Note the shape `decrypt_signed_data()` expects is not the one `encrypt_and_sign_data()`
+	 * produces — the two directions are separate protocols. This mirrors the decrypt side.
+	 *
+	 * @param string      $email     The email to attest to.
+	 * @param int|null    $timestamp Envelope timestamp. Defaults to now.
+	 * @param string|null $key       Key to seal with. Defaults to the store blog token.
+	 *
+	 * @return array The base64-encoded envelope.
+	 */
+	private function build_envelope( string $email, ?int $timestamp = null, ?string $key = null ): array {
+		$key     = $key ?? self::BLOG_TOKEN;
+		$payload = wp_json_encode(
+			[
+				'user_email' => $email,
+				'timestamp'  => $timestamp ?? time(),
+			]
+		);
+
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$ciphertext = openssl_encrypt( $payload, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		return [
+			'data' => base64_encode( $ciphertext ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			'iv'   => base64_encode( $iv ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		];
+	}
+}

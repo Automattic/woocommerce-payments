@@ -41,10 +41,13 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
+					// Not required: a caller that attests to the email in an encrypted
+					// envelope has no reason to also send it in the clear. Kept accepted so
+					// WooPay versions that only send this arg keep working.
 					'email' => [
 						'type'     => 'string',
 						'format'   => 'email',
-						'required' => true,
+						'required' => false,
 					],
 				],
 			]
@@ -74,10 +77,31 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	/**
 	 * Check permission confirms that the request is from WooPay.
 	 *
-	 * @return bool True if the request is from WooPay and is authenticated.
+	 * Deliberately stricter than the proxied Store API traffic, which accepts a Cart-Token.
+	 * This is not proxied shopper traffic: the response carries the store's own session
+	 * material, and reaching it creates a Stripe customer as a side effect. A Cart-Token
+	 * only establishes that the caller holds a cart, which every shopper holds for their
+	 * own, so it does not establish enough here.
+	 *
+	 * What it accepts instead is proof that WooPay composed the request — either the
+	 * legacy blog token signature, or an attestation envelope, which establishes the same
+	 * key without attaching a reusable credential to the request. See
+	 * `WooPay_Session::get_woopay_attestation()` and WOOPAY-463.
+	 *
+	 * @return bool True if the request is from WooPay and carries proof of it.
 	 */
 	public function check_permission() {
-		return $this->is_request_from_woopay() && WooPay_Session::AUTH_NONE !== WooPay_Session::get_request_auth_level();
+		if ( ! $this->is_request_from_woopay() ) {
+			return false;
+		}
+
+		if ( WooPay_Session::AUTH_BLOG_TOKEN === WooPay_Session::get_request_auth_level() ) {
+			return true;
+		}
+
+		// Not the attested *email*: a guest shopper has no email to name, and the envelope
+		// still proves the request came from WooPay.
+		return null !== WooPay_Session::get_woopay_attestation();
 	}
 
 	/**
