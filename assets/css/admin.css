@@ -284,6 +284,12 @@
 	margin-bottom: 0;
 }
 
+/* wp-admin resets `ul` to `list-style: none; padding: 0`, so the bullets need restoring. */
+.wcpay-fraud-risk-triggered-filters {
+	list-style: disc outside;
+	margin: 0 0 6px 1.8em;
+}
+
 .wcpay-fraud-risk-meta-allow,
 .wcpay-fraud-risk-meta-review,
 .wcpay-fraud-risk-meta-blocked {
