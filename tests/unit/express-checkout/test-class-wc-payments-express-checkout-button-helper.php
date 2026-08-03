@@ -1123,9 +1123,27 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$product->set_sku( $sku );
 		$product->save();
 
-		$this->go_to_page_embedding_product_content( sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ) );
+		$this->go_to_page_with_content( sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ) );
 
 		return [ $product, $sku ];
+	}
+
+	/**
+	 * Puts the main query back to the unparsed state a request has on `init`.
+	 *
+	 * WordPress 6.0's test teardown resets $wp_query but not $wp_the_query, so an earlier
+	 * test's go_to() otherwise leaves the main query pointing at its page for the rest of
+	 * the run. Mirrors what go_to() itself does.
+	 *
+	 * @return void
+	 */
+	private function reset_main_query() {
+		unset( $GLOBALS['wp_query'], $GLOBALS['wp_the_query'] );
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
+		$GLOBALS['wp_the_query'] = new WP_Query();
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
+		$GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
 	}
 
 	/**
@@ -1134,7 +1152,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * @param string $content The page content.
 	 * @return int The page ID.
 	 */
-	private function go_to_page_embedding_product_content( string $content ): int {
+	private function go_to_page_with_content( string $content ): int {
 		$page_id = wp_insert_post(
 			[
 				'post_title'   => 'Test page',
@@ -1154,27 +1172,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 */
 	public function test_get_product_from_product_page_shortcode( string $shortcode_template, bool $use_sku ) {
 		list( $product ) = $this->go_to_page_embedding_product( $shortcode_template, $use_sku );
-
-		$resolved = $this->system_under_test->get_product();
-
-		$this->assertInstanceOf( WC_Product::class, $resolved );
-		$this->assertSame( $product->get_id(), $resolved->get_id() );
-	}
-
-	/**
-	 * An escaped [[product_page]] renders as literal text, so the page embeds no product and
-	 * there is nothing to offer express checkout for. Relies on parsing with core's shortcode
-	 * regex, which marks the escaped form.
-	 */
-	public function test_get_product_ignores_escaped_product_page_shortcode() {
-		list( $product ) = $this->go_to_page_embedding_product( '[[product_page id="%s"]]', false );
-
-		$this->assertNull( $this->system_under_test->get_product() );
-
-		// A real shortcode alongside the escaped one still resolves.
-		$this->go_to_page_embedding_product_content(
-			sprintf( '[[product_page id="%1$d"]] [product_page id="%1$d"]', $product->get_id() )
-		);
 
 		$resolved = $this->system_under_test->get_product();
 
@@ -1219,6 +1216,107 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertArrayHasKey( 'is_product', $observed, 'woocommerce_after_add_to_cart_form did not fire.' );
 		$this->assertTrue( $observed['is_product'] );
 		$this->assertSame( $product->get_id(), $observed['product_id'] );
+	}
+
+	/**
+	 * is_product() and get_product() are public, so anything hooked early — a third-party
+	 * plugin on `init`, say — can reach them before WordPress has parsed the request. The
+	 * answer at that point is meaningless, and caching it would silently disable express
+	 * checkout for the rest of the request.
+	 */
+	public function test_early_call_does_not_pin_the_shortcode_context() {
+		$this->reset_main_query();
+
+		$this->assertFalse( $this->system_under_test->is_product() );
+		$this->assertNull( $this->system_under_test->get_product() );
+
+		list( $product ) = $this->go_to_page_embedding_product( '[product_page sku="%s"]', true );
+
+		$this->assertTrue( $this->system_under_test->is_product() );
+		$this->assertSame( $product->get_id(), $this->system_under_test->get_product()->get_id() );
+	}
+
+	/**
+	 * wc_get_product_id_by_sku() is an uncached direct database query, and a single page
+	 * render asks the helper for the page context dozens of times.
+	 */
+	public function test_repeated_calls_look_the_sku_up_once() {
+		list( $product ) = $this->go_to_page_embedding_product( '[product_page sku="%s"]', true );
+
+		// Counted from here so the uniqueness check WooCommerce runs when the fixture saves
+		// its SKU isn't mistaken for one of the helper's lookups.
+		$lookups = 0;
+		add_filter(
+			'woocommerce_get_product_id_by_sku',
+			function ( $id ) use ( &$lookups ) {
+				++$lookups;
+				return $id;
+			}
+		);
+
+		for ( $i = 0; $i < 5; $i++ ) {
+			$this->system_under_test->is_product();
+			$this->system_under_test->get_product();
+		}
+
+		$this->assertSame( 1, $lookups );
+		$this->assertSame( $product->get_id(), $this->system_under_test->get_product()->get_id() );
+	}
+
+	/**
+	 * The global product is only the right answer while the button markup is being emitted.
+	 * Anywhere else it can be left over from an archive, cross-sell or [products] loop.
+	 */
+	public function test_unrelated_global_product_does_not_override_the_shortcode_product() {
+		list( $product ) = $this->go_to_page_embedding_product( '[product_page id="%s"]', false );
+
+		$GLOBALS['product'] = WC_Helper_Product::create_simple_product();
+
+		$resolved = $this->system_under_test->get_product();
+		unset( $GLOBALS['product'] );
+
+		$this->assertSame( $product->get_id(), $resolved->get_id() );
+	}
+
+	/**
+	 * do_shortcode() leaves [[product_page]] alone and prints it literally, so no product
+	 * is ever rendered and no express checkout button belongs on the page.
+	 */
+	public function test_escaped_shortcode_is_not_treated_as_a_product_page() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to_page_with_content( '[[product_page id="' . $product->get_id() . '"]]' );
+
+		$this->assertFalse( $this->system_under_test->is_product() );
+		$this->assertNull( $this->system_under_test->get_product() );
+	}
+
+	/**
+	 * A page documenting the shortcode alongside a live one is the shape that catches a parser
+	 * skipping the escaping: the escaped tag has to be passed over and the real one behind it
+	 * still resolve, which is what do_shortcode() renders.
+	 */
+	public function test_escaped_shortcode_does_not_shadow_a_real_one_after_it() {
+		$escaped = WC_Helper_Product::create_simple_product();
+		$real    = WC_Helper_Product::create_simple_product();
+
+		$this->go_to_page_with_content(
+			sprintf( '[[product_page id="%d"]] [product_page id="%d"]', $escaped->get_id(), $real->get_id() )
+		);
+
+		$this->assertTrue( $this->system_under_test->is_product() );
+		$this->assertSame( $real->get_id(), $this->system_under_test->get_product()->get_id() );
+	}
+
+	/**
+	 * is_product() answers "does this page embed the shortcode", which it has to keep doing
+	 * when the shortcode names a product that no longer exists — it is public, and callers
+	 * gate their own product handling on get_product() returning something.
+	 */
+	public function test_shortcode_naming_a_missing_product_is_still_a_product_page() {
+		$this->go_to_page_with_content( '[product_page id="999999"]' );
+
+		$this->assertTrue( $this->system_under_test->is_product() );
+		$this->assertNull( $this->system_under_test->get_product() );
 	}
 
 	public function test_should_not_show_express_checkout_button_when_product_not_purchasable() {
