@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed Express Checkout (Apple Pay / Google Pay) buttons not appearing on pages that use the [product_page] shortcode with SKU, unquoted, single-quoted, or multi-attribute syntax.

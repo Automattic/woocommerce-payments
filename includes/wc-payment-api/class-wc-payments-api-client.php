@@ -12,6 +12,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Amount_Too_Large_Exception;
+use WCPay\Exceptions\Blocked_By_Fraud_Rules_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -2914,6 +2915,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				$merchant_message = $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'];
 
 				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code, 0, null, $payment_intent_id );
+			}
+
+			if ( 'wcpay_blocked_by_fraud_rule' === $error_code ) {
+				// The server ships the fired risk filters with the error, so the order can record
+				// which rules blocked the payment without a follow-up API request.
+				$ruleset_results = $response_body['data']['ruleset_results'] ?? null;
+
+				throw new Blocked_By_Fraud_Rules_Exception( $message, is_array( $ruleset_results ) ? $ruleset_results : [], $response_code );
 			}
 
 			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code, 0, null, $error_param, $payment_intent_id );
