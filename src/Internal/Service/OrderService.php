@@ -22,7 +22,7 @@ use WCPay\Internal\Proxy\LegacyProxy;
  */
 class OrderService {
 	/**
-	 * Stripe Billing subscription service, loaded only while the feature is in use.
+	 * Stripe Billing subscription service, loaded by an explicit include rather than autoloaded.
 	 *
 	 * Held as a name because `includes/subscriptions` is excluded from static analysis.
 	 *
@@ -111,10 +111,9 @@ class OrderService {
 			// The additional Stripe Billing fee follows this value, so a store-level feature check
 			// would surcharge on-site renewals that Stripe Billing never touched.
 			//
-			// The service is only loaded while Stripe Billing is in use, so its absence already means
-			// the subscription is billed on-site. See WC_Payments::should_load_stripe_billing_integration().
-			// Referenced by name rather than ::class because includes/subscriptions is excluded from
-			// static analysis, matching is_wcpay_subscription_renewal_order() in the subscriptions trait.
+			// Guarded because includes/subscriptions is not autoloaded; where it has not been included
+			// nothing on the store can be Stripe-billed, so false is correct. Named rather than ::class
+			// because that directory is excluded from static analysis.
 			$is_stripe_billed_subscription = $this->legacy_proxy->call_function( 'class_exists', self::SUBSCRIPTION_SERVICE_CLASS )
 				&& $this->legacy_proxy->call_static( self::SUBSCRIPTION_SERVICE_CLASS, 'is_wcpay_subscription_order', $order );
 
