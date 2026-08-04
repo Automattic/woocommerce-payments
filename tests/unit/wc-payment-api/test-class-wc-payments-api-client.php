@@ -113,6 +113,30 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_transaction( $transaction_id );
 	}
 
+	/**
+	 * Test that a fraud rule block error surfaces the ruleset results shipped with the error body.
+	 */
+	public function test_fraud_rule_block_error_carries_ruleset_results() {
+		$this->set_http_mock_response(
+			403,
+			[
+				'code'    => 'wcpay_blocked_by_fraud_rule',
+				'message' => "There's a problem with this payment.",
+				'data'    => [
+					'status'          => 403,
+					'ruleset_results' => [ 'avs_verification' => 'block' ],
+				],
+			]
+		);
+
+		try {
+			$this->payments_api_client->get_transaction( 'txn_mock' );
+			$this->fail( 'Expected Blocked_By_Fraud_Rules_Exception to be thrown.' );
+		} catch ( \WCPay\Exceptions\Blocked_By_Fraud_Rules_Exception $e ) {
+			$this->assertSame( 'wcpay_blocked_by_fraud_rule', $e->get_error_code() );
+			$this->assertSame( [ 'avs_verification' => 'block' ], $e->get_ruleset_results() );
+		}
+	}
 
 	/**
 	 * Test creating a customer.

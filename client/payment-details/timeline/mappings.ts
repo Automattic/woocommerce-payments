@@ -11,6 +11,9 @@ import {
 	Rules,
 } from '../../settings/fraud-protection/advanced-settings/constants';
 
+// The phrasing must stay in sync with Fraud_Risk_Tools::get_ruleset_result_labels() in
+// includes/fraud-prevention/class-fraud-risk-tools.php, which renders the same outcomes
+// in the order note and the Fraud & Risk meta box.
 export const fraudOutcomeRulesetMapping = {
 	[ Outcomes.REVIEW ]: {
 		[ Rules.RULE_AVS_VERIFICATION ]: __(
