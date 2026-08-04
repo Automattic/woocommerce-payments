@@ -1628,6 +1628,12 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function remove_deprecated_notes() {
+		// Do not try to modify notes on ajax requests to improve their performance.
+		// Mirrors the guard already present in self::add_woo_admin_notes().
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();

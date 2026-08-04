@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Admin\Notes\Note;
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\WooPay\WooPay_Session;
 
 /**
@@ -92,6 +94,38 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			->willReturn( null );
 
 		WC_Payments::maybe_display_express_checkout_buttons();
+	}
+
+	public function test_remove_deprecated_notes_skips_cleanup_during_ajax_requests() {
+		$note_id = $this->create_deprecated_note();
+
+		add_filter( 'wp_doing_ajax', '__return_true', 999 );
+
+		try {
+			WC_Payments::remove_deprecated_notes();
+
+			$note_ids = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
+			$this->assertContains( $note_id, $note_ids );
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true', 999 );
+			Notes::delete_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
+		}
+	}
+
+	public function test_remove_deprecated_notes_runs_cleanup_during_regular_requests() {
+		$note_id = $this->create_deprecated_note();
+
+		add_filter( 'wp_doing_ajax', '__return_false', 999 );
+
+		try {
+			WC_Payments::remove_deprecated_notes();
+
+			$note_ids = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
+			$this->assertNotContains( $note_id, $note_ids );
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_false', 999 );
+			Notes::delete_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
+		}
 	}
 
 	public function test_it_skips_stripe_link_gateway_registration() {
@@ -277,5 +311,15 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			}
 			$previous_position = $position;
 		}
+	}
+
+	private function create_deprecated_note() {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+
+		$note = new Note();
+		$note->set_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
+		$note->save();
+
+		return $note->get_id();
 	}
 }
