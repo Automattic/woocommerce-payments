@@ -384,9 +384,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_get_request_auth_level_returns_cart_token_when_opted_in() {
+	public function test_get_request_auth_level_returns_cart_token_by_default() {
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
 
 		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
@@ -394,8 +393,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cart_token', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_get_request_auth_level_returns_none_for_cart_token_by_default() {
+	public function test_get_request_auth_level_returns_none_for_cart_token_when_opted_out() {
 		$this->unsign_request();
+		$this->deny_cart_token_auth();
 
 		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
@@ -403,7 +403,15 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_store_does_not_advertise_cart_token_auth_support_by_default() {
+	public function test_store_advertises_cart_token_auth_support_by_default() {
+		// The store advertising this is what lets WooPay stop signing, so the
+		// default is load-bearing rather than incidental.
+		$this->assertTrue( WooPay_Session::is_cart_token_auth_allowed() );
+	}
+
+	public function test_store_does_not_advertise_cart_token_auth_support_when_opted_out() {
+		$this->deny_cart_token_auth();
+
 		$this->assertFalse( WooPay_Session::is_cart_token_auth_allowed() );
 	}
 

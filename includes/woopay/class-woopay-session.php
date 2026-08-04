@@ -934,13 +934,13 @@ class WooPay_Session {
 	 * Whether a valid Cart-Token may stand in for a blog token signature on proxied
 	 * WooPay requests.
 	 *
-	 * Opt-in: off by default. This is what lets WooPay stop signing proxied shopper
-	 * requests with the store's Jetpack blog token — a site-wide credential that has no
-	 * business riding along on shopper-originated traffic. WooPay decides per merchant
-	 * from the capability advertised in the session payload, so a store that has not
-	 * opted in keeps receiving signed requests. See WOOPAY-463.
+	 * On by default. This is what lets WooPay stop signing proxied shopper requests with
+	 * the store's Jetpack blog token — a site-wide credential that has no business riding
+	 * along on shopper-originated traffic. Off would make the change inert, since the
+	 * store advertises this value and WooPay keeps signing for any store that answers
+	 * no. See WOOPAY-463.
 	 *
-	 * Filter it to true to accept Cart-Token authentication on this store.
+	 * Filter it to false to keep requiring the signature on this store.
 	 *
 	 * @return bool True if Cart-Token authentication is accepted.
 	 */
@@ -953,7 +953,7 @@ class WooPay_Session {
 		 *
 		 * @param bool $allowed Whether Cart-Token authentication is accepted.
 		 */
-		return (bool) apply_filters( 'wcpay_woopay_allow_cart_token_auth', false );
+		return (bool) apply_filters( 'wcpay_woopay_allow_cart_token_auth', true );
 	}
 
 	/**
