@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 11.0.0 - 2026-08-03 =
+= 11.0.0 - 2026-08-04 =
 * Add - Add A/B/C design variants to the in-app review prompt, assigned per-store via ExPlat (prompt remains disabled pending eligibility criteria)
 * Add - Multi-Currency: add the `wcpay_multi_currency_should_output_explicit_price` filter so merchants can force the currency code suffix on totals (e.g. "765 Kč CZK") on or off.
 * Add - Multi-Currency: auto-detect page caching to enable or recommend the cache-optimized rendering mode
