@@ -1102,6 +1102,12 @@ class WooPay_Session {
 		$envelope = $_POST['encrypted_data'] ?? $_GET['encrypted_data'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( ! is_array( $envelope ) ) {
+			// Carrying no envelope is ordinary — every signed request is one — so only say
+			// something when one was presented and could not be used.
+			if ( null !== $envelope ) {
+				Logger::log( 'WooPay attestation rejected: encrypted_data is not an envelope.' );
+			}
+
 			return null;
 		}
 
@@ -1111,6 +1117,8 @@ class WooPay_Session {
 		// rather than warning on an undefined index inside it.
 		foreach ( [ 'data', 'iv', 'hash' ] as $key ) {
 			if ( ! isset( $envelope[ $key ] ) || ! is_string( $envelope[ $key ] ) ) {
+				Logger::log( 'WooPay attestation rejected: envelope has no usable "' . $key . '" field.' );
+
 				return null;
 			}
 
@@ -1128,6 +1136,12 @@ class WooPay_Session {
 		$decrypted = WooPay_Utilities::decrypt_signed_data( $parts );
 
 		if ( ! is_array( $decrypted ) || ! isset( $decrypted['timestamp'] ) ) {
+			// The likeliest cause of a well-formed envelope that will not open is the two
+			// ends disagreeing about the key or the encoding, which is what a bad rollout
+			// looks like from here. Worth naming, since it is otherwise indistinguishable
+			// from a forgery.
+			Logger::log( 'WooPay attestation rejected: envelope did not open, or carries no timestamp. Both ends must seal with the same store blog token, and base64 fields must be URL-encoded in a query string.' );
+
 			return null;
 		}
 

@@ -96,16 +96,33 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 */
 	public function check_permission() {
 		if ( ! $this->is_request_from_woopay() ) {
+			Logger::log( 'WooPay session route denied: the request does not identify as WooPay.' );
+
 			return false;
 		}
 
-		if ( WooPay_Session::AUTH_BLOG_TOKEN === WooPay_Session::get_request_auth_level() ) {
+		$auth_level = WooPay_Session::get_request_auth_level();
+
+		if ( WooPay_Session::AUTH_BLOG_TOKEN === $auth_level ) {
 			return true;
 		}
 
 		// Not the attested *email*: a guest shopper has no email to name, and the envelope
 		// still proves the request came from WooPay.
-		return null !== WooPay_Session::get_woopay_attestation();
+		if ( null !== WooPay_Session::get_woopay_attestation() ) {
+			return true;
+		}
+
+		// Which of the two it was matters: a Cart-Token here is a caller using the wrong
+		// credential rather than none, and `get_woopay_attestation()` has already said why
+		// an envelope was refused if one was presented at all.
+		Logger::log(
+			WooPay_Session::AUTH_CART_TOKEN === $auth_level
+				? 'WooPay session route denied: a Cart-Token does not authorize this route, which needs a signature or an attestation.'
+				: 'WooPay session route denied: no blog token signature and no usable attestation.'
+		);
+
+		return false;
 	}
 
 	/**
