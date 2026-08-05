@@ -534,6 +534,39 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 	}
 
+	public function test_envelope_does_not_attest_when_opted_out() {
+		$this->unsign_request();
+		$this->deny_cart_token_auth();
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		// Opting out has to reach every consumer of the envelope, not just the route's
+		// permission check — this is what gates minting email_verified_session_nonce.
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$this->assertNull( WooPay_Session::get_woopay_attestation() );
+	}
+
+	public function test_signature_still_attests_when_opted_out() {
+		$this->deny_cart_token_auth();
+
+		// The signature is what the opt-out falls back to, so it must still vouch.
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	public function test_attested_email_does_not_outrank_a_caller_supplied_email_when_opted_out() {
+		$this->unsign_request();
+		$this->deny_cart_token_auth();
+
+		$_GET['email']          = 'other@example.com';
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		// With the envelope refused, this falls back to the plain parameter it would have
+		// used before the attestation existed.
+		$this->assertSame( 'other@example.com', WooPay_Session::get_user_email( wp_get_current_user() ) );
+
+		unset( $_GET['email'] );
+	}
+
 	public function test_attested_email_outranks_a_caller_supplied_email() {
 		$this->unsign_request();
 

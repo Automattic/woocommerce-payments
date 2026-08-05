@@ -931,27 +931,35 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Whether a valid Cart-Token may stand in for a blog token signature on proxied
-	 * WooPay requests.
+	 * Whether this store accepts the narrower WooPay credentials in place of a blog token
+	 * signature.
 	 *
-	 * On by default. This is what lets WooPay stop signing proxied shopper requests with
-	 * the store's Jetpack blog token — a site-wide credential that has no business riding
+	 * On by default. This is what lets WooPay stop signing shopper requests with the
+	 * store's Jetpack blog token — a site-wide credential that has no business riding
 	 * along on shopper-originated traffic. Off would make the change inert, since the
 	 * store advertises this value and WooPay keeps signing for any store that answers
 	 * no. See WOOPAY-463.
 	 *
-	 * Filter it to false to keep requiring the signature on this store.
+	 * One flag covers both channels, because a store gains the two capabilities in the
+	 * same release and cannot advertise one without the other: a Cart-Token on proxied
+	 * Store API traffic (`get_request_auth_level()`), and an attestation envelope on the
+	 * session route (`get_woopay_attestation()`).
 	 *
-	 * @return bool True if Cart-Token authentication is accepted.
+	 * Filter it to false to keep requiring the signature on this store — on both channels,
+	 * since an opt-out that closed only one would still leave the other accepting unsigned
+	 * requests.
+	 *
+	 * @return bool True if the narrower WooPay credentials are accepted.
 	 */
 	public static function is_cart_token_auth_allowed(): bool {
 		/**
-		 * Filters whether a valid Cart-Token is accepted in place of a blog token signature
-		 * for proxied WooPay Store API requests.
+		 * Filters whether the narrower WooPay credentials are accepted in place of a blog
+		 * token signature: a valid Cart-Token on proxied WooPay Store API requests, and an
+		 * attestation envelope on the WooPay session route.
 		 *
 		 * @since 10.10.0
 		 *
-		 * @param bool $allowed Whether Cart-Token authentication is accepted.
+		 * @param bool $allowed Whether the narrower WooPay credentials are accepted.
 		 */
 		return (bool) apply_filters( 'wcpay_woopay_allow_cart_token_auth', true );
 	}
@@ -993,9 +1001,21 @@ class WooPay_Session {
 	 * The envelope may arrive in POST or GET, since an HMAC does not care about transport.
 	 * Senders must URL-encode the base64 fields when using a query string.
 	 *
-	 * @return array|null The attested payload, or null when absent, malformed, or stale.
+	 * A store that opted out of `wcpay_woopay_allow_cart_token_auth` attests to nothing:
+	 * the opt-out covers both channels, so this returns null there regardless of how good
+	 * the envelope is. See `is_cart_token_auth_allowed()`.
+	 *
+	 * @return array|null The attested payload, or null when opted out, absent, malformed, or stale.
 	 */
 	public static function get_woopay_attestation(): ?array {
+		// A store that answers no to `supports_cart_token_auth` has WooPay signing its
+		// requests again, so accepting an envelope here would leave the opt-out half
+		// closed — the signature would be required on proxied traffic but not on the
+		// session route, which is the one channel the filter is reached for.
+		if ( ! self::is_cart_token_auth_allowed() ) {
+			return null;
+		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification
 		$envelope = $_POST['encrypted_data'] ?? $_GET['encrypted_data'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification
 

@@ -39,6 +39,7 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
+		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
 
 		unset(
 			$_SERVER['HTTP_USER_AGENT'],
@@ -86,6 +87,26 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
 		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_for_an_attested_email_when_opted_out() {
+		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		// The opt-out covers both channels. A store that answers no has WooPay signing
+		// again, so a perfectly good envelope buys nothing here — otherwise the filter
+		// would close proxied traffic while leaving this route open.
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_granted_for_a_signed_request_when_opted_out() {
+		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		// Opting out means falling back to the signature, so it has to keep working —
+		// otherwise the escape hatch closes the route outright.
+		$this->assertTrue( $this->controller->check_permission() );
 	}
 
 	public function test_permission_is_denied_when_the_user_agent_is_not_woopay() {
