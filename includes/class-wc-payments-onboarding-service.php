@@ -124,6 +124,7 @@ class WC_Payments_Onboarding_Service {
 			10,
 			2
 		);
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cached_onboarding_fields_data' ] );
 	}
 
 	/**
@@ -943,8 +944,21 @@ class WC_Payments_Onboarding_Service {
 		// If the account is gone, everything else is too.
 		$this->database_cache->delete_all();
 
-		// Clean up the test-to-live banner state.
-		self::sync_banner_state( false );
+		// Clean up the test-to-live notice state.
+		self::sync_notice_state( false );
+	}
+
+	/**
+	 * Clear cached onboarding fields data.
+	 *
+	 * This deliberately excludes recommended payment methods, which are account-specific and are
+	 * only cleared after a successful onboarding flow.
+	 *
+	 * @return void
+	 */
+	public function clear_cached_onboarding_fields_data() {
+		$this->database_cache->delete( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
+		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
 	}
 
 	/**
@@ -956,9 +970,9 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public function cleanup_on_account_onboarded() {
-		// Delete the onboarding fields data since it is used only during the initial onboarding.
-		$this->database_cache->delete( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
-		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+		// Delete the onboarding fields and recommended payment methods data since they are used only
+		// during the initial onboarding.
+		$this->clear_cached_onboarding_fields_data();
 		$this->database_cache->delete( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
 	}
 
@@ -1069,7 +1083,7 @@ class WC_Payments_Onboarding_Service {
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
 
-		self::sync_banner_state( $test_mode );
+		self::sync_notice_state( $test_mode );
 	}
 
 	/**
@@ -1089,7 +1103,7 @@ class WC_Payments_Onboarding_Service {
 			return;
 		}
 
-		self::sync_banner_state( 'yes' === $new_test_mode );
+		self::sync_notice_state( 'yes' === $new_test_mode );
 	}
 
 	/**
@@ -1444,15 +1458,16 @@ class WC_Payments_Onboarding_Service {
 	 * @return array The request args, possible updated with the test drive account settings, used to create new account.
 	 */
 	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
-		if (
-			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
-			is_array( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
-		) {
+		$test_drive_settings = get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		if ( is_array( $test_drive_settings ) && ! empty( $test_drive_settings['capabilities'] ) ) {
+			// Only the requested capabilities belong in the account creation request. The transient is
+			// left in place so the enabled payment methods can be restored once the live account connects
+			// (WC_Payments_Account::restore_test_drive_enabled_payment_methods).
 			$args['account_data'] = array_merge(
 				$args['account_data'],
-				get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+				[ 'capabilities' => $test_drive_settings['capabilities'] ]
 			);
-			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
 		return $args;
@@ -1514,9 +1529,15 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// Update gateway option with the WooPay capability.
+		// WooPay and Link by Stripe are mutually exclusive, so an account that can auto-enable WooPay
+		// must not do so while Link is enabled: that would leave both active with neither toggle
+		// editable, and silently discard a payment method the merchant deliberately turned on. Link is
+		// read from the merged list because it can be enabled either from existing settings or from this
+		// same capabilities payload. See #9404.
+		$is_link_enabled = in_array( \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_id(), $enabled_payment_methods, true );
 		if ( ! empty( $capabilities['woopay'] ) ) {
-			$gateway->update_is_woopay_enabled( true );
+			// Link wins when both would be on, so WooPay is only enabled when Link is not.
+			$gateway->update_is_woopay_enabled( ! $is_link_enabled );
 		} else {
 			$gateway->update_is_woopay_enabled( false );
 		}
@@ -1634,14 +1655,14 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Maintains banner state that depends on test mode: sets/clears
+	 * Maintains notice state that depends on test mode: sets/clears
 	 * TEST_MODE_ENABLED_DATE_OPTION (test-to-live nudge clock) and drops the
 	 * test-to-live and post-KYC eligibility transients.
 	 *
 	 * @param bool $test_mode True if test mode is being enabled, false if disabled.
 	 * @return void
 	 */
-	private static function sync_banner_state( bool $test_mode ): void {
+	private static function sync_notice_state( bool $test_mode ): void {
 		if ( $test_mode ) {
 			// Preserve the original enable date on subsequent calls.
 			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
@@ -1652,7 +1673,7 @@ class WC_Payments_Onboarding_Service {
 			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 		}
 
-		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 }

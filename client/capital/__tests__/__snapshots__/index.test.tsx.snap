@@ -144,7 +144,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-36 {
@@ -163,6 +163,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -171,10 +172,6 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 4) calc(4px * 6);
-}
-
-.emotion-38>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-38>* {
@@ -186,19 +183,21 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
 }
 
 .emotion-38:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-38:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-40 {
-  color: #1e1e1e;
-  line-height: 1.2;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  line-height: 1.4;
   margin: 0;
+  text-wrap: balance;
+  text-wrap: pretty;
   color: #23282d;
   font-size: calc((16 / 13) * 13px);
   font-weight: 600;
@@ -211,13 +210,13 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
 }
 
 .emotion-42:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-42:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-44 {
@@ -232,6 +231,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   -webkit-justify-content: center;
@@ -243,10 +243,6 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
   padding: calc(4px * 4) calc(4px * 6);
 }
 
-.emotion-44>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
 .emotion-44>* {
   min-width: 0;
 }
@@ -256,13 +252,13 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
 }
 
 .emotion-44:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-44:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-46 {
@@ -279,14 +275,13 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-46 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -492,20 +487,20 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
       />
     </div>
     <div
-      class="components-surface components-card woocommerce-table wcpay-loans-list emotion-34 emotion-35"
+      class="components-surface components-card woocommerce-table wcpay-loans-list emotion-34 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="emotion-36 emotion-35"
+        class="emotion-36 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-38 emotion-35"
+          class="components-flex components-card__header components-card-header emotion-38 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <h2
-            class="components-truncate components-text emotion-40 emotion-35"
+            class="components-truncate components-text emotion-40 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -516,7 +511,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
           />
         </div>
         <div
-          class="components-card__body components-card-body emotion-42 emotion-35"
+          class="components-card__body components-card-body emotion-42 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -715,7 +710,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
           </div>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer emotion-44 emotion-35"
+          class="components-flex components-card__footer components-card-footer emotion-44 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -770,13 +765,13 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation emotion-46 emotion-35"
+        class="components-elevation emotion-46 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation emotion-46 emotion-35"
+        class="components-elevation emotion-46 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

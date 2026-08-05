@@ -511,7 +511,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
+		$this->wcpay_gateway->get_form_fields();
 
 		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
 
@@ -730,6 +730,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
+		// The list is now restricted to available methods, i.e. those the account has fees for
+		// (see get_upe_available_payment_methods). So the capability request below is already
+		// scoped to fee-backed methods and doesn't need to re-check fees itself.
 		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
 
 		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
@@ -805,11 +808,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$cache_needs_refresh     = false;
 		foreach ( $payment_method_ids_to_enable as $payment_method_id_to_enable ) {
 			$stripe_key = $capability_key_map[ $payment_method_id_to_enable ] ?? null;
-			if ( array_key_exists( $stripe_key, $payment_method_statuses ) ) {
-				if ( 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
-					$request_result      = $this->api_client->request_capability( $stripe_key, true );
-					$cache_needs_refresh = $cache_needs_refresh || 'unrequested' !== $request_result['status'];
-				}
+			if ( null === $stripe_key ) {
+				continue;
+			}
+
+			// A never-requested capability is absent from the cached account data rather than
+			// reported as 'unrequested' — and the settings UI treats that absence as 'unrequested',
+			// letting the merchant enable the method. Default the same way so it gets requested here.
+			if ( 'unrequested' === ( $payment_method_statuses[ $stripe_key ]['status'] ?? 'unrequested' ) ) {
+				$request_result      = $this->api_client->request_capability( $stripe_key, true );
+				$cache_needs_refresh = $cache_needs_refresh || 'unrequested' !== $request_result['status'];
 			}
 		}
 

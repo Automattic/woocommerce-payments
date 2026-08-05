@@ -169,11 +169,11 @@ class Analytics {
 	 * Disables report caching. Used for development of analytics related functionality.
 	 * To disable report caching
 	 *
-	 * @param array $args Filter arguments.
+	 * @param array $_unused_args Filter arguments.
 	 *
 	 * @return boolean
 	 */
-	public function disable_report_caching( $args ): bool {
+	public function disable_report_caching( $_unused_args ): bool {
 		return false;
 	}
 

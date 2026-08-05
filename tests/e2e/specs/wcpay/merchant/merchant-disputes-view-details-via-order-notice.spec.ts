@@ -40,6 +40,11 @@ test.describe( 'Disputes > View dispute details via disputed order notice', () =
 	test( 'should navigate to dispute details when disputed order notice button clicked', async ( {
 		browser,
 	} ) => {
+		// The dispute only shows up merchant-side once Stripe's webhook is
+		// processed, which can take a while - the retry loop below needs the
+		// extra room.
+		test.slow();
+
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrder( merchantPage, orderId );
 
@@ -55,20 +60,27 @@ test.describe( 'Disputes > View dispute details via disputed order notice', () =
 			return;
 		}
 
-		// Click the order dispute notice.
-		await merchantPage
-			.getByRole( 'button', {
-				name: 'Respond now',
-			} )
-			.click();
+		// The order notice and the dispute details both depend on the webhook
+		// having landed, so retry the whole cycle with a fresh page load
+		// each time.
+		await expect( async () => {
+			await goToOrder( merchantPage, orderId );
 
-		// Verify we see the dispute details on the transaction details merchantPage.
-		await expect(
-			merchantPage.getByText(
-				'The cardholder claims this is an unauthorized transaction.',
-				{ exact: true }
-			)
-		).toBeVisible();
+			// Click the order dispute notice.
+			await merchantPage
+				.getByRole( 'button', {
+					name: 'Respond now',
+				} )
+				.click( { timeout: 5000 } );
+
+			// Verify we see the dispute details on the transaction details merchantPage.
+			await expect(
+				merchantPage.getByText(
+					'The cardholder claims this is an unauthorized transaction.',
+					{ exact: true }
+				)
+			).toBeVisible( { timeout: 10000 } );
+		} ).toPass( { timeout: 120000, intervals: [ 3000 ] } );
 
 		// Visual regression test for the dispute notice.
 		// TODO: This visual regression test is not flaky, but we should revisit the approach.

@@ -697,10 +697,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $input ) {
-			return false === strpos( $input, 'some-secret' );
-		};
-
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
@@ -715,6 +711,72 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				2,
 			],
 		];
+	}
+
+	/**
+	 * Test that data in GET request query parameters is redacted in the log context URL.
+	 *
+	 * Regression test for WOOPMNT-5954: the raw URL (containing e.g. email, name) was
+	 * passed directly into the log context, while the human-readable log message correctly
+	 * used the redacted URL.
+	 */
+	public function test_get_request_url_is_redacted_in_log_context() {
+		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
+			->setMethods( [ 'log' ] )
+			->getMock();
+		$mock_internal_logger = new Logger( $mock_logger, WC_Payments::mode() );
+		wcpay_get_test_container()->replace( Logger::class, $mock_internal_logger );
+
+		WC_Payments::mode()->dev();
+
+		$captured_context = null;
+		$mock_logger
+			->expects( $this->atLeastOnce() )
+			->method( 'log' )
+			->willReturnCallback(
+				function ( $level, $message, $context ) use ( &$captured_context ) {
+					if ( false !== strpos( $message, 'API REQUEST' ) ) {
+						$captured_context = $context;
+					}
+				}
+			);
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					[
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+						'body'     => wp_json_encode( [ 'status' => true ] ),
+					]
+				)
+			);
+
+		$reflection     = new ReflectionClass( $this->payments_api_client );
+		$request_method = $reflection->getMethod( 'request' );
+		$request_method->setAccessible( true );
+		$request_method->invokeArgs(
+			$this->payments_api_client,
+			[ [ 'email' => 'customer@example.com' ], 'abc', 'GET' ]
+		);
+		$request_method->setAccessible( false );
+
+		$this->assertNotNull( $captured_context, 'API REQUEST log entry was not captured.' );
+		$this->assertArrayHasKey( 'request', $captured_context );
+		$this->assertArrayHasKey( 'url', $captured_context['request'] );
+		$this->assertStringNotContainsString(
+			'customer@example.com',
+			$captured_context['request']['url'],
+			'Raw email address must not appear in the log context URL.'
+		);
+
+		// clean up.
+		WC_Payments::mode()->live();
+		wcpay_get_test_container()->reset_all_replacements();
 	}
 
 	/**
@@ -1037,7 +1099,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_readers_charge_summary() {
 		$transaction_id = uniqid( 'trx_' );
-		$charge_date    = gmdate( 'Y-m-d', 1634291278 );
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
@@ -1107,6 +1168,59 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		} catch ( API_Merchant_Exception $e ) {
 			$this->assertSame( 'card_declined', $e->get_error_code() );
 			$this->assertSame( 'Bank declined', $e->get_merchant_message() );
+		}
+	}
+
+	public function test_api_merchant_exception_includes_payment_intent_id() {
+		$mock_response                                  = [];
+		$mock_response['error']['code']                 = 'card_declined';
+		$mock_response['error']['payment_intent']['id'] = 'pi_mock_failed_123';
+		$mock_response['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] = 'Bank declined';
+		$this->set_http_mock_response(
+			401,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Merchant_Exception was not thrown.' );
+		} catch ( API_Merchant_Exception $e ) {
+			$this->assertSame( 'pi_mock_failed_123', $e->get_intent_id() );
+		}
+	}
+
+	public function test_api_exception_includes_payment_intent_id() {
+		$mock_response                                  = [];
+		$mock_response['error']['code']                 = 'incorrect_cvc';
+		$mock_response['error']['type']                 = 'card_error';
+		$mock_response['error']['payment_intent']['id'] = 'pi_mock_failed_456';
+		$this->set_http_mock_response(
+			402,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Exception was not thrown.' );
+		} catch ( API_Exception $e ) {
+			$this->assertSame( 'pi_mock_failed_456', $e->get_intent_id() );
+		}
+	}
+
+	public function test_api_exception_intent_id_is_null_when_no_payment_intent() {
+		$mock_response                     = [];
+		$mock_response['error']['code']    = 'resource_missing';
+		$mock_response['error']['message'] = 'No such payment_method: pm_123.';
+		$this->set_http_mock_response(
+			400,
+			$mock_response
+		);
+
+		try {
+			$this->payments_api_client->create_subscription();
+			$this->fail( 'Expected API_Exception was not thrown.' );
+		} catch ( API_Exception $e ) {
+			$this->assertNull( $e->get_intent_id() );
 		}
 	}
 
@@ -1821,5 +1935,100 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'YmFzZTY0ZGF0YQ==', (string) $captured_body );
 		$this->assertStringContainsString( 'receipt.pdf', (string) $captured_body );
 		$this->assertStringContainsString( 'dispute_evidence', (string) $captured_body );
+	}
+
+	/**
+	 * A charge can have more than one dispute, so the additive `disputes` array
+	 * on the server response must survive deserialization onto the charge model.
+	 */
+	public function test_deserialize_payment_intention_carries_charge_disputes() {
+		$disputes = [
+			[
+				'id'     => 'dp_1',
+				'status' => 'needs_response',
+			],
+			[
+				'id'     => 'dp_2',
+				'status' => 'under_review',
+			],
+		];
+
+		$intention_array = [
+			'id'            => 'pi_mock',
+			'amount'        => 1500,
+			'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
+			'created'       => ( new DateTime() )->getTimestamp(),
+			'status'        => Intent_Status::SUCCEEDED,
+			'client_secret' => 'pi_mock_secret',
+			'metadata'      => [],
+			'charges'       => [
+				'total_count' => 1,
+				'data'        => [
+					[
+						'id'       => 'ch_mock',
+						'amount'   => 1500,
+						'created'  => ( new DateTime() )->getTimestamp(),
+						'dispute'  => [ 'id' => 'dp_1' ],
+						'disputed' => true,
+						'disputes' => $disputes,
+					],
+				],
+			],
+		];
+
+		$intent = $this->payments_api_client->deserialize_payment_intention_object_from_array( $intention_array );
+		$charge = $intent->get_charge();
+
+		$this->assertSame(
+			[
+				[
+					'id'     => 'dp_1',
+					'status' => 'needs_response',
+				],
+				[
+					'id'     => 'dp_2',
+					'status' => 'under_review',
+				],
+			],
+			$charge->get_disputes()
+		);
+
+		$this->assertSame( [ 'id' => 'dp_1' ], $charge->get_dispute() );
+
+		$this->assertTrue( $charge->get_disputed() );
+	}
+
+	/**
+	 * Back-compat: a charge with no `disputes` array still deserializes, and the
+	 * singular dispute fields are untouched.
+	 */
+	public function test_deserialize_payment_intention_without_charge_disputes() {
+		$intention_array = [
+			'id'            => 'pi_mock',
+			'amount'        => 1500,
+			'currency'      => Currency_Code::UNITED_STATES_DOLLAR,
+			'created'       => ( new DateTime() )->getTimestamp(),
+			'status'        => Intent_Status::SUCCEEDED,
+			'client_secret' => 'pi_mock_secret',
+			'metadata'      => [],
+			'charges'       => [
+				'total_count' => 1,
+				'data'        => [
+					[
+						'id'      => 'ch_mock',
+						'amount'  => 1500,
+						'created' => ( new DateTime() )->getTimestamp(),
+						'dispute' => [ 'id' => 'dp_1' ],
+					],
+				],
+			],
+		];
+
+		$intent = $this->payments_api_client->deserialize_payment_intention_object_from_array( $intention_array );
+		$charge = $intent->get_charge();
+
+		$this->assertNull( $charge->get_disputes() );
+
+		$this->assertSame( [ 'id' => 'dp_1' ], $charge->get_dispute() );
 	}
 }

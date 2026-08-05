@@ -19,8 +19,9 @@ exports[`AccordionBody renders with custom className 1`] = `
             aria-hidden="true"
             class="wcpay-accordion__arrow"
             focusable="false"
-            size="24"
+            height="24"
             viewBox="0 0 24 24"
+            width="24"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
@@ -63,8 +64,9 @@ exports[`AccordionBody renders with default props 1`] = `
             aria-hidden="true"
             class="wcpay-accordion__arrow"
             focusable="false"
-            size="24"
+            height="24"
             viewBox="0 0 24 24"
+            width="24"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
@@ -107,8 +109,9 @@ exports[`AccordionBody renders with function children 1`] = `
             aria-hidden="true"
             class="wcpay-accordion__arrow"
             focusable="false"
-            size="24"
+            height="24"
             viewBox="0 0 24 24"
+            width="24"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
@@ -151,8 +154,9 @@ exports[`AccordionBody renders with icon 1`] = `
             aria-hidden="true"
             class="wcpay-accordion__arrow"
             focusable="false"
-            size="24"
+            height="24"
             viewBox="0 0 24 24"
+            width="24"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
@@ -169,8 +173,9 @@ exports[`AccordionBody renders with icon 1`] = `
           aria-hidden="true"
           class="wcpay-accordion__icon"
           focusable="false"
-          size="20"
+          height="20"
           viewBox="0 0 24 24"
+          width="20"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -207,8 +212,9 @@ exports[`AccordionBody renders with large title 1`] = `
             aria-hidden="true"
             class="wcpay-accordion__arrow"
             focusable="false"
-            size="24"
+            height="24"
             viewBox="0 0 24 24"
+            width="24"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
@@ -251,8 +257,9 @@ exports[`AccordionBody renders with subtitle 1`] = `
             aria-hidden="true"
             class="wcpay-accordion__arrow"
             focusable="false"
-            size="24"
+            height="24"
             viewBox="0 0 24 24"
+            width="24"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path

@@ -155,6 +155,10 @@ jobs:
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
 
+      - name: Install Playwright
+        shell: bash
+        run: pnpm exec playwright install chromium
+
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
 
@@ -189,6 +193,10 @@ jobs:
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
+
+      - name: Install Playwright
+        shell: bash
+        run: pnpm exec playwright install chromium
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests

@@ -59,6 +59,11 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_file' ],
+				// Intentionally public: authorization is enforced per file purpose inside get_file().
+				// Public branding assets (business_logo/business_icon) must be served to logged-out
+				// shoppers (e.g. the WooPay checkout store logo); every other purpose still requires
+				// manage_woocommerce. A static permission_callback can't express that split because the
+				// decision depends on the fetched file's purpose.
 				'permission_callback' => [],
 			]
 		);
@@ -85,7 +90,8 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 		$as_account = (bool) $request->get_param( 'as_account' );
 
 		$file_service = new WC_Payments_File_Service();
-		$purpose      = get_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id . '_' . ( $as_account ? '1' : '0' ) );
+		$cache_key    = WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id . '_' . ( $as_account ? '1' : '0' );
+		$purpose      = get_transient( $cache_key );
 
 		if ( ! $purpose ) {
 			$file = $this->forward_request( 'get_file', [ $file_id, $as_account ] );
@@ -94,7 +100,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 				return $this->file_error_response( $file );
 			}
 			$purpose = $file->get_data()['purpose'];
-			set_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . $file_id, $purpose, WC_Payments_File_Service::CACHE_PERIOD );
+			set_transient( $cache_key, $purpose, WC_Payments_File_Service::CACHE_PERIOD );
 		}
 
 		if ( ! $file_service->is_file_public( $purpose ) && ! $this->check_permission() ) {

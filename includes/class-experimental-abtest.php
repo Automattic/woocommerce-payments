@@ -22,6 +22,21 @@ namespace WCPay;
  */
 class Experimental_Abtest {
 	/**
+	 * Marks a cached no-assignment. Truthy so the `! empty()` cache read hits.
+	 *
+	 * @var string
+	 */
+	private const NO_ASSIGNMENT = '__wcpay_no_assignment__';
+
+	/**
+	 * Marks a briefly cached failed request, so an ExPlat outage does not add
+	 * a blocking request to every page load.
+	 *
+	 * @var string
+	 */
+	private const REQUEST_FAILED = '__wcpay_request_failed__';
+
+	/**
 	 * A variable to hold the tests we fetched, and their variations for the current user.
 	 *
 	 * @var array
@@ -111,8 +126,19 @@ class Experimental_Abtest {
 		}
 
 		// Return external-cached test variations.
-		if ( ! empty( get_transient( 'abtest_variation_' . $test_name ) ) ) {
-			return get_transient( 'abtest_variation_' . $test_name );
+		$cache_key = $this->get_cache_key( $test_name );
+		$cached    = get_transient( $cache_key );
+
+		if ( self::NO_ASSIGNMENT === $cached ) {
+			return $this->no_assignment_error();
+		}
+
+		if ( self::REQUEST_FAILED === $cached ) {
+			return $this->fetch_failed_error();
+		}
+
+		if ( ! empty( $cached ) ) {
+			return $cached;
 		}
 
 		// Make the request to the WP.com API.
@@ -120,15 +146,30 @@ class Experimental_Abtest {
 
 		// Bail if there was an error or malformed response.
 		if ( is_wp_error( $response ) || ! is_array( $response ) || ! isset( $response['body'] ) ) {
-			return new \WP_Error( 'failed_to_fetch_data', 'Unable to fetch the requested data.' );
+			set_transient( $cache_key, self::REQUEST_FAILED, MINUTE_IN_SECONDS );
+
+			return $this->fetch_failed_error();
 		}
 
 		// Decode the results.
 		$results = json_decode( $response['body'], true );
 
-		// Bail if there were no results or there is no test variation returned.
-		if ( ! is_array( $results ) || empty( $results['variations'] ) ) {
-			return new \WP_Error( 'unexpected_data_format', 'Data was not returned in the expected format.' );
+		// A body that does not decode is an outage-shaped response, such as a
+		// rate-limiter page, not an answer.
+		if ( ! is_array( $results ) ) {
+			set_transient( $cache_key, self::REQUEST_FAILED, MINUTE_IN_SECONDS );
+
+			return $this->fetch_failed_error();
+		}
+
+		// Bail if there is no test variation returned.
+		if ( empty( $results['variations'] ) ) {
+			// Cache it: an empty variations list is an answer, not a failure, and carries a TTL.
+			if ( $this->has_usable_ttl( $results ) ) {
+				set_transient( $cache_key, self::NO_ASSIGNMENT, (int) $results['ttl'] );
+			}
+
+			return $this->no_assignment_error();
 		}
 
 		// Store the variation in our internal cache.
@@ -137,11 +178,23 @@ class Experimental_Abtest {
 		$variation = $results['variations'][ $test_name ] ?? 'control';
 
 		// Store the variation in our external cache.
-		if ( ! empty( $results['ttl'] ) ) {
-			set_transient( 'abtest_variation_' . $test_name, $variation, $results['ttl'] );
+		if ( $this->has_usable_ttl( $results ) ) {
+			set_transient( $cache_key, $variation, (int) $results['ttl'] );
 		}
 
 		return $variation;
+	}
+
+	/**
+	 * Build the transient key for a cached variation.
+	 *
+	 * Scoped to the anon-ID because the transient is a site-wide option.
+	 *
+	 * @param string $test_name Name of the A/B test.
+	 * @return string
+	 */
+	protected function get_cache_key( $test_name ) {
+		return 'abtest_variation_' . $test_name . '_' . md5( $this->anon_id );
 	}
 
 	/**
@@ -151,10 +204,12 @@ class Experimental_Abtest {
 	 * @return array|\WP_Error A/B test variation error on failure.
 	 */
 	protected function request_variation( $test_name ) {
+		// Values are encoded here because add_query_arg() appends them as-is, and a '+' in
+		// the base64 anon-ID would arrive as a space.
 		$args = [
 			'experiment_name'  => $test_name,
-			'anon_id'          => $this->anon_id,
-			'woo_country_code' => get_option( 'woocommerce_default_country' ),
+			'anon_id'          => rawurlencode( $this->anon_id ),
+			'woo_country_code' => rawurlencode( (string) get_option( 'woocommerce_default_country' ) ),
 		];
 
 		$url = add_query_arg(
@@ -165,8 +220,45 @@ class Experimental_Abtest {
 			)
 		);
 
-		$get = wp_remote_get( $url );
+		// The request blocks admin page render, so it must not wait the default 5 seconds.
+		$get = wp_remote_get( $url, [ 'timeout' => 3 ] );
 
 		return $get;
+	}
+
+	/**
+	 * Whether the response TTL can be cached against.
+	 *
+	 * A non-numeric or sub-second TTL casts to 0, which set_transient() reads as no expiry.
+	 *
+	 * @param array $results Decoded ExPlat response.
+	 * @return bool
+	 */
+	private function has_usable_ttl( array $results ): bool {
+		return is_numeric( $results['ttl'] ?? null ) && (int) $results['ttl'] > 0;
+	}
+
+	/**
+	 * The error returned when ExPlat has no assignment for this participant.
+	 *
+	 * Onboarding_Experiment_Abtest turns this into null, so cached and fresh
+	 * no-assignments must stay indistinguishable.
+	 *
+	 * @return \WP_Error
+	 */
+	private function no_assignment_error() {
+		return new \WP_Error( 'unexpected_data_format', 'Data was not returned in the expected format.' );
+	}
+
+	/**
+	 * The error returned when the request itself failed.
+	 *
+	 * Cached and fresh failures must stay indistinguishable, so callers that
+	 * persist assignments never treat an outage as an answer.
+	 *
+	 * @return \WP_Error
+	 */
+	private function fetch_failed_error() {
+		return new \WP_Error( 'failed_to_fetch_data', 'Unable to fetch the requested data.' );
 	}
 }

@@ -35,6 +35,20 @@ class WC_Payments_Order_Service {
 	const INTENT_ID_META_KEY = '_intent_id';
 
 	/**
+	 * WC session key holding the payment intent the current session just paid. Written by the gateway
+	 * when a payment completes, read on the order confirmation page to recognise the genuine payer
+	 * (any WooPayments payment, not only wallets) without trusting query-string params.
+	 *
+	 * Holds a single intent id, so back-to-back payments in one session keep only the latest: after
+	 * paying order B, visiting order A's order-received page no longer matches and falls back to email
+	 * verification. Acceptable because the fallback is safe (we ask to verify, never wrongly waive) and
+	 * the sequence is rare; a per-order map would be more state to prune for little gain.
+	 *
+	 * @const string
+	 */
+	const PAID_INTENT_ID_SESSION_KEY = 'wcpay_paid_intent_id';
+
+	/**
 	 * Meta key used to store payment method Id.
 	 *
 	 * @const string
@@ -262,7 +276,6 @@ class WC_Payments_Order_Service {
 
 		if ( Order_Mode::PRODUCTION === $order->get_meta( self::WCPAY_MODE_META_KEY ) ) {
 			update_option( self::HAS_LIVE_SALE_OPTION, '1', true );
-			delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 
 			if ( class_exists( 'WC_Tracks' ) ) {
 				WC_Tracks::record_event( 'wcpay_first_live_sale' );
@@ -309,10 +322,10 @@ class WC_Payments_Order_Service {
 	/**
 	 * Returns whether the store has had at least one live (production) WooPayments sale.
 	 *
-	 * Reads the one-way `HAS_LIVE_SALE_OPTION` flag set by `maybe_record_first_live_sale()`;
-	 * falls back to a single `wc_get_orders` meta query when the option hasn't been
-	 * populated yet (e.g., for stores that took their first live sale before this
-	 * feature shipped). Writes the option on hit so subsequent reads short-circuit.
+	 * Reads the one-way `HAS_LIVE_SALE_OPTION` flag; falls back to a `wc_get_orders` lookup
+	 * for `_wcpay_mode = production` orders and writes the flag on hit. The mode filter is
+	 * required (it excludes completed test-mode orders), so live orders created before that
+	 * meta existed aren't detected.
 	 *
 	 * @return bool
 	 */
@@ -533,16 +546,17 @@ class WC_Payments_Order_Service {
 	 * @param string   $reason     The reason for the dispute – human-readable text.
 	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
 	 * @param string   $status     The status of the dispute.
+	 * @param string   $dispute_id The ID of the dispute. Distinguishes the notes when a charge carries more than one dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status = '' ) {
+	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status = '', $dispute_id = '' ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
 		$is_inquiry = strpos( $status, 'warning_' ) === 0;
-		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry );
+		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry, $dispute_id );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -559,16 +573,17 @@ class WC_Payments_Order_Service {
 	 * @param string   $charge_id       The ID of the disputed charge associated with this order.
 	 * @param string   $status          The status of the dispute.
 	 * @param array    $dispute_summary Dispute summary information.
+	 * @param string   $dispute_id      The ID of the dispute. Keeps the note (and its refund) distinct when a charge carries more than one dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [] ): void {
+	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [], $dispute_id = '' ): void {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
 		$is_inquiry = strpos( $status, 'warning_' ) === 0;
-		$note       = $this->generate_dispute_closed_note( $charge_id, $status, $is_inquiry );
+		$note       = $this->generate_dispute_closed_note( $charge_id, $status, $is_inquiry, $dispute_id );
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
@@ -677,8 +692,8 @@ class WC_Payments_Order_Service {
 		$this->complete_order_processing( $order, $intent_status );
 		// When the order is already in 'failed' status, WC core won't fire notification hooks (status didn't change). Manually trigger them so the merchant is notified on every terminal payment failure.
 		if ( Order_Status::FAILED === $order_status_before_update ) {
-			do_action( 'woocommerce_order_status_pending_to_failed_notification', $order->get_id(), $order );
-			do_action( 'woocommerce_order_status_failed_notification', $order->get_id(), $order );
+			do_action( 'woocommerce_order_status_pending_to_failed_notification', $order->get_id(), $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
+			do_action( 'woocommerce_order_status_failed_notification', $order->get_id(), $order ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 		}
 	}
 
@@ -1898,16 +1913,17 @@ class WC_Payments_Order_Service {
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment */
+				/* translators: %1: the charged amount, %2: WooPayments, %3: transaction ID of the payment, %4: transaction details URL */
 				__( 'A test payment of %1$s was processed using %2$s in <strong>test mode</strong> (<a>%3$s</a>). No real funds were collected.', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%4$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
+			$transaction_url
 		);
 	}
 
@@ -2227,17 +2243,18 @@ class WC_Payments_Order_Service {
 	 * @param string $reason     The reason for the dispute – human-readable text.
 	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
 	 * @param bool   $is_inquiry  Whether the dispute is an inquiry or not.
+	 * @param string $dispute_id The ID of the dispute, appended so a charge's several disputes each get a distinct note.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry = false ) {
+	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry = false, $dispute_id = '' ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		// Get merchant-friendly dispute reason description.
 		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
 
 		if ( $is_inquiry ) {
-			return sprintf(
+			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to the inquiry */
 					__( 'A payment inquiry has been raised for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
@@ -2250,21 +2267,35 @@ class WC_Payments_Order_Service {
 				$due_by,
 				$dispute_url
 			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
+					__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$amount,
+				$reason,
+				$due_by,
+				$dispute_url
+			);
 		}
 
-		return sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
-				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
-				[
-					'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
-				]
-			),
-			$amount,
-			$reason,
-			$due_by,
-			$dispute_url
-		);
+		// A charge can carry several disputes with identical amount, reason and
+		// deadline; without the dispute ID their notes are byte-identical and
+		// order_note_exists() collapses them into one. It also keeps a
+		// re-delivered webhook for the same dispute de-duplicated.
+		if ( '' !== $dispute_id ) {
+			$note .= ' ' . sprintf(
+				/* translators: %s: the dispute ID */
+				esc_html__( '(Dispute ID: %s)', 'woocommerce-payments' ),
+				esc_html( $dispute_id )
+			);
+		}
+
+		return $note;
 	}
 
 	/**
@@ -2273,14 +2304,15 @@ class WC_Payments_Order_Service {
 	 * @param string $charge_id The ID of the disputed charge associated with this order.
 	 * @param string $status    The status of the dispute.
 	 * @param bool   $is_inquiry Whether the dispute is an inquiry or not.
+	 * @param string $dispute_id The ID of the dispute, appended so a charge's several disputes each get a distinct note.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_closed_note( $charge_id, $status, $is_inquiry = false ) {
+	private function generate_dispute_closed_note( $charge_id, $status, $is_inquiry = false, $dispute_id = '' ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		if ( $is_inquiry ) {
-			return sprintf(
+			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute status */
 					__( 'Payment inquiry has been closed with status %1$s. See <a>payment status</a> for more details.', 'woocommerce-payments' ),
@@ -2291,19 +2323,33 @@ class WC_Payments_Order_Service {
 				$status,
 				$dispute_url
 			);
+		} else {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the dispute status */
+					__( 'Dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$status,
+				$dispute_url
+			);
 		}
 
-		return sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the dispute status */
-				__( 'Dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
-				[
-					'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
-				]
-			),
-			$status,
-			$dispute_url
-		);
+		// Two disputes that close with the same status make identical note text, and
+		// order_note_exists() dedups on it. That check also gates the refund, so without
+		// the dispute ID the second lost dispute's refund just gets skipped. The ID keeps
+		// each note (and its refund) distinct; a re-delivered webhook still de-dupes.
+		if ( '' !== $dispute_id ) {
+			$note .= ' ' . sprintf(
+				/* translators: %s: the dispute ID */
+				esc_html__( '(Dispute ID: %s)', 'woocommerce-payments' ),
+				esc_html( $dispute_id )
+			);
+		}
+
+		return $note;
 	}
 
 	/**

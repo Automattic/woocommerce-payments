@@ -354,6 +354,56 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_all_filters( 'wcpay_payment_request_total_label_suffix' );
 	}
 
+	public function test_get_quantity_preserves_decimal_on_decimal_stores() {
+		// Stores that sell in fractional units (e.g. fabric by the metre) swap the
+		// default integer stock-amount filter for a float one; mirror that here so
+		// wc_stock_amount() keeps the fraction instead of truncating it.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+
+		try {
+			$_POST['qty'] = '0.25';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+			unset( $_POST['qty'] );
+		}
+
+		$this->assertEqualsWithDelta( 0.25, $result, 0.0001 );
+	}
+
+	public function test_get_quantity_preserves_decimal_from_woopay_quantity_key() {
+		// WooPay posts the quantity as `quantity`; it must be preserved the same way.
+		remove_filter( 'woocommerce_stock_amount', 'intval' );
+		add_filter( 'woocommerce_stock_amount', 'floatval' );
+
+		try {
+			$_POST['quantity'] = '0.25';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			remove_filter( 'woocommerce_stock_amount', 'floatval' );
+			add_filter( 'woocommerce_stock_amount', 'intval' );
+			unset( $_POST['quantity'] );
+		}
+
+		$this->assertEqualsWithDelta( 0.25, $result, 0.0001 );
+	}
+
+	public function test_get_quantity_returns_integer_on_default_stores() {
+		try {
+			$_POST['qty'] = '3';
+
+			$result = $this->system_under_test->get_quantity();
+		} finally {
+			unset( $_POST['qty'] );
+		}
+
+		$this->assertSame( 3, $result );
+	}
+
 	public function test_should_show_express_checkout_button_for_tokenized_ece_with_billing_email() {
 		global $wp;
 		global $wp_query;
@@ -366,6 +416,39 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
 		$order                = WC_Helper_Order::create_order( 1, 100 );
+		$order_id             = $order->get_id();
+		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
+
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+	}
+
+	public function test_should_show_express_checkout_button_for_pay_for_order_without_billing_email() {
+		global $wp;
+		global $wp_query;
+
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+		WC_Payments::mode()->dev();
+		$_GET['pay_for_order'] = true;
+
+		// Order created without a billing email (e.g. by the merchant). The email is captured
+		// from the wallet at payment time, so the button should still be offered.
+		$order = WC_Helper_Order::create_order( 1, 100 );
+		$order->set_billing_email( '' );
+		$order->save();
 		$order_id             = $order->get_id();
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
@@ -925,6 +1008,336 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$this->assertFalse( $helper->should_show_express_checkout_button() );
+	}
+
+	public function test_is_product_purchasable_returns_false_when_no_product() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_product' ] )
+			->getMock();
+		$helper->method( 'get_product' )->willReturn( null );
+
+		// No resolvable product (e.g. off a product page, where get_product()
+		// returns null) -> not purchasable. Callers still guard with is_product(),
+		// so this never gates the cart or checkout.
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_true_for_purchasable_in_stock_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'instock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		$this->assertTrue( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_false_for_out_of_stock_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'outofstock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_true_for_backorder_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( 0 );
+		$product->set_backorders( 'yes' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		// is_in_stock() returns true for backorder products, so they remain purchasable.
+		$this->assertTrue( $helper->is_product_purchasable() );
+	}
+
+	public function test_is_product_purchasable_returns_false_for_non_purchasable_product() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '' );
+		$product->set_price( '' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		// A product with no price is not purchasable.
+		$this->assertFalse( $helper->is_product_purchasable() );
+	}
+
+	/**
+	 * Data provider for get_product() shortcode-parsing tests.
+	 *
+	 * Each entry is [ post_content_template, use_sku ].
+	 * "use_sku" tells the test whether to substitute the product ID or its SKU.
+	 */
+	public function get_product_shortcode_syntaxes_provider(): array {
+		return [
+			'double-quoted id'           => [ '[product_page id="%s"]', false ],
+			'single-quoted id'           => [ "[product_page id='%s']", false ],
+			'unquoted id'                => [ '[product_page id=%s]', false ],
+			'extra attributes after id'  => [ '[product_page id="%s" show_title="false"]', false ],
+			'extra attributes before id' => [ '[product_page show_title="false" id="%s"]', false ],
+			'sku double-quoted'          => [ '[product_page sku="%s"]', true ],
+			'sku single-quoted'          => [ "[product_page sku='%s']", true ],
+			'sku unquoted'               => [ '[product_page sku=%s]', true ],
+		];
+	}
+
+	/**
+	 * Creates a product with a known SKU plus a page embedding it via the given shortcode
+	 * syntax, then navigates to that page. Returns the product and its SKU.
+	 *
+	 * @param string $shortcode_template Template with a single %s placeholder.
+	 * @param bool   $use_sku            Substitute the SKU instead of the product ID.
+	 * @return array{0: WC_Product, 1: string}
+	 */
+	private function go_to_page_embedding_product( string $shortcode_template, bool $use_sku ): array {
+		$product = WC_Helper_Product::create_simple_product();
+		$sku     = 'test-sku-' . $product->get_id();
+		$product->set_sku( $sku );
+		$product->save();
+
+		$this->go_to_page_with_content( sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ) );
+
+		return [ $product, $sku ];
+	}
+
+	/**
+	 * Puts the main query back to the unparsed state a request has on `init`.
+	 *
+	 * WordPress 6.0's test teardown resets $wp_query but not $wp_the_query, so an earlier
+	 * test's go_to() otherwise leaves the main query pointing at its page for the rest of
+	 * the run. Mirrors what go_to() itself does.
+	 *
+	 * @return void
+	 */
+	private function reset_main_query() {
+		unset( $GLOBALS['wp_query'], $GLOBALS['wp_the_query'] );
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
+		$GLOBALS['wp_the_query'] = new WP_Query();
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Resetting the main query, as go_to() does.
+		$GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
+	}
+
+	/**
+	 * Publishes a page with the given content and navigates to it.
+	 *
+	 * @param string $content The page content.
+	 * @return int The page ID.
+	 */
+	private function go_to_page_with_content( string $content ): int {
+		$page_id = wp_insert_post(
+			[
+				'post_title'   => 'Test page',
+				'post_content' => $content,
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+			]
+		);
+
+		$this->go_to( get_permalink( $page_id ) );
+
+		return $page_id;
+	}
+
+	/**
+	 * @dataProvider get_product_shortcode_syntaxes_provider
+	 */
+	public function test_get_product_from_product_page_shortcode( string $shortcode_template, bool $use_sku ) {
+		list( $product ) = $this->go_to_page_embedding_product( $shortcode_template, $use_sku );
+
+		$resolved = $this->system_under_test->get_product();
+
+		$this->assertInstanceOf( WC_Product::class, $resolved );
+		$this->assertSame( $product->get_id(), $resolved->get_id() );
+	}
+
+	/**
+	 * The express checkout markup is emitted from `woocommerce_after_add_to_cart_form`, which
+	 * fires inside the shortcode's own WP_Query loop — so by then the `$post` and `$wp_query`
+	 * globals point at the embedded product rather than the host page. The helper has to keep
+	 * recognising the page there, or the buttons are never rendered.
+	 *
+	 * The `sku` attribute is what exposes this: WooCommerce queries it via `meta_query` with no
+	 * post ID, so the inner query never derives `is_singular` the way the `id` attribute does.
+	 *
+	 * @dataProvider get_product_shortcode_syntaxes_provider
+	 */
+	public function test_get_product_while_product_page_shortcode_renders( string $shortcode_template, bool $use_sku ) {
+		list( $product, $sku ) = $this->go_to_page_embedding_product( $shortcode_template, $use_sku );
+
+		$observed = [];
+		add_action(
+			'woocommerce_after_add_to_cart_form',
+			function () use ( &$observed ) {
+				$resolved               = $this->system_under_test->get_product();
+				$observed['is_product'] = $this->system_under_test->is_product();
+				$observed['product_id'] = $resolved instanceof WC_Product ? $resolved->get_id() : null;
+			}
+		);
+
+		// The single-product template renders reviews, and the default test theme ships no
+		// comments.php.
+		$this->setExpectedDeprecated( 'Theme without comments.php' );
+
+		// Render through WooCommerce's real shortcode rather than emulating its query, so this
+		// keeps testing the actual conditions the button markup is emitted under.
+		ob_start();
+		do_shortcode( sprintf( $shortcode_template, $use_sku ? $sku : $product->get_id() ) );
+		ob_end_clean();
+
+		$this->assertArrayHasKey( 'is_product', $observed, 'woocommerce_after_add_to_cart_form did not fire.' );
+		$this->assertTrue( $observed['is_product'] );
+		$this->assertSame( $product->get_id(), $observed['product_id'] );
+	}
+
+	/**
+	 * is_product() and get_product() are public, so anything hooked early — a third-party
+	 * plugin on `init`, say — can reach them before WordPress has parsed the request. The
+	 * answer at that point is meaningless, and caching it would silently disable express
+	 * checkout for the rest of the request.
+	 */
+	public function test_early_call_does_not_pin_the_shortcode_context() {
+		$this->reset_main_query();
+
+		$this->assertFalse( $this->system_under_test->is_product() );
+		$this->assertNull( $this->system_under_test->get_product() );
+
+		list( $product ) = $this->go_to_page_embedding_product( '[product_page sku="%s"]', true );
+
+		$this->assertTrue( $this->system_under_test->is_product() );
+		$this->assertSame( $product->get_id(), $this->system_under_test->get_product()->get_id() );
+	}
+
+	/**
+	 * wc_get_product_id_by_sku() is an uncached direct database query, and a single page
+	 * render asks the helper for the page context dozens of times.
+	 */
+	public function test_repeated_calls_look_the_sku_up_once() {
+		list( $product ) = $this->go_to_page_embedding_product( '[product_page sku="%s"]', true );
+
+		// Counted from here so the uniqueness check WooCommerce runs when the fixture saves
+		// its SKU isn't mistaken for one of the helper's lookups.
+		$lookups = 0;
+		add_filter(
+			'woocommerce_get_product_id_by_sku',
+			function ( $id ) use ( &$lookups ) {
+				++$lookups;
+				return $id;
+			}
+		);
+
+		for ( $i = 0; $i < 5; $i++ ) {
+			$this->system_under_test->is_product();
+			$this->system_under_test->get_product();
+		}
+
+		$this->assertSame( 1, $lookups );
+		$this->assertSame( $product->get_id(), $this->system_under_test->get_product()->get_id() );
+	}
+
+	/**
+	 * The global product is only the right answer while the button markup is being emitted.
+	 * Anywhere else it can be left over from an archive, cross-sell or [products] loop.
+	 */
+	public function test_unrelated_global_product_does_not_override_the_shortcode_product() {
+		list( $product ) = $this->go_to_page_embedding_product( '[product_page id="%s"]', false );
+
+		$GLOBALS['product'] = WC_Helper_Product::create_simple_product();
+
+		$resolved = $this->system_under_test->get_product();
+		unset( $GLOBALS['product'] );
+
+		$this->assertSame( $product->get_id(), $resolved->get_id() );
+	}
+
+	/**
+	 * do_shortcode() leaves [[product_page]] alone and prints it literally, so no product
+	 * is ever rendered and no express checkout button belongs on the page.
+	 */
+	public function test_escaped_shortcode_is_not_treated_as_a_product_page() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to_page_with_content( '[[product_page id="' . $product->get_id() . '"]]' );
+
+		$this->assertFalse( $this->system_under_test->is_product() );
+		$this->assertNull( $this->system_under_test->get_product() );
+	}
+
+	/**
+	 * A page documenting the shortcode alongside a live one is the shape that catches a parser
+	 * skipping the escaping: the escaped tag has to be passed over and the real one behind it
+	 * still resolve, which is what do_shortcode() renders.
+	 */
+	public function test_escaped_shortcode_does_not_shadow_a_real_one_after_it() {
+		$escaped = WC_Helper_Product::create_simple_product();
+		$real    = WC_Helper_Product::create_simple_product();
+
+		$this->go_to_page_with_content(
+			sprintf( '[[product_page id="%d"]] [product_page id="%d"]', $escaped->get_id(), $real->get_id() )
+		);
+
+		$this->assertTrue( $this->system_under_test->is_product() );
+		$this->assertSame( $real->get_id(), $this->system_under_test->get_product()->get_id() );
+	}
+
+	/**
+	 * is_product() answers "does this page embed the shortcode", which it has to keep doing
+	 * when the shortcode names a product that no longer exists — it is public, and callers
+	 * gate their own product handling on get_product() returning something.
+	 */
+	public function test_shortcode_naming_a_missing_product_is_still_a_product_page() {
+		$this->go_to_page_with_content( '[product_page id="999999"]' );
+
+		$this->assertTrue( $this->system_under_test->is_product() );
+		$this->assertNull( $this->system_under_test->get_product() );
+	}
+
+	public function test_should_not_show_express_checkout_button_when_product_not_purchasable() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+
+		// A supported, priced product that is out of stock: every other gate in
+		// should_show_express_checkout_button() passes, so the purchasability gate
+		// is the only thing that makes it return false — exercising the real
+		// is_product_purchasable() through the full flow.
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'outofstock' );
+		$product->save();
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'get_product', 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'get_product' )->willReturn( $product );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}

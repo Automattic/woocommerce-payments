@@ -34,6 +34,21 @@ class MultiCurrency {
 	const RENDERING_MODE_CACHE    = 'cache';
 
 	/**
+	 * Option that stores the multi-currency price rendering mode ('speed' or 'cache').
+	 */
+	const RENDERING_MODE_OPTION = 'wcpay_multi_currency_rendering_mode';
+
+	/**
+	 * Option flag marking that the one-time caching auto-detection has already run.
+	 */
+	const CACHE_AUTODETECT_DONE_OPTION = 'wcpay_multi_currency_cache_autodetect_done';
+
+	/**
+	 * Option flag marking that the merchant dismissed the cache-mode recommendation notice.
+	 */
+	const CACHE_RECOMMENDATION_DISMISSED_OPTION = 'wcpay_multi_currency_cache_recommendation_dismissed';
+
+	/**
 	 * The plugin's ID.
 	 *
 	 * @var string
@@ -174,6 +189,13 @@ class MultiCurrency {
 	protected $async_renderer;
 
 	/**
+	 * CachingEnvironment instance.
+	 *
+	 * @var CachingEnvironment
+	 */
+	protected $caching_environment;
+
+	/**
 	 * Simulation variables array.
 	 *
 	 * @var array
@@ -190,8 +212,9 @@ class MultiCurrency {
 	 * @param MultiCurrencyLocalizationInterface $localization_service Localization Service instance.
 	 * @param MultiCurrencyCacheInterface        $cache                Cache instance.
 	 * @param Utils|null                         $utils                Optional Utils instance.
+	 * @param CachingEnvironment|null            $caching_environment  Optional CachingEnvironment instance.
 	 */
-	public function __construct( MultiCurrencySettingsInterface $settings_service, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, ?Utils $utils = null ) {
+	public function __construct( MultiCurrencySettingsInterface $settings_service, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, ?Utils $utils = null, ?CachingEnvironment $caching_environment = null ) {
 		$this->settings_service     = $settings_service;
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
@@ -199,6 +222,7 @@ class MultiCurrency {
 		$this->cache                = $cache;
 		// If a Utils instance is not passed as argument, initialize it. This allows to mock it in tests.
 		$this->utils                   = $utils ?? new Utils();
+		$this->caching_environment     = $caching_environment ?? new CachingEnvironment();
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
@@ -228,6 +252,7 @@ class MultiCurrency {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			// Enqueue the scripts after the main WC_Payments_Admin does.
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ], 20 );
+			add_action( 'admin_init', [ $this, 'maybe_auto_enable_cache_rendering_mode' ] );
 		}
 
 		add_action( 'init', [ $this, 'init' ] );
@@ -277,12 +302,13 @@ class MultiCurrency {
 		// If the store currency is not in the list of available WooCommerce currencies
 		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
 		// Multi-Currency cannot function without a valid base currency.
-		if ( ! array_key_exists( get_woocommerce_currency(), get_woocommerce_currencies() ) ) {
+		$store_currency = $this->get_store_currency_code();
+		if ( ! array_key_exists( $store_currency, get_woocommerce_currencies() ) ) {
 			Logger::error(
 				sprintf(
 					'Multi-Currency disabled: store currency "%s" is not a recognized WooCommerce currency. '
 					. 'A custom currency may have been removed. Update the currency at WooCommerce → Settings → General.',
-					get_woocommerce_currency()
+					$store_currency
 				)
 			);
 			// Initialize properties to safe defaults so lazy-init getters and
@@ -366,15 +392,15 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_rest_api() {
-		// Ensures we are not initializing our REST during `rest_preload_api_request`.
-		// When constructors signature changes, in manual update scenarios we were run into fatals.
-		// Those fatals are not critical, but it causes hickups in release process as catches unnecessary attention.
-		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
-			return;
+		// Catch fatals from controller constructor signature changes when old and new code mix
+		// during a manual plugin update. Routes must otherwise always register: internal REST
+		// requests dispatched with an admin screen set 404 without them.
+		try {
+			$api_controller = new RestController( $this );
+			$api_controller->register_routes();
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to register REST controller: ' . $e->getMessage() );
 		}
-
-		$api_controller = new RestController( $this );
-		$api_controller->register_routes();
 	}
 
 	/**
@@ -475,7 +501,7 @@ class MultiCurrency {
 			MultiCurrencyCacheInterface::CURRENCIES_KEY,
 			function () {
 				try {
-					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
+					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( $this->get_store_currency_code() ) );
 					return [
 						'currencies' => $currency_data,
 						'updated'    => time(),
@@ -711,7 +737,7 @@ class MultiCurrency {
 			$this->init();
 		}
 
-		return $this->default_currency ?? new Currency( $this->localization_service, get_woocommerce_currency() );
+		return $this->default_currency ?? new Currency( $this->localization_service, $this->get_store_currency_code() );
 	}
 
 	/**
@@ -774,6 +800,10 @@ class MultiCurrency {
 	public function get_selected_currency(): Currency {
 		$multi_currency_code = $this->compatibility->override_selected_currency();
 		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
+
+		if ( null === $currency_code ) {
+			return $this->get_default_currency();
+		}
 
 		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
 	}
@@ -1147,7 +1177,7 @@ class MultiCurrency {
 	 * @return string One of 'speed' or 'cache'.
 	 */
 	public function get_rendering_mode(): string {
-		return get_option( 'wcpay_multi_currency_rendering_mode', self::RENDERING_MODE_SPEED );
+		return get_option( self::RENDERING_MODE_OPTION, self::RENDERING_MODE_SPEED );
 	}
 
 	/**
@@ -1158,6 +1188,36 @@ class MultiCurrency {
 	public function is_cache_optimized_mode(): bool {
 		return \WC_Payments_Features::is_mc_cache_optimized_enabled()
 			&& self::RENDERING_MODE_CACHE === $this->get_rendering_mode();
+	}
+
+	/**
+	 * Auto-enables the cache-optimized rendering mode, once, on sites that benefit from it.
+	 *
+	 * Runs at most once per site (guarded by CACHE_AUTODETECT_DONE_OPTION). It only switches the
+	 * rendering mode to 'cache' when the merchant has never had a rendering mode written *and*
+	 * a high-confidence caching environment is detected. An existing rendering mode value is never
+	 * overridden — sites that have one fall back to the recommendation notice instead. See
+	 * should_recommend_cache_mode().
+	 *
+	 * @return void
+	 */
+	public function maybe_auto_enable_cache_rendering_mode() {
+		if ( 'yes' === get_option( self::CACHE_AUTODETECT_DONE_OPTION, 'no' ) ) {
+			return;
+		}
+
+		// Don't mark detection as done while the feature is disabled, so it can run if enabled later.
+		if ( ! \WC_Payments_Features::is_mc_cache_optimized_enabled() ) {
+			return;
+		}
+
+		// Only auto-enable when the merchant has never had a rendering mode written. Any stored value
+		// (including 'speed') means they have interacted with Store Settings, so we don't override it.
+		if ( false === get_option( self::RENDERING_MODE_OPTION, false ) && $this->caching_environment->is_page_caching_active() ) {
+			update_option( self::RENDERING_MODE_OPTION, self::RENDERING_MODE_CACHE );
+		}
+
+		update_option( self::CACHE_AUTODETECT_DONE_OPTION, 'yes' );
 	}
 
 	/**
@@ -1191,6 +1251,23 @@ class MultiCurrency {
 		return $this->is_cache_optimized_mode()
 			&& ! $this->has_active_session()
 			&& ! Utils::is_store_api_request();
+	}
+
+	/**
+	 * Whether to recommend switching to the cache-optimized rendering mode.
+	 *
+	 * True when the feature is available, the site is still on 'speed', a high-confidence caching
+	 * environment is detected, and the merchant has not dismissed the recommendation. Drives the
+	 * inline notice on the Store Settings page for sites that were not auto-enabled (i.e. they
+	 * already had a rendering mode stored). See maybe_auto_enable_cache_rendering_mode().
+	 *
+	 * @return bool
+	 */
+	private function should_recommend_cache_mode(): bool {
+		return \WC_Payments_Features::is_mc_cache_optimized_enabled()
+			&& self::RENDERING_MODE_SPEED === $this->get_rendering_mode()
+			&& 'yes' !== get_option( self::CACHE_RECOMMENDATION_DISMISSED_OPTION, 'no' )
+			&& $this->caching_environment->is_page_caching_active();
 	}
 
 	/**
@@ -1276,6 +1353,8 @@ class MultiCurrency {
 			$this->id . '_enable_storefront_switcher' => $this->is_using_storefront_switcher(),
 			'wcpay_multi_currency_rendering_mode'     => $this->get_rendering_mode(),
 			'is_cache_optimized_feature_enabled'      => \WC_Payments_Features::is_mc_cache_optimized_enabled(),
+			'should_recommend_cache_mode'             => $this->should_recommend_cache_mode(),
+			'cache_recommendation_dismissed'          => 'yes' === get_option( self::CACHE_RECOMMENDATION_DISMISSED_OPTION, 'no' ),
 			'site_theme'                              => wp_get_theme()->get( 'Name' ),
 			'date_format'                             => esc_attr( get_option( 'date_format', 'F j, Y' ) ),
 			'time_format'                             => esc_attr( get_option( 'time_format', 'g:i a' ) ),
@@ -1294,7 +1373,8 @@ class MultiCurrency {
 		$updateable_options = [
 			'wcpay_multi_currency_enable_auto_currency',
 			'wcpay_multi_currency_enable_storefront_switcher',
-			'wcpay_multi_currency_rendering_mode',
+			self::RENDERING_MODE_OPTION,
+			self::CACHE_RECOMMENDATION_DISMISSED_OPTION,
 		];
 
 		foreach ( $updateable_options as $key ) {
@@ -1305,8 +1385,15 @@ class MultiCurrency {
 			$value = sanitize_text_field( $params[ $key ] );
 
 			// Validate rendering mode to only accept known values.
-			if ( 'wcpay_multi_currency_rendering_mode' === $key
+			if ( self::RENDERING_MODE_OPTION === $key
 				&& ! in_array( $value, [ self::RENDERING_MODE_SPEED, self::RENDERING_MODE_CACHE ], true ) ) {
+				continue;
+			}
+
+			// Validate the cache recommendation dismissal flag to only accept known values.
+			// This method can be called outside the REST route, which enforces the enum.
+			if ( self::CACHE_RECOMMENDATION_DISMISSED_OPTION === $key
+				&& ! in_array( $value, [ 'yes', 'no' ], true ) ) {
 				continue;
 			}
 
@@ -1617,7 +1704,7 @@ class MultiCurrency {
 	 */
 	private function initialize_available_currencies() {
 		// Add default store currency with a rate of 1.0.
-		$woocommerce_currency                                = get_woocommerce_currency();
+		$woocommerce_currency                                = $this->get_store_currency_code();
 		$this->available_currencies[ $woocommerce_currency ] = new Currency( $this->localization_service, $woocommerce_currency, 1.0 );
 
 		$available_currencies = [];
@@ -1697,7 +1784,23 @@ class MultiCurrency {
 	 */
 	private function set_default_currency() {
 		$available_currencies   = $this->get_available_currencies();
-		$this->default_currency = $available_currencies[ get_woocommerce_currency() ] ?? null;
+		$this->default_currency = $available_currencies[ $this->get_store_currency_code() ] ?? null;
+	}
+
+	/**
+	 * Returns the configured WooCommerce store currency.
+	 *
+	 * This intentionally reads the raw option instead of get_woocommerce_currency().
+	 * WooCommerce filters that helper for display and compatibility purposes, and
+	 * visitor-facing currency switchers can use it to return the selected currency.
+	 * Multi-Currency base-currency state must be tied to the admin setting instead.
+	 * Keep cache invalidation and base-currency initialization on this helper to
+	 * avoid reintroducing visitor-triggered cache churn.
+	 *
+	 * @return string
+	 */
+	private function get_store_currency_code(): string {
+		return (string) get_option( 'woocommerce_currency', '' );
 	}
 
 	/**
@@ -1726,7 +1829,7 @@ class MultiCurrency {
 	 */
 	private function check_store_currency_for_change(): bool {
 		$last_known_currency  = get_option( $this->id . '_store_currency', false );
-		$woocommerce_currency = get_woocommerce_currency();
+		$woocommerce_currency = $this->get_store_currency_code();
 
 		// If the last known currency was not set, update the option to set it and return false.
 		if ( ! $last_known_currency ) {
@@ -1885,7 +1988,7 @@ class MultiCurrency {
 		// Simulate client currency from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_currency_name',
-			function ( $selected_currency_name ) use ( $simulation_currency_name ) {
+			function ( $_unused_selected_currency_name ) use ( $simulation_currency_name ) {
 				return $simulation_currency_name;
 			}
 		);
@@ -1893,7 +1996,7 @@ class MultiCurrency {
 		// Simulate client country from geolocation.
 		add_filter(
 			'wcpay_multi_currency_override_notice_country',
-			function ( $selected_country ) use ( $simulation_country ) {
+			function ( $_unused_selected_country ) use ( $simulation_country ) {
 				return $simulation_country;
 			}
 		);

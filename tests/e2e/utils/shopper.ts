@@ -141,18 +141,89 @@ export const fillBillingAddressWCB = async (
 		.fill( billingAddress.phone );
 };
 
-// The Stripe element can swallow the first click, so keep retrying until
-// checkout shows the blocking overlay or reaches the order-received page.
-export const placeOrder = async ( page: Page ) => {
-	let orderPlaced = false;
-	while ( ! orderPlaced ) {
-		await page.locator( placeOrderButtonSelector ).first().click();
+// WC's checkout AJAX finishes a submission with a `window.location` change
+// (order-received, an off-site BNPL page, or the #wcpay-confirm- hash for 3DS),
+// which can tear the page down mid-click. Playwright reports that as an error,
+// but it just means the click worked.
+const navigationTeardownErrorPattern =
+	/execution context was destroyed|target closed|target page, context or browser has been closed|frame was detached|navigating frame was detached/i;
 
-		if (
-			( await page.$( '.blockUI' ) ) ||
-			page.url().includes( '/checkout/order-received/' )
-		) {
-			orderPlaced = true;
+const placeOrderTerminalStateTimeout = 15000;
+
+export const placeOrder = async ( page: Page, maxAttempts = 3 ) => {
+	const button = page.locator( placeOrderButtonSelector ).first();
+	const errorNotice = page.locator( '.woocommerce-error' ).first();
+	const checkoutUrl = page.url();
+
+	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
+		// A previous attempt's click can land even if its wait timed out.
+		// If the URL already moved on, the submission is under way and
+		// clicking again would just chase a button that no longer exists.
+		if ( page.url() !== checkoutUrl ) {
+			return;
+		}
+
+		// A leftover error banner from an earlier attempt on the same page
+		// (e.g. the retry-after-decline specs) shouldn't count as a result
+		// of this click.
+		const hadStaleErrorNotice = await errorNotice.isVisible();
+
+		try {
+			// Without a timeout, a click blocked by the processing overlay
+			// can outlive the page and hang until the test-level timeout.
+			await button.click( {
+				timeout: placeOrderTerminalStateTimeout,
+			} );
+
+			const terminalStateWaits = [
+				// jQuery blockUI renders a hidden placeholder before the
+				// visible overlay, and the first .blockUI match can be the
+				// hidden one - waiting for presence avoids that.
+				page.locator( '.blockUI' ).first().waitFor( {
+					state: 'attached',
+					timeout: placeOrderTerminalStateTimeout,
+				} ),
+				page.waitForURL( ( url ) => url.toString() !== checkoutUrl, {
+					timeout: placeOrderTerminalStateTimeout,
+				} ),
+			];
+
+			if ( ! hadStaleErrorNotice ) {
+				terminalStateWaits.push(
+					errorNotice.waitFor( {
+						state: 'visible',
+						timeout: placeOrderTerminalStateTimeout,
+					} )
+				);
+			}
+
+			// The waits that lose the race eventually reject, and Playwright
+			// fails tests on unhandled rejections. The no-op handler marks
+			// them as handled; the race itself still rejects if every wait
+			// fails.
+			terminalStateWaits.forEach( ( wait ) =>
+				wait.catch( () => undefined )
+			);
+
+			await Promise.race( terminalStateWaits );
+
+			return;
+		} catch ( error ) {
+			if (
+				navigationTeardownErrorPattern.test(
+					( error as Error ).message
+				)
+			) {
+				return;
+			}
+
+			if ( attempt === maxAttempts ) {
+				throw error;
+			}
+
+			// The Stripe element can swallow the first click, so give the
+			// page a beat before trying again.
+			await page.waitForTimeout( 1000 );
 		}
 	}
 };

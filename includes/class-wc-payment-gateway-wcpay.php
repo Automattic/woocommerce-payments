@@ -1317,6 +1317,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( Order_Status::FAILED );
 			}
 
+			// Store the intent ID on failed orders too, so a declined transaction stays traceable
+			// and matchable by webhooks — mirroring successful payments.
+			if ( $e instanceof API_Exception && ! empty( $e->get_intent_id() ) ) {
+				$this->order_service->set_intent_id_for_order( $order, $e->get_intent_id() );
+			}
+
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
@@ -1854,8 +1860,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( $this->is_mandate_data_required() ) {
-					$request->set_mandate_data( $this->get_mandate_data() );
+				if ( $this->should_send_mandate_data( $payment_information ) ) {
+					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
 
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
@@ -1969,7 +1975,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
 						$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
-						$request->set_mandate_data( $this->get_mandate_data() );
+
+						if ( $this->should_send_mandate_data( $payment_information ) ) {
+							$request->set_mandate_data( $this->get_mandate_data( $order ) );
+						}
 					}
 				}
 
@@ -2115,6 +2124,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
+
+			// Remember the intent this session paid so the order confirmation page can recognise the
+			// genuine payer without trusting query-string params. The session cannot be reconstructed
+			// from a leaked order key.
+			if ( WC()->session && '' !== (string) $intent_id ) {
+				WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, (string) $intent_id );
+			}
 		}
 		// Set the branded payment method title + card meta from the charge details BEFORE the status update.
 		// update_order_status_from_intent() -> payment_complete() fires the customer order/renewal email
@@ -2221,8 +2237,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$is_nonce_valid = check_admin_referer( 'wcpay_process_redirect_order_nonce' );
-		if ( ! $is_nonce_valid || empty( $_GET['wc_payment_method'] ) ) {
+		// The redirect return is always a top-level GET. Other requests to this page (e.g. the
+		// block "Create Account" form, which POSTs back with its own nonce) must not be treated
+		// as returns, or the nonce check below would fatal them via wp_nonce_ays(). See WOOPMNT-6279.
+		if ( 'GET' !== strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) ) {
+			return;
+		}
+
+		// Verify softly so a stale/refreshed return URL no-ops instead of fatalling.
+		$is_nonce_valid = wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'wcpay_process_redirect_order_nonce' );
+		if ( ! $is_nonce_valid ) {
 			return;
 		}
 
@@ -2288,7 +2312,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( "Begin processing UPE redirect payment for order {$order_id} for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			list( $user, $_unused_customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			$payment_needed = 0 < $order->get_total();
 
@@ -2302,7 +2326,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status                 = $intent->get_status();
 				$charge                 = $intent->get_charge();
 				$charge_id              = $charge ? $charge->get_id() : null;
-				$currency               = $intent->get_currency();
 				$payment_method_id      = $intent->get_payment_method_id();
 				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 				$payment_method_type    = $this->get_payment_method_type_from_payment_details( $payment_method_details );
@@ -2321,7 +2344,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status            = $intent->get_status();
 				$charge_id         = '';
 				$charge            = null;
-				$currency          = $order->get_currency();
 				$payment_method_id = $intent->get_payment_method_id();
 				// SetupIntents carry no charge, so source the card details from the confirmed payment method
 				// to brand the order title (and card meta) instead of falling back to a generic "Card". WOOPMNT-2882.
@@ -2545,18 +2567,92 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Get values for Stripe mandate_data parameter
 	 *
+	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 *
 	 * @return array mandate_data values to use in request.
 	 */
-	private function get_mandate_data() {
+	private function get_mandate_data( ?WC_Order $order = null ) {
 		return [
 			'customer_acceptance' => [
 				'type'   => 'online',
 				'online' => [
-					'ip_address' => WC_Geolocation::get_ip_address(),
+					'ip_address' => $this->get_mandate_ip_address( $order ),
 					'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
 				],
 			],
 		];
+	}
+
+	/**
+	 * Resolves the customer IP address to record on the mandate.
+	 *
+	 * Prefers the order, which holds the IP captured while the customer was present, the
+	 * moment they accepted the mandate terms. Falls back to live request state, which is
+	 * empty when no HTTP request exists (CLI cron, WP-CLI) and Stripe then rejects the
+	 * intent with "Invalid IP address".
+	 *
+	 * Only customer-present payments reach here: should_send_mandate_data() sends nothing
+	 * for merchant-initiated ones.
+	 *
+	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 *
+	 * @return string Customer IP address, or an empty string when neither source has one.
+	 */
+	private function get_mandate_ip_address( ?WC_Order $order = null ): string {
+		$order_ip_address = $order ? $order->get_customer_ip_address() : '';
+
+		if ( ! empty( $order_ip_address ) ) {
+			return $order_ip_address;
+		}
+
+		return WC_Geolocation::get_ip_address();
+	}
+
+	/**
+	 * Determines whether mandate data should be sent to Stripe for this payment.
+	 *
+	 * Three conditions, none of them method-specific:
+	 *
+	 * - The payment method needs a mandate at all (is_mandate_data_required()).
+	 * - The payment is not merchant-initiated. Stripe authorises those through the MIT /
+	 *   network transaction ID framework established at the original checkout, so SCA
+	 *   exemptions and dispute liability derive from that authentication rather than from
+	 *   repeating acceptance per renewal (confirmed with Stripe, WOOPMNT-6299).
+	 * - A valid customer IP is available. Stripe rejects a malformed ip_address outright but
+	 *   accepts a confirmation carrying no mandate data, so omitting beats sending a payload
+	 *   certain to fail. rest_is_ip_address() is a format check that allows private and
+	 *   loopback addresses on purpose, since Stripe accepts them and loopback cron needs it.
+	 *
+	 * SEPA needs no carve-out: it is not reusable, so every SEPA subscription renews manually
+	 * with the customer present and always reaches the last condition.
+	 *
+	 * @param Payment_Information $payment_information Payment information for the transaction.
+	 *
+	 * @return bool True when mandate data should be sent.
+	 */
+	private function should_send_mandate_data( Payment_Information $payment_information ): bool {
+		if ( ! $this->is_mandate_data_required() ) {
+			return false;
+		}
+
+		if ( $payment_information->is_merchant_initiated() ) {
+			return false;
+		}
+
+		$order = $payment_information->get_order();
+
+		if ( rest_is_ip_address( $this->get_mandate_ip_address( $order ) ) ) {
+			return true;
+		}
+
+		Logger::warning(
+			sprintf(
+				'Skipping mandate data for order %s: no valid customer IP address is available.',
+				$order ? $order->get_id() : 'unknown'
+			)
+		);
+
+		return false;
 	}
 
 	/**
@@ -2714,6 +2810,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Ensures a payment method is saved as a WooCommerce token and attached to the order/subscription.
+	 *
+	 * @param WC_Order     $order             The order.
+	 * @param string       $payment_method_id The payment method ID.
+	 * @param WP_User|null $user              The user to attach the token to.
+	 * @return WC_Payment_Token The saved token.
+	 *
+	 * @throws Exception When the payment method cannot be saved for the order customer.
+	 */
+	public function ensure_payment_method_token_for_order( $order, $payment_method_id, $user = null ) {
+		$token = $this->get_payment_token( $order );
+		if ( $token instanceof WC_Payment_Token && $payment_method_id === $token->get_token() ) {
+			$this->add_token_to_order( $order, $token );
+			return $token;
+		}
+
+		$user = $this->get_payment_token_user_for_order( $order, $user );
+		if ( ! $user instanceof WP_User || empty( $user->ID ) ) {
+			throw new Exception( __( 'Unable to save payment method for subscription. The order customer could not be found.', 'woocommerce-payments' ) );
+		}
+
+		$gateway_ids      = [ self::GATEWAY_ID ];
+		$order_gateway_id = $order->get_payment_method();
+		if ( is_string( $order_gateway_id ) && 0 === strpos( $order_gateway_id, self::GATEWAY_ID ) ) {
+			$gateway_ids[] = $order_gateway_id;
+		}
+
+		foreach ( array_unique( $gateway_ids ) as $gateway_id ) {
+			$tokens = WC_Payment_Tokens::get_customer_tokens( $user->ID, $gateway_id );
+			foreach ( $tokens as $customer_token ) {
+				if ( $customer_token instanceof WC_Payment_Token && $payment_method_id === $customer_token->get_token() ) {
+					$this->add_token_to_order( $order, $customer_token );
+					return $customer_token;
+				}
+			}
+		}
+
+		$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+		$this->add_token_to_order( $order, $token );
+
+		return $token;
+	}
+
+	/**
 	 * Retrieve payment token from a subscription or order.
 	 *
 	 * @param WC_Order $order Order or subscription object.
@@ -2816,6 +2956,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
+			// Default reason so the failure tracking below always has a value, even on branches that don't build a richer note.
+			$note = $e->getMessage();
 			if ( $e instanceof API_Exception && 'insufficient_balance_for_refund' === $e->get_error_code() ) {
 				// Handle insufficient_balance_for_refund error.
 				$this->order_service->handle_insufficient_balance_for_refund( $order, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
@@ -4143,8 +4285,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$token = null;
 			if ( $intent->is_authorized() && $should_save_payment_method && ! empty( $payment_method_id ) ) {
 				try {
-					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
-					$this->add_token_to_order( $order, $token );
+					$token = $this->ensure_payment_method_token_for_order( $order, $payment_method_id, wp_get_current_user() );
 				} catch ( Exception $e ) {
 					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 
@@ -4934,6 +5075,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
 		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : LinkDefinition::get_id();
+	}
+
+	/**
+	 * Resolves the user that should own a payment token for an order.
+	 *
+	 * @param WC_Order     $order The order.
+	 * @param WP_User|null $user  The preferred user.
+	 * @return WP_User|false
+	 */
+	private function get_payment_token_user_for_order( $order, $user = null ) {
+		if ( $user instanceof WP_User && ! empty( $user->ID ) ) {
+			return $user;
+		}
+
+		return $order->get_user();
 	}
 
 	/**

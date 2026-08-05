@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, errors } from '@playwright/test';
 /**
  * Internal dependencies
  */
@@ -11,6 +11,7 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
+	disableEditorWelcomeGuide,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 } from '../../../utils/merchant';
@@ -51,8 +52,10 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 		// ).toHaveScreenshot();
 	} );
 
-	test( 'add the currency switcher to the sidebar', async () => {
-		await addMulticurrencyWidget( page );
+	test( 'add the currency switcher to the sidebar', async ( {}, {
+		project,
+	} ) => {
+		await addMulticurrencyWidget( page, project.use.baseURL );
 	} );
 
 	test( 'can add the currency switcher to a post/page and verify on frontend', async () => {
@@ -61,20 +64,30 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 
 		await navigation.goToNewPost( page );
 
-		if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
-			await page.getByRole( 'button', { name: 'Close' } ).click();
-		}
+		// Dismiss the Welcome Guide; its overlay blocks the block inserter.
+		await disableEditorWelcomeGuide( page );
 
-		if ( await page.locator( '[name="editor-canvas"]' ).isVisible() ) {
-			await expect(
-				page.locator( '[name="editor-canvas"]' )
-			).toBeAttached();
-			const editor = page
-				.locator( '[name="editor-canvas"]' )
-				.contentFrame();
+		// Wait for the iframed canvas before branching — `isVisible()` doesn't
+		// auto-wait, so an early check raced the mount and took the WC 7.7.0
+		// inline path on WP nightly.
+		const editorCanvas = page.locator( '[name="editor-canvas"]' );
+		const usesIframedCanvas = await editorCanvas
+			.waitFor( { state: 'visible', timeout: 15000 } )
+			.then( () => true )
+			.catch( ( error ) => {
+				// Only a timeout means the inline (non-iframed) WC 7.7.0 editor;
+				// surface anything else (page closed, navigation, bad selector).
+				if ( error instanceof errors.TimeoutError ) {
+					return false;
+				}
+				throw error;
+			} );
+
+		if ( usesIframedCanvas ) {
+			const editor = editorCanvas.contentFrame();
 			await editor.getByRole( 'button', { name: 'Add block' } ).click();
 		} else {
-			// Fallback for WC 7.7.0.
+			// Fallback for the inline (non-iframed) editor on WC 7.7.0.
 			await page.getByRole( 'button', { name: 'Add block' } ).click();
 		}
 

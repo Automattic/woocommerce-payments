@@ -128,21 +128,21 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 
 ### Development
 ```bash
-npm install                         # Install dependencies
-npm start                           # Watch JS changes (alias: npm run watch)
-npm run watch                       # Rebuild assets while developing locally
-npm run hmr                         # Hot module replacement server
-npm run up                          # Start Docker environment at http://localhost:8082
-npm run dev                         # Start Docker + watch mode
+pnpm install                        # Install dependencies
+pnpm start                          # Watch JS changes (alias: pnpm run watch)
+pnpm run watch                      # Rebuild assets while developing locally
+pnpm run hmr                        # Hot module replacement server
+pnpm run up                         # Start Docker environment at http://localhost:8082
+pnpm run dev                        # Start Docker + watch mode
 ```
 
 ### PHP Tests
 ```bash
-npm run test:php                    # Run all (first run sets up environment)
-npm run test:php-watch              # Watch mode
-npm run test:php-coverage           # With coverage
+pnpm run test:php                    # Run all (first run sets up environment)
+pnpm run test:php-watch              # Watch mode
+pnpm run test:php-coverage           # With coverage
 
-# Specific test (after initial npm run test:php setup):
+# Specific test (after initial pnpm run test:php setup):
 docker compose exec -u www-data wordpress bash -c \
   "cd /var/www/html/wp-content/plugins/woocommerce-payments && \
   vendor/bin/phpunit --configuration phpunit.xml.dist --filter 'TestClassName::test_method_name'"
@@ -150,56 +150,66 @@ docker compose exec -u www-data wordpress bash -c \
 
 ### JavaScript Tests
 ```bash
-npm run test:js                     # Run all JS tests
-npm run test:watch                  # Watch mode
-npm run test:debug                  # Debug mode
-npm run test:update-snapshots       # Update snapshots
+pnpm run test:js                     # Run all JS tests
+pnpm run test:watch                  # Watch mode
+pnpm run test:debug                  # Debug mode
+pnpm run test:update-snapshots       # Update snapshots
 ```
 
 ### E2E Tests
 
 E2E tests use Playwright in Docker containers against a local WordPress site with real Stripe test transactions.
 
-**First-time setup:** Run `bin/setup-e2e-local.sh` to auto-generate `tests/e2e/config/local.env` from your local infrastructure, then `npm run build:client && npm run test:e2e-setup`. See the E2E skill (`/e2e-testing`) or `tests/e2e/README.md` for full details.
+**First-time setup:** Run `bin/setup-e2e-local.sh` to auto-generate `tests/e2e/config/local.env` from your local infrastructure, then `pnpm run build:client && pnpm run test:e2e-setup`. See the E2E skill (`/e2e-testing`) or `tests/e2e/README.md` for full details.
 
 ```bash
-npm run test:e2e                    # Run all E2E tests (headless)
-npm run test:e2e-ui                 # Interactive UI mode (localhost:8077)
-npm run test:e2e-setup              # First-time E2E environment setup
-npm run test:e2e-up                 # Start existing E2E containers
-npm run test:e2e-down               # Stop E2E containers
+pnpm run test:e2e                    # Run all E2E tests (headless)
+pnpm run test:e2e-ui                 # Interactive UI mode (localhost:8077)
+pnpm run test:e2e-setup              # First-time E2E environment setup
+pnpm run test:e2e-up                 # Start existing E2E containers
+pnpm run test:e2e-down               # Stop E2E containers
 
 # Run specific tests
-npm run test:e2e tests/e2e/specs/wcpay/merchant/  # All merchant tests
-npm run test:e2e tests/e2e/specs/wcpay/shopper/   # All shopper tests
-npm run test:e2e -- -g "dispute"                   # By test name
+pnpm run test:e2e tests/e2e/specs/wcpay/merchant/  # All merchant tests
+pnpm run test:e2e tests/e2e/specs/wcpay/shopper/   # All shopper tests
+pnpm run test:e2e -- -g "dispute"                   # By test name
 ```
 
 **E2E environment ports:** WordPress `:8084` | phpMyAdmin `:8085` | Transact Server `:8088` | Playwright UI `:8077`
 
 ### Build & Quality
 ```bash
-npm run build:client                # Build production JS
-npm run build                       # Build release package
-npm run lint                        # Run all linters
-npm run lint:js                     # ESLint + TypeScript
-npm run lint:php                    # PHPCS
-npm run lint:php-fix                # Auto-fix PHP issues
-npm run format                      # Format with Prettier
-npm run psalm                       # PHP static analysis
+pnpm run build:client                # Build production JS
+pnpm run build                       # Build release package
+pnpm run lint                        # Run all linters
+pnpm run lint:js                     # ESLint + TypeScript
+pnpm run lint:php                    # PHPCS
+pnpm run lint:php-fix                # Auto-fix PHP issues
+pnpm run format                      # Format with Prettier
+pnpm run psalm                       # PHP static analysis
 ```
 
 ### Changelog
 ```bash
-npm run changelog                   # Interactive
-npm run changelog:add -- --type=fix --entry="Fixed a bug"
-npm run changelog:add -- --type=add --entry="Added feature" --significance=minor
+pnpm run changelog                   # Interactive
+pnpm run changelog:add -- --type=fix --entry="Fixed a bug"
+pnpm run changelog:add -- --type=add --entry="Added feature" --significance=minor
 ```
 Types: `add`, `fix`, `update`, `dev`. Significances: `patch` (default), `minor`, `major`. Entries go in `changelog/`.
 
+### Dependencies & supply-chain cooldown
+
+All pnpm settings live in `pnpm-workspace.yaml` — since pnpm 11 the `package.json` `pnpm` field and non-auth `.npmrc` settings are no longer read. Three supply-chain guards are on:
+
+- **`minimumReleaseAge: 1440`** — pnpm won't resolve an npm version until it is 1 day old, closing the window between a malicious publish and its detection. It gates *resolution* (`pnpm add`/`update`, lockfile regeneration); on pnpm ≥ 11.1.3 `pnpm install --frozen-lockfile` also re-validates existing lockfile entries and aborts on a too-young pin (`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`). Dependabot's 7-day cooldown keeps its PRs clear of this.
+- **`blockExoticSubdeps: true`** — transitive dependencies must resolve from the registry; a transitive git/tarball URL fails the install.
+- **`allowBuilds`** — the build-script allowlist (`strictDepBuilds` is on by default, so a dependency whose install script is not listed here fails the install). List a package as `true` to let it build, `false` to silence it.
+
+**Pushing an urgent security bump through the cooldown:** add the package to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` (bare name or exact `pkg@version`), or run `pnpm audit --fix`, which auto-exempts advisory-patched versions. Remove the exclude once the version ages past the window.
+
 ### Other
 ```bash
-npm run i18n:pot                    # Generate translations
+pnpm run i18n:pot                    # Generate translations
 ```
 
 ## Git Workflow
@@ -214,7 +224,7 @@ gh pr list --head "$(git branch --show-current)" --state merged --json number --
 If non-zero, create a new branch off `develop` instead.
 
 **Before creating a PR:**
-- Add and commit a changelog entry: `npm run changelog:add -- --type=<type> --entry="<description>"`
+- Add and commit a changelog entry: `pnpm run changelog:add -- --type=<type> --entry="<description>"`
 - Use PR template from `.github/PULL_REQUEST_TEMPLATE.md`
 - Open PRs in **draft mode** (`gh pr create --draft`).
 
@@ -226,7 +236,7 @@ If non-zero, create a new branch off `develop` instead.
 
 Worktrees provide isolated working directories for parallel feature work. Each worktree gets its own Docker port range (8180-8199).
 
-**Setup:** `npm run worktree:setup` (configures `.env`), `npm run worktree:status` (list all), `npm run tube:start` (tunnel — see [Jurassic Tube](#jurassic-tube-ssh-tunnels))
+**Setup:** `pnpm run worktree:setup` (configures `.env`), `pnpm run worktree:status` (list all), `pnpm run tube:start` (tunnel — see [Jurassic Tube](#jurassic-tube-ssh-tunnels))
 
 **CRITICAL: Never remove a worktree that is your current working directory.** Removing the CWD makes ALL subsequent commands fail irrecoverably — no `cd`, no subshell can fix it.
 
@@ -257,9 +267,9 @@ git -C /path/to/main/repo merge worktree-feat/branch-name
 | phpMyAdmin | `http://localhost:8083` |
 | MySQL | `localhost:5678` |
 
-- First-time: `npm run up:recreate`
-- Subsequent: `npm run up` brings the local WordPress server up at `http://localhost:8082` by default.
-- When testing local frontend/admin UI changes, run `npm run watch` so built assets are regenerated.
+- First-time: `pnpm run up:recreate`
+- Subsequent: `pnpm run up` brings the local WordPress server up at `http://localhost:8082` by default.
+- When testing local frontend/admin UI changes, run `pnpm run watch` so built assets are regenerated.
 - Xdebug ready (requires IDE path mapping)
 - Local WP admin credentials are `admin` / `admin`. Do **not** change the local admin password with `wp user update admin --user_pass=...` unless explicitly requested. If browser/MCP login fails, ask before resetting credentials.
 
@@ -271,10 +281,10 @@ Jurassic Tube creates public HTTPS tunnels (`<subdomain>.jurassic.tube`) to your
 
 | Command | Purpose |
 |---------|---------|
-| `npm run tube:setup` | First-time setup: registers subdomain, generates SSH keys, creates `bin/jurassictube/config.env` |
-| `npm run tube:start` | Starts tunnel (WordPress URLs resolve automatically via `wp-config.php`) |
-| `npm run tube:stop` | Stops tunnel |
-| `npm run tube:status` | Shows subdomain, port, tunnel state, and worktree info |
+| `pnpm run tube:setup` | First-time setup: registers subdomain, generates SSH keys, creates `bin/jurassictube/config.env` |
+| `pnpm run tube:start` | Starts tunnel (WordPress URLs resolve automatically via `wp-config.php`) |
+| `pnpm run tube:stop` | Stops tunnel |
+| `pnpm run tube:status` | Shows subdomain, port, tunnel state, and worktree info |
 
 ### Worktree Support
 
@@ -286,23 +296,23 @@ Jurassic Tube creates public HTTPS tunnels (`<subdomain>.jurassic.tube`) to your
 - Only one tunnel can use a subdomain at a time — starting in a worktree redirects the subdomain to the worktree's port
 
 **Per-worktree subdomains (parallel tunnels):**
-- Run `npm run tube:setup` in the worktree to register a dedicated subdomain
+- Run `pnpm run tube:setup` in the worktree to register a dedicated subdomain
 - Each worktree then has its own `bin/jurassictube/config.env` with a unique subdomain
 - Multiple tunnels can run simultaneously on different subdomains
 
 **Agent workflow for tunnels in worktrees:**
 ```bash
 # 1. Ensure worktree has a port assigned
-npm run worktree:setup
+pnpm run worktree:setup
 
 # 2. Ensure Docker is running
-npm run up
+pnpm run up
 
 # 3. Start tunnel (auto-copies config from main repo if needed)
-npm run tube:start
+pnpm run tube:start
 
 # 4. When done
-npm run tube:stop
+pnpm run tube:stop
 ```
 
 **Key details:**
@@ -314,7 +324,7 @@ npm run tube:stop
 
 | File | Purpose |
 |------|---------|
-| `package.json` | npm scripts and dependencies |
+| `package.json` | pnpm scripts and dependencies |
 | `composer.json` | PHP dependencies and autoloading |
 | `webpack.config.js` | Main webpack entry |
 | `phpunit.xml.dist` | PHPUnit configuration |
@@ -330,13 +340,54 @@ npm run tube:stop
 - **WooCommerce:** Loose L-2
 - Details: `docs/version-support-policy.md`
 
+## Backward Compatibility
+
+WooPayments has backward-compatibility obligations in **both directions**. Any change to a **public or externally exposed** class, interface, function, or method signature is **high-risk** and **must state its backward-compatibility impact in the PR description** — regardless of whether the symbol lives under the `WCPay\Internal` namespace.
+
+Treat a symbol as **externally exposed** when it is implemented or consumed outside this plugin — by extensions, themes, WooPay, mobile apps, or other plugins — even if it lives under `Internal`. `Internal` is **not** a stability guarantee. When in doubt, assume it is exposed and state the BC impact.
+
+**As a producer of public API.** WooPayments exposes a large surface that third parties consume:
+- `do_action`/`apply_filters` hooks — `wcpay_*` and the `woocommerce_*` hooks this plugin fires (renaming a hook, changing its args, or dropping a filter's passthrough value is breaking).
+- The Request/Response class layer (`includes/core/server/request/`) — deliberately hook-extensible (`wcpay_*_request` filters), so its constructors, setters, and validation are consumed externally.
+- The public gateway class `WC_Payment_Gateway_WCPay` and payment-method classes.
+- REST controllers (`includes/admin/`, `includes/reports/`, `includes/multi-currency/`) — route paths, params, response shapes — and registered Abilities.
+- `wcpay_*` option keys and stored meta.
+
+Adding a **required** method to an interface that external code can implement is backward-incompatible — existing implementers fatal on load. Prefer a non-breaking alternative: add the method to a concrete class, introduce a separate new interface, or provide a default via an abstract base class.
+
+**Deprecate, don't rename.** Never rename or remove an existing public symbol (class, interface, method, constant, hook, option key) in place. Mark the old one `@deprecated`, add the replacement alongside it, and keep both working through a deprecation window so consumers can migrate.
+
+**As a consumer of upstream WooCommerce contracts.** WooPayments extends and implements upstream WooCommerce classes and interfaces — e.g. `WC_Payment_Gateway_CC`, `Blocks\Payments\Integrations\AbstractPaymentMethodType`, and `Blocks\Integrations\IntegrationInterface`. The `Internal` namespace is not a stability guarantee upstream either: WooCommerce can change these contracts, and doing so is exactly the class of break this guardrail exists to prevent (a WC 10.9.0 change to an `Internal` `FeedInterface` fataled older WooCommerce Stripe Gateway versions on load). When implementing an upstream contract, keep the implementation compatible across the supported WC range (L, L-1, L-2) and guard against contract changes rather than assuming the interface is frozen.
+
+### The compatibility surface is wider than PHP signatures
+
+Class and function signatures are not the only contracts. The following are equally binding: a change to any of them is **high-risk** and requires the same backward-compatibility impact statement in the PR description.
+
+**Hooks and filters are public contracts.** Every `do_action` and `apply_filters` call — the `wcpay_*` hooks and the `woocommerce_*` hooks this plugin fires — is an interface third-party callbacks depend on. Removing a hook, renaming it, or removing/reordering its arguments breaks every attached callback. Changing *when* or *whether* a hook fires can break consumers that depend on its timing. Additive is the safe path: append new arguments at the end, never remove or reorder existing ones. To retire a hook, fire it through `do_action_deprecated()` / `apply_filters_deprecated()` for a deprecation window instead of deleting it.
+
+**Do not assume global state.** WooPayments code runs in admin, REST, CLI, cron, webhook, and front-end contexts, and not all of them set the globals a front-end request does (`$post`, `$wp_query`, an initialized session or cart). Webhook and cron handlers in particular run with no cart and no logged-in customer. A newly introduced read of a global, or of `WC()->…` state, in a path reachable outside a standard request is a fatal or a silent misbehavior in the contexts that do not set it. Guard the exact dependency explicitly: use `function_exists`/`class_exists` for symbols, `isset` for variables, `did_action` for lifecycle state, and verify that `WC()` and the required component are initialized before dereferencing `WC()->…`.
+
+**Do not assume single-site.** Multisite changes where data lives: site-scoped vs network-scoped options (`get_option` vs `get_site_option`), per-site tables, user roles and capabilities, and upload paths all differ. A change that reads or writes site state must state in its PR whether it behaves correctly under multisite — and if it was not tested there, say so explicitly.
+
+**Do not assume install layout.** WordPress could be configured to run in a subdirectory, with relocated `wp-content`, and behind reverse proxies. Never build paths or URLs by concatenation from the domain root; derive them (`plugins_url()`, `plugin_dir_path()`, `wp_upload_dir()`, and mind the `home_url()` vs `site_url()` distinction). A path that works on a root install and breaks elsewhere is a compatibility bug, not an edge case.
+
+### Before changing any public or externally exposed surface (agent checklist)
+
+1. Identify the contract you are touching: signature, hook, global/scope expectation, site topology, or install layout.
+2. Assume unseen consumers. You cannot enumerate third-party code; if the surface is reachable from outside this plugin, someone consumes it.
+3. Prefer the additive path (new optional method, appended hook argument, new symbol + deprecation) over changing what exists.
+4. State the impact in the PR description: what changed, who could consume it, and why it is safe or what the deprecation path is.
+5. If you cannot establish the impact, stop and flag it to the user as needing review.
+
+> Core's [AGENTS.md Backward Compatibility](https://github.com/woocommerce/woocommerce/blob/trunk/AGENTS.md#backward-compatibility) section carries the same guardrail.
+
 ## Documentation Index
 
 | Doc | Content |
 |-----|---------|
 | `README.md` | Main setup and overview |
 | `CONTRIBUTING.md` | Contribution guidelines |
-| `tests/README.md` | Testing guide |
+| `tests/README.md` | Testing overview & index of suites (unit, JS, E2E, QIT) |
 | `docker/README.md` | Docker setup |
 | `includes/core/README.md` | Extensibility docs |
 | `docs/` | Additional documentation |
@@ -384,4 +435,6 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 - **Migration version_compare:** When adding a migration class in `includes/migrations/`, the `version_compare()` threshold must match the version in the `@since` tag (e.g., `version_compare('10.6.0', $previous_version, '>')` for `@since 10.6.0`). The version represents when the migration ships, not when the old behavior was introduced.
 - **Styles cache invalidation on plugin update:** `WC_Payments_Utils::compute_styles_cache_version()` uses `WCPAY_VERSION_NUMBER` in its hash, but the cached WP option persists across updates. Hook `invalidate_styles_cache_version` to `woocommerce_woocommerce_payments_updated` to clear stale caches.
 - **Abilities API registrations** (`src/Internal/Abilities/AbilitiesRegistrar.php` + `src/Internal/Abilities/Domain/*.php`): each ability lives in its own `Domain/<AbilityName>.php` class implementing `Automattic\WooCommerce\Abilities\AbilityDefinition`. When you change the code path behind a registered ability (REST controller callback, backing Request class, capability gate), audit the relevant Domain class for required updates (annotations, `input_schema`, `output_schema`, description). List abilities use the WC 10.9 paginated output envelope (`{ <collection>: [...], total_pages, page, per_page }`) via the `AbstractWCPayAbility` base. The feature gates on `class_exists('\Automattic\WooCommerce\Internal\Abilities\AbilitiesLoader')` and silently no-ops on WC < 10.9. Each Domain class points at the controller method that backs it with `@see`; the controller method points back at the Domain class with the same `@see` so the connection is visible from both sides — keep that pairing when adding a new ability. Run `vendor/bin/phpunit --filter 'Abilities'` after such changes — covers both the registrar coordinator and per-ability Domain tests.
+- **ExPlat experiments — assign on the Tracks anon-ID from `WC_Tracks_Client::get_identity()`:** ExPlat joins an experiment's assignments to its Tracks events on identity, so any other assignment key reports zero conversions with no error. Resolve the anon-ID through the same helper that stamps the events rather than reading `$_COOKIE['tk_ai']` or minting one via `Jetpack_Tracks_Client`; those diverge when the cookie is absent, and the wrong ID then sticks in user meta. A `wpcom:user_id` identity (stores running the standalone Jetpack plugin) has no joinable key, so sit the experiment out. Resolve identity only after the consent check, since it persists user meta. Consent means `WC_Site_Tracking::is_tracking_enabled()`, the predicate that gates the events; the raw `woocommerce_allow_tracking` option misses the kill-switch filters. See `ReviewPromptExperiment::assignment_key()`.
+- **`rawurlencode()` query values before `add_query_arg()`:** it appends values as-is, so a `+` in the base64 anon-ID arrives as a space and keys the assignment on a different identity than the Tracks events. Same pattern as WooCommerce core's copy of this class and PR #11815. See `Experimental_Abtest::request_variation()`.
 - **Constants in tests — literals on the assert side:** When a value has a named constant (currency codes like `WCPay\Constants\Currency_Code`, status/enum constants, etc.), use the constant for *incidental* values in the **arrange/act** phases — fixtures, mock return values, setup, and values passed *into* the system under test in their own statements. Use **plain literals** for anything that is the point of an assertion: the expected value, mock `->with()` payloads, **and even an act-input nested inside an `assert*()` wrapper**. Rationale (Meszaros *xUnit Test Patterns* / Fowler): an assertion should pin its expected value *independently* of the code under test — reusing the system-under-test's own constant on both sides couples them and can mask a wrong/drifted constant, and a bare literal (`'EUR'`, `'complete'`) reads better as an expected value than the constant. Don't convert literals where the literal *is* the point: array **keys**, values whose **case** or invalidity is load-bearing (e.g. lowercase Stripe-response codes, rejection-path sentinels), or tests of the constant/formatting logic itself (literals there are the independent oracle). Quick guard: a constant shouldn't appear inside an `assert*()` call — e.g. `grep -n 'assert.*Currency_Code::'` returns nothing.

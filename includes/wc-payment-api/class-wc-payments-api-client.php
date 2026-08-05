@@ -107,11 +107,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		'state',
 		'city',
 		'country',
-		'company',
 		'customer_name',
 		'customer_email',
 		// Free-text refund reason can contain merchant-entered PII, so keep it out of logs.
 		'merchant_refund_reason',
+		// Address autocomplete JWT is a credential; keep it out of logs.
+		'token',
 	];
 
 	const EVENT_AUTHORIZED            = 'authorized';
@@ -959,12 +960,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Create a connection token.
 	 *
-	 * @param WP_REST_Request $request request object received.
+	 * @param WP_REST_Request $_unused_request request object received.
 	 *
 	 * @return array
 	 * @throws API_Exception - If request throws.
 	 */
-	public function create_token( $request ) {
+	public function create_token( $_unused_request ) {
 		return $this->request( [], self::CONN_TOKENS_API, self::POST );
 	}
 
@@ -2729,7 +2730,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			Logger::info(
 				sprintf( 'API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
 				[
-					'request' => $request_args,
+					'request' => array_merge( $request_args, [ 'url' => $redacted_url ] ),
 					null !== $body ? [ 'body' => $redacted_params ] : [],
 				]
 			);
@@ -2836,9 +2837,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
-			$error_type   = null;
-			$decline_code = null;
-			$error_param  = null;
+			$error_type        = null;
+			$decline_code      = null;
+			$error_param       = null;
+			$payment_intent_id = null;
 			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
 				throw new Amount_Too_Small_Exception(
 					$response_body['message'],
@@ -2849,6 +2851,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			} elseif ( isset( $response_body['error'] ) ) {
 				$response_body_error_code = $response_body['error']['code'] ?? $response_body['error']['message_code'] ?? null;
 				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
+				$payment_intent_id        = $response_body['error']['payment_intent']['id'] ?? null;
 
 				// We redact the API error message to prevent prompting the merchant to contact Stripe support
 				// when attempting to manually capture an amount greater than what's authorized. Contacting support is unnecessary in this scenario.
@@ -2910,10 +2913,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			if ( 'card_declined' === $error_code && isset( $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] ) ) {
 				$merchant_message = $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'];
 
-				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code );
+				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code, 0, null, $payment_intent_id );
 			}
 
-			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code, 0, null, $error_param );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code, 0, null, $error_param, $payment_intent_id );
 		}
 	}
 
@@ -3059,7 +3062,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$charge_array['payment_intent'] ?? null,
 			$charge_array['refunded'] ?? null,
 			$charge_array['refunds'] ?? null,
-			$charge_array['status'] ?? null
+			$charge_array['status'] ?? null,
+			$charge_array['disputes'] ?? null
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {

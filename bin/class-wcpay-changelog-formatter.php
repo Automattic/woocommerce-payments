@@ -77,7 +77,10 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 
 		// Entries make up the rest of the document.
 		$entries = [];
-		preg_match_all( '/^=\s+([^\n=]+)\s+=(((?!^=).)+)/ms', $changelog, $version_sections );
+		$matched = preg_match_all( '/^=\s+([^\n=]+)\s+=(((?!^=).)++)/ms', $changelog, $version_sections );
+		if ( false === $matched ) {
+			throw new \RuntimeException( 'Failed to parse changelog: PCRE error ' . preg_last_error_msg() );
+		}
 
 		foreach ( $version_sections[0] as $section ) {
 			$heading_pattern = '/^= +(\[?[^] ]+\]?) - (.+?) =/';

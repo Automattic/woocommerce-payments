@@ -15,13 +15,29 @@ jobs:
 
         steps:
             - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            # corepack (bundled with Node) provisions pnpm; pnpm/action-setup
+            # is blocked by the Automattic enterprise Actions allowlist.
+            - name: Install pnpm
+              run: corepack enable
             - name: Use desired version of NodeJS
               uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
               with:
                   node-version-file: '.nvmrc'
-                  cache: npm
+                  cache: pnpm
             - name: Checking for file changes
-              uses: preactjs/compressed-size-action@68177c91dc8dcaa2f80e10ced85ebee59fb676df # post-2.9.1
+              uses: preactjs/compressed-size-action@f322c295dde06a1cb7ccaef105732dd8a726d1d9 # post-2.9.1
               with:
+                  # The action installs both this branch and the base branch
+                  # under the Node version from this branch's .nvmrc. Let the
+                  # base comparison install old package engine metadata.
+                  # --ignore-scripts: the webpack bundle build doesn't need
+                  # dependency build scripts, so skip them on both installs.
+                  # --config.strict-dep-builds=false: --ignore-scripts alone
+                  # doesn't prevent ERR_PNPM_IGNORED_BUILDS — the base-branch
+                  # reinstall re-checks builds approved by this branch's
+                  # allowBuilds against the base's older or absent allowlist
+                  # and hard-fails (seen on release→trunk PRs).
+                  install-script: pnpm install --no-frozen-lockfile --ignore-scripts --config.engine-strict=false --config.strict-dep-builds=false
                   pattern: '{release/**/*.js,release/**/*.css}'
                   exclude: '{release/vendor/**}'
+                  package-manager: pnpm

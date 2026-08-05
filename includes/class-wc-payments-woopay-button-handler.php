@@ -285,6 +285,12 @@ class WC_Payments_WooPay_Button_Handler {
 			return false;
 		}
 
+		// Product page, but the product can't be added to the cart (not purchasable or out of stock).
+		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_product_purchasable() ) {
+			Logger::log( 'Product is not purchasable ( WooPay Express button disabled )' );
+			return false;
+		}
+
 		// Cart has unsupported product type.
 		if ( ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );

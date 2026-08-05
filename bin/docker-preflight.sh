@@ -45,12 +45,12 @@ if [[ "$infra_needed" == "true" ]]; then
         echo "Running from worktree. Starting infrastructure from main checkout:"
         echo "  $MAIN_CHECKOUT"
         echo ""
-        (cd "$MAIN_CHECKOUT" && npm run infra:up --silent)
+        (cd "$MAIN_CHECKOUT" && pnpm run infra:up --silent)
     else
         # We're in the main checkout
         SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
         REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-        (cd "$REPO_ROOT" && npm run infra:up --silent)
+        (cd "$REPO_ROOT" && pnpm run infra:up --silent)
     fi
 
     echo ""

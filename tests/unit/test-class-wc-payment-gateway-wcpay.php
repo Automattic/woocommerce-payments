@@ -17,7 +17,9 @@ use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -345,6 +347,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_REQUEST = [];
 
+		// Restore the request IP address that WC_Helper_Order::create_order() depends on,
+		// in case a test simulated a context with no HTTP request.
+		$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 		wcpay_get_test_container()->reset_all_replacements();
 		WC()->session->set( 'wc_notices', [] );
 		WC()->countries->locale = $this->locale_backup;
@@ -413,6 +419,84 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
 		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
+	}
+
+	public function test_maybe_process_upe_redirect_ignores_create_account_form_post() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// The block checkout "Create Account" form POSTs back to the very URL the shopper was
+		// returned to, so the query string still carries a valid redirect return: everything
+		// below would be processed if this were a GET. The request-method gate is the only
+		// thing that may stop it.
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = wp_create_nonce( 'wcpay_process_redirect_order_nonce' );
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
+
+		// ...but submitted by the form, which posts its own nonce.
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_POST['create-account']   = '1';
+		$_POST['_wpnonce']         = wp_create_nonce( 'wc_create_account' );
+		$_REQUEST['_wpnonce']      = $_POST['_wpnonce'];
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		// The POST is not a return: the order is left untouched, and there's no fatal
+		// "the link you followed has expired" nonce die.
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
+			$_GET['key'],
+			$_POST['create-account']
+		);
+	}
+
+	public function test_maybe_process_upe_redirect_does_not_fatal_on_stale_nonce() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_mock' );
+		$order->save();
+
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		set_query_var( 'order-received', $order->get_id() );
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// An otherwise processable return, so the nonce is the only thing that may stop it.
+		$_SERVER['REQUEST_METHOD']            = 'GET';
+		$_GET['wc_payment_method']            = 'woocommerce_payments';
+		$_GET['_wpnonce']                     = 'not-a-valid-nonce';
+		$_GET['payment_intent']               = 'pi_mock';
+		$_GET['payment_intent_client_secret'] = 'pi_mock_secret';
+		$_GET['key']                          = $order->get_order_key();
+
+		$this->card_gateway->maybe_process_upe_redirect();
+
+		// A stale or refreshed return URL quietly no-ops rather than hard-dying.
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order->get_id() )->get_status() );
+
+		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		unset(
+			$_SERVER['REQUEST_METHOD'],
+			$_GET['wc_payment_method'],
+			$_GET['_wpnonce'],
+			$_GET['payment_intent'],
+			$_GET['payment_intent_client_secret'],
+			$_GET['key']
+		);
 	}
 
 	public function test_process_redirect_payment_intent_succeded() {
@@ -527,16 +611,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				],
 				'expected_title'   => 'Mastercard credit card',
 				'expected_gateway' => 'woocommerce_payments',
-			],
-			'giropay'                => [
-				'payment_details'  => [ 'type' => 'giropay' ],
-				'expected_title'   => 'giropay',
-				'expected_gateway' => 'woocommerce_payments_giropay',
-			],
-			'Sofort'                 => [
-				'payment_details'  => [ 'type' => 'sofort' ],
-				'expected_title'   => 'Sofort',
-				'expected_gateway' => 'woocommerce_payments_sofort',
 			],
 			'Bancontact'             => [
 				'payment_details'  => [ 'type' => 'bancontact' ],
@@ -950,14 +1024,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'funding' => 'credit',
 			],
 		];
-		$mock_giropay_details    = [
-			'type' => 'giropay',
-		];
 		$mock_p24_details        = [
 			'type' => 'p24',
-		];
-		$mock_sofort_details     = [
-			'type' => 'sofort',
 		];
 		$mock_bancontact_details = [
 			'type' => 'bancontact',
@@ -985,9 +1053,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		];
 
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
 		$p24_method        = $this->payment_methods['p24'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1004,23 +1070,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $card_method->is_reusable() );
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
 
-		$this->assertEquals( 'giropay', $giropay_method->get_id() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title() );
-		$this->assertEquals( 'giropay', $giropay_method->get_title( 'US', $mock_giropay_details ) );
-		$this->assertTrue( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_reusable() );
-
 		$this->assertEquals( 'p24', $p24_method->get_id() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
 		$this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( 'US', $mock_p24_details ) );
 		$this->assertTrue( $p24_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $p24_method->is_reusable() );
-
-		$this->assertEquals( 'sofort', $sofort_method->get_id() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title() );
-		$this->assertEquals( 'Sofort', $sofort_method->get_title( 'US', $mock_sofort_details ) );
-		$this->assertTrue( $sofort_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_reusable() );
 
 		$this->assertEquals( 'bancontact', $bancontact_method->get_id() );
 		$this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
@@ -1093,8 +1147,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1106,8 +1158,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$grabpay_method    = $this->payment_methods['grabpay'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $giropay_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sofort_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $eps_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $sepa_method->is_enabled_at_checkout( 'US' ) );
@@ -1203,8 +1253,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_only_valid_payment_methods_returned_for_currency() {
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1219,8 +1267,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$account_domestic_currency = Currency_Code::UNITED_STATES_DOLLAR;
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1235,8 +1281,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Site_Currency::$mock_site_currency = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1266,8 +1310,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_payment_method_compares_correct_currency() {
 		$card_method       = $this->payment_methods['card'];
-		$giropay_method    = $this->payment_methods['giropay'];
-		$sofort_method     = $this->payment_methods['sofort'];
 		$bancontact_method = $this->payment_methods['bancontact'];
 		$eps_method        = $this->payment_methods['eps'];
 		$sepa_method       = $this->payment_methods['sepa_debit'];
@@ -1281,8 +1323,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$account_domestic_currency                   = Currency_Code::UNITED_STATES_DOLLAR;
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertTrue( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -1297,8 +1337,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $giropay_method->is_currency_valid( $account_domestic_currency ) );
-		$this->assertFalse( $sofort_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $bancontact_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $eps_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $sepa_method->is_currency_valid( $account_domestic_currency ) );
@@ -3436,6 +3474,321 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_mandate_data_uses_order_customer_ip_address() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		// $_SERVER['REMOTE_ADDR'] is 127.0.0.1 here, set by WC_Helper_Order::create_order().
+		// The order's IP must win over it.
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '203.0.113.10' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_uses_order_customer_ip_when_request_has_no_ip() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		// This is the reported bug: a scheduled renewal running outside an HTTP request.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '203.0.113.10' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_falls_back_to_request_ip_when_order_has_no_ip() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		// Regression guard for the on-session checkout path: with no order IP, the live
+		// request is still the correct source.
+		$_SERVER['REMOTE_ADDR'] = '198.51.100.20';
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '198.51.100.20' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_uses_order_customer_ip_for_setup_intent() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 0 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_12345' ) );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->must_save_payment_method_to_store();
+
+		// The $0 setup-intent call site has the same defect as the payment-intent one.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'id' => 'seti_mock_123' ] ) );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return '203.0.113.10' === $data['customer_acceptance']['online']['ip_address'];
+					}
+				)
+			);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_is_skipped_when_no_valid_ip_is_available() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		// Neither source has an IP: an imported or admin-created subscription renewing
+		// under CLI cron. Sending mandate data here is a guaranteed Stripe rejection.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_is_skipped_for_sepa_without_a_valid_ip() {
+		// The IP guard is uniform across payment methods. Sending mandate data with an
+		// unusable IP is a guaranteed Stripe rejection for SEPA as much as for card, so the
+		// request is omitted and logged rather than sent to fail. SEPA's normal path still
+		// sends it: see test_set_mandate_data_to_payment_intent_if_required().
+		$gateway = $this->get_gateway( Payment_Method::SEPA );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments_sepa_debit';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_mandate_data_is_skipped_for_merchant_initiated_card_renewal() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, Payment_Type::RECURRING(), null, Payment_Initiated_By::MERCHANT(), null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		// Off-session card and Link renewals are authorised through the MIT framework, not
+		// mandate data, so it must be omitted even though this order carries a usable IP.
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
+	public function test_mandate_data_is_skipped_for_merchant_initiated_sepa() {
+		// The merchant-initiated rule is uniform: no payment method sends mandate data
+		// off-session. SEPA cannot actually reach this state in production, because it is
+		// not reusable and maybe_force_subscription_to_manual() puts every SEPA subscription
+		// on manual renewal, keeping the customer present for each payment. This pins the
+		// rule as method-agnostic so no per-method carve-out creeps back in.
+		$gateway = $this->get_gateway( Payment_Method::SEPA );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 100 );
+		$order->set_customer_ip_address( '203.0.113.10' );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments_sepa_debit';
+		$pi                                    = new Payment_Information( 'pm_test', $order, Payment_Type::RECURRING(), null, Payment_Initiated_By::MERCHANT(), null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_mandate_data_is_skipped_for_setup_intent_when_no_valid_ip_is_available() {
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card', 'link' ];
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( Currency_Code::UNITED_STATES_DOLLAR );
+		$order->set_total( 0 );
+		$order->set_customer_ip_address( '' );
+		$order->save();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_12345' ) );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = 'woocommerce_payments';
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->must_save_payment_method_to_store();
+
+		// Neither the order nor the request has an IP on the $0 setup-intent path either.
+		$this->simulate_no_request_ip_address();
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_setup_intention( [ 'id' => 'seti_mock_123' ] ) );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( new WC_Payment_Token_CC() );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' );
+
+		$request->expects( $this->never() )
+			->method( 'set_mandate_data' );
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
+	}
+
 	public function test_non_reusable_gateways_not_available_when_changing_payment_method_for_card() {
 		// Simulate is_changing_payment_method_for_subscription being true so that is_enabled_at_checkout() checks if the payment method is reusable().
 		$_GET['change_payment_method'] = 10;
@@ -4815,7 +5168,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GrabPayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
@@ -4823,7 +5175,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
 		];
@@ -5223,6 +5574,24 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'card' ], $payment_methods );
 
 		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
+	}
+
+	public function test_ensure_payment_method_token_for_order_reuses_existing_amazon_pay_token() {
+		$user_id = self::factory()->user->create();
+		$user    = new WP_User( $user_id );
+		$order   = WC_Helper_Order::create_order( $user_id );
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+		$token = WC_Helper_Token::create_amazon_pay_token( 'pm_amazon_mock', $user_id );
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result = $this->card_gateway->ensure_payment_method_token_for_order( $order, 'pm_amazon_mock', $user );
+
+		$this->assertSame( $token->get_id(), $result->get_id() );
+		$this->assertSame( [ $token->get_id() ], wc_get_order( $order->get_id() )->get_payment_tokens() );
 	}
 
 	/**
@@ -5753,5 +6122,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$product->save();
 
 		return wc_get_product( $product->get_id() );
+	}
+
+	/**
+	 * Removes every $_SERVER key WC_Geolocation::get_ip_address() reads, simulating an
+	 * execution context with no HTTP request, such as CLI cron or WP-CLI.
+	 *
+	 * WC_Helper_Order::create_order() sets REMOTE_ADDR, so this must be called *after*
+	 * the order is created. tear_down() restores it.
+	 */
+	private function simulate_no_request_ip_address() {
+		unset( $_SERVER['HTTP_X_REAL_IP'], $_SERVER['HTTP_X_FORWARDED_FOR'], $_SERVER['REMOTE_ADDR'] );
 	}
 }

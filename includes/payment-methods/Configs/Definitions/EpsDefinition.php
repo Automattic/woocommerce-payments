@@ -57,23 +57,23 @@ class EpsDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the customer-facing title of the payment method
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_title( ?string $account_country = null ): string {
+	public static function get_title( ?string $_unused_account_country = null ): string {
 		return __( 'EPS', 'woocommerce-payments' );
 	}
 
 	/**
 	 * Get a dynamic title based on charge details from Stripe.
 	 *
-	 * @param string $account_country The merchant's account country.
-	 * @param array  $payment_details The payment method details from the Stripe charge.
+	 * @param string $_unused_account_country The merchant's account country.
+	 * @param array  $_unused_payment_details The payment method details from the Stripe charge.
 	 *
 	 * @return string|null The dynamic title, or null to use the default get_title().
 	 */
-	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+	public static function get_title_from_charge_details( string $_unused_account_country, array $_unused_payment_details ): ?string {
 		return null;
 	}
 
@@ -91,10 +91,10 @@ class EpsDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the customer-facing description of the payment method
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public static function get_description( ?string $account_country = null ): string {
+	public static function get_description( ?string $_unused_account_country = null ): string {
 		return __( 'Accept your payment with EPS — a common payment method in Austria.', 'woocommerce-payments' );
 	}
 
@@ -110,10 +110,10 @@ class EpsDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the list of supported countries
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 * @return string[] Array of country codes
 	 */
-	public static function get_supported_countries( ?string $account_country = null ): array {
+	public static function get_supported_countries( ?string $_unused_account_country = null ): array {
 		return [ Country_Code::AUSTRIA ];
 	}
 
@@ -131,11 +131,11 @@ class EpsDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the URL for the payment method's icon
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @param string|null $_unused_account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_icon_url( ?string $account_country = null ): string {
+	public static function get_icon_url( ?string $_unused_account_country = null ): string {
 		return plugins_url( 'assets/images/payment-methods/eps.svg', WCPAY_PLUGIN_FILE );
 	}
 
@@ -164,10 +164,10 @@ class EpsDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the testing instructions for the payment method
 	 *
-	 * @param string $account_country The merchant's account country.
+	 * @param string $_unused_account_country The merchant's account country.
 	 * @return string HTML string containing testing instructions
 	 */
-	public static function get_testing_instructions( string $account_country ): string {
+	public static function get_testing_instructions( string $_unused_account_country ): string {
 		return '';
 	}
 
@@ -195,24 +195,24 @@ class EpsDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the minimum amount for this payment method for a given currency and country
 	 *
-	 * @param string $currency The currency code.
-	 * @param string $country The country code.
+	 * @param string $_unused_currency The currency code.
+	 * @param string $_unused_country The country code.
 	 *
 	 * @return int|null The minimum amount or null if no minimum.
 	 */
-	public static function get_minimum_amount( string $currency, string $country ): ?int {
+	public static function get_minimum_amount( string $_unused_currency, string $_unused_country ): ?int {
 		return null;
 	}
 
 	/**
 	 * Get the maximum amount for this payment method for a given currency and country
 	 *
-	 * @param string $currency The currency code.
-	 * @param string $country The country code.
+	 * @param string $_unused_currency The currency code.
+	 * @param string $_unused_country The country code.
 	 *
 	 * @return int|null The maximum amount or null if no maximum.
 	 */
-	public static function get_maximum_amount( string $currency, string $country ): ?int {
+	public static function get_maximum_amount( string $_unused_currency, string $_unused_country ): ?int {
 		return null;
 	}
 }
