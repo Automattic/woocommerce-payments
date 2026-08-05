@@ -39,6 +39,7 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_false' );
 		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
 		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
 
@@ -88,6 +89,29 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
 		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_when_both_levers_are_off() {
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_false' );
+		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		// Before 10.10.0 the signature filter alone closed this route. It takes both now,
+		// so this pins the documented replacement for that kill switch.
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function test_suppressing_the_signature_alone_still_admits_an_attestation() {
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_false' );
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		// The narrowing is deliberate: the filter answers whether the request was signed,
+		// and a false there is indistinguishable from an ordinary unsigned request — which
+		// is the case the attestation exists to serve. Changing this should be a decision,
+		// not an accident.
+		$this->assertTrue( $this->controller->check_permission() );
 	}
 
 	public function test_permission_is_denied_for_a_replayed_envelope() {

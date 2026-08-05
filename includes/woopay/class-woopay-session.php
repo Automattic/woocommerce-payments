@@ -935,11 +935,27 @@ class WooPay_Session {
 	/**
 	 * Returns true if the request that's currently being processed is signed with the blog token.
 	 *
+	 * This answers one question — was this request signed — and since 10.10.0 that is no
+	 * longer the same question as whether WooPay may be served. A signature is now one of
+	 * two accepted credentials rather than the only one, so a false here sends the request
+	 * on to the Cart-Token and attestation checks instead of ending it.
+	 *
+	 * That matters to anyone filtering this to false as a kill switch, which before 10.10.0
+	 * closed the WooPay session route outright. It no longer does on its own, and it cannot
+	 * be made to: the filter wraps a predicate whose false is indistinguishable from an
+	 * ordinary unsigned request, which is precisely the case the attestation serves. To
+	 * close the route, filter `wcpay_woopay_allow_cart_token_auth` to false as well — that
+	 * refuses the attestation, leaving a signature this filter then denies. See WOOPAY-463.
+	 *
 	 * @return bool True if the request signature is valid.
 	 */
 	public static function has_valid_request_signature() {
 		/**
 		 * Filters whether the current request is signed with the store's blog token.
+		 *
+		 * Answers whether the request was signed, not whether it may proceed: since 10.10.0
+		 * a false falls through to the narrower credentials rather than rejecting outright.
+		 * See `is_cart_token_auth_allowed()` to refuse those too.
 		 *
 		 * @since 5.9.0
 		 *
@@ -965,7 +981,8 @@ class WooPay_Session {
 	 *
 	 * Filter it to false to keep requiring the signature on this store — on both channels,
 	 * since an opt-out that closed only one would still leave the other accepting unsigned
-	 * requests.
+	 * requests. Paired with `wcpay_woopay_is_signed_with_blog_token` filtered to false, it
+	 * closes the WooPay session route outright, which that filter alone did before 10.10.0.
 	 *
 	 * @return bool True if the narrower WooPay credentials are accepted.
 	 */
