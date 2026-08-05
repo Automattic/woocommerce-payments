@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Add opt-in support for authorizing proxied WooPay Store API requests on the Cart-Token the store already validates, and accept an encrypted attested-email envelope on the WooPay session route, so neither channel needs a Jetpack blog token signature
+Authorize proxied WooPay Store API requests on the Cart-Token the store already validates, and accept an encrypted attested-email envelope on the WooPay session route, so neither channel needs a Jetpack blog token signature. On by default; filter `wcpay_woopay_allow_cart_token_auth` to false to keep requiring the signature.
