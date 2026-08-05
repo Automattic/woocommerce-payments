@@ -151,8 +151,23 @@ class WooPay_Session {
 		// Validate that the request is authenticated, by blog token signature or, when
 		// enabled, by a valid Cart-Token.
 		if ( self::AUTH_NONE === self::get_request_auth_level() ) {
-			Logger::log( __( 'WooPay request is not signed correctly.', 'woocommerce-payments' ) );
-			wp_die( esc_html__( 'WooPay request is not signed correctly.', 'woocommerce-payments' ), 401 );
+			$error = self::get_unauthenticated_request_error();
+
+			$error_data = $error->get_error_data();
+
+			Logger::log( 'WooPay request rejected: ' . $error->get_error_code() );
+
+			// Spelled out rather than passing the WP_Error itself: only handlers that run it
+			// through _wp_die_process_input() would unpack the code and status, and the
+			// handler is filterable.
+			wp_die(
+				esc_html( $error->get_error_message() ),
+				'',
+				[
+					'response' => absint( $error_data['status'] ),
+					'code'     => esc_html( $error->get_error_code() ),
+				]
+			);
 		}
 
 		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
@@ -1155,6 +1170,50 @@ class WooPay_Session {
 		$attested_email = self::get_woopay_attested_email();
 
 		return null !== $attested_email && 0 === strcasecmp( $attested_email, $email );
+	}
+
+	/**
+	 * Says why the current request could not be authenticated.
+	 *
+	 * Rejecting is not negotiable — serving a request the store cannot authenticate would
+	 * defeat its own opt-out — so the useful thing is to name the cause rather than fail
+	 * all three the same way. Each maps to a distinct code, in the log and in the response
+	 * body, so a store owner and WooPay can tell them apart:
+	 *
+	 * - `woopay_signature_required`: this store has opted back out of Cart-Token auth while
+	 *   WooPay was still going unsigned for it. Transient by construction — the capability
+	 *   rides in the session payload, so the next session puts the two back in step and
+	 *   WooPay signs again with no deploy. This is the one that looks alarming and isn't.
+	 * - `woopay_invalid_cart_token`: a Cart-Token arrived but does not validate. A genuine
+	 *   problem, and not the same problem as the above.
+	 * - `woopay_request_not_authenticated`: nothing was presented at all.
+	 *
+	 * @return \WP_Error The error to end the request with.
+	 */
+	private static function get_unauthenticated_request_error(): \WP_Error {
+		$has_cart_token = isset( $_SERVER['HTTP_CART_TOKEN'] );
+
+		if ( $has_cart_token && ! self::is_cart_token_auth_allowed() ) {
+			return new \WP_Error(
+				'woopay_signature_required',
+				__( 'This store requires WooPay requests to be signed with its blog token.', 'woocommerce-payments' ),
+				[ 'status' => 401 ]
+			);
+		}
+
+		if ( $has_cart_token ) {
+			return new \WP_Error(
+				'woopay_invalid_cart_token',
+				__( 'The Cart-Token on this WooPay request is invalid or expired.', 'woocommerce-payments' ),
+				[ 'status' => 401 ]
+			);
+		}
+
+		return new \WP_Error(
+			'woopay_request_not_authenticated',
+			__( 'WooPay request is not signed correctly.', 'woocommerce-payments' ),
+			[ 'status' => 401 ]
+		);
 	}
 
 	/**

@@ -630,6 +630,50 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		unset( $_GET['email'] );
 	}
 
+	public function test_unauthenticated_request_is_rejected_as_carrying_nothing() {
+		$this->unsign_request();
+
+		$this->expect_woopay_request_to_die( 'WooPay request is not signed correctly.' );
+	}
+
+	public function test_cart_token_request_is_rejected_as_needing_a_signature_when_opted_out() {
+		$this->unsign_request();
+		$this->deny_cart_token_auth();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+
+		// The store opted back out while WooPay was still going unsigned for it. Saying so
+		// separates a transient rollout mismatch from a store that is actually misconfigured.
+		$this->expect_woopay_request_to_die( 'This store requires WooPay requests to be signed with its blog token.' );
+	}
+
+	public function test_invalid_cart_token_is_rejected_as_invalid() {
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$_SERVER['HTTP_CART_TOKEN'] = 'not.a.valid.token';
+
+		$this->expect_woopay_request_to_die( 'The Cart-Token on this WooPay request is invalid or expired.' );
+	}
+
+	/**
+	 * Asserts the current request is refused by determine_current_user_for_woopay().
+	 *
+	 * @param string $expected_message The message the request should be refused with.
+	 */
+	private function expect_woopay_request_to_die( string $expected_message ) {
+		try {
+			WooPay_Session::determine_current_user_for_woopay( null );
+		} catch ( WPDieException $e ) {
+			$this->assertSame( $expected_message, $e->getMessage() );
+			$this->assertSame( 401, $e->getCode() );
+
+			return;
+		}
+
+		$this->fail( 'Expected the request to be refused, but it was allowed through.' );
+	}
+
 	public function test_nonce_is_withheld_from_the_rest_route_when_the_email_is_not_attested() {
 		$this->unsign_request();
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
