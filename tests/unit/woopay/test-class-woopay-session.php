@@ -534,6 +534,58 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 	}
 
+	public function test_envelope_is_refused_on_a_second_request() {
+		$this->unsign_request();
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+
+		// A second request replaying the same envelope is the attack: it is still fresh,
+		// still sealed correctly, and would otherwise mint a nonce for that shopper.
+		$this->reset_resolved_attestations();
+
+		$this->assertNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	public function test_envelope_serves_every_caller_within_one_request() {
+		$this->unsign_request();
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		// The permission check, the email lookup and the nonce gate each resolve the
+		// envelope independently. Spending it on the first of them would break checkout.
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertSame( 'shopper@example.com', WooPay_Session::get_woopay_attested_email() );
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+	}
+
+	public function test_spending_one_envelope_does_not_affect_another() {
+		$this->unsign_request();
+
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+
+		// A shopper's envelope being spent must not lock anyone else out.
+		$this->reset_resolved_attestations();
+		$_GET['encrypted_data'] = $this->build_envelope( 'other@example.com' );
+
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+	}
+
+	public function test_stale_envelope_is_not_spent_before_it_is_rejected() {
+		$this->unsign_request();
+
+		// A stale envelope is refused on freshness, so it never reaches the claim — the
+		// rejection reason stays 'stale' rather than turning into 'already used'.
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+
+		$this->assertNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertFalse( $this->attestation_was_claimed( $_GET['encrypted_data']['hash'] ) );
+	}
+
 	public function test_envelope_does_not_attest_when_opted_out() {
 		$this->unsign_request();
 		$this->deny_cart_token_auth();
@@ -576,6 +628,29 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'shopper@example.com', WooPay_Session::get_user_email( wp_get_current_user() ) );
 
 		unset( $_GET['email'] );
+	}
+
+	/**
+	 * Forgets attestations resolved so far, standing in for a fresh request.
+	 *
+	 * The per-request memo is what lets several callers share one envelope, so replay has
+	 * to be asserted across requests rather than within one.
+	 */
+	private function reset_resolved_attestations() {
+		$property = new ReflectionProperty( WooPay_Session::class, 'resolved_attestations' );
+		$property->setAccessible( true );
+		$property->setValue( null, [] );
+	}
+
+	/**
+	 * Whether an envelope has been recorded as spent.
+	 *
+	 * @param string $hash The envelope's `hash` field.
+	 *
+	 * @return bool True if the envelope was claimed.
+	 */
+	private function attestation_was_claimed( string $hash ): bool {
+		return false !== get_transient( WooPay_Session::ATTESTATION_CLAIM_PREFIX . md5( $hash ) );
 	}
 
 	/**

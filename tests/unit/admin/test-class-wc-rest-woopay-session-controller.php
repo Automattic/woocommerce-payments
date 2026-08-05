@@ -6,6 +6,7 @@
  */
 
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -89,6 +90,18 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
+	public function test_permission_is_denied_for_a_replayed_envelope() {
+		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		$this->assertTrue( $this->controller->check_permission() );
+
+		// The envelope rides in the query string, so it reaches access logs and browser
+		// history. Once delivered it has to be worthless to whoever reads it there.
+		$this->reset_resolved_attestations();
+
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
 	public function test_permission_is_denied_for_an_attested_email_when_opted_out() {
 		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
 
@@ -115,6 +128,18 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0';
 
 		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	/**
+	 * Forgets attestations resolved so far, standing in for a fresh request.
+	 *
+	 * The per-request memo is what lets several callers share one envelope, so replay has
+	 * to be asserted across requests rather than within one.
+	 */
+	private function reset_resolved_attestations() {
+		$property = new ReflectionProperty( WooPay_Session::class, 'resolved_attestations' );
+		$property->setAccessible( true );
+		$property->setValue( null, [] );
 	}
 
 	/**

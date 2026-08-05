@@ -53,10 +53,28 @@ class WooPay_Session {
 	/**
 	 * How old a WooPay attestation envelope may be, in seconds.
 	 *
-	 * The envelope carries no nonce of its own, so freshness is the only thing standing
-	 * between it and unlimited replay by anyone who observes one. Five minutes.
+	 * The envelope carries no nonce of its own, so freshness bounds how long a replay of
+	 * an observed one stays interesting. Five minutes. Each envelope is also spent on
+	 * first use — see `claim_attestation()` — so this bounds the window in which a
+	 * *never-delivered* envelope could be raced, not one already used.
 	 */
 	const ATTESTATION_MAX_AGE = 300;
+
+	/**
+	 * Transient prefix recording that an attestation envelope has been spent.
+	 */
+	const ATTESTATION_CLAIM_PREFIX = 'wcpay_woopay_attestation_';
+
+	/**
+	 * Attestations already resolved on this request, keyed by envelope fingerprint.
+	 *
+	 * The permission check, the email lookup and the nonce gate each ask independently,
+	 * and an envelope may only be spent once — so the answer has to be remembered rather
+	 * than recomputed, or the second caller would see a replay of the first.
+	 *
+	 * @var array<string, array|null>
+	 */
+	private static $resolved_attestations = [];
 
 	/**
 	 * Order ID used for error handling.
@@ -1005,7 +1023,10 @@ class WooPay_Session {
 	 * the opt-out covers both channels, so this returns null there regardless of how good
 	 * the envelope is. See `is_cart_token_auth_allowed()`.
 	 *
-	 * @return array|null The attested payload, or null when opted out, absent, malformed, or stale.
+	 * An envelope is spent on first use and refused thereafter, so observing one in a URL
+	 * buys nothing once it has been delivered. See `claim_attestation()`.
+	 *
+	 * @return array|null The attested payload, or null when opted out, absent, malformed, stale, or spent.
 	 */
 	public static function get_woopay_attestation(): ?array {
 		// A store that answers no to `supports_cart_token_auth` has WooPay signing its
@@ -1035,6 +1056,14 @@ class WooPay_Session {
 			$parts[ $key ] = sanitize_text_field( wp_unslash( $envelope[ $key ] ) );
 		}
 
+		// The HMAC covers the IV and the ciphertext, and WooPay seals each envelope under a
+		// fresh IV, so it identifies this one envelope and nothing else.
+		$fingerprint = md5( $parts['hash'] );
+
+		if ( array_key_exists( $fingerprint, self::$resolved_attestations ) ) {
+			return self::$resolved_attestations[ $fingerprint ];
+		}
+
 		$decrypted = WooPay_Utilities::decrypt_signed_data( $parts );
 
 		if ( ! is_array( $decrypted ) || ! isset( $decrypted['timestamp'] ) ) {
@@ -1046,6 +1075,16 @@ class WooPay_Session {
 
 			return null;
 		}
+
+		if ( ! self::claim_attestation( $fingerprint ) ) {
+			Logger::log( 'WooPay attestation rejected: envelope has already been used.' );
+
+			self::$resolved_attestations[ $fingerprint ] = null;
+
+			return null;
+		}
+
+		self::$resolved_attestations[ $fingerprint ] = $decrypted;
 
 		return $decrypted;
 	}
@@ -1099,6 +1138,36 @@ class WooPay_Session {
 		$attested_email = self::get_woopay_attested_email();
 
 		return null !== $attested_email && 0 === strcasecmp( $attested_email, $email );
+	}
+
+	/**
+	 * Spends an attestation envelope, returning false if it was already spent.
+	 *
+	 * Freshness alone leaves an observed envelope replayable for the whole window, and
+	 * these travel in query strings — so they reach access logs, proxy traces and browser
+	 * history. Replaying one is not merely a session read: it mints
+	 * `email_verified_session_nonce` for whichever user the envelope names, which is
+	 * enough to resolve as that user on the Store API. Spending it on arrival is what
+	 * keeps an observed envelope worthless. See WOOPAY-463.
+	 *
+	 * The claim outlives the freshness window on both sides, since `ATTESTATION_MAX_AGE`
+	 * is applied to the absolute clock difference and so also admits envelopes dated
+	 * slightly ahead of the store.
+	 *
+	 * @param string $fingerprint Fingerprint of the envelope being spent.
+	 *
+	 * @return bool True if this call spent the envelope, false if it was already spent.
+	 */
+	private static function claim_attestation( string $fingerprint ): bool {
+		$key = self::ATTESTATION_CLAIM_PREFIX . $fingerprint;
+
+		if ( false !== get_transient( $key ) ) {
+			return false;
+		}
+
+		set_transient( $key, time(), 2 * self::ATTESTATION_MAX_AGE );
+
+		return true;
 	}
 
 	/**
