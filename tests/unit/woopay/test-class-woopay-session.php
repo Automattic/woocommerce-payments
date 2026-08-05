@@ -630,6 +630,80 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		unset( $_GET['email'] );
 	}
 
+	public function test_nonce_is_withheld_from_the_rest_route_when_the_email_is_not_attested() {
+		$this->unsign_request();
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		// Names the shopper in a plain parameter, which anyone can do.
+		$_GET['email'] = $shopper->user_email;
+
+		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+
+		// The REST route hands this array back in plaintext, so an unattested caller must
+		// not be able to name an email and be given a nonce minted for that account.
+		$this->assertArrayNotHasKey( 'email_verified_session_nonce', $request );
+
+		unset( $_GET['email'] );
+	}
+
+	public function test_nonce_is_minted_for_the_rest_route_when_the_email_is_attested() {
+		$this->unsign_request();
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		$_GET['encrypted_data'] = $this->build_envelope( $shopper->user_email );
+
+		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+
+		// This is the flow the gate exists to permit: WooPay vouched for the email, so the
+		// shopper gets the nonce that unlocks their balance.
+		$this->assertArrayHasKey( 'email_verified_session_nonce', $request );
+	}
+
+	public function test_nonce_is_minted_without_an_attestation_when_it_is_not_disclosed() {
+		$this->unsign_request();
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		$_GET['email'] = $shopper->user_email;
+
+		// No WP_REST_Request means the frontend or redirect caller, which encrypts the
+		// payload or POSTs it server-side. Nothing is disclosed, so nothing is withheld —
+		// gating these too would break the paths that never leaked the nonce.
+		$request = WooPay_Session::get_init_session_request();
+
+		$this->assertArrayHasKey( 'email_verified_session_nonce', $request );
+
+		unset( $_GET['email'] );
+	}
+
+	/**
+	 * Puts a guest shopper in front of a store carrying a redeemable balance for them.
+	 *
+	 * The nonce is only minted for a logged-out shopper who holds an account on the store
+	 * and has adapted extension data, so all three have to be true before the attestation
+	 * gate is the thing being tested.
+	 *
+	 * @return WP_User The shopper's store account.
+	 */
+	private function setup_shopper_with_adapted_extension_balance() {
+		$this->setup_adapted_extensions();
+
+		add_action(
+			'woocommerce_blocks_checkout_block_registration',
+			function ( $integration_registry ) {
+				$integration_registry->register( new WC_Points_Rewards_Integration() );
+			}
+		);
+
+		update_option( 'wc_points_rewards_redeem_points_ratio', '100:1' );
+
+		// get_users_points() returns the user ID, so any real user has a balance.
+		$shopper = self::factory()->user->create_and_get();
+
+		wp_set_current_user( 0 );
+
+		return $shopper;
+	}
+
 	/**
 	 * Forgets attestations resolved so far, standing in for a fresh request.
 	 *
