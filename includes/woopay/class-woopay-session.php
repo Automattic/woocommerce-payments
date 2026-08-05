@@ -196,9 +196,38 @@ class WooPay_Session {
 		$session_data    = $session_handler->get_session( $payload->user_id );
 		$customer        = maybe_unserialize( $session_data['customer'] );
 
-		// If the token is already authenticated, return the customer ID.
+		/*
+		 * If the token is already authenticated, return the customer ID.
+		 *
+		 * A signed request stands on its own: the blog token proves WooPay composed it.
+		 * Unsigned, the Cart-Token alone would resolve the account behind the session, and
+		 * that is a weaker pairing than this path used to require — so ask for the same
+		 * store-minted nonce the verified-email branch below does.
+		 *
+		 * Worth being honest about the limit: WooPay sends `Nonce` and `Cart-Token` as
+		 * headers on one request, so this does nothing against a caller who captured the
+		 * whole request. What it stops is a Cart-Token on its own resolving a registered
+		 * user.
+		 *
+		 * The nonce is `session_nonce` from the session payload, rotated from this store's
+		 * own responses afterwards, so it stays bound to the same user across a checkout.
+		 * A shopper whose session-creation identity differs from their cart session's falls
+		 * back to guest, which detaches the order from their account — logged rather than
+		 * silent, since that is the failure worth noticing here.
+		 */
 		if ( is_numeric( $customer['id'] ) && intval( $customer['id'] ) > 0 ) {
-			return intval( $customer['id'] );
+			$customer_id = intval( $customer['id'] );
+
+			if (
+				self::AUTH_BLOG_TOKEN !== self::get_request_auth_level() &&
+				! self::has_store_minted_nonce_for_user( $customer_id )
+			) {
+				Logger::log( 'WooPay Cart-Token rejected: no store-minted nonce bound to the session customer. Resolving as guest.' );
+
+				return null;
+			}
+
+			return $customer_id;
 		}
 
 		$woopay_verified_email_address = self::get_woopay_verified_email_address();

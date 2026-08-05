@@ -630,6 +630,61 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		unset( $_GET['email'] );
 	}
 
+	public function test_authenticated_cart_token_is_accepted_with_a_store_minted_nonce() {
+		$shopper = self::factory()->user->create_and_get();
+
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $shopper->ID );
+
+		$this->setup_session( $shopper->ID );
+
+		$this->assertEquals( $shopper->ID, WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	public function test_authenticated_cart_token_is_rejected_without_a_nonce() {
+		$shopper = self::factory()->user->create_and_get();
+
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+
+		$this->setup_session( $shopper->ID );
+
+		// A Cart-Token on its own no longer resolves the account behind the session.
+		$this->assertNull( WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	public function test_authenticated_cart_token_is_rejected_with_a_nonce_for_another_user() {
+		$shopper = self::factory()->user->create_and_get();
+		$other   = self::factory()->user->create_and_get();
+
+		$this->unsign_request();
+		$this->allow_cart_token_auth();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $other->ID );
+
+		$this->setup_session( $shopper->ID );
+
+		$this->assertNull( WooPay_Session::get_user_id_from_cart_token() );
+	}
+
+	public function test_authenticated_cart_token_does_not_require_a_nonce_when_signed() {
+		$shopper = self::factory()->user->create_and_get();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+
+		$this->setup_session( $shopper->ID );
+
+		// A signed request proves WooPay composed it, so the nonce adds nothing. WooPay
+		// versions that still sign must keep working unchanged.
+		$this->assertEquals( $shopper->ID, WooPay_Session::get_user_id_from_cart_token() );
+	}
+
 	public function test_unauthenticated_request_is_rejected_as_carrying_nothing() {
 		$this->unsign_request();
 
