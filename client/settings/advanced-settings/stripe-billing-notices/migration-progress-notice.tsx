@@ -69,9 +69,6 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 		return null;
 	}
 
-	// Mark the notice as shown.
-	context.isMigrationInProgressShown = true;
-
 	return (
 		<InlineNotice
 			status="info"
