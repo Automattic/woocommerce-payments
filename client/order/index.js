@@ -39,6 +39,11 @@ function disableWooOrderRefundButton( disputeStatus ) {
 			'Refunds and order editing have been disabled as a result of a lost dispute.',
 			'woocommerce-payments'
 		);
+	} else if ( disputeStatus === 'charge_refunded' ) {
+		tooltipText = __(
+			'Refunds and order editing have been disabled because the payment was refunded to resolve a dispute.',
+			'woocommerce-payments'
+		);
 	}
 
 	jQuery( refundButton )
