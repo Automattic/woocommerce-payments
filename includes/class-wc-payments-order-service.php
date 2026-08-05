@@ -12,6 +12,7 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Exceptions\Order_Not_Found_Exception;
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
@@ -96,6 +97,14 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const WCPAY_FRAUD_OUTCOME_STATUS_META_KEY = '_wcpay_fraud_outcome_status';
+
+	/**
+	 * Meta key used to store the risk filter results that blocked a payment or held it for review,
+	 * as a JSON-encoded map of rule key => outcome (e.g. {"avs_verification":"block"}).
+	 *
+	 * @const string
+	 */
+	const WCPAY_FRAUD_RULESET_RESULTS_META_KEY = '_wcpay_fraud_ruleset_results';
 
 	/**
 	 * Meta key used to store WCPay intent currency.
@@ -219,6 +228,18 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const IPP_CHANNEL_META_KEY = '_wcpay_ipp_channel';
+
+	/**
+	 * Meta key holding the IDs of the disputes recorded against this order that have
+	 * not closed yet. The list is order-wide; it is not keyed or scoped per charge.
+	 *
+	 * A single charge can carry several disputes at once (AmEx and Klarna raise one
+	 * per separately shipped item), and nothing in the close webhook says whether the
+	 * others are still running, so the plugin has to keep its own tally.
+	 *
+	 * @const string
+	 */
+	const WCPAY_OPEN_DISPUTE_IDS_META_KEY = '_wcpay_open_dispute_ids';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -514,23 +535,27 @@ class WC_Payments_Order_Service {
 	/**
 	 * Leaves order status as Pending, adds fraud meta data, and adds the fraud blocked note.
 	 *
-	 * @param WC_Order $order         Order object.
-	 * @param string   $intent_id     The ID of the intent associated with this order.
-	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param WC_Order $order           Order object.
+	 * @param string   $intent_id       The ID of the intent associated with this order.
+	 * @param string   $intent_status   The status of the intent related to this order.
+	 * @param array    $ruleset_results The risk filter results that blocked the payment, as a map of rule key => outcome.
 	 *
 	 * @return void
 	 */
-	public function mark_order_blocked_for_fraud( $order, $intent_id, $intent_status ) {
+	public function mark_order_blocked_for_fraud( $order, $intent_id, $intent_status, array $ruleset_results = [] ) {
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$note = $this->generate_fraud_blocked_note( $order );
+		$note = $this->generate_fraud_blocked_note( $order, $intent_id, $ruleset_results );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
 
+		if ( [] !== $ruleset_results ) {
+			$this->set_fraud_ruleset_results_for_order( $order, $ruleset_results );
+		}
 		$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_BLOCK );
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::BLOCK );
 		$order->add_order_note( $note );
@@ -563,6 +588,7 @@ class WC_Payments_Order_Service {
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
+		$this->add_open_dispute_id( $order, $dispute_id );
 		$order->save();
 	}
 
@@ -594,6 +620,8 @@ class WC_Payments_Order_Service {
 		add_filter( 'woocommerce_email_enabled_customer_refunded_order', '__return_false' );
 		add_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
+		$open_dispute_ids = $this->close_open_dispute_id( $order, $dispute_id );
+
 		if ( 'lost' === $status ) {
 			// Use dispute summary data if available to determine refund amount.
 			$refund_amount = $order->get_remaining_refund_amount();
@@ -624,8 +652,36 @@ class WC_Payments_Order_Service {
 					'line_items' => $line_items,
 				]
 			);
+		} elseif ( ! empty( $open_dispute_ids ) ) {
+			// Another dispute on the same charge is still running its evidence deadline, and
+			// the hold it put on the order has to outlive this one. Leave the status alone
+			// rather than picking a new one: the sibling's own close will resolve it.
+			$order->add_order_note(
+				sprintf(
+					/* translators: %d: the number of disputes on this payment that are still open */
+					_n(
+						'The order was not marked as completed because %d other dispute on this payment is still open.',
+						'The order was not marked as completed because %d other disputes on this payment are still open.',
+						count( $open_dispute_ids ),
+						'woocommerce-payments'
+					),
+					count( $open_dispute_ids )
+				)
+			);
+		} elseif ( $this->is_order_fully_refunded( $order ) ) {
+			// Promoting a fully refunded order to completed would make Analytics count it
+			// as revenue again. It still has to leave the dispute hold, though: no other
+			// webhook will arrive to move it off on-hold.
+			if ( ! $order->has_status( Order_Status::REFUNDED ) ) {
+				$this->update_order_status( $order, Order_Status::REFUNDED );
+			}
+
+			$order->add_order_note(
+				__( 'The order was not marked as completed because it has already been fully refunded.', 'woocommerce-payments' )
+			);
 		} else {
-			// TODO: This should revert to the status the order was in before the dispute was created.
+			// TODO: Revert to the status the order held before the dispute. Nothing records
+			// the pre-dispute status, so completed is the best guess available here.
 			$this->update_order_status( $order, Order_Status::COMPLETED );
 			$order->save();
 		}
@@ -1121,6 +1177,35 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the fraud ruleset results for an order.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  array $ruleset_results The ruleset results, as a map of rule key => outcome.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_fraud_ruleset_results_for_order( $order, array $ruleset_results ) {
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::WCPAY_FRAUD_RULESET_RESULTS_META_KEY, wp_json_encode( $ruleset_results ) );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the fraud ruleset results for an order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return array The ruleset results, as a map of rule key => outcome. Empty when none were stored.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_fraud_ruleset_results_for_order( $order ): array {
+		$order = $this->get_order( $order );
+
+		return $this->decode_ruleset_results( (string) $order->get_meta( self::WCPAY_FRAUD_RULESET_RESULTS_META_KEY, true ) );
+	}
+
+	/**
 	 * Set the fraud_meta_box_type for an order.
 	 *
 	 * @param  mixed  $order The order.
@@ -1554,11 +1639,16 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_order_held_for_review_for_fraud( $order, $intent_data ) {
-		$note = $this->generate_fraud_held_for_review_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+		$ruleset_results = $intent_data['fraud_ruleset_results'] ?? [];
+
+		$note = $this->generate_fraud_held_for_review_note( $order, $intent_data['intent_id'], $intent_data['charge_id'], $ruleset_results );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
+		if ( [] !== $ruleset_results ) {
+			$this->set_fraud_ruleset_results_for_order( $order, $ruleset_results );
+		}
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_REVIEW );
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW );
@@ -2166,13 +2256,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the fraud held for review order note.
 	 *
-	 * @param WC_Order $order     Order object.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param WC_Order $order           Order object.
+	 * @param string   $intent_id       The ID of the intent associated with this order.
+	 * @param string   $charge_id       The charge ID related to the intent/order.
+	 * @param array    $ruleset_results The risk filter results that held the payment for review, as a map of rule key => outcome.
 	 *
 	 * @return string
 	 */
-	private function generate_fraud_held_for_review_note( $order, $intent_id, $charge_id ): string {
+	private function generate_fraud_held_for_review_note( $order, $intent_id, $charge_id, array $ruleset_results = [] ): string {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url(
 			$intent_id,
 			$charge_id,
@@ -2182,57 +2273,95 @@ class WC_Payments_Order_Service {
 			]
 		);
 
-		$note = sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the amount held for review, %2: transaction details URL */
-				__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
-				[
-					'&#x26D4;' => '&#x26D4;',
-					'strong'   => '<strong>',
-					'br'       => '<br>',
-					'a'        => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
-				]
-			),
-			$this->get_order_amount( $order ),
-			$transaction_url
+		return $this->generate_fraud_note(
+			$order,
+			$transaction_url,
+			$ruleset_results,
+			/* translators: %1: the amount held for review, %2: the list of risk filters that held the payment for review */
+			__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by the following risk filters:<br>%2$s<br><br><a>View more details</a>.', 'woocommerce-payments' ),
+			/* translators: %1: the amount held for review */
+			__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' )
 		);
-
-		return $note;
 	}
 
 	/**
 	 * Generates the fraud blocked order note.
 	 *
-	 * @param WC_Order $order     Order object.
+	 * @param WC_Order $order           Order object.
+	 * @param string   $intent_id       The ID of the payment intent that was blocked, when one exists.
+	 * @param array    $ruleset_results The risk filter results that blocked the payment, as a map of rule key => outcome.
 	 *
 	 * @return string
 	 */
-	private function generate_fraud_blocked_note( $order ): string {
+	private function generate_fraud_blocked_note( $order, $intent_id, array $ruleset_results = [] ): string {
+		// Key the link on the specific payment intent so each blocked attempt on an order points to
+		// its own transaction; fall back to the order id for rule engine blocks, which have no intent.
 		$transaction_url = WC_Payments_Utils::compose_transaction_url(
-			$order->get_id(),
-			'',
+			$intent_id,
+			(string) $order->get_id(),
 			[
 				'status_is' => Rule::FRAUD_OUTCOME_BLOCK,
 				'type_is'   => 'order_note',
 			]
 		);
 
-		$note = sprintf(
+		return $this->generate_fraud_note(
+			$order,
+			$transaction_url,
+			$ruleset_results,
+			/* translators: %1: the blocked amount, %2: the list of risk filters that blocked the payment */
+			__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by the following risk filters:<br>%2$s<br><br><a>View more details</a>.', 'woocommerce-payments' ),
+			/* translators: %1: the blocked amount */
+			__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' )
+		);
+	}
+
+	/**
+	 * Builds the fraud blocked/held-for-review order note, choosing between a template listing the
+	 * fired risk filters and a generic fallback when none are known (e.g. card-testing-prevention
+	 * blocks, which carry no ruleset data).
+	 *
+	 * @param WC_Order $order                 Order object.
+	 * @param string   $transaction_url       Transaction details URL, or an empty string when none is available.
+	 * @param array    $ruleset_results       The risk filter results, as a map of rule key => outcome.
+	 * @param string   $with_filters_template Translated template used when the fired risk filters are known. Takes the amount, the risk filter list, and the transaction URL, in that order.
+	 * @param string   $generic_template      Translated fallback template used when no risk filters are known. Takes the amount and the transaction URL, in that order.
+	 *
+	 * @return string
+	 */
+	private function generate_fraud_note( WC_Order $order, string $transaction_url, array $ruleset_results, string $with_filters_template, string $generic_template ): string {
+		$labels = Fraud_Risk_Tools::get_ruleset_result_labels( $ruleset_results );
+
+		if ( [] !== $labels ) {
+			$rules_list = '&#8226; ' . implode( '<br>&#8226; ', array_map( 'esc_html', $labels ) );
+
+			return sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					$with_filters_template,
+					[
+						'strong' => '<strong>',
+						'br'     => '<br>',
+						'a'      => ! empty( $transaction_url ) ? '<a href="%3$s" target="_blank" rel="noopener noreferrer">' : '<code>',
+					]
+				),
+				$this->get_order_amount( $order ),
+				$rules_list,
+				$transaction_url
+			);
+		}
+
+		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the blocked amount, %2: transaction details URL */
-				__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
+				$generic_template,
 				[
-					'&#x1F6AB;' => '&#x1F6AB;',
-					'strong'    => '<strong>',
-					'br'        => '<br>',
-					'a'         => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
+					'strong' => '<strong>',
+					'br'     => '<br>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="%2$s" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$this->get_order_amount( $order ),
 			$transaction_url
 		);
-
-		return $note;
 	}
 
 	/**
@@ -2502,6 +2631,96 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Checks whether the order has already been refunded in full.
+	 *
+	 * @param WC_Order $order The order being checked.
+	 *
+	 * @return bool True if the whole order total has been refunded, false otherwise.
+	 */
+	private function is_order_fully_refunded( WC_Order $order ): bool {
+		// Two independent clauses: has_status() catches WooCommerce's standard
+		// fully-refunded transition, the remaining-amount check catches stores that
+		// redirect it via woocommerce_order_fully_refunded_status, plus over-refunds.
+		// The total clamp guards only the second clause, since on a zero-total order
+		// (free / 100% coupon) the remaining amount is trivially 0.
+		return $order->has_status( Order_Status::REFUNDED )
+			|| ( (float) $order->get_total() > 0 && (float) $order->get_remaining_refund_amount() <= 0 );
+	}
+
+	/**
+	 * Reads the IDs of the charge's disputes that have not closed yet.
+	 *
+	 * @param WC_Order $order The order the disputed charge belongs to.
+	 *
+	 * @return string[] The open dispute IDs, empty when none were ever recorded.
+	 */
+	private function get_open_dispute_ids( WC_Order $order ): array {
+		$open_dispute_ids = $order->get_meta( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY, true );
+
+		return is_array( $open_dispute_ids ) ? array_values( $open_dispute_ids ) : [];
+	}
+
+	/**
+	 * Records a dispute as open on the order. Does not save the order.
+	 *
+	 * @param WC_Order $order      The order the disputed charge belongs to.
+	 * @param string   $dispute_id The ID of the dispute that was created.
+	 *
+	 * @return void
+	 */
+	private function add_open_dispute_id( WC_Order $order, string $dispute_id ) {
+		if ( empty( $dispute_id ) ) {
+			return;
+		}
+
+		$open_dispute_ids = $this->get_open_dispute_ids( $order );
+		if ( in_array( $dispute_id, $open_dispute_ids, true ) ) {
+			return;
+		}
+
+		$open_dispute_ids[] = $dispute_id;
+		$order->update_meta_data( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY, $open_dispute_ids );
+	}
+
+	/**
+	 * Drops a dispute from the order's open list and reports which disputes are left.
+	 *
+	 * @param WC_Order $order      The order the disputed charge belongs to.
+	 * @param string   $dispute_id The ID of the dispute that closed.
+	 *
+	 * @return string[] The disputes still open on the charge.
+	 */
+	private function close_open_dispute_id( WC_Order $order, string $dispute_id ): array {
+		// Without an ID there is no telling which of the charge's disputes just closed, so
+		// leave the record untouched and report nothing open. Callers still on the older
+		// signature — and orders whose disputes predate this bookkeeping — keep the
+		// behaviour they had before.
+		if ( '' === $dispute_id ) {
+			return [];
+		}
+
+		$open_dispute_ids = $this->get_open_dispute_ids( $order );
+		$remaining        = array_values( array_diff( $open_dispute_ids, [ $dispute_id ] ) );
+
+		if ( $remaining === $open_dispute_ids ) {
+			return $remaining;
+		}
+
+		if ( empty( $remaining ) ) {
+			$order->delete_meta_data( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY );
+		} else {
+			$order->update_meta_data( self::WCPAY_OPEN_DISPUTE_IDS_META_KEY, $remaining );
+		}
+
+		// Nothing further down this method is guaranteed to save the order: the lost branch
+		// refunds through a separate order instance and the sibling-open branch changes no
+		// status at all.
+		$order->save();
+
+		return $remaining;
+	}
+
+	/**
 	 * Checks to see if the current order, and a fresh copy of the order from the database are paid.
 	 *
 	 * @param WC_Order $order The order being checked.
@@ -2599,11 +2818,13 @@ class WC_Payments_Order_Service {
 	private function get_intent_data( WC_Payments_API_Abstract_Intention $intent ): array {
 
 		$intent_data = [
-			'intent_id'           => $intent->get_id(),
-			'intent_status'       => $intent->get_status(),
-			'charge_id'           => '',
-			'fraud_outcome'       => $intent->get_metadata()['fraud_outcome'] ?? '',
-			'payment_method_type' => $intent->get_payment_method_type(),
+			'intent_id'             => $intent->get_id(),
+			'intent_status'         => $intent->get_status(),
+			'charge_id'             => '',
+			'fraud_outcome'         => $intent->get_metadata()['fraud_outcome'] ?? '',
+			// The server stores the fired risk filters in the intent metadata as a JSON string, alongside `fraud_outcome`.
+			'fraud_ruleset_results' => $this->decode_ruleset_results( (string) ( $intent->get_metadata()['fraud_ruleset_results'] ?? '' ) ),
+			'payment_method_type'   => $intent->get_payment_method_type(),
 		];
 
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
@@ -2613,6 +2834,19 @@ class WC_Payments_Order_Service {
 		}
 
 		return $intent_data;
+	}
+
+	/**
+	 * Decodes a JSON-encoded map of rule key => outcome, e.g. from order or intent metadata.
+	 *
+	 * @param string $json The JSON-encoded ruleset results, or an empty string when none are stored.
+	 *
+	 * @return array The decoded ruleset results. Empty when the input isn't a valid JSON array.
+	 */
+	private function decode_ruleset_results( string $json ): array {
+		$results = json_decode( $json, true );
+
+		return is_array( $results ) ? $results : [];
 	}
 
 	/**
