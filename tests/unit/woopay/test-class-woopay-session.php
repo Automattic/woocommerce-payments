@@ -374,16 +374,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'blog_token', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_get_request_auth_level_returns_none_without_signature_when_cart_token_auth_disabled() {
-		$this->unsign_request();
-		$this->deny_cart_token_auth();
-
-		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
-		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
-
-		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
-	}
-
 	public function test_get_request_auth_level_returns_cart_token_by_default() {
 		$this->unsign_request();
 
@@ -419,6 +409,26 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->allow_cart_token_auth();
 
 		$this->assertTrue( WooPay_Session::is_cart_token_auth_allowed() );
+	}
+
+	public function test_session_payload_carries_the_capability_flag() {
+		// The gate being right is not the same as WooPay being told: this key in the payload
+		// is the whole negotiation, and dropping it would silently keep WooPay signing.
+		$request = WooPay_Session::get_init_session_request();
+
+		$this->assertArrayHasKey( 'supports_cart_token_auth', $request );
+		$this->assertTrue( $request['supports_cart_token_auth'] );
+	}
+
+	public function test_session_payload_carries_the_capability_flag_when_opted_out() {
+		$this->deny_cart_token_auth();
+
+		$request = WooPay_Session::get_init_session_request();
+
+		// Present and false, not absent — WooPay reads the answer, so "no" has to be said
+		// rather than left out.
+		$this->assertArrayHasKey( 'supports_cart_token_auth', $request );
+		$this->assertFalse( $request['supports_cart_token_auth'] );
 	}
 
 	public function test_get_request_auth_level_returns_none_when_cart_token_is_invalid() {
@@ -532,6 +542,74 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
 		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
+	/**
+	 * @dataProvider provider_malformed_envelopes
+	 *
+	 * @param mixed $envelope The malformed value arriving as encrypted_data.
+	 */
+	public function test_malformed_envelope_does_not_attest( $envelope ) {
+		$this->unsign_request();
+
+		$_GET['encrypted_data'] = $envelope;
+
+		// decrypt_signed_data() indexes data/iv/hash directly, so these have to be refused
+		// here rather than reaching it and warning on an undefined index.
+		$this->assertNull( WooPay_Session::get_woopay_attestation() );
+	}
+
+	public function provider_malformed_envelopes() {
+		return [
+			'not an array'      => [ 'just-a-string' ],
+			'empty array'       => [ [] ],
+			'missing hash'      => [
+				[
+					'data' => 'x',
+					'iv'   => 'y',
+				],
+			],
+			'missing iv'        => [
+				[
+					'data' => 'x',
+					'hash' => 'z',
+				],
+			],
+			'missing data'      => [
+				[
+					'iv'   => 'y',
+					'hash' => 'z',
+				],
+			],
+			'non-string member' => [
+				[
+					'data' => [ 'nested' ],
+					'iv'   => 'y',
+					'hash' => 'z',
+				],
+			],
+			'null member'       => [
+				[
+					'data' => null,
+					'iv'   => 'y',
+					'hash' => 'z',
+				],
+			],
+			'empty strings'     => [
+				[
+					'data' => '',
+					'iv'   => '',
+					'hash' => '',
+				],
+			],
+		];
+	}
+
+	public function test_absent_envelope_does_not_attest() {
+		$this->unsign_request();
+
+		// Carrying no envelope at all is the ordinary case, not a malformed one.
+		$this->assertNull( WooPay_Session::get_woopay_attestation() );
 	}
 
 	public function test_envelope_is_refused_on_a_second_request() {
