@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { addFilter, removeAllFilters } from '@wordpress/hooks';
+import { addFilter, removeFilter } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -11,6 +11,8 @@ import {
 	getSetupFutureUsageForCart,
 	getSetupFutureUsageForContext,
 } from '../subscriptions';
+
+const testFilterNamespace = 'wcpay-test/setup-future-usage';
 
 const buildSubscriptionSchedule = ( { billingPeriod = 'month' } = {} ) => ( {
 	billing_period: billingPeriod,
@@ -182,7 +184,10 @@ describe( 'cartHasAnySubscription', () => {
 
 describe( 'getSetupFutureUsageForCart', () => {
 	afterEach( () => {
-		removeAllFilters( 'wcpay.express-checkout.setup-future-usage' );
+		removeFilter(
+			'wcpay.express-checkout.setup-future-usage',
+			testFilterNamespace
+		);
 	} );
 
 	describe( 'falling back to the WC Subscriptions heuristic', () => {
@@ -249,7 +254,7 @@ describe( 'getSetupFutureUsageForCart', () => {
 		it( 'can declare off_session for a cart that looks regular', () => {
 			addFilter(
 				'wcpay.express-checkout.setup-future-usage',
-				'test/declare',
+				testFilterNamespace,
 				() => 'off_session'
 			);
 
@@ -262,7 +267,7 @@ describe( 'getSetupFutureUsageForCart', () => {
 			const seen: unknown[] = [];
 			addFilter(
 				'wcpay.express-checkout.setup-future-usage',
-				'test/suppress',
+				testFilterNamespace,
 				( value: unknown, cartData: unknown ) => {
 					seen.push( cartData );
 					return null;
@@ -284,7 +289,10 @@ describe( 'getSetupFutureUsageForCart', () => {
 
 describe( 'getSetupFutureUsageForContext', () => {
 	afterEach( () => {
-		removeAllFilters( 'wcpay.express-checkout.setup-future-usage' );
+		removeFilter(
+			'wcpay.express-checkout.setup-future-usage',
+			testFilterNamespace
+		);
 		delete ( global as Record< string, unknown > )
 			.wcpayExpressCheckoutParams;
 	} );
@@ -307,7 +315,7 @@ describe( 'getSetupFutureUsageForContext', () => {
 		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
 		addFilter(
 			'wcpay.express-checkout.setup-future-usage',
-			'test/declare',
+			testFilterNamespace,
 			() => 'off_session'
 		);
 
