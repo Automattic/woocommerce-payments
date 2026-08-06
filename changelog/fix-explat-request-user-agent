@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Send a WooPayments user agent on ExPlat assignment requests so experiment assignments are not filtered out as bot traffic.
