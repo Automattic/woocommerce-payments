@@ -76,7 +76,11 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 	 * `methods_enabled_at_location` (the raw, currency-independent location
 	 * settings) to get the final set.
 	 *
-	 * @return array{express_checkout_methods: string[]}
+	 * Also carries the `setup_future_usage` the client must mint its ConfirmationToken
+	 * with. Deciding that server-side keeps one predicate — and one filter — behind every
+	 * express checkout surface, instead of each re-deriving it from the cart response.
+	 *
+	 * @return array{express_checkout_methods: string[], setup_future_usage: string|null}
 	 */
 	public function extend_cart_data() {
 		$methods = [];
@@ -89,7 +93,11 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 			$methods[] = 'amazon_pay';
 		}
 
-		return [ 'express_checkout_methods' => $methods ];
+		return [
+			'express_checkout_methods' => $methods,
+			// This endpoint has no page context, so the context is named rather than inferred.
+			'setup_future_usage'       => $this->express_checkout_helper->get_setup_future_usage( 'cart' ),
+		];
 	}
 
 	/**
@@ -107,6 +115,13 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 				'items'       => [
 					'type' => 'string',
 				],
+			],
+			'setup_future_usage'       => [
+				'description' => __( 'Whether Express Checkout should authorize the payment method for future off-session payments.', 'woocommerce-payments' ),
+				'type'        => [ 'string', 'null' ],
+				'enum'        => [ 'off_session', null ],
+				'context'     => [ 'view', 'edit' ],
+				'readonly'    => true,
 			],
 		];
 	}
