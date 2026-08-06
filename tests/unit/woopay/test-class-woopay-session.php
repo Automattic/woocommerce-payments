@@ -99,8 +99,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			$_SERVER['HTTP_NONCE'],
 			$_SERVER['HTTP_CART_TOKEN'],
 			$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'],
-			$_GET['encrypted_data'],
-			$_POST['encrypted_data']
+			$_GET[ WooPay_Session::ATTESTATION_PARAM ],
+			$_POST[ WooPay_Session::ATTESTATION_PARAM ]
 		);
 
 		parent::tear_down();
@@ -372,7 +372,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'blog_token', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_get_request_auth_level_returns_cart_token_by_default() {
+	public function test_get_request_auth_level_returns_cart_token_for_a_valid_cart_token() {
 		$this->unsign_request();
 
 		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
@@ -380,7 +380,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'cart_token', WooPay_Session::get_request_auth_level() );
 	}
-
 
 	public function test_session_payload_carries_the_store_version() {
 		// WooPay decides whether to sign by comparing this against its own minimum, and
@@ -391,7 +390,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'wcpay_version', $request );
 		$this->assertSame( WCPAY_VERSION_NUMBER, $request['wcpay_version'] );
 	}
-
 
 	public function test_get_request_auth_level_returns_none_when_cart_token_is_invalid() {
 		$this->unsign_request();
@@ -476,7 +474,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_email_is_attested_by_a_fresh_envelope_for_that_email() {
 		$this->unsign_request();
 
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 	}
@@ -485,7 +483,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->unsign_request();
 
 		// The envelope is valid, but names someone else, so it vouches only for that address.
-		$_GET['encrypted_data'] = $this->build_envelope( 'other@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'other@example.com' );
 
 		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 	}
@@ -493,7 +491,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_stale_envelope_does_not_attest() {
 		$this->unsign_request();
 
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
 		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 	}
@@ -501,12 +499,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider provider_malformed_envelopes
 	 *
-	 * @param mixed $envelope The malformed value arriving as encrypted_data.
+	 * @param mixed $envelope The malformed value arriving as the attestation param.
 	 */
 	public function test_malformed_envelope_does_not_attest( $envelope ) {
 		$this->unsign_request();
 
-		$_GET['encrypted_data'] = $envelope;
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
 
 		// decrypt_signed_data() indexes data/iv/hash directly, so these have to be refused
 		// here rather than reaching it and warning on an undefined index.
@@ -559,6 +557,18 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_guest_envelope_attests_without_naming_an_email() {
+		$this->unsign_request();
+
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope();
+
+		// A guest shopper has no account to name. The attestation still stands — it is
+		// what admits the request — but there is no email for it to vouch for.
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertNull( WooPay_Session::get_woopay_attested_account_email() );
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+	}
+
 	public function test_absent_envelope_does_not_attest() {
 		$this->unsign_request();
 
@@ -569,7 +579,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_envelope_is_refused_on_a_second_request() {
 		$this->unsign_request();
 
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
 
@@ -584,12 +594,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_envelope_serves_every_caller_within_one_request() {
 		$this->unsign_request();
 
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		// The permission check, the email lookup and the nonce gate each resolve the
 		// envelope independently. Spending it on the first of them would break checkout.
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
-		$this->assertSame( 'shopper@example.com', WooPay_Session::get_woopay_attested_email() );
+		$this->assertSame( 'shopper@example.com', WooPay_Session::get_woopay_attested_account_email() );
 		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
 	}
@@ -597,12 +607,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_spending_one_envelope_does_not_affect_another() {
 		$this->unsign_request();
 
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
 
 		// A shopper's envelope being spent must not lock anyone else out.
 		$this->reset_resolved_attestations();
-		$_GET['encrypted_data'] = $this->build_envelope( 'other@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'other@example.com' );
 
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
 	}
@@ -612,20 +622,17 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		// A stale envelope is refused on freshness, so it never reaches the claim — the
 		// rejection reason stays 'stale' rather than turning into 'already used'.
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
 		$this->assertNull( WooPay_Session::get_woopay_attestation() );
-		$this->assertFalse( $this->attestation_was_claimed( $_GET['encrypted_data']['hash'] ) );
+		$this->assertFalse( $this->attestation_was_claimed( $_POST[ WooPay_Session::ATTESTATION_PARAM ]['hash'] ) );
 	}
 
-
-
-
-	public function test_attested_email_outranks_a_caller_supplied_email() {
+	public function test_attested_account_email_outranks_a_caller_supplied_email() {
 		$this->unsign_request();
 
-		$_GET['email']          = 'other@example.com';
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_GET['email']                              = 'other@example.com';
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$this->assertSame( 'shopper@example.com', WooPay_Session::get_user_email( wp_get_current_user() ) );
 
@@ -687,7 +694,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->expect_woopay_request_to_die( 'WooPay request is not signed correctly.' );
 	}
 
-
 	public function test_invalid_cart_token_is_rejected_as_invalid() {
 		$this->unsign_request();
 		$_SERVER['HTTP_CART_TOKEN'] = 'not.a.valid.token';
@@ -733,7 +739,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->unsign_request();
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
-		$_GET['encrypted_data'] = $this->build_envelope( $shopper->user_email );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( $shopper->user_email );
 
 		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
 
@@ -816,20 +822,21 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * Mirrors what decrypt_signed_data() expects, which is not the shape
 	 * encrypt_and_sign_data() produces — the two directions are separate protocols.
 	 *
-	 * @param string   $email     The email to attest to.
+	 * @param string|null $email     The email to attest to, or null for a guest shopper.
 	 * @param int|null $timestamp Envelope timestamp. Defaults to now.
 	 *
 	 * @return array The base64-encoded envelope.
 	 */
-	private function build_envelope( string $email, ?int $timestamp = null ): array {
+	private function build_envelope( ?string $email = null, ?int $timestamp = null ): array {
 		$key = \WCPay\WooPay\WooPay_Utilities::get_store_blog_token();
 
-		$payload = wp_json_encode(
-			[
-				'user_email' => $email,
-				'timestamp'  => $timestamp ?? time(),
-			]
-		);
+		$payload = [ 'timestamp' => $timestamp ?? time() ];
+
+		if ( null !== $email ) {
+			$payload['user_email'] = $email;
+		}
+
+		$payload = wp_json_encode( $payload );
 
 		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
 		$ciphertext = openssl_encrypt( $payload, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
@@ -847,8 +854,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	private function unsign_request() {
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 	}
-
-
 
 	/**
 	 * Mints a nonce the same way the store does, via the private producer, so these

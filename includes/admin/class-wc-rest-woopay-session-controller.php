@@ -37,13 +37,18 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base,
 			[
-				'methods'             => WP_REST_Server::READABLE,
+				// POST is what an attested caller uses, so the envelope travels in the body
+				// rather than a URL that reaches access logs, browser history and Referer
+				// headers. GET stays for callers that sign instead, and because this route
+				// has always answered it. See WooPay_Session::get_woopay_attestation().
+				'methods'             => WP_REST_Server::READABLE . ', ' . WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					// Not required: a caller that attests to the email in an encrypted
-					// envelope has no reason to also send it in the clear. Kept accepted so
-					// WooPay versions that only send this arg keep working.
+					// Not required: an attested request carries the email inside the
+					// envelope, and sending it in the clear as well would expose the
+					// shopper's address for nothing. Still accepted, because a signed
+					// request has no envelope to read it from.
 					'email' => [
 						'type'     => 'string',
 						'format'   => 'email',

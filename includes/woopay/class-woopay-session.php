@@ -61,6 +61,15 @@ class WooPay_Session {
 	const ATTESTATION_MAX_AGE = 300;
 
 	/**
+	 * Request parameter carrying a WooPay attestation envelope.
+	 *
+	 * Its own name rather than the `encrypted_data` key `get_user_email()` reads. That is
+	 * an older exchange with a different payload and different rules, and one being taken
+	 * for the other is the kind of mistake a shared name makes easy.
+	 */
+	const ATTESTATION_PARAM = 'woopay_attestation';
+
+	/**
 	 * Transient prefix recording that an attestation envelope has been spent.
 	 */
 	const ATTESTATION_CLAIM_PREFIX = 'wcpay_woopay_attestation_';
@@ -534,7 +543,7 @@ class WooPay_Session {
 	public static function get_user_email( $user ) {
 		// An email WooPay attested to outranks anything a caller can put in a plain request
 		// parameter, and is the only source here that carries any proof of origin.
-		$attested_email = self::get_woopay_attested_email();
+		$attested_email = self::get_woopay_attested_account_email();
 
 		if ( null !== $attested_email ) {
 			return $attested_email;
@@ -1030,25 +1039,26 @@ class WooPay_Session {
 	 * and confers nothing beyond them. See WOOPAY-463.
 	 *
 	 * A fresh timestamp is required, since the envelope carries no nonce of its own and
-	 * would otherwise stay valid indefinitely.
+	 * would otherwise stay valid indefinitely. It is also spent on first use and refused
+	 * thereafter. See `claim_attestation()`.
 	 *
-	 * The envelope may arrive in POST or GET, since an HMAC does not care about transport.
-	 * Senders must URL-encode the base64 fields when using a query string.
-	 *
-	 * An envelope is spent on first use and refused thereafter, so observing one in a URL
-	 * buys nothing once it has been delivered. See `claim_attestation()`.
+	 * Carried under its own parameter, and normally in a POST body so it stays out of
+	 * access logs, browser history and Referer headers. Deliberately not the
+	 * `encrypted_data` key `get_user_email()` reads: that is an older exchange with a
+	 * different shape and different rules, and sharing a name would invite one to be
+	 * mistaken for the other.
 	 *
 	 * @return array|null The attested payload, or null when absent, malformed, stale, or spent.
 	 */
 	public static function get_woopay_attestation(): ?array {
 		// phpcs:ignore WordPress.Security.NonceVerification
-		$envelope = $_POST['encrypted_data'] ?? $_GET['encrypted_data'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification
+		$envelope = $_POST[ self::ATTESTATION_PARAM ] ?? $_GET[ self::ATTESTATION_PARAM ] ?? null; // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( ! is_array( $envelope ) ) {
 			// Carrying no envelope is ordinary — every signed request is one — so only say
 			// something when one was presented and could not be used.
 			if ( null !== $envelope ) {
-				Logger::log( 'WooPay attestation rejected: encrypted_data is not an envelope.' );
+				Logger::log( 'WooPay attestation rejected: ' . self::ATTESTATION_PARAM . ' is not an envelope.' );
 			}
 
 			return null;
@@ -1079,11 +1089,10 @@ class WooPay_Session {
 		$decrypted = WooPay_Utilities::decrypt_signed_data( $parts );
 
 		if ( ! is_array( $decrypted ) || ! isset( $decrypted['timestamp'] ) ) {
-			// The likeliest cause of a well-formed envelope that will not open is the two
-			// ends disagreeing about the key or the encoding, which is what a bad rollout
-			// looks like from here. Worth naming, since it is otherwise indistinguishable
-			// from a forgery.
-			Logger::log( 'WooPay attestation rejected: envelope did not open, or carries no timestamp. Both ends must seal with the same store blog token, and base64 fields must be URL-encoded in a query string.' );
+			// Distinguished from the other rejections because a bad rollout looks like this
+			// from here, and is otherwise indistinguishable from a forgery. What to check
+			// when it happens belongs with the sender, not in a public log line.
+			Logger::log( 'WooPay attestation rejected: envelope did not open, or carries no timestamp.' );
 
 			return null;
 		}
@@ -1108,20 +1117,23 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Returns the email WooPay attested to on this request, or null if it named none.
+	 * Returns the WooPay account email this request was sealed for, or null if it named none.
 	 *
-	 * An attestation need not carry an email — a guest shopper has none to name — so this
-	 * being null does not mean the request is unattested. Use `get_woopay_attestation()`
-	 * for that question.
+	 * Not to be confused with the `X-WooPay-Verified-Email-Address` header, which is a
+	 * shopper's claim to an address they proved on WooPay and reaches the store unsealed.
+	 * This is WooPay stating who the shopper is, and it is the account's own email rather
+	 * than anything the shopper typed at checkout.
 	 *
-	 * This is deliberately stricter than the `encrypted_data` branch in `get_user_email()`,
-	 * which accepts an envelope with no freshness check. Prefer this method over
-	 * `get_user_email()` wherever the email decides what the request may do, such as which
-	 * user a nonce is minted for.
+	 * An attestation need not name one — a guest shopper has no account — so this being null
+	 * does not mean the request is unattested. Use `get_woopay_attestation()` for that.
 	 *
-	 * @return string|null The attested email, or null when the attestation names none.
+	 * Deliberately stricter than the `encrypted_data` branch in `get_user_email()`, which
+	 * accepts an envelope with no freshness check. Prefer this wherever the email decides
+	 * what the request may do, such as which user a nonce is minted for.
+	 *
+	 * @return string|null The attested account email, or null when the attestation names none.
 	 */
-	public static function get_woopay_attested_email(): ?string {
+	public static function get_woopay_attested_account_email(): ?string {
 		$attestation = self::get_woopay_attestation();
 
 		if ( null === $attestation || empty( $attestation['user_email'] ) ) {
@@ -1153,7 +1165,7 @@ class WooPay_Session {
 			return true;
 		}
 
-		$attested_email = self::get_woopay_attested_email();
+		$attested_email = self::get_woopay_attested_account_email();
 
 		return null !== $attested_email && 0 === strcasecmp( $attested_email, $email );
 	}
@@ -1190,12 +1202,12 @@ class WooPay_Session {
 	/**
 	 * Spends an attestation envelope, returning false if it was already spent.
 	 *
-	 * Freshness alone leaves an observed envelope replayable for the whole window, and
-	 * these travel in query strings — so they reach access logs, proxy traces and browser
-	 * history. Replaying one is not merely a session read: it mints
-	 * `email_verified_session_nonce` for whichever user the envelope names, which is
-	 * enough to resolve as that user on the Store API. Spending it on arrival is what
-	 * keeps an observed envelope worthless. See WOOPAY-463.
+	 * Freshness alone leaves a captured envelope replayable for the whole window, and
+	 * replaying one is not merely a session read: it mints `email_verified_session_nonce`
+	 * for whichever user the envelope names, which is enough to resolve as that user on
+	 * the Store API. Spending it on arrival is what keeps a captured envelope worthless.
+	 * The body keeps it out of logs and history; this covers whatever saw the request
+	 * itself. See WOOPAY-463.
 	 *
 	 * The claim outlives the freshness window on both sides, since `ATTESTATION_MAX_AGE`
 	 * is applied to the absolute clock difference and so also admits envelopes dated

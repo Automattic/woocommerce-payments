@@ -7,7 +7,6 @@
 
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 use WCPay\WooPay\WooPay_Session;
-use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * WC_REST_WooPay_Session_Controller unit tests.
@@ -44,7 +43,8 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		unset(
 			$_SERVER['HTTP_USER_AGENT'],
 			$_SERVER['HTTP_CART_TOKEN'],
-			$_GET['encrypted_data'],
+			$_GET[ WooPay_Session::ATTESTATION_PARAM ],
+			$_POST[ WooPay_Session::ATTESTATION_PARAM ],
 			$_POST['encrypted_data']
 		);
 
@@ -58,8 +58,16 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_permission_is_granted_for_an_attested_email_without_a_signature() {
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
+		$this->assertTrue( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_granted_for_a_guest_envelope_naming_no_email() {
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope();
+
+		// A guest shopper has no account to name, so the envelope carries no email. It
+		// still proves WooPay composed the request, which is what this route asks for.
 		$this->assertTrue( $this->controller->check_permission() );
 	}
 
@@ -75,23 +83,39 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
+	public function test_permission_is_granted_for_an_envelope_sent_in_the_query_string() {
+		$_GET[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+
+		// WooPay sends this in a POST body so it stays out of logs and history, but the
+		// envelope is what authorizes the request, not how it travelled.
+		$this->assertTrue( $this->controller->check_permission() );
+	}
+
+	public function test_permission_is_denied_for_an_envelope_under_the_old_parameter() {
+		$_POST['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+
+		// `encrypted_data` is an older exchange that get_user_email() reads, with a
+		// different payload and different rules. Giving the attestation its own name is
+		// what stops one being mistaken for the other.
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
 	public function test_permission_is_denied_for_an_envelope_sealed_with_the_wrong_key() {
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', null, 'not.the.blog.token' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', null, 'not.the.blog.token' );
 
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
 	public function test_permission_is_denied_for_a_stale_envelope() {
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
-
 	public function test_suppressing_the_signature_alone_still_admits_an_attestation() {
 		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_false' );
 
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		// The narrowing is deliberate: the filter answers whether the request was signed,
 		// and a false there is indistinguishable from an ordinary unsigned request — which
@@ -102,18 +126,16 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_permission_is_denied_for_a_replayed_envelope() {
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$this->assertTrue( $this->controller->check_permission() );
 
-		// The envelope rides in the query string, so it reaches access logs and browser
-		// history. Once delivered it has to be worthless to whoever reads it there.
+		// The body keeps the envelope out of logs and history, but not out of anything
+		// that saw the request itself. Once delivered it has to be worthless to replay.
 		$this->reset_resolved_attestations();
 
 		$this->assertFalse( $this->controller->check_permission() );
 	}
-
-
 
 	public function test_permission_is_denied_when_the_user_agent_is_not_woopay() {
 		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
@@ -141,20 +163,21 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	 * Note the shape `decrypt_signed_data()` expects is not the one `encrypt_and_sign_data()`
 	 * produces — the two directions are separate protocols. This mirrors the decrypt side.
 	 *
-	 * @param string      $email     The email to attest to.
+	 * @param string|null $email     The email to attest to, or null for a guest shopper.
 	 * @param int|null    $timestamp Envelope timestamp. Defaults to now.
 	 * @param string|null $key       Key to seal with. Defaults to the store blog token.
 	 *
 	 * @return array The base64-encoded envelope.
 	 */
-	private function build_envelope( string $email, ?int $timestamp = null, ?string $key = null ): array {
+	private function build_envelope( ?string $email = null, ?int $timestamp = null, ?string $key = null ): array {
 		$key     = $key ?? self::BLOG_TOKEN;
-		$payload = wp_json_encode(
-			[
-				'user_email' => $email,
-				'timestamp'  => $timestamp ?? time(),
-			]
-		);
+		$payload = [ 'timestamp' => $timestamp ?? time() ];
+
+		if ( null !== $email ) {
+			$payload['user_email'] = $email;
+		}
+
+		$payload = wp_json_encode( $payload );
 
 		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
 		$ciphertext = openssl_encrypt( $payload, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
