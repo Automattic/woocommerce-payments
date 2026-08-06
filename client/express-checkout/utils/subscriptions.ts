@@ -1,5 +1,20 @@
+/**
+ * External dependencies
+ */
+import { applyFilters } from '@wordpress/hooks';
+
+/**
+ * Internal dependencies
+ */
+import { getExpressCheckoutData } from './express-checkout-data';
+
+export type SetupFutureUsage = 'off_session' | null;
+
 type SubscriptionExtensions = {
 	subscriptions?: unknown[] | Record< string, unknown >;
+	wcpay?: {
+		setup_future_usage?: SetupFutureUsage;
+	};
 };
 
 type CartItem = {
@@ -72,13 +87,64 @@ export const cartHasAnySubscription = ( cartData?: CartData ): boolean => {
 };
 
 /**
+ * Applies the extensibility filter that has the last word on `setupFutureUsage`.
+ *
+ * Declare `off_session` only when the payment method really will be saved. Stripe
+ * inherits the token's value onto the PaymentIntent even when the intent itself omits
+ * it, so over-declaring silently attaches the shopper's card to the Stripe customer on
+ * an ordinary one-off purchase, with no WooPayments token recorded against it.
+ *
+ * @param value    Server-computed (or heuristic) value.
+ * @param cartData Cart data from Store API, when the caller has it.
+ * @return Stripe setupFutureUsage value.
+ */
+const filterSetupFutureUsage = (
+	value: SetupFutureUsage,
+	cartData?: CartData
+): SetupFutureUsage =>
+	applyFilters(
+		'wcpay.express-checkout.setup-future-usage',
+		value,
+		cartData
+	) as SetupFutureUsage;
+
+/**
  * Gets the setupFutureUsage value that should be passed to Stripe Elements for
  * the current cart.
+ *
+ * The server decides this — it is the only side that knows every reason the payment
+ * method might be saved, and it exposes one filter for the reasons it can't infer. The
+ * WC Subscriptions heuristic below is the fallback for when the cart response carries no
+ * `wcpay` extension at all (the Store API extension only registers on WooCommerce
+ * versions that expose `woocommerce_store_api_register_endpoint_data`).
  *
  * @param cartData Cart data from Store API.
  * @return Stripe setupFutureUsage value.
  */
 export const getSetupFutureUsageForCart = (
 	cartData?: CartData
-): 'off_session' | null =>
-	cartHasAnySubscription( cartData ) ? 'off_session' : null;
+): SetupFutureUsage => {
+	const wcpayExtension = cartData?.extensions?.wcpay;
+
+	// Presence, not truthiness: an explicit `null` from the server is a decision
+	// ("this cart does not save the payment method") and must beat the heuristic.
+	const value =
+		wcpayExtension && 'setup_future_usage' in wcpayExtension
+			? wcpayExtension.setup_future_usage ?? null
+			: cartHasAnySubscription( cartData )
+			? 'off_session'
+			: null;
+
+	return filterSetupFutureUsage( value, cartData );
+};
+
+/**
+ * Gets the setupFutureUsage value for contexts that have no Store API cart to read —
+ * the product page, where the express button is rendered before anything is in the cart.
+ *
+ * @return Stripe setupFutureUsage value.
+ */
+export const getSetupFutureUsageForContext = (): SetupFutureUsage =>
+	filterSetupFutureUsage(
+		getExpressCheckoutData( 'setup_future_usage' ) ?? null
+	);
