@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix redelivered payment webhooks re-attaching the original checkout card to subscriptions that have since been changed to a different payment method.
