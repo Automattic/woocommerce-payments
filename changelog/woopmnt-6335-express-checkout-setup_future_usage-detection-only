@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix express checkout payments failing when a plugin other than WooCommerce Subscriptions saves the payment method
