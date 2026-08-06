@@ -1872,6 +1872,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
 					if ( $this->payment_method->is_reusable() ) {
 						$request->setup_future_usage();
+						$this->log_unexpected_setup_future_usage( $payment_information );
 					}
 				}
 				if ( $scheduled_subscription_payment ) {
@@ -5464,6 +5465,47 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
 		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
+	}
+
+	/**
+	 * Logs when a ConfirmationToken was almost certainly minted without the
+	 * `setup_future_usage` the PaymentIntent is now asking for.
+	 *
+	 * Stripe fixes that value on the token before the wallet sheet opens and rejects the
+	 * confirmation when the two disagree, so this combination is a purchase that fails
+	 * every time. It means something decided to save the payment method that the express
+	 * checkout predicate could not see while the cart was still open — typically a
+	 * subscriptions plugin other than WooCommerce Subscriptions, or an integration setting
+	 * `wc-woocommerce_payments-new-payment-method` as the order is processed.
+	 *
+	 * Diagnostic only. The request is deliberately left alone: dropping
+	 * `setup_future_usage` would let the payment through, but Stripe attaches the payment
+	 * method to the customer precisely because that parameter is present, so the token
+	 * saved afterwards would point at an unattached payment method and the first renewal
+	 * would fail instead — a quiet failure in place of a loud one.
+	 *
+	 * @param Payment_Information $payment_information The payment information for this order.
+	 */
+	private function log_unexpected_setup_future_usage( Payment_Information $payment_information ) {
+		if ( ! $payment_information->is_using_confirmation_token() ) {
+			return;
+		}
+
+		$express_checkout_helper = WC_Payments::get_express_checkout_helper();
+		if ( ! $express_checkout_helper || null !== $express_checkout_helper->get_setup_future_usage( 'cart' ) ) {
+			return;
+		}
+
+		$order = $payment_information->get_order();
+
+		Logger::error(
+			sprintf(
+				'Order %s is saving the payment method, but its confirmation token was minted without setup_future_usage, so Stripe will reject this payment. '
+				. 'Something outside WooCommerce Subscriptions is requesting the save. Declare it with the wcpay_express_checkout_setup_future_usage filter '
+				. 'so express checkout mints the token with off_session.',
+				$order ? $order->get_id() : 'unknown'
+			)
+		);
 	}
 
 	/**
