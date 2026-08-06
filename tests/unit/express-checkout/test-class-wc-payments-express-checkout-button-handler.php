@@ -144,9 +144,15 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 					'radius' => '10',
 				]
 			);
+		$this->mock_ece_button_helper
+			->method( 'get_setup_future_usage' )
+			->willReturn( 'off_session' );
+
 		$params = $this->system_under_test->get_express_checkout_params();
 		$this->assertArrayHasKey( 'store_name', $params );
 		$this->assertEquals( get_bloginfo( 'name' ), $params['store_name'] );
+		// The product page has no Store API cart to carry this, so it ships localized.
+		$this->assertSame( 'off_session', $params['setup_future_usage'] );
 	}
 
 	public function test_payment_fields_js_config_on_cart_page_with_cart_disabled() {
