@@ -296,6 +296,122 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $helper->has_subscription_product() );
 	}
 
+	public function test_cart_contains_subscription_reads_cart_state_without_page_context() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		// No is_cart()/is_checkout() stubbing: the point is that this works with no page context.
+		$this->assertTrue( $this->system_under_test->cart_contains_subscription() );
+	}
+
+	public function test_cart_contains_subscription_detects_renewal_carts() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$this->assertTrue( $this->system_under_test->cart_contains_subscription() );
+	}
+
+	public function test_cart_contains_subscription_is_false_for_a_plain_cart() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$this->assertFalse( $this->system_under_test->cart_contains_subscription() );
+	}
+
+	public function test_get_setup_future_usage_is_off_session_for_a_subscription_cart() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$helper = $this->make_helper_for_context( false, true, false );
+
+		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
+	}
+
+	public function test_get_setup_future_usage_is_null_for_a_plain_cart() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->make_helper_for_context( false, true, false );
+
+		$this->assertNull( $helper->get_setup_future_usage() );
+	}
+
+	public function test_get_setup_future_usage_is_off_session_on_a_subscription_product_page() {
+		WC_Subscriptions_Product::$is_subscription = true;
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->make_helper_for_context( true, false, false );
+
+		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
+	}
+
+	/**
+	 * The Store API cart endpoint carries no page context, so it names the context instead.
+	 * Without that, is_cart()/is_checkout() are both false and the cart would look plain.
+	 */
+	public function test_get_setup_future_usage_honours_a_named_cart_context_with_no_page_context() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'cart' ) );
+	}
+
+	public function test_get_setup_future_usage_filter_can_declare_off_session() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$seen_context = null;
+		$filter       = function ( $value, $context ) use ( &$seen_context ) {
+			$seen_context = $context;
+			return 'off_session';
+		};
+		add_filter( 'wcpay_express_checkout_setup_future_usage', $filter, 10, 2 );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'cart' );
+
+		remove_filter( 'wcpay_express_checkout_setup_future_usage', $filter, 10 );
+
+		$this->assertSame( 'off_session', $actual );
+		$this->assertSame( 'cart', $seen_context );
+	}
+
+	public function test_get_setup_future_usage_filter_can_suppress_off_session() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$filter = function () {
+			return null;
+		};
+		add_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'cart' );
+
+		remove_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * Builds a helper whose page context is pinned, so context-dependent predicates
+	 * can be exercised off an actual request.
+	 *
+	 * @param bool $is_product  Whether to report a product page.
+	 * @param bool $is_cart     Whether to report the cart page.
+	 * @param bool $is_checkout Whether to report the checkout page.
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private function make_helper_for_context( bool $is_product, bool $is_cart, bool $is_checkout ) {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( $is_product );
+		$helper->method( 'is_cart' )->willReturn( $is_cart );
+		$helper->method( 'is_checkout' )->willReturn( $is_checkout );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		return $helper;
+	}
+
 	public function test_common_get_button_settings() {
 		$this->assertEquals(
 			[
