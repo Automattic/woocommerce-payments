@@ -12,6 +12,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
+use WCPay\Internal\Logger as InternalLogger;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\Session_Rate_Limiter;
@@ -399,6 +400,126 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		// The order status is NOT 'processing' yet - it will be set after frontend confirmation
 		// via the update_order_status AJAX handler. At this point it should not be 'failed'.
 		$this->assertNotEquals( Order_Status::FAILED, $result_order->get_status() );
+	}
+
+	/**
+	 * A confirmation token is minted before the wallet sheet opens, with a
+	 * `setup_future_usage` Stripe then refuses to disagree with. When the gateway decides
+	 * to save the payment method for a reason express checkout could not see while the
+	 * cart was open, that is a purchase that fails every time — so it gets logged rather
+	 * than surfacing only as an opaque Stripe error.
+	 */
+	public function test_logs_when_a_confirmation_token_was_minted_without_setup_future_usage() {
+		$logged = $this->capture_wcpay_logs();
+
+		$this->process_subscription_payment_with_confirmation_token( null );
+
+		$this->assertNotEmpty(
+			$this->logs_naming_the_setup_future_usage_filter( $logged ),
+			'Expected the mismatch to be logged with the filter that fixes it.'
+		);
+	}
+
+	public function test_does_not_log_when_the_confirmation_token_matches() {
+		$logged = $this->capture_wcpay_logs();
+
+		$this->process_subscription_payment_with_confirmation_token( 'off_session' );
+
+		$this->assertEmpty( $this->logs_naming_the_setup_future_usage_filter( $logged ) );
+	}
+
+	/**
+	 * Replaces the internal logger with one backed by a mock WC_Logger that records
+	 * every call, so assertions can be made on what was logged rather than on
+	 * invocation-count matchers.
+	 *
+	 * @return ArrayObject Collected [ level, message ] pairs, filled as the test runs.
+	 */
+	private function capture_wcpay_logs(): ArrayObject {
+		$logged = new ArrayObject();
+
+		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+			->setMethods( [ 'log' ] )
+			->getMock();
+
+		$mock_logger
+			->method( 'log' )
+			->willReturnCallback(
+				function ( $level, $message ) use ( $logged ) {
+					$logged[] = [
+						'level'   => $level,
+						'message' => $message,
+					];
+				}
+			);
+
+		wcpay_get_test_container()->replace(
+			InternalLogger::class,
+			new InternalLogger( $mock_logger, WC_Payments::mode() )
+		);
+		WC_Payments::mode()->dev();
+
+		return $logged;
+	}
+
+	/**
+	 * Narrows captured logs to the ones pointing at the express checkout filter.
+	 *
+	 * @param ArrayObject $logged Collected log calls.
+	 * @return array
+	 */
+	private function logs_naming_the_setup_future_usage_filter( ArrayObject $logged ): array {
+		return array_filter(
+			$logged->getArrayCopy(),
+			function ( $entry ) {
+				return 'error' === $entry['level']
+					&& false !== strpos( $entry['message'], 'wcpay_express_checkout_setup_future_usage' );
+			}
+		);
+	}
+
+	/**
+	 * Runs a paid subscription order through process_payment with a confirmation token,
+	 * with express checkout reporting the given `setup_future_usage` for the cart.
+	 *
+	 * @param string|null $express_checkout_setup_future_usage What the ECE predicate reports.
+	 */
+	private function process_subscription_payment_with_confirmation_token( ?string $express_checkout_setup_future_usage ) {
+		$order         = WC_Helper_Order::create_order( self::USER_ID );
+		$subscriptions = [ new WC_Subscription() ];
+		$subscriptions[0]->set_parent( $order );
+
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
+		$_POST = [
+			'wcpay-confirmation-token' => 'ctoken_mock',
+			'payment_method'           => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		];
+
+		$mock_ece_helper = $this->createMock( WC_Payments_Express_Checkout_Button_Helper::class );
+		$mock_ece_helper->method( 'get_setup_future_usage' )->willReturn( $express_checkout_setup_future_usage );
+
+		$original_ece_helper = WC_Payments::get_express_checkout_helper();
+		WC_Payments::set_express_checkout_helper( $mock_ece_helper );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'setup_future_usage' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->payment_intent );
+
+		// The intent succeeds, so the payment method is vaulted afterwards.
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $this->token );
+
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		} finally {
+			WC_Payments::set_express_checkout_helper( $original_ece_helper );
+		}
 	}
 
 	public function test_new_card_is_added_before_status_update() {
