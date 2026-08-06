@@ -125,15 +125,15 @@ export const getSetupFutureUsageForCart = (
 	cartData?: CartData
 ): SetupFutureUsage => {
 	const wcpayExtension = cartData?.extensions?.wcpay;
+	let value: SetupFutureUsage;
 
-	// Presence, not truthiness: an explicit `null` from the server is a decision
-	// ("this cart does not save the payment method") and must beat the heuristic.
-	const value =
-		wcpayExtension && 'setup_future_usage' in wcpayExtension
-			? wcpayExtension.setup_future_usage ?? null
-			: cartHasAnySubscription( cartData )
-			? 'off_session'
-			: null;
+	if ( wcpayExtension && 'setup_future_usage' in wcpayExtension ) {
+		// Presence, not truthiness: an explicit `null` from the server is a decision
+		// ("this cart does not save the payment method") and must beat the heuristic.
+		value = wcpayExtension.setup_future_usage ?? null;
+	} else {
+		value = cartHasAnySubscription( cartData ) ? 'off_session' : null;
+	}
 
 	return filterSetupFutureUsage( value, cartData );
 };
