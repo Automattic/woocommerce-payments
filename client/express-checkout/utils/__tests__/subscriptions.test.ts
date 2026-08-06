@@ -1,9 +1,15 @@
 /**
+ * External dependencies
+ */
+import { addFilter, removeAllFilters } from '@wordpress/hooks';
+
+/**
  * Internal dependencies
  */
 import {
 	cartHasAnySubscription,
 	getSetupFutureUsageForCart,
+	getSetupFutureUsageForContext,
 } from '../subscriptions';
 
 const buildSubscriptionSchedule = ( { billingPeriod = 'month' } = {} ) => ( {
@@ -175,18 +181,136 @@ describe( 'cartHasAnySubscription', () => {
 } );
 
 describe( 'getSetupFutureUsageForCart', () => {
-	it( 'returns null for a regular cart', () => {
-		expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
+	afterEach( () => {
+		removeAllFilters( 'wcpay.express-checkout.setup-future-usage' );
 	} );
 
-	it( 'returns off_session when the cart contains a subscription', () => {
-		expect(
-			getSetupFutureUsageForCart( {
-				items: [],
-				extensions: {
-					subscriptions: [ buildSubscriptionSchedule() ],
-				},
-			} )
-		).toBe( 'off_session' );
+	describe( 'falling back to the WC Subscriptions heuristic', () => {
+		// The Store API extension only registers on WooCommerce versions exposing
+		// `woocommerce_store_api_register_endpoint_data`, so the cart response can
+		// legitimately arrive with no `wcpay` extension at all.
+		it( 'returns null for a regular cart', () => {
+			expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
+		} );
+
+		it( 'returns off_session when the cart contains a subscription', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					items: [],
+					extensions: {
+						subscriptions: [ buildSubscriptionSchedule() ],
+					},
+				} )
+			).toBe( 'off_session' );
+		} );
+
+		it( 'falls back when the wcpay extension omits the key', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					items: [],
+					extensions: {
+						subscriptions: [ buildSubscriptionSchedule() ],
+						wcpay: {},
+					},
+				} )
+			).toBe( 'off_session' );
+		} );
+	} );
+
+	describe( 'preferring the server-computed value', () => {
+		// The WOOPMNT-6335 case: a cart with no subscription the client can see, whose
+		// payment method the server will nonetheless save.
+		it( 'returns off_session the server declares for a cart with no subscription', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					...regularCart,
+					extensions: {
+						wcpay: { setup_future_usage: 'off_session' },
+					},
+				} )
+			).toBe( 'off_session' );
+		} );
+
+		// Presence beats truthiness: an explicit null is the server deciding, not an absence.
+		it( 'returns null the server declares even when the heuristic would say off_session', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					items: [],
+					extensions: {
+						subscriptions: [ buildSubscriptionSchedule() ],
+						wcpay: { setup_future_usage: null },
+					},
+				} )
+			).toBeNull();
+		} );
+	} );
+
+	describe( 'the extensibility filter', () => {
+		it( 'can declare off_session for a cart that looks regular', () => {
+			addFilter(
+				'wcpay.express-checkout.setup-future-usage',
+				'test/declare',
+				() => 'off_session'
+			);
+
+			expect( getSetupFutureUsageForCart( regularCart ) ).toBe(
+				'off_session'
+			);
+		} );
+
+		it( 'can suppress off_session and receives the cart data', () => {
+			const seen: unknown[] = [];
+			addFilter(
+				'wcpay.express-checkout.setup-future-usage',
+				'test/suppress',
+				( value: unknown, cartData: unknown ) => {
+					seen.push( cartData );
+					return null;
+				}
+			);
+
+			expect(
+				getSetupFutureUsageForCart( {
+					items: [],
+					extensions: {
+						wcpay: { setup_future_usage: 'off_session' },
+					},
+				} )
+			).toBeNull();
+			expect( seen ).toHaveLength( 1 );
+		} );
+	} );
+} );
+
+describe( 'getSetupFutureUsageForContext', () => {
+	afterEach( () => {
+		removeAllFilters( 'wcpay.express-checkout.setup-future-usage' );
+		delete ( global as Record< string, unknown > )
+			.wcpayExpressCheckoutParams;
+	} );
+
+	it( 'returns the localized value', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			setup_future_usage: 'off_session',
+		};
+
+		expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+	} );
+
+	it( 'returns null when the localized value is absent', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
+
+		expect( getSetupFutureUsageForContext() ).toBeNull();
+	} );
+
+	it( 'runs through the same filter as the cart path', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
+		addFilter(
+			'wcpay.express-checkout.setup-future-usage',
+			'test/declare',
+			() => 'off_session'
+		);
+
+		expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
 	} );
 } );

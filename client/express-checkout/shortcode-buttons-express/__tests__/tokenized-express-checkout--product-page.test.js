@@ -582,7 +582,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	it( 'should use setupFutureUsage for subscription products', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
-		global.wcpayExpressCheckoutParams.has_subscription = true;
+		global.wcpayExpressCheckoutParams.setup_future_usage = 'off_session';
 		global.wcpayExpressCheckoutParams.product.product_type = 'subscription';
 
 		await jest.isolateModulesAsync( async () => {
@@ -603,7 +603,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	it( 'should use setupFutureUsage for variable-subscription products', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
-		global.wcpayExpressCheckoutParams.has_subscription = true;
+		global.wcpayExpressCheckoutParams.setup_future_usage = 'off_session';
 		global.wcpayExpressCheckoutParams.product.product_type =
 			'variable-subscription';
 
@@ -620,10 +620,12 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		);
 	} );
 
-	it( 'should use setupFutureUsage when has_subscription is true', async () => {
+	// A non-subscription product whose payment method the server will still save —
+	// the WOOPMNT-6335 case, where the client cannot infer it and has to be told.
+	it( 'should use setupFutureUsage the server declares for a simple product', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
-		global.wcpayExpressCheckoutParams.has_subscription = true;
+		global.wcpayExpressCheckoutParams.setup_future_usage = 'off_session';
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
@@ -634,6 +636,23 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			expect.objectContaining( {
 				mode: 'payment',
 				setupFutureUsage: 'off_session',
+			} )
+		);
+	} );
+
+	it( 'should omit setupFutureUsage when the server declares none', async () => {
+		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
+		global.wcpayExpressCheckoutParams.setup_future_usage = null;
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		expect( global.Stripe ).toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.not.objectContaining( {
+				setupFutureUsage: expect.anything(),
 			} )
 		);
 	} );
