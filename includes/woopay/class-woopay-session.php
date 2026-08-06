@@ -690,12 +690,6 @@ class WooPay_Session {
 			'font_rules'           => $font_rules,
 		];
 
-		// Tells WooPay whether this store accepts requests that are not signed with the blog
-		// token — proxied Store API traffic on the Cart-Token, and the session route on an
-		// attestation envelope. One flag covers both because the two arrived together, so no
-		// store can support one without the other. See WOOPAY-463.
-		$request['supports_cart_token_auth'] = self::is_cart_token_auth_allowed();
-
 		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
 		$request['extension_data'] = $woopay_adapted_extensions->get_extension_data();
 
@@ -952,15 +946,12 @@ class WooPay_Session {
 		}
 
 		$data = [
-			'wcpay_version'            => WCPAY_VERSION_NUMBER,
-			'blog_id'                  => $blog_id,
-			'blog_rest_url'            => get_rest_url(),
-			'blog_checkout_url'        => wc_get_checkout_url(),
-			'session_nonce'            => self::create_woopay_nonce( get_current_user_id() ),
-			'store_api_token'          => self::init_store_api_token(),
-			// Covers the session route as well as proxied Store API traffic; see the same
-			// key in get_init_session_request(). WOOPAY-463.
-			'supports_cart_token_auth' => self::is_cart_token_auth_allowed(),
+			'wcpay_version'     => WCPAY_VERSION_NUMBER,
+			'blog_id'           => $blog_id,
+			'blog_rest_url'     => get_rest_url(),
+			'blog_checkout_url' => wc_get_checkout_url(),
+			'session_nonce'     => self::create_woopay_nonce( get_current_user_id() ),
+			'store_api_token'   => self::init_store_api_token(),
 		];
 
 		return WooPay_Utilities::encrypt_and_sign_data( $data );
@@ -979,17 +970,17 @@ class WooPay_Session {
 	/**
 	 * Returns true if the request that's currently being processed is signed with the blog token.
 	 *
-	 * This answers one question — was this request signed — and since 10.10.0 that is no
+	 * This answers one question — was this request signed — and since 11.1.0 that is no
 	 * longer the same question as whether WooPay may be served. A signature is now one of
 	 * two accepted credentials rather than the only one, so a false here sends the request
 	 * on to the Cart-Token and attestation checks instead of ending it.
 	 *
-	 * That matters to anyone filtering this to false as a kill switch, which before 10.10.0
-	 * closed the WooPay session route outright. It no longer does on its own, and it cannot
-	 * be made to: the filter wraps a predicate whose false is indistinguishable from an
-	 * ordinary unsigned request, which is precisely the case the attestation serves. To
-	 * close the route, filter `wcpay_woopay_allow_cart_token_auth` to false as well — that
-	 * refuses the attestation, leaving a signature this filter then denies. See WOOPAY-463.
+	 * That matters to anyone filtering this to false as a kill switch, which before 11.1.0
+	 * closed the WooPay session route outright. It no longer does, and it cannot be made to:
+	 * the filter wraps a predicate whose false is indistinguishable from an ordinary
+	 * unsigned request, which is precisely the case the attestation serves. Nothing on the
+	 * store closes that route now — WooPay decides whether to sign, and holds the levers for
+	 * putting a store back on signed requests. See WOOPAY-463.
 	 *
 	 * @return bool True if the request signature is valid.
 	 */
@@ -997,50 +988,14 @@ class WooPay_Session {
 		/**
 		 * Filters whether the current request is signed with the store's blog token.
 		 *
-		 * Answers whether the request was signed, not whether it may proceed: since 10.10.0
+		 * Answers whether the request was signed, not whether it may proceed: since 11.1.0
 		 * a false falls through to the narrower credentials rather than rejecting outright.
-		 * See `is_cart_token_auth_allowed()` to refuse those too.
 		 *
 		 * @since 5.9.0
 		 *
 		 * @param bool $is_signed Whether the request signature was verified against the blog token.
 		 */
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
-	}
-
-	/**
-	 * Whether this store accepts the narrower WooPay credentials in place of a blog token
-	 * signature.
-	 *
-	 * On by default. This is what lets WooPay stop signing shopper requests with the
-	 * store's Jetpack blog token — a site-wide credential that has no business riding
-	 * along on shopper-originated traffic. Off would make the change inert, since the
-	 * store advertises this value and WooPay keeps signing for any store that answers
-	 * no. See WOOPAY-463.
-	 *
-	 * One flag covers both channels, because a store gains the two capabilities in the
-	 * same release and cannot advertise one without the other: a Cart-Token on proxied
-	 * Store API traffic (`get_request_auth_level()`), and an attestation envelope on the
-	 * session route (`get_woopay_attestation()`).
-	 *
-	 * Filter it to false to keep requiring the signature on this store — on both channels,
-	 * since an opt-out that closed only one would still leave the other accepting unsigned
-	 * requests. Paired with `wcpay_woopay_is_signed_with_blog_token` filtered to false, it
-	 * closes the WooPay session route outright, which that filter alone did before 10.10.0.
-	 *
-	 * @return bool True if the narrower WooPay credentials are accepted.
-	 */
-	public static function is_cart_token_auth_allowed(): bool {
-		/**
-		 * Filters whether the narrower WooPay credentials are accepted in place of a blog
-		 * token signature: a valid Cart-Token on proxied WooPay Store API requests, and an
-		 * attestation envelope on the WooPay session route.
-		 *
-		 * @since 10.10.0
-		 *
-		 * @param bool $allowed Whether the narrower WooPay credentials are accepted.
-		 */
-		return (bool) apply_filters( 'wcpay_woopay_allow_cart_token_auth', true );
 	}
 
 	/**
@@ -1058,7 +1013,7 @@ class WooPay_Session {
 			return self::AUTH_BLOG_TOKEN;
 		}
 
-		if ( self::is_cart_token_auth_allowed() && null !== self::get_payload_from_cart_token() ) {
+		if ( null !== self::get_payload_from_cart_token() ) {
 			return self::AUTH_CART_TOKEN;
 		}
 
@@ -1080,24 +1035,12 @@ class WooPay_Session {
 	 * The envelope may arrive in POST or GET, since an HMAC does not care about transport.
 	 * Senders must URL-encode the base64 fields when using a query string.
 	 *
-	 * A store that opted out of `wcpay_woopay_allow_cart_token_auth` attests to nothing:
-	 * the opt-out covers both channels, so this returns null there regardless of how good
-	 * the envelope is. See `is_cart_token_auth_allowed()`.
-	 *
 	 * An envelope is spent on first use and refused thereafter, so observing one in a URL
 	 * buys nothing once it has been delivered. See `claim_attestation()`.
 	 *
-	 * @return array|null The attested payload, or null when opted out, absent, malformed, stale, or spent.
+	 * @return array|null The attested payload, or null when absent, malformed, stale, or spent.
 	 */
 	public static function get_woopay_attestation(): ?array {
-		// A store that answers no to `supports_cart_token_auth` has WooPay signing its
-		// requests again, so accepting an envelope here would leave the opt-out half
-		// closed — the signature would be required on proxied traffic but not on the
-		// session route, which is the one channel the filter is reached for.
-		if ( ! self::is_cart_token_auth_allowed() ) {
-			return null;
-		}
-
 		// phpcs:ignore WordPress.Security.NonceVerification
 		$envelope = $_POST['encrypted_data'] ?? $_GET['encrypted_data'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification
 
@@ -1218,33 +1161,18 @@ class WooPay_Session {
 	/**
 	 * Says why the current request could not be authenticated.
 	 *
-	 * Rejecting is not negotiable — serving a request the store cannot authenticate would
-	 * defeat its own opt-out — so the useful thing is to name the cause rather than fail
-	 * all three the same way. Each maps to a distinct code, in the log and in the response
-	 * body, so a store owner and WooPay can tell them apart:
+	 * Rejecting is not negotiable, so the useful thing is to name the cause rather than fail
+	 * both the same way. Each maps to a distinct code, in the log and in the response body,
+	 * so a store owner and WooPay can tell them apart:
 	 *
-	 * - `woopay_signature_required`: this store has opted back out of Cart-Token auth while
-	 *   WooPay was still going unsigned for it. Transient by construction — the capability
-	 *   rides in the session payload, so the next session puts the two back in step and
-	 *   WooPay signs again with no deploy. This is the one that looks alarming and isn't.
-	 * - `woopay_invalid_cart_token`: a Cart-Token arrived but does not validate. A genuine
-	 *   problem, and not the same problem as the above.
+	 * - `woopay_invalid_cart_token`: a Cart-Token arrived but does not validate. Either it
+	 *   expired mid-checkout, or the two ends disagree about `wp_salt()`.
 	 * - `woopay_request_not_authenticated`: nothing was presented at all.
 	 *
 	 * @return \WP_Error The error to end the request with.
 	 */
 	private static function get_unauthenticated_request_error(): \WP_Error {
-		$has_cart_token = isset( $_SERVER['HTTP_CART_TOKEN'] );
-
-		if ( $has_cart_token && ! self::is_cart_token_auth_allowed() ) {
-			return new \WP_Error(
-				'woopay_signature_required',
-				__( 'This store requires WooPay requests to be signed with its blog token.', 'woocommerce-payments' ),
-				[ 'status' => 401 ]
-			);
-		}
-
-		if ( $has_cart_token ) {
+		if ( isset( $_SERVER['HTTP_CART_TOKEN'] ) ) {
 			return new \WP_Error(
 				'woopay_invalid_cart_token',
 				__( 'The Cart-Token on this WooPay request is invalid or expired.', 'woocommerce-payments' ),

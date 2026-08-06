@@ -94,8 +94,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
-		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
-		remove_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
 
 		unset(
 			$_SERVER['HTTP_NONCE'],
@@ -383,58 +381,20 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'cart_token', WooPay_Session::get_request_auth_level() );
 	}
 
-	public function test_get_request_auth_level_returns_none_for_cart_token_when_opted_out() {
-		$this->unsign_request();
-		$this->deny_cart_token_auth();
 
-		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
-		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
-
-		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
-	}
-
-	public function test_store_advertises_cart_token_auth_support_by_default() {
-		// The store advertising this is what lets WooPay stop signing, so the
-		// default is load-bearing rather than incidental.
-		$this->assertTrue( WooPay_Session::is_cart_token_auth_allowed() );
-	}
-
-	public function test_store_does_not_advertise_cart_token_auth_support_when_opted_out() {
-		$this->deny_cart_token_auth();
-
-		$this->assertFalse( WooPay_Session::is_cart_token_auth_allowed() );
-	}
-
-	public function test_store_advertises_cart_token_auth_support_when_opted_in() {
-		$this->allow_cart_token_auth();
-
-		$this->assertTrue( WooPay_Session::is_cart_token_auth_allowed() );
-	}
-
-	public function test_session_payload_carries_the_capability_flag() {
-		// The gate being right is not the same as WooPay being told: this key in the payload
-		// is the whole negotiation, and dropping it would silently keep WooPay signing.
+	public function test_session_payload_carries_the_store_version() {
+		// WooPay decides whether to sign by comparing this against its own minimum, and
+		// treats a payload without it as too old. Dropping it would leave every store on
+		// signed requests with nothing failing to say so.
 		$request = WooPay_Session::get_init_session_request();
 
-		$this->assertArrayHasKey( 'supports_cart_token_auth', $request );
-		$this->assertTrue( $request['supports_cart_token_auth'] );
+		$this->assertArrayHasKey( 'wcpay_version', $request );
+		$this->assertSame( WCPAY_VERSION_NUMBER, $request['wcpay_version'] );
 	}
 
-	public function test_session_payload_carries_the_capability_flag_when_opted_out() {
-		$this->deny_cart_token_auth();
-
-		$request = WooPay_Session::get_init_session_request();
-
-		// Present and false, not absent — WooPay reads the answer, so "no" has to be said
-		// rather than left out.
-		$this->assertArrayHasKey( 'supports_cart_token_auth', $request );
-		$this->assertFalse( $request['supports_cart_token_auth'] );
-	}
 
 	public function test_get_request_auth_level_returns_none_when_cart_token_is_invalid() {
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$_SERVER['HTTP_CART_TOKEN'] = 'not-a-valid-cart-token';
 
 		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
@@ -444,8 +404,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$verified_user = self::factory()->user->create_and_get();
 
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
@@ -462,8 +420,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$other_user    = self::factory()->user->create_and_get();
 
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
@@ -480,8 +436,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$verified_user = self::factory()->user->create_and_get();
 
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
@@ -664,38 +618,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->attestation_was_claimed( $_GET['encrypted_data']['hash'] ) );
 	}
 
-	public function test_envelope_does_not_attest_when_opted_out() {
-		$this->unsign_request();
-		$this->deny_cart_token_auth();
 
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
 
-		// Opting out has to reach every consumer of the envelope, not just the route's
-		// permission check — this is what gates minting email_verified_session_nonce.
-		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
-		$this->assertNull( WooPay_Session::get_woopay_attestation() );
-	}
-
-	public function test_signature_still_attests_when_opted_out() {
-		$this->deny_cart_token_auth();
-
-		// The signature is what the opt-out falls back to, so it must still vouch.
-		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
-	}
-
-	public function test_attested_email_does_not_outrank_a_caller_supplied_email_when_opted_out() {
-		$this->unsign_request();
-		$this->deny_cart_token_auth();
-
-		$_GET['email']          = 'other@example.com';
-		$_GET['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
-
-		// With the envelope refused, this falls back to the plain parameter it would have
-		// used before the attestation existed.
-		$this->assertSame( 'other@example.com', WooPay_Session::get_user_email( wp_get_current_user() ) );
-
-		unset( $_GET['email'] );
-	}
 
 	public function test_attested_email_outranks_a_caller_supplied_email() {
 		$this->unsign_request();
@@ -712,8 +636,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$shopper = self::factory()->user->create_and_get();
 
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $shopper->ID );
 
@@ -726,8 +648,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$shopper = self::factory()->user->create_and_get();
 
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 
 		$this->setup_session( $shopper->ID );
@@ -741,8 +661,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$other   = self::factory()->user->create_and_get();
 
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $other->ID );
 
@@ -769,21 +687,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->expect_woopay_request_to_die( 'WooPay request is not signed correctly.' );
 	}
 
-	public function test_cart_token_request_is_rejected_as_needing_a_signature_when_opted_out() {
-		$this->unsign_request();
-		$this->deny_cart_token_auth();
-
-		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
-
-		// The store opted back out while WooPay was still going unsigned for it. Saying so
-		// separates a transient rollout mismatch from a store that is actually misconfigured.
-		$this->expect_woopay_request_to_die( 'This store requires WooPay requests to be signed with its blog token.' );
-	}
 
 	public function test_invalid_cart_token_is_rejected_as_invalid() {
 		$this->unsign_request();
-		$this->allow_cart_token_auth();
-
 		$_SERVER['HTTP_CART_TOKEN'] = 'not.a.valid.token';
 
 		$this->expect_woopay_request_to_die( 'The Cart-Token on this WooPay request is invalid or expired.' );
@@ -942,13 +848,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 	}
 
-	private function allow_cart_token_auth() {
-		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_true' );
-	}
 
-	private function deny_cart_token_auth() {
-		add_filter( 'wcpay_woopay_allow_cart_token_auth', '__return_false' );
-	}
 
 	/**
 	 * Mints a nonce the same way the store does, via the private producer, so these

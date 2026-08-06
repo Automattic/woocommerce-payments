@@ -88,10 +88,6 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 * key without attaching a reusable credential to the request. See
 	 * `WooPay_Session::get_woopay_attestation()` and WOOPAY-463.
 	 *
-	 * A store that opted out of `wcpay_woopay_allow_cart_token_auth` is back to requiring
-	 * the signature here: the envelope stops being accepted at its source. See
-	 * `WooPay_Session::is_cart_token_auth_allowed()`.
-	 *
 	 * @return bool True if the request is from WooPay and carries proof of it.
 	 */
 	public function check_permission() {
