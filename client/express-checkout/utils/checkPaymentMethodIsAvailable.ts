@@ -10,6 +10,7 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  */
 import type WCPayAPI from 'wcpay/checkout/api';
 import { getExpressCheckoutData } from '.';
+import { getSetupFutureUsageForContext } from './subscriptions';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 interface CartTotals {
@@ -79,8 +80,7 @@ function checkAvailablePaymentMethods(
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
 		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-	const hasSubscription =
-		getExpressCheckoutData( 'has_subscription' ) ?? false;
+	const setupFutureUsage = getSetupFutureUsageForContext();
 
 	let container: HTMLDivElement | null = null;
 
@@ -102,8 +102,8 @@ function checkAvailablePaymentMethods(
 				...( useConfirmationToken && isManualCaptureEnabled
 					? { captureMethod: 'manual' }
 					: {} ),
-				...( useConfirmationToken && hasSubscription
-					? { setupFutureUsage: 'off_session' }
+				...( useConfirmationToken && setupFutureUsage
+					? { setupFutureUsage }
 					: {} ),
 			} );
 

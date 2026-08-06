@@ -36,6 +36,14 @@ export interface WCPayExpressCheckoutParams {
 	};
 
 	has_subscription?: boolean;
+
+	/**
+	 * The `setup_future_usage` the ConfirmationToken must be minted with, computed
+	 * server-side. Covers the product page, where no Store API cart exists yet — the
+	 * cart and checkout contexts read it off the cart response instead.
+	 */
+	setup_future_usage?: 'off_session' | null;
+
 	is_manual_capture?: boolean;
 
 	/**
