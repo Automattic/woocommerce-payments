@@ -219,4 +219,47 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 			expect.objectContaining( { amount: 1 } )
 		);
 	} );
+
+	// This probe builds its own Elements instance to ask which wallets are available. If its
+	// setupFutureUsage diverges from the one the real button mints with, availability is
+	// answered for a different payment than the shopper actually makes.
+	describe( 'setupFutureUsage', () => {
+		afterEach( () => {
+			delete global.wcpayExpressCheckoutParams;
+		} );
+
+		it( 'passes the value the server declared', async () => {
+			global.wcpayExpressCheckoutParams = {
+				setup_future_usage: 'off_session',
+			};
+
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD' ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { setupFutureUsage: 'off_session' } )
+			);
+		} );
+
+		it( 'omits it when the server declared none', async () => {
+			global.wcpayExpressCheckoutParams = {
+				setup_future_usage: null,
+			};
+
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD' ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.not.objectContaining( {
+					setupFutureUsage: expect.anything(),
+				} )
+			);
+		} );
+	} );
 } );
