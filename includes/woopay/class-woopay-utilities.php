@@ -332,7 +332,7 @@ class WooPay_Utilities {
 		}
 
 		// Create an HMAC hash for data integrity.
-		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
+		$hash = hash_hmac( 'sha256', $iv . $session_encrypted, $store_blog_token );
 
 		$data = [
 			'session' => $session_encrypted,

@@ -311,9 +311,15 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		$parts = array_map( 'base64_decode', $encrypted['data'] );
 
 		// Checked the way the receiver checks it, so this fails if either side of the
-		// contract moves. Note the HMAC covers the ciphertext alone on this leg, which
-		// is not what the opposite direction does. See WOOPAY-461.
+		// contract moves. The HMAC has to cover the IV, not the ciphertext alone —
+		// otherwise the IV can be rewritten in transit. See WOOPAY-461.
 		$this->assertSame(
+			hash_hmac( 'sha256', $parts['iv'] . $parts['session'], $token ),
+			$parts['hash']
+		);
+
+		// And specifically not the form WooPay still accepts from older releases.
+		$this->assertNotSame(
 			hash_hmac( 'sha256', $parts['session'], $token ),
 			$parts['hash']
 		);
