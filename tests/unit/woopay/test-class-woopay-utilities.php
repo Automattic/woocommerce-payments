@@ -284,4 +284,52 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
+
+	public function test_encrypt_and_sign_data_returns_nothing_without_a_blog_token() {
+		Jetpack_Options::update_option( 'blog_token', '' );
+
+		$this->assertSame(
+			[],
+			WooPay_Utilities::encrypt_and_sign_data( [ 'wcpay_version' => '1.0.0' ] )
+		);
+	}
+
+	public function test_encrypt_and_sign_data_produces_a_payload_the_receiver_can_open() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$session = [
+			'wcpay_version' => '1.0.0',
+			'blog_id'       => 123,
+		];
+
+		$encrypted = WooPay_Utilities::encrypt_and_sign_data( $session );
+
+		$this->assertArrayHasKey( 'data', $encrypted );
+
+		$parts = array_map( 'base64_decode', $encrypted['data'] );
+
+		// Checked the way the receiver checks it, so this fails if either side of the
+		// contract moves. Note the HMAC covers the ciphertext alone on this leg, which
+		// is not what the opposite direction does. See WOOPAY-461.
+		$this->assertSame(
+			hash_hmac( 'sha256', $parts['session'], $token ),
+			$parts['hash']
+		);
+
+		$this->assertSame(
+			$session,
+			json_decode(
+				openssl_decrypt(
+					$parts['session'],
+					'aes-256-cbc',
+					$token,
+					OPENSSL_RAW_DATA,
+					$parts['iv']
+				),
+				true
+			)
+		);
+	}
 }

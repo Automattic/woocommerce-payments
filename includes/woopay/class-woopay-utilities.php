@@ -320,6 +320,17 @@ class WooPay_Utilities {
 		// Encrypt the JSON session.
 		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
 
+		// Fail closed. Without this, a failed encryption is signed and shipped like any
+		// other payload: hash_hmac() casts false to '', so the receiver is handed an empty
+		// session carrying a valid HMAC of the empty string, and reads it as authentic but
+		// empty rather than as something that went wrong. Returning nothing instead matches
+		// the empty-token case above, which callers already treat as "no session to send".
+		if ( false === $session_encrypted ) {
+			Logger::log( 'Failed to encrypt the WooPay session data.' );
+
+			return [];
+		}
+
 		// Create an HMAC hash for data integrity.
 		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
 
