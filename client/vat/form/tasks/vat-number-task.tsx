@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -195,15 +195,10 @@ export const VatNumberTask = ( {
 	const isVatButtonDisabled =
 		isVatRegistered && vatNumber.trimEnd() === vatNumberPrefix.trimEnd();
 
-	// Initialize VAT number with prefix when VAT registration is enabled
-	useEffect( () => {
-		if ( isVatRegistered && vatNumber === '' ) {
-			setVatNumber( vatNumberPrefix );
-		}
-		if ( ! isVatRegistered && vatNumber !== '' ) {
-			setVatNumber( '' );
-		}
-	}, [ isVatRegistered, vatNumber, vatNumberPrefix ] );
+	const handleVatRegisteredChange = ( registered: boolean ) => {
+		setVatRegistered( registered );
+		setVatNumber( registered ? vatNumberPrefix : '' );
+	};
 
 	const submit = async () => {
 		const normalizedVatNumber = isVatRegistered
@@ -269,7 +264,7 @@ export const VatNumberTask = ( {
 				<CheckboxControl
 					className="wcpay-vat-number-task__checkbox"
 					checked={ isVatRegistered }
-					onChange={ setVatRegistered }
+					onChange={ handleVatRegisteredChange }
 					label={ sprintf(
 						__(
 							/* translators: %$1$s: tax ID name, e.g. VAT Number, GST Number, Corporate Number */
