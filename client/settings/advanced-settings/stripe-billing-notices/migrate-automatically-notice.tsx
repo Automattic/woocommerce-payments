@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { _n, sprintf } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
@@ -24,24 +24,10 @@ const MigrateAutomaticallyNotice: React.FC< Props > = ( {
 } ) => {
 	const context = useContext( StripeBillingMigrationNoticeContext );
 
-	/**
-	 * Whether the notice is eligible to be shown.
-	 *
-	 * Note: We use `useState` here to snapshot the setting value on load.
-	 * This notice should only be shown if Stripe Billing was enabled on load.
-	 */
-	const [ isEligible, setIsEligible ] = useState(
-		context.isStripeBillingEnabled
-	);
-
-	// Set the notice to be eligible if Stripe Billing is saved as enabled. ie Once saved, disabling will automatically migrate.
-	useEffect( () => {
-		if ( context.hasSavedSettings ) {
-			setIsEligible( context.savedIsStripeBillingEnabled );
-		}
-	}, [ context.hasSavedSettings, context.savedIsStripeBillingEnabled ] );
-
-	if ( ! isEligible ) {
+	// The notice is eligible whenever the last-saved Stripe Billing snapshot is
+	// enabled. Because the parent seeds the snapshot from the mount value, this
+	// also covers the "Stripe Billing enabled on load" case before any save.
+	if ( ! context.savedIsStripeBillingEnabled ) {
 		return null;
 	}
 
