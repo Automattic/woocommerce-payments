@@ -765,15 +765,13 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 		/**
-		 * Bumped migration version from for giropay from 7.9.0 to 11.0.0 because commit a4739037b re-added giropay to
-		 *              PaymentMethodDefinitionRegistry, which re-enabled them on accounts that
-		 *              still had fee data for them. Re-running the migration ensures those
-		 *              accounts are cleaned up after the registry fix in 11.0.0.
+		 * The version is the release that should run the cleanup, not the one that deprecated the method. A
+		 * cleanup only fires on stores upgrading from below it, so bump it whenever stores need it again.
 		 *
 		 * @see WOOPMNT-6277.
 		 */
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'giropay', '11.0.0' ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'sofort', '8.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'sofort', '11.1.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );

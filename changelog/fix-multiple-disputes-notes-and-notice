@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Reflect all of a charge's disputes in order notes and the order dispute notice when a charge has more than one, and align the 'Dispute N of M' label on the transaction details page.
