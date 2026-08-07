@@ -346,6 +346,20 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Counterpart to the test above. The subscription-product stub defaults to true, so
+	 * without this the product branch would assert `off_session` for every product page
+	 * and pin nothing.
+	 */
+	public function test_get_setup_future_usage_is_null_on_a_non_subscription_product_page() {
+		WC_Subscriptions_Product::$is_subscription = false;
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->make_helper_for_context( true, false, false );
+
+		$this->assertNull( $helper->get_setup_future_usage() );
+	}
+
+	/**
 	 * The Store API cart endpoint carries no page context, so it names the context instead.
 	 * Without that, is_cart()/is_checkout() are both false and the cart would look plain.
 	 */
