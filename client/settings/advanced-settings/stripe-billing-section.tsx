@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
@@ -23,23 +23,6 @@ import StripeBillingToggle from './stripe-billing-toggle';
 /**
  * Renders a WooPayments Subscriptions Advanced Settings Section.
  *
- * The save-and-migrate state machine is owned here and exposed to the notices
- * and toggle via `StripeBillingMigrationNoticeContext`:
- *
- *   - `wasSavingRef` remembers the previous `isSaving` value so we can detect
- *     the `isSaving: true → false` transition from render (no state, no
- *     effect-driven cascade re-renders).
- *   - `savedIsStripeBillingEnabledRef` snapshots the Stripe Billing value at
- *     each save boundary. Initialised from the mount value so the notices have
- *     a valid snapshot before the first save.
- *   - `hasEverSavedEnabledRef` latches true once Stripe Billing has ever been
- *     saved-enabled (or was enabled on mount). It locks the migrate-option
- *     notice off — once Stripe Billing has been enabled, the "migrate now"
- *     prompt is no longer offered.
- *   - `hasCompletedSaveRef` latches true after the first completed save cycle.
- *     Notices use this to distinguish "server-reported migration on mount"
- *     from "user just saved with Stripe Billing disabled".
- *
  * @return {JSX.Element} Rendered subscriptions advanced settings section.
  */
 const StripeBillingSection: React.FC = () => {
@@ -55,50 +38,58 @@ const StripeBillingSection: React.FC = () => {
 		hasResolved,
 	] = useStripeBillingMigration();
 
-	const { isSaving } = useSettings();
+	/**
+	 * Notices are shown and hidden based on whether the settings have been saved.
+	 * The following variables track the saving state of the WooPayments settings.
+	 */
+	const { isLoading, isSaving } = useSettings();
+	const [ hasSavedSettings, setHasSavedSettings ] = useState( false );
+	const [ savedIsStripeBillingEnabled, setSavedIsStripeBillingEnabled ] =
+		useState( isStripeBillingEnabled );
 
-	// Track the previous `isSaving` value so we can detect the "save finished"
-	// transition without a `setState`-in-effect cascade.
-	const wasSavingRef = useRef( false );
+	// The settings have finished saving when the settings are not actively being saved and we've flagged they were being saved.
+	const hasFinishedSavingSettings = ! isSaving && hasSavedSettings;
 
-	// Latched snapshots of Stripe Billing state at save boundaries. Initialised
-	// from the mount value so the notices have a valid snapshot before the
-	// first save cycle.
-	const savedIsStripeBillingEnabledRef = useRef( isStripeBillingEnabled );
-	const hasEverSavedEnabledRef = useRef( isStripeBillingEnabled );
-	const hasCompletedSaveRef = useRef( false );
-
-	const hasFinishedSavingSettings = wasSavingRef.current && ! isSaving;
-
-	// Render-time snapshot update: on the render where we detect the save
-	// finished, capture the new Stripe Billing value into the refs. Refs never
-	// trigger re-renders, so this is safe and does not fire the
-	// set-state-in-effect rule.
-	if ( hasFinishedSavingSettings ) {
-		savedIsStripeBillingEnabledRef.current = isStripeBillingEnabled;
-		hasCompletedSaveRef.current = true;
-		if ( isStripeBillingEnabled ) {
-			hasEverSavedEnabledRef.current = true;
-		}
-	}
-
+	// When the settings are being saved, set the hasSavedSettings flag to true.
 	useEffect( () => {
-		wasSavingRef.current = isSaving;
-	}, [ isSaving ] );
+		if ( isSaving && ! isLoading ) {
+			setHasSavedSettings( true );
+		}
+	}, [ isLoading, isSaving ] );
 
-	// Local mirror for a migration triggered from the "Begin migration" button.
+	// When the settings have finished saving, update the savedIsStripeBillingEnabled value.
+	useEffect( () => {
+		if ( hasFinishedSavingSettings ) {
+			setSavedIsStripeBillingEnabled( isStripeBillingEnabled );
+		}
+	}, [ hasFinishedSavingSettings, isStripeBillingEnabled ] );
+
+	// Set up the context to be shared between the notices and the toggle.
 	const [ isMigrationInProgressLocal, setIsMigrationInProgressLocal ] =
 		useState( false );
 
+	/**
+	 * Whether the migrate-option notice is eligible to be shown.
+	 *
+	 * Note: We use `useState` here to snapshot the setting value on load.
+	 * The option notice should only be shown if Stripe Billing was disabled on load.
+	 */
+	const [ isMigrationOptionEligible, setIsMigrationOptionEligible ] =
+		useState( ! isStripeBillingEnabled );
+
+	// Once settings are saved with Stripe Billing enabled, the option notice is no longer eligible.
+	useEffect( () => {
+		if ( savedIsStripeBillingEnabled ) {
+			setIsMigrationOptionEligible( false );
+		}
+	}, [ savedIsStripeBillingEnabled ] );
+
+	// Derive `isMigrationOptionShown` synchronously so all children (the toggle and sibling
+	// notices) read the same value in the first render — otherwise the toggle's help text
+	// flickers because <Notices /> renders before <StripeBillingToggle /> and can't update
+	// the context until after its first commit.
 	const isMigrationInProgressCombined =
 		isMigrationInProgress || isMigrationInProgressLocal;
-
-	// The migrate-option notice is only eligible when Stripe Billing has never
-	// been saved-enabled (and was not enabled on mount). Both conditions
-	// collapse into `hasEverSavedEnabledRef` because it is initialised from
-	// the mount value.
-	const isMigrationOptionEligible = ! hasEverSavedEnabledRef.current;
-
 	const isMigrationOptionShown =
 		! hasResolved &&
 		! isMigrationInProgressCombined &&
@@ -108,7 +99,7 @@ const StripeBillingSection: React.FC = () => {
 
 	const noticeContext = {
 		isStripeBillingEnabled: isStripeBillingEnabled,
-		savedIsStripeBillingEnabled: savedIsStripeBillingEnabledRef.current,
+		savedIsStripeBillingEnabled: savedIsStripeBillingEnabled,
 
 		// Notice logic.
 		isMigrationOptionShown: isMigrationOptionShown,
@@ -116,7 +107,7 @@ const StripeBillingSection: React.FC = () => {
 		// Migration logic.
 		isMigrationInProgress: isMigrationInProgressCombined,
 		setIsMigrationInProgress: setIsMigrationInProgressLocal,
-		hasCompletedSave: hasCompletedSaveRef.current,
+		hasSavedSettings: hasFinishedSavingSettings,
 
 		// Migration data.
 		subscriptionCount: subscriptionCount,
@@ -137,12 +128,14 @@ const StripeBillingSection: React.FC = () => {
 	const closeStripeBillingManualCaptureConflictModal = () =>
 		setStripeBillingManualCaptureConflictModalOpen( false );
 
+	// When the toggle is changed, update the WooPayments settings and reset the hasSavedSettings flag.
 	const stripeBillingSettingToggle = ( enabled: boolean ) => {
 		if ( enabled && isManualCaptureEnabled ) {
 			openStripeBillingManualCaptureConflictModal();
 			return;
 		}
 		updateIsStripeBillingEnabled( enabled );
+		setHasSavedSettings( false );
 	};
 
 	return (
