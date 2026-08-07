@@ -98,9 +98,9 @@
 		"react-hooks/purity": "error",
 		"react-hooks/use-memo": "error",
 		"react-hooks/immutability": "error",
-		/* BEGIN WOOPMNT-6292 — react-hooks v7 new rules, temporarily set to warn until violations are fixed */
+		"react-hooks/set-state-in-effect": "error",
+		/* BEGIN WOOPMNT-6292 — react-hooks v7 remaining rule, temporarily set to warn until violations are fixed */
 		"react-hooks/refs": "warn",
-		"react-hooks/set-state-in-effect": "warn",
 		/* END WOOPMNT-6292 */
 		"jest/no-conditional-expect": "off",
 		"jest/valid-title": "off",
