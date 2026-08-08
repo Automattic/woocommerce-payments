@@ -91,8 +91,106 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+
+		unset( $_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] );
 
 		parent::tear_down();
+	}
+
+	/**
+	 * Puts the request in the state determine_current_user_for_woopay() leaves it in once it
+	 * has accepted the request's credentials, whichever credentials this release accepts.
+	 */
+	private function authenticate_woopay_request() {
+		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+	}
+
+	public function test_an_accepted_woopay_request_marks_itself_as_one() {
+		// The IP gate reads this filter rather than naming a credential, so it is only as
+		// good as the auth path still setting it. Pin that here: if the two ever come apart,
+		// the order silently keeps the WordPress.com address instead.
+		WooPay_Session::determine_current_user_for_woopay( 0 );
+
+		/**
+		 * Filters whether the current request is a WooPay Store API request.
+		 *
+		 * @since 7.2.0
+		 *
+		 * @param bool $is_woopay_store_api_request Whether this is a WooPay Store API request.
+		 */
+		$this->assertTrue( apply_filters( 'wcpay_is_woopay_store_api_request', false ) );
+	}
+
+	public function test_woopay_order_records_the_shopper_ip_address() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->authenticate_woopay_request();
+
+		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] = '203.0.113.10';
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		// Without this the order keeps the address the request arrived from, which for a
+		// WooPay checkout is a WordPress.com server rather than the shopper. See WOOPAY-415.
+		$this->assertSame( '203.0.113.10', $order->get_customer_ip_address() );
+	}
+
+	public function test_woopay_order_keeps_its_own_ip_address_when_none_is_sent() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '198.51.100.20' );
+
+		$this->authenticate_woopay_request();
+
+		// Every WooPay release before this change sends no address, and neither does any
+		// request other than the checkout POST.
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		$this->assertSame( '198.51.100.20', $order->get_customer_ip_address() );
+	}
+
+	public function test_woopay_order_ignores_an_address_that_does_not_parse() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '198.51.100.20' );
+
+		$this->authenticate_woopay_request();
+
+		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] = 'not-an-ip-address';
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		$this->assertSame( '198.51.100.20', $order->get_customer_ip_address() );
+	}
+
+	public function test_order_ignores_the_shopper_ip_header_on_an_unauthenticated_request() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '198.51.100.20' );
+
+		// determine_current_user_for_woopay() never accepted this request's credentials, so
+		// the address on it is nobody's word in particular.
+		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] = '203.0.113.10';
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		$this->assertSame( '198.51.100.20', $order->get_customer_ip_address() );
+	}
+
+	public function test_order_ignores_the_shopper_ip_header_when_the_request_is_not_from_woopay() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '198.51.100.20' );
+
+		$this->authenticate_woopay_request();
+
+		$restore_user_agent = $_SERVER['HTTP_USER_AGENT'];
+		unset( $_SERVER['HTTP_USER_AGENT'] );
+
+		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] = '203.0.113.10';
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		$_SERVER['HTTP_USER_AGENT'] = $restore_user_agent;
+
+		$this->assertSame( '198.51.100.20', $order->get_customer_ip_address() );
 	}
 
 	public function test_get_user_id_from_cart_token_with_guest_user() {

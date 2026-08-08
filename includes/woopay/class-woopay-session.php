@@ -61,6 +61,7 @@ class WooPay_Session {
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ __CLASS__, 'catch_woopay_checkout_errors' ], 1, 1 );
+		add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ __CLASS__, 'set_woopay_order_customer_ip' ], 10, 1 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
@@ -162,6 +163,95 @@ class WooPay_Session {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Records the shopper's own IP on an order placed through WooPay.
+	 *
+	 * WooPay places the order by calling this store's Store API from WordPress.com, so
+	 * `WC_Geolocation::get_ip_address()` sees a WordPress.com address and that is what
+	 * `OrderController::update_order_from_cart()` wrote onto the order. Merchants read that
+	 * field for fraud rules, IP filtering and audit, and a datacenter address tells them
+	 * nothing about the shopper. WooPay sends the address it saw the shopper's browser
+	 * arrive from, and this replaces the placeholder with it. See WOOPAY-415.
+	 *
+	 * Runs on `woocommerce_store_api_checkout_update_order_from_request`, which fires after
+	 * the draft order has taken its IP from the request and before the order is validated
+	 * and paid — so this is also the address that reaches Stripe on the mandate.
+	 *
+	 * Only a request that authenticated as WooPay is believed. That is asked through
+	 * `wcpay_is_woopay_store_api_request`, which `determine_current_user_for_woopay()` sets
+	 * once the request has passed whatever this release accepts as authentication, rather
+	 * than by naming a credential here. Naming one would tie this to a rollout it has
+	 * nothing to do with: WooPay is moving proxied Store API traffic off the blog token
+	 * signature and onto the Cart-Token, so a signature check here would quietly stop
+	 * matching and leave the order back on a WordPress.com address.
+	 *
+	 * How much that vouches for the address is therefore whatever the credential in force
+	 * vouches for. A blog token signature can only be produced by WooPay on WordPress.com,
+	 * so the address is WooPay's word. A Cart-Token identifies the cart rather than WooPay,
+	 * so under that model a shopper holding their own could name an address on their own
+	 * order — no worse than the store's own position behind a proxy that forwards
+	 * `X-Forwarded-For`, and better than the address being wrong for everyone.
+	 *
+	 * @param \WC_Order $order Order being updated from the checkout request.
+	 */
+	public static function set_woopay_order_customer_ip( $order ) {
+		if ( ! $order instanceof \WC_Order ) {
+			return;
+		}
+
+		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
+			return;
+		}
+
+		if ( ! self::is_woopay_enabled() ) {
+			return;
+		}
+
+		/**
+		 * Filters whether the current request is a WooPay Store API request.
+		 *
+		 * @since 7.2.0
+		 *
+		 * @param bool $is_woopay_store_api_request Whether this is a WooPay Store API request.
+		 */
+		if ( ! apply_filters( 'wcpay_is_woopay_store_api_request', false ) ) {
+			return;
+		}
+
+		$customer_ip_address = self::get_woopay_customer_ip_address();
+
+		if ( null === $customer_ip_address ) {
+			return;
+		}
+
+		$order->set_customer_ip_address( $customer_ip_address );
+	}
+
+	/**
+	 * The shopper IP address WooPay sent with this request.
+	 *
+	 * WooPay proxies checkout to this store from WordPress.com, so the connection describes
+	 * WooPay rather than the shopper, and the `X-WooPay-Customer-IP` header is what carries
+	 * the address the shopper's browser actually arrived from.
+	 *
+	 * Absent on WooPay versions that do not send it yet, and on every request that is not
+	 * the checkout POST — WooPay only sends it where an order is created from it. Null in
+	 * both cases, which leaves the order with whatever the request itself resolved to.
+	 *
+	 * @return string|null The shopper's IP address, or null when none was sent or it does not parse.
+	 */
+	private static function get_woopay_customer_ip_address(): ?string {
+		if ( ! isset( $_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] ) ) {
+			return null;
+		}
+
+		$customer_ip_address = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] ) );
+
+		$validated = rest_is_ip_address( $customer_ip_address );
+
+		return false === $validated ? null : $validated;
 	}
 
 	/**
