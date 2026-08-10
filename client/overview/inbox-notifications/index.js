@@ -157,9 +157,9 @@ const InboxPanel = () => {
 		} );
 	const [ dismiss, setDismiss ] = useState();
 	// Make sure we only set lastRead at component mount.
-	const lastRead = useRef( overviewInboxLastRead );
-	if ( ! lastRead.current && overviewInboxLastRead ) {
-		lastRead.current = overviewInboxLastRead;
+	const lastReadRef = useRef( overviewInboxLastRead );
+	if ( ! lastReadRef.current && overviewInboxLastRead ) {
+		lastReadRef.current = overviewInboxLastRead;
 	}
 
 	useEffect( () => {
@@ -291,7 +291,7 @@ const InboxPanel = () => {
 						renderNotes( {
 							hasNotes,
 							batchUpdating,
-							lastRead: lastRead.current,
+							lastRead: lastReadRef.current,
 							notes,
 							onDismiss,
 							onNoteActionClick,

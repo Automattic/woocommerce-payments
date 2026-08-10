@@ -79,6 +79,13 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$this->subscription_service = new WC_Payments_Subscription_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_product_service, $this->mock_invoice_service );
 	}
 
+	public function tear_down() {
+		// Reset the global function stub so it cannot leak into other tests.
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+
+		parent::tear_down();
+	}
+
 	/**
 	 * Mock get_period static method.
 	 *
@@ -749,6 +756,72 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'test_is_wcpay_subscription' );
 
 		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) );
+	}
+
+	/**
+	 * An order whose subscription is billed through Stripe Billing.
+	 */
+	public function test_is_wcpay_subscription_order_with_stripe_billed_subscription() {
+		$subscription                 = new WC_Subscription();
+		$subscription->payment_method = 'woocommerce_payments';
+		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * A tokenised subscription renews on-site, so its order must not be treated as
+	 * Stripe-billed even though the store may have the Stripe Billing feature enabled.
+	 */
+	public function test_is_wcpay_subscription_order_with_tokenised_subscription() {
+		$subscription                 = new WC_Subscription();
+		$subscription->payment_method = 'woocommerce_payments';
+		// No _wcpay_subscription_id: never created in Stripe Billing.
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$this->assertFalse( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * Mixed relations: any Stripe-billed subscription is enough, matching
+	 * is_wcpay_subscription_renewal_order() in the subscriptions gateway trait.
+	 */
+	public function test_is_wcpay_subscription_order_with_mixed_subscriptions() {
+		$tokenised                 = new WC_Subscription();
+		$tokenised->payment_method = 'woocommerce_payments';
+
+		$stripe_billed                 = new WC_Subscription();
+		$stripe_billed->payment_method = 'woocommerce_payments';
+		$stripe_billed->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test456' );
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $tokenised, $stripe_billed ] );
+
+		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * An order with no related subscriptions is never Stripe-billed.
+	 */
+	public function test_is_wcpay_subscription_order_without_subscriptions() {
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$this->assertFalse( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * Stubs wcs_get_subscriptions_for_order() for the duration of a test.
+	 *
+	 * @param array $subscriptions Subscriptions the stub should return.
+	 */
+	private function mock_wcs_get_subscriptions_for_order( array $subscriptions ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $_unused_order, $_unused_args = [] ) use ( $subscriptions ) {
+				return $subscriptions;
+			}
+		);
 	}
 
 	/**

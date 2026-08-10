@@ -114,6 +114,19 @@ export const isInDevMode = ( fallback = false ) => {
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
 
 /**
+ * Navigate the browser to a full URL.
+ *
+ * Extracted so callers don't need to assign to `window.location.href` inside
+ * component bodies or hooks — the `react-hooks/immutability` rule treats that
+ * assignment as a mutation of a captured value.
+ *
+ * @param {string} url The URL to navigate to.
+ */
+export const redirectTo = ( url ) => {
+	window.location.href = url;
+};
+
+/**
  * Returns the URL to view a WooPayments document.
  *
  * @param {string} documentId The document ID.

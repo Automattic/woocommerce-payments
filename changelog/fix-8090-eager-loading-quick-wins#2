@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Resolve repeated Database_Cache::get_or_add() calls from memory within a request, skipping redundant validation of hot keys like account data
