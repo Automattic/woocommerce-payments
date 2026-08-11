@@ -105,6 +105,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions::wcs_cart_contains_renewal( null );
 		WC_Subscriptions::wcs_cart_contains_resubscribe( null );
 		WC_Subscriptions::wcs_cart_contains_switches( null );
+		WC_Subscriptions::set_wcs_order_contains_subscription( null );
+		WC_Subscriptions::wcs_order_contains_renewal( null );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
 		WC()->cart->empty_cart();
@@ -400,6 +402,94 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
 
 		$this->assertNull( $actual );
+	}
+
+	/**
+	 * Paying an existing order runs with an empty cart, so the cart and product predicates
+	 * both report false while the gateway still saves the payment method for the
+	 * subscription on the order.
+	 */
+	public function test_get_setup_future_usage_reads_the_order_for_pay_for_order() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+
+		$actual = $this->make_helper_for_order()->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertSame( 'off_session', $actual );
+	}
+
+	public function test_get_setup_future_usage_is_null_for_a_pay_for_order_without_a_subscription() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$actual = $this->make_helper_for_order()->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * A renewal order carries the renewed subscription by reference rather than as a
+	 * subscription line item, so `wcs_order_contains_subscription()` alone misses it.
+	 */
+	public function test_get_setup_future_usage_recognises_a_renewal_order() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return false;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$actual = $this->make_helper_for_order()->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertSame( 'off_session', $actual );
+	}
+
+	/**
+	 * `get_current_order()` returns false off the order-pay page, and the subscription
+	 * predicates must not be handed that in place of an order.
+	 */
+	public function test_get_setup_future_usage_is_null_when_no_order_resolves() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$actual = $this->make_helper_for_order( false )->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * Builds a helper resolving to a given order, for the pay-for-order context.
+	 *
+	 * @param WC_Order|false|null $order Order to resolve to, or false for none. Defaults
+	 *                                  to a freshly created order.
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private function make_helper_for_order( $order = null ) {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_current_order' ] )
+			->getMock();
+		$helper->method( 'get_current_order' )->willReturn( $order ?? WC_Helper_Order::create_order() );
+
+		return $helper;
 	}
 
 	/**

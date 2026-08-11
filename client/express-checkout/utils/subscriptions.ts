@@ -158,6 +158,14 @@ export const getSetupFutureUsageForCart = (
 		// Presence, not truthiness: an explicit `null` from the server is a decision
 		// ("this cart does not save the payment method") and must beat the heuristic.
 		value = wcpayExtension.setup_future_usage ?? null;
+	} else if (
+		getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
+	) {
+		// Pay-for-order reads an order, not a cart, and the extension registers on the
+		// cart schema only — so this data will never carry it. The subscription being
+		// renewed lives on the order, which only the server can see, and the order does
+		// not change under us the way a cart does.
+		value = getLocalizedSetupFutureUsage();
 	} else {
 		value = cartHasAnySubscription( cartData ) ? 'off_session' : null;
 	}
