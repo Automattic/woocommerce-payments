@@ -5474,7 +5474,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * what this payment is doing. Both directions are worth knowing about, for opposite reasons.
 	 *
 	 * Stripe fixes that value on the token before the wallet sheet opens, and the express
-	 * checkout predicate is re-evaluated here to infer what the token carries.
+	 * checkout predicate is re-evaluated here to infer what the token carries. Both values
+	 * compared below are server-side, so a client that mints a token differing from what it was
+	 * told to goes unseen here — Stripe's own rejection is what surfaces that case.
 	 *
 	 * **Token lacks it, this payment saves the method.** Stripe rejects the confirmation, so
 	 * the purchase fails every time. Something decided to save the payment method that the
@@ -5518,9 +5520,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $intent_requests_off_session ) {
 			Logger::error(
 				sprintf(
-					'Order %s is saving the payment method, but its confirmation token was minted without setup_future_usage, so Stripe will reject this payment. '
-					. 'Something outside WooCommerce Subscriptions is requesting the save. Declare it with the wcpay_express_checkout_setup_future_usage filter '
-					. 'so express checkout mints the token with off_session.',
+					'Order %s saves the payment method, but express checkout was told to mint its confirmation token without setup_future_usage, '
+					. 'so Stripe will reject this payment if the token followed that. Something outside WooCommerce Subscriptions is requesting the save. '
+					. 'Declare it with the wcpay_express_checkout_setup_future_usage filter so the token is minted with off_session.',
 					$order_id
 				)
 			);
@@ -5529,9 +5531,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		Logger::error(
 			sprintf(
-				'Order %s was paid with a confirmation token minted for off_session use, but this payment does not save the payment method. '
-				. 'Stripe applies the token\'s setup_future_usage regardless, so the card is attached to the customer with no WooPayments token recorded against it. '
-				. 'Check whatever filters wcpay_express_checkout_setup_future_usage — declare off_session only when the payment method will genuinely be saved.',
+				'Order %s declared off_session to express checkout, but this payment does not save the payment method. '
+				. 'If the token was minted with it, Stripe applies the token\'s setup_future_usage regardless, so the card is attached to the customer '
+				. 'with no WooPayments token recorded against it. Check whatever filters wcpay_express_checkout_setup_future_usage — declare off_session '
+				. 'only when the payment method will genuinely be saved.',
 				$order_id
 			)
 		);
