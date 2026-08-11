@@ -107,6 +107,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions::wcs_cart_contains_switches( null );
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::wcs_order_contains_renewal( null );
+		unset( $GLOBALS['wp']->query_vars['order-pay'] );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
 		WC()->cart->empty_cart();
@@ -416,18 +417,35 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				return true;
 			}
 		);
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
 
-		$actual = $this->make_helper_for_order()->get_setup_future_usage( 'pay_for_order' );
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
 
 		$this->assertSame( 'off_session', $actual );
 	}
 
 	public function test_get_setup_future_usage_is_null_for_a_pay_for_order_without_a_subscription() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
 
-		$actual = $this->make_helper_for_order()->get_setup_future_usage( 'pay_for_order' );
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
 
 		$this->assertNull( $actual );
+	}
+
+	/**
+	 * The order-pay page carries the order in a query var. `get_current_order()` reads the
+	 * admin globals, where `$post` is the checkout page on the front end — so resolving
+	 * through it returns no order and the subscription goes undetected.
+	 */
+	public function test_get_order_being_paid_resolves_the_order_pay_query_var() {
+		$order = WC_Helper_Order::create_order();
+		$this->set_order_pay_endpoint( $order );
+
+		$resolved = $this->system_under_test->get_order_being_paid();
+
+		$this->assertInstanceOf( WC_Order::class, $resolved );
+		$this->assertSame( $order->get_id(), $resolved->get_id() );
 	}
 
 	/**
@@ -447,14 +465,16 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			}
 		);
 
-		$actual = $this->make_helper_for_order()->get_setup_future_usage( 'pay_for_order' );
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
 
 		$this->assertSame( 'off_session', $actual );
 	}
 
 	/**
-	 * `get_current_order()` returns false off the order-pay page, and the subscription
-	 * predicates must not be handed that in place of an order.
+	 * Off the order-pay endpoint there is no order to read, and the subscription
+	 * predicates must not be handed a non-order in its place.
 	 */
 	public function test_get_setup_future_usage_is_null_when_no_order_resolves() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
@@ -469,27 +489,22 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			}
 		);
 
-		$actual = $this->make_helper_for_order( false )->get_setup_future_usage( 'pay_for_order' );
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
 
 		$this->assertNull( $actual );
 	}
 
 	/**
-	 * Builds a helper resolving to a given order, for the pay-for-order context.
+	 * Puts a real order on the order-pay endpoint, the way the front end does. Resolution
+	 * is deliberately left unmocked — mocking it is what hid the order going unresolved
+	 * outside the admin.
 	 *
-	 * @param WC_Order|false|null $order Order to resolve to, or false for none. Defaults
-	 *                                  to a freshly created order.
-	 *
-	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 * @param WC_Order $order Order being paid.
 	 */
-	private function make_helper_for_order( $order = null ) {
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'get_current_order' ] )
-			->getMock();
-		$helper->method( 'get_current_order' )->willReturn( $order ?? WC_Helper_Order::create_order() );
+	private function set_order_pay_endpoint( WC_Order $order ) {
+		global $wp;
 
-		return $helper;
+		$wp->query_vars['order-pay'] = (string) $order->get_id();
 	}
 
 	/**

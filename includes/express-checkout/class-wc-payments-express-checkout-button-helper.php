@@ -382,13 +382,36 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		$order = $this->get_current_order();
+		$order = $this->get_order_being_paid();
 		if ( ! $order ) {
 			return false;
 		}
 
 		return wcs_order_contains_subscription( $order )
 			|| ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order ) );
+	}
+
+	/**
+	 * Resolves the order the shopper is paying for on the order-pay endpoint.
+	 *
+	 * `get_current_order()` reads `$theorder` and `$post`, which only resolve an order on
+	 * the admin edit screen — on the front end `$post` is the checkout page, so it hands
+	 * back the wrong object or nothing at all. The order-pay endpoint carries the ID in a
+	 * query var instead, the same way the gateway and customer service read it.
+	 *
+	 * @return WC_Order|WC_Order_Refund|false
+	 */
+	public function get_order_being_paid() {
+		global $wp;
+
+		if ( isset( $wp->query_vars['order-pay'] ) ) {
+			$order = wc_get_order( absint( $wp->query_vars['order-pay'] ) );
+			if ( $order ) {
+				return $order;
+			}
+		}
+
+		return $this->get_current_order();
 	}
 
 	/**
