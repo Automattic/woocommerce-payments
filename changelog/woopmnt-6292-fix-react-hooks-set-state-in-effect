@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix react-hooks/set-state-in-effect ESLint violations.
