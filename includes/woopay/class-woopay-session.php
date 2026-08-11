@@ -61,7 +61,7 @@ class WooPay_Session {
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ __CLASS__, 'catch_woopay_checkout_errors' ], 1, 1 );
-		add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ __CLASS__, 'set_woopay_order_customer_ip' ], 10, 1 );
+		add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ __CLASS__, 'set_woopay_order_customer_ip' ], 10, 2 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
@@ -181,10 +181,11 @@ class WooPay_Session {
 	 * credential, so the check keeps matching as WooPay moves proxied Store API traffic off
 	 * the blog token signature and onto the Cart-Token.
 	 *
-	 * @param \WC_Order $order Order being updated from the checkout request.
+	 * @param \WC_Order        $order   Order being updated from the checkout request.
+	 * @param \WP_REST_Request $request The checkout request the order is being updated from.
 	 */
-	public static function set_woopay_order_customer_ip( $order ) {
-		if ( ! $order instanceof \WC_Order ) {
+	public static function set_woopay_order_customer_ip( $order, $request = null ) {
+		if ( ! $order instanceof \WC_Order || ! $request instanceof \WP_REST_Request ) {
 			return;
 		}
 
@@ -207,9 +208,18 @@ class WooPay_Session {
 			return;
 		}
 
-		$customer_ip_address = self::get_woopay_customer_ip_address();
+		$customer_ip_address = self::get_woopay_customer_ip_address( $request );
 
 		if ( null === $customer_ip_address ) {
+			// A request that got this far authenticated as WooPay and still named no usable
+			// address. Worth saying so, because that is the shape a broken gate would take:
+			// the order silently keeps the WordPress.com address and nothing else fails.
+			// Only on the checkout POST — the hook also fires on the PATCH, which WooPay
+			// never sends the header on, and logging that would be noise on a normal flow.
+			if ( 'POST' === $request->get_method() ) {
+				Logger::log( 'WooPay checkout carried no usable shopper IP address; the order keeps the address the request arrived from.' );
+			}
+
 			return;
 		}
 
@@ -227,14 +237,19 @@ class WooPay_Session {
 	 * the checkout POST — WooPay only sends it where an order is created from it. Null in
 	 * both cases, which leaves the order with whatever the request itself resolved to.
 	 *
+	 * @param \WP_REST_Request $request The checkout request the order is being updated from.
+	 *
 	 * @return string|null The shopper's IP address, or null when none was sent or it does not parse.
 	 */
-	private static function get_woopay_customer_ip_address(): ?string {
-		if ( ! isset( $_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] ) ) {
+	private static function get_woopay_customer_ip_address( \WP_REST_Request $request ): ?string {
+		// Already unslashed by WP_REST_Server before the request reaches any route.
+		$customer_ip_address = $request->get_header( 'X-WooPay-Customer-IP' );
+
+		if ( null === $customer_ip_address ) {
 			return null;
 		}
 
-		$customer_ip_address = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] ) );
+		$customer_ip_address = sanitize_text_field( $customer_ip_address );
 
 		$validated = rest_is_ip_address( $customer_ip_address );
 
