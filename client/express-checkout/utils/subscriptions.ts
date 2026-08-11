@@ -109,6 +109,33 @@ const filterSetupFutureUsage = (
 	) as SetupFutureUsage;
 
 /**
+ * Reads the server's decision out of the localized params, honouring the older
+ * `has_subscription` flag it replaced.
+ *
+ * `has_subscription` was the only lever before `setup_future_usage` existed, and
+ * `wcpay_express_checkout_js_params` is a documented extension point, so an integration
+ * may already be forcing it — quite likely one working around this very bug. The server
+ * never reports `has_subscription` true without also declaring `off_session`, so this
+ * only ever fires for an override.
+ *
+ * Enabling only: a `has_subscription` of false cannot be told apart from the server
+ * computing false, so it is not treated as a suppression. Use the
+ * `wcpay_express_checkout_setup_future_usage` filter to suppress.
+ *
+ * @deprecated `has_subscription` support here is transitional; declare through the filter.
+ *
+ * @return Stripe setupFutureUsage value.
+ */
+const getLocalizedSetupFutureUsage = (): SetupFutureUsage => {
+	const declared = getExpressCheckoutData( 'setup_future_usage' ) ?? null;
+	const legacy = getExpressCheckoutData( 'has_subscription' )
+		? 'off_session'
+		: null;
+
+	return declared ?? legacy;
+};
+
+/**
  * Gets the setupFutureUsage value that should be passed to Stripe Elements for
  * the current cart.
  *
@@ -145,6 +172,4 @@ export const getSetupFutureUsageForCart = (
  * @return Stripe setupFutureUsage value.
  */
 export const getSetupFutureUsageForContext = (): SetupFutureUsage =>
-	filterSetupFutureUsage(
-		getExpressCheckoutData( 'setup_future_usage' ) ?? null
-	);
+	filterSetupFutureUsage( getLocalizedSetupFutureUsage() );
