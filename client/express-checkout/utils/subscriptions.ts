@@ -114,9 +114,9 @@ const filterSetupFutureUsage = (
  *
  * The server decides this — it is the only side that knows every reason the payment
  * method might be saved, and it exposes one filter for the reasons it can't infer. The
- * WC Subscriptions heuristic below is the fallback for when the cart response carries no
- * `wcpay` extension at all (the Store API extension only registers on WooCommerce
- * versions that expose `woocommerce_store_api_register_endpoint_data`).
+ * WC Subscriptions heuristic below only runs when the cart response carries no `wcpay`
+ * extension, which no supported WooCommerce should produce; it is there so a cart that
+ * loses the extension degrades to the old behaviour rather than to "never save".
  *
  * @param cartData Cart data from Store API.
  * @return Stripe setupFutureUsage value.

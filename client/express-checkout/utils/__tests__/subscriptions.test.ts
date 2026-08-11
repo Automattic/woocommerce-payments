@@ -191,9 +191,8 @@ describe( 'getSetupFutureUsageForCart', () => {
 	} );
 
 	describe( 'falling back to the WC Subscriptions heuristic', () => {
-		// The Store API extension only registers on WooCommerce versions exposing
-		// `woocommerce_store_api_register_endpoint_data`, so the cart response can
-		// legitimately arrive with no `wcpay` extension at all.
+		// A cart response that carries no `wcpay` extension degrades to the old
+		// WC Subscriptions detection rather than to "never save".
 		it( 'returns null for a regular cart', () => {
 			expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
 		} );
