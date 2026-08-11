@@ -320,4 +320,39 @@ describe( 'getSetupFutureUsageForContext', () => {
 
 		expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
 	} );
+
+	// `wcpay_express_checkout_js_params` is a documented extension point, and
+	// `has_subscription` was the only lever before `setup_future_usage` existed — quite
+	// possibly forced by an integration working around this very bug.
+	describe( 'legacy has_subscription overrides', () => {
+		it( 'honours has_subscription when the server declared nothing', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					setup_future_usage: null,
+					has_subscription: true,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+		} );
+
+		it( 'prefers the server value over the legacy flag', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					setup_future_usage: 'off_session',
+					has_subscription: false,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+		} );
+
+		it( 'returns null when neither is set', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					setup_future_usage: null,
+					has_subscription: false,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBeNull();
+		} );
+	} );
 } );
