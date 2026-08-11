@@ -356,3 +356,44 @@ describe( 'getSetupFutureUsageForContext', () => {
 		} );
 	} );
 } );
+
+// Pay-for-order swaps the cart API for an order API, and the Store API extension registers
+// on the cart schema only — so the response can never carry it. The subscription being
+// renewed lives on the order, which only the server can see.
+describe( 'getSetupFutureUsageForCart on pay-for-order', () => {
+	afterEach( () => {
+		delete ( global as Record< string, unknown > )
+			.wcpayExpressCheckoutParams;
+	} );
+
+	it( 'falls back to the localized value instead of the cart heuristic', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'pay_for_order',
+			setup_future_usage: 'off_session',
+		};
+
+		// An order response: no `wcpay` extension, and no WC Subscriptions cart data.
+		expect( getSetupFutureUsageForCart( regularCart ) ).toBe(
+			'off_session'
+		);
+	} );
+
+	it( 'still returns null when the order carries no subscription', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'pay_for_order',
+			setup_future_usage: null,
+		};
+
+		expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
+	} );
+
+	it( 'does not use the localized value in other contexts', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'checkout',
+			setup_future_usage: 'off_session',
+		};
+
+		// The cart is the source of truth off the order-pay page.
+		expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
+	} );
+} );
