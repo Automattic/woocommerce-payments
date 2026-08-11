@@ -370,6 +370,28 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Checks whether the order being paid holds a subscription — a parent order or a
+	 * renewal. The pay-for-order page runs with an empty cart, so the cart-based and
+	 * product-based predicates both report false there while the gateway still saves the
+	 * payment method for the subscription on the order.
+	 *
+	 * @return boolean
+	 */
+	public function order_contains_subscription() {
+		if ( ! function_exists( 'wcs_order_contains_subscription' ) ) {
+			return false;
+		}
+
+		$order = $this->get_current_order();
+		if ( ! $order ) {
+			return false;
+		}
+
+		return wcs_order_contains_subscription( $order )
+			|| ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order ) );
+	}
+
+	/**
 	 * Returns the `setup_future_usage` that express checkout should mint its Stripe
 	 * ConfirmationToken with, for the current cart or product.
 	 *
@@ -390,9 +412,19 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function get_setup_future_usage( ?string $context = null ) {
 		$context = $context ?? $this->get_button_context();
 
-		$will_be_saved = 'cart' === $context
-			? $this->cart_contains_subscription()
-			: $this->has_subscription_product();
+		switch ( $context ) {
+			case 'cart':
+				$will_be_saved = $this->cart_contains_subscription();
+				break;
+			case 'pay_for_order':
+				// Paying an existing order leaves the cart empty, so the subscription this
+				// payment renews lives on the order and nowhere else.
+				$will_be_saved = $this->order_contains_subscription();
+				break;
+			default:
+				$will_be_saved = $this->has_subscription_product();
+				break;
+		}
 
 		/**
 		 * Filters the `setup_future_usage` express checkout mints its ConfirmationToken with.

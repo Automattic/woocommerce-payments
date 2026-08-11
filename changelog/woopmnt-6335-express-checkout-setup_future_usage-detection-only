@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix express checkout payments failing when a plugin other than WooCommerce Subscriptions saves the payment method
+Fix express checkout payments failing when the payment method will be saved for a subscription the page cannot see, including renewals paid from the order-pay page and subscriptions plugins other than WooCommerce Subscriptions
