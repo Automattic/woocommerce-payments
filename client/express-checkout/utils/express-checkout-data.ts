@@ -135,6 +135,32 @@ export const getExpressCheckoutData = <
 };
 
 /**
+ * Whether the server sent a key at all.
+ *
+ * `getExpressCheckoutData()` collapses a missing key and an explicit `null` to the same
+ * `null`, which is fine for values where absence and "no" mean the same thing. It is not
+ * fine for a decision: the server declaring `setup_future_usage: null` means "this payment
+ * does not save the payment method", and that must outrank any older signal.
+ *
+ * @param key Key to look for.
+ * @return True when the key is present, whatever its value.
+ */
+export const hasExpressCheckoutData = (
+	key: keyof WCPayExpressCheckoutParams
+): boolean => {
+	if ( typeof window.wcpayExpressCheckoutParams !== 'undefined' ) {
+		return key in window.wcpayExpressCheckoutParams;
+	}
+
+	if ( typeof window.wc?.wcSettings !== 'undefined' ) {
+		const data = window.wc.wcSettings.getSetting( 'ece_data' );
+		return !! data && typeof data === 'object' && key in data;
+	}
+
+	return false;
+};
+
+/**
  * Re-applies location gating to the cart's express method list.
  *
  * The cart Store API extension is currency-fresh but location-blind, so on its
