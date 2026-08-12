@@ -370,25 +370,25 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks whether the order being paid holds a subscription — a parent order or a
-	 * renewal. The pay-for-order page runs with an empty cart, so the cart-based and
-	 * product-based predicates both report false there while the gateway still saves the
-	 * payment method for the subscription on the order.
+	 * Checks whether the order being paid is a recurring payment. The pay-for-order page
+	 * runs with an empty cart, so the cart-based and product-based predicates both report
+	 * false there while the gateway still saves the payment method for the subscription on
+	 * the order.
+	 *
+	 * Defers to the gateway's own `is_payment_recurring()` rather than re-deriving it. The
+	 * whole point of this predicate is to agree with the decision the gateway will make
+	 * after the wallet sheet closes, and two hand-maintained copies would drift — the
+	 * renewal clause was itself a later addition to that method.
 	 *
 	 * @return boolean
 	 */
 	public function order_contains_subscription() {
-		if ( ! function_exists( 'wcs_order_contains_subscription' ) ) {
-			return false;
-		}
-
 		$order = $this->get_order_being_paid();
 		if ( ! $order ) {
 			return false;
 		}
 
-		return wcs_order_contains_subscription( $order )
-			|| ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order ) );
+		return $this->gateway->is_payment_recurring( $order->get_id() );
 	}
 
 	/**

@@ -5507,15 +5507,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$token_declares_off_session  = null !== $express_checkout_helper->get_setup_future_usage( 'cart' );
+		$order    = $payment_information->get_order();
+		$order_id = $order->get_id();
+
+		// Both surfaces the token can be minted from: the cart, and — on the order-pay page,
+		// which processes with an empty cart — the order. Asking the cart alone would report
+		// a mismatch on every successful renewal paid from that page.
+		$token_declares_off_session  = null !== $express_checkout_helper->get_setup_future_usage( 'cart' )
+			|| $this->is_payment_recurring( $order_id );
 		$intent_requests_off_session = $save_payment_method_to_store && $this->payment_method->is_reusable();
 
 		if ( $token_declares_off_session === $intent_requests_off_session ) {
 			return;
 		}
-
-		$order    = $payment_information->get_order();
-		$order_id = $order ? $order->get_id() : 'unknown';
 
 		if ( $intent_requests_off_session ) {
 			Logger::error(
