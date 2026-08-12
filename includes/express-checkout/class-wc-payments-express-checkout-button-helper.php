@@ -348,7 +348,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * @return boolean
 	 */
-	public function cart_contains_subscription() {
+	private function cart_contains_subscription() {
 		if ( ! class_exists( 'WC_Subscriptions_Cart' ) ) {
 			return false;
 		}
@@ -382,7 +382,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * @return boolean
 	 */
-	public function order_contains_subscription() {
+	private function order_contains_subscription() {
 		$order = $this->get_order_being_paid();
 		if ( ! $order ) {
 			return false;
@@ -401,7 +401,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * @return WC_Order|WC_Order_Refund|false
 	 */
-	public function get_order_being_paid() {
+	private function get_order_being_paid() {
 		global $wp;
 
 		if ( isset( $wp->query_vars['order-pay'] ) ) {
