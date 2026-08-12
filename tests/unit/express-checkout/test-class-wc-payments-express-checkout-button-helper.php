@@ -299,14 +299,14 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertFalse( $helper->has_subscription_product() );
 	}
 
-	public function test_cart_contains_subscription_reads_cart_state_without_page_context() {
+	public function test_named_cart_context_reads_cart_state_without_page_context() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
 		// No is_cart()/is_checkout() stubbing: the point is that this works with no page context.
-		$this->assertTrue( $this->system_under_test->cart_contains_subscription() );
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'cart' ) );
 	}
 
-	public function test_cart_contains_subscription_detects_renewal_carts() {
+	public function test_named_cart_context_detects_renewal_carts() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC_Subscriptions::wcs_cart_contains_renewal(
 			function () {
@@ -314,13 +314,13 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			}
 		);
 
-		$this->assertTrue( $this->system_under_test->cart_contains_subscription() );
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'cart' ) );
 	}
 
-	public function test_cart_contains_subscription_is_false_for_a_plain_cart() {
+	public function test_named_cart_context_is_null_for_a_plain_cart() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 
-		$this->assertFalse( $this->system_under_test->cart_contains_subscription() );
+		$this->assertNull( $this->system_under_test->get_setup_future_usage( 'cart' ) );
 	}
 
 	public function test_get_setup_future_usage_is_off_session_for_a_subscription_cart() {
@@ -438,14 +438,20 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * admin globals, where `$post` is the checkout page on the front end — so resolving
 	 * through it returns no order and the subscription goes undetected.
 	 */
-	public function test_get_order_being_paid_resolves_the_order_pay_query_var() {
+	public function test_pay_for_order_resolves_the_order_from_the_query_var() {
 		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function ( $order_id ) use ( $order ) {
+				// Answers only for this exact order, so resolving the checkout page — or
+				// nothing at all — cannot pass this.
+				return (int) $order_id === $order->get_id();
+			}
+		);
 		$this->set_order_pay_endpoint( $order );
 
-		$resolved = $this->system_under_test->get_order_being_paid();
-
-		$this->assertInstanceOf( WC_Order::class, $resolved );
-		$this->assertSame( $order->get_id(), $resolved->get_id() );
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'pay_for_order' ) );
 	}
 
 	/**
