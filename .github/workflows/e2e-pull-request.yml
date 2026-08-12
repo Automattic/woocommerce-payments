@@ -75,16 +75,24 @@ jobs:
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
+          # The wcpay shopper group is the slowest job (its specs run serially),
+          # so it is split into shards, each with its own isolated environment.
+          WCPAY_SHOPPER_SHARDS=3
+
           # Add L-1 version with PHP 8.3
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          for SHARD in $(seq 1 $WCPAY_SHOPPER_SHARDS); do
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"shard_index\":\"$SHARD\",\"shard_total\":\"$WCPAY_SHOPPER_SHARDS\"}")
+          done
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add latest with PHP 8.3
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          for SHARD in $(seq 1 $WCPAY_SHOPPER_SHARDS); do
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"shard_index\":\"$SHARD\",\"shard_total\":\"$WCPAY_SHOPPER_SHARDS\"}")
+          done
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
@@ -97,11 +105,12 @@ jobs:
   wcpay-e2e-tests:
     runs-on: ubuntu-latest
     needs: generate-matrix
+    timeout-minutes: 60
     strategy:
       fail-fast:     false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
-    name: WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}${{ matrix.shard_index && format(' ({0}/{1})', matrix.shard_index, matrix.shard_total) || '' }}
 
     env:
       E2E_WP_VERSION: 'latest'
@@ -109,6 +118,8 @@ jobs:
       E2E_PHP_VERSION: ${{ matrix.php }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
+      E2E_SHARD_INDEX: ${{ matrix.shard_index }}
+      E2E_SHARD_TOTAL: ${{ matrix.shard_total }}
       SKIP_WC_SUBSCRIPTIONS_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
       SKIP_WC_ACTION_SCHEDULER_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
 
