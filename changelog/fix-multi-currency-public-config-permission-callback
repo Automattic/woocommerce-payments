@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Use a named permission callback for the public multi-currency config REST endpoint.
