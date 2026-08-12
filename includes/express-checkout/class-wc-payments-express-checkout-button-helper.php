@@ -427,8 +427,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * @param string|null $context Button context to evaluate for ('product', 'cart',
 	 *                             'checkout', 'pay_for_order'). Defaults to the current
-	 *                             page's context. Pass 'cart' explicitly from request
-	 *                             handlers that carry no page context.
+	 *                             page's context. 'cart', 'checkout' and 'pay_for_order'
+	 *                             resolve from cart or order state, so request handlers
+	 *                             with no page context can name one; 'product' needs the
+	 *                             queried product and falls back to page state.
 	 *
 	 * @return string|null 'off_session' when the payment method will be saved, null otherwise.
 	 */
@@ -437,6 +439,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		switch ( $context ) {
 			case 'cart':
+			case 'checkout':
+				// Both read the same cart. Naming either resolves without page state, which
+				// is what lets request handlers with no page context ask.
 				$will_be_saved = $this->cart_contains_subscription();
 				break;
 			case 'pay_for_order':
@@ -445,6 +450,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				$will_be_saved = $this->order_contains_subscription();
 				break;
 			default:
+				// 'product' included: it needs the queried product, so it can only be
+				// answered from page state.
 				$will_be_saved = $this->has_subscription_product();
 				break;
 		}
