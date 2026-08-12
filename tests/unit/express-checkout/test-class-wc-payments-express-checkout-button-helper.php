@@ -495,6 +495,45 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Every client consumer gates on truthiness while the server infers from `null !==`, so
+	 * a filter returning anything other than 'off_session' or null has the two sides
+	 * disagreeing about the same payment.
+	 *
+	 * @dataProvider provider_non_canonical_filter_returns
+	 *
+	 * @param mixed $returned What the filter hands back.
+	 */
+	public function test_get_setup_future_usage_normalises_non_canonical_filter_returns( $returned ) {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$filter = function () use ( $returned ) {
+			return $returned;
+		};
+		add_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'cart' );
+
+		remove_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * Data provider for the filter normalisation test.
+	 *
+	 * @return array
+	 */
+	public function provider_non_canonical_filter_returns() {
+		return [
+			'__return_false' => [ false ],
+			'__return_true'  => [ true ],
+			'empty string'   => [ '' ],
+			'on_session'     => [ 'on_session' ],
+			'zero'           => [ 0 ],
+		];
+	}
+
+	/**
 	 * Puts a real order on the order-pay endpoint, the way the front end does. Resolution
 	 * is deliberately left unmocked — mocking it is what hid the order going unresolved
 	 * outside the admin.

@@ -468,11 +468,19 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 * @param string      $context            Button context: 'product', 'cart', 'checkout',
 		 *                                        'pay_for_order', or '' when undetermined.
 		 */
-		return apply_filters(
+		$setup_future_usage = apply_filters(
 			'wcpay_express_checkout_setup_future_usage',
 			$will_be_saved ? 'off_session' : null,
 			$context
 		);
+
+		// Normalise whatever came back to the two values Stripe and the Store API schema
+		// accept. The server infers the token's value from this while every client consumer
+		// gates on truthiness, so anything else — `false` from `__return_false`, `true` from
+		// `__return_true` — has the two sides disagreeing about the same payment. Anything
+		// that is not an explicit 'off_session' resolves to null, which fails loudly at
+		// Stripe rather than silently vaulting a card.
+		return 'off_session' === $setup_future_usage ? 'off_session' : null;
 	}
 
 	/**
