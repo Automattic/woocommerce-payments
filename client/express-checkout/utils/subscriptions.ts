@@ -6,7 +6,10 @@ import { applyFilters } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { getExpressCheckoutData } from './express-checkout-data';
+import {
+	getExpressCheckoutData,
+	hasExpressCheckoutData,
+} from './express-checkout-data';
 
 export type SetupFutureUsage = 'off_session' | null;
 
@@ -112,27 +115,31 @@ const filterSetupFutureUsage = (
  * Reads the server's decision out of the localized params, honouring the older
  * `has_subscription` flag it replaced.
  *
- * `has_subscription` was the only lever before `setup_future_usage` existed, and
- * `wcpay_express_checkout_js_params` is a documented extension point, so an integration
- * may already be forcing it — quite likely one working around this very bug. The server
- * never reports `has_subscription` true without also declaring `off_session`, so this
- * only ever fires for an override.
+ * Presence, not truthiness. The server declaring `null` is a decision — "this payment does
+ * not save the payment method" — and it has to outrank the older flag, because the two are
+ * computed by different predicates over different state: `has_subscription` reads the live
+ * cart via `has_subscription_product()`, while `setup_future_usage` reads the order on the
+ * order-pay page. A shopper with a subscription in the cart paying an unrelated one-off
+ * order would otherwise mint a token declaring `off_session` against an intent that never
+ * asks for it, and Stripe would silently vault their card with no WooPayments token
+ * recorded against it.
  *
- * Enabling only: a `has_subscription` of false cannot be told apart from the server
- * computing false, so it is not treated as a suppression. Use the
- * `wcpay_express_checkout_setup_future_usage` filter to suppress.
+ * The server always sends the key, so the fallback below only covers a stale cached asset
+ * or a payload something else has stripped. `wcpay_express_checkout_js_params` is a
+ * documented extension point, so an integration forcing `has_subscription` should move to
+ * the `wcpay_express_checkout_setup_future_usage` filter, which is evaluated server-side
+ * alongside everything else.
  *
  * @deprecated `has_subscription` support here is transitional; declare through the filter.
  *
  * @return Stripe setupFutureUsage value.
  */
 const getLocalizedSetupFutureUsage = (): SetupFutureUsage => {
-	const declared = getExpressCheckoutData( 'setup_future_usage' ) ?? null;
-	const legacy = getExpressCheckoutData( 'has_subscription' )
-		? 'off_session'
-		: null;
+	if ( hasExpressCheckoutData( 'setup_future_usage' ) ) {
+		return getExpressCheckoutData( 'setup_future_usage' ) ?? null;
+	}
 
-	return declared ?? legacy;
+	return getExpressCheckoutData( 'has_subscription' ) ? 'off_session' : null;
 };
 
 /**

@@ -325,14 +325,38 @@ describe( 'getSetupFutureUsageForContext', () => {
 	// `has_subscription` was the only lever before `setup_future_usage` existed — quite
 	// possibly forced by an integration working around this very bug.
 	describe( 'legacy has_subscription overrides', () => {
-		it( 'honours has_subscription when the server declared nothing', () => {
+		// The two are computed by different predicates over different state:
+		// `has_subscription` reads the live cart, `setup_future_usage` reads the order on
+		// the order-pay page. A shopper with a subscription in the cart paying an unrelated
+		// one-off order would otherwise mint a token declaring off_session against an intent
+		// that never asks for it — Stripe then vaults the card silently.
+		it( 'prefers an explicit server null over the legacy flag', () => {
 			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
 				{
 					setup_future_usage: null,
 					has_subscription: true,
 				};
 
+			expect( getSetupFutureUsageForContext() ).toBeNull();
+		} );
+
+		// Presence, not truthiness: only a payload missing the key falls back.
+		it( 'honours has_subscription when the server sent no key at all', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					has_subscription: true,
+				};
+
 			expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+		} );
+
+		it( 'returns null when the key is absent and the legacy flag is false', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					has_subscription: false,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBeNull();
 		} );
 
 		it( 'prefers the server value over the legacy flag', () => {
