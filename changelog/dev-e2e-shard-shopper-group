@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Shard the wcpay shopper E2E group in PR runs and add job timeouts.
+Shard the wcpay shopper E2E group in PR runs, add job timeouts, and cache the Basic-Auth test plugin zip.

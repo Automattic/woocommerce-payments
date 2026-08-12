@@ -68,6 +68,23 @@ runs:
         sudo fuser -k -n tcp 8084 || true
         echo "::endgroup::"
 
+    # Cache the Basic-Auth plugin zip. The repo is archived, so the content
+    # never changes, and fetching it per environment build is an intermittent
+    # source of setup failures.
+    - name: Cache Basic-Auth plugin zip
+      id: basic-auth-cache
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: tests/e2e/deps/basic-auth.zip
+        key: basic-auth-plugin-zip
+
+    - name: Download Basic-Auth plugin zip
+      if: ${{ steps.basic-auth-cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        mkdir -p tests/e2e/deps
+        curl -sSfL --retry 3 --retry-delay 5 -o tests/e2e/deps/basic-auth.zip https://github.com/WP-API/Basic-Auth/archive/master.zip
+
     # Prepare test environment
     - name: Prepare test environment
       shell: bash
