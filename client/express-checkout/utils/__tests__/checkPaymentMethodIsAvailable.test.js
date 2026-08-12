@@ -34,12 +34,14 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 	let mockStripe;
 	let eventHandlers;
 
-	const createCart = ( totalPrice, currencyCode ) => ( {
+	const createCart = ( totalPrice, currencyCode, extensions = {} ) => ( {
 		cartTotals: {
 			total_price: totalPrice,
 			currency_code: currencyCode,
 			currency_minor_unit: 2,
 		},
+		cartItems: [],
+		extensions,
 	} );
 
 	beforeEach( () => {
@@ -228,14 +230,12 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 			delete global.wcpayExpressCheckoutParams;
 		} );
 
-		it( 'passes the value the server declared', async () => {
-			global.wcpayExpressCheckoutParams = {
-				setup_future_usage: 'off_session',
-			};
-
+		it( 'passes the value the server declared on the cart', async () => {
 			await checkPaymentMethodIsAvailable(
 				'applePay',
-				createCart( '1000', 'USD' ),
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: 'off_session' },
+				} ),
 				mockApi
 			);
 
@@ -245,13 +245,33 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		} );
 
 		it( 'omits it when the server declared none', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.not.objectContaining( {
+					setupFutureUsage: expect.anything(),
+				} )
+			);
+		} );
+
+		// The page-load globals go stale the moment the shopper edits the cart without a
+		// reload, so the live cart has to win.
+		it( 'reads the live cart rather than the page-load globals', async () => {
 			global.wcpayExpressCheckoutParams = {
-				setup_future_usage: null,
+				setup_future_usage: 'off_session',
 			};
 
 			await checkPaymentMethodIsAvailable(
 				'applePay',
-				createCart( '1000', 'USD' ),
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
 				mockApi
 			);
 
