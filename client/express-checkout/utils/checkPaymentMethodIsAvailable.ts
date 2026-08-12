@@ -10,7 +10,10 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  */
 import type WCPayAPI from 'wcpay/checkout/api';
 import { getExpressCheckoutData } from '.';
-import { getSetupFutureUsageForContext } from './subscriptions';
+import {
+	getSetupFutureUsageForCart,
+	type SetupFutureUsage,
+} from './subscriptions';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 interface CartTotals {
@@ -74,13 +77,13 @@ function checkAvailablePaymentMethods(
 	stripe: Stripe,
 	amount: number,
 	currency: string,
-	mode: string
+	mode: string,
+	setupFutureUsage: SetupFutureUsage
 ): Promise< Partial< AvailablePaymentMethods > > {
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
 		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-	const setupFutureUsage = getSetupFutureUsageForContext();
 
 	let container: HTMLDivElement | null = null;
 
@@ -145,7 +148,8 @@ let memoizedCheck:
 	| ( (
 			_amount: number,
 			_currency: string,
-			_mode: string
+			_mode: string,
+			_setupFutureUsage: SetupFutureUsage
 	  ) => Promise< Partial< AvailablePaymentMethods > > )
 	| null = null;
 
@@ -157,6 +161,7 @@ async function checkAllExpressMethodsAvailability(
 	api: WCPayAPI,
 	amount: number,
 	currency: string,
+	setupFutureUsage: SetupFutureUsage,
 	mode = 'payment'
 ): Promise< Partial< AvailablePaymentMethods > > {
 	if ( ! cachedStripePromise ) {
@@ -180,21 +185,37 @@ async function checkAllExpressMethodsAvailability(
 
 	if ( ! memoizedCheck ) {
 		memoizedCheck = memoize(
-			// eslint-disable-next-line @typescript-eslint/naming-convention
-			( _amount: number, _currency: string, _mode: string ) =>
+			(
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_amount: number,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_currency: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_mode: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_setupFutureUsage: SetupFutureUsage
+			) =>
 				checkAvailablePaymentMethods(
 					stripe,
 					_amount,
 					_currency,
-					_mode
+					_mode,
+					_setupFutureUsage
 				),
-			// eslint-disable-next-line @typescript-eslint/naming-convention
-			( _amount: number, _currency: string, _mode: string ) =>
-				`${ _amount }-${ _currency }-${ _mode }`
+			(
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_amount: number,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_currency: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_mode: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_setupFutureUsage: SetupFutureUsage
+			) => `${ _amount }-${ _currency }-${ _mode }-${ _setupFutureUsage }`
 		);
 	}
 
-	return memoizedCheck( amount, currency, mode );
+	return memoizedCheck( amount, currency, mode, setupFutureUsage );
 }
 
 /**
@@ -217,10 +238,19 @@ export async function checkPaymentMethodIsAvailable(
 
 	const totalPrice = getEffectiveTotalPrice( cart );
 
+	// Read the live cart, the same source the button itself uses. Resolving this from the
+	// page-load globals instead would advertise a wallet the button then mints a different
+	// token for, once the shopper changes the cart without a reload.
+	const setupFutureUsage = getSetupFutureUsageForCart( {
+		extensions: cart.extensions,
+		items: cart.cartItems,
+	} as Parameters< typeof getSetupFutureUsageForCart >[ 0 ] );
+
 	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
 		api,
 		Number( totalPrice ),
-		cart.cartTotals.currency_code.toLowerCase()
+		cart.cartTotals.currency_code.toLowerCase(),
+		setupFutureUsage
 	);
 
 	return Boolean( availablePaymentMethods[ paymentMethod ] );
