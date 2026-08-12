@@ -340,7 +340,13 @@ const ConnectAccountPage: React.FC = () => {
 			source: determineTrackingSource(),
 		} );
 
-		// Maybe auto-start the test drive onboarding.
+		// URL-parameter-triggered mount workflow: when the page loads with
+		// `?auto_start_test_drive_onboarding=…`, kick off the same async
+		// workflow as the sandbox CTA. It ultimately calls setState (via
+		// handleSetupTestDriveMode) before starting a fetch and navigating,
+		// so the rule fires even though this is a legitimate URL-triggered
+		// mount side effect with no cleaner React 18.3 primitive.
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		autoStartTestDriveOnboarding();
 
 		// We only want to run this once.
