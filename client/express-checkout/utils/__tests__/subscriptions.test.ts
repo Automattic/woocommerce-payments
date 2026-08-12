@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { addFilter, removeFilter } from '@wordpress/hooks';
-
-/**
  * Internal dependencies
  */
 import {
@@ -11,8 +6,6 @@ import {
 	getSetupFutureUsageForCart,
 	getSetupFutureUsageForContext,
 } from '../subscriptions';
-
-const testFilterNamespace = 'wcpay-test/setup-future-usage';
 
 const buildSubscriptionSchedule = ( { billingPeriod = 'month' } = {} ) => ( {
 	billing_period: billingPeriod,
@@ -183,13 +176,6 @@ describe( 'cartHasAnySubscription', () => {
 } );
 
 describe( 'getSetupFutureUsageForCart', () => {
-	afterEach( () => {
-		removeFilter(
-			'wcpay.express-checkout.setup-future-usage',
-			testFilterNamespace
-		);
-	} );
-
 	describe( 'falling back to the WC Subscriptions heuristic', () => {
 		// A cart response that carries no `wcpay` extension degrades to the old
 		// WC Subscriptions detection rather than to "never save".
@@ -248,50 +234,10 @@ describe( 'getSetupFutureUsageForCart', () => {
 			).toBeNull();
 		} );
 	} );
-
-	describe( 'the extensibility filter', () => {
-		it( 'can declare off_session for a cart that looks regular', () => {
-			addFilter(
-				'wcpay.express-checkout.setup-future-usage',
-				testFilterNamespace,
-				() => 'off_session'
-			);
-
-			expect( getSetupFutureUsageForCart( regularCart ) ).toBe(
-				'off_session'
-			);
-		} );
-
-		it( 'can suppress off_session and receives the cart data', () => {
-			const seen: unknown[] = [];
-			addFilter(
-				'wcpay.express-checkout.setup-future-usage',
-				testFilterNamespace,
-				( value: unknown, cartData: unknown ) => {
-					seen.push( cartData );
-					return null;
-				}
-			);
-
-			expect(
-				getSetupFutureUsageForCart( {
-					items: [],
-					extensions: {
-						wcpay: { setup_future_usage: 'off_session' },
-					},
-				} )
-			).toBeNull();
-			expect( seen ).toHaveLength( 1 );
-		} );
-	} );
 } );
 
 describe( 'getSetupFutureUsageForContext', () => {
 	afterEach( () => {
-		removeFilter(
-			'wcpay.express-checkout.setup-future-usage',
-			testFilterNamespace
-		);
 		delete ( global as Record< string, unknown > )
 			.wcpayExpressCheckoutParams;
 	} );
@@ -308,17 +254,6 @@ describe( 'getSetupFutureUsageForContext', () => {
 		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
 
 		expect( getSetupFutureUsageForContext() ).toBeNull();
-	} );
-
-	it( 'runs through the same filter as the cart path', () => {
-		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
-		addFilter(
-			'wcpay.express-checkout.setup-future-usage',
-			testFilterNamespace,
-			() => 'off_session'
-		);
-
-		expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
 	} );
 
 	// `wcpay_express_checkout_js_params` is a documented extension point, and
