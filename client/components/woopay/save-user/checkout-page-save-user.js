@@ -153,6 +153,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			setPhoneNumber( getPhoneFieldValue() );
 		} else {
 			setPhoneNumber( '' );
+			onPhoneValidationChange( null );
+			clearValidationError( errorId );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -181,10 +183,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 	useEffect( () => {
 		if ( ! isSaveDetailsChecked ) {
-			clearValidationError( errorId );
-			if ( isPhoneValid !== null ) {
-				onPhoneValidationChange( null );
-			}
 			return;
 		}
 

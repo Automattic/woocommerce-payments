@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
@@ -175,14 +175,6 @@ const OverviewPage = () => {
 		setTestDriveSuccessDisplayed( true );
 	}
 
-	// Show old tasks if the embedded component fails to load.
-	useEffect( () => {
-		if ( stripeNotificationsBannerErrorMessage ) {
-			setShowUpdateDetailsTask( true );
-			setStripeComponentLoading( false );
-		}
-	}, [ stripeNotificationsBannerErrorMessage ] );
-
 	// eslint-disable-next-line valid-jsdoc
 	/**
 	 * Configure custom banner behaviour so the banner isn't shown when there are no action items.
@@ -341,6 +333,7 @@ const OverviewPage = () => {
 									setStripeNotificationsBannerErrorType(
 										loadError.error.type
 									);
+									setShowUpdateDetailsTask( true );
 									setStripeComponentLoading( false );
 								} }
 								onNotificationsChange={
