@@ -680,7 +680,8 @@ export const addSavedCard = async (
 	// Wait for one of the expected outcomes:
 	//  - 3DS modal appears (Stripe iframe)
 	//  - Success notice
-	//  - Error notice (e.g., too soon after previous)
+	//  - Error notice (declined card, too soon after previous, generic failure)
+	//  - Card validation error inside the Stripe iframe (form never submits)
 	//  - Redirect back to Payment methods page
 	const threeDSFrame = page.locator(
 		'body > div > iframe[name^="__privateStripeFrame"]'
@@ -688,12 +689,11 @@ export const addSavedCard = async (
 	const successNotice = page.getByText(
 		'Payment method successfully added.'
 	);
-	const tooSoonNotice = page.getByText(
-		'You cannot add a new payment method so soon after the previous one.'
-	);
-	const genericError = page.getByText(
-		"We're not able to add this payment method. Please refresh the page and try again."
-	);
+	const errorNotice = page.getByRole( 'alert' ).first();
+	const inlineCardError = page
+		.frameLocator( 'iframe[title="Secure payment input frame"]' )
+		.getByRole( 'alert' )
+		.first();
 	const methodsHeading = page.getByRole( 'heading', {
 		name: 'Payment methods',
 	} );
@@ -701,12 +701,12 @@ export const addSavedCard = async (
 	await Promise.race( [
 		threeDSFrame.waitFor( { state: 'visible', timeout: 20000 } ),
 		successNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		tooSoonNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		genericError.waitFor( { state: 'visible', timeout: 20000 } ),
+		errorNotice.waitFor( { state: 'visible', timeout: 20000 } ),
+		inlineCardError.waitFor( { state: 'visible', timeout: 20000 } ),
 		methodsHeading.waitFor( { state: 'visible', timeout: 20000 } ),
 	] ).catch( () => {
 		throw new Error(
-			'Adding a payment method produced none of the expected outcomes: no 3DS modal, success notice, error notice, or redirect to the Payment methods page.'
+			'Adding a payment method produced none of the expected outcomes: no 3DS modal, success notice, error notice, inline card error, or redirect to the Payment methods page.'
 		);
 	} );
 };
