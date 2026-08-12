@@ -5513,8 +5513,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Both surfaces the token can be minted from: the cart, and — on the order-pay page,
 		// which processes with an empty cart — the order. Asking the cart alone would report
 		// a mismatch on every successful renewal paid from that page.
-		$token_declares_off_session  = null !== $express_checkout_helper->get_setup_future_usage( 'cart' )
-			|| $this->is_payment_recurring( $order_id );
+		//
+		// `get_setup_future_usage()` fires `wcpay_express_checkout_setup_future_usage`, a
+		// hook whose callbacks are written for button render time and may not survive being
+		// called mid-payment. Nothing here is worth failing an order over, so a throwing
+		// callback costs the log line and no more.
+		try {
+			$token_declares_off_session = null !== $express_checkout_helper->get_setup_future_usage( 'cart' )
+				|| $this->is_payment_recurring( $order_id );
+		} catch ( Throwable $e ) {
+			Logger::error( 'Could not check setup_future_usage for order ' . $order_id . ': ' . $e->getMessage() );
+			return;
+		}
+
 		$intent_requests_off_session = $save_payment_method_to_store && $this->payment_method->is_reusable();
 
 		if ( $token_declares_off_session === $intent_requests_off_session ) {
