@@ -705,7 +705,9 @@ export const addSavedCard = async (
 		genericError.waitFor( { state: 'visible', timeout: 20000 } ),
 		methodsHeading.waitFor( { state: 'visible', timeout: 20000 } ),
 	] ).catch( () => {
-		/* ignore and let the caller continue; downstream assertions will catch real issues */
+		throw new Error(
+			'Adding a payment method produced none of the expected outcomes: no 3DS modal, success notice, error notice, or redirect to the Payment methods page.'
+		);
 	} );
 };
 
