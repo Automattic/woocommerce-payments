@@ -35,6 +35,13 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 */
 	private $original_customer_service;
 
+	/**
+	 * Snapshot of $_SERVER, restored on tear down.
+	 *
+	 * @var array
+	 */
+	private $original_server;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -75,6 +82,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->set_is_woopay_eligible( true );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
+		$this->original_server      = $_SERVER;
 		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
 		$_SERVER['REQUEST_URI']     = '/wp-json/wc/store/v1/checkout';
 
@@ -89,6 +97,16 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
+		// The request context this class fakes must not outlive it: suites that run later
+		// read $_SERVER['REQUEST_URI'] to decide whether they are serving the Store API.
+		$_SERVER = $this->original_server;
+
+		// Leave an ordinary front-end request behind rather than no request at all —
+		// WordPress always defines this, and code under test dereferences it directly.
+		if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
+			$_SERVER['REQUEST_URI'] = '/';
+		}
+
 		WC_Payments::set_customer_service( $this->original_customer_service );
 
 		wp_set_current_user( 0 );
@@ -96,9 +114,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 
 		unset(
-			$_SERVER['HTTP_NONCE'],
-			$_SERVER['HTTP_CART_TOKEN'],
-			$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'],
 			$_GET[ WooPay_Session::ATTESTATION_PARAM ],
 			$_POST[ WooPay_Session::ATTESTATION_PARAM ]
 		);
