@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { applyFilters } from '@wordpress/hooks';
-
-/**
  * Internal dependencies
  */
 import {
@@ -90,28 +85,6 @@ export const cartHasAnySubscription = ( cartData?: CartData ): boolean => {
 };
 
 /**
- * Applies the extensibility filter that has the last word on `setupFutureUsage`.
- *
- * Declare `off_session` only when the payment method really will be saved. Stripe
- * inherits the token's value onto the PaymentIntent even when the intent itself omits
- * it, so over-declaring silently attaches the shopper's card to the Stripe customer on
- * an ordinary one-off purchase, with no WooPayments token recorded against it.
- *
- * @param value    Server-computed (or heuristic) value.
- * @param cartData Cart data from Store API, when the caller has it.
- * @return Stripe setupFutureUsage value.
- */
-const filterSetupFutureUsage = (
-	value: SetupFutureUsage,
-	cartData?: CartData
-): SetupFutureUsage =>
-	applyFilters(
-		'wcpay.express-checkout.setup-future-usage',
-		value,
-		cartData
-	) as SetupFutureUsage;
-
-/**
  * Reads the server's decision out of the localized params, honouring the older
  * `has_subscription` flag it replaced.
  *
@@ -146,9 +119,13 @@ const getLocalizedSetupFutureUsage = (): SetupFutureUsage => {
  * Gets the setupFutureUsage value that should be passed to Stripe Elements for
  * the current cart.
  *
- * The server decides this — it is the only side that knows every reason the payment
- * method might be saved, and it exposes one filter for the reasons it can't infer. The
- * WC Subscriptions heuristic below only runs when the cart response carries no `wcpay`
+ * The server decides this — it is the only side that knows every reason the payment method
+ * might be saved, and `wcpay_express_checkout_setup_future_usage` is where it takes
+ * declarations for the reasons it can't infer. There is deliberately no client-side filter:
+ * the server also decides whether the payment actually saves the method, so a value
+ * declared only in the browser would guarantee the divergence Stripe punishes.
+ *
+ * The WC Subscriptions heuristic below only runs when the cart response carries no `wcpay`
  * extension, which no supported WooCommerce should produce; it is there so a cart that
  * loses the extension degrades to the old behaviour rather than to "never save".
  *
@@ -177,7 +154,7 @@ export const getSetupFutureUsageForCart = (
 		value = cartHasAnySubscription( cartData ) ? 'off_session' : null;
 	}
 
-	return filterSetupFutureUsage( value, cartData );
+	return value;
 };
 
 /**
@@ -187,4 +164,4 @@ export const getSetupFutureUsageForCart = (
  * @return Stripe setupFutureUsage value.
  */
 export const getSetupFutureUsageForContext = (): SetupFutureUsage =>
-	filterSetupFutureUsage( getLocalizedSetupFutureUsage() );
+	getLocalizedSetupFutureUsage();
