@@ -39,6 +39,7 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 	// Set the notice to be eligible if the user has chosen to migrate.
 	useEffect( () => {
 		if ( context.hasResolvedMigrateRequest ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see stripe-billing-section.tsx header for rationale.
 			setIsEligible( true );
 		}
 	}, [ context.hasResolvedMigrateRequest ] );
@@ -46,6 +47,7 @@ const MigrationInProgressNotice: React.FC< Props > = ( {
 	// Set the notice to be eligible if Stripe Billing is saved as disabled. When disabling Stripe Billing, the migration will automatically start.
 	useEffect( () => {
 		if ( context.hasSavedSettings ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see stripe-billing-section.tsx header for rationale.
 			setIsEligible( ! context.savedIsStripeBillingEnabled );
 		}
 	}, [ context.hasSavedSettings, context.savedIsStripeBillingEnabled ] );

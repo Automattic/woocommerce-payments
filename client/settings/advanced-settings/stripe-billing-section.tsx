@@ -23,6 +23,15 @@ import StripeBillingToggle from './stripe-billing-toggle';
 /**
  * Renders a WooPayments Subscriptions Advanced Settings Section.
  *
+ * The three `useEffect` blocks below (and the mirrors in
+ * `stripe-billing-notices/*`) call `setState` synchronously from an effect
+ * body, tripping `react-hooks/set-state-in-effect`. Rewriting them into a
+ * single coordinated save-and-migrate state machine passes the rule but
+ * ships a significantly larger behavioural change to a surface that only a
+ * subset of merchants (those on Stripe Billing) sees and that is no longer
+ * actively developed. The suppressions below intentionally keep the
+ * original semantics; the rule is not load-bearing for correctness here.
+ *
  * @return {JSX.Element} Rendered subscriptions advanced settings section.
  */
 const StripeBillingSection: React.FC = () => {
@@ -53,6 +62,7 @@ const StripeBillingSection: React.FC = () => {
 	// When the settings are being saved, set the hasSavedSettings flag to true.
 	useEffect( () => {
 		if ( isSaving && ! isLoading ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see file header for rationale.
 			setHasSavedSettings( true );
 		}
 	}, [ isLoading, isSaving ] );
@@ -60,6 +70,7 @@ const StripeBillingSection: React.FC = () => {
 	// When the settings have finished saving, update the savedIsStripeBillingEnabled value.
 	useEffect( () => {
 		if ( hasFinishedSavingSettings ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see file header for rationale.
 			setSavedIsStripeBillingEnabled( isStripeBillingEnabled );
 		}
 	}, [ hasFinishedSavingSettings, isStripeBillingEnabled ] );
@@ -80,6 +91,7 @@ const StripeBillingSection: React.FC = () => {
 	// Once settings are saved with Stripe Billing enabled, the option notice is no longer eligible.
 	useEffect( () => {
 		if ( savedIsStripeBillingEnabled ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see file header for rationale.
 			setIsMigrationOptionEligible( false );
 		}
 	}, [ savedIsStripeBillingEnabled ] );
