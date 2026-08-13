@@ -281,5 +281,28 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 				} )
 			);
 		} );
+
+		// Holding amount and currency fixed is what makes this discriminating: it leaves
+		// setupFutureUsage as the only dimension that can force a second probe. Swapping a
+		// simple product for a same-priced subscription without a reload is the real case —
+		// without it in the memo key, the cached probe answers for the wrong payment shape.
+		it( 'different setupFutureUsage triggers separate checks', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi
+			);
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: 'off_session' },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+		} );
 	} );
 } );
