@@ -108,6 +108,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::wcs_order_contains_renewal( null );
 		unset( $GLOBALS['wp']->query_vars['order-pay'] );
+		unset( $_GET['key'] );
+		wp_set_current_user( 0 );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
 		WC()->cart->empty_cart();
@@ -455,6 +457,62 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Scripts are enqueued on `wp_enqueue_scripts`, while core validates the order key on
+	 * `the_content` — so without a key check here, an anonymous visitor walking order IDs
+	 * would read each order's `setup_future_usage` out of the localized params.
+	 *
+	 * @dataProvider provider_unauthorized_order_pay_requests
+	 *
+	 * @param string $key_mode Whether the request carries a 'valid', 'missing', 'wrong' or 'empty' order key.
+	 * @param bool   $as_guest Whether to make the request logged out.
+	 */
+	public function test_get_setup_future_usage_does_not_read_an_order_without_authorization( string $key_mode, bool $as_guest ) {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function ( $order_id ) use ( $order ) {
+				return (int) $order_id === $order->get_id();
+			}
+		);
+
+		// The authorized request first, so the assertion below is about authorization and
+		// not about the order failing to look like a subscription.
+		$this->set_order_pay_endpoint( $order );
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'pay_for_order' ) );
+
+		switch ( $key_mode ) {
+			case 'missing':
+				unset( $_GET['key'] );
+				break;
+			case 'wrong':
+				$_GET['key'] = 'wc_order_notthekey';
+				break;
+			case 'empty':
+				$_GET['key'] = '';
+				break;
+		}
+
+		if ( $as_guest ) {
+			wp_set_current_user( 0 );
+		}
+
+		$this->assertNull( $this->system_under_test->get_setup_future_usage( 'pay_for_order' ) );
+	}
+
+	/**
+	 * @return array<string, array{0: string, 1: bool}>
+	 */
+	public function provider_unauthorized_order_pay_requests() {
+		return [
+			'no order key'                   => [ 'missing', false ],
+			'wrong order key'                => [ 'wrong', false ],
+			'empty order key'                => [ 'empty', false ],
+			'valid key but not the customer' => [ 'valid', true ],
+		];
+	}
+
+	/**
 	 * A renewal order carries the renewed subscription by reference rather than as a
 	 * subscription line item, so `wcs_order_contains_subscription()` alone misses it.
 	 */
@@ -569,6 +627,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		global $wp;
 
 		$wp->query_vars['order-pay'] = (string) $order->get_id();
+
+		// An authorized request: the payment link carries the order key, and the visitor is
+		// the customer it belongs to. Both are what core requires before it will render the
+		// pay form, so anything less never reaches the express checkout button either.
+		$_GET['key'] = $order->get_order_key();
+		wp_set_current_user( $order->get_user_id() );
 	}
 
 	/**

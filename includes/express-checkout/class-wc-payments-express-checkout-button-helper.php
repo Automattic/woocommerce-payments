@@ -399,6 +399,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * back the wrong object or nothing at all. The order-pay endpoint carries the ID in a
 	 * query var instead, the same way the gateway and customer service read it.
 	 *
+	 * The order key is what authorises reading it. Scripts are enqueued on
+	 * `wp_enqueue_scripts`, while core validates the key in `WC_Shortcode_Checkout::order_pay()`
+	 * on `the_content` — so by the time core rejects the request, whatever this resolved has
+	 * already been localized into the page. Without the check below, an anonymous visitor
+	 * walking order IDs would read back each order's `setup_future_usage`.
+	 *
+	 * Fails closed: an unverifiable order resolves to no order, so `get_setup_future_usage()`
+	 * returns null, which fails loudly at Stripe rather than silently vaulting a card.
+	 *
 	 * @return WC_Order|WC_Order_Refund|false
 	 */
 	private function get_order_being_paid() {
@@ -406,9 +415,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		if ( isset( $wp->query_vars['order-pay'] ) ) {
 			$order = wc_get_order( absint( $wp->query_vars['order-pay'] ) );
-			if ( $order ) {
+
+			// Note: there is no nonce verification for the "pay for order" action — the URL is long living.
+			$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			if ( $order && hash_equals( $order->get_order_key(), $order_key ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
 				return $order;
 			}
+
+			return false;
 		}
 
 		return $this->get_current_order();
