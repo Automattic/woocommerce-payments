@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Log when the setup_future_usage an express checkout confirmation token was minted with disagrees with what the payment is doing, in either direction
