@@ -78,6 +78,10 @@ class WC_Helper_Order {
 		$_SERVER['REMOTE_ADDR'] = '127.0.0.1'; // Required, else wc_create_order throws an exception.
 		$order                  = wc_create_order( $order_data );
 
+		// Order item rows outlive the rollback that removes the order between tests, while order IDs
+		// get handed out again, so a fresh order can arrive already carrying an earlier test's items.
+		$order->remove_order_items();
+
 		// Add order products.
 		$item = new WC_Order_Item_Product();
 		$item->set_props(
