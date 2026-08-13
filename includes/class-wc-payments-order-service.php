@@ -725,10 +725,10 @@ class WC_Payments_Order_Service {
 		$this->set_early_fraud_warning_for_order(
 			$order,
 			[
-				'efw_id'     => $efw_id,
-				'actionable' => $actionable,
-				'fraud_type' => $fraud_type,
-				'created'    => $created,
+				'efw_id'         => $efw_id,
+				'efw_actionable' => $actionable,
+				'efw_type'       => $fraud_type,
+				'created'        => $created,
 			]
 		);
 
@@ -1282,8 +1282,8 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the early fraud warning data for an order.
 	 *
-	 * @param  mixed                                                                     $order The order.
-	 * @param  array{efw_id: string, actionable: bool, fraud_type: string, created: int} $early_fraud_warning The early fraud warning data to be set.
+	 * @param  mixed                                                                       $order The order.
+	 * @param  array{efw_id: string, efw_actionable: bool, efw_type: string, created: int} $early_fraud_warning The early fraud warning data to be set.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
@@ -1298,7 +1298,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order Id or order object.
 	 *
-	 * @return array{efw_id: string, actionable: bool, fraud_type: string, created: int}|null The early fraud warning data, or null when none was received.
+	 * @return array{efw_id: string, efw_actionable: bool, efw_type: string, created: int}|null The early fraud warning data, or null when none was received.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */

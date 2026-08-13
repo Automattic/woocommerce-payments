@@ -296,8 +296,8 @@ class Order_Fraud_And_Risk_Meta_Box {
 			return;
 		}
 
-		$actionable      = ! empty( $early_fraud_warning['actionable'] );
-		$fraud_type_text = WC_Payments_Utils::get_early_fraud_warning_fraud_type_description( $early_fraud_warning['fraud_type'] ?? '' );
+		$actionable      = ! empty( $early_fraud_warning['efw_actionable'] );
+		$fraud_type_text = WC_Payments_Utils::get_early_fraud_warning_fraud_type_description( $early_fraud_warning['efw_type'] ?? '' );
 
 		$icon = $actionable
 			? [

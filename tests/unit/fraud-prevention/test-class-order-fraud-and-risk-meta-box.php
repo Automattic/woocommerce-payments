@@ -523,10 +523,10 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->method( 'get_early_fraud_warning_for_order' )
 			->willReturn(
 				[
-					'efw_id'     => 'issfr_123',
-					'actionable' => true,
-					'fraud_type' => 'made_with_stolen_card',
-					'created'    => 1719800000,
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
 				]
 			);
 
@@ -574,10 +574,10 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->method( 'get_early_fraud_warning_for_order' )
 			->willReturn(
 				[
-					'efw_id'     => 'issfr_123',
-					'actionable' => true,
-					'fraud_type' => 'brand_new_stripe_enum',
-					'created'    => 1719800000,
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'brand_new_stripe_enum',
+					'created'        => 1719800000,
 				]
 			);
 
@@ -623,10 +623,10 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->method( 'get_early_fraud_warning_for_order' )
 			->willReturn(
 				[
-					'efw_id'     => 'issfr_123',
-					'actionable' => false,
-					'fraud_type' => 'made_with_stolen_card',
-					'created'    => 1719800000,
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => false,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
 				]
 			);
 

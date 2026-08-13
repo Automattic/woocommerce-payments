@@ -1830,10 +1830,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the early fraud warning meta was persisted (read back from the database).
 		$this->assertSame(
 			[
-				'efw_id'     => 'issfr_123',
-				'actionable' => true,
-				'fraud_type' => 'made_with_stolen_card',
-				'created'    => 1719800000,
+				'efw_id'         => 'issfr_123',
+				'efw_actionable' => true,
+				'efw_type'       => 'made_with_stolen_card',
+				'created'        => 1719800000,
 			],
 			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
 		);
@@ -1865,10 +1865,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the persisted early fraud warning meta was overwritten with the latest state.
 		$this->assertSame(
 			[
-				'efw_id'     => 'issfr_123',
-				'actionable' => false,
-				'fraud_type' => 'made_with_stolen_card',
-				'created'    => 1719800000,
+				'efw_id'         => 'issfr_123',
+				'efw_actionable' => false,
+				'efw_type'       => 'made_with_stolen_card',
+				'created'        => 1719800000,
 			],
 			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
 		);
@@ -2158,10 +2158,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_set_early_fraud_warning_for_order() {
 		$early_fraud_warning = [
-			'efw_id'     => 'issfr_123',
-			'actionable' => true,
-			'fraud_type' => 'made_with_stolen_card',
-			'created'    => 1719800000,
+			'efw_id'         => 'issfr_123',
+			'efw_actionable' => true,
+			'efw_type'       => 'made_with_stolen_card',
+			'created'        => 1719800000,
 		];
 		$this->order_service->set_early_fraud_warning_for_order( $this->order, $early_fraud_warning );
 		$this->assertSame( $this->order->get_meta( '_wcpay_early_fraud_warning', true ), $early_fraud_warning );
@@ -2169,10 +2169,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_early_fraud_warning_for_order() {
 		$early_fraud_warning = [
-			'efw_id'     => 'issfr_123',
-			'actionable' => true,
-			'fraud_type' => 'made_with_stolen_card',
-			'created'    => 1719800000,
+			'efw_id'         => 'issfr_123',
+			'efw_actionable' => true,
+			'efw_type'       => 'made_with_stolen_card',
+			'created'        => 1719800000,
 		];
 		$this->order->update_meta_data( '_wcpay_early_fraud_warning', $early_fraud_warning );
 		$this->order->save_meta_data();

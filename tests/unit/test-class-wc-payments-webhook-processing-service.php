@@ -2359,10 +2359,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with(
 				'_wcpay_early_fraud_warning',
 				[
-					'efw_id'     => 'issfr_123',
-					'actionable' => true,
-					'fraud_type' => 'made_with_stolen_card',
-					'created'    => 1719800000,
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
 				]
 			);
 
@@ -2408,10 +2408,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with(
 				'_wcpay_early_fraud_warning',
 				[
-					'efw_id'     => 'issfr_123',
-					'actionable' => true,
-					'fraud_type' => '',
-					'created'    => 1719800000,
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => '',
+					'created'        => 1719800000,
 				]
 			);
 
@@ -2456,10 +2456,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with( '_wcpay_early_fraud_warning', true )
 			->willReturn(
 				[
-					'efw_id'     => 'issfr_123',
-					'actionable' => true,
-					'fraud_type' => 'made_with_stolen_card',
-					'created'    => 1719800000,
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
 				]
 			);
 
@@ -2469,10 +2469,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with(
 				'_wcpay_early_fraud_warning',
 				[
-					'efw_id'     => 'issfr_123',
-					'actionable' => false,
-					'fraud_type' => 'made_with_stolen_card',
-					'created'    => 1719800000,
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => false,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
 				]
 			);
 
