@@ -145,14 +145,16 @@ export interface TimelineItem {
 	datetime: number;
 	acquirer_reference_number?: string;
 	acquirer_reference_number_status?: string;
-	/** Whether the early fraud warning can still be acted on (refund to avoid a dispute). */
-	actionable?: boolean;
 	amount?: number;
 	amount_captured?: number;
 	amount_refunded?: number;
 	currency?: string;
 	deposit?: TimelineDeposit;
 	dispute_id?: string;
+	/** Whether the early fraud warning can still be acted on (refund to avoid a dispute). */
+	efw_actionable?: boolean;
+	/** Stripe `fraud_type` enum reported with an early fraud warning. */
+	efw_type?: string;
 	evidence_due_by?: number;
 	failure_reason?: string;
 	failure_transaction_id?: string;
@@ -166,8 +168,6 @@ export interface TimelineItem {
 	 * and the order page "Transaction Fee" row all read from one source.
 	 */
 	fee_breakdown_v1?: TimelineFeeBreakdown;
-	/** Stripe `fraud_type` enum reported with an early fraud warning. */
-	fraud_type?: string;
 	loan_id?: string;
 	/** Payment intent ID carried by early fraud warning events. */
 	payment_intent?: string;

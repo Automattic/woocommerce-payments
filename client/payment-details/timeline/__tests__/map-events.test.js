@@ -189,8 +189,8 @@ describe( 'mapTimelineEvents', () => {
 					{
 						datetime: 1585859207,
 						type: 'early_fraud_warning',
-						actionable: true,
-						fraud_type: 'made_with_stolen_card',
+						efw_actionable: true,
+						efw_type: 'made_with_stolen_card',
 						payment_intent: 'pi_1',
 					},
 				],
@@ -208,8 +208,8 @@ describe( 'mapTimelineEvents', () => {
 				{
 					datetime: 1585859207,
 					type: 'early_fraud_warning',
-					actionable: true,
-					fraud_type: 'made_with_stolen_card',
+					efw_actionable: true,
+					efw_type: 'made_with_stolen_card',
 					payment_intent: 'pi_1',
 				},
 			],
@@ -236,8 +236,8 @@ describe( 'mapTimelineEvents', () => {
 				{
 					datetime: 1585859207,
 					type: 'early_fraud_warning',
-					actionable: true,
-					fraud_type: 'brand_new_stripe_enum',
+					efw_actionable: true,
+					efw_type: 'brand_new_stripe_enum',
 					payment_intent: 'pi_1',
 				},
 			],
@@ -264,8 +264,8 @@ describe( 'mapTimelineEvents', () => {
 				{
 					datetime: 1585859207,
 					type: 'early_fraud_warning',
-					actionable: true,
-					fraud_type: 'made_with_stolen_card',
+					efw_actionable: true,
+					efw_type: 'made_with_stolen_card',
 					payment_intent: 'pi_1',
 				},
 			] )
@@ -278,8 +278,8 @@ describe( 'mapTimelineEvents', () => {
 				{
 					datetime: 1585859207,
 					type: 'early_fraud_warning',
-					actionable: false,
-					fraud_type: 'made_with_stolen_card',
+					efw_actionable: false,
+					efw_type: 'made_with_stolen_card',
 					payment_intent: 'pi_1',
 				},
 			] )

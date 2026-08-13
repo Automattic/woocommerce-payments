@@ -1306,7 +1306,7 @@ const mapEventToTimelineItems = (
 			];
 		case 'early_fraud_warning': {
 			const fraudTypeLabel =
-				earlyFraudWarningFraudTypeMapping[ event.fraud_type ] ?? null;
+				earlyFraudWarningFraudTypeMapping[ event.efw_type ] ?? null;
 			const reportedReason = fraudTypeLabel
 				? sprintf(
 						/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
@@ -1315,7 +1315,7 @@ const mapEventToTimelineItems = (
 				  )
 				: null;
 
-			if ( ! event.actionable ) {
+			if ( ! event.efw_actionable ) {
 				return [
 					getStatusChangeTimelineItem(
 						event,
