@@ -419,7 +419,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	public function test_logs_when_a_confirmation_token_was_minted_without_setup_future_usage() {
 		$logged = $this->capture_wcpay_logs();
 
-		$this->process_subscription_payment_with_confirmation_token( null );
+		$this->process_third_party_save_with_confirmation_token( null );
 
 		$this->assertNotEmpty(
 			$this->logs_naming_the_setup_future_usage_filter( $logged ),
@@ -430,9 +430,26 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	public function test_does_not_log_when_the_confirmation_token_matches() {
 		$logged = $this->capture_wcpay_logs();
 
-		$this->process_subscription_payment_with_confirmation_token( 'off_session' );
+		$this->process_third_party_save_with_confirmation_token( 'off_session' );
 
 		$this->assertEmpty( $this->logs_naming_the_setup_future_usage_filter( $logged ) );
+	}
+
+	/**
+	 * The order-pay page processes with an empty cart, so the cart predicate reports false
+	 * there while the token was correctly minted from the order. Comparing against the cart
+	 * alone would log an error on every successful renewal paid from that page — telling the
+	 * merchant Stripe will reject a payment that just went through.
+	 */
+	public function test_does_not_log_for_a_recurring_order_the_cart_predicate_cannot_see() {
+		$logged = $this->capture_wcpay_logs();
+
+		$this->process_subscription_payment_with_confirmation_token( null );
+
+		$this->assertEmpty(
+			$this->logs_naming_the_setup_future_usage_filter( $logged ),
+			'A recurring order is visible to the pay-for-order predicate, so there is no mismatch.'
+		);
 	}
 
 	/**
@@ -530,6 +547,52 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	 *
 	 * @param string|null $express_checkout_setup_future_usage What the ECE predicate reports.
 	 */
+	/**
+	 * The WOOPMNT-6335 shape: an ordinary order that is not a WooCommerce Subscriptions
+	 * order at all, whose payment method something else asks to save — a subscriptions
+	 * plugin other than WCS, or any integration setting the new-payment-method flag. Nothing
+	 * express checkout could see while the cart was open, which is what makes it worth
+	 * logging.
+	 *
+	 * @param string|null $express_checkout_setup_future_usage What the cart predicate reports.
+	 */
+	private function process_third_party_save_with_confirmation_token( ?string $express_checkout_setup_future_usage ) {
+		$order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$this->mock_wcs_order_contains_subscription( false );
+
+		$_POST = [
+			'wcpay-confirmation-token'                   => 'ctoken_mock',
+			'payment_method'                             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'wc-woocommerce_payments-new-payment-method' => 'true',
+		];
+
+		$mock_ece_helper = $this->createMock( WC_Payments_Express_Checkout_Button_Helper::class );
+		$mock_ece_helper->method( 'get_setup_future_usage' )
+			->with( 'cart' )
+			->willReturn( $express_checkout_setup_future_usage );
+
+		$original_ece_helper = WC_Payments::get_express_checkout_helper();
+		WC_Payments::set_express_checkout_helper( $mock_ece_helper );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'setup_future_usage' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->payment_intent );
+
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $this->token );
+
+		try {
+			$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		} finally {
+			WC_Payments::set_express_checkout_helper( $original_ece_helper );
+		}
+	}
+
 	private function process_payment_without_saving_with_confirmation_token( ?string $express_checkout_setup_future_usage ) {
 		$order = WC_Helper_Order::create_order( self::USER_ID );
 
