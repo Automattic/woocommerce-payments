@@ -91,7 +91,7 @@ jQuery( function ( $ ) {
 		}
 	);
 
-	// The Fraud & Risk metabox "Refund to avoid a dispute" CTA: the refund is
+	// The Fraud & Risk metabox "Refund this payment" CTA: the refund is
 	// managed on this very screen, so open WooCommerce's inline refund panel
 	// instead of leaving the page. When the panel is unavailable (e.g. refunds
 	// disabled during a dispute), fall back to the payment details link.

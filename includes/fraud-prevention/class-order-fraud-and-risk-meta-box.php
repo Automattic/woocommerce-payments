@@ -338,7 +338,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 			// when the panel is unavailable (e.g. refunds locked during a dispute).
 			$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 			if ( '' !== $transaction_url ) {
-				echo '<p><a href="' . esc_url( $transaction_url ) . '" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund to avoid a dispute', 'woocommerce-payments' ) . '</a></p>';
+				echo '<p><a href="' . esc_url( $transaction_url ) . '" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund this payment', 'woocommerce-payments' ) . '</a></p>';
 			}
 		}
 

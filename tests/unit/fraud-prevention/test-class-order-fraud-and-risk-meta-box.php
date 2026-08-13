@@ -538,7 +538,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			. '<p class="wcpay-fraud-risk-efw__title"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Early fraud warning</p>'
 			. '<p class="wcpay-fraud-risk-efw__reason">Reported reason: Made with stolen card</p>'
 			. '<p>The card issuer flagged this payment as likely fraudulent. Refunding it now can prevent a dispute.</p>'
-			. '<p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=pi_mock" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refund to avoid a dispute</a></p>'
+			. '<p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=pi_mock" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refund this payment</a></p>'
 			. '</div>';
 		$risk_level_block   = $this->compose_fraud_and_risk_level_block( 'normal', 'Normal', 'This payment shows a lower than normal risk of fraudulent activity.' );
 		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
@@ -588,7 +588,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$efw_block          = '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--actionable">'
 			. '<p class="wcpay-fraud-risk-efw__title"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Early fraud warning</p>'
 			. '<p>The card issuer flagged this payment as likely fraudulent. Refunding it now can prevent a dispute.</p>'
-			. '<p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=pi_mock" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refund to avoid a dispute</a></p>'
+			. '<p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=pi_mock" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refund this payment</a></p>'
 			. '</div>';
 		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
 
