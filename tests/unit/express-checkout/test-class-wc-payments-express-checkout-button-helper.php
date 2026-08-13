@@ -326,7 +326,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	public function test_get_setup_future_usage_is_off_session_for_a_subscription_cart() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
-		$helper = $this->make_helper_for_context( false, true, false );
+		$helper = $this->make_helper_for_context( 'cart' );
 
 		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
 	}
@@ -334,7 +334,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	public function test_get_setup_future_usage_is_null_for_a_plain_cart() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 
-		$helper = $this->make_helper_for_context( false, true, false );
+		$helper = $this->make_helper_for_context( 'cart' );
 
 		$this->assertNull( $helper->get_setup_future_usage() );
 	}
@@ -343,7 +343,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 
-		$helper = $this->make_helper_for_context( true, false, false );
+		$helper = $this->make_helper_for_context( 'product' );
 
 		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
 	}
@@ -357,7 +357,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions_Product::$is_subscription = false;
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 
-		$helper = $this->make_helper_for_context( true, false, false );
+		$helper = $this->make_helper_for_context( 'product' );
 
 		$this->assertNull( $helper->get_setup_future_usage() );
 	}
@@ -495,6 +495,25 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * The handler calls `get_setup_future_usage()` with no argument, so the shipped value
+	 * comes from `get_button_context()`. Passing the context by hand in every other test
+	 * leaves that wiring unpinned for the branch this PR added.
+	 */
+	public function test_get_setup_future_usage_resolves_pay_for_order_with_no_argument() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
+
+		$helper = $this->make_helper_for_context( 'pay_for_order' );
+
+		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
+	}
+
+	/**
 	 * Every client consumer gates on truthiness while the server infers from `null !==`, so
 	 * a filter returning anything other than 'off_session' or null has the two sides
 	 * disagreeing about the same payment.
@@ -556,16 +575,17 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 *
 	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
 	 */
-	private function make_helper_for_context( bool $is_product, bool $is_cart, bool $is_checkout ) {
+	private function make_helper_for_context( string $context ) {
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
 			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
 			->getMock();
 
-		$helper->method( 'is_product' )->willReturn( $is_product );
-		$helper->method( 'is_cart' )->willReturn( $is_cart );
-		$helper->method( 'is_checkout' )->willReturn( $is_checkout );
-		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+		$helper->method( 'is_product' )->willReturn( 'product' === $context );
+		$helper->method( 'is_cart' )->willReturn( 'cart' === $context );
+		// The order-pay page is part of checkout, so `is_checkout()` is true there too.
+		$helper->method( 'is_checkout' )->willReturn( in_array( $context, [ 'checkout', 'pay_for_order' ], true ) );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( 'pay_for_order' === $context );
 
 		return $helper;
 	}
