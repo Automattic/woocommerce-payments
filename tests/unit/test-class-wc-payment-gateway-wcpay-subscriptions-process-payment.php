@@ -542,12 +542,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	}
 
 	/**
-	 * Runs a plain (non-subscription) order through process_payment with a confirmation
-	 * token, so nothing asks for the payment method to be saved.
-	 *
-	 * @param string|null $express_checkout_setup_future_usage What the ECE predicate reports.
-	 */
-	/**
 	 * The WOOPMNT-6335 shape: an ordinary order that is not a WooCommerce Subscriptions
 	 * order at all, whose payment method something else asks to save — a subscriptions
 	 * plugin other than WCS, or any integration setting the new-payment-method flag. Nothing
@@ -593,6 +587,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		}
 	}
 
+	/**
+	 * Runs a plain (non-subscription) order through process_payment with a confirmation
+	 * token, so nothing asks for the payment method to be saved.
+	 *
+	 * @param string|null $express_checkout_setup_future_usage What the ECE predicate reports.
+	 */
 	private function process_payment_without_saving_with_confirmation_token( ?string $express_checkout_setup_future_usage ) {
 		$order = WC_Helper_Order::create_order( self::USER_ID );
 
