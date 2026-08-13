@@ -2180,8 +2180,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $early_fraud_warning_from_service, $early_fraud_warning );
 	}
 
-	public function test_get_early_fraud_warning_for_order_returns_empty_array_when_not_set() {
-		$this->assertSame( [], $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() ) );
+	public function test_get_early_fraud_warning_for_order_returns_null_when_not_set() {
+		$this->assertNull( $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() ) );
 	}
 
 	public function test_set_payment_transaction_id_for_order() {

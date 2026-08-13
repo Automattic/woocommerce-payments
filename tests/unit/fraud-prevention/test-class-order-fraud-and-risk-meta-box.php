@@ -670,7 +670,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service
 			->expects( $this->once() )
 			->method( 'get_early_fraud_warning_for_order' )
-			->willReturn( [] );
+			->willReturn( null );
 
 		// Act: Call the method to display the meta box.
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );

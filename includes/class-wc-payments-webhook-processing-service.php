@@ -893,7 +893,7 @@ class WC_Payments_Webhook_Processing_Service {
 		// An update to a warning the store never received (e.g. its creation was skipped
 		// because the charge was already disputed) would only add a confusing "resolved"
 		// note for a warning the merchant never saw — ignore it.
-		if ( 'radar.early_fraud_warning.updated' === $event_type && [] === $this->order_service->get_early_fraud_warning_for_order( $order ) ) {
+		if ( 'radar.early_fraud_warning.updated' === $event_type && null === $this->order_service->get_early_fraud_warning_for_order( $order ) ) {
 			return;
 		}
 

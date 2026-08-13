@@ -292,7 +292,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 	private function maybe_print_early_fraud_warning_block( $order, $intent_id, $charge_id ) {
 		$early_fraud_warning = $this->order_service->get_early_fraud_warning_for_order( $order );
 
-		if ( [] === $early_fraud_warning ) {
+		if ( null === $early_fraud_warning ) {
 			return;
 		}
 

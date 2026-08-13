@@ -1298,15 +1298,15 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param  mixed $order The order Id or order object.
 	 *
-	 * @return array The early fraud warning data, or an empty array when none was received.
+	 * @return array|null The early fraud warning data, or null when none was received.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_early_fraud_warning_for_order( $order ): array {
+	public function get_early_fraud_warning_for_order( $order ): ?array {
 		$order               = $this->get_order( $order );
 		$early_fraud_warning = $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, true );
 
-		return is_array( $early_fraud_warning ) ? $early_fraud_warning : [];
+		return is_array( $early_fraud_warning ) ? $early_fraud_warning : null;
 	}
 
 	/**
