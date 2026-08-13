@@ -169,8 +169,6 @@ export interface TimelineItem {
 	 */
 	fee_breakdown_v1?: TimelineFeeBreakdown;
 	loan_id?: string;
-	/** Payment intent ID carried by early fraud warning events. */
-	payment_intent?: string;
 	reason?: string;
 	transaction_details?: TimelineTransactionDetails;
 	transaction_id?: string;
