@@ -639,9 +639,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 * Builds a helper whose page context is pinned, so context-dependent predicates
 	 * can be exercised off an actual request.
 	 *
-	 * @param bool $is_product  Whether to report a product page.
-	 * @param bool $is_cart     Whether to report the cart page.
-	 * @param bool $is_checkout Whether to report the checkout page.
+	 * @param string $context Button context to report: 'product', 'cart', 'checkout' or
+	 *                        'pay_for_order'.
 	 *
 	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
 	 */
