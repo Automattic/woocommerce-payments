@@ -492,6 +492,49 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	}
 
 	/**
+	 * `wcpay_express_checkout_setup_future_usage` callbacks are written for button render
+	 * time, and this asks them again mid-payment — a context they were never designed for,
+	 * where the cart and the queried product may both be gone. A callback that throws there
+	 * must cost the log line and nothing else: no part of a diagnostic is worth failing a
+	 * customer's order over.
+	 *
+	 * The real express checkout helper is left in place so the filter genuinely fires,
+	 * rather than mocking the throw straight onto `get_setup_future_usage()`.
+	 */
+	public function test_a_throwing_filter_callback_does_not_fail_the_payment() {
+		$logged = $this->capture_wcpay_logs();
+
+		$thrower = function () {
+			throw new Exception( 'callback written for render time' );
+		};
+		add_filter( 'wcpay_express_checkout_setup_future_usage', $thrower );
+
+		try {
+			$order = $this->process_third_party_save_with_real_express_checkout_helper();
+		} finally {
+			remove_filter( 'wcpay_express_checkout_setup_future_usage', $thrower );
+		}
+
+		$this->assertNotEquals(
+			Order_Status::FAILED,
+			wc_get_order( $order->get_id() )->get_status(),
+			'A throwing filter callback must not fail the order.'
+		);
+
+		$this->assertNotEmpty(
+			$this->logs_containing( $logged, 'Could not check setup_future_usage' ),
+			'Expected the swallowed exception to be logged.'
+		);
+
+		// The diagnostic returns from the catch, so it cannot also reach either mismatch
+		// branch — otherwise it would name a filter on the strength of a value it never got.
+		$this->assertEmpty(
+			$this->logs_naming_the_setup_future_usage_filter( $logged ),
+			'A caught exception must not also produce a mismatch report.'
+		);
+	}
+
+	/**
 	 * Replaces the internal logger with one backed by a mock WC_Logger that records
 	 * every call, so assertions can be made on what was logged rather than on
 	 * invocation-count matchers.
@@ -523,6 +566,56 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		WC_Payments::mode()->dev();
 
 		return $logged;
+	}
+
+	/**
+	 * Narrows captured logs to the ones whose message carries a given fragment.
+	 *
+	 * @param ArrayObject $logged Collected log calls.
+	 * @param string      $needle Fragment to look for.
+	 * @return array
+	 */
+	private function logs_containing( ArrayObject $logged, string $needle ): array {
+		return array_filter(
+			$logged->getArrayCopy(),
+			function ( $entry ) use ( $needle ) {
+				return false !== strpos( $entry['message'], $needle );
+			}
+		);
+	}
+
+	/**
+	 * The same shape as `process_third_party_save_with_confirmation_token()` — an ordinary
+	 * order whose payment method something else asks to save — but leaves the real express
+	 * checkout helper in place, so `wcpay_express_checkout_setup_future_usage` actually fires.
+	 *
+	 * @return WC_Order The order that was processed.
+	 */
+	private function process_third_party_save_with_real_express_checkout_helper() {
+		$order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$this->mock_wcs_order_contains_subscription( false );
+
+		$_POST = [
+			'wcpay-confirmation-token'                   => 'ctoken_mock',
+			'payment_method'                             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'wc-woocommerce_payments-new-payment-method' => 'true',
+		];
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'setup_future_usage' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->payment_intent );
+
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $this->token );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		return $order;
 	}
 
 	/**
