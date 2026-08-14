@@ -14,6 +14,8 @@ import type {
 	EvidenceDetails,
 } from 'wcpay/types/disputes';
 import type { BalanceTransaction } from 'wcpay/types/balance-transactions';
+import type { Charge } from 'wcpay/types/charges';
+import { getChargeDisputes } from 'wcpay/utils/charge';
 import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
@@ -22,6 +24,7 @@ import {
 	formatCurrency,
 	formatExplicitCurrency,
 } from 'multi-currency/interface/functions';
+import { klarnaChargebackLossReasons } from 'wcpay/disputes/strings';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -102,6 +105,80 @@ export const isVisaComplianceDispute = (
 			'visa_compliance'
 		)
 	);
+};
+
+/**
+ * What Klarna said about a chargeback it ruled against the merchant.
+ *
+ * - `stated`      — Klarna gave a reason, ready to display.
+ * - `unspecified` — Klarna closed the dispute without giving one. This is a
+ *   fact worth telling the merchant, so it stays distinct from "we don't know".
+ */
+export type KlarnaLossReason =
+	| { type: 'stated'; display: string }
+	| { type: 'unspecified' };
+
+/**
+ * Returns Klarna's stated reason for ruling against the merchant, if there is one.
+ *
+ * Klarna is the only payment method that reports a loss reason, and it only does
+ * so once it closes a chargeback. Returns `null` when there's nothing to say:
+ * a non-Klarna dispute, or a Klarna dispute Stripe hasn't annotated (yet).
+ *
+ * @param {Pick<Dispute, 'payment_method_details'>} dispute - The dispute object.
+ * @return {KlarnaLossReason | null} The loss reason, or null if none is available.
+ */
+export const getKlarnaLossReason = (
+	dispute: Pick< Dispute, 'payment_method_details' >
+): KlarnaLossReason | null => {
+	const code =
+		dispute?.payment_method_details?.klarna?.chargeback_loss_reason_code
+			?.trim()
+			.toLowerCase()
+			.replace( /[\s-]+/g, '_' );
+
+	if ( ! code ) {
+		return null;
+	}
+
+	if ( code === 'reason_unspecified' ) {
+		return { type: 'unspecified' };
+	}
+
+	// Codes read as English phrases, so humanizing an unmapped one still tells
+	// the merchant more than hiding it would. Translated once it's in the map.
+	const display =
+		klarnaChargebackLossReasons[ code ] ??
+		code
+			.replace( /_/g, ' ' )
+			.replace( /^./, ( first ) => first.toUpperCase() );
+
+	return { type: 'stated', display };
+};
+
+/**
+ * Returns Klarna's loss reasons for a charge's disputes, keyed by dispute id.
+ *
+ * The timeline's `dispute_lost` events carry no loss reason of their own, so the
+ * timeline reads them off the charge instead. Only disputes Klarna gave a reason
+ * for appear here.
+ *
+ * @param {Charge} charge - The charge to collect loss reasons from.
+ * @return {Record<string, KlarnaLossReason>} Loss reasons keyed by dispute id.
+ */
+export const getKlarnaLossReasons = (
+	charge: Charge
+): Record< string, KlarnaLossReason > => {
+	const reasonById: Record< string, KlarnaLossReason > = {};
+
+	getChargeDisputes( charge ).forEach( ( dispute ) => {
+		const lossReason = getKlarnaLossReason( dispute );
+		if ( lossReason ) {
+			reasonById[ dispute.id ] = lossReason;
+		}
+	} );
+
+	return reasonById;
 };
 
 /**

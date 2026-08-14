@@ -19,6 +19,7 @@ import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
 import { getBankName, getDisputeOrdinals } from 'wcpay/utils/charge';
+import { getKlarnaLossReasons } from 'wcpay/disputes/utils';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -62,6 +63,12 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	// identically. Only meaningful when the charge carries 2+ disputes.
 	const disputeOrder = charge ? getDisputeOrdinals( charge ) : undefined;
 
+	// Klarna's reason for a lost dispute lives on the dispute, not on the
+	// timeline event, so it travels alongside the events.
+	const klarnaLossReasons = charge
+		? getKlarnaLossReasons( charge )
+		: undefined;
+
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<TestModeNotice currentPage="payments" isDetailsView={ true } />
@@ -80,6 +87,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 						paymentIntentId={ id }
 						bankName={ bankName }
 						disputeOrder={ disputeOrder }
+						klarnaLossReasons={ klarnaLossReasons }
 					/>
 				</ErrorBoundary>
 			) }

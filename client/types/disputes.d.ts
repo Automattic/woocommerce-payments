@@ -47,6 +47,26 @@ interface IssuerEvidence {
 	text_evidence: string | null;
 }
 
+/**
+ * Payment-method-specific dispute details, passed through from Stripe.
+ *
+ * See https://docs.stripe.com/api/disputes/object#dispute_object-payment_method_details
+ */
+interface DisputePaymentMethodDetails {
+	type?: string;
+	klarna?: {
+		/**
+		 * Why Klarna decided against the merchant, mapped by Stripe from Klarna's
+		 * own loss reason. Only populated once Klarna has closed a chargeback, and
+		 * Klarna doesn't always supply one — the documented codes include
+		 * `reason_unspecified`.
+		 *
+		 * See https://docs.stripe.com/payments/klarna/disputes#klarna-chargeback-loss-reason-code
+		 */
+		chargeback_loss_reason_code?: string | null;
+	};
+}
+
 export type DisputeReason =
 	| 'bank_cannot_process'
 	| 'check_returned'
@@ -133,6 +153,11 @@ export interface Dispute {
 	effective_fee?: { amount: number; currency: string } | null;
 	payment_intent: string;
 	enhanced_eligibility_types?: string[];
+	/**
+	 * Absent on payloads that don't come straight from Stripe, e.g. the cached
+	 * disputes list. Callers must treat every field as optional.
+	 */
+	payment_method_details?: DisputePaymentMethodDetails;
 }
 
 export interface CachedDispute {

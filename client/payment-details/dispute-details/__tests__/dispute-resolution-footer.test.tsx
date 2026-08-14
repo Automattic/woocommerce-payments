@@ -33,6 +33,7 @@ jest.mock( 'wcpay/utils', () => ( {
 
 // Mock dispute utils
 jest.mock( 'wcpay/disputes/utils', () => ( {
+	...jest.requireActual( 'wcpay/disputes/utils' ),
 	getDisputeFeeFormatted: jest.fn( () => '$15.00' ),
 	isVisaComplianceDispute: jest.fn( ( dispute ) => {
 		if ( ! dispute ) {
@@ -351,6 +352,101 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		expect(
 			screen.queryByText( /Bank of America/i )
 		).not.toBeInTheDocument();
+	} );
+
+	it( "renders Klarna's stated loss reason for submitted disputes", () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {
+					chargeback_loss_reason_code: 'shipping_policy_violated',
+				},
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect(
+			screen.getByText(
+				/Klarna listed the reason as “Shipping policy violated”/i
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'says Klarna gave no reason when the reason is unspecified', () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {
+					chargeback_loss_reason_code: 'reason_unspecified',
+				},
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect(
+			screen.getByText(
+				/Klarna did not share a reason for this decision/i
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'omits the loss reason when Klarna supplied none', () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {},
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect( screen.queryByText( /Klarna listed the reason/i ) ).toBeNull();
+		expect( screen.queryByText( /did not share a reason/i ) ).toBeNull();
+	} );
+
+	it( 'omits the loss reason when no evidence was submitted', () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {
+					chargeback_loss_reason_code:
+						'merchant_didnt_counter_dispute',
+				},
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect( screen.queryByText( /Klarna listed the reason/i ) ).toBeNull();
 	} );
 
 	it( 'renders accepted dispute message', () => {

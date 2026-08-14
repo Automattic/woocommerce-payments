@@ -1332,6 +1332,98 @@ describe( 'mapTimelineEvents dispute ordinal qualifiers', () => {
 	} );
 } );
 
+describe( 'mapTimelineEvents Klarna loss reasons', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
+			zeroDecimalCurrencies: [],
+			connect: { country: 'US' },
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+			dateFormat: 'M j, Y',
+		};
+	} );
+
+	const lostEvent = ( overrides = {} ) => ( {
+		amount: 10000,
+		currency: 'USD',
+		datetime: 1586055370,
+		deposit: null,
+		fee: 1500,
+		type: 'dispute_lost',
+		...overrides,
+	} );
+
+	// The main "Dispute lost." line is the last item of the event's group.
+	const mainItemBody = ( items ) => items[ items.length - 1 ].body;
+
+	test( 'adds the reason to the lost item when Klarna stated one', () => {
+		const items = mapTimelineEvents( [ lostEvent() ], 'Klarna', undefined, {
+			dp_klarna: { type: 'stated', display: 'Shipping policy violated' },
+		} );
+
+		expect( mainItemBody( items ) ).toEqual( [
+			'Klarna listed the reason as “Shipping policy violated”.',
+		] );
+	} );
+
+	test( 'matches the reason to the event by dispute id', () => {
+		const items = mapTimelineEvents(
+			[ lostEvent( { dispute_id: 'dp_second' } ) ],
+			'Klarna',
+			{ orderById: { dp_first: 1, dp_second: 2 }, total: 2 },
+			{
+				dp_first: {
+					type: 'stated',
+					display: 'Proof of delivery inadequate',
+				},
+				dp_second: {
+					type: 'stated',
+					display: 'Merchant didn’t issue refund',
+				},
+			}
+		);
+
+		expect( mainItemBody( items ) ).toEqual( [
+			'Klarna listed the reason as “Merchant didn’t issue refund”.',
+		] );
+	} );
+
+	test( 'leaves an id-less event unannotated when the charge has several disputes', () => {
+		const items = mapTimelineEvents( [ lostEvent() ], 'Klarna', undefined, {
+			dp_first: {
+				type: 'stated',
+				display: 'Proof of delivery inadequate',
+			},
+			dp_second: { type: 'stated', display: 'Shipping policy violated' },
+		} );
+
+		expect( mainItemBody( items ) ).toEqual( [] );
+	} );
+
+	test( 'leaves an unspecified reason to the dispute footer', () => {
+		const items = mapTimelineEvents( [ lostEvent() ], 'Klarna', undefined, {
+			dp_klarna: { type: 'unspecified' },
+		} );
+
+		expect( mainItemBody( items ) ).toEqual( [] );
+	} );
+
+	test( 'adds nothing for disputes without a Klarna loss reason', () => {
+		const items = mapTimelineEvents( [ lostEvent() ], 'Chase Bank' );
+
+		expect( mainItemBody( items ) ).toEqual( [] );
+	} );
+} );
+
 describe( 'composeTaxString', () => {
 	it( 'should return empty string when no tax data is present', () => {
 		const event = {};

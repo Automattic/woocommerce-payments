@@ -19,11 +19,17 @@ const PaymentDetailsTimeline = ( {
 	paymentIntentId,
 	bankName,
 	disputeOrder,
+	klarnaLossReasons,
 } ) => {
 	const { timeline, timelineError, isLoading } =
 		useTimeline( paymentIntentId );
 
-	const items = mapTimelineEvents( timeline, bankName, disputeOrder );
+	const items = mapTimelineEvents(
+		timeline,
+		bankName,
+		disputeOrder,
+		klarnaLossReasons
+	);
 
 	return (
 		<Card size="large">

@@ -21,6 +21,7 @@ import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import {
 	getDisputeFeeFormatted,
+	getKlarnaLossReason,
 	isVisaComplianceDispute,
 } from 'wcpay/disputes/utils';
 import './style.scss';
@@ -224,6 +225,7 @@ const DisputeLostFooter: React.FC< {
 		| 'balance_transactions'
 		| 'reason'
 		| 'enhanced_eligibility_types'
+		| 'payment_method_details'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
@@ -289,6 +291,28 @@ const DisputeLostFooter: React.FC< {
 		}
 	}
 
+	// Klarna is the only provider that reports why it decided against the
+	// merchant. Show it only once evidence was submitted: that's the case where
+	// the merchant is left asking how their evidence was weighed, and where a
+	// "Klarna gave no reason" statement is worth making. The accepted and
+	// non-response paths already explain themselves.
+	const klarnaLossReason = isSubmitted
+		? getKlarnaLossReason( dispute )
+		: null;
+	let lossReasonText = '';
+	if ( klarnaLossReason?.type === 'stated' ) {
+		lossReasonText = sprintf(
+			/* Translators: %1$s - the reason Klarna gave for the decision, eg "Shipping policy violated" */
+			__( 'Klarna listed the reason as “%1$s”.', 'woocommerce-payments' ),
+			klarnaLossReason.display
+		);
+	} else if ( klarnaLossReason?.type === 'unspecified' ) {
+		lossReasonText = __(
+			'Klarna did not share a reason for this decision.',
+			'woocommerce-payments'
+		);
+	}
+
 	return (
 		<CardFooter className="transaction-details-dispute-footer">
 			<Flex justify="space-between">
@@ -296,6 +320,7 @@ const DisputeLostFooter: React.FC< {
 					{ createInterpolateElement( messagePrefix, {
 						strong: <strong />,
 					} ) }{ ' ' }
+					{ lossReasonText && <>{ lossReasonText } </> }
 					{ sprintf(
 						/* Translators: %1$s – the formatted dispute fee amount */
 						__(
@@ -483,6 +508,7 @@ const DisputeResolutionFooter: React.FC< {
 		| 'balance_transactions'
 		| 'reason'
 		| 'enhanced_eligibility_types'
+		| 'payment_method_details'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {

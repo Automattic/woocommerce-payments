@@ -364,6 +364,54 @@ export const reasons: Record<
 	},
 };
 
+// Mapping of Klarna's chargeback loss reason codes to display strings. Klarna
+// sends these when it rules against the merchant on a chargeback; Stripe maps
+// them onto `dispute.payment_method_details.klarna.chargeback_loss_reason_code`.
+// `reason_unspecified` is deliberately absent: it means Klarna gave no reason,
+// which the UI phrases as such rather than presenting it as one.
+// See https://docs.stripe.com/payments/klarna/disputes#klarna-chargeback-loss-reason-code
+export const klarnaChargebackLossReasons: Record< string, string > = {
+	shipping_policy_violated: __(
+		'Shipping policy violated',
+		'woocommerce-payments'
+	),
+	proof_of_delivery_inadequate: __(
+		'Proof of delivery inadequate',
+		'woocommerce-payments'
+	),
+	evidence_missing_proof_of_delivery: __(
+		'Evidence missing proof of delivery',
+		'woocommerce-payments'
+	),
+	evidence_missing_customer_details: __(
+		'Evidence missing customer details',
+		'woocommerce-payments'
+	),
+	merchant_loss_accepted: __(
+		'Merchant loss accepted',
+		'woocommerce-payments'
+	),
+	// Stripe documents these two as "Merchant didn't …" without publishing the
+	// raw code, so both spellings are mapped. Anything still unmapped falls back
+	// to a humanized form of the code itself.
+	merchant_didnt_counter_dispute: __(
+		'Merchant didn’t counter dispute',
+		'woocommerce-payments'
+	),
+	merchant_did_not_counter_dispute: __(
+		'Merchant didn’t counter dispute',
+		'woocommerce-payments'
+	),
+	merchant_didnt_issue_refund: __(
+		'Merchant didn’t issue refund',
+		'woocommerce-payments'
+	),
+	merchant_did_not_issue_refund: __(
+		'Merchant didn’t issue refund',
+		'woocommerce-payments'
+	),
+};
+
 // Mapping of disputes status to display string.
 export const displayStatus = {
 	warning_needs_response: __(
