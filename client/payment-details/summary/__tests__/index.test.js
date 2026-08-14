@@ -302,6 +302,40 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( renderCharge( {}, true ) ).toMatchSnapshot();
 	} );
 
+	describe( 'refund-modal opener registered for sibling surfaces', () => {
+		test( 'ignores invocations while the charge is still loading', () => {
+			let openRefundModal;
+			renderCharge( {}, {}, true, {
+				onRegisterRefundOpener: ( open ) => ( openRefundModal = open ),
+			} );
+
+			act( () => openRefundModal() );
+
+			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+			expect( recordEvent ).not.toHaveBeenCalledWith(
+				'payments_transactions_details_refund_modal_open',
+				expect.anything()
+			);
+		} );
+
+		test( 'opens the refund modal once the charge has loaded', () => {
+			let openRefundModal;
+			renderCharge( getBaseCharge(), {}, false, {
+				onRegisterRefundOpener: ( open ) => ( openRefundModal = open ),
+			} );
+
+			act( () => openRefundModal() );
+
+			expect(
+				screen.getByRole( 'dialog', { name: 'Refund transaction' } )
+			).toBeInTheDocument();
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_transactions_details_refund_modal_open',
+				{ payment_intent_id: 'pi_abc' }
+			);
+		} );
+	} );
+
 	describe( 'capture notification and fraud buttons', () => {
 		beforeAll( () => {
 			// Mock current date and time to fixed value in moment

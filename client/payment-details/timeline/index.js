@@ -19,11 +19,17 @@ const PaymentDetailsTimeline = ( {
 	paymentIntentId,
 	bankName,
 	disputeOrder,
+	onRefund,
 } ) => {
 	const { timeline, timelineError, isLoading } =
 		useTimeline( paymentIntentId );
 
-	const items = mapTimelineEvents( timeline, bankName, disputeOrder );
+	const items = mapTimelineEvents(
+		timeline,
+		bankName,
+		disputeOrder,
+		onRefund
+	);
 
 	return (
 		<Card size="large">
