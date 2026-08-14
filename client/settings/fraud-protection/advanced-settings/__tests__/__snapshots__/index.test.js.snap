@@ -799,6 +799,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                               >
                                 <input
                                   aria-describedby="inspector-toggle-control-16__help"
+                                  checked=""
                                   class="components-form-toggle__input"
                                   id="inspector-toggle-control-16"
                                   type="checkbox"
@@ -2005,6 +2006,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                             >
                               <input
                                 aria-describedby="inspector-toggle-control-16__help"
+                                checked=""
                                 class="components-form-toggle__input"
                                 id="inspector-toggle-control-16"
                                 type="checkbox"
@@ -2642,7 +2644,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
       id="a11y-speak-polite"
       style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.   Learn more  ↗    
     </div>
     <div>
       <div>
@@ -4712,7 +4714,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
       id="a11y-speak-polite"
       style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.   Learn more  ↗    
     </div>
     <div>
       <h2
@@ -6739,7 +6741,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
       id="a11y-speak-polite"
       style="position:absolute;margin:-1px;padding:0;height:1px;width:1px;overflow:hidden;clip-path:inset(50%);border:0;word-wrap:normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.   Learn more  ↗    
     </div>
     <div>
       <div>
@@ -7301,6 +7303,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                               >
                                 <input
                                   aria-describedby="inspector-toggle-control-22__help"
+                                  checked=""
                                   class="components-form-toggle__input"
                                   id="inspector-toggle-control-22"
                                   type="checkbox"
@@ -8403,6 +8406,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                             >
                               <input
                                 aria-describedby="inspector-toggle-control-22__help"
+                                checked=""
                                 class="components-form-toggle__input"
                                 id="inspector-toggle-control-22"
                                 type="checkbox"

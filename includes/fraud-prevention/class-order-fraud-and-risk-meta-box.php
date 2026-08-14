@@ -123,7 +123,9 @@ class Order_Fraud_And_Risk_Meta_Box {
 				$description     = __( 'The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.', 'woocommerce-payments' );
 				$callout         = __( 'View more details', 'woocommerce-payments' );
 				$transaction_url = $this->compose_transaction_url_with_tracking( $order->get_id(), '', Rule::FRAUD_OUTCOME_BLOCK );
-				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icons['red_shield']['url'] ) . '" alt="' . esc_html( $icons['red_shield']['alt'] ) . '"> ' . esc_html( $statuses['blocked'] ) . '</p><p>' . esc_html( $description ) . '</p><p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a></p>';
+				echo '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . esc_url( $icons['red_shield']['url'] ) . '" alt="' . esc_html( $icons['red_shield']['alt'] ) . '"> ' . esc_html( $statuses['blocked'] ) . '</p><p>' . esc_html( $description ) . '</p>';
+				$this->maybe_print_ruleset_results( $order );
+				echo '<p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a></p>';
 				break;
 
 			case Fraud_Meta_Box_Type::NOT_CARD:
@@ -161,7 +163,9 @@ class Order_Fraud_And_Risk_Meta_Box {
 				$description     = __( 'The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.', 'woocommerce-payments' );
 				$callout         = __( 'Review payment', 'woocommerce-payments' );
 				$transaction_url = $this->compose_transaction_url_with_tracking( $intent_id, $charge_id, Rule::FRAUD_OUTCOME_REVIEW );
-				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icons['orange_shield']['url'] ) . '" alt="' . esc_html( $icons['orange_shield']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p><p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a></p>';
+				echo '<p class="wcpay-fraud-risk-meta-review"><img src="' . esc_url( $icons['orange_shield']['url'] ) . '" alt="' . esc_html( $icons['orange_shield']['alt'] ) . '"> ' . esc_html( $statuses['held_for_review'] ) . '</p><p>' . esc_html( $description ) . '</p>';
+				$this->maybe_print_ruleset_results( $order );
+				echo '<p><a href="' . esc_url( $transaction_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $callout ) . '</a></p>';
 				break;
 
 			case Fraud_Meta_Box_Type::REVIEW_ALLOWED:
@@ -210,6 +214,31 @@ class Order_Fraud_And_Risk_Meta_Box {
 		}
 
 		echo '</div>';
+	}
+
+	/**
+	 * Prints the list of risk filters that fired for the order, when they are known.
+	 *
+	 * Orders created before the ruleset results were persisted — and blocks that carry no
+	 * ruleset data, like card-testing prevention — have nothing stored, so nothing is printed
+	 * and the meta box keeps its generic copy.
+	 *
+	 * @param \WC_Order $order The order we are working with.
+	 *
+	 * @return void
+	 */
+	private function maybe_print_ruleset_results( $order ) {
+		$labels = Fraud_Risk_Tools::get_ruleset_result_labels( $this->order_service->get_fraud_ruleset_results_for_order( $order ) );
+
+		if ( [] === $labels ) {
+			return;
+		}
+
+		echo '<p>' . esc_html__( 'Triggered risk filters:', 'woocommerce-payments' ) . '</p><ul class="wcpay-fraud-risk-triggered-filters">';
+		foreach ( $labels as $label ) {
+			echo '<li>' . esc_html( $label ) . '</li>';
+		}
+		echo '</ul>';
 	}
 
 	/**

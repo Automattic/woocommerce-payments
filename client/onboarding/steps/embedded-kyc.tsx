@@ -12,7 +12,12 @@ import { LoadError } from '@stripe/connect-js';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { finalizeOnboarding } from 'wcpay/onboarding/utils';
-import { getConnectUrl, getOverviewUrl, isInDevMode } from 'wcpay/utils';
+import {
+	getConnectUrl,
+	getOverviewUrl,
+	isInDevMode,
+	redirectTo,
+} from 'wcpay/utils';
 import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
 import { EmbeddedAccountOnboarding } from 'wcpay/embedded-components';
 import BannerNotice from 'wcpay/components/banner-notice';
@@ -44,29 +49,35 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		try {
 			const response = await finalizeOnboarding( urlSource );
 			if ( response.success ) {
-				window.location.href = getOverviewUrl(
-					{
-						...response.params,
-						'wcpay-connection-success': '1',
-					},
-					'WCPAY_ONBOARDING_WIZARD'
+				redirectTo(
+					getOverviewUrl(
+						{
+							...response.params,
+							'wcpay-connection-success': '1',
+						},
+						'WCPAY_ONBOARDING_WIZARD'
+					)
 				);
 			} else {
-				window.location.href = getConnectUrl(
-					{
-						...response.params,
-						'wcpay-connection-error': '1',
-					},
-					'WCPAY_ONBOARDING_WIZARD'
+				redirectTo(
+					getConnectUrl(
+						{
+							...response.params,
+							'wcpay-connection-error': '1',
+						},
+						'WCPAY_ONBOARDING_WIZARD'
+					)
 				);
 			}
 		} catch ( error ) {
-			window.location.href = getConnectUrl(
-				{
-					'wcpay-connection-error': '1',
-					source: urlSource,
-				},
-				'WCPAY_ONBOARDING_WIZARD'
+			redirectTo(
+				getConnectUrl(
+					{
+						'wcpay-connection-error': '1',
+						source: urlSource,
+					},
+					'WCPAY_ONBOARDING_WIZARD'
+				)
 			);
 		}
 	};

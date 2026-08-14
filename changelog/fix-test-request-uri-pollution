@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Restore $_SERVER['REQUEST_URI'] after WC_Payments_Utils tests so leaked wp-json URIs don't send later tests down REST-only WooCommerce code paths

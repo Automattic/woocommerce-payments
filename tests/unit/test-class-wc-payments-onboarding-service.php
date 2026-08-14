@@ -163,6 +163,19 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->onboarding_service->clear_cached_onboarding_fields_data();
 	}
 
+	public function test_cleanup_on_account_reset_deletes_store_had_woopayments_options() {
+		// Arrange.
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'yes' );
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version', 2 );
+
+		// Act.
+		$this->onboarding_service->cleanup_on_account_reset();
+
+		// Assert.
+		$this->assertFalse( get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+		$this->assertFalse( get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' ) );
+	}
+
 	public function test_create_embedded_kyc_session() {
 		// Arrange.
 		$this->mock_api_client
