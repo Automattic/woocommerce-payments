@@ -109,6 +109,12 @@ class Order_Fraud_And_Risk_Meta_Box {
 		$risk_filters_url              = WC_Payments_Admin_Settings::get_settings_url( [ 'anchor' => '%23fp-settings' ] );
 		$show_adjust_risk_filters_link = true;
 
+		// Early fraud warnings are independent of the fraud outcome below — an approved
+		// charge can still receive one — so this renders as its own additive block. The
+		// warning goes first: it arrives after the risk level was assessed at checkout,
+		// and a reassuring "Normal" score at the top could make merchants overlook it.
+		$this->maybe_print_early_fraud_warning_block( $order, $intent_id, $charge_id );
+
 		$this->maybe_print_risk_level_block( $risk_level );
 
 		echo '<div class="wcpay-fraud-risk-action">';
@@ -271,6 +277,71 @@ class Order_Fraud_And_Risk_Meta_Box {
 		echo '<p class="wcpay-fraud-risk-level__title">' . esc_html( $titles[ $risk_level ] ) . '</p>';
 		echo '<div class="wcpay-fraud-risk-level__bar"></div>';
 		echo '<p>' . esc_html( $descriptions[ $risk_level ] ) . '</p>';
+		echo '</div>';
+	}
+
+	/**
+	 * Prints the early fraud warning block when the order's charge received one.
+	 *
+	 * @param \WC_Order $order     The order we are working with.
+	 * @param string    $intent_id The payment intent ID for the order.
+	 * @param string    $charge_id The charge ID for the order.
+	 *
+	 * @return void
+	 */
+	private function maybe_print_early_fraud_warning_block( $order, $intent_id, $charge_id ) {
+		$early_fraud_warning = $this->order_service->get_early_fraud_warning_for_order( $order );
+
+		if ( null === $early_fraud_warning ) {
+			return;
+		}
+
+		$actionable      = ! empty( $early_fraud_warning['efw_actionable'] );
+		$fraud_type_text = WC_Payments_Utils::get_early_fraud_warning_fraud_type_description( $early_fraud_warning['efw_type'] ?? '' );
+
+		$icon = $actionable
+			? [
+				'url' => plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ),
+				'alt' => __( 'Orange shield outline', 'woocommerce-payments' ),
+			]
+			: [
+				'url' => plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ),
+				'alt' => __( 'Green check mark', 'woocommerce-payments' ),
+			];
+
+		$modifier = $actionable ? 'actionable' : 'resolved';
+		$title    = $actionable
+			? __( 'Early fraud warning', 'woocommerce-payments' )
+			: __( 'Early fraud warning resolved', 'woocommerce-payments' );
+
+		$description = $actionable
+			? __( 'The card issuer flagged this payment as likely fraudulent. Refunding it now can prevent a dispute.', 'woocommerce-payments' )
+			: __( 'This payment was refunded or disputed, so the warning is no longer actionable.', 'woocommerce-payments' );
+
+		echo '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--' . esc_attr( $modifier ) . '">';
+		echo '<p class="wcpay-fraud-risk-efw__title"><img src="' . esc_url( $icon['url'] ) . '" alt="' . esc_attr( $icon['alt'] ) . '"> ' . esc_html( $title ) . '</p>';
+
+		if ( '' !== $fraud_type_text ) {
+			echo '<p class="wcpay-fraud-risk-efw__reason">' . sprintf(
+				/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
+				esc_html__( 'Reported reason: %s', 'woocommerce-payments' ),
+				esc_html( $fraud_type_text )
+			) . '</p>';
+		}
+
+		echo '<p>' . esc_html( $description ) . '</p>';
+
+		if ( $actionable ) {
+			// The refund is managed on this same screen, so admin JS intercepts the
+			// click and opens WooCommerce's inline refund panel instead (see
+			// client/order/index.js). The payment details href is the fallback for
+			// when the panel is unavailable (e.g. refunds locked during a dispute).
+			$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+			if ( '' !== $transaction_url ) {
+				echo '<p><a href="' . esc_url( $transaction_url ) . '" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund this payment', 'woocommerce-payments' ) . '</a></p>';
+			}
+		}
+
 		echo '</div>';
 	}
 
