@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Remove skipped tests for the capital loan notice that was removed from the deposits overview.
