@@ -3,7 +3,7 @@
  */
 import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -24,29 +24,17 @@ const SupportPhoneInput = ( { setInputValid } ) => {
 		useGetSavingError()?.data?.details?.account_business_support_phone
 			?.message;
 
-	const currentPhone = useRef( supportPhone ).current;
-	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
 	const isTestModeOnboarding = useTestModeOnboarding();
 	const isTestPhoneValid =
 		isTestModeOnboarding && supportPhone === '+10000000000';
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
-	if ( supportPhone === '' ) {
-		supportPhoneError = __(
-			'Support phone number cannot be empty.',
-			'woocommerce-payments'
-		);
-	}
-	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
-		supportPhoneError = __(
-			'Please enter a valid phone number.',
-			'woocommerce-payments'
-		);
-	}
 
-	if ( supportPhone === '' && currentPhone !== '' ) {
+	// Empty, never set, and invalid numbers all share one message: the merchant
+	// only ever needs to know that a valid number is required.
+	if ( supportPhone === '' || ( ! isTestPhoneValid && ! isPhoneValid ) ) {
 		supportPhoneError = __(
-			'Support phone number cannot be empty once it has been set before, please specify.',
+			'A support phone number is required. Please enter a valid phone number.',
 			'woocommerce-payments'
 		);
 	}
@@ -57,7 +45,10 @@ const SupportPhoneInput = ( { setInputValid } ) => {
 		}
 	}, [ supportPhoneError, setInputValid ] );
 
-	const labelText = __( 'Support phone number', 'woocommerce-payments' );
+	const labelText = __(
+		'Support phone number (required)',
+		'woocommerce-payments'
+	);
 	return (
 		<>
 			{ supportPhoneError && (
@@ -70,7 +61,8 @@ const SupportPhoneInput = ( { setInputValid } ) => {
 				help={
 					<>
 						{ __(
-							'This may be visible on receipts, invoices, and automated emails from your store.',
+							// eslint-disable-next-line max-len
+							"This number may appear on customer bank statements and in-person purchase receipts, but not in order emails. Use a number you're comfortable sharing publicly.",
 							'woocommerce-payments'
 						) }
 						{ isTestModeOnboarding && (
