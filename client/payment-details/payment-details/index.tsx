@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 
@@ -40,6 +40,14 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	showTimeline = true,
 	paymentIntent,
 } ) => {
+	// The refund modal (and the charge-derived props it needs) lives in the
+	// summary card; the summary registers an opener here so the timeline's
+	// early-fraud-warning "Refund this payment" CTA can trigger it.
+	const refundModalOpener = useRef< () => void >();
+	const registerRefundOpener = useCallback( ( open: () => void ) => {
+		refundModalOpener.current = open;
+	}, [] );
+
 	// Check instance of error because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
 		return (
@@ -78,6 +86,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 					metadata={ metadata }
 					isLoading={ isLoading }
 					paymentIntent={ paymentIntent }
+					onRegisterRefundOpener={ registerRefundOpener }
 				/>
 			</ErrorBoundary>
 
@@ -87,6 +96,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 						paymentIntentId={ id }
 						bankName={ bankName }
 						disputeOrder={ disputeOrder }
+						onRefund={ () => refundModalOpener.current?.() }
 						klarnaLossReasons={ klarnaLossReasons }
 					/>
 				</ErrorBoundary>

@@ -85,6 +85,12 @@ interface PaymentDetailsSummaryProps {
 	metadata?: Record< string, any >;
 	fraudOutcome?: FraudOutcome;
 	paymentIntent?: PaymentIntent;
+	/**
+	 * Called with a function that opens the refund modal, letting sibling
+	 * surfaces (e.g. the timeline's early-fraud-warning CTA) trigger the
+	 * modal, which lives here along with the charge-derived props it needs.
+	 */
+	onRegisterRefundOpener?: ( open: () => void ) => void;
 }
 
 const placeholderValues = {
@@ -280,6 +286,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	metadata = {},
 	isLoading,
 	paymentIntent,
+	onRegisterRefundOpener,
 } ) => {
 	const balance = charge.amount
 		? getChargeAmounts( charge )
@@ -432,6 +439,29 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const [ refundTarget, setRefundTarget ] = useState< {
 		dispute?: ChargeDispute;
 	} | null >( null );
+
+	// Expose the refund-modal opener to sibling surfaces (the timeline's
+	// early-fraud-warning CTA); the modal state is invoked only from the
+	// resulting click handler, never during render or the effect itself.
+	useEffect( () => {
+		onRegisterRefundOpener?.( () => {
+			// The timeline fetches independently and can render its refund CTA
+			// while the charge is still loading; the modal would render broken
+			// amounts from the incomplete charge, so ignore clicks until then.
+			if ( isLoading || ! charge.id ) {
+				return;
+			}
+			setRefundTarget( {} );
+			recordEvent( 'payments_transactions_details_refund_modal_open', {
+				payment_intent_id: charge.payment_intent,
+			} );
+		} );
+	}, [
+		onRegisterRefundOpener,
+		charge.id,
+		charge.payment_intent,
+		isLoading,
+	] );
 
 	const bankName = getBankName( charge );
 

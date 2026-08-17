@@ -19,6 +19,7 @@ const PaymentDetailsTimeline = ( {
 	paymentIntentId,
 	bankName,
 	disputeOrder,
+	onRefund,
 	klarnaLossReasons,
 } ) => {
 	const { timeline, timelineError, isLoading } =
@@ -28,6 +29,7 @@ const PaymentDetailsTimeline = ( {
 		timeline,
 		bankName,
 		disputeOrder,
+		onRefund,
 		klarnaLossReasons
 	);
 

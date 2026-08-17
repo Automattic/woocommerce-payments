@@ -7,6 +7,7 @@ import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { createInterpolateElement } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import SyncIcon from 'gridicons/dist/sync';
 import PlusIcon from 'gridicons/dist/plus';
@@ -28,7 +29,11 @@ import {
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
-import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+import {
+	earlyFraudWarningFraudTypeMapping,
+	fraudOutcomeRulesetMapping,
+	paymentFailureMapping,
+} from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
@@ -773,6 +778,7 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
  * @param {Object}        event             An event data
  * @param {string | null} bankName          The name of the bank
  * @param {Object}        disputeOrder      Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]        Opens the payment details refund modal; when omitted, refund CTAs render as plain text
  * @param {Object}        klarnaLossReasons Klarna's loss reasons, keyed by dispute id
  *
  * @return {Array} Payment timeline items
@@ -781,6 +787,7 @@ const mapEventToTimelineItems = (
 	event,
 	bankName = null,
 	disputeOrder,
+	onRefund,
 	klarnaLossReasons
 ) => {
 	const { type } = event;
@@ -1327,6 +1334,88 @@ const mapEventToTimelineItems = (
 					]
 				),
 			];
+		case 'early_fraud_warning': {
+			const fraudTypeLabel =
+				earlyFraudWarningFraudTypeMapping[ event.efw_type ] ?? null;
+			const reportedReason = fraudTypeLabel
+				? sprintf(
+						/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
+						__( 'Reported reason: %s', 'woocommerce-payments' ),
+						fraudTypeLabel
+				  )
+				: null;
+
+			if ( ! event.efw_actionable ) {
+				return [
+					getStatusChangeTimelineItem(
+						event,
+						__(
+							'Early fraud warning resolved',
+							'woocommerce-payments'
+						)
+					),
+					getMainTimelineItem(
+						event,
+						__(
+							'This early fraud warning is no longer actionable.',
+							'woocommerce-payments'
+						),
+						<NoticeOutlineIcon />,
+						[
+							__(
+								'The payment was refunded or disputed, so no further action is needed to avoid a dispute.',
+								'woocommerce-payments'
+							),
+							reportedReason,
+						].filter( Boolean )
+					),
+				];
+			}
+
+			// The timeline renders on the payment details page itself, so a link
+			// back to that page would be a no-op. Instead the CTA asks the page
+			// (via the callback threaded from the payment details parent) to open
+			// the refund modal that already lives in the summary card.
+			const refundCta = onRefund
+				? createInterpolateElement(
+						__(
+							'Refunding this payment now can prevent a dispute. <link>Refund this payment</link>',
+							'woocommerce-payments'
+						),
+						{
+							link: (
+								<Button variant="link" onClick={ onRefund } />
+							),
+						}
+				  )
+				: __(
+						'Refunding this payment now can prevent a dispute.',
+						'woocommerce-payments'
+				  );
+
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Early fraud warning', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					__(
+						'Payment received an early fraud warning',
+						'woocommerce-payments'
+					),
+					<NoticeOutlineIcon className="is-warning" />,
+					[
+						__(
+							'The card issuer flagged this payment as likely fraudulent.',
+							'woocommerce-payments'
+						),
+						reportedReason,
+						refundCta,
+					].filter( Boolean )
+				),
+			];
+		}
 		case 'fraud_outcome_manual_approve':
 			return getManualFraudOutcomeTimelineItem( event, 'allow' );
 		case 'fraud_outcome_manual_block':
@@ -1346,6 +1435,7 @@ const mapEventToTimelineItems = (
  * @param {Array}         timelineEvents    array of events
  * @param {string | null} bankName          The name of the bank
  * @param {Object}        disputeOrder      Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]        Opens the payment details refund modal; when omitted, refund CTAs render as plain text
  * @param {Object}        klarnaLossReasons Klarna's loss reasons, keyed by dispute id
  *
  * @return {Array} Array of view items
@@ -1354,6 +1444,7 @@ export default (
 	timelineEvents,
 	bankName = null,
 	disputeOrder,
+	onRefund,
 	klarnaLossReasons
 ) => {
 	if ( ! timelineEvents ) {
@@ -1365,6 +1456,7 @@ export default (
 			event,
 			bankName,
 			disputeOrder,
+			onRefund,
 			klarnaLossReasons
 		)
 	).filter( Boolean );

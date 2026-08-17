@@ -2,7 +2,8 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import React from 'react';
+import { render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -176,6 +177,105 @@ describe( 'mapTimelineEvents', () => {
 					acquirer_reference_number: '4785767637658864',
 					failure_reason: 'expired_or_canceled_card',
 					amount_refunded: '100',
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
+	test( 'formats actionable early_fraud_warning events', () => {
+		expect(
+			mapTimelineEvents(
+				[
+					{
+						datetime: 1585859207,
+						type: 'early_fraud_warning',
+						efw_actionable: true,
+						efw_type: 'made_with_stolen_card',
+					},
+				],
+				null,
+				undefined,
+				jest.fn()
+			)
+		).toMatchSnapshot();
+	} );
+
+	test( 'invokes the refund handler when the early_fraud_warning CTA is clicked', () => {
+		const onRefund = jest.fn();
+		const items = mapTimelineEvents(
+			[
+				{
+					datetime: 1585859207,
+					type: 'early_fraud_warning',
+					efw_actionable: true,
+					efw_type: 'made_with_stolen_card',
+				},
+			],
+			null,
+			undefined,
+			onRefund
+		);
+
+		// The second item is the main timeline entry; its body carries the CTA.
+		// Children are passed positionally to avoid array-key warnings.
+		const { getByRole } = render(
+			React.createElement( 'div', null, ...items[ 1 ].body )
+		);
+		fireEvent.click(
+			getByRole( 'button', { name: 'Refund this payment' } )
+		);
+
+		expect( onRefund ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'formats actionable early_fraud_warning events with an unknown fraud type', () => {
+		const items = mapTimelineEvents(
+			[
+				{
+					datetime: 1585859207,
+					type: 'early_fraud_warning',
+					efw_actionable: true,
+					efw_type: 'brand_new_stripe_enum',
+				},
+			],
+			null,
+			undefined,
+			jest.fn()
+		);
+
+		// Guards against both rendering the raw enum and a stale label.
+		expect(
+			items[ 1 ].body.some(
+				( line ) =>
+					typeof line === 'string' &&
+					line.includes( 'Reported reason' )
+			)
+		).toBe( false );
+
+		expect( items ).toMatchSnapshot();
+	} );
+
+	test( 'formats actionable early_fraud_warning events without a refund handler', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'early_fraud_warning',
+					efw_actionable: true,
+					efw_type: 'made_with_stolen_card',
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
+	test( 'formats resolved early_fraud_warning events', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'early_fraud_warning',
+					efw_actionable: false,
+					efw_type: 'made_with_stolen_card',
 				},
 			] )
 		).toMatchSnapshot();
@@ -1366,9 +1466,18 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 	const mainItemBody = ( items ) => items[ items.length - 1 ].body;
 
 	test( 'adds the reason to the lost item when Klarna stated one', () => {
-		const items = mapTimelineEvents( [ lostEvent() ], 'Klarna', undefined, {
-			dp_klarna: { type: 'stated', display: 'Shipping policy violated' },
-		} );
+		const items = mapTimelineEvents(
+			[ lostEvent() ],
+			'Klarna',
+			undefined,
+			undefined,
+			{
+				dp_klarna: {
+					type: 'stated',
+					display: 'Shipping policy violated',
+				},
+			}
+		);
 
 		expect( mainItemBody( items ) ).toEqual( [
 			'Klarna listed the reason as “Shipping policy violated”.',
@@ -1380,6 +1489,7 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 			[ lostEvent( { dispute_id: 'dp_second' } ) ],
 			'Klarna',
 			{ orderById: { dp_first: 1, dp_second: 2 }, total: 2 },
+			undefined,
 			{
 				dp_first: {
 					type: 'stated',
@@ -1398,21 +1508,34 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 	} );
 
 	test( 'leaves an id-less event unannotated when the charge has several disputes', () => {
-		const items = mapTimelineEvents( [ lostEvent() ], 'Klarna', undefined, {
-			dp_first: {
-				type: 'stated',
-				display: 'Proof of delivery inadequate',
-			},
-			dp_second: { type: 'stated', display: 'Shipping policy violated' },
-		} );
+		const items = mapTimelineEvents(
+			[ lostEvent() ],
+			'Klarna',
+			undefined,
+			undefined,
+			{
+				dp_first: {
+					type: 'stated',
+					display: 'Proof of delivery inadequate',
+				},
+				dp_second: {
+					type: 'stated',
+					display: 'Shipping policy violated',
+				},
+			}
+		);
 
 		expect( mainItemBody( items ) ).toEqual( [] );
 	} );
 
 	test( 'leaves an unspecified reason to the dispute footer', () => {
-		const items = mapTimelineEvents( [ lostEvent() ], 'Klarna', undefined, {
-			dp_klarna: { type: 'unspecified' },
-		} );
+		const items = mapTimelineEvents(
+			[ lostEvent() ],
+			'Klarna',
+			undefined,
+			undefined,
+			{ dp_klarna: { type: 'unspecified' } }
+		);
 
 		expect( mainItemBody( items ) ).toEqual( [] );
 	} );
