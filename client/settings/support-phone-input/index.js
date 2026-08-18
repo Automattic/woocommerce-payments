@@ -30,8 +30,6 @@ const SupportPhoneInput = ( { setInputValid } ) => {
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
 
-	// Empty, never set, and invalid numbers all share one message: the merchant
-	// only ever needs to know that a valid number is required.
 	if ( supportPhone === '' || ( ! isTestPhoneValid && ! isPhoneValid ) ) {
 		supportPhoneError = __(
 			'A support phone number is required. Please enter a valid phone number.',
