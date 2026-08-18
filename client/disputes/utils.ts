@@ -16,6 +16,7 @@ import type {
 import type { BalanceTransaction } from 'wcpay/types/balance-transactions';
 import type { Charge } from 'wcpay/types/charges';
 import { getChargeDisputes } from 'wcpay/utils/charge';
+import { formatStringValue } from 'wcpay/utils';
 import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
@@ -148,10 +149,7 @@ export const getKlarnaLossReason = (
 	// Codes read as English phrases, so humanizing an unmapped one still tells
 	// the merchant more than hiding it would. Translated once it's in the map.
 	const display =
-		klarnaChargebackLossReasons[ code ] ??
-		code
-			.replace( /_/g, ' ' )
-			.replace( /^./, ( first ) => first.toUpperCase() );
+		klarnaChargebackLossReasons[ code ] ?? formatStringValue( code );
 
 	return { type: 'stated', display };
 };

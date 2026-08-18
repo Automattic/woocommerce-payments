@@ -427,6 +427,31 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		expect( screen.queryByText( /did not share a reason/i ) ).toBeNull();
 	} );
 
+	it( 'renders the plain lost footer when payment_method_details is absent', () => {
+		// The shape older servers and the cached disputes list send: the field
+		// isn't empty, it isn't there at all.
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+		} );
+		expect( dispute.payment_method_details ).toBeUndefined();
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect(
+			screen.getByText(
+				/Unfortunately, you've lost this dispute\. The customer's bank, Klarna, reached this decision/i
+			)
+		).toBeInTheDocument();
+		expect( screen.queryByText( /Klarna listed the reason/i ) ).toBeNull();
+		expect( screen.queryByText( /did not share a reason/i ) ).toBeNull();
+	} );
+
 	it( 'omits the loss reason when no evidence was submitted', () => {
 		const dispute = getBaseDispute( {
 			status: 'lost',
