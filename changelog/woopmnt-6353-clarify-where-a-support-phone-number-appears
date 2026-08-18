@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Clarify where the support phone number appears, mark the field as required, and use one plain validation message.
