@@ -1231,12 +1231,13 @@ const mapEventToTimelineItems = (
 			}
 
 			// Only Klarna reports why it decided against the merchant. The event
-			// itself carries no reason, so it comes from the charge's disputes:
-			// by id when the server identifies the dispute, and otherwise only
-			// when the charge has a single dispute for the event to belong to.
-			// Older servers omit dispute_id; the reason map is keyed by dispute
-			// but holds only the disputes that stated one, so its size can't
-			// stand in for the charge's dispute count — disputeOrder.total can.
+			// itself carries no reason, so it comes from the charge's disputes,
+			// matched by id — which every dispute event the server builds sets
+			// from the Stripe dispute. The id-less branch is defensive: it fires
+			// only when the charge has a single dispute for the event to belong
+			// to. The reason map is keyed by dispute but holds just the disputes
+			// that stated a reason, so its size can't stand in for the charge's
+			// dispute count — disputeOrder.total can.
 			const lossReasons = Object.values( klarnaLossReasons ?? {} );
 			let klarnaLossReason;
 			if ( event.dispute_id ) {
