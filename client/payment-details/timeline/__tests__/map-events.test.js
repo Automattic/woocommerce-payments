@@ -1528,6 +1528,23 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 		expect( mainItemBody( items ) ).toEqual( [] );
 	} );
 
+	test( 'leaves an id-less event unannotated when only one of several disputes stated a reason', () => {
+		const items = mapTimelineEvents(
+			[ lostEvent() ],
+			'Klarna',
+			{ orderById: { dp_first: 1, dp_second: 2 }, total: 2 },
+			undefined,
+			{
+				dp_second: {
+					type: 'stated',
+					display: 'Shipping policy violated',
+				},
+			}
+		);
+
+		expect( mainItemBody( items ) ).toEqual( [] );
+	} );
+
 	test( 'leaves an unspecified reason to the dispute footer', () => {
 		const items = mapTimelineEvents(
 			[ lostEvent() ],

@@ -1234,11 +1234,17 @@ const mapEventToTimelineItems = (
 			// itself carries no reason, so it comes from the charge's disputes:
 			// by id when the server identifies the dispute, and otherwise only
 			// when the charge has a single dispute for the event to belong to.
+			// Older servers omit dispute_id; the reason map is keyed by dispute
+			// but holds only the disputes that stated one, so its size can't
+			// stand in for the charge's dispute count — disputeOrder.total can.
 			const lossReasons = Object.values( klarnaLossReasons ?? {} );
 			let klarnaLossReason;
 			if ( event.dispute_id ) {
 				klarnaLossReason = klarnaLossReasons?.[ event.dispute_id ];
-			} else if ( lossReasons.length === 1 ) {
+			} else if (
+				lossReasons.length === 1 &&
+				( disputeOrder?.total ?? 1 ) === 1
+			) {
 				klarnaLossReason = lossReasons[ 0 ];
 			}
 			// An unstated reason is left to the dispute footer, which has the
