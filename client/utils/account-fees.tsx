@@ -60,12 +60,15 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	GB: 'united-kingdom',
 	US: 'united-states',
 	RO: 'romania',
-	// PR (Puerto Rico) is intentionally absent. The fees page has no Puerto
-	// Rico section, and its only PR line sits inside the US section stating
-	// that PR-issued cards trigger the international payment fee — so
-	// mapping PR to 'united-states' would assert rates the docs do not
-	// support. Unmapped merchants get the un-anchored fees page instead.
-	// Revisit if a Puerto Rico section is ever added.
+	// PR (Puerto Rico) is intentionally absent. This map is keyed on the
+	// store base country, but PR is not selectable during Stripe account
+	// signup, so a PR store's account is created as US while its base
+	// country stays PR — the two diverge. The fees page also has no Puerto
+	// Rico section; its only PR line sits inside the US section, noting
+	// that PR-issued cards trigger the international payment fee. Mapping
+	// PR to 'united-states' would paper over that divergence and assert
+	// rates the docs do not support, so PR merchants get the un-anchored
+	// fees page instead.
 };
 
 const getStripeFeeSectionUrl = ( country: string ): string => {
