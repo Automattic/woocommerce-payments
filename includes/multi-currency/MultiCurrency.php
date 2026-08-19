@@ -570,12 +570,8 @@ class MultiCurrency {
 	 * @return string The widget markup.
 	 */
 	public function get_switcher_widget_markup( array $instance = [], array $args = [] ): string {
-		/**
-		 * The spl_object_hash function is used here due to we register the widget with an instance of the widget and
-		 * not the class name of the widget. WordPress core takes the instance and passes it through spl_object_hash
-		 * to get a hash and adds that as the widget's name in the $wp_widget_factory->widgets[] array. In order to
-		 * call the_widget, you need to have the name of the widget, so we get the instance and hash to use.
-		 */
+		global $wp_widget_factory;
+
 		ob_start();
 
 		$currency_switcher_widget = $this->get_currency_switcher_widget();
@@ -591,8 +587,17 @@ class MultiCurrency {
 			return ob_get_clean();
 		}
 
+		/*
+		 * We register the currency switcher with a widget instance rather than a class name, so WordPress stores it
+		 * in $wp_widget_factory->widgets[] under a generated key rather than under its class name. the_widget()
+		 * expects that key, so we ask the factory for it instead of recomputing it ourselves: WordPress 7.1 changed
+		 * the key from spl_object_hash() to spl_object_id(). WP_Widget_Factory::get_widget_key() has returned the
+		 * current key since WordPress 5.8, whichever way it is generated.
+		 */
+		$widget_key = $wp_widget_factory->get_widget_key( $currency_switcher_widget->id_base );
+
 		the_widget(
-			spl_object_hash( $currency_switcher_widget ),
+			$widget_key,
 			/**
 			 * Filters the instance settings passed to the currency switcher theme widget.
 			 *
