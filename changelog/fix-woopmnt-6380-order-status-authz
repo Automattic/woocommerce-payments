@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Bind the checkout payment-authentication nonce to its order so it can only update that order, preventing an unauthenticated request from writing a note to another shopper's order.
