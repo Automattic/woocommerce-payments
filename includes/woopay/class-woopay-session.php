@@ -1146,7 +1146,7 @@ class WooPay_Session {
 		}
 
 		if ( ! self::claim_attestation( $fingerprint ) ) {
-			Logger::log( 'WooPay attestation rejected: envelope has already been used.' );
+			Logger::log( 'WooPay attestation rejected: envelope has already been used, or its claim could not be recorded.' );
 
 			self::$resolved_attestations[ $fingerprint ] = null;
 
@@ -1250,9 +1250,17 @@ class WooPay_Session {
 	 * is applied to the absolute clock difference and so also admits envelopes dated
 	 * slightly ahead of the store.
 	 *
+	 * The write decides, not the read before it. `add_option()` underneath refuses a key
+	 * that already exists, so of two requests arriving with the same envelope at once —
+	 * both past the `get_transient()` check — only one gets a true back. Trusting the read
+	 * would let both through, which is the replay this exists to stop. It also fails
+	 * closed if the claim cannot be recorded at all: an envelope whose guard is not in
+	 * place is refused rather than accepted on the assumption it will be.
+	 *
 	 * @param string $fingerprint Fingerprint of the envelope being spent.
 	 *
-	 * @return bool True if this call spent the envelope, false if it was already spent.
+	 * @return bool True if this call spent the envelope, false if it was already spent or
+	 *              the claim could not be recorded.
 	 */
 	private static function claim_attestation( string $fingerprint ): bool {
 		$key = self::ATTESTATION_CLAIM_PREFIX . $fingerprint;
@@ -1261,9 +1269,7 @@ class WooPay_Session {
 			return false;
 		}
 
-		set_transient( $key, time(), 2 * self::ATTESTATION_MAX_AGE );
-
-		return true;
+		return (bool) set_transient( $key, time(), 2 * self::ATTESTATION_MAX_AGE );
 	}
 
 	/**
