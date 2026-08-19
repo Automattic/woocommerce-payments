@@ -100,7 +100,7 @@ test.describe(
 			const cvcErrorText = stripeFrame.locator( 'p#Field-cvcError' );
 
 			await expect( cvcErrorText ).toHaveText(
-				'Your card’s security code is incomplete.'
+				'Your security code is incomplete.'
 			);
 		} );
 
