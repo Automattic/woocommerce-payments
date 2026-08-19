@@ -167,7 +167,7 @@ test.describe(
 				'p#Field-numberError'
 			);
 
-			expect( numberErrorText ).toHaveText(
+			await expect( numberErrorText ).toHaveText(
 				'Your card number is invalid.'
 			);
 		} );
