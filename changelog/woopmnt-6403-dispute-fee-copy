@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stopped the dispute details from naming a fee that was never charged: a zero or reversed dispute fee now drops the fee wording instead of showing a $0.00 amount or a dash.

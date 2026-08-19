@@ -1,7 +1,12 @@
 /**
  * Internal dependencies
  */
-import { isDueWithin, isInquiry, isVisaComplianceDispute } from '../utils';
+import {
+	getDisputeFeeAmount,
+	isDueWithin,
+	isInquiry,
+	isVisaComplianceDispute,
+} from '../utils';
 import type { Dispute } from 'wcpay/types/disputes';
 
 describe( 'isDueWithin', () => {
@@ -179,5 +184,85 @@ describe( 'isVisaComplianceDispute', () => {
 
 	test( 'returns false if dispute is undefined', () => {
 		expect( isVisaComplianceDispute( undefined as any ) ).toBe( false );
+	} );
+} );
+
+describe( 'getDisputeFeeAmount', () => {
+	const disputeFeeRow = {
+		amount: -5000,
+		currency: 'usd',
+		fee: 1500,
+		reporting_category: 'dispute',
+	};
+
+	describe( 'when the server annotates effective_fee', () => {
+		test( 'returns the annotated fee', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [],
+					effective_fee: { amount: 1500, currency: 'usd' },
+				} )
+			).toEqual( { amount: 1500, currency: 'usd' } );
+		} );
+
+		test( 'returns undefined when the fee was reversed', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [ disputeFeeRow ],
+					effective_fee: null,
+				} )
+			).toBeUndefined();
+		} );
+
+		test( 'returns undefined when the fee is zero', () => {
+			// A $0.00 fee is no fee. Returning it would let callers render
+			// "the $0.00 fee has been deducted from your account".
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [],
+					effective_fee: { amount: 0, currency: 'usd' },
+				} )
+			).toBeUndefined();
+		} );
+	} );
+
+	describe( 'when falling back to balance_transactions', () => {
+		test( 'returns the dispute row fee', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [ disputeFeeRow ],
+				} )
+			).toEqual( { amount: 1500, currency: 'usd' } );
+		} );
+
+		test( 'returns undefined when a reversal row is present', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [
+						disputeFeeRow,
+						{
+							amount: 5000,
+							currency: 'usd',
+							fee: -1500,
+							reporting_category: 'dispute_reversal',
+						},
+					],
+				} )
+			).toBeUndefined();
+		} );
+
+		test( 'returns undefined when no dispute row is present', () => {
+			expect(
+				getDisputeFeeAmount( { balance_transactions: [] } )
+			).toBeUndefined();
+		} );
+
+		test( 'returns undefined when the dispute row fee is zero', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [ { ...disputeFeeRow, fee: 0 } ],
+				} )
+			).toBeUndefined();
+		} );
 	} );
 } );

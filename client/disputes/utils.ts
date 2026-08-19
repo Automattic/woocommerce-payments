@@ -133,8 +133,8 @@ const getDisputeDeductedBalanceTransaction = (
 };
 
 /**
- * Returns the effective dispute fee as a raw `{ amount, currency }` pair if it
- * exists and the deduction has not been reversed.
+ * Returns the effective dispute fee as a raw `{ amount, currency }` pair if a
+ * non-zero fee exists and the deduction has not been reversed.
  *
  * Prefers the server-computed `dispute.effective_fee` when present.
  * Falls back to inspecting `balance_transactions` directly for responses
@@ -146,29 +146,29 @@ const getDisputeDeductedBalanceTransaction = (
 export const getDisputeFeeAmount = (
 	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >
 ): { amount: number; currency: string } | undefined => {
-	// Server-computed path: effective_fee is explicitly null when the fee
-	// was reversed, an object when it's still effective.
+	let fee: { amount: number; currency: string } | undefined;
+
 	if ( dispute.effective_fee !== undefined ) {
-		if ( dispute.effective_fee === null ) {
-			return undefined;
-		}
-		return {
-			amount: dispute.effective_fee.amount,
-			currency: dispute.effective_fee.currency,
-		};
+		// Server-computed: an object while the fee is effective, explicitly
+		// null once it has been reversed.
+		fee = dispute.effective_fee ?? undefined;
+	} else {
+		// Legacy fallback.
+		const row = getDisputeDeductedBalanceTransaction( dispute );
+		fee = row ? { amount: row.fee, currency: row.currency } : undefined;
 	}
 
-	// Legacy fallback.
-	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
-	if ( ! disputeFee ) {
-		return undefined;
-	}
-	return { amount: disputeFee.fee, currency: disputeFee.currency };
+	// A zero fee is no fee. Callers phrase this as "the %s fee has been
+	// deducted from your account", which is false at $0.00 — the same
+	// copy/reality mismatch as a reversed fee.
+	return fee && fee.amount !== 0
+		? { amount: fee.amount, currency: fee.currency }
+		: undefined;
 };
 
 /**
- * Returns the dispute fee formatted as a currency string if it exists
- * and the deduction has not been reversed.
+ * Returns the dispute fee formatted as a currency string if a non-zero fee
+ * exists and the deduction has not been reversed.
  */
 export const getDisputeFeeFormatted = (
 	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >,
