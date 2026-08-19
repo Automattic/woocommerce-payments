@@ -511,7 +511,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ balance.refunded ? (
 									<p>
 										{ `${
-											disputeFee
+											// Disputed money left the account
+											// as a deduction, not a refund —
+											// keyed on the dispute itself
+											// because the fee can be zero or
+											// reversed.
+											disputes.length
 												? __(
 														'Deducted',
 														'woocommerce-payments'

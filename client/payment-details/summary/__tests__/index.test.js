@@ -848,6 +848,28 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'labels a zero-fee dispute as deducted, not refunded', () => {
+		// The label keys on the dispute, not the dispute fee: the disputed
+		// amount left the account as a deduction whether or not a fee rode
+		// along with it.
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				currency: 'usd',
+				fee: 0,
+				reporting_category: 'dispute',
+			},
+		];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Deducted:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
+	} );
+
 	test( 'renders the fee breakdown tooltip of a disputed charge', async () => {
 		const charge = {
 			...getBaseCharge(),
