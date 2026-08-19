@@ -104,7 +104,7 @@ test.describe(
 			);
 
 			await expect( cvcErrorText ).toHaveText(
-				'Your card\u2019s security code is incomplete.'
+				'Your security code is incomplete.'
 			);
 		} );
 
