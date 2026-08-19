@@ -363,6 +363,28 @@ describe( 'Account fees utility functions', () => {
 			);
 		};
 
+		it( 'links a United Kingdom merchant to the united-kingdom fee section', () => {
+			const { container } = renderTooltipForCountry( 'GB' );
+
+			expect(
+				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/#united-kingdom'
+			);
+		} );
+
+		it( 'links a Swedish merchant to the sweden fee section', () => {
+			const { container } = renderTooltipForCountry( 'SE' );
+
+			expect(
+				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/#sweden'
+			);
+		} );
+
 		it( 'links a merchant in an unmapped country to the fees page with no anchor', () => {
 			const { container } = renderTooltipForCountry( 'PR' );
 
