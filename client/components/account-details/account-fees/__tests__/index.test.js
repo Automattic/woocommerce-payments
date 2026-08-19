@@ -139,8 +139,6 @@ describe( 'AccountFees', () => {
 	} );
 
 	test( 'renders discounted non-USD base fee', () => {
-		global.wcpaySettings.connect.country = 'GB';
-
 		const { container: accountFees } = renderAccountFees( [
 			{
 				payment_method: 'card',

@@ -345,12 +345,21 @@ describe( 'Account fees utility functions', () => {
 	} );
 
 	describe( 'formatMethodFeesTooltip() country fee links', () => {
+		let originalWcpaySettings: typeof global.wcpaySettings;
+
+		beforeEach( () => {
+			originalWcpaySettings = global.wcpaySettings;
+		} );
+
 		afterEach( () => {
-			global.wcpaySettings = { connect: { country: '' } };
+			global.wcpaySettings = originalWcpaySettings;
 		} );
 
 		const renderTooltipForCountry = ( country: string ) => {
-			global.wcpaySettings = { connect: { country } };
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				connect: { country },
+			};
 
 			return render(
 				formatMethodFeesTooltip(
@@ -387,6 +396,28 @@ describe( 'Account fees utility functions', () => {
 
 		it( 'links a merchant in an unmapped country to the fees page with no anchor', () => {
 			const { container } = renderTooltipForCountry( 'PR' );
+
+			expect(
+				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/'
+			);
+		} );
+
+		it( 'drops the "in your country" promise for an unmapped country', () => {
+			const { container } = renderTooltipForCountry( 'PR' );
+
+			expect(
+				container.querySelector( '.wcpay-fees-tooltip__hint-text' )
+					?.textContent
+			).toMatch( /Learn more.* about WooPayments Fees$/ );
+		} );
+
+		it( 'treats an Object.prototype member as an unmapped country', () => {
+			// A bare bracket lookup walks the prototype chain and would
+			// interpolate a function into the URL fragment.
+			const { container } = renderTooltipForCountry( 'constructor' );
 
 			expect(
 				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )

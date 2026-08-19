@@ -19,9 +19,12 @@ import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 import { createInterpolateElement } from '@wordpress/element';
 import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
-const countryFeeStripeDocsBaseLink =
+const countryFeeDocsBaseLink =
 	'https://woocommerce.com/document/woopayments/fees/';
-const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
+
+// Keyed on the store base country; values are the fees page's URL fragment
+// slugs, not section numbers.
+const countryFeeDocsSectionSlugs: Record< string, string > = {
 	AE: 'united-arab-emirates',
 	AU: 'australia',
 	AT: 'austria',
@@ -71,15 +74,18 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	// fees page instead.
 };
 
-const getStripeFeeSectionUrl = ( country: string ): string => {
-	const section = countryFeeStripeDocsSectionNumbers[ country ];
-
-	// Fall back to the un-anchored fees page rather than emitting
-	// "#undefined" for a country the map does not cover.
-	return section
-		? `${ countryFeeStripeDocsBaseLink }#${ section }`
-		: countryFeeStripeDocsBaseLink;
-};
+/**
+ * The fees page's fragment slug for a store's base country, if the page has a
+ * section for it.
+ *
+ * `hasOwnProperty` rather than a bare lookup: a bare lookup walks the
+ * prototype chain, so a country of `constructor` or `toString` would resolve
+ * to a function and read as a mapped country.
+ */
+const getCountryFeeDocsSlug = ( country: string ): string | undefined =>
+	Object.prototype.hasOwnProperty.call( countryFeeDocsSectionSlugs, country )
+		? countryFeeDocsSectionSlugs[ country ]
+		: undefined;
 
 const getFeeDescriptionString = (
 	fee: BaseFee,
@@ -146,6 +152,14 @@ export const formatMethodFeesTooltip = (
 		return fee.fixed_rate > 0.0 || fee.percentage_rate > 0.0;
 	};
 
+	const country = wcpaySettings?.connect?.country;
+	// Un-anchored fees page for a country the page has no section for, rather
+	// than a "#undefined" fragment.
+	const feeDocsSlug = country ? getCountryFeeDocsSlug( country ) : undefined;
+	const feeDocsUrl = feeDocsSlug
+		? `${ countryFeeDocsBaseLink }#${ feeDocsSlug }`
+		: countryFeeDocsBaseLink;
+
 	return (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
@@ -196,59 +210,34 @@ export const formatMethodFeesTooltip = (
 					{ getFeeDescriptionString( total ) }
 				</div>
 			</div>
-			{ wcpaySettings &&
-			wcpaySettings.connect &&
-			wcpaySettings.connect.country ? (
+			{ country ? (
 				<div className="wcpay-fees-tooltip__hint-text">
 					<span>
-						{ countryFeeStripeDocsSectionNumbers[
-							wcpaySettings.connect.country
-						]
-							? interpolateComponents( {
-									mixedString: sprintf(
+						{ interpolateComponents( {
+							mixedString: feeDocsSlug
+								? sprintf(
 										/* translators: %s: WooPayments */
 										__(
 											'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees in your country',
 											'woocommerce-payments'
 										),
 										'WooPayments'
-									),
-									components: {
-										linkToStripePage: (
-											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink
-												href={ getStripeFeeSectionUrl(
-													wcpaySettings.connect
-														.country
-												) }
-											/>
-										),
-									},
-							  } )
-							: interpolateComponents( {
-									mixedString: sprintf(
+								  )
+								: sprintf(
 										/* translators: %s: WooPayments */
 										__(
-											'{{linkToStripePage /}} about %s Fees',
+											'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees',
 											'woocommerce-payments'
 										),
 										'WooPayments'
-									),
-									components: {
-										linkToStripePage: (
-											<ExternalLink
-												href={
-													countryFeeStripeDocsBaseLink
-												}
-											>
-												{ __(
-													'Learn more',
-													'woocommerce-payments'
-												) }
-											</ExternalLink>
-										),
-									},
-							  } ) }
+								  ),
+							components: {
+								linkToStripePage: (
+									// @ts-expect-error: children is provided when interpolating the component
+									<ExternalLink href={ feeDocsUrl } />
+								),
+							},
+						} ) }
 					</span>
 				</div>
 			) : (
