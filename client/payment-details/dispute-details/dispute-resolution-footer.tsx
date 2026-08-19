@@ -91,7 +91,7 @@ const DisputeUnderReviewFooter: React.FC< {
 						  ) }{ ' ' }
 					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#monitor-status">
 						{ __(
-							'Learn more about the dispute process.',
+							'Learn more about monitoring dispute status.',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>
