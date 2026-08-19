@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 import DisputeResolutionFooter from '../dispute-resolution-footer';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { Charge } from 'wcpay/types/charges';
+import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 
 // Mock date formatting utility
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -402,6 +403,39 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect( screen.getByText( /\$15\.00 fee/i ) ).toBeInTheDocument();
+	} );
+
+	it( 'omits the fee sentence when the dispute fee was reversed or never charged', () => {
+		( getDisputeFeeFormatted as jest.Mock ).mockReturnValueOnce(
+			undefined
+		);
+
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName={ null } />
+		);
+
+		expect( screen.queryByText( /fee has been deducted/i ) ).toBeNull();
+		expect(
+			screen.getByText(
+				/The disputed amount has been returned to your customer/i
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: /Learn more about disputed amounts/i,
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#amounts'
+		);
 	} );
 
 	it( 'renders link to view dispute details for submitted disputes', () => {
