@@ -60,6 +60,12 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	GB: 'united-kingdom',
 	US: 'united-states',
 	RO: 'romania',
+	// PR (Puerto Rico) is intentionally absent. The fees page has no Puerto
+	// Rico section, and its only PR line sits inside the US section stating
+	// that PR-issued cards trigger the international payment fee — so
+	// mapping PR to 'united-states' would assert rates the docs do not
+	// support. Unmapped merchants get the un-anchored fees page instead.
+	// Revisit if a Puerto Rico section is ever added.
 };
 
 const getStripeFeeSectionUrl = ( country: string ): string => {
