@@ -588,13 +588,10 @@ class MultiCurrency {
 		}
 
 		/*
-		 * We register the currency switcher with a widget instance rather than a class name, so WordPress stores it
-		 * in $wp_widget_factory->widgets[] under a generated key rather than under its class name. the_widget()
-		 * expects that key, so we ask the factory for it instead of recomputing it ourselves: WordPress 7.1 changed
-		 * the key from spl_object_hash() to spl_object_id(). WP_Widget_Factory::get_widget_key() has returned the
-		 * current key since WordPress 5.8, whichever way it is generated.
+		 * WordPress changed instance widget keys from spl_object_hash() to spl_object_id() in 7.1.
+		 * Find the exact registered instance instead of reproducing WordPress's key generation.
 		 */
-		$widget_key = $wp_widget_factory->get_widget_key( $currency_switcher_widget->id_base );
+		$widget_key = array_search( $currency_switcher_widget, $wp_widget_factory->widgets, true );
 
 		the_widget(
 			$widget_key,
