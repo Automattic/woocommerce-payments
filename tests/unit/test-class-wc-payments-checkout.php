@@ -148,6 +148,126 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_gateway( $this->default_gateway );
+		unset( $_GET['key'] );
+		wp_dequeue_script( 'wcpay-upe-checkout' );
+	}
+
+	/**
+	 * Points the current request at the Pay for Order endpoint for the given order.
+	 *
+	 * @param \WC_Order $order The order being paid.
+	 */
+	private function setup_pay_for_order_endpoint( \WC_Order $order ) {
+		global $wp, $wp_query;
+		$wp->query_vars       = [ 'order-pay' => strval( $order->get_id() ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order->get_id() ) ];
+		set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = $order->get_order_key();
+	}
+
+	/**
+	 * Invokes the private is_valid_pay_for_order_endpoint() method.
+	 *
+	 * @return bool
+	 */
+	private function invoke_is_valid_pay_for_order_endpoint(): bool {
+		$method = new \ReflectionMethod( $this->system_under_test, 'is_valid_pay_for_order_endpoint' );
+		$method->setAccessible( true );
+
+		return (bool) $method->invoke( $this->system_under_test );
+	}
+
+	/**
+	 * Creates a guest order that still needs payment.
+	 *
+	 * @return \WC_Order
+	 */
+	private function create_guest_order_needing_payment(): \WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->set_status( 'pending' );
+		$order->save();
+
+		return $order;
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_true_for_guest_order_with_matching_key() {
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertTrue( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_not_order_pay_endpoint() {
+		$order       = $this->create_guest_order_needing_payment();
+		$_GET['key'] = $order->get_order_key();
+		// No order-pay query var set.
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_key_does_not_match() {
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+		$_GET['key'] = 'wc_order_wrongkey';
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_order_does_not_need_payment() {
+		$order = $this->create_guest_order_needing_payment();
+		$order->set_status( 'completed' );
+		$order->save();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_order_missing() {
+		global $wp, $wp_query;
+		$wp->query_vars       = [ 'order-pay' => '999999' ];
+		$wp_query->query_vars = [ 'order-pay' => '999999' ];
+		set_query_var( 'order-pay', 999999 );
+		$_GET['key'] = 'wc_order_whatever';
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_enqueues_on_valid_endpoint() {
+		wp_set_current_user( 0 );
+		$this->mock_wcpay_gateway->enabled = 'yes';
+		// register_scripts() runs at priority 10 in production; register here so the enqueue sticks.
+		wp_register_script( 'wcpay-upe-checkout', 'https://example.com/wcpay-checkout.js', [], '1.0.0', true );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertFalse( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
+
+		$this->system_under_test->maybe_load_pay_for_order_scripts();
+
+		$this->assertTrue( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_skips_when_gateway_disabled() {
+		wp_set_current_user( 0 );
+		$this->mock_wcpay_gateway->enabled = 'no';
+		wp_register_script( 'wcpay-upe-checkout', 'https://example.com/wcpay-checkout.js', [], '1.0.0', true );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->system_under_test->maybe_load_pay_for_order_scripts();
+
+		$this->assertFalse( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_skips_when_not_pay_for_order_endpoint() {
+		$this->mock_wcpay_gateway->enabled = 'yes';
+		wp_register_script( 'wcpay-upe-checkout', 'https://example.com/wcpay-checkout.js', [], '1.0.0', true );
+
+		$this->system_under_test->maybe_load_pay_for_order_scripts();
+
+		$this->assertFalse( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
 	}
 
 	public function test_save_payment_method_checkbox_not_called_when_saved_cards_disabled() {
