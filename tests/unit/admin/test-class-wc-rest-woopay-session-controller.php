@@ -37,9 +37,6 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
-		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
-		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_false' );
-
 		unset(
 			$_SERVER['HTTP_USER_AGENT'],
 			$_SERVER['HTTP_CART_TOKEN'],
@@ -51,13 +48,7 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_permission_is_granted_for_a_signed_woopay_request() {
-		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
-
-		$this->assertTrue( $this->controller->check_permission() );
-	}
-
-	public function test_permission_is_granted_for_an_attested_email_without_a_signature() {
+	public function test_permission_is_granted_for_an_attested_email() {
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$this->assertTrue( $this->controller->check_permission() );
@@ -112,19 +103,6 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
-	public function test_suppressing_the_signature_alone_still_admits_an_attestation() {
-		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_false' );
-
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
-
-		// The narrowing is deliberate: the filter answers whether the request was signed,
-		// and a false there is indistinguishable from an ordinary unsigned request — which
-		// is the case the attestation exists to serve. Before 11.1.0 this filter closed the
-		// route outright; nothing on the store does now. Changing that should be a decision,
-		// not an accident.
-		$this->assertTrue( $this->controller->check_permission() );
-	}
-
 	public function test_permission_is_denied_for_a_replayed_envelope() {
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
@@ -138,7 +116,7 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_permission_is_denied_when_the_user_agent_is_not_woopay() {
-		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0';
 

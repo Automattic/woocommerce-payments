@@ -90,8 +90,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->original_customer_service = WC_Payments::get_customer_service();
 		WC_Payments::set_customer_service( $this->mock_customer_service );
 
-		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
-
 		// Needed as the key for attested-email envelopes; see build_envelope().
 		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
 	}
@@ -110,8 +108,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_customer_service( $this->original_customer_service );
 
 		wp_set_current_user( 0 );
-
-		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 
 		unset(
 			$_GET[ WooPay_Session::ATTESTATION_PARAM ],
@@ -156,6 +152,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$authenticated_cart_token = $woopay_store_api_token->get_cart_token();
 
 		$_SERVER['HTTP_CART_TOKEN'] = $authenticated_cart_token;
+		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $user->ID );
 
 		$this->setup_session( $user->ID );
 		$this->setup_adapted_extensions();
@@ -201,6 +198,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $guest_cart_token;
 		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
+		$_SERVER['HTTP_NONCE']                           = $this->create_woopay_nonce( $verified_user->ID );
 
 		$this->setup_session(
 			0,
@@ -259,6 +257,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $guest_cart_token;
 		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
+		$_SERVER['HTTP_NONCE']                           = $this->create_woopay_nonce( $verified_user->ID );
 
 		$this->setup_adapted_extensions();
 
@@ -356,6 +355,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$authenticated_cart_token = $woopay_store_api_token->get_cart_token();
 
 		$_SERVER['HTTP_CART_TOKEN'] = $authenticated_cart_token;
+		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $woopay_user->ID );
 
 		$this->setup_session( $woopay_user->ID );
 
@@ -375,6 +375,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$authenticated_cart_token = $woopay_store_api_token->get_cart_token();
 
 		$_SERVER['HTTP_CART_TOKEN'] = $authenticated_cart_token;
+		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $woopay_user->ID );
 
 		$this->setup_session( $woopay_user->ID );
 
@@ -383,13 +384,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		unset( $_REQUEST['rest_route'] );
 	}
 
-	public function test_get_request_auth_level_returns_blog_token_when_signed() {
-		$this->assertSame( 'blog_token', WooPay_Session::get_request_auth_level() );
-	}
-
 	public function test_get_request_auth_level_returns_cart_token_for_a_valid_cart_token() {
-		$this->unsign_request();
-
 		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
 
@@ -407,7 +402,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_request_auth_level_returns_none_when_cart_token_is_invalid() {
-		$this->unsign_request();
 		$_SERVER['HTTP_CART_TOKEN'] = 'not-a-valid-cart-token';
 
 		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
@@ -416,7 +410,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_verified_email_is_rejected_under_cart_token_auth_without_store_minted_nonce() {
 		$verified_user = self::factory()->user->create_and_get();
 
-		$this->unsign_request();
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
@@ -432,7 +425,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$verified_user = self::factory()->user->create_and_get();
 		$other_user    = self::factory()->user->create_and_get();
 
-		$this->unsign_request();
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
@@ -448,7 +440,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_verified_email_is_accepted_under_cart_token_auth_with_store_minted_nonce() {
 		$verified_user = self::factory()->user->create_and_get();
 
-		$this->unsign_request();
 		$woopay_store_api_token = WooPay_Store_Api_Token::init();
 
 		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
@@ -461,42 +452,17 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
 	}
 
-	public function test_verified_email_does_not_require_nonce_when_request_is_signed() {
-		$verified_user = self::factory()->user->create_and_get();
-
-		$woopay_store_api_token = WooPay_Store_Api_Token::init();
-
-		$_SERVER['HTTP_CART_TOKEN']                      = $woopay_store_api_token->get_cart_token();
-		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
-
-		$this->setup_session( 0, $verified_user->user_email );
-		$this->setup_adapted_extensions();
-
-		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
-	}
-
-	public function test_email_is_attested_when_the_request_is_signed() {
-		// A signed request is WooPay by definition, so the email it names needs no envelope.
-		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
-	}
-
-	public function test_email_is_not_attested_without_a_signature_or_envelope() {
-		$this->unsign_request();
-
+	public function test_email_is_not_attested_without_an_envelope() {
 		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 	}
 
 	public function test_email_is_attested_by_a_fresh_envelope_for_that_email() {
-		$this->unsign_request();
-
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
 	}
 
 	public function test_envelope_does_not_attest_to_a_different_email() {
-		$this->unsign_request();
-
 		// The envelope is valid, but names someone else, so it vouches only for that address.
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'other@example.com' );
 
@@ -504,8 +470,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_stale_envelope_does_not_attest() {
-		$this->unsign_request();
-
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
 		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
@@ -517,8 +481,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @param mixed $envelope The malformed value arriving as the attestation param.
 	 */
 	public function test_malformed_envelope_does_not_attest( $envelope ) {
-		$this->unsign_request();
-
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
 
 		// decrypt_signed_data() indexes data/iv/hash directly, so these have to be refused
@@ -573,8 +535,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_guest_envelope_attests_without_naming_an_email() {
-		$this->unsign_request();
-
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope();
 
 		// A guest shopper has no account to name. The attestation still stands — it is
@@ -585,15 +545,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_absent_envelope_does_not_attest() {
-		$this->unsign_request();
-
 		// Carrying no envelope at all is the ordinary case, not a malformed one.
 		$this->assertNull( WooPay_Session::get_woopay_attestation() );
 	}
 
 	public function test_envelope_is_refused_on_a_second_request() {
-		$this->unsign_request();
-
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
@@ -607,8 +563,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_envelope_serves_every_caller_within_one_request() {
-		$this->unsign_request();
-
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
 		// The permission check, the email lookup and the nonce gate each resolve the
@@ -620,8 +574,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_spending_one_envelope_does_not_affect_another() {
-		$this->unsign_request();
-
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
 
@@ -633,8 +585,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_stale_envelope_is_not_spent_before_it_is_rejected() {
-		$this->unsign_request();
-
 		// A stale envelope is refused on freshness, so it never reaches the claim — the
 		// rejection reason stays 'stale' rather than turning into 'already used'.
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
@@ -644,8 +594,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_attested_account_email_outranks_a_caller_supplied_email() {
-		$this->unsign_request();
-
 		$_GET['email']                              = 'other@example.com';
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
@@ -657,7 +605,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_authenticated_cart_token_is_accepted_with_a_store_minted_nonce() {
 		$shopper = self::factory()->user->create_and_get();
 
-		$this->unsign_request();
 		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $shopper->ID );
 
@@ -669,7 +616,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_authenticated_cart_token_is_rejected_without_a_nonce() {
 		$shopper = self::factory()->user->create_and_get();
 
-		$this->unsign_request();
 		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 
 		$this->setup_session( $shopper->ID );
@@ -682,7 +628,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$shopper = self::factory()->user->create_and_get();
 		$other   = self::factory()->user->create_and_get();
 
-		$this->unsign_request();
 		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 		$_SERVER['HTTP_NONCE']      = $this->create_woopay_nonce( $other->ID );
 
@@ -691,26 +636,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( WooPay_Session::get_user_id_from_cart_token() );
 	}
 
-	public function test_authenticated_cart_token_does_not_require_a_nonce_when_signed() {
-		$shopper = self::factory()->user->create_and_get();
-
-		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
-
-		$this->setup_session( $shopper->ID );
-
-		// A signed request proves WooPay composed it, so the nonce adds nothing. WooPay
-		// versions that still sign must keep working unchanged.
-		$this->assertEquals( $shopper->ID, WooPay_Session::get_user_id_from_cart_token() );
-	}
-
 	public function test_unauthenticated_request_is_rejected_as_carrying_nothing() {
-		$this->unsign_request();
-
 		$this->expect_woopay_request_to_die( 'WooPay request is not signed correctly.' );
 	}
 
 	public function test_invalid_cart_token_is_rejected_as_invalid() {
-		$this->unsign_request();
 		$_SERVER['HTTP_CART_TOKEN'] = 'not.a.valid.token';
 
 		$this->expect_woopay_request_to_die( 'The Cart-Token on this WooPay request is invalid or expired.' );
@@ -735,7 +665,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_nonce_is_withheld_from_the_rest_route_when_the_email_is_not_attested() {
-		$this->unsign_request();
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		// Names the shopper in a plain parameter, which anyone can do.
@@ -751,7 +680,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_nonce_is_minted_for_the_rest_route_when_the_email_is_attested() {
-		$this->unsign_request();
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( $shopper->user_email );
@@ -764,7 +692,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_nonce_is_minted_without_an_attestation_when_it_is_not_disclosed() {
-		$this->unsign_request();
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		$_GET['email'] = $shopper->user_email;
@@ -861,13 +788,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			'iv'   => base64_encode( $iv ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		];
-	}
-
-	/**
-	 * Drops the blog token signature that set_up() installs.
-	 */
-	private function unsign_request() {
-		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 	}
 
 	/**

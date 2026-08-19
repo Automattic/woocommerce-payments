@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Authorize proxied WooPay Store API requests on the Cart-Token the store already validates, and accept an encrypted attested-email envelope on the WooPay session route, so neither channel needs a Jetpack blog token signature.
+Authorize WooPay requests on the Cart-Token the store already validates, and the WooPay session route on an encrypted attestation envelope, instead of a Jetpack blog token signature. The signature is no longer accepted, and the `wcpay_woopay_is_signed_with_blog_token` filter is removed with it.

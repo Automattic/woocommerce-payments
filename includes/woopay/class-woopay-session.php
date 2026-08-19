@@ -7,7 +7,6 @@
 
 namespace WCPay\WooPay;
 
-use Automattic\Jetpack\Connection\Rest_Authentication;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
@@ -36,12 +35,7 @@ class WooPay_Session {
 	const WOOPAY_SESSION_KEY = 'woopay-user-data';
 
 	/**
-	 * Request was signed with the store's Jetpack blog token.
-	 */
-	const AUTH_BLOG_TOKEN = 'blog_token';
-
-	/**
-	 * Request carries a valid Cart-Token but no blog token signature.
+	 * Request carries a valid Cart-Token.
 	 */
 	const AUTH_CART_TOKEN = 'cart_token';
 
@@ -157,8 +151,7 @@ class WooPay_Session {
 			return $user;
 		}
 
-		// Validate that the request is authenticated, by blog token signature or, when
-		// enabled, by a valid Cart-Token.
+		// Validate that the request is authenticated by a valid Cart-Token.
 		if ( self::AUTH_NONE === self::get_request_auth_level() ) {
 			$error = self::get_unauthenticated_request_error();
 
@@ -208,10 +201,9 @@ class WooPay_Session {
 		/*
 		 * If the token is already authenticated, return the customer ID.
 		 *
-		 * A signed request stands on its own: the blog token proves WooPay composed it.
-		 * Unsigned, the Cart-Token alone would resolve the account behind the session, and
-		 * that is a weaker pairing than this path used to require — so ask for the same
-		 * store-minted nonce the verified-email branch below does.
+		 * A Cart-Token on its own would resolve the account behind the session, which is a
+		 * weaker pairing than this path used to require when every request was signed — so
+		 * ask for the same store-minted nonce the verified-email branch below does.
 		 *
 		 * Worth being honest about the limit: WooPay sends `Nonce` and `Cart-Token` as
 		 * headers on one request, so this does nothing against a caller who captured the
@@ -227,10 +219,7 @@ class WooPay_Session {
 		if ( is_numeric( $customer['id'] ) && intval( $customer['id'] ) > 0 ) {
 			$customer_id = intval( $customer['id'] );
 
-			if (
-				self::AUTH_BLOG_TOKEN !== self::get_request_auth_level() &&
-				! self::has_store_minted_nonce_for_user( $customer_id )
-			) {
+			if ( ! self::has_store_minted_nonce_for_user( $customer_id ) ) {
 				Logger::log( 'WooPay Cart-Token rejected: no store-minted nonce bound to the session customer. Resolving as guest.' );
 
 				return null;
@@ -251,14 +240,10 @@ class WooPay_Session {
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
 				/**
 				 * This branch resolves a registered user from a request header, so the header
-				 * has to be authenticated. A blog token signature authenticates it as coming
-				 * from WooPay on WordPress.com. Without one, require instead the nonce this
-				 * store minted for that specific user (email_verified_session_nonce).
+				 * has to be authenticated: require the nonce this store minted for that
+				 * specific user (email_verified_session_nonce).
 				 */
-				if (
-					self::AUTH_BLOG_TOKEN !== self::get_request_auth_level() &&
-					! self::has_store_minted_nonce_for_user( (int) $user->ID )
-				) {
+				if ( ! self::has_store_minted_nonce_for_user( (int) $user->ID ) ) {
 					Logger::log( 'WooPay verified email header rejected: no store-minted nonce bound to the requested user.' );
 
 					return null;
@@ -977,51 +962,16 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Returns true if the request that's currently being processed is signed with the blog token.
-	 *
-	 * This answers one question — was this request signed — and since 11.1.0 that is no
-	 * longer the same question as whether WooPay may be served. A signature is now one of
-	 * two accepted credentials rather than the only one, so a false here sends the request
-	 * on to the Cart-Token and attestation checks instead of ending it.
-	 *
-	 * That matters to anyone filtering this to false as a kill switch, which before 11.1.0
-	 * closed the WooPay session route outright. It no longer does, and it cannot be made to:
-	 * the filter wraps a predicate whose false is indistinguishable from an ordinary
-	 * unsigned request, which is precisely the case the attestation serves. Nothing on the
-	 * store closes that route now — WooPay decides whether to sign, and holds the levers for
-	 * putting a store back on signed requests. See WOOPAY-463.
-	 *
-	 * @return bool True if the request signature is valid.
-	 */
-	public static function has_valid_request_signature() {
-		/**
-		 * Filters whether the current request is signed with the store's blog token.
-		 *
-		 * Answers whether the request was signed, not whether it may proceed: since 11.1.0
-		 * a false falls through to the narrower credentials rather than rejecting outright.
-		 *
-		 * @since 5.9.0
-		 *
-		 * @param bool $is_signed Whether the request signature was verified against the blog token.
-		 */
-		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
-	}
-
-	/**
 	 * Determines how the current request authenticated itself.
 	 *
-	 * A blog token signature proves the request came from WooPay on WordPress.com. A
-	 * Cart-Token only proves the caller holds that cart, which any shopper legitimately
-	 * does for their own — so the two are not interchangeable and callers that need the
-	 * stronger property must check for AUTH_BLOG_TOKEN specifically.
+	 * A Cart-Token proves the caller holds that cart, which any shopper legitimately does
+	 * for their own. It is therefore enough for proxied Store API traffic and not enough
+	 * for anything that grants authority over an account — those paths ask for a
+	 * store-minted nonce or an attestation on top of it. See WOOPAY-463.
 	 *
 	 * @return string One of the AUTH_* constants.
 	 */
 	public static function get_request_auth_level(): string {
-		if ( self::has_valid_request_signature() ) {
-			return self::AUTH_BLOG_TOKEN;
-		}
-
 		if ( null !== self::get_payload_from_cart_token() ) {
 			return self::AUTH_CART_TOKEN;
 		}
@@ -1055,8 +1005,8 @@ class WooPay_Session {
 		$envelope = $_POST[ self::ATTESTATION_PARAM ] ?? $_GET[ self::ATTESTATION_PARAM ] ?? null; // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( ! is_array( $envelope ) ) {
-			// Carrying no envelope is ordinary — every signed request is one — so only say
-			// something when one was presented and could not be used.
+			// Carrying no envelope is ordinary — proxied Store API traffic never does — so
+			// only say something when one was presented and could not be used.
 			if ( null !== $envelope ) {
 				Logger::log( 'WooPay attestation rejected: ' . self::ATTESTATION_PARAM . ' is not an envelope.' );
 			}
@@ -1146,25 +1096,20 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Whether WooPay vouched for this email, by either credential.
+	 * Whether WooPay vouched for this email.
 	 *
 	 * Gates anything that grants authority over the account behind an email — chiefly
 	 * minting `email_verified_session_nonce`, which authorizes promoting a guest session
 	 * to that user. The email must therefore come from an authenticated source: do not
 	 * relax this to `get_user_email()`, which also accepts plain request parameters.
 	 *
-	 * Both credentials are accepted: the envelope is the one this store prefers, and a
-	 * blog token signature remains sufficient for WooPay versions still signing this route.
+	 * The attestation envelope is the only thing that vouches for one. See WOOPAY-463.
 	 *
 	 * @param string $email The email to check.
 	 *
 	 * @return bool True if WooPay attested to this email.
 	 */
 	public static function is_email_attested_by_woopay( string $email ): bool {
-		if ( self::AUTH_BLOG_TOKEN === self::get_request_auth_level() ) {
-			return true;
-		}
-
 		$attested_email = self::get_woopay_attested_account_email();
 
 		return null !== $attested_email && 0 === strcasecmp( $attested_email, $email );
