@@ -344,6 +344,37 @@ describe( 'Account fees utility functions', () => {
 		} );
 	} );
 
+	describe( 'formatMethodFeesTooltip() country fee links', () => {
+		afterEach( () => {
+			global.wcpaySettings = { connect: { country: '' } };
+		} );
+
+		const renderTooltipForCountry = ( country: string ) => {
+			global.wcpaySettings = { connect: { country } };
+
+			return render(
+				formatMethodFeesTooltip(
+					mockAccountFees( {
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
+						currency: 'USD',
+					} )
+				)
+			);
+		};
+
+		it( 'links a merchant in an unmapped country to the fees page with no anchor', () => {
+			const { container } = renderTooltipForCountry( 'PR' );
+
+			expect(
+				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/'
+			);
+		} );
+	} );
+
 	describe( 'getDiscountBadgeText()', () => {
 		beforeAll( () => {
 			global.wcpaySettings = {

@@ -63,7 +63,13 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 };
 
 const getStripeFeeSectionUrl = ( country: string ): string => {
-	return `${ countryFeeStripeDocsBaseLink }#${ countryFeeStripeDocsSectionNumbers[ country ] }`;
+	const section = countryFeeStripeDocsSectionNumbers[ country ];
+
+	// Fall back to the un-anchored fees page rather than emitting
+	// "#undefined" for a country the map does not cover.
+	return section
+		? `${ countryFeeStripeDocsBaseLink }#${ section }`
+		: countryFeeStripeDocsBaseLink;
 };
 
 const getFeeDescriptionString = (
@@ -186,9 +192,9 @@ export const formatMethodFeesTooltip = (
 			wcpaySettings.connect.country ? (
 				<div className="wcpay-fees-tooltip__hint-text">
 					<span>
-						{ countryFeeStripeDocsSectionNumbers.hasOwnProperty(
+						{ countryFeeStripeDocsSectionNumbers[
 							wcpaySettings.connect.country
-						)
+						]
 							? interpolateComponents( {
 									mixedString: sprintf(
 										/* translators: %s: WooPayments */
