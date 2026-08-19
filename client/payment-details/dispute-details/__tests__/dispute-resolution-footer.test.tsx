@@ -82,6 +82,14 @@ const getBaseDispute = ( overrides = {} ): Dispute => ( {
 	...overrides,
 } );
 
+// The module factory's implementation is not restored between tests, so a
+// `mockReturnValueOnce` that the component stops consuming would otherwise
+// surface as a failure in whichever test runs next.
+beforeEach( () => {
+	( getDisputeFeeFormatted as jest.Mock ).mockReset();
+	( getDisputeFeeFormatted as jest.Mock ).mockReturnValue( '$15.00' );
+} );
+
 describe( 'DisputeResolutionFooter - Under Review Status', () => {
 	it( 'renders under review footer with bank name for regular disputes', () => {
 		const dispute = getBaseDispute( { status: 'under_review' } );
@@ -405,7 +413,10 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		expect( screen.getByText( /\$15\.00 fee/i ) ).toBeInTheDocument();
 	} );
 
-	it( 'omits the fee sentence when the dispute fee was reversed or never charged', () => {
+	// getDisputeFeeFormatted returns undefined for a reversed fee, a missing
+	// fee, and a zero fee alike (see client/disputes/__tests__/utils.test.ts);
+	// this covers what the footer does with that answer.
+	it( 'omits the fee sentence when there is no dispute fee', () => {
 		( getDisputeFeeFormatted as jest.Mock ).mockReturnValueOnce(
 			undefined
 		);
