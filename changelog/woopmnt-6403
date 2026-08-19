@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed merchant-facing documentation links that resolved but landed on the wrong page or section

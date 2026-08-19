@@ -95,7 +95,7 @@ class Mode {
 		 *
 		 * @since 0.8.2
 		 *
-		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
+		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/
 		 * @param bool $dev_mode Whether to enter WooPayments in dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );

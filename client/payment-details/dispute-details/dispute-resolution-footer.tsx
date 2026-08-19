@@ -89,7 +89,7 @@ const DisputeUnderReviewFooter: React.FC< {
 									strong: <strong />,
 								}
 						  ) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#monitor-status">
 						{ __(
 							'Learn more about the dispute process.',
 							'woocommerce-payments'
@@ -179,7 +179,7 @@ const DisputeWonFooter: React.FC< {
 									strong: <strong />,
 								}
 						  ) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
 						{ __(
 							'Learn more about preventing disputes.',
 							'woocommerce-payments'
@@ -304,9 +304,9 @@ const DisputeLostFooter: React.FC< {
 						),
 						disputeFeeFormatted
 					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#fees">
 						{ __(
-							'Learn more about preventing disputes.',
+							'Learn more about dispute fees.',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>
@@ -380,7 +380,7 @@ const InquiryUnderReviewFooter: React.FC< {
 							strong: <strong />,
 						}
 					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries">
 						{ __( 'Learn more.', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</FlexItem>
@@ -435,7 +435,7 @@ const InquiryClosedFooter: React.FC< {
 						),
 						closedDateFormatted
 					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
 						{ __(
 							'Learn more about preventing disputes.',
 							'woocommerce-payments'

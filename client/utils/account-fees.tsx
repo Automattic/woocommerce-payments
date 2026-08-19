@@ -51,13 +51,16 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	NZ: 'new-zealand',
 	PL: 'poland',
 	PT: 'portugal',
+	// Puerto Rico has no section of its own; its fees are covered by the
+	// United States section.
+	PR: 'united-states',
 	SG: 'singapore',
 	SI: 'slovenia',
 	SK: 'slovakia',
-	SW: 'sweden',
+	SE: 'sweden',
 	ES: 'spain',
 	CH: 'switzerland',
-	UK: 'united-kingdom',
+	GB: 'united-kingdom',
 	US: 'united-states',
 	RO: 'romania',
 };
