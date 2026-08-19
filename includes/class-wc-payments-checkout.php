@@ -100,7 +100,12 @@ class WC_Payments_Checkout {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
-		add_action( 'wp_enqueue_scripts', [ $this, 'maybe_load_pay_for_order_scripts' ], 20 );
+		// Hooked to wp_footer (like the Stripe gateway) rather than wp_enqueue_scripts on purpose:
+		// on a normal pay-for-order page payment_fields() enqueues during the body render, so by
+		// wp_footer the script is already enqueued and this loader no-ops — letting payment_fields()
+		// own the full setup (CSS, wcpayCustomerData, action hooks). It only acts when the form was
+		// not rendered (the guest verification interstitial). Priority stays below wp_print_footer_scripts (20).
+		add_action( 'wp_footer', [ $this, 'maybe_load_pay_for_order_scripts' ] );
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
 		add_filter( 'woocommerce_update_order_review_fragments', [ $this, 'add_payment_methods_config_to_update_order_review_fragments' ] );
 	}
@@ -179,7 +184,11 @@ class WC_Payments_Checkout {
 	 *
 	 * Loading the scripts here — keyed on the pay-for-order endpoint rather than on the
 	 * form being rendered — mirrors the WooCommerce Stripe gateway and lets the existing
-	 * on-load continuation logic complete the payment. See WOOPMNT-6405.
+	 * on-load continuation logic complete the payment. It runs on wp_footer so that, on a
+	 * normal pay-for-order page, payment_fields() has already enqueued the script during the
+	 * render and the not-already-enqueued guard below makes this a no-op — payment_fields()
+	 * keeps ownership of the full asset setup (CSS, wcpayCustomerData, action hooks). See
+	 * WOOPMNT-6405.
 	 */
 	public function maybe_load_pay_for_order_scripts() {
 		if ( 'yes' !== $this->gateway->enabled ) {
@@ -217,7 +226,7 @@ class WC_Payments_Checkout {
 		$order_id = absint( get_query_var( 'order-pay' ) );
 		$order    = wc_get_order( $order_id );
 
-		if ( ! $order || wc_clean( wp_unslash( $_GET['key'] ) ) !== $order->get_order_key() ) {
+		if ( ! $order || ! hash_equals( (string) $order->get_order_key(), wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
 			return false;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
