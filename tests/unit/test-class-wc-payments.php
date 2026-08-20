@@ -97,7 +97,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_remove_deprecated_notes_skips_cleanup_during_ajax_requests() {
-		$note_id = $this->create_deprecated_note();
+		$this->create_deprecated_note();
 
 		add_filter( 'wp_doing_ajax', '__return_true', 999 );
 
@@ -105,7 +105,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			WC_Payments::remove_deprecated_notes();
 
 			$note_ids = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
-			$this->assertContains( $note_id, $note_ids );
+			$this->assertNotSame( [], $note_ids );
 		} finally {
 			remove_filter( 'wp_doing_ajax', '__return_true', 999 );
 			Notes::delete_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
@@ -113,7 +113,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_remove_deprecated_notes_runs_cleanup_during_regular_requests() {
-		$note_id = $this->create_deprecated_note();
+		$this->create_deprecated_note();
 
 		add_filter( 'wp_doing_ajax', '__return_false', 999 );
 
@@ -121,7 +121,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			WC_Payments::remove_deprecated_notes();
 
 			$note_ids = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
-			$this->assertNotContains( $note_id, $note_ids );
+			$this->assertSame( [], $note_ids );
 		} finally {
 			remove_filter( 'wp_doing_ajax', '__return_false', 999 );
 			Notes::delete_notes_with_name( WC_Payments_Notes_Qualitative_Feedback::NOTE_NAME );
