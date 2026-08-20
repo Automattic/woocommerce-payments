@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Recover onboarding within minutes instead of a week after a transient error, by backing off errored business-types and onboarding-fields cache entries instead of caching the failure for the full week.
