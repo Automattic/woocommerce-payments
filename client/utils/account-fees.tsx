@@ -22,8 +22,9 @@ import PAYMENT_METHOD_IDS from 'constants/payment-method';
 const countryFeeDocsBaseLink =
 	'https://woocommerce.com/document/woopayments/fees/';
 
-// Keyed on the store base country; values are the fees page's URL fragment
-// slugs, not section numbers.
+// Keyed on the Stripe account country — the same account the fees in this
+// tooltip come from. Values are the fees page's URL fragment slugs, not
+// section numbers.
 const countryFeeDocsSectionSlugs: Record< string, string > = {
 	AE: 'united-arab-emirates',
 	AU: 'australia',
@@ -63,19 +64,17 @@ const countryFeeDocsSectionSlugs: Record< string, string > = {
 	GB: 'united-kingdom',
 	US: 'united-states',
 	RO: 'romania',
-	// PR (Puerto Rico) is intentionally absent. This map is keyed on the
-	// store base country, but PR is not selectable during Stripe account
-	// signup, so a PR store's account is created as US while its base
-	// country stays PR — the two diverge. The fees page also has no Puerto
-	// Rico section; its only PR line sits inside the US section, noting
-	// that PR-issued cards trigger the international payment fee. Mapping
-	// PR to 'united-states' would paper over that divergence and assert
-	// rates the docs do not support, so PR merchants get the un-anchored
-	// fees page instead.
+	// PR (Puerto Rico) needs no entry. It is a supported *store* country but
+	// is not selectable during Stripe account signup, so a Puerto Rico store's
+	// account is created as US and this lookup resolves to 'united-states' —
+	// which is the section describing the rates that account is actually
+	// charged. The fees page has no Puerto Rico section to point at anyway;
+	// its only PR line sits inside the US section, noting that PR-issued cards
+	// trigger the international payment fee.
 };
 
 /**
- * The fees page's fragment slug for a store's base country, if the page has a
+ * The fees page's fragment slug for an account's country, if the page has a
  * section for it.
  *
  * `hasOwnProperty` rather than a bare lookup: a bare lookup walks the
@@ -152,7 +151,13 @@ export const formatMethodFeesTooltip = (
 		return fee.fixed_rate > 0.0 || fee.percentage_rate > 0.0;
 	};
 
-	const country = wcpaySettings?.connect?.country;
+	// The account country, not `connect.country` (the store base country): these
+	// are separate facts that only usually agree, and the fees above this link
+	// come from the account. A store that changes its base country after
+	// onboarding — or a Puerto Rico store, whose account is created as US —
+	// would otherwise be shown one country's rates under a link promising
+	// another's.
+	const country = wcpaySettings?.accountStatus?.country;
 	// Un-anchored fees page for a country the page has no section for, rather
 	// than a "#undefined" fragment.
 	const feeDocsSlug = country ? getCountryFeeDocsSlug( country ) : undefined;
