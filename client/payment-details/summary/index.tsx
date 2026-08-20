@@ -345,9 +345,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			( fee ): fee is { amount: number; currency: string } => !! fee
 		);
 	const disputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
-	// Settlement currency, not the first fee-bearing dispute's: which dispute
-	// sits at index 0 shifts as the list is filtered, and the rest of the
-	// breakdown is already denominated in `balance.currency`.
+	// Every dispute fee on a charge is already denominated in the settlement
+	// currency, so reading it off `balance.currency` rather than off whichever
+	// dispute happens to sit at index 0 changes nothing rendered — it just
+	// states the denomination the rest of the breakdown uses instead of
+	// relying on the two agreeing by construction.
 	const disputeFee = disputeFeeAmounts.length
 		? formatCurrency( disputeFeeTotal, balance.currency )
 		: undefined;
