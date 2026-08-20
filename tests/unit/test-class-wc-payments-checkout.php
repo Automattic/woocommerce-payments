@@ -266,6 +266,34 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
 	}
 
+	public function test_is_valid_pay_for_order_endpoint_false_for_array_key_without_error() {
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+		// An array key (e.g. ?key[]=x) must not reach hash_equals(), which would throw a TypeError.
+		$_GET['key'] = [ 'x' ];
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_user_cannot_pay_for_order() {
+		// An order owned by one customer, viewed by a different, non-owner customer, must fail the
+		// current_user_can( 'pay_for_order' ) check even though the endpoint + key + needs_payment pass.
+		$owner_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+		$other_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( $owner_id );
+		$order->set_status( 'pending' );
+		$order->save();
+
+		wp_set_current_user( $other_id );
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+
+		wp_set_current_user( 0 );
+	}
+
 	public function test_maybe_load_pay_for_order_scripts_enqueues_on_valid_endpoint() {
 		wp_set_current_user( 0 );
 		$this->mock_wcpay_gateway->enabled = 'yes';

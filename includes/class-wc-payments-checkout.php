@@ -183,8 +183,8 @@ class WC_Payments_Checkout {
 	 * the authentication continuation and the shopper is stuck on the verification form.
 	 *
 	 * Loading the scripts here — keyed on the pay-for-order endpoint rather than on the
-	 * form being rendered — mirrors the WooCommerce Stripe gateway and lets the existing
-	 * on-load continuation logic complete the payment. It runs on wp_footer so that, on a
+	 * form being rendered (the endpoint check mirrors the WooCommerce Stripe gateway's) — lets
+	 * the existing on-load continuation logic complete the payment. It runs on wp_footer so that, on a
 	 * normal pay-for-order page, payment_fields() has already enqueued the script during the
 	 * render and the not-already-enqueued guard below makes this a no-op — payment_fields()
 	 * keeps ownership of the full asset setup (CSS, wcpayCustomerData, action hooks). See
@@ -219,7 +219,10 @@ class WC_Payments_Checkout {
 	 */
 	private function is_valid_pay_for_order_endpoint(): bool {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
-		if ( ! is_wc_endpoint_url( 'order-pay' ) || ! isset( $_GET['key'] ) ) {
+		// is_string() guards against an array being passed (e.g. ?key[]=x): wc_clean() would return
+		// an array and hash_equals() would throw a TypeError. is_wc_endpoint_url( 'order-pay' ) is
+		// satisfied by a bare ?order-pay=<id> on any front-end page, so this is reachable unauthenticated.
+		if ( ! is_wc_endpoint_url( 'order-pay' ) || ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
 			return false;
 		}
 
