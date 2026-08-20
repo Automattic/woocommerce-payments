@@ -456,6 +456,39 @@ describe( 'Account fees utility functions', () => {
 			);
 		} );
 
+		it( 'still offers the fees page when the account country is unknown', () => {
+			// The cached account can carry fees while erroring out of a
+			// status, leaving no country. Fees are on screen, so the link
+			// that explains them should be too.
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				accountStatus: undefined,
+			};
+
+			const { container } = render(
+				formatMethodFeesTooltip(
+					mockAccountFees( {
+						percentage_rate: 0.123,
+						fixed_rate: 456.78,
+						currency: 'USD',
+					} )
+				)
+			);
+
+			expect(
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
+			).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fees/'
+			);
+			expect(
+				container.querySelector( '.wcpay-fees-tooltip__hint-text' )
+					?.textContent
+			).toMatch( /Learn more.* about WooPayments Fees$/ );
+		} );
+
 		it( 'treats an Object.prototype member as an unmapped country', () => {
 			// A bare bracket lookup walks the prototype chain and would
 			// interpolate a function into the URL fragment.

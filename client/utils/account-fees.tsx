@@ -214,39 +214,38 @@ export const formatMethodFeesTooltip = (
 					{ getFeeDescriptionString( total ) }
 				</div>
 			</div>
-			{ country ? (
-				<div className="wcpay-fees-tooltip__hint-text">
-					<span>
-						{ interpolateComponents( {
-							mixedString: feeDocsSlug
-								? sprintf(
-										/* translators: %s: WooPayments */
-										__(
-											'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees in your country',
-											'woocommerce-payments'
-										),
-										'WooPayments'
-								  )
-								: sprintf(
-										/* translators: %s: WooPayments */
-										__(
-											'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees',
-											'woocommerce-payments'
-										),
-										'WooPayments'
-								  ),
-							components: {
-								linkToStripePage: (
-									// @ts-expect-error: children is provided when interpolating the component
-									<ExternalLink href={ feeDocsUrl } />
-								),
-							},
-						} ) }
-					</span>
-				</div>
-			) : (
-				''
-			) }
+			{ /* No country gate: an account whose country is unknown still gets
+			     the un-anchored fees page, the same as a country the page has
+			     no section for. Fees are on screen either way. */ }
+			<div className="wcpay-fees-tooltip__hint-text">
+				<span>
+					{ interpolateComponents( {
+						mixedString: feeDocsSlug
+							? sprintf(
+									/* translators: %s: WooPayments */
+									__(
+										'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees in your country',
+										'woocommerce-payments'
+									),
+									'WooPayments'
+							  )
+							: sprintf(
+									/* translators: %s: WooPayments */
+									__(
+										'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees',
+										'woocommerce-payments'
+									),
+									'WooPayments'
+							  ),
+						components: {
+							linkToStripePage: (
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink href={ feeDocsUrl } />
+							),
+						},
+					} ) }
+				</span>
+			</div>
 		</div>
 	);
 };
