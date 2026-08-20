@@ -344,8 +344,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			( fee ): fee is { amount: number; currency: string } => !! fee
 		);
 	const disputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
+	// Settlement currency, not the first fee-bearing dispute's: which dispute
+	// sits at index 0 shifts as the list is filtered, and the rest of the
+	// breakdown is already denominated in `balance.currency`.
 	const disputeFee = disputeFeeAmounts.length
-		? formatCurrency( disputeFeeTotal, disputeFeeAmounts[ 0 ].currency )
+		? formatCurrency( disputeFeeTotal, balance.currency )
 		: undefined;
 
 	// Refunding is blocked while any single dispute blocks it, so the menu is
