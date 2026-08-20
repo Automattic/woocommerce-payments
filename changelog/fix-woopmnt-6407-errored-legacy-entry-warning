@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid a PHP 8 "Undefined array key" warning when computing the cache TTL for a legacy cache entry stored before the errored field existed.
