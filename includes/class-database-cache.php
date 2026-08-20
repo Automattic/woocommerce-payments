@@ -423,11 +423,16 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return integer The cache TTL.
 	 */
 	private function get_ttl( string $key, array $cache_contents ): int {
+		// Legacy cache entries written before the `errored` field existed do not carry the key,
+		// and get() reaches get_ttl() (via is_expired) without guaranteeing it. Default to false so
+		// the reads below cannot emit a PHP 8 "Undefined array key" warning.
+		$errored = $cache_contents['errored'] ?? false;
+
 		switch ( $key ) {
 			case self::ACCOUNT_KEY:
 				if ( is_admin() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
+					if ( $errored ) {
 						// Progressive backoff on repeated errors (2/5/10/15 min).
 						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
@@ -442,7 +447,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			case self::CURRENCIES_KEY:
 				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
+					if ( $errored ) {
 						// Progressive backoff on repeated errors (2/5/10/15 min).
 						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
@@ -458,7 +463,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			case self::ONBOARDING_FIELDS_DATA_KEY:
 				// Cache successful data for a week, but back off quickly on errors so a
 				// single transient failure does not block onboarding for the full week.
-				$ttl = $cache_contents['errored']
+				$ttl = $errored
 					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
 					: WEEK_IN_SECONDS;
 				break;
@@ -471,12 +476,12 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::TRACKING_INFO_KEY:
-				$ttl = $cache_contents['errored']
+				$ttl = $errored
 					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
 					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
-				if ( $cache_contents['errored'] ) {
+				if ( $errored ) {
 					// Retry quickly after a transient failure so address autocomplete recovers promptly.
 					$ttl = 2 * MINUTE_IN_SECONDS;
 				} else {

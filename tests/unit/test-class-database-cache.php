@@ -816,6 +816,29 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * A legacy cache entry written before the `errored` field existed must resolve without a
+	 * PHP 8 "Undefined array key" warning. With convertWarningsToExceptions enabled, an unguarded
+	 * read of the missing key would throw here.
+	 */
+	public function test_get_ttl_handles_legacy_entry_without_errored_key() {
+		update_option(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[
+				'data'    => [ 'business_types' => [] ],
+				'fetched' => time(),
+			],
+			'no'
+		);
+
+		$this->assertSame(
+			[ 'business_types' => [] ],
+			$this->database_cache->get( Database_Cache::BUSINESS_TYPES_KEY )
+		);
+
+		delete_option( Database_Cache::BUSINESS_TYPES_KEY );
+	}
+
+	/**
 	 * @dataProvider provider_errored_ttl_ladder
 	 */
 	public function test_onboarding_fields_data_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
