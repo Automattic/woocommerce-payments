@@ -88,6 +88,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 == Changelog ==
 
 = 11.0.1 - 2026-08-20 =
+* Fix - Fix the currency switcher not rendering on WordPress 7.1 in Storefront breadcrumbs and the wc_get_currency_switcher_markup() template tag.
 
 
 = 11.0.0 - 2026-08-05 =
