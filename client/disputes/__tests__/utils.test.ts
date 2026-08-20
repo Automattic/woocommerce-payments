@@ -214,6 +214,18 @@ describe( 'getDisputeFeeAmount', () => {
 			).toBeUndefined();
 		} );
 
+		test( 'returns undefined when the amount is malformed', () => {
+			// Would otherwise reach the currency formatter and render "$NaN".
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [],
+					effective_fee: {
+						currency: 'usd',
+					} as unknown as { amount: number; currency: string },
+				} )
+			).toBeUndefined();
+		} );
+
 		test( 'returns undefined when the fee is zero', () => {
 			// A $0.00 fee is no fee. Returning it would let callers render
 			// "the $0.00 fee has been deducted from your account".

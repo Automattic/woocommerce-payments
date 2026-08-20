@@ -160,9 +160,11 @@ export const getDisputeFeeAmount = (
 
 	// A zero fee is no fee. Callers phrase this as "the %s fee has been
 	// deducted from your account", which is false at $0.00 — the same
-	// copy/reality mismatch as a reversed fee.
-	return fee && fee.amount !== 0
-		? { amount: fee.amount, currency: fee.currency }
+	// copy/reality mismatch as a reversed fee. The finite check keeps a
+	// malformed amount from reaching the currency formatter and rendering
+	// as "$NaN".
+	return fee && Number.isFinite( fee.amount ) && fee.amount !== 0
+		? fee
 		: undefined;
 };
 
