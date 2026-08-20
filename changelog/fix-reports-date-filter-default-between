@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Default the payments reports date filter to the Between operator so its date range presets are offered by default.

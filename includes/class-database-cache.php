@@ -456,8 +456,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 			case self::BUSINESS_TYPES_KEY:
 			case self::ONBOARDING_FIELDS_DATA_KEY:
-				// Cache these for a week.
-				$ttl = WEEK_IN_SECONDS;
+				// Cache successful data for a week, but back off quickly on errors so a
+				// single transient failure does not block onboarding for the full week.
+				$ttl = $cache_contents['errored']
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: WEEK_IN_SECONDS;
 				break;
 			case self::CONNECT_INCENTIVE_KEY:
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;

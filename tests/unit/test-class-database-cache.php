@@ -815,6 +815,50 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	/**
+	 * @dataProvider provider_errored_ttl_ladder
+	 */
+	public function test_onboarding_fields_data_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
+			[ 'fields' => [] ],
+			true,
+			$expected_ttl,
+			$consecutive_errors
+		);
+	}
+
+	/**
+	 * @dataProvider provider_errored_ttl_ladder
+	 */
+	public function test_business_types_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[ 'business_types' => [] ],
+			true,
+			$expected_ttl,
+			$consecutive_errors
+		);
+	}
+
+	public function test_onboarding_fields_data_successful_entries_are_cached_for_a_week() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
+			[ 'fields' => [] ],
+			false,
+			WEEK_IN_SECONDS
+		);
+	}
+
+	public function test_business_types_successful_entries_are_cached_for_a_week() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[ 'business_types' => [] ],
+			false,
+			WEEK_IN_SECONDS
+		);
+	}
+
 	public function test_errored_write_sets_consecutive_errors_to_one_on_first_failure() {
 		$refreshed = false;
 

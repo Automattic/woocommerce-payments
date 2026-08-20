@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop charging the additional Stripe Billing fee on subscription renewals that are not billed through Stripe Billing
