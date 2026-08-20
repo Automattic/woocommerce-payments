@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Run the PHP test suite against WordPress nightly in the compatibility workflow, to catch breaking WordPress changes before they are released.
