@@ -870,6 +870,78 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
 	} );
 
+	test( 'labels a refund on a charge with an inquiry as refunded', () => {
+		// An inquiry withdraws nothing, so the only money that moved is the
+		// customer refund. The label must not follow the mere presence of a
+		// dispute record.
+		const charge = getBaseCharge();
+		charge.amount_refunded = 1000;
+		charge.refunds = {
+			data: [
+				{
+					amount: 1000,
+					currency: 'usd',
+					balance_transaction: {
+						amount: -1000,
+						currency: 'usd',
+						fee: 0,
+					},
+				},
+			],
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'warning_needs_response';
+		charge.dispute.balance_transactions = [];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Refunded:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Deducted:/i ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'labels a refund on a charge with a won dispute as refunded', () => {
+		// The dispute rows net to zero, so nothing was deducted; the refund is
+		// the only withdrawal.
+		const charge = getBaseCharge();
+		charge.amount_refunded = 1000;
+		charge.refunds = {
+			data: [
+				{
+					amount: 1000,
+					currency: 'usd',
+					balance_transaction: {
+						amount: -1000,
+						currency: 'usd',
+						fee: 0,
+					},
+				},
+			],
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'won';
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				currency: 'usd',
+				fee: 1500,
+				reporting_category: 'dispute',
+			},
+			{
+				amount: 2000,
+				currency: 'usd',
+				fee: -1500,
+				reporting_category: 'dispute_reversal',
+			},
+		];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Refunded:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Deducted:/i ) ).not.toBeInTheDocument();
+	} );
+
 	test( 'renders the fee breakdown tooltip of a disputed charge', async () => {
 		const charge = {
 			...getBaseCharge(),

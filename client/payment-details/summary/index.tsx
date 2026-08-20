@@ -27,6 +27,7 @@ import {
 import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,
+	isChargeDisputed,
 	getChargeDisputes,
 	getDisputeOrdinals,
 	getChargeStatus,
@@ -351,6 +352,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		? formatCurrency( disputeFeeTotal, balance.currency )
 		: undefined;
 
+	// The withdrawn-balance line folds refunds and dispute deductions together
+	// (see getChargeAmounts). Call it "Deducted" only when a dispute actually
+	// moved money: an inquiry withdraws nothing, and a won dispute's rows net
+	// back to zero, so in both cases a refund is the only withdrawal.
+	const disputeWithdrawnAmount = isChargeDisputed( charge )
+		? _.sumBy(
+				disputes.flatMap(
+					( dispute ) => dispute.balance_transactions ?? []
+				),
+				'amount'
+		  )
+		: 0;
+
 	// Refunding is blocked while any single dispute blocks it, so the menu is
 	// only refundable when every dispute is.
 	const isDisputeRefundable = disputes.every( ( dispute ) =>
@@ -514,12 +528,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ balance.refunded ? (
 									<p>
 										{ `${
-											// Disputed money left the account
-											// as a deduction, not a refund —
-											// keyed on the dispute itself
-											// because the fee can be zero or
-											// reversed.
-											disputes.length
+											disputeWithdrawnAmount !== 0
 												? __(
 														'Deducted',
 														'woocommerce-payments'
