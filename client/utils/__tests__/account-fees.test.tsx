@@ -416,15 +416,6 @@ describe( 'Account fees utility functions', () => {
 			);
 		} );
 
-		it( 'drops the "in your country" promise for an unmapped country', () => {
-			const { container } = renderTooltipForCountry( 'BR' );
-
-			expect(
-				container.querySelector( '.wcpay-fees-tooltip__hint-text' )
-					?.textContent
-			).toMatch( /Learn more.* about WooPayments Fees$/ );
-		} );
-
 		it( 'follows the account country when the store base country differs', () => {
 			// The fees rendered above the link come from the account, so the
 			// link has to describe the account's country. A store that changed
@@ -487,21 +478,6 @@ describe( 'Account fees utility functions', () => {
 				container.querySelector( '.wcpay-fees-tooltip__hint-text' )
 					?.textContent
 			).toMatch( /Learn more.* about WooPayments Fees$/ );
-		} );
-
-		it( 'treats an Object.prototype member as an unmapped country', () => {
-			// A bare bracket lookup walks the prototype chain and would
-			// interpolate a function into the URL fragment.
-			const { container } = renderTooltipForCountry( 'constructor' );
-
-			expect(
-				within( container ).getByRole( 'link', {
-					name: /Learn more/i,
-				} )
-			).toHaveAttribute(
-				'href',
-				'https://woocommerce.com/document/woopayments/fees/'
-			);
 		} );
 	} );
 

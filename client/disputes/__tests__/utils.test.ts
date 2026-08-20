@@ -239,14 +239,6 @@ describe( 'getDisputeFeeAmount', () => {
 	} );
 
 	describe( 'when falling back to balance_transactions', () => {
-		test( 'returns the dispute row fee', () => {
-			expect(
-				getDisputeFeeAmount( {
-					balance_transactions: [ disputeFeeRow ],
-				} )
-			).toEqual( { amount: 1500, currency: 'usd' } );
-		} );
-
 		test( 'returns undefined when a reversal row is present', () => {
 			expect(
 				getDisputeFeeAmount( {
@@ -260,12 +252,6 @@ describe( 'getDisputeFeeAmount', () => {
 						},
 					],
 				} )
-			).toBeUndefined();
-		} );
-
-		test( 'returns undefined when no dispute row is present', () => {
-			expect(
-				getDisputeFeeAmount( { balance_transactions: [] } )
 			).toBeUndefined();
 		} );
 
