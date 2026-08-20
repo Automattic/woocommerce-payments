@@ -37,7 +37,9 @@ const navigateToSubscriptionDetails = async (
 		} )
 	).toBeVisible();
 
-	await page.getByText( 'Choose a new payment method' ).isVisible();
+	await expect(
+		page.getByText( 'Choose a new payment method' )
+	).toBeVisible();
 };
 
 describeif( shouldRunSubscriptionsTests )(
@@ -76,7 +78,7 @@ describeif( shouldRunSubscriptionsTests )(
 			await page
 				.locator( changePaymentMethodButtonSelector )
 				.first()
-				.click( { noWaitAfter: true } );
+				.click();
 
 			await expect(
 				page.getByText( 'Payment method updated.' )
@@ -92,7 +94,7 @@ describeif( shouldRunSubscriptionsTests )(
 			await page
 				.locator( changePaymentMethodButtonSelector )
 				.first()
-				.click( { noWaitAfter: true } );
+				.click();
 
 			await expect(
 				page.getByText( 'Payment method updated.' )

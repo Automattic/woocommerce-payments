@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix the currency switcher not rendering on WordPress 7.1 in Storefront breadcrumbs and the wc_get_currency_switcher_markup() template tag.
