@@ -152,10 +152,10 @@ export const formatMethodFeesTooltip = (
 	};
 
 	// The fees above this link come from the Stripe account, so the link has to
-	// describe the account's country. `connect.country` is the store base
-	// country — a separate setting that only usually agrees, since it can be
-	// edited after onboarding and a Puerto Rico store's account is created
-	// as US.
+	// describe the account's country. Not `connect.country` — that namespace is
+	// the onboarding form's data (country, availableCountries, availableStates),
+	// where the store address is the only country signal available because no
+	// account exists yet.
 	const country = wcpaySettings?.accountStatus?.country;
 	// Un-anchored fees page for a country the page has no section for, rather
 	// than a "#undefined" fragment.
