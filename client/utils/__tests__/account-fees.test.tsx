@@ -3,7 +3,7 @@
  */
 import { sprintf } from '@wordpress/i18n';
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, within } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -376,7 +376,9 @@ describe( 'Account fees utility functions', () => {
 			const { container } = renderTooltipForCountry( 'GB' );
 
 			expect(
-				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
 			).toHaveAttribute(
 				'href',
 				'https://woocommerce.com/document/woopayments/fees/#united-kingdom'
@@ -387,7 +389,9 @@ describe( 'Account fees utility functions', () => {
 			const { container } = renderTooltipForCountry( 'SE' );
 
 			expect(
-				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
 			).toHaveAttribute(
 				'href',
 				'https://woocommerce.com/document/woopayments/fees/#sweden'
@@ -398,7 +402,9 @@ describe( 'Account fees utility functions', () => {
 			const { container } = renderTooltipForCountry( 'PR' );
 
 			expect(
-				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
 			).toHaveAttribute(
 				'href',
 				'https://woocommerce.com/document/woopayments/fees/'
@@ -420,7 +426,9 @@ describe( 'Account fees utility functions', () => {
 			const { container } = renderTooltipForCountry( 'constructor' );
 
 			expect(
-				container.querySelector( '.wcpay-fees-tooltip__hint-text a' )
+				within( container ).getByRole( 'link', {
+					name: /Learn more/i,
+				} )
 			).toHaveAttribute(
 				'href',
 				'https://woocommerce.com/document/woopayments/fees/'
