@@ -103,11 +103,11 @@ Stripe account capabilities
 
 `PUT /wc/v3/payments/settings` → `update_enabled_payment_methods()` in `includes/admin/class-wc-rest-payments-settings-controller.php`:
 
-1. **Filter to available.** Intersects the submitted list with `get_upe_available_payment_methods()` = registered definitions ∩ methods the account has **fees** for. Fees are composed by Transact and arrive in the cached account data — there is no local fee table. Apple Pay and Google Pay borrow card's fee entry. A method with no fee entry does not appear as available, which is what shapes the settings list. Treat this as a **client-side filter, not an enforcement boundary** — it runs in the plugin and is filterable via `wcpay_upe_available_payment_methods`. Enforcement is server-side and independent: Transact validates every capability request (step 3), and the checkout gate requires an `active` capability that only Stripe grants. Bypassing the filter locally cannot make a method chargeable.
-2. Manual-capture filter, when manual capture is enabled in the same request.
+1. **Manual-capture filter**, when manual capture is being enabled in the same request — drops every method that does not allow manual capture; Link is always kept, since it follows card's capture behaviour.
+2. **Filter to available.** Intersects the result with `get_upe_available_payment_methods()` = registered definitions ∩ methods the account has **fees** for. Fees are composed by Transact and arrive in the cached account data — there is no local fee table. Apple Pay and Google Pay borrow card's fee entry. A method with no fee entry does not appear as available, which is what shapes the settings list. Treat this as a **client-side filter, not an enforcement boundary** — it runs in the plugin and is filterable via `wcpay_upe_available_payment_methods`. Enforcement is server-side and independent: Transact validates every capability request (step 3), and the checkout gate requires an `active` capability that only Stripe grants. Bypassing the filter locally cannot make a method chargeable.
 3. **`request_unrequested_payment_methods()`** — for each method whose cached status is `unrequested` *or absent*, POST to the Transact `accounts/capabilities` endpoint with `requested: true`. Absent is treated as unrequested deliberately: a never-requested capability simply does not appear in the account payload.
 4. Refresh the account cache if any request changed a status.
-5. Tracks events, then promotion activation, then `enable()` on the split gateway.
+5. Tracks events for each added and removed method. Then, for each newly enabled method, promotion activation followed by `enable()` on its split gateway; for each removed method, `disable()` on its split gateway.
 6. Write `upe_enabled_payment_method_ids` to **every** gateway instance.
 
 **What Transact does with step 3.** It validates the capability against its own whitelist (an unknown capability is a 400, never forwarded), then checks availability for the account. If Transact reports the method as unavailable there, it synthesizes a refusal **without contacting Stripe at all**, which the plugin renders exactly as it renders a Stripe-side refusal. Otherwise it requests the capability on the connected Express account and invalidates its own account cache so the next read is fresh.
@@ -130,8 +130,8 @@ Consequences:
 
 - **Account creation** — Transact creates the Stripe account with `card_payments` and `transfers` requested (plus US tax reporting), merging in whatever capabilities the plugin sent. The plugin does not request these itself.
 - **NOX preselection**: WooCommerce core sends a complete `{ payment_method: true|false }` map. `WC_Payments_Onboarding_Service::get_account_data()` requests only the `true` entries; `false` entries are **omitted, not unrequested**. For a new account the two are equivalent, since every capability starts `unrequested`.
-- `update_enabled_payment_methods_ids()` **merges** into the existing list rather than replacing it, and enables each method's split gateway. Link is force-disabled when WooPay is auto-enabled (mutually exclusive — see #9404).
-- **Test-drive accounts** — Transact requests every capability its registry lists for that country, ignoring the merchant's selection, so a test-drive account is not representative of what a live one will have. Converting to live deletes that account and creates a fresh one, so nothing carries over implicitly.
+- `update_enabled_payment_methods_ids()` **merges** into the existing list rather than replacing it, and enables each method's split gateway. Link and WooPay are mutually exclusive: when both would end up enabled, Link wins and WooPay stays off (see #9404).
+- **Test-drive accounts** — Transact creates a *custom* Stripe account (not Express) and requests the capability of every method available for onboarding in that country and client version, ignoring the merchant's selection — so a test-drive account is not representative of what a live one will have. Converting to live deletes that account and creates a fresh one, so nothing carries over implicitly.
 - **Account reset / `account.deleted`** returns the list to `['card']`.
 
 ## Settings UI Semantics
@@ -151,7 +151,7 @@ Consequences:
 
 ## Special Cases
 
-- **Apple Pay / Google Pay** — no capability of their own; both map to `card_payments`. Availability rides on card, plus `express_checkout_in_payment_methods` for placement in the methods list vs. as express buttons. They enter the available list by borrowing card's fee entry.
+- **Apple Pay / Google Pay** — no Stripe capability of their own; availability rides on card. But the two halves of the client disagree on *which key* says so. The PHP key map points both at `card_payments`, which is what the checkout gate and the capability request use. Their definition classes, however, derive `apple_pay_payments` / `google_pay_payments` through the default `<id>_payments` rule, and that is the `stripe_key` the settings UI looks up — a key the account payload never carries, so the UI always falls back to `unrequested` and renders the toggle as operable regardless of card's real status. Placement in the methods list vs. as express buttons is `express_checkout_in_payment_methods`; they enter the available list by borrowing card's fee entry.
 - **Link** — has a real `link_payments` capability, but is filtered out of checkout when card is not enabled, is never registered as a WC gateway, and is mutually exclusive with WooPay.
 - **WooPay** — not a Stripe capability; a separate `platform_checkout` gateway option.
 - **Stale key-map entries** — `sofort`, `giropay`, `jcb` remain in `$payment_method_capability_key_map` with no corresponding definition class.
@@ -162,6 +162,7 @@ Consequences:
 |---|---|
 | Method enabled in settings, absent at checkout | Capability not `active` (often `pending` right after enabling), or currency/amount limits, or manual capture filtering it out |
 | Toggle does nothing, no notice shown | Status is `disabled` — see the known gap above |
+| Apple Pay / Google Pay toggle operable while card is `pending` or `inactive` | Settings UI looks up `apple_pay_payments` / `google_pay_payments`, keys the account never carries, and defaults to `unrequested`; the checkout gate uses `card_payments` — see Special Cases |
 | Method missing from the settings list entirely | No fee entry for it on the account, so it never reaches `get_upe_available_payment_methods()` |
 | Method reappears as `pending_verification` after months disabled | Requirements lapsed while it sat unused; the capability stayed requested the whole time |
 | Settings and checkout disagree after a country switch | `get_settings()` intersects the stored list with currently-available methods on read; invalid entries are hidden, not deleted |
