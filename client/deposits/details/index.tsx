@@ -346,7 +346,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 									components: {
 										learnMoreLink: (
 											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#transactions" />
+											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
 										),
 									},
 								} ) }
