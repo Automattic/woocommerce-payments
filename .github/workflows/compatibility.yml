@@ -1,7 +1,11 @@
 name: Compatibility - WC, WP and PHP
 
 on:
-  pull_request
+  pull_request:
+  # Also run on a schedule so WC beta and WP nightly breakage is caught in quiet weeks
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
 
 env:
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
