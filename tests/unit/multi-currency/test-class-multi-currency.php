@@ -145,6 +145,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
+		remove_all_filters( 'wcpay_multi_currency_override_selected_currency' );
 		remove_all_filters( 'woocommerce_currency' );
 		remove_all_filters( 'woocommerce_geolocate_ip' );
 		remove_all_filters( 'stylesheet' );
@@ -395,6 +396,16 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_selected_currency_returns_default_currency_for_empty_session_and_user() {
 		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
+	public function test_get_explicit_selected_currency_returns_null_for_empty_session_and_user() {
+		$this->assertNull( $this->multi_currency->get_explicit_selected_currency() );
+	}
+
+	public function test_get_explicit_selected_currency_returns_null_for_invalid_session_currency() {
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, 'UNSUPPORTED_CURRENCY' );
+
+		$this->assertNull( $this->multi_currency->get_explicit_selected_currency() );
 	}
 
 	public function test_get_selected_currency_does_not_trigger_null_offset_deprecation_without_stored_currency() {
@@ -1977,6 +1988,34 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency( null, false );
 
 		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
+		$this->assertSame( 'GBP', get_woocommerce_currency() );
+	}
+
+	public function test_explicit_store_currency_selection_overrides_filtered_currency() {
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => Currency_Code::POUND_STERLING, 5 );
+		$this->init_multi_currency();
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, Currency_Code::UNITED_STATES_DOLLAR );
+
+		$this->assertSame( 'USD', get_woocommerce_currency() );
+	}
+
+	public function test_compatibility_store_currency_override_overrides_filtered_currency() {
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => Currency_Code::POUND_STERLING, 5 );
+		add_filter( 'wcpay_multi_currency_override_selected_currency', fn() => Currency_Code::UNITED_STATES_DOLLAR );
+		$this->init_multi_currency();
+
+		$this->assertSame( 'USD', get_woocommerce_currency() );
+	}
+
+	public function test_filtered_woocommerce_currency_survives_empty_logged_in_user_selection() {
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => Currency_Code::POUND_STERLING, 5 );
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
+		delete_user_meta( self::LOGGED_IN_USER_ID, MultiCurrency::CURRENCY_META_KEY );
+		$this->init_multi_currency();
+
 		$this->assertSame( 'GBP', get_woocommerce_currency() );
 	}
 

@@ -66,6 +66,13 @@ class FrontendCurrencies {
 	private $woocommerce_currency;
 
 	/**
+	 * Whether WooPayments has an explicit shopper or compatibility currency selection.
+	 *
+	 * @var bool|null
+	 */
+	private $has_explicit_currency_selection;
+
+	/**
 	 * Price Decimal Separator cache.
 	 *
 	 * @var array
@@ -132,10 +139,11 @@ class FrontendCurrencies {
 	 * @return void
 	 */
 	public function selected_currency_changed() {
-		$this->selected_currency_code   = null;
-		$this->price_decimal_separators = [];
-		$this->woocommerce_currency     = null;
-		$this->store_currency           = null;
+		$this->selected_currency_code          = null;
+		$this->price_decimal_separators        = [];
+		$this->woocommerce_currency            = null;
+		$this->has_explicit_currency_selection = null;
+		$this->store_currency                  = null;
 	}
 
 	/**
@@ -186,6 +194,9 @@ class FrontendCurrencies {
 	/**
 	 * Returns the currency code to be used by WooCommerce.
 	 *
+	 * The WordPress filter supplies its current currency as an undeclared argument.
+	 * Reading it at runtime keeps the public zero-argument signature compatible with subclasses.
+	 *
 	 * @return string The code of the currency to be used.
 	 */
 	public function get_woocommerce_currency(): string {
@@ -196,11 +207,13 @@ class FrontendCurrencies {
 		}
 
 		if ( empty( $this->woocommerce_currency ) ) {
-			$this->woocommerce_currency = $this->get_selected_currency_code();
+			$explicit_currency                     = $this->multi_currency->get_explicit_selected_currency();
+			$this->has_explicit_currency_selection = null !== $explicit_currency;
+			$this->woocommerce_currency            = ( $explicit_currency ?? $this->get_store_currency() )->get_code();
 		}
 
 		if (
-			$this->woocommerce_currency === $this->get_store_currency()->get_code()
+			false === $this->has_explicit_currency_selection
 			&& is_string( $currency )
 			&& '' !== $currency
 		) {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Respect currencies selected by third-party switchers when WooPayments has no active currency selection

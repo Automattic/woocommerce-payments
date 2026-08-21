@@ -795,19 +795,28 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Gets the user selected currency, or `$default_currency` if is not set.
+	 * Gets an explicit currency selection from compatibility code or shopper storage.
+	 *
+	 * @return Currency|null The explicit currency, or null when WooPayments has no selection.
+	 */
+	public function get_explicit_selected_currency(): ?Currency {
+		$multi_currency_code = $this->compatibility->override_selected_currency();
+		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
+
+		if ( null === $currency_code || '' === $currency_code ) {
+			return null;
+		}
+
+		return $this->get_enabled_currencies()[ $currency_code ] ?? null;
+	}
+
+	/**
+	 * Gets the user selected currency, or the default currency if one is not set.
 	 *
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$multi_currency_code = $this->compatibility->override_selected_currency();
-		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
-
-		if ( null === $currency_code ) {
-			return $this->get_default_currency();
-		}
-
-		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
+		return $this->get_explicit_selected_currency() ?? $this->get_default_currency();
 	}
 
 	/**
