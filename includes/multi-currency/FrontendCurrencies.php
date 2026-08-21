@@ -189,6 +189,8 @@ class FrontendCurrencies {
 	 * @return string The code of the currency to be used.
 	 */
 	public function get_woocommerce_currency(): string {
+		$currency = func_num_args() > 0 ? func_get_arg( 0 ) : '';
+
 		if ( $this->compatibility->should_return_store_currency() ) {
 			return $this->get_store_currency()->get_code();
 		}
@@ -196,6 +198,15 @@ class FrontendCurrencies {
 		if ( empty( $this->woocommerce_currency ) ) {
 			$this->woocommerce_currency = $this->get_selected_currency_code();
 		}
+
+		if (
+			$this->woocommerce_currency === $this->get_store_currency()->get_code()
+			&& is_string( $currency )
+			&& '' !== $currency
+		) {
+			return $currency;
+		}
+
 		return $this->woocommerce_currency;
 	}
 

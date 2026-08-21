@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\MultiCurrency\Utils;
+use WCPay\Constants\Currency_Code;
 use WCPay\MultiCurrency\CachingEnvironment;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
@@ -16,6 +16,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
+use WCPay\MultiCurrency\Utils;
 
 /**
  * WCPay\MultiCurrency\MultiCurrency unit tests.
@@ -1965,6 +1966,18 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $this->multi_currency->get_enabled_currencies() );
 
 		update_option( 'woocommerce_currency', 'USD' );
+	}
+
+	public function test_filtered_woocommerce_currency_survives_when_only_store_currency_is_enabled() {
+		remove_all_filters( 'woocommerce_currency' );
+		// A third-party currency switcher picks the visitor currency at a low priority.
+		add_filter( 'woocommerce_currency', fn() => Currency_Code::POUND_STERLING, 5 );
+
+		// Not connected: Multi-Currency has only the store currency available, so it has nothing to switch.
+		$this->init_multi_currency( null, false );
+
+		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
+		$this->assertSame( 'GBP', get_woocommerce_currency() );
 	}
 
 	private function mock_theme( $theme ) {
