@@ -90,7 +90,7 @@ Because the menu is not registered when `has_previous_loans` is false, visiting 
 
 The capital flags come from the `wcpay_account_data` transient, populated from Transact → Stripe. The cache does **not** refresh automatically after a Stripe-side state change (accept, disburse, repay). Until it is invalidated, the UI keeps showing the pre-change state.
 
-TTL is set in `includes/class-database-cache.php:394-407`: **2 hours** for admin requests (or 2 minutes if the last fetch errored), **24 hours** for non-admin requests. So without manual invalidation, a Stripe state change can take up to 2 hours to surface in the admin UI.
+TTL is set in `Database_Cache::get_ttl()` (`includes/class-database-cache.php`): **2 hours** for admin requests, **24 hours** for non-admin requests; after a failed fetch the admin TTL backs off progressively (2/5/10/15 minutes). So without manual invalidation, a Stripe state change can take up to 2 hours to surface in the admin UI.
 
 Invalidate:
 
