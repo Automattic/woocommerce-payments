@@ -70,6 +70,8 @@ Independently of Stripe's status, **Transact may report a method as unavailable*
 | Method unavailable platform-wide | Status rewritten to `disabled` (the capability may still be `active` on Stripe) |
 | Method unavailable for this account | Entry **absent from the response**, which the plugin reads as `unrequested` |
 
+Methods being retired — closed to new merchants but still live for those already using them — are exempt from the `disabled` rewrite. Their real Stripe status passes through untouched, and Transact keeps them in the account's fee list only when the capability is already `active`, so they stay on the settings page for existing holders and disappear for everyone else. P24 is the current case.
+
 The second case also affects writes: an enable request for a method Transact reports as unavailable for the account is refused without reaching Stripe (see the enable path below).
 
 Client-side constants live in `client/settings/constants.js` (`upeCapabilityStatuses`). Note that `disabled` is absent from them — see the known gap under Settings UI Semantics.
