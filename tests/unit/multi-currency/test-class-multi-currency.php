@@ -1967,6 +1967,18 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_option( 'woocommerce_currency', 'USD' );
 	}
 
+	public function test_filtered_woocommerce_currency_survives_when_only_store_currency_is_enabled() {
+		remove_all_filters( 'woocommerce_currency' );
+		// A third-party currency switcher picks the visitor currency at a low priority.
+		add_filter( 'woocommerce_currency', fn() => 'GBP', 5 );
+
+		// Not connected: Multi-Currency has only the store currency available, so it has nothing to switch.
+		$this->init_multi_currency( null, false );
+
+		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
+		$this->assertSame( 'GBP', get_woocommerce_currency() );
+	}
+
 	private function mock_theme( $theme ) {
 		add_filter(
 			'stylesheet',
