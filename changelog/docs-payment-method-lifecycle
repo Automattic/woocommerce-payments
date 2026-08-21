@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add a payment method lifecycle reference doc covering Stripe capability state vs. checkout enablement
