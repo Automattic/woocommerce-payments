@@ -243,6 +243,25 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Whether the Multi-Currency module may initialize on this request.
+	 *
+	 * True when the customer multi-currency feature is enabled, or when the merchant is going through the
+	 * Multi-Currency setup flow, which needs the module before the feature is switched on. Everything that
+	 * boots the module — the `plugins_loaded` bootstrap, the lazy-initializing getters, and direct callers of
+	 * `WC_Payments_Multi_Currency()` — must respect this, so a disabled module never registers hooks or
+	 * touches the currency, no matter who asks for it.
+	 *
+	 * @return bool
+	 */
+	public static function is_enabled(): bool {
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			return true;
+		}
+
+		return function_exists( 'wcpay_multi_currency_onboarding_check' ) && wcpay_multi_currency_onboarding_check();
+	}
+
+	/**
 	 * Initializes this class' WP hooks.
 	 *
 	 * @return void
@@ -299,6 +318,14 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		// The lazy-initializing getters call init() on demand, and any code path can reach them through
+		// WC_Payments_Multi_Currency() regardless of the feature flag. Refuse to initialize when the module
+		// is disabled, so a disabled module never registers the frontend currency and price hooks.
+		if ( ! static::is_enabled() ) {
+			$this->set_inert_state();
+			return;
+		}
+
 		// If the store currency is not in the list of available WooCommerce currencies
 		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
 		// Multi-Currency cannot function without a valid base currency.
@@ -311,10 +338,7 @@ class MultiCurrency {
 					$store_currency
 				)
 			);
-			// Initialize properties to safe defaults so lazy-init getters and
-			// later init-hook callbacks don't re-trigger init() or fatal.
-			$this->available_currencies = [];
-			$this->enabled_currencies   = [];
+			$this->set_inert_state();
 			return;
 		}
 
@@ -540,6 +564,10 @@ class MultiCurrency {
 	 * @return FrontendPrices
 	 */
 	public function get_frontend_prices(): FrontendPrices {
+		if ( null === $this->frontend_prices ) {
+			$this->init();
+		}
+
 		return $this->frontend_prices;
 	}
 
@@ -549,6 +577,10 @@ class MultiCurrency {
 	 * @return FrontendCurrencies
 	 */
 	public function get_frontend_currencies(): FrontendCurrencies {
+		if ( null === $this->frontend_currencies ) {
+			$this->init();
+		}
+
 		return $this->frontend_currencies;
 	}
 
@@ -1787,6 +1819,24 @@ class MultiCurrency {
 	private function set_default_currency() {
 		$available_currencies   = $this->get_available_currencies();
 		$this->default_currency = $available_currencies[ $this->get_store_currency_code() ] ?? null;
+	}
+
+	/**
+	 * Puts the module into its inert state: no currencies, no hooks, but every getter still
+	 * returns a usable value.
+	 *
+	 * Used when init() must not proceed, so lazy-initializing getters and later init-hook
+	 * callbacks neither re-trigger init() nor fatal. The frontend price and currency objects are
+	 * still constructed, just without their hooks, because get_frontend_prices() and
+	 * get_frontend_currencies() have non-nullable return types and are reachable from any caller.
+	 *
+	 * @return void
+	 */
+	private function set_inert_state() {
+		$this->available_currencies = [];
+		$this->enabled_currencies   = [];
+		$this->frontend_prices      = new FrontendPrices( $this, $this->compatibility );
+		$this->frontend_currencies  = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 	}
 
 	/**

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\MultiCurrency\FrontendCurrencies;
+use WCPay\MultiCurrency\FrontendPrices;
 use WCPay\MultiCurrency\Utils;
 use WCPay\MultiCurrency\CachingEnvironment;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
@@ -158,6 +160,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		delete_option( 'wcpay_multi_currency_rendering_mode' );
 		delete_option( 'wcpay_multi_currency_cache_autodetect_done' );
 		delete_option( 'wcpay_multi_currency_cache_recommendation_dismissed' );
+		delete_option( '_wcpay_feature_customer_multi_currency' );
+		unset( $_SERVER['HTTP_REFERER'] );
 		delete_option( 'wcpay_multi_currency_store_currency' );
 
 		parent::tear_down();
@@ -1836,7 +1840,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_cache = null, $mock_caching_environment = null ) {
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_cache = null, $mock_caching_environment = null, $run_init = true ) {
 		$this->mock_api_client = $this->createMock( MultiCurrencyApiClientInterface::class );
 
 		$this->mock_account = $mock_account ?? $this->createMock( MultiCurrencyAccountInterface::class );
@@ -1861,7 +1865,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$mock_caching_environment
 		);
 		$this->multi_currency->init_widgets();
-		$this->multi_currency->init();
+		if ( $run_init ) {
+			$this->multi_currency->init();
+		}
 	}
 
 	private function add_mock_order_with_currency_meta( $currency ) {
@@ -1977,6 +1983,73 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
 		$this->assertSame( 'GBP', get_woocommerce_currency() );
+	}
+
+	public function test_init_does_not_initialize_when_feature_is_disabled() {
+		remove_all_filters( 'woocommerce_currency' );
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+
+		$this->init_multi_currency();
+
+		$this->assertSame( [], $this->multi_currency->get_available_currencies() );
+		$this->assertSame( [], $this->multi_currency->get_enabled_currencies() );
+		$this->assertFalse( has_filter( 'woocommerce_currency' ) );
+	}
+
+	public function test_uninitialized_module_still_reports_store_currency_as_default_and_selected() {
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+
+		$this->init_multi_currency();
+
+		$this->assertSame( 'USD', $this->multi_currency->get_default_currency()->get_code() );
+		$this->assertSame( 'USD', $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
+	public function test_uninitialized_module_still_exposes_frontend_objects_without_their_hooks() {
+		remove_all_filters( 'woocommerce_currency' );
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+
+		$this->init_multi_currency();
+
+		$this->assertInstanceOf( FrontendCurrencies::class, $this->multi_currency->get_frontend_currencies() );
+		$this->assertInstanceOf( FrontendPrices::class, $this->multi_currency->get_frontend_prices() );
+		$this->assertFalse( has_filter( 'woocommerce_currency' ) );
+	}
+
+	public function test_frontend_getters_initialize_a_disabled_module_on_first_use() {
+		remove_all_filters( 'woocommerce_currency' );
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+
+		// Nothing has run init() yet: the getters must not return null into their non-nullable return types.
+		$this->init_multi_currency( null, true, null, null, null, false );
+
+		$this->assertInstanceOf( FrontendCurrencies::class, $this->multi_currency->get_frontend_currencies() );
+		$this->assertInstanceOf( FrontendPrices::class, $this->multi_currency->get_frontend_prices() );
+		$this->assertFalse( has_filter( 'woocommerce_currency' ) );
+	}
+
+	public function test_init_initializes_during_setup_when_feature_is_disabled() {
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+		$_SERVER['HTTP_REFERER'] = admin_url( 'admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup' );
+
+		$this->init_multi_currency();
+
+		$this->assertNotEmpty( $this->multi_currency->get_enabled_currencies() );
+	}
+
+	public function test_is_enabled_follows_the_customer_multi_currency_feature_flag() {
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+		$this->assertFalse( MultiCurrency::is_enabled() );
+
+		update_option( '_wcpay_feature_customer_multi_currency', '1' );
+		$this->assertTrue( MultiCurrency::is_enabled() );
+	}
+
+	public function test_is_enabled_is_true_during_setup_when_feature_is_disabled() {
+		update_option( '_wcpay_feature_customer_multi_currency', '0' );
+		$_SERVER['HTTP_REFERER'] = admin_url( 'admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup' );
+
+		$this->assertTrue( MultiCurrency::is_enabled() );
 	}
 
 	private function mock_theme( $theme ) {
