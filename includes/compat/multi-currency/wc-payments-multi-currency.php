@@ -27,16 +27,14 @@ function wcpay_multi_currency_onboarding_check() {
 /**
  * Returns the MultiCurrency singleton.
  *
- * Declared unconditionally, on purpose. PHP hoists top-level function declarations at compile time,
- * so the early `return` below never prevented this function from existing, and callers across the
- * plugin and in third-party code — including `MultiCurrency::instance()`, which delegates here —
- * rely on it being available whether or not the module is active.
+ * Declared unconditionally, on purpose: PHP hoists top-level function declarations at compile time,
+ * so the early `return` below never prevented this function from existing, and callers here and in
+ * third-party code rely on it whether or not the module is active.
  *
- * `init_hooks()` stays unconditional. Everything that changes what the store does — the currency and
- * price filters, the currency collections — is registered from `MultiCurrency::init()`, which refuses
- * to run when `MultiCurrency::is_active()` is false. What is left here is the admin screens, the REST
- * routes and a few frontend listeners that no-op on an empty currency list, and a merchant on an
- * unconfigured store still needs those to find and switch the feature on.
+ * `init_hooks()` stays unconditional too. Everything that changes what the store does is registered
+ * from `MultiCurrency::init()`, which refuses to run when `MultiCurrency::is_active()` is false;
+ * what is left here is the admin screens and REST routes an unconfigured store still needs to
+ * switch the feature on.
  *
  * @return WCPay\MultiCurrency\MultiCurrency
  */
@@ -57,13 +55,9 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 	return $instance;
 }
 
-// Unchanged from before: bail out when the merchant turned Multi-Currency off. Reading the saved
-// preference rather than `is_customer_multi_currency_enabled()` keeps the same two outcomes — the
-// helper only ever returns false for a stored '0' — while making it explicit that the never-saved
-// case is decided elsewhere, by `MultiCurrency::is_active()`.
-//
-// This guard is not what keeps the module inert. PHP hoists the function declared above, so callers
-// construct the module whether or not this file returns here.
+// Skip the bootstrap when the merchant saved the setting as off. This is not what keeps the module
+// inert — PHP hoists the function above, so callers construct it whether or not this file returns
+// here. `MultiCurrency::is_active()` is what decides.
 if ( false === WC_Payments_Features::get_saved_customer_multi_currency_preference() && ! wcpay_multi_currency_onboarding_check() ) {
 	return;
 }

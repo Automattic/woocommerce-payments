@@ -63,6 +63,16 @@ class MultiCurrency {
 	protected static $is_initialized = false;
 
 	/**
+	 * Whether init() has already run on this instance, successfully or into an inert state.
+	 *
+	 * Separate from the static $is_initialized, which reports whether Multi-Currency is running
+	 * and is shared by every instance in the process. This one guards re-entry per instance.
+	 *
+	 * @var bool
+	 */
+	private $init_ran = false;
+
+	/**
 	 * Compatibility instance.
 	 *
 	 * @var Compatibility
@@ -246,25 +256,17 @@ class MultiCurrency {
 	 * Whether the module may change what the store does on this request.
 	 *
 	 * Multi-Currency is on by default, but "on by default" must not mean "on before the merchant has
-	 * a WooPayments account". A store with WooPayments installed and unconfigured has nothing to
-	 * switch — only its base currency is enabled — yet the module still registered its
-	 * `woocommerce_currency` and price filters and overrode the currency a third-party currency
-	 * switcher had already selected. See #12060.
+	 * a WooPayments account": an unconfigured store has nothing to switch, yet still registered its
+	 * `woocommerce_currency` and price filters over a third-party currency switcher. See #12060.
 	 *
-	 * `WC_Payments_Features::get_saved_customer_multi_currency_preference()` reports three states,
-	 * and each one has an unambiguous answer:
+	 * The saved preference has three states, each with an unambiguous answer:
 	 *
-	 * - `false`  the merchant saved the setting as off. Stay inert.
-	 * - `true`   the merchant saved settings while it was on. Run.
-	 * - `null`   the merchant never saved it. Run only once WooPayments is configured.
+	 * - `false`  saved as off. Stay inert.
+	 * - `true`   saved as on. Run.
+	 * - `null`   never saved. Run only once WooPayments is configured.
 	 *
-	 * The Multi-Currency setup flow needs the module before the setting has been written, so it wins
-	 * over all three.
-	 *
-	 * Every entry point has to respect this — the bootstrap in
-	 * `includes/compat/multi-currency/wc-payments-multi-currency.php`, the lazy-initializing getters,
-	 * and any direct caller of `WC_Payments_Multi_Currency()` — so an inert module never registers a
-	 * hook or touches the currency, no matter who asks for it.
+	 * The Multi-Currency setup flow needs the module before the setting is written, so it wins over
+	 * all three.
 	 *
 	 * @return bool
 	 */
@@ -339,6 +341,15 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		// init() runs on the `init` action and lazily from the getters below. A caller that reaches
+		// a getter before `init` fires would otherwise initialize twice, leaving two sets of price
+		// and currency objects hooked at the same priority.
+		if ( $this->init_ran ) {
+			return;
+		}
+
+		$this->init_ran = true;
+
 		// The lazy-initializing getters call init() on demand, and any code path can reach them
 		// through WC_Payments_Multi_Currency() regardless of the bootstrap guard. Refuse to
 		// initialize when the module must stay inert, so it never registers the frontend currency
@@ -1849,6 +1860,12 @@ class MultiCurrency {
 	 * implementation without it keeps the previous behaviour rather than having Multi-Currency
 	 * switch itself off underneath it.
 	 *
+	 * The enabled-currencies option is a second, durable signal. The account cache is wiped by
+	 * `WC_Payments_Account::clear_cache()` — hooked to `woocommerce_woocommerce_payments_updated`,
+	 * so every plugin update — and a storefront request never refreshes it. Without this fallback a
+	 * connected store whose merchant never saved the setting would go inert until something else
+	 * warmed the cache. The option survives that, and is only ever written by a merchant action.
+	 *
 	 * @return bool
 	 */
 	private function is_payments_configured(): bool {
@@ -1856,7 +1873,13 @@ class MultiCurrency {
 			return true;
 		}
 
-		return (bool) $this->payments_account->has_account_data();
+		if ( $this->payments_account->has_account_data() ) {
+			return true;
+		}
+
+		$enabled_currency_codes = get_option( $this->id . '_enabled_currencies', [] );
+
+		return is_array( $enabled_currency_codes ) && ! empty( $enabled_currency_codes );
 	}
 
 	/**
@@ -1876,6 +1899,7 @@ class MultiCurrency {
 	private function set_inert_state() {
 		$this->available_currencies = [];
 		$this->enabled_currencies   = [];
+		$this->default_currency     = new Currency( $this->localization_service, $this->get_store_currency_code() );
 		$this->frontend_prices      = $this->frontend_prices ?? new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies  = $this->frontend_currencies ?? new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 	}
