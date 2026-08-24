@@ -34,6 +34,7 @@ class WC_Payments_Features {
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
+	const CUSTOMER_MULTI_CURRENCY_FLAG_NAME                   = '_wcpay_feature_customer_multi_currency';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -65,7 +66,29 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_customer_multi_currency_enabled() {
-		return '1' === get_option( '_wcpay_feature_customer_multi_currency', '1' );
+		return '1' === get_option( self::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '1' );
+	}
+
+	/**
+	 * Returns the customer Multi-Currency preference the merchant saved, if they ever saved one.
+	 *
+	 * `is_customer_multi_currency_enabled()` collapses "never saved" into "enabled", because the
+	 * feature is on by default. Callers that have to tell a saved preference apart from that default
+	 * need the raw three-state value. The option is written in exactly one place — the settings REST
+	 * controller, see `WC_REST_Payments_Settings_Controller::update_is_multi_currency_enabled()` —
+	 * and only ever as '1' or '0', so an absent option reliably means the merchant never saved it.
+	 *
+	 * Note that the settings page posts its whole payload, so saving any unrelated WooPayments
+	 * setting writes this option with whatever value was on screen. A stored '1' therefore records
+	 * that the merchant saved settings while the feature was on; it is not proof of a deliberate
+	 * opt-in.
+	 *
+	 * @return bool|null True or false when the merchant saved the setting, null when they never did.
+	 */
+	public static function get_saved_customer_multi_currency_preference() {
+		$saved_value = get_option( self::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, null );
+
+		return null === $saved_value ? null : '1' === $saved_value;
 	}
 
 	/**

@@ -95,12 +95,28 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_customer_multi_currency_is_enabled_by_default() {
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
 		$this->assertTrue( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
 	public function test_customer_multi_currency_can_be_disabled() {
 		$this->set_feature_flag_option( '_wcpay_feature_customer_multi_currency', '0' );
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
+	}
+
+	public function test_saved_customer_multi_currency_preference_is_null_when_never_saved() {
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
+		$this->assertNull( WC_Payments_Features::get_saved_customer_multi_currency_preference() );
+	}
+
+	public function test_saved_customer_multi_currency_preference_reports_a_saved_on() {
+		$this->set_feature_flag_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '1' );
+		$this->assertTrue( WC_Payments_Features::get_saved_customer_multi_currency_preference() );
+	}
+
+	public function test_saved_customer_multi_currency_preference_reports_a_saved_off() {
+		$this->set_feature_flag_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '0' );
+		$this->assertFalse( WC_Payments_Features::get_saved_customer_multi_currency_preference() );
 	}
 
 	public function test_is_mc_cache_optimized_enabled_by_default() {
