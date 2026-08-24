@@ -50,6 +50,12 @@ function _manually_load_plugin() {
 	// is not loaded even though it's set during the tests setup.
 	update_option( 'woocommerce_currency', 'USD' );
 
+	// Multi-Currency only initializes for a merchant who saved the setting as on, or for a store
+	// that has WooPayments configured — see MultiCurrency::is_active(). This environment has no
+	// account, so record the saved preference that the Multi-Currency suites assume. Tests that
+	// need the never-saved state delete this option; the per-test transaction restores it.
+	update_option( '_wcpay_feature_customer_multi_currency', '1' );
+
 	// Enable the WCPay Subscriptions feature flag in tests to ensure we can test
 	// subscriptions functionality. Using 'default_option_' filter provides a default
 	// only when the option doesn't exist in the database, allowing tests to override

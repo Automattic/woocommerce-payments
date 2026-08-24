@@ -243,6 +243,46 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Whether the module may change what the store does on this request.
+	 *
+	 * Multi-Currency is on by default, but "on by default" must not mean "on before the merchant has
+	 * a WooPayments account". A store with WooPayments installed and unconfigured has nothing to
+	 * switch — only its base currency is enabled — yet the module still registered its
+	 * `woocommerce_currency` and price filters and overrode the currency a third-party currency
+	 * switcher had already selected. See #12060.
+	 *
+	 * `WC_Payments_Features::get_saved_customer_multi_currency_preference()` reports three states,
+	 * and each one has an unambiguous answer:
+	 *
+	 * - `false`  the merchant saved the setting as off. Stay inert.
+	 * - `true`   the merchant saved settings while it was on. Run.
+	 * - `null`   the merchant never saved it. Run only once WooPayments is configured.
+	 *
+	 * The Multi-Currency setup flow needs the module before the setting has been written, so it wins
+	 * over all three.
+	 *
+	 * Every entry point has to respect this — the bootstrap in
+	 * `includes/compat/multi-currency/wc-payments-multi-currency.php`, the lazy-initializing getters,
+	 * and any direct caller of `WC_Payments_Multi_Currency()` — so an inert module never registers a
+	 * hook or touches the currency, no matter who asks for it.
+	 *
+	 * @return bool
+	 */
+	public function is_active(): bool {
+		if ( function_exists( 'wcpay_multi_currency_onboarding_check' ) && wcpay_multi_currency_onboarding_check() ) {
+			return true;
+		}
+
+		$saved_preference = WC_Payments_Features::get_saved_customer_multi_currency_preference();
+
+		if ( null !== $saved_preference ) {
+			return $saved_preference;
+		}
+
+		return $this->is_payments_configured();
+	}
+
+	/**
 	 * Initializes this class' WP hooks.
 	 *
 	 * @return void
@@ -299,6 +339,15 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		// The lazy-initializing getters call init() on demand, and any code path can reach them
+		// through WC_Payments_Multi_Currency() regardless of the bootstrap guard. Refuse to
+		// initialize when the module must stay inert, so it never registers the frontend currency
+		// and price hooks on a store that never asked for them.
+		if ( ! $this->is_active() ) {
+			$this->set_inert_state();
+			return;
+		}
+
 		// If the store currency is not in the list of available WooCommerce currencies
 		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
 		// Multi-Currency cannot function without a valid base currency.
@@ -311,10 +360,7 @@ class MultiCurrency {
 					$store_currency
 				)
 			);
-			// Initialize properties to safe defaults so lazy-init getters and
-			// later init-hook callbacks don't re-trigger init() or fatal.
-			$this->available_currencies = [];
-			$this->enabled_currencies   = [];
+			$this->set_inert_state();
 			return;
 		}
 
@@ -540,6 +586,10 @@ class MultiCurrency {
 	 * @return FrontendPrices
 	 */
 	public function get_frontend_prices(): FrontendPrices {
+		if ( null === $this->frontend_prices ) {
+			$this->init();
+		}
+
 		return $this->frontend_prices;
 	}
 
@@ -549,6 +599,10 @@ class MultiCurrency {
 	 * @return FrontendCurrencies
 	 */
 	public function get_frontend_currencies(): FrontendCurrencies {
+		if ( null === $this->frontend_currencies ) {
+			$this->init();
+		}
+
 		return $this->frontend_currencies;
 	}
 
@@ -1777,6 +1831,53 @@ class MultiCurrency {
 		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
 		unset( $this->enabled_currencies[ $default_code ] );
 		$this->enabled_currencies = array_merge( $default, $this->enabled_currencies );
+	}
+
+	/**
+	 * Whether WooPayments has been configured on this store, with any kind of account.
+	 *
+	 * Reads the local account cache only. `has_account_data()` goes through
+	 * `Database_Cache::get( ACCOUNT_KEY, true )`, which bypasses the expiry check and returns
+	 * whatever is stored, so it never reaches the server. `is_provider_connected()` would: it calls
+	 * `get_cached_account_data()`, which refetches a cold or expired cache and answers false when
+	 * that request fails — a storefront page load must not depend on either. It also only checks for
+	 * an account id, so sandbox, test and live accounts all count, which is what "configured" means
+	 * here.
+	 *
+	 * `has_account_data()` is deliberately not part of `MultiCurrencyAccountInterface`: adding a
+	 * required method to an interface third parties can implement breaks them on load. An
+	 * implementation without it keeps the previous behaviour rather than having Multi-Currency
+	 * switch itself off underneath it.
+	 *
+	 * @return bool
+	 */
+	private function is_payments_configured(): bool {
+		if ( ! method_exists( $this->payments_account, 'has_account_data' ) ) {
+			return true;
+		}
+
+		return (bool) $this->payments_account->has_account_data();
+	}
+
+	/**
+	 * Puts the module into its inert state: no currencies and no hooks, but every getter still
+	 * returns a usable value.
+	 *
+	 * Used when init() must not proceed, so the lazy-initializing getters and later init-hook
+	 * callbacks neither re-trigger init() nor fatal. The frontend price and currency objects are
+	 * still constructed, just without their hooks, because get_frontend_prices() and
+	 * get_frontend_currencies() have non-nullable return types and are reachable from any caller.
+	 *
+	 * `static::$is_initialized` is deliberately left false, so `is_initialized()` keeps reporting
+	 * that Multi-Currency is not running.
+	 *
+	 * @return void
+	 */
+	private function set_inert_state() {
+		$this->available_currencies = [];
+		$this->enabled_currencies   = [];
+		$this->frontend_prices      = $this->frontend_prices ?? new FrontendPrices( $this, $this->compatibility );
+		$this->frontend_currencies  = $this->frontend_currencies ?? new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 	}
 
 	/**

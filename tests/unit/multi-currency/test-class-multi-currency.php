@@ -9,6 +9,8 @@ use WCPay\MultiCurrency\Utils;
 use WCPay\MultiCurrency\CachingEnvironment;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
+use WCPay\MultiCurrency\FrontendCurrencies;
+use WCPay\MultiCurrency\FrontendPrices;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
@@ -159,6 +161,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		delete_option( 'wcpay_multi_currency_cache_autodetect_done' );
 		delete_option( 'wcpay_multi_currency_cache_recommendation_dismissed' );
 		delete_option( 'wcpay_multi_currency_store_currency' );
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
+		unset( $_SERVER['HTTP_REFERER'] );
 
 		parent::tear_down();
 	}
@@ -1836,7 +1840,25 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_cache = null, $mock_caching_environment = null ) {
+	/**
+	 * Builds an account mock that answers the "is WooPayments configured?" question.
+	 *
+	 * Mocks the concrete class rather than MultiCurrencyAccountInterface on purpose:
+	 * has_account_data() is deliberately absent from the interface, and
+	 * MultiCurrency::is_payments_configured() probes for it with method_exists().
+	 *
+	 * @param bool $has_account_data Whether the local account cache holds an account.
+	 *
+	 * @return WC_Payments_Account|PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function create_mock_account_with_data( bool $has_account_data ) {
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account->method( 'has_account_data' )->willReturn( $has_account_data );
+
+		return $mock_account;
+	}
+
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_cache = null, $mock_caching_environment = null, $run_init = true ) {
 		$this->mock_api_client = $this->createMock( MultiCurrencyApiClientInterface::class );
 
 		$this->mock_account = $mock_account ?? $this->createMock( MultiCurrencyAccountInterface::class );
@@ -1861,7 +1883,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$mock_caching_environment
 		);
 		$this->multi_currency->init_widgets();
-		$this->multi_currency->init();
+
+		if ( $run_init ) {
+			$this->multi_currency->init();
+		}
 	}
 
 	private function add_mock_order_with_currency_meta( $currency ) {
@@ -1965,6 +1990,118 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $this->multi_currency->get_enabled_currencies() );
 
 		update_option( 'woocommerce_currency', 'USD' );
+	}
+
+	public function test_is_active_is_false_when_the_merchant_saved_the_setting_as_off() {
+		update_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '0' );
+
+		$this->init_multi_currency( null, true, $this->create_mock_account_with_data( true ), null, null, false );
+
+		$this->assertFalse( $this->multi_currency->is_active() );
+	}
+
+	public function test_is_active_is_true_when_the_merchant_saved_the_setting_as_on() {
+		update_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '1' );
+
+		// Not configured: a saved preference wins over the configuration check.
+		$this->init_multi_currency( null, false, $this->create_mock_account_with_data( false ), null, null, false );
+
+		$this->assertTrue( $this->multi_currency->is_active() );
+	}
+
+	public function test_is_active_is_false_when_the_setting_was_never_saved_and_woopayments_is_unconfigured() {
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
+
+		$this->init_multi_currency( null, false, $this->create_mock_account_with_data( false ), null, null, false );
+
+		$this->assertFalse( $this->multi_currency->is_active() );
+	}
+
+	public function test_is_active_is_true_when_the_setting_was_never_saved_but_woopayments_is_configured() {
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
+
+		$this->init_multi_currency( null, true, $this->create_mock_account_with_data( true ), null, null, false );
+
+		$this->assertTrue( $this->multi_currency->is_active() );
+	}
+
+	public function test_is_active_is_true_on_the_setup_flow_even_when_the_setting_is_off() {
+		update_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '0' );
+		$_SERVER['HTTP_REFERER'] = admin_url( 'admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup' );
+
+		$this->init_multi_currency( null, true, $this->create_mock_account_with_data( true ), null, null, false );
+
+		$this->assertTrue( $this->multi_currency->is_active() );
+	}
+
+	public function test_init_registers_no_currency_hooks_when_the_module_is_inactive() {
+		remove_all_filters( 'woocommerce_currency' );
+		update_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '0' );
+
+		$this->init_multi_currency( null, true, $this->create_mock_account_with_data( true ) );
+
+		$this->assertSame( [], $this->multi_currency->get_available_currencies() );
+		$this->assertSame( [], $this->multi_currency->get_enabled_currencies() );
+		// Note: is_initialized() is not asserted here. It reads a static flag shared by every
+		// MultiCurrency instance in the process, so an earlier active instance leaves it true.
+		$this->assertFalse( has_filter( 'woocommerce_currency' ) );
+	}
+
+	/**
+	 * The reported scenario: WooPayments installed but never configured, the merchant never touched
+	 * the Multi-Currency setting, and a third-party currency switcher hooked below priority 900.
+	 *
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/12060
+	 */
+	public function test_unconfigured_store_leaves_a_third_party_currency_filter_alone() {
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => 'GBP', 5 );
+
+		$this->init_multi_currency( null, false, $this->create_mock_account_with_data( false ) );
+
+		$this->assertSame( 'GBP', get_woocommerce_currency() );
+	}
+
+	public function test_configured_store_still_asserts_its_currency_over_a_third_party_filter() {
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => 'GBP', 5 );
+
+		$this->init_multi_currency( null, true, $this->create_mock_account_with_data( true ) );
+
+		$this->assertSame( 'USD', get_woocommerce_currency() );
+	}
+
+	public function test_inactive_module_still_reports_the_store_currency() {
+		update_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '0' );
+
+		$this->init_multi_currency( null, true, $this->create_mock_account_with_data( true ) );
+
+		$this->assertSame( 'USD', $this->multi_currency->get_default_currency()->get_code() );
+		$this->assertSame( 'USD', $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
+	public function test_frontend_getters_initialize_an_inactive_module_on_first_use() {
+		remove_all_filters( 'woocommerce_currency' );
+		update_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME, '0' );
+
+		// Nothing has run init() yet: the getters must not return null into their non-nullable types.
+		$this->init_multi_currency( null, true, $this->create_mock_account_with_data( true ), null, null, false );
+
+		$this->assertInstanceOf( FrontendCurrencies::class, $this->multi_currency->get_frontend_currencies() );
+		$this->assertInstanceOf( FrontendPrices::class, $this->multi_currency->get_frontend_prices() );
+		$this->assertFalse( has_filter( 'woocommerce_currency' ) );
+	}
+
+	public function test_an_account_implementation_without_has_account_data_keeps_the_previous_behaviour() {
+		// MultiCurrencyAccountInterface does not declare has_account_data(); a third-party
+		// implementation must not be switched off underneath.
+		delete_option( WC_Payments_Features::CUSTOMER_MULTI_CURRENCY_FLAG_NAME );
+
+		$this->init_multi_currency( null, false, $this->createMock( MultiCurrencyAccountInterface::class ), null, null, false );
+
+		$this->assertTrue( $this->multi_currency->is_active() );
 	}
 
 	private function mock_theme( $theme ) {

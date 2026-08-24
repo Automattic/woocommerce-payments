@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep Multi-Currency inert until the merchant turns it on or configures WooPayments, so it no longer overrides the currency chosen by a third-party currency switcher on an unconfigured store
