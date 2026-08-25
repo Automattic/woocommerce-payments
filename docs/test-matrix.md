@@ -33,7 +33,7 @@ All test suites, CI workflows, and release processes are owned and maintained by
 | 15 | [ESLint + CSS Lint](#15-eslint--css-lint) | Linting | WooPayments | PR, merge_group | Yes | No |
 | 16 | [TypeScript](#16-typescript) | Type Checking | WooPayments | PR, merge_group | Yes | No |
 | 17 | [PHP Compatibility](#17-php-compatibility) | Compatibility | WooPayments | PR | Yes | No |
-| 18 | [WC/WP Compatibility](#18-wcwp-compatibility) | Compatibility | WooPayments | PR | Partial | No |
+| 18 | [WC/WP Compatibility](#18-wcwp-compatibility) | Compatibility | WooPayments | PR, daily schedule | Partial | No |
 | 19 | [Changelog Check](#19-changelog-check) | Process | WooPayments | PR (develop, release/*) | Yes | No |
 | 20 | [Bundle Size](#20-bundle-size) | Performance | WooPayments | PR | Yes | No |
 | | **Release Testing** | | | | | |
@@ -414,8 +414,8 @@ Validates PHP version compatibility using `bin/phpcs-compat.sh`.
 |-------|-------|
 | **Category** | Compatibility |
 | **CI Workflow** | `compatibility.yml` |
-| **Trigger** | `pull_request` |
-| **Required** | Partial (main matrix required, beta allowed to fail) |
+| **Trigger** | `pull_request`, daily `schedule`, `workflow_dispatch` |
+| **Required** | Partial (main matrix required, beta and WP nightly allowed to fail) |
 | **Status** | Active |
 
 **Main matrix (required):**
@@ -427,6 +427,8 @@ Validates PHP version compatibility using `bin/phpcs-compat.sh`.
 | 7.6.0 | 6.0 | 13.6.0 | 7.4 |
 
 **Beta matrix (allowed to fail):** WC beta x PHP 7.4, 8.0, 8.1.
+
+**WP nightly (allowed to fail):** WC latest x WP nightly x PHP 7.4.
 
 ---
 
