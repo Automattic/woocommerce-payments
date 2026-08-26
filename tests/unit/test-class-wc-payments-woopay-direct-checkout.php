@@ -9,6 +9,13 @@ use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * WC_Payments_WooPay_Direct_Checkout_Test class.
+ *
+ * Runs in a separate process because these tests define the `WOOCOMMERCE_CHECKOUT`
+ * constant, which cannot be undefined once set. Isolation keeps it from leaking into
+ * other test classes (several code paths, e.g. customer creation, branch on it).
+ *
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
  */
 class WC_Payments_WooPay_Direct_Checkout_Test extends WCPAY_UnitTestCase {
 
@@ -23,6 +30,8 @@ class WC_Payments_WooPay_Direct_Checkout_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		// The filter only runs during checkout; the class returns early otherwise.
+		// Safe to define here: the class runs in a separate process (see class docblock),
+		// so the constant does not leak into other test classes.
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
@@ -88,5 +97,24 @@ class WC_Payments_WooPay_Direct_Checkout_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
 		$this->assertNull( WC()->session->get( 'store_api_draft_order' ) );
 		$this->assertEquals( $order->get_id(), WC()->session->get( 'order_awaiting_payment' ) );
+	}
+
+	/**
+	 * A trashed order still resolves to a WC_Order, but is not a resumable draft, so it must be
+	 * discarded rather than resumed. Guards against the "just trashed" case raised in review.
+	 */
+	public function test_trashed_order_is_discarded_and_not_resumed() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'checkout-draft' );
+		$order->save();
+		$order->get_data_store()->delete( $order, [ 'force_delete' => false ] ); // Trash, not force-delete.
+
+		WC()->session->set( 'store_api_draft_order', $order->get_id() );
+
+		$result = $this->direct_checkout->maybe_use_store_api_draft_order_id( 0 );
+
+		$this->assertSame( 0, $result );
+		$this->assertNull( WC()->session->get( 'store_api_draft_order' ) );
+		$this->assertNull( WC()->session->get( 'order_awaiting_payment' ) );
 	}
 }

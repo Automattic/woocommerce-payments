@@ -69,13 +69,24 @@ class WC_Payments_WooPay_Direct_Checkout {
 		$draft_order_id = absint( WC()->session->get( 'store_api_draft_order' ) );
 		$draft_order    = $draft_order_id ? wc_get_order( $draft_order_id ) : false;
 
-		// The session can outlive the draft order it points at: the daily
-		// `woocommerce_cleanup_draft_orders` action deletes stale draft orders while the
-		// customer session persists. Under HPOS a reused post ID can even make the stale
-		// pointer resolve to a non-order object, so guard with an instance check rather than
-		// a truthiness check. When the pointer is stale, discard it and fall through to
-		// normal order creation instead of fataling on a call to set_status() on false.
-		if ( ! $draft_order instanceof WC_Order ) {
+		// Only resume the session's draft order when it is genuinely the customer's current,
+		// resumable order, mirroring WooCommerce core's own validity check
+		// (WooCommerce\StoreApi\Utilities\DraftOrderTrait::is_valid_draft_order()): it must be a
+		// checkout-draft, or an unpaid order that still matches the current cart. Anything else is
+		// discarded so checkout falls through to normal order creation rather than resuming the
+		// wrong order — or fataling. This covers a pointer left dangling by the daily
+		// `woocommerce_cleanup_draft_orders` cleanup (where wc_get_order() returns false), a
+		// trashed order, and a stale order that no longer matches the cart.
+		$cart      = WC()->cart;
+		$cart_hash = $cart instanceof WC_Cart ? $cart->get_cart_hash() : '';
+
+		$is_resumable_draft_order = $draft_order instanceof WC_Order
+			&& (
+				$draft_order->has_status( 'checkout-draft' )
+				|| ( $draft_order->needs_payment() && $draft_order->has_cart_hash( $cart_hash ) )
+			);
+
+		if ( ! $is_resumable_draft_order ) {
 			WC()->session->set( 'store_api_draft_order', null );
 			return $order_id;
 		}
