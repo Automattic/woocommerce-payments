@@ -595,6 +595,47 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
 	}
 
+	public function test_envelope_is_refused_on_a_second_request_under_a_persistent_object_cache() {
+		// Stores at this size normally run Redis or Memcached, and transients behave
+		// differently there: set_transient() becomes wp_cache_set(), which stores
+		// unconditionally and reports success either way. The claim has to be made with an
+		// operation that refuses a key already present, or the guard is only as good as the
+		// read in front of it — and two requests arriving together both pass that read.
+		//
+		// Honest about what this does and does not prove: the race is not reproducible in a
+		// unit test, and this passes against the read-then-write version too, since a
+		// sequential replay is caught by the read. It is here so the object cache path is
+		// exercised at all — nothing else covers it — and so a change that leaves the claim
+		// working only on the database path fails.
+		$was_using_ext_object_cache = wp_using_ext_object_cache( true );
+
+		try {
+			$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+
+			$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+
+			$this->reset_resolved_attestations();
+
+			$this->assertNull( WooPay_Session::get_woopay_attestation() );
+		} finally {
+			wp_using_ext_object_cache( $was_using_ext_object_cache );
+		}
+	}
+
+	public function test_the_recorded_claim_does_not_carry_a_timestamp() {
+		$envelope = $this->build_envelope( 'shopper@example.com' );
+
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
+
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+
+		// On the database path a duplicate claim is refused by MySQL reporting zero affected
+		// rows for an INSERT that changes nothing, which only holds while every request
+		// writes the same value. A timestamp here would make two requests either side of a
+		// second boundary look like a change, and both would be told they spent the envelope.
+		$this->assertEquals( 1, get_transient( WooPay_Session::ATTESTATION_CLAIM_PREFIX . md5( $envelope['hash'] ) ) );
+	}
+
 	public function test_spending_one_envelope_does_not_affect_another() {
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );

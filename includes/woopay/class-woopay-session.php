@@ -1182,12 +1182,29 @@ class WooPay_Session {
 	 * is applied to the absolute clock difference and so also admits envelopes dated
 	 * slightly ahead of the store.
 	 *
-	 * The write decides, not the read before it. `add_option()` underneath refuses a key
-	 * that already exists, so of two requests arriving with the same envelope at once —
-	 * both past the `get_transient()` check — only one gets a true back. Trusting the read
-	 * would let both through, which is the replay this exists to stop. It also fails
-	 * closed if the claim cannot be recorded at all: an envelope whose guard is not in
-	 * place is refused rather than accepted on the assumption it will be.
+	 * The write decides, and there is no read before it. Reading first and trusting the
+	 * answer is what lets two requests carrying the same envelope both pass: each sees
+	 * nothing recorded, each then records it, and both are told they spent it. Asking the
+	 * store to refuse a key it already holds collapses that into one operation, so the
+	 * loser is told so by the same call that would have granted it.
+	 *
+	 * Which operation that is depends on where transients live, and the two differ in a
+	 * way that matters here:
+	 *
+	 * - Under a persistent object cache — Redis or Memcached, normal for a store at this
+	 *   size — `set_transient()` is `wp_cache_set()`, which overwrites whatever is there
+	 *   and answers true either way. `wp_cache_add()` is the one that refuses an existing
+	 *   key, and both backends implement it as a store-if-absent rather than a read
+	 *   followed by a write.
+	 * - On the database, `set_transient()` reaches `add_option()`, whose
+	 *   `INSERT ... ON DUPLICATE KEY UPDATE` reports zero affected rows when the row
+	 *   already holds the value being written — which MySQL only says when the value is
+	 *   unchanged. That is why the stored value is a constant: with `time()` in there, two
+	 *   requests either side of a second boundary write different values, the update
+	 *   counts as a change, and both are told they won.
+	 *
+	 * It also fails closed if the claim cannot be recorded at all: an envelope whose guard
+	 * is not in place is refused rather than accepted on the assumption it will be.
 	 *
 	 * @param string $fingerprint Fingerprint of the envelope being spent.
 	 *
@@ -1195,13 +1212,16 @@ class WooPay_Session {
 	 *              the claim could not be recorded.
 	 */
 	private static function claim_attestation( string $fingerprint ): bool {
-		$key = self::ATTESTATION_CLAIM_PREFIX . $fingerprint;
+		$key        = self::ATTESTATION_CLAIM_PREFIX . $fingerprint;
+		$expiration = 2 * self::ATTESTATION_MAX_AGE;
 
-		if ( false !== get_transient( $key ) ) {
-			return false;
+		// The group and key `set_transient()` would have used, so `get_transient()` still
+		// reads the claim back.
+		if ( wp_using_ext_object_cache() ) {
+			return wp_cache_add( $key, 1, 'transient', $expiration );
 		}
 
-		return (bool) set_transient( $key, time(), 2 * self::ATTESTATION_MAX_AGE );
+		return (bool) set_transient( $key, 1, $expiration );
 	}
 
 	/**
