@@ -728,6 +728,54 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		unset( $_GET['email'] );
 	}
 
+	public function test_rest_route_withholds_extension_data_for_an_email_it_was_only_told_about() {
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		// Names the shopper in a plain parameter, which anyone can do.
+		$_GET['email'] = $shopper->user_email;
+
+		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+
+		// The nonce was already withheld here, but the balance it guards was not: this route
+		// returns adapted extension data in plaintext, so naming an address must not be enough
+		// to read that account's Points & Rewards and Gift Card data.
+		$this->assertSame( '', $request['email'] );
+		$this->assertArrayNotHasKey( 'adapted_extensions', $request );
+
+		unset( $_GET['email'] );
+	}
+
+	public function test_a_guest_envelope_does_not_let_the_caller_name_someone_elses_email() {
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		// A guest shopper has no account to name, so their envelope carries no email — and it
+		// still authorizes the route. That combination is the one worth pinning: the envelope
+		// gets the caller in, and the parameter must not then decide whose data comes back.
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope();
+		$_POST['email']                             = $shopper->user_email;
+
+		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+
+		$this->assertSame( '', $request['email'] );
+		$this->assertArrayNotHasKey( 'adapted_extensions', $request );
+		$this->assertArrayNotHasKey( 'email_verified_session_nonce', $request );
+
+		unset( $_POST['email'] );
+	}
+
+	public function test_rest_route_returns_extension_data_for_an_attested_email() {
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( $shopper->user_email );
+
+		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+
+		// The control for the two above: withholding is the point, but not at the cost of the
+		// flow this route exists to serve.
+		$this->assertSame( $shopper->user_email, $request['email'] );
+		$this->assertNotEmpty( $request['adapted_extensions'] );
+	}
+
 	/**
 	 * Puts a guest shopper in front of a store carrying a redeemable balance for them.
 	 *

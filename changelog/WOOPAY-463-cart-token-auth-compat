@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Authorize WooPay requests on the Cart-Token the store already validates, and the WooPay session route on an encrypted attestation envelope, instead of a Jetpack blog token signature. The signature is no longer accepted, and the `wcpay_woopay_is_signed_with_blog_token` filter is removed with it.
+Authorize WooPay requests on the Cart-Token the store already validates, and the WooPay session route on an encrypted attestation envelope, instead of a Jetpack blog token signature. The signature is no longer accepted, and the `wcpay_woopay_is_signed_with_blog_token` filter is removed with it. The session route now also takes the shopper's email from that envelope rather than from a request parameter.
