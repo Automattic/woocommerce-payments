@@ -55,7 +55,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 */
 	public function maybe_use_store_api_draft_order_id( $order_id ) {
 		// Only apply this filter during the checkout request.
-		$is_checkout = defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT;
+		$is_checkout = $this->is_checkout_request();
 		// Only apply this filter if the order ID is not already defined.
 		$is_already_defined_order_id = ! empty( $order_id );
 		// Only apply this filter if the session doesn't already have an order_awaiting_payment.
@@ -137,6 +137,19 @@ class WC_Payments_WooPay_Direct_Checkout {
 		);
 
 		wp_enqueue_script( 'WCPAY_WOOPAY_DIRECT_CHECKOUT' );
+	}
+
+	/**
+	 * Whether the current request is a (classic) checkout request.
+	 *
+	 * Extracted so it can be overridden in tests without defining the global
+	 * `WOOCOMMERCE_CHECKOUT` constant (which cannot be undefined and would leak
+	 * into other test classes).
+	 *
+	 * @return bool
+	 */
+	protected function is_checkout_request(): bool {
+		return defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT;
 	}
 
 	/**

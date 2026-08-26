@@ -9,13 +9,6 @@ use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * WC_Payments_WooPay_Direct_Checkout_Test class.
- *
- * Runs in a separate process because these tests define the `WOOCOMMERCE_CHECKOUT`
- * constant, which cannot be undefined once set. Isolation keeps it from leaking into
- * other test classes (several code paths, e.g. customer creation, branch on it).
- *
- * @runTestsInSeparateProcesses
- * @preserveGlobalState disabled
  */
 class WC_Payments_WooPay_Direct_Checkout_Test extends WCPAY_UnitTestCase {
 
@@ -29,14 +22,14 @@ class WC_Payments_WooPay_Direct_Checkout_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		// The filter only runs during checkout; the class returns early otherwise.
-		// Safe to define here: the class runs in a separate process (see class docblock),
-		// so the constant does not leak into other test classes.
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-			define( 'WOOCOMMERCE_CHECKOUT', true );
-		}
-
-		$this->direct_checkout = new WC_Payments_WooPay_Direct_Checkout( $this->createMock( WooPay_Utilities::class ) );
+		// The filter only runs during checkout. Rather than define the global
+		// WOOCOMMERCE_CHECKOUT constant (which cannot be undefined and would leak into other
+		// test classes), stub is_checkout_request() to report a checkout request.
+		$this->direct_checkout = $this->getMockBuilder( WC_Payments_WooPay_Direct_Checkout::class )
+			->setConstructorArgs( [ $this->createMock( WooPay_Utilities::class ) ] )
+			->onlyMethods( [ 'is_checkout_request' ] )
+			->getMock();
+		$this->direct_checkout->method( 'is_checkout_request' )->willReturn( true );
 
 		WC()->session->set( 'store_api_draft_order', null );
 		WC()->session->set( 'order_awaiting_payment', null );
