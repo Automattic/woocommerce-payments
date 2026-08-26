@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Re-run the sofort cleanup on stores where the payment method registry re-enabled it.
