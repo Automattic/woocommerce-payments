@@ -446,6 +446,7 @@ class WC_Payments_Token_Service {
 			// rather than the WCPay logger so the failure is recorded even when the gateway's debug
 			// logging toggle is off, which is its shipped default.
 			WC_Payments_Utils::log_to_wc( 'Failed to set the default payment method for customer: ' . $e->getMessage() );
+			$this->report_failed_default_payment_method_mirror();
 		} finally {
 			// Clear cached payment methods on both paths. The cache has no TTL, so leaving it in
 			// place after a failure keeps serving a payment method the server no longer has: the
@@ -561,5 +562,41 @@ class WC_Payments_Token_Service {
 		}
 
 		return $label;
+	}
+
+	/**
+	 * Tells the customer that the new default did not reach the server.
+	 *
+	 * WooCommerce's My Account handler adds "This payment method was successfully set as your
+	 * default." right after this action returns, with no way to signal a failure back to it. Left
+	 * alone, a swallowed error reads to the customer as a change that stuck. Suppress that one
+	 * message and put an error in its place instead.
+	 *
+	 * The same action also fires during checkout and in admin and REST flows, where there is no
+	 * customer reading notices, so this only runs for the My Account "Make default" request.
+	 *
+	 * @return void
+	 */
+	private function report_failed_default_payment_method_mirror() {
+		if ( ! isset( $GLOBALS['wp']->query_vars['set-default-payment-method'] ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'wc_add_notice' ) || ! did_action( 'woocommerce_init' ) || ! isset( WC()->session ) ) {
+			return;
+		}
+
+		// Returning an empty message from this filter drops the notice. The callback removes
+		// itself so it only ever eats the one success notice that follows this action.
+		$suppress_success_notice = function () use ( &$suppress_success_notice ) {
+			remove_filter( 'woocommerce_add_message', $suppress_success_notice, 100 );
+			return '';
+		};
+		add_filter( 'woocommerce_add_message', $suppress_success_notice, 100 );
+
+		wc_add_notice(
+			__( 'We could not set that payment method as your default. It may no longer be available, please reload the page and try again.', 'woocommerce-payments' ),
+			'error'
+		);
 	}
 }
