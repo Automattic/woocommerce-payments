@@ -429,24 +429,28 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
 
-		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
-			try {
-				$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
-				if ( $customer_id ) {
-					$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
-					// Clear cached payment methods.
-					$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
-				}
-			} catch ( Exception $e ) {
-				// This runs inside a WooCommerce action during checkout and My Account requests,
-				// and failing to mirror the default must not take the request down. The local
-				// default is already written at this point. When the token is stale on the server
-				// side (e.g. the payment method was detached via the Stripe dashboard) the next
-				// payment methods sync prunes it; transient API failures are logged but not
-				// retried. Logged via log_to_wc() rather than the WCPay logger so the failure is
-				// recorded even when the gateway's debug logging toggle is off.
-				WC_Payments_Utils::log_to_wc( 'Failed to set the default payment method for customer: ' . $e->getMessage() );
-			}
+		if ( ! in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
+			return;
+		}
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
+		if ( ! $customer_id ) {
+			return;
+		}
+
+		try {
+			$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
+		} catch ( Exception $e ) {
+			// This runs inside a WooCommerce action during checkout and My Account requests, and
+			// failing to mirror the default must not take the request down. Logged via log_to_wc()
+			// rather than the WCPay logger so the failure is recorded even when the gateway's debug
+			// logging toggle is off, which is its shipped default.
+			WC_Payments_Utils::log_to_wc( 'Failed to set the default payment method for customer: ' . $e->getMessage() );
+		} finally {
+			// Clear cached payment methods on both paths. The cache has no TTL, so leaving it in
+			// place after a failure keeps serving a payment method the server no longer has: the
+			// next read re-syncs instead, picking up the new default or pruning the stale token.
+			$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
 		}
 	}
 

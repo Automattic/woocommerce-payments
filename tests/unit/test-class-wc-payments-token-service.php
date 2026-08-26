@@ -533,7 +533,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'default payment method', $captured[0]['message'] );
 	}
 
-	public function test_woocommerce_payment_token_set_default_skips_cache_clear_on_failure() {
+	public function test_woocommerce_payment_token_set_default_clears_cache_on_failure() {
 		update_user_meta( 1, '_wcpay_payment_methods', [ 'cached' ] );
 
 		$this->mock_customer_service
@@ -550,9 +550,11 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
 
-		$this->assertNotEmpty(
+		// The cache has no TTL, so keeping it after a failure would go on serving a payment method
+		// the server no longer has. Clearing it lets the next read prune the stale token.
+		$this->assertEmpty(
 			get_user_meta( 1, '_wcpay_payment_methods', true ),
-			'The cached payment methods should not be cleared when the server mirror fails'
+			'The cached payment methods should be cleared when the server mirror fails'
 		);
 	}
 
