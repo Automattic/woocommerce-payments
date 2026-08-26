@@ -67,8 +67,20 @@ class WC_Payments_WooPay_Direct_Checkout {
 		}
 
 		$draft_order_id = absint( WC()->session->get( 'store_api_draft_order' ) );
+		$draft_order    = $draft_order_id ? wc_get_order( $draft_order_id ) : false;
+
+		// The session can outlive the draft order it points at: the daily
+		// `woocommerce_cleanup_draft_orders` action deletes stale draft orders while the
+		// customer session persists. Under HPOS a reused post ID can even make the stale
+		// pointer resolve to a non-order object, so guard with an instance check rather than
+		// a truthiness check. When the pointer is stale, discard it and fall through to
+		// normal order creation instead of fataling on a call to set_status() on false.
+		if ( ! $draft_order instanceof WC_Order ) {
+			WC()->session->set( 'store_api_draft_order', null );
+			return $order_id;
+		}
+
 		// Set the order status to "pending" payment, so that it can be resumed.
-		$draft_order = wc_get_order( $draft_order_id );
 		$draft_order->set_status( 'pending' );
 		$draft_order->save();
 
