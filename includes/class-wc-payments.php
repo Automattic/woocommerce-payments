@@ -138,6 +138,13 @@ class WC_Payments {
 	private static $dependency_service;
 
 	/**
+	 * Whether init() passed the dependency check and registered the full feature set.
+	 *
+	 * @var bool
+	 */
+	private static $initialized = false;
+
+	/**
 	 * Instance of WC_Payments_Fraud_Service, created in init function
 	 *
 	 * @var WC_Payments_Fraud_Service
@@ -370,6 +377,8 @@ class WC_Payments {
 		if ( false === self::$dependency_service->has_valid_dependencies() ) {
 			return;
 		}
+
+		self::$initialized = true;
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
@@ -900,6 +909,15 @@ class WC_Payments {
 	public static function add_post_kyc_activation_email( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_Post_Kyc_Activation'] = include __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
+	}
+
+	/**
+	 * Whether init() passed the dependency check and registered the full feature set.
+	 *
+	 * @return bool
+	 */
+	public static function is_initialized(): bool {
+		return self::$initialized;
 	}
 
 	/**
