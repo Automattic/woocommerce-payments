@@ -32,6 +32,15 @@ class WC_Payments_Dependency_Service {
 		self::WOOADMIN_NOT_FOUND,
 	];
 
+	const UPDATE_WC_REQUIREMENT_TRANSIENT = 'wcpay_update_wc_requirement';
+
+	/**
+	 * Details of an update offer withheld by gate_plugin_updates() during this request, or null.
+	 *
+	 * @var array|null
+	 */
+	private $gated_update;
+
 	/**
 	 * Initializes this class's WP hooks.
 	 *
@@ -39,6 +48,8 @@ class WC_Payments_Dependency_Service {
 	 */
 	public function init_hooks() {
 		add_filter( 'admin_notices', [ $this, 'display_admin_notices' ] );
+		add_filter( 'site_transient_update_plugins', [ $this, 'gate_plugin_updates' ] );
+		add_action( 'after_plugin_row_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ $this, 'display_gated_update_row_notice' ] );
 	}
 
 	/**
@@ -63,6 +74,135 @@ class WC_Payments_Dependency_Service {
 	 */
 	public function get_blocking_dependencies() {
 		return array_values( array_intersect( $this->get_invalid_dependencies(), self::BLOCKING_DEPENDENCIES ) );
+	}
+
+	/**
+	 * Withholds the plugin update offer when the offered version requires a newer
+	 * WooCommerce version than the one installed. Mirrors how WordPress core keeps
+	 * updates requiring a newer PHP version away from incompatible sites.
+	 *
+	 * @param mixed $transient Value of the update_plugins site transient.
+	 *
+	 * @return mixed The (possibly modified) transient value.
+	 */
+	public function gate_plugin_updates( $transient ) {
+		$plugin_file = plugin_basename( WCPAY_PLUGIN_FILE );
+
+		if ( ! is_object( $transient ) || empty( $transient->response[ $plugin_file ] ) || ! defined( 'WC_VERSION' ) ) {
+			return $transient;
+		}
+
+		$update      = $transient->response[ $plugin_file ];
+		$new_version = $update->new_version ?? null;
+
+		if ( ! $new_version ) {
+			return $transient;
+		}
+
+		$required_wc_version = $this->get_wc_version_required_by( $new_version );
+
+		// Fail open: without a known requirement, leave the offer alone.
+		if ( ! $required_wc_version || version_compare( WC_VERSION, $required_wc_version, '>=' ) ) {
+			return $transient;
+		}
+
+		// Moving the offer to no_update hides the update badge and keeps auto-updates away.
+		unset( $transient->response[ $plugin_file ] );
+		$transient->no_update[ $plugin_file ] = $update;
+
+		$this->gated_update = [
+			'new_version' => $new_version,
+			'wc_requires' => $required_wc_version,
+		];
+
+		return $transient;
+	}
+
+	/**
+	 * Returns the "WC requires at least" header of the given released plugin version,
+	 * fetched from the WordPress.org plugin repository and cached for 12 hours.
+	 *
+	 * @param string $version Version of WooPayments to look up.
+	 *
+	 * @return string|null The minimum required WooCommerce version, or null when unknown.
+	 */
+	public function get_wc_version_required_by( $version ) {
+		$cached = get_transient( self::UPDATE_WC_REQUIREMENT_TRANSIENT );
+
+		if ( is_array( $cached ) && ( $cached['version'] ?? null ) === $version ) {
+			return $cached['wc_requires'];
+		}
+
+		// Only fetch in admin or cron contexts, where update checks belong.
+		if ( ! is_admin() && ! wp_doing_cron() ) {
+			return null;
+		}
+
+		$response = wp_remote_get(
+			'https://plugins.svn.wordpress.org/woocommerce-payments/tags/' . rawurlencode( $version ) . '/woocommerce-payments.php',
+			[ 'timeout' => 5 ]
+		);
+
+		$wc_requires = null;
+
+		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+			$matched     = preg_match( '/^[ \t\/*#@]*WC requires at least:[ \t]*([0-9][0-9.]*)/mi', wp_remote_retrieve_body( $response ), $matches );
+			$wc_requires = $matched ? $matches[1] : null;
+		}
+
+		// Cache failures for a shorter time so a transient network error does not stick.
+		$expiration = null === $wc_requires ? HOUR_IN_SECONDS : 12 * HOUR_IN_SECONDS;
+		set_transient(
+			self::UPDATE_WC_REQUIREMENT_TRANSIENT,
+			[
+				'version'     => $version,
+				'wc_requires' => $wc_requires,
+			],
+			$expiration
+		);
+
+		return $wc_requires;
+	}
+
+	/**
+	 * Renders a plugins-screen row notice when an update offer was withheld
+	 * because the site's WooCommerce version is too old. Called on the
+	 * after_plugin_row_{$plugin_file} action.
+	 *
+	 * @param string $plugin_file Path to the plugin file relative to the plugins directory.
+	 *
+	 * @return void
+	 */
+	public function display_gated_update_row_notice( $plugin_file ) {
+		if ( null === $this->gated_update || ! defined( 'WC_VERSION' ) ) {
+			return;
+		}
+
+		$colspan = 4;
+		if ( function_exists( '_get_list_table' ) ) {
+			$colspan = _get_list_table( 'WP_Plugins_List_Table' )->get_column_count();
+		}
+
+		$is_active = function_exists( 'is_plugin_active' ) && is_plugin_active( $plugin_file );
+
+		$message = sprintf(
+			/* translators: %1: WooPayments, %2: new WooPayments version number, %3: WooCommerce, %4: WC version required by the new version, %5: currently installed WC version */
+			__( '%1$s %2$s is available, but it requires %3$s %4$s or greater (you are using %5$s). Update %3$s to receive new versions of %1$s, including security fixes.', 'woocommerce-payments' ),
+			'WooPayments',
+			$this->gated_update['new_version'],
+			'WooCommerce',
+			$this->gated_update['wc_requires'],
+			WC_VERSION
+		);
+
+		printf(
+			'<tr class="plugin-update-tr %1$s" id="%2$s-update" data-slug="%2$s" data-plugin="%3$s"><td colspan="%4$d" class="plugin-update colspanchange"><div class="update-message notice inline notice-warning notice-alt"><p>%5$s</p></div></td></tr>',
+			$is_active ? 'active' : 'inactive',
+			'woocommerce-payments',
+			esc_attr( $plugin_file ),
+			(int) $colspan,
+			esc_html( $message )
+		);
 	}
 
 	/**
