@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 env:
-  WC_MIN_SUPPORTED_VERSION: '7.6.0'
-  WP_MIN_SUPPORTED_VERSION: '6.0'
+  WC_MIN_SUPPORTED_VERSION: '10.9.0'
+  WP_MIN_SUPPORTED_VERSION: '6.9'
   PHP_MIN_SUPPORTED_VERSION: '7.4'
 
 concurrency:
