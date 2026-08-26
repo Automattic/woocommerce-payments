@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Bump the minimum supported WooCommerce version to 10.9 and the minimum WordPress version to 6.9, following the L-2 support policy.

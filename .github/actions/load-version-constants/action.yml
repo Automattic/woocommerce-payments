@@ -13,5 +13,5 @@ runs:
     - id: vars
       shell: bash
       run: |
-        echo "gutenberg_for_wp_min=13.6.0" >> $GITHUB_OUTPUT
+        echo "gutenberg_for_wp_min=22.3.0" >> $GITHUB_OUTPUT
         echo "gutenberg_for_php_min=22.3.0" >> $GITHUB_OUTPUT
