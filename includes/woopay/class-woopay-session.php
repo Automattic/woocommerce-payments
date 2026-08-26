@@ -1012,17 +1012,21 @@ class WooPay_Session {
 	 * would otherwise stay valid indefinitely. It is also spent on first use and refused
 	 * thereafter. See `claim_attestation()`.
 	 *
-	 * Carried under its own parameter, and normally in a POST body so it stays out of
-	 * access logs, browser history and Referer headers. Deliberately not the
-	 * `encrypted_data` key `get_user_email()` reads: that is an older exchange with a
-	 * different shape and different rules, and sharing a name would invite one to be
-	 * mistaken for the other.
+	 * Read from the POST body only. Keeping it out of access logs, browser history and
+	 * Referer headers is a property of the request WooPay sends, and reading the query
+	 * string as well would hand that property back: it is the store's own access log that
+	 * would then record valid envelopes. WooPay only ever POSTs, so nothing legitimate is
+	 * turned away by refusing to look. See WOOPAY-463.
+	 *
+	 * Carried under its own parameter, deliberately not the `encrypted_data` key
+	 * `get_user_email()` reads: that is an older exchange with a different shape and
+	 * different rules, and sharing a name would invite one to be mistaken for the other.
 	 *
 	 * @return array|null The attested payload, or null when absent, malformed, stale, or spent.
 	 */
 	public static function get_woopay_attestation(): ?array {
 		// phpcs:ignore WordPress.Security.NonceVerification
-		$envelope = $_POST[ self::ATTESTATION_PARAM ] ?? $_GET[ self::ATTESTATION_PARAM ] ?? null; // phpcs:ignore WordPress.Security.NonceVerification
+		$envelope = $_POST[ self::ATTESTATION_PARAM ] ?? null;
 
 		if ( ! is_array( $envelope ) ) {
 			// Carrying no envelope is ordinary — proxied Store API traffic never does — so

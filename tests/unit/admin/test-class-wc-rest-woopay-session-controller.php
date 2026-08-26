@@ -74,12 +74,15 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
-	public function test_permission_is_granted_for_an_envelope_sent_in_the_query_string() {
+	public function test_permission_is_denied_for_an_envelope_sent_in_the_query_string() {
 		$_GET[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 
-		// WooPay sends this in a POST body so it stays out of logs and history, but the
-		// envelope is what authorizes the request, not how it travelled.
-		$this->assertTrue( $this->controller->check_permission() );
+		// The envelope travels in a POST body so it stays out of access logs, browser
+		// history and Referer headers — a property the sender provides and the receiver
+		// would hand straight back by reading the query string too. It is this store's own
+		// access log that would record valid envelopes. WooPay only ever POSTs, so nothing
+		// legitimate is turned away here.
+		$this->assertFalse( $this->controller->check_permission() );
 	}
 
 	public function test_permission_is_denied_for_an_envelope_under_the_old_parameter() {
