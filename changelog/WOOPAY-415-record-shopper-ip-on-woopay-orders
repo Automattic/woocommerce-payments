@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Record the shopper's own IP address on orders placed through WooPay, instead of the address of the server that proxied the checkout
