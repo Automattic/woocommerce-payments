@@ -24,7 +24,6 @@
 * Update - Clarify where the support phone number appears, mark the field as required, and use one plain validation message.
 * Dev - Add a payment method lifecycle reference doc covering Stripe capability state vs. checkout enablement
 * Dev - Bump WP tested up to version to 7.1 and WC tested up to version to 11.1.0
-* Dev - Comment: Correct development guidance for invalidating the styles cache after plugin updates.
 * Dev - Fix E2E assertions that could not fail: missing awaits, an assertion-free filter test, and swallowed add-payment-method outcomes.
 * Dev - Fix react-hooks/immutability ESLint violations
 * Dev - Fix react-hooks/set-state-in-effect ESLint violations.
