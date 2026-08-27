@@ -643,21 +643,7 @@ class WooPay_Session {
 		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
 
-		/*
-		 * The REST route hands this array straight back to whoever called it, so the email
-		 * deciding what goes in it has to be one WooPay vouched for rather than one the caller
-		 * named. `get_user_email()` accepts plain request parameters by design, which is right
-		 * for the two callers that never return the result to the shopper and wrong for this
-		 * one: a guest envelope names no address, and the fallback would answer with
-		 * `$_POST['email']` and hand back that account's adapted extension data — Points &
-		 * Rewards and Gift Card balances — to a caller who proved nothing about the address.
-		 *
-		 * Empty is the right answer for a genuine guest: there is no account for the extensions
-		 * to describe, and the block that reads this is skipped. See WOOPAY-463.
-		 */
-		$email = null !== $woopay_request
-			? ( self::get_woopay_attested_account_email() ?? '' )
-			: self::get_user_email( $user );
+		$email = self::get_user_email( $user );
 
 		if ( $woopay_request ) {
 			$order_id = $checkout_data['order_id'] ?? null;
@@ -715,26 +701,49 @@ class WooPay_Session {
 			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
 
+			/*
+			 * Which email the extensions describe is a narrower question than which email
+			 * this shopper appears to be. `$email` answers the second, and has to: it is how
+			 * WooPay recognises a returning shopper and decides to ask for an OTP, and it
+			 * legitimately comes from the store's own view of the cart.
+			 *
+			 * Adapted extension data is Points & Rewards and Gift Card balances for whoever
+			 * owns the address, and the REST route hands its array straight back to the
+			 * caller. So on that route the address selecting it has to be one WooPay named,
+			 * not one the caller did — otherwise naming someone's address is enough to read
+			 * their balance. The other two callers encrypt the payload or POST it to WooPay
+			 * server-side, never return it to the shopper, and keep the address they were
+			 * given. See WOOPAY-463.
+			 */
+			$extensions_email = null !== $woopay_request
+				? ( self::get_woopay_attested_account_email() ?? '' )
+				: $email;
+
+			if ( empty( $extensions_email ) ) {
+				return $request;
+			}
+
 			$woopay_adapted_extensions->init();
-			$request['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $email );
+			$request['adapted_extensions'] = $woopay_adapted_extensions->get_adapted_extensions_data( $extensions_email );
 
 			// $woopay_request is set only on the REST route, which hands this array straight
 			// back to the caller in plaintext. The other two callers either encrypt the
 			// payload or POST it to WooPay server-side, so the nonce is never disclosed to
 			// whoever triggered them and no attestation is needed.
 			//
-			// Belt and braces since `$email` became attestation-only on that same route: this
-			// cannot currently be reached with an address WooPay did not name. It stays because
-			// it states the property directly — no nonce is minted for an account WooPay did
-			// not vouch for — whatever a later change makes `$email` mean. See WOOPAY-463.
+			// Belt and braces since `$extensions_email` is already attestation-only on that
+			// route: this cannot currently be reached with an address WooPay did not name. It
+			// stays because it states the property directly — no nonce is minted for an account
+			// WooPay did not vouch for — whatever a later change makes that variable mean.
+			// See WOOPAY-463.
 			$nonce_would_be_disclosed = null !== $woopay_request;
 
 			if (
 				! is_user_logged_in() &&
 				count( $request['adapted_extensions'] ) > 0 &&
-				( ! $nonce_would_be_disclosed || self::is_email_attested_by_woopay( $email ) )
+				( ! $nonce_would_be_disclosed || self::is_email_attested_by_woopay( $extensions_email ) )
 			) {
-				$store_user_email_registered = get_user_by( 'email', $email );
+				$store_user_email_registered = get_user_by( 'email', $extensions_email );
 
 				if ( $store_user_email_registered ) {
 					$request['email_verified_session_nonce'] = self::create_woopay_nonce( $store_user_email_registered->ID );

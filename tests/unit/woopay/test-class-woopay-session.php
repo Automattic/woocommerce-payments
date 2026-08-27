@@ -878,8 +878,12 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// The nonce was already withheld here, but the balance it guards was not: this route
 		// returns adapted extension data in plaintext, so naming an address must not be enough
 		// to read that account's Points & Rewards and Gift Card data.
-		$this->assertSame( '', $request['email'] );
 		$this->assertArrayNotHasKey( 'adapted_extensions', $request );
+
+		// The email itself still travels. It is how WooPay recognises a returning shopper and
+		// decides to ask for an OTP, so withholding it signs nobody in — a narrower question
+		// than whose balances to hand back, and answered separately.
+		$this->assertSame( $shopper->user_email, $request['email'] );
 
 		unset( $_GET['email'] );
 	}
@@ -895,9 +899,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
 
-		$this->assertSame( '', $request['email'] );
 		$this->assertArrayNotHasKey( 'adapted_extensions', $request );
 		$this->assertArrayNotHasKey( 'email_verified_session_nonce', $request );
+
+		// Still named to WooPay, so the shopper can still be asked for an OTP.
+		$this->assertSame( $shopper->user_email, $request['email'] );
 
 		unset( $_POST['email'] );
 	}
