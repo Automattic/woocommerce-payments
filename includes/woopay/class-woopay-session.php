@@ -108,6 +108,7 @@ class WooPay_Session {
 		add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_woopay' ], 20 );
 		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'woopay_order_payment_status_changed' ] );
+		add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ __CLASS__, 'set_woopay_order_customer_ip' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ __CLASS__, 'catch_woopay_checkout_errors' ], 1, 1 );
@@ -1143,6 +1144,52 @@ class WooPay_Session {
 		$attested_email = self::get_woopay_attested_account_email();
 
 		return null !== $attested_email && 0 === strcasecmp( $attested_email, $email );
+	}
+
+	/**
+	 * Records the address the shopper actually checked out from on their order.
+	 *
+	 * WooPay places the order by calling this store's Store API from WordPress.com, so
+	 * WC_Geolocation::get_ip_address() answers with one of WooPay's servers and the order
+	 * records that. Merchants read the field for fraud rules, IP allow and deny lists and
+	 * audit, where a datacenter address is worse than an empty one: it reads as a real
+	 * shopper who happens to be in Texas.
+	 *
+	 * The address comes out of the sealed envelope rather than a header of its own. A header
+	 * would need a gate to decide whether to believe it, and the only gate available said
+	 * "this request carries a Cart-Token", which any visitor can arrange — so any visitor
+	 * could have stamped an address of their choosing on their own order and walked past
+	 * whatever IP rules the merchant relies on. Reading it from inside the envelope removes
+	 * the question: the value cannot be there unless WooPay put it there.
+	 *
+	 * Absent on WooPay releases that do not seal one yet, and on every request that is not
+	 * the checkout POST. The order then keeps whatever the request itself resolved to, which
+	 * is what it had before. See WOOPAY-415.
+	 *
+	 * @param \WC_Order $order Order being updated from the checkout request.
+	 */
+	public static function set_woopay_order_customer_ip( $order ) {
+		if ( ! $order instanceof \WC_Order || ! self::is_woopay_enabled() ) {
+			return;
+		}
+
+		$vouch = self::get_woopay_vouch();
+
+		if ( null === $vouch || empty( $vouch['customer_ip'] ) ) {
+			return;
+		}
+
+		// Sealed by WooPay, so this says the address did not arrive from anywhere else. It
+		// still has to be an address before it goes on an order.
+		$customer_ip_address = rest_is_ip_address( sanitize_text_field( $vouch['customer_ip'] ) );
+
+		if ( false === $customer_ip_address ) {
+			Logger::log( 'WooPay vouch carried a customer IP that does not parse; the order keeps the address the request arrived from.' );
+
+			return;
+		}
+
+		$order->set_customer_ip_address( $customer_ip_address );
 	}
 
 	/**

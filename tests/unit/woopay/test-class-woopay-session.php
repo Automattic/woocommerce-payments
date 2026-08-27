@@ -10,6 +10,7 @@ use WCPay\WooPay\WooPay_Session;
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 use WCPay\Platform_Checkout\SessionHandler;
 use WCPay\WooPay\WooPay_Scheduler;
+use WCPay\WooPay\WooPay_Utilities;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -113,10 +114,107 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		unset(
 			$_GET[ WooPay_Session::ATTESTATION_PARAM ],
-			$_POST[ WooPay_Session::ATTESTATION_PARAM ]
+			$_POST[ WooPay_Session::ATTESTATION_PARAM ],
+			$_SERVER[ WooPay_Session::VOUCH_HEADER ]
 		);
 
 		parent::tear_down();
+	}
+
+	public function test_a_sealed_shopper_ip_is_recorded_on_the_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '192.0.91.172' );
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header( [ 'customer_ip' => '203.0.113.10' ] );
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		// The address WooPay saw the shopper arrive from, rather than the WordPress.com
+		// address this request left from. See WOOPAY-415.
+		$this->assertSame( '203.0.113.10', $order->get_customer_ip_address() );
+	}
+
+	public function test_an_ipv6_shopper_address_is_recorded_on_the_order() {
+		$order = WC_Helper_Order::create_order();
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header( [ 'customer_ip' => '2001:db8::8a2e:370:7334' ] );
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		$this->assertSame( '2001:db8::8a2e:370:7334', $order->get_customer_ip_address() );
+	}
+
+	public function test_an_order_keeps_its_own_address_when_the_vouch_seals_none() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '192.0.91.172' );
+
+		// A vouch with no address in it, as on a WooPay release that seals none yet.
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header();
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		$this->assertSame( '192.0.91.172', $order->get_customer_ip_address() );
+	}
+
+	public function test_an_order_keeps_its_own_address_when_the_sealed_one_does_not_parse() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '192.0.91.172' );
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header( [ 'customer_ip' => 'not-an-ip-address' ] );
+
+		WooPay_Session::set_woopay_order_customer_ip( $order );
+
+		$this->assertSame( '192.0.91.172', $order->get_customer_ip_address() );
+	}
+
+	public function test_an_unsealed_address_cannot_be_stamped_on_an_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_ip_address( '192.0.91.172' );
+
+		// Everything a visitor can arrange for themselves: the User-Agent, a Cart-Token, and
+		// a header naming whatever address they like. Before the value moved inside the
+		// envelope this was enough to stamp it on their own order and walk past the
+		// merchant's IP rules. See WOOPAY-463.
+		$_SERVER['HTTP_USER_AGENT']            = 'WooPay';
+		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP']  = '203.0.113.10';
+		$_SERVER['HTTP_CART_TOKEN']            = WooPay_Store_Api_Token::init()->get_cart_token();
+
+		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+
+		try {
+			WooPay_Session::set_woopay_order_customer_ip( $order );
+
+			$this->assertSame( '192.0.91.172', $order->get_customer_ip_address() );
+		} finally {
+			remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+			unset( $_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] );
+		}
+	}
+
+	/**
+	 * Seals a vouch envelope the way WooPay does, and encodes it for the header.
+	 *
+	 * @param array $extra Payload fields to seal alongside the timestamp.
+	 *
+	 * @return string The header value.
+	 */
+	private function build_vouch_header( array $extra = [] ): string {
+		$key        = WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE );
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$plaintext  = wp_json_encode( array_merge( [ 'timestamp' => time() ], $extra ) );
+		$ciphertext = openssl_encrypt( $plaintext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		$envelope = array_map(
+			'base64_encode',
+			[
+				'data' => $ciphertext,
+				'iv'   => $iv,
+				'hash' => hash_hmac( 'sha256', $iv . $ciphertext, $key ),
+			]
+		);
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		return base64_encode( wp_json_encode( $envelope ) );
 	}
 
 	public function test_an_accepted_woopay_request_marks_itself_as_one() {
