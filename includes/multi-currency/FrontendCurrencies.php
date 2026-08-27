@@ -66,6 +66,13 @@ class FrontendCurrencies {
 	private $woocommerce_currency;
 
 	/**
+	 * Whether WooPayments has an explicit shopper or compatibility currency selection.
+	 *
+	 * @var bool|null
+	 */
+	private $has_explicit_currency_selection;
+
+	/**
 	 * Price Decimal Separator cache.
 	 *
 	 * @var array
@@ -132,10 +139,11 @@ class FrontendCurrencies {
 	 * @return void
 	 */
 	public function selected_currency_changed() {
-		$this->selected_currency_code   = null;
-		$this->price_decimal_separators = [];
-		$this->woocommerce_currency     = null;
-		$this->store_currency           = null;
+		$this->selected_currency_code          = null;
+		$this->price_decimal_separators        = [];
+		$this->woocommerce_currency            = null;
+		$this->has_explicit_currency_selection = null;
+		$this->store_currency                  = null;
 	}
 
 	/**
@@ -187,31 +195,35 @@ class FrontendCurrencies {
 	 * Returns the currency code to be used by WooCommerce.
 	 *
 	 * Runs on the `woocommerce_currency` filter at priority 900, after WooCommerce and any other
-	 * plugin filtering the currency. Multi-Currency only asserts its own currency when it is actually
-	 * switching, i.e. when the selected currency differs from the store currency. When it is idle —
-	 * including when a compatibility rule asks for the store currency — it leaves the value produced by
-	 * the earlier filters untouched, so a third-party currency switcher that hooks at a lower priority
-	 * keeps working alongside an idle Multi-Currency module. Every other formatting filter in this class
-	 * already follows the same rule by comparing against the store currency before overriding.
+	 * plugin filtering the currency. Multi-Currency only asserts its own currency when the shopper
+	 * or a compatibility rule has an explicit selection. When it is idle, it leaves the value
+	 * produced by the earlier filters untouched, so a third-party currency switcher that hooks at a
+	 * lower priority keeps working alongside an idle Multi-Currency module.
 	 *
-	 * @param string $currency The currency code produced by the filter chain so far. Defaults to empty
-	 *                         for direct calls, in which case the store currency is used as the fallback.
+	 * The WordPress filter supplies its current currency as an undeclared argument.
+	 * Reading it at runtime keeps the public zero-argument signature compatible with subclasses.
 	 *
 	 * @return string The code of the currency to be used.
 	 */
-	public function get_woocommerce_currency( $currency = '' ): string {
-		$filtered_currency = is_string( $currency ) && '' !== $currency ? $currency : $this->get_store_currency()->get_code();
+	public function get_woocommerce_currency(): string {
+		$currency = func_num_args() > 0 ? func_get_arg( 0 ) : '';
 
 		if ( $this->compatibility->should_return_store_currency() ) {
-			return $filtered_currency;
+			return $this->get_store_currency()->get_code();
 		}
 
 		if ( empty( $this->woocommerce_currency ) ) {
-			$this->woocommerce_currency = $this->get_selected_currency_code();
+			$explicit_currency                     = $this->multi_currency->get_explicit_selected_currency();
+			$this->has_explicit_currency_selection = null !== $explicit_currency;
+			$this->woocommerce_currency            = ( $explicit_currency ?? $this->get_store_currency() )->get_code();
 		}
 
-		if ( $this->woocommerce_currency === $this->get_store_currency()->get_code() ) {
-			return $filtered_currency;
+		if (
+			false === $this->has_explicit_currency_selection
+			&& is_string( $currency )
+			&& '' !== $currency
+		) {
+			return $currency;
 		}
 
 		return $this->woocommerce_currency;

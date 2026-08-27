@@ -202,6 +202,15 @@ class MultiCurrency {
 	 */
 	protected $simulation_params = [];
 
+	/**
+	 * Whether init() has already run for this instance.
+	 *
+	 * Separate from the static $is_initialized, which reports whether Multi-Currency is running
+	 * and is shared by every instance in the process. This one guards re-entry per instance.
+	 *
+	 * @var bool
+	 */
+	private $init_ran = false;
 
 	/**
 	 * Class constructor.
@@ -318,6 +327,15 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		// init() runs on the `init` action and lazily from the getters below. A caller that reaches
+		// a getter before `init` fires would otherwise initialize twice, leaving two sets of price
+		// and currency objects hooked at the same priority.
+		if ( $this->init_ran ) {
+			return;
+		}
+
+		$this->init_ran = true;
+
 		// The lazy-initializing getters call init() on demand, and any code path can reach them through
 		// WC_Payments_Multi_Currency() regardless of the feature flag. Refuse to initialize when the module
 		// is disabled, so a disabled module never registers the frontend currency and price hooks.
@@ -827,19 +845,32 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Gets an explicit shopper or compatibility currency selection, if one exists.
+	 *
+	 * Unlike get_selected_currency(), this does not fall back to the store currency. Null means
+	 * Multi-Currency has nothing of its own to assert, so a third-party `woocommerce_currency`
+	 * filter should be left alone.
+	 *
+	 * @return Currency|null
+	 */
+	public function get_explicit_selected_currency(): ?Currency {
+		$multi_currency_code = $this->compatibility->override_selected_currency();
+		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
+
+		if ( null === $currency_code || '' === $currency_code ) {
+			return null;
+		}
+
+		return $this->get_enabled_currencies()[ $currency_code ] ?? null;
+	}
+
+	/**
 	 * Gets the user selected currency, or `$default_currency` if is not set.
 	 *
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$multi_currency_code = $this->compatibility->override_selected_currency();
-		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
-
-		if ( null === $currency_code ) {
-			return $this->get_default_currency();
-		}
-
-		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
+		return $this->get_explicit_selected_currency() ?? $this->get_default_currency();
 	}
 
 	/**
@@ -1826,17 +1857,19 @@ class MultiCurrency {
 	 * returns a usable value.
 	 *
 	 * Used when init() must not proceed, so lazy-initializing getters and later init-hook
-	 * callbacks neither re-trigger init() nor fatal. The frontend price and currency objects are
-	 * still constructed, just without their hooks, because get_frontend_prices() and
-	 * get_frontend_currencies() have non-nullable return types and are reachable from any caller.
+	 * callbacks neither re-trigger init() nor fatal. default_currency is assigned so
+	 * get_default_currency() short-circuits. The frontend price and currency objects are
+	 * constructed without their hooks (and not replaced if they already exist), because
+	 * get_frontend_prices() and get_frontend_currencies() have non-nullable return types.
 	 *
 	 * @return void
 	 */
 	private function set_inert_state() {
 		$this->available_currencies = [];
 		$this->enabled_currencies   = [];
-		$this->frontend_prices      = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies  = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
+		$this->default_currency     = new Currency( $this->localization_service, $this->get_store_currency_code() );
+		$this->frontend_prices      = $this->frontend_prices ?? new FrontendPrices( $this, $this->compatibility );
+		$this->frontend_currencies  = $this->frontend_currencies ?? new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 	}
 
 	/**
