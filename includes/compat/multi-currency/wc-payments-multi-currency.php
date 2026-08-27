@@ -57,7 +57,11 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 	return $instance;
 }
 
-if ( ! WCPay\MultiCurrency\MultiCurrency::is_enabled() ) {
+// Deliberately class-free: this file is included on every request of every store, and referencing
+// MultiCurrency here would autoload it even where the feature is off, fataling during an old/new file
+// mix while a manual update is in progress. This is the same predicate as MultiCurrency::is_enabled();
+// keep the two in sync.
+if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() && ! wcpay_multi_currency_onboarding_check() ) {
 	return;
 }
 
