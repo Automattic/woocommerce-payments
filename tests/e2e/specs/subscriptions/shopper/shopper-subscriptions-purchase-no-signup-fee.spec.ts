@@ -55,7 +55,7 @@ describeif( shouldRunSubscriptionsTests )(
 				const card = config.cards.basic;
 				await fillCardDetails( shopperPage, card );
 				await placeOrder( shopperPage );
-				expect(
+				await expect(
 					shopperPage.getByRole( 'heading', {
 						name: 'Order received',
 					} )

@@ -155,7 +155,7 @@ class WC_Payments_Admin_Settings {
 					printf(
 						/* translators: %s: URL to learn more */
 						esc_html__( 'Provide additional details about your business so you can begin accepting real payments. %1$sLearn more%2$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#sign-up-process' ) . '" target="_blank" rel="noreferrer noopener">',
+						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#signup-process' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>'
 					);
 				} else {
@@ -236,7 +236,7 @@ class WC_Payments_Admin_Settings {
 						esc_html__( 'To begin accepting real payments you will need to first %1$sreset your account%2$s and, then, provide additional details about your business. %3$sLearn more%4$s', 'woocommerce-payments' ),
 						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#resetting' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>',
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#sign-up-process' ) . '" target="_blank" rel="noreferrer noopener">',
+						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#signup-process' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>',
 					);
 				} else {
