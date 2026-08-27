@@ -175,9 +175,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// a header naming whatever address they like. Before the value moved inside the
 		// envelope this was enough to stamp it on their own order and walk past the
 		// merchant's IP rules. See WOOPAY-463.
-		$_SERVER['HTTP_USER_AGENT']            = 'WooPay';
-		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP']  = '203.0.113.10';
-		$_SERVER['HTTP_CART_TOKEN']            = WooPay_Store_Api_Token::init()->get_cart_token();
+		$_SERVER['HTTP_USER_AGENT']           = 'WooPay';
+		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] = '203.0.113.10';
+		$_SERVER['HTTP_CART_TOKEN']           = WooPay_Store_Api_Token::init()->get_cart_token();
 
 		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
 
