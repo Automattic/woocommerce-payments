@@ -39,6 +39,15 @@ class WooPay_Utilities {
 	const ATTESTATION_KEY_PURPOSE = 'woopay-attestation-v1';
 
 	/**
+	 * HKDF label for the envelope WooPay attaches to proxied checkout requests.
+	 *
+	 * Separate from the session envelope on purpose. That one is spent on arrival and
+	 * travels in a POST body; this one rides a header and is replayed by our own retry, so
+	 * it cannot be. Deriving a key per use is what stops one being presented as the other.
+	 */
+	const VOUCH_KEY_PURPOSE = 'woopay-vouch-v1';
+
+	/**
 	 * Check various conditions to determine if we should enable woopay.
 	 *
 	 * @param \WC_Payment_Gateway_WCPay $gateway Gateway instance.
@@ -401,10 +410,12 @@ class WooPay_Utilities {
 	 * it reachable costs nothing beyond keeping it reachable — which is what the follow-up
 	 * removes, once no WooPay release is still sending it. See WOOPAY-461.
 	 *
-	 * @param array $data The session, iv, and hash data for the encryption.
+	 * @param array       $data    The session, iv, and hash data for the encryption.
+	 * @param string|null $purpose HKDF label the envelope was sealed under, or null to accept
+	 *                             the attestation key and the undifferentiated blog token.
 	 * @return mixed The decoded data.
 	 */
-	public static function decrypt_signed_data( $data ) {
+	public static function decrypt_signed_data( $data, ?string $purpose = null ) {
 		$store_blog_token = self::get_store_blog_token();
 
 		if ( empty( $store_blog_token ) ) {
@@ -419,7 +430,11 @@ class WooPay_Utilities {
 
 		// Verify the HMAC hash before decryption to ensure data integrity, and let whichever
 		// key verified it be the one that decrypts — trying the other would fail anyway.
-		foreach ( [ self::derive_key_for( self::ATTESTATION_KEY_PURPOSE ), $store_blog_token ] as $candidate ) {
+		$candidates = null === $purpose
+			? [ self::derive_key_for( self::ATTESTATION_KEY_PURPOSE ), $store_blog_token ]
+			: [ self::derive_key_for( $purpose ) ];
+
+		foreach ( $candidates as $candidate ) {
 			if ( '' !== $candidate && hash_equals( hash_hmac( 'sha256', $signed_payload, $candidate ), $decoded_data_request['hash'] ) ) {
 				$key = $candidate;
 				break;

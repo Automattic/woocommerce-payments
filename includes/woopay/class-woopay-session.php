@@ -69,6 +69,12 @@ class WooPay_Session {
 	const ATTESTATION_CLAIM_PREFIX = 'wcpay_woopay_attestation_';
 
 	/**
+	 * Request header carrying the envelope WooPay seals onto proxied checkout requests.
+	 */
+	const VOUCH_HEADER = 'HTTP_X_WOOPAY_ATTESTATION';
+
+
+	/**
 	 * Attestations already resolved on this request, keyed by envelope fingerprint.
 	 *
 	 * The permission check, the email lookup and the nonce gate each ask independently,
@@ -1137,6 +1143,100 @@ class WooPay_Session {
 		$attested_email = self::get_woopay_attested_account_email();
 
 		return null !== $attested_email && 0 === strcasecmp( $attested_email, $email );
+	}
+
+	/**
+	 * The payload WooPay sealed onto this proxied request, or null if it sealed none.
+	 *
+	 * `wcpay_is_woopay_store_api_request` answers "does this request belong to that cart",
+	 * because a Cart-Token is all it takes to set it — and any visitor holds one for their
+	 * own cart. Controls that need "WooPay composed this request" were reading that flag
+	 * for want of anything better. This is the anything better: an envelope only WooPay can
+	 * seal, on the one request those controls run on.
+	 *
+	 * Deliberately not spent on arrival, unlike the session route's envelope.
+	 * `remote_request_with_retry()` re-sends an identical request when the first attempt
+	 * fails, and a checkout has already been charged by then, so a single-use claim would
+	 * refuse the retry of a payment that must not be dropped. Freshness carries it instead:
+	 * a captured request is replayable for five minutes, which it already was, since the
+	 * Cart-Token and nonce travel in the same request.
+	 *
+	 * Not memoized either, for the same reason: opening it has no side effect, so callers
+	 * asking twice get the same answer rather than a replay of the first one.
+	 *
+	 * Rides a header rather than the body, because the Store API reads a JSON body and PHP
+	 * only fills `$_POST` for form bodies. Headers are not in access logs, browser history
+	 * or Referer, which is what kept the session envelope out of the query string.
+	 *
+	 * @return array|null The sealed payload, or null when absent, malformed or stale.
+	 */
+	public static function get_woopay_vouch(): ?array {
+		if ( ! isset( $_SERVER[ self::VOUCH_HEADER ] ) ) {
+			return null;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$raw = trim( wp_unslash( $_SERVER[ self::VOUCH_HEADER ] ) );
+
+		if ( ! preg_match( '#^[A-Za-z0-9+/=]+$#', $raw ) ) {
+			Logger::log( 'WooPay vouch rejected: header is not base64.' );
+
+			return null;
+		}
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		$envelope = json_decode( (string) base64_decode( $raw ), true );
+
+		if ( ! is_array( $envelope ) ) {
+			Logger::log( 'WooPay vouch rejected: header does not decode to an envelope.' );
+
+			return null;
+		}
+
+		$parts = [];
+
+		foreach ( [ 'data', 'iv', 'hash' ] as $key ) {
+			if ( ! isset( $envelope[ $key ] ) || ! is_string( $envelope[ $key ] ) ) {
+				Logger::log( 'WooPay vouch rejected: envelope has no usable "' . $key . '" field.' );
+
+				return null;
+			}
+
+			$parts[ $key ] = $envelope[ $key ];
+		}
+
+		// Its own derived key, so the session route's envelope cannot be presented here and
+		// this cannot be presented there. Those two have different rules — that one is spent
+		// on arrival, this one cannot be — and a shared key would let either be used as the
+		// other. See WOOPAY-461.
+		$payload = WooPay_Utilities::decrypt_signed_data( $parts, WooPay_Utilities::VOUCH_KEY_PURPOSE );
+
+		if ( ! is_array( $payload ) || ! isset( $payload['timestamp'] ) ) {
+			Logger::log( 'WooPay vouch rejected: envelope did not open, or carries no timestamp.' );
+
+			return null;
+		}
+
+		if ( ! is_numeric( $payload['timestamp'] ) || abs( time() - (int) $payload['timestamp'] ) > self::ATTESTATION_MAX_AGE ) {
+			Logger::log( 'WooPay vouch rejected: envelope timestamp is missing or stale.' );
+
+			return null;
+		}
+
+		return $payload;
+	}
+
+	/**
+	 * Whether WooPay proved it composed this request.
+	 *
+	 * What the fraud-prevention bypass keys on. Naming the credential rather than reading a
+	 * filter, so the check cannot quietly come to mean something weaker than it did when it
+	 * was written. See WOOPAY-463.
+	 *
+	 * @return bool True if the request carries a fresh envelope WooPay sealed.
+	 */
+	public static function is_request_vouched_by_woopay(): bool {
+		return null !== self::get_woopay_vouch();
 	}
 
 	/**
