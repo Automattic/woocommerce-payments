@@ -381,9 +381,8 @@ class MultiCurrency {
 		$user_settings = new UserSettings( $this );
 		new Analytics( $this, $this->settings_service );
 
-		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
-		$this->tracking            = new Tracking( $this );
+		$this->build_frontend_objects();
+		$this->tracking = new Tracking( $this );
 
 		// Init all the hooks.
 		$admin_notices->init_hooks();
@@ -1859,8 +1858,8 @@ class MultiCurrency {
 	 * Used when init() must not proceed, so lazy-initializing getters and later init-hook
 	 * callbacks neither re-trigger init() nor fatal. default_currency is assigned so
 	 * get_default_currency() short-circuits. The frontend price and currency objects are
-	 * constructed without their hooks (and not replaced if they already exist), because
-	 * get_frontend_prices() and get_frontend_currencies() have non-nullable return types.
+	 * constructed without their hooks, because get_frontend_prices() and
+	 * get_frontend_currencies() have non-nullable return types.
 	 *
 	 * @return void
 	 */
@@ -1868,8 +1867,20 @@ class MultiCurrency {
 		$this->available_currencies = [];
 		$this->enabled_currencies   = [];
 		$this->default_currency     = new Currency( $this->localization_service, $this->get_store_currency_code() );
-		$this->frontend_prices      = $this->frontend_prices ?? new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies  = $this->frontend_currencies ?? new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
+		$this->build_frontend_objects();
+	}
+
+	/**
+	 * Constructs the frontend price and currency objects, without registering their hooks.
+	 *
+	 * Shared by the full initialization and the inert state so the two cannot drift. Objects that
+	 * already exist are kept: callers may be holding a reference obtained through the getters.
+	 *
+	 * @return void
+	 */
+	private function build_frontend_objects() {
+		$this->frontend_prices     = $this->frontend_prices ?? new FrontendPrices( $this, $this->compatibility );
+		$this->frontend_currencies = $this->frontend_currencies ?? new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 	}
 
 	/**
