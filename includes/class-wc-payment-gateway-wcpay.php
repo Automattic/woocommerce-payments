@@ -4152,9 +4152,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Builds the order-scoped nonce action for the update_order_status AJAX handler.
 	 *
-	 * The nonce is bound to the order id so that a value a shopper legitimately
-	 * obtains for their own order during authentication cannot be replayed against
-	 * a different customer's order. See WOOPMNT-6380.
+	 * Folding the order id into the action stops a nonce a shopper gets for their
+	 * own order from being replayed against someone else's. See WOOPMNT-6380.
 	 *
 	 * @param int $order_id The order the nonce authorizes.
 	 * @return string The nonce action.
