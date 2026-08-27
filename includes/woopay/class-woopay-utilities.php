@@ -26,6 +26,19 @@ class WooPay_Utilities {
 	const DEFAULT_WOOPAY_URL = 'https://pay.woo.com';
 
 	/**
+	 * HKDF label for payloads this store seals and WooPay opens.
+	 *
+	 * Must match the label WooPay derives with. Versioned so the pair can be rotated
+	 * without the two ends having to agree on a flag day. See WOOPAY-461.
+	 */
+	const SESSION_KEY_PURPOSE = 'woopay-session-v1';
+
+	/**
+	 * HKDF label for payloads WooPay seals and this store opens.
+	 */
+	const ATTESTATION_KEY_PURPOSE = 'woopay-attestation-v1';
+
+	/**
 	 * Check various conditions to determine if we should enable woopay.
 	 *
 	 * @param \WC_Payment_Gateway_WCPay $gateway Gateway instance.
@@ -300,13 +313,42 @@ class WooPay_Utilities {
 	}
 
 	/**
+	 * Derives a key for one use of the blog token, so no two uses share a secret.
+	 *
+	 * The blog token authenticates the Jetpack connection, encrypts these payloads and
+	 * signs them, and until now the two directions of this exchange used it directly and
+	 * therefore used the same key. That made them interchangeable: the session payload this
+	 * store hands the shopper's browser is sealed exactly as an inbound attestation is, so
+	 * renaming one array key was enough to feed the store's own envelope back into
+	 * `decrypt_signed_data()`. What stopped it going further was that the payload happens
+	 * to carry no `timestamp` — an accident, not a boundary, and one innocuous field away
+	 * from becoming an authentication bypass. See WOOPAY-461.
+	 *
+	 * HKDF makes the direction part of the key, so an envelope sealed for one is not a
+	 * valid envelope for the other and cannot be made into one without the blog token.
+	 *
+	 * @param string $purpose Label naming what the derived key may be used for.
+	 *
+	 * @return string The derived key, or an empty string when the blog token is unavailable.
+	 */
+	public static function derive_key_for( string $purpose ): string {
+		$store_blog_token = self::get_store_blog_token();
+
+		if ( empty( $store_blog_token ) ) {
+			return '';
+		}
+
+		return hash_hkdf( 'sha256', $store_blog_token, 32, $purpose );
+	}
+
+	/**
 	 * Return an array with encrypted and signed data.
 	 *
 	 * @param array $data The data to be encrypted and signed.
 	 * @return array The encrypted and signed data.
 	 */
 	public static function encrypt_and_sign_data( $data ) {
-		$store_blog_token = self::get_store_blog_token();
+		$store_blog_token = self::derive_key_for( self::SESSION_KEY_PURPOSE );
 
 		if ( empty( $store_blog_token ) ) {
 			return [];
@@ -347,7 +389,17 @@ class WooPay_Utilities {
 	}
 
 	/**
-	 * Decode encrypted and signed data and return it.
+	 * Decode data WooPay sealed for this store and return it.
+	 *
+	 * Opens with the attestation key, which this store never seals anything with — so an
+	 * envelope this store produced is not a valid envelope here, whatever its array keys
+	 * are named. That is the separation `derive_key_for()` exists to provide.
+	 *
+	 * The undifferentiated blog token is still accepted, because WooPay releases before
+	 * the matching change seal with it, and the connect exchange this also serves still
+	 * does for every merchant. Neither can be produced without the blog token, so keeping
+	 * it reachable costs nothing beyond keeping it reachable — which is what the follow-up
+	 * removes, once no WooPay release is still sending it. See WOOPAY-461.
 	 *
 	 * @param array $data The session, iv, and hash data for the encryption.
 	 * @return mixed The decoded data.
@@ -362,16 +414,25 @@ class WooPay_Utilities {
 		// Decode the data.
 		$decoded_data_request = array_map( 'base64_decode', $data );
 
-		// Verify the HMAC hash before decryption to ensure data integrity.
-		$computed_hash = hash_hmac( 'sha256', $decoded_data_request['iv'] . $decoded_data_request['data'], $store_blog_token );
+		$signed_payload = $decoded_data_request['iv'] . $decoded_data_request['data'];
+		$key            = null;
 
-		// If the hashes don't match, the message may have been tampered with.
-		if ( ! hash_equals( $computed_hash, $decoded_data_request['hash'] ) ) {
+		// Verify the HMAC hash before decryption to ensure data integrity, and let whichever
+		// key verified it be the one that decrypts — trying the other would fail anyway.
+		foreach ( [ self::derive_key_for( self::ATTESTATION_KEY_PURPOSE ), $store_blog_token ] as $candidate ) {
+			if ( '' !== $candidate && hash_equals( hash_hmac( 'sha256', $signed_payload, $candidate ), $decoded_data_request['hash'] ) ) {
+				$key = $candidate;
+				break;
+			}
+		}
+
+		// If neither matches, the message may have been tampered with.
+		if ( null === $key ) {
 			return null;
 		}
 
-		// Decipher the data using the blog token and the IV.
-		$decrypted_data = openssl_decrypt( $decoded_data_request['data'], 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $decoded_data_request['iv'] );
+		// Decipher the data using the verified key and the IV.
+		$decrypted_data = openssl_decrypt( $decoded_data_request['data'], 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $decoded_data_request['iv'] );
 
 		if ( false === $decrypted_data ) {
 			return null;
