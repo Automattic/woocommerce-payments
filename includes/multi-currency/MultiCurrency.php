@@ -850,17 +850,32 @@ class MultiCurrency {
 	 * Multi-Currency has nothing of its own to assert, so a third-party `woocommerce_currency`
 	 * filter should be left alone.
 	 *
+	 * A compatibility override always counts. A stored session or user-meta code only counts when
+	 * more than one currency is enabled: with a single currency nothing could have been selected,
+	 * so a stored code is stale state (an old `?currency=` link, meta from a time the store had more
+	 * currencies), not a choice to assert over other plugins' filters.
+	 *
 	 * @return Currency|null
 	 */
 	public function get_explicit_selected_currency(): ?Currency {
-		$multi_currency_code = $this->compatibility->override_selected_currency();
-		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
+		$enabled_currencies = $this->get_enabled_currencies();
+		$override_code      = $this->compatibility->override_selected_currency();
 
-		if ( null === $currency_code || '' === $currency_code ) {
+		if ( $override_code ) {
+			return $enabled_currencies[ $override_code ] ?? null;
+		}
+
+		if ( count( $enabled_currencies ) < 2 ) {
 			return null;
 		}
 
-		return $this->get_enabled_currencies()[ $currency_code ] ?? null;
+		$stored_code = $this->get_stored_currency_code();
+
+		if ( null === $stored_code || '' === $stored_code ) {
+			return null;
+		}
+
+		return $enabled_currencies[ $stored_code ] ?? null;
 	}
 
 	/**

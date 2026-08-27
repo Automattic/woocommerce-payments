@@ -412,6 +412,24 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->multi_currency->get_explicit_selected_currency() );
 	}
 
+	public function test_get_explicit_selected_currency_ignores_stored_code_when_only_store_currency_is_enabled() {
+		// Not connected: only the store currency is enabled, so nothing could have been selected.
+		$this->init_multi_currency( null, false );
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, Currency_Code::UNITED_STATES_DOLLAR );
+
+		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
+		$this->assertNull( $this->multi_currency->get_explicit_selected_currency() );
+	}
+
+	public function test_get_explicit_selected_currency_honours_stored_store_currency_with_two_enabled_currencies() {
+		update_option( self::ENABLED_CURRENCIES_OPTION, [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING ] );
+		$this->init_multi_currency();
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, Currency_Code::UNITED_STATES_DOLLAR );
+
+		$this->assertSame( [ 'USD', 'GBP' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
+		$this->assertSame( 'USD', $this->multi_currency->get_explicit_selected_currency()->get_code() );
+	}
+
 	public function test_get_selected_currency_does_not_trigger_null_offset_deprecation_without_stored_currency() {
 		// Regression test for WOOPMNT-6238. With no currency stored for the user or
 		// session, the resolved currency code is null. Subscripting the enabled
@@ -2004,6 +2022,16 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->assertSame( 'USD', get_woocommerce_currency() );
+	}
+
+	public function test_stored_store_currency_does_not_override_filtered_currency_when_only_store_currency_is_enabled() {
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => Currency_Code::POUND_STERLING, 5 );
+		// Not connected: a stored code on a one-currency store is stale state, not a shopper's choice.
+		$this->init_multi_currency( null, false );
+		WC()->session->set( MultiCurrency::CURRENCY_SESSION_KEY, Currency_Code::UNITED_STATES_DOLLAR );
+
+		$this->assertSame( 'GBP', get_woocommerce_currency() );
 	}
 
 	public function test_compatibility_store_currency_override_overrides_filtered_currency() {
