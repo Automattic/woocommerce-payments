@@ -534,7 +534,11 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			$captured[0]['source'],
 			'The failure must log under the woopayments source so it lands in the log file support pulls'
 		);
+		// The IDs make the entry actionable: which payment method, on which customer and user.
 		$this->assertStringContainsString( 'default payment method', $captured[0]['message'] );
+		$this->assertStringContainsString( 'pm_mock', $captured[0]['message'] );
+		$this->assertStringContainsString( 'cus_12345', $captured[0]['message'] );
+		$this->assertStringContainsString( 'user 1', $captured[0]['message'] );
 	}
 
 	public function test_woocommerce_payment_token_set_default_clears_cache_on_failure() {
