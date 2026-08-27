@@ -150,29 +150,10 @@ export default class WCPayAPI {
 		}
 
 		const isSetupIntent = partials[ 1 ] === 'si';
-		let orderId = partials[ 2 ];
+		const orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
 		const confirmationToken = partials[ 5 ] || null;
-		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
-		const isOrderPage = orderPayIndex > -1;
-
-		// If we're on the Pay for Order page, get the order ID
-		// directly from the URL instead of relying on the hash.
-		// The checkout URL does not contain the string 'order-pay'.
-		// The Pay for Order page contains the string 'order-pay' and
-		// can have these formats:
-		// Plain permalinks:
-		// /?page_id=7&order-pay=189&pay_for_order=true&key=wc_order_key
-		// Non-plain permalinks:
-		// /checkout/order-pay/189/
-		// Match for consecutive digits after the string 'order-pay' to get the order ID.
-		const orderIdPartials =
-			isOrderPage &&
-			redirectUrl.substring( orderPayIndex ).match( /\d+/ );
-		if ( orderIdPartials ) {
-			orderId = orderIdPartials[ 0 ];
-		}
 
 		const confirmPaymentOrSetup = async () => {
 			const { locale, publishableKey } = this.options;
