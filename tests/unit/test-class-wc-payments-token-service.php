@@ -659,15 +659,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	/**
-	 * Puts the request in the shape WooCommerce's My Account "Make default" form handler runs in.
-	 */
-	private function set_default_payment_method_request() {
-		global $wp;
-
-		$wp->query_vars['set-default-payment-method'] = '1';
-	}
-
 	public function test_woocommerce_payment_token_set_default_other_gateway() {
 		$this->mock_customer_service
 			->expects( $this->never() )
@@ -1544,5 +1535,14 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		// Should return unchanged when wallet type not found.
 		$this->assertEquals( 'Visa', $result['method']['brand'] );
+	}
+
+	/**
+	 * Puts the request in the shape WooCommerce's My Account "Make default" form handler runs in.
+	 */
+	private function set_default_payment_method_request() {
+		global $wp;
+
+		$wp->query_vars['set-default-payment-method'] = '1';
 	}
 }
