@@ -55,6 +55,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// The failure paths under test log through wc_get_logger(). Returning null from this
+		// filter stops the handlers, so the tests do not write into wp-content/uploads/wc-logs.
+		add_filter( 'woocommerce_logger_log_message', '__return_null', 100 );
+
 		$this->original_gateway = WC_Payments::get_gateway();
 
 		$this->user_id = get_current_user_id();
@@ -76,6 +80,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		global $wp;
 
+		remove_filter( 'woocommerce_logger_log_message', '__return_null', 100 );
 		unset( $wp->query_vars['set-default-payment-method'] );
 		wc_clear_notices();
 		wp_set_current_user( $this->user_id );
@@ -495,10 +500,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_woocommerce_payment_token_set_default_failure_is_logged_without_debug_toggle() {
-		// Regression guard: with the WCPay debug toggle off (and no dev mode in the test
-		// bootstrap), the gated WCPay logger produces nothing, so this test fails if the
-		// catch ever reverts to Logger::error().
-		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enable_logging' => 'no' ] );
+		// Regression guard: the gated WCPay logger writes nothing while the debug toggle is off,
+		// which is the default here, so this test fails if the catch ever reverts to
+		// Logger::error(). Asserted rather than assumed, since the guard is void without it.
+		$this->assertFalse( \WCPay\Logger::can_log(), 'Precondition: the gated WCPay logger must be off' );
 
 		$captured = [];
 		$capture  = function ( $message, $level, $context ) use ( &$captured ) {
