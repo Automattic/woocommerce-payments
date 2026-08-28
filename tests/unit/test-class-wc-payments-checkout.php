@@ -167,6 +167,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		parent::tear_down();
 		WC_Payments::set_gateway( $this->default_gateway );
 		unset( $_GET['key'] );
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		wp_dequeue_script( 'wcpay-upe-checkout' );
 		// Deregister too, so localized wcpay_upe_config data does not leak into later tests.
 		wp_deregister_script( 'wcpay-upe-checkout' );
@@ -181,7 +182,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Points the current request at the Pay for Order endpoint for the given order.
+	 * Sets the order-pay query data for the given order.
 	 *
 	 * Merges the endpoint query var rather than replacing the whole array; the originals are
 	 * snapshotted in set_up and restored in tear_down so these process-shared globals do not
@@ -189,12 +190,22 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	 *
 	 * @param \WC_Order $order The order being paid.
 	 */
-	private function setup_pay_for_order_endpoint( \WC_Order $order ) {
+	private function setup_order_pay_query_data( \WC_Order $order ) {
 		global $wp, $wp_query;
 		$wp->query_vars       = array_merge( (array) ( $wp->query_vars ?? [] ), [ 'order-pay' => strval( $order->get_id() ) ] );
 		$wp_query->query_vars = array_merge( (array) ( $wp_query->query_vars ?? [] ), [ 'order-pay' => strval( $order->get_id() ) ] );
 		set_query_var( 'order-pay', $order->get_id() );
 		$_GET['key'] = $order->get_order_key();
+	}
+
+	/**
+	 * Points the current request at the checkout Pay for Order page for the given order.
+	 *
+	 * @param \WC_Order $order The order being paid.
+	 */
+	private function setup_pay_for_order_endpoint( \WC_Order $order ) {
+		$this->setup_order_pay_query_data( $order );
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
 	}
 
 	/**
@@ -239,6 +250,14 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
 	}
 
+	public function test_is_valid_pay_for_order_endpoint_false_for_bare_order_pay_query_var_outside_checkout() {
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_order_pay_query_data( $order );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
 	public function test_is_valid_pay_for_order_endpoint_false_when_key_does_not_match() {
 		$order = $this->create_guest_order_needing_payment();
 		$this->setup_pay_for_order_endpoint( $order );
@@ -262,6 +281,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$wp_query->query_vars = [ 'order-pay' => '999999' ];
 		set_query_var( 'order-pay', 999999 );
 		$_GET['key'] = 'wc_order_whatever';
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
 
 		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
 	}

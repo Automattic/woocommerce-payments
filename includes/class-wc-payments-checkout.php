@@ -182,8 +182,8 @@ class WC_Payments_Checkout {
 	 * order-pay URL with a `#wcpay-confirm-...` fragment, there is no script to process
 	 * the authentication continuation and the shopper is stuck on the verification form.
 	 *
-	 * Loading the scripts here — keyed on the pay-for-order endpoint rather than on the
-	 * form being rendered (the endpoint check mirrors the WooCommerce Stripe gateway's) — lets
+	 * Loading the scripts here — keyed on the checkout pay page rather than on the
+	 * form being rendered — lets
 	 * the existing on-load continuation logic complete the payment. It runs on wp_footer so that, on a
 	 * normal pay-for-order page, payment_fields() has already enqueued the script during the
 	 * render and the not-already-enqueued guard below makes this a no-op — payment_fields()
@@ -207,11 +207,10 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Checks whether the current request is a Pay for Order endpoint the current user is
+	 * Checks whether the current request is a Pay for Order checkout page the current user is
 	 * allowed to pay, independent of whether the pay-for-order form is rendered.
 	 *
-	 * Mirrors the WooCommerce Stripe gateway's endpoint check: the request must be on the
-	 * `order-pay` endpoint with a `key` matching the order, the order must still need
+	 * The request must be on the checkout pay page with a `key` matching the order, the order must still need
 	 * payment, and the current user must be allowed to pay for it (guests are allowed to
 	 * pay for guest orders by order key). See WOOPMNT-6405.
 	 *
@@ -220,9 +219,9 @@ class WC_Payments_Checkout {
 	private function is_valid_pay_for_order_endpoint(): bool {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
 		// is_string() guards against an array being passed (e.g. ?key[]=x): wc_clean() would return
-		// an array and hash_equals() would throw a TypeError. is_wc_endpoint_url( 'order-pay' ) is
-		// satisfied by a bare ?order-pay=<id> on any front-end page, so this is reachable unauthenticated.
-		if ( ! is_wc_endpoint_url( 'order-pay' ) || ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+		// an array and hash_equals() would throw a TypeError. The checkout pay page is public, so
+		// malformed query string input is reachable unauthenticated.
+		if ( ! is_checkout_pay_page() || ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
 			return false;
 		}
 
