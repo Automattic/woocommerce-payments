@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix the E2E Action Scheduler helper so it finds the Run link on WordPress 7.1.

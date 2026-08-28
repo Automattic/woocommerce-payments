@@ -108,7 +108,7 @@ exports[`Test mode notification Returns valid component for overview page 1`] = 
        All transactions will be simulated. 
       <a
         class="components-external-link"
-        href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
+        href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/"
         rel="external noreferrer noopener"
         target="_blank"
       >
