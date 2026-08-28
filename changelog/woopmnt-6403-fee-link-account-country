@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Linked the payment method fee tooltip to the fee section for the WooPayments account's country rather than the store's base country, which differ for Puerto Rico stores and for any store that changes its base country after onboarding.

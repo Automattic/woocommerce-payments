@@ -23,6 +23,15 @@ import StripeBillingToggle from './stripe-billing-toggle';
 /**
  * Renders a WooPayments Subscriptions Advanced Settings Section.
  *
+ * The three `useEffect` blocks below (and the mirrors in
+ * `stripe-billing-notices/*`) call `setState` synchronously from an effect
+ * body, tripping `react-hooks/set-state-in-effect`. Rewriting them into a
+ * single coordinated save-and-migrate state machine passes the rule but
+ * ships a significantly larger behavioural change to a surface that only a
+ * subset of merchants (those on Stripe Billing) sees and that is no longer
+ * actively developed. The suppressions below intentionally keep the
+ * original semantics; the rule is not load-bearing for correctness here.
+ *
  * @return {JSX.Element} Rendered subscriptions advanced settings section.
  */
 const StripeBillingSection: React.FC = () => {
@@ -53,6 +62,7 @@ const StripeBillingSection: React.FC = () => {
 	// When the settings are being saved, set the hasSavedSettings flag to true.
 	useEffect( () => {
 		if ( isSaving && ! isLoading ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see file header for rationale.
 			setHasSavedSettings( true );
 		}
 	}, [ isLoading, isSaving ] );
@@ -60,13 +70,44 @@ const StripeBillingSection: React.FC = () => {
 	// When the settings have finished saving, update the savedIsStripeBillingEnabled value.
 	useEffect( () => {
 		if ( hasFinishedSavingSettings ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see file header for rationale.
 			setSavedIsStripeBillingEnabled( isStripeBillingEnabled );
 		}
 	}, [ hasFinishedSavingSettings, isStripeBillingEnabled ] );
 
 	// Set up the context to be shared between the notices and the toggle.
-	const [ isMigrationInProgressShown ] = useState( false );
-	const [ isMigrationOptionShown ] = useState( false );
+	const [ isMigrationInProgressLocal, setIsMigrationInProgressLocal ] =
+		useState( false );
+
+	/**
+	 * Whether the migrate-option notice is eligible to be shown.
+	 *
+	 * Note: We use `useState` here to snapshot the setting value on load.
+	 * The option notice should only be shown if Stripe Billing was disabled on load.
+	 */
+	const [ isMigrationOptionEligible, setIsMigrationOptionEligible ] =
+		useState( ! isStripeBillingEnabled );
+
+	// Once settings are saved with Stripe Billing enabled, the option notice is no longer eligible.
+	useEffect( () => {
+		if ( savedIsStripeBillingEnabled ) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- see file header for rationale.
+			setIsMigrationOptionEligible( false );
+		}
+	}, [ savedIsStripeBillingEnabled ] );
+
+	// Derive `isMigrationOptionShown` synchronously so all children (the toggle and sibling
+	// notices) read the same value in the first render — otherwise the toggle's help text
+	// flickers because <Notices /> renders before <StripeBillingToggle /> and can't update
+	// the context until after its first commit.
+	const isMigrationInProgressCombined =
+		isMigrationInProgress || isMigrationInProgressLocal;
+	const isMigrationOptionShown =
+		! hasResolved &&
+		! isMigrationInProgressCombined &&
+		subscriptionCount > 0 &&
+		isMigrationOptionEligible &&
+		! isStripeBillingEnabled;
 
 	const noticeContext = {
 		isStripeBillingEnabled: isStripeBillingEnabled,
@@ -74,10 +115,10 @@ const StripeBillingSection: React.FC = () => {
 
 		// Notice logic.
 		isMigrationOptionShown: isMigrationOptionShown,
-		isMigrationInProgressShown: isMigrationInProgressShown,
 
 		// Migration logic.
-		isMigrationInProgress: isMigrationInProgress,
+		isMigrationInProgress: isMigrationInProgressCombined,
+		setIsMigrationInProgress: setIsMigrationInProgressLocal,
 		hasSavedSettings: hasFinishedSavingSettings,
 
 		// Migration data.

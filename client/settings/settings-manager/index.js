@@ -102,7 +102,7 @@ const DepositsDescription = () => {
 			</p>
 			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
-					'Learn more about pending schedules',
+					'Learn more about payout schedules',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
@@ -146,6 +146,16 @@ const AdvancedDescription = () => {
 		</>
 	);
 };
+
+const isVatDetailsModalRequested = () => {
+	const urlParams = new URLSearchParams( window.location.search );
+	return urlParams.get( 'woopayments-vat-details-modal' ) === 'true';
+};
+
+const shouldOpenVatModal = () =>
+	isVatDetailsModalRequested() &&
+	wcpaySettings.accountStatus.isDocumentsEnabled &&
+	! wcpaySettings.accountStatus.hasSubmittedVatData;
 
 const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] =
@@ -191,28 +201,27 @@ const SettingsManager = () => {
 
 	const [ dismissedDuplicateNotices, setDismissedDuplicateNotices ] =
 		useState( wcpaySettings.dismissedDuplicateNotices || {} );
-	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+	const [ isVatFormModalOpen, setVatFormModalOpen ] =
+		useState( shouldOpenVatModal );
 
 	useEffect( () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
-			if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
-				dispatch( 'core/notices' ).createErrorNotice(
-					__(
-						'Tax details collection is not available for your account.',
-						'woocommerce-payments'
-					)
-				);
-			} else if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
-				setVatFormModalOpen( true );
-			} else {
-				dispatch( 'core/notices' ).createInfoNotice(
-					__(
-						'Tax details are already submitted.',
-						'woocommerce-payments'
-					)
-				);
-			}
+		if ( ! isVatDetailsModalRequested() ) {
+			return;
+		}
+		if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
+			dispatch( 'core/notices' ).createErrorNotice(
+				__(
+					'Tax details collection is not available for your account.',
+					'woocommerce-payments'
+				)
+			);
+		} else if ( wcpaySettings.accountStatus.hasSubmittedVatData ) {
+			dispatch( 'core/notices' ).createInfoNotice(
+				__(
+					'Tax details are already submitted.',
+					'woocommerce-payments'
+				)
+			);
 		}
 	}, [] );
 

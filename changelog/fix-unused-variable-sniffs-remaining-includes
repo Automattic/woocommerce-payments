@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: fix: enable VariableAnalysis UnusedVariable sniff on remaining includes/ and src/ files (part of #8436)

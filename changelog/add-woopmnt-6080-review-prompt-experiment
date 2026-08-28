@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add A/B/C design variants to the in-app review prompt, assigned per-store via ExPlat (prompt remains disabled pending eligibility criteria)

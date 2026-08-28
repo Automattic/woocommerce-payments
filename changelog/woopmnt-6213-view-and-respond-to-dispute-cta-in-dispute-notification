@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix the dispute notification "View and respond to dispute" link intermittently landing on an error or broken page by redirecting to the disputes list when the dispute's transaction details cannot be resolved.

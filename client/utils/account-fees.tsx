@@ -19,9 +19,13 @@ import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 import { createInterpolateElement } from '@wordpress/element';
 import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
-const countryFeeStripeDocsBaseLink =
+const countryFeeDocsBaseLink =
 	'https://woocommerce.com/document/woopayments/fees/';
-const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
+
+// Keyed on the Stripe account country — the same account the fees in this
+// tooltip come from. Values are the fees page's URL fragment slugs, not
+// section numbers.
+const countryFeeDocsSectionSlugs: Record< string, string > = {
 	AE: 'united-arab-emirates',
 	AU: 'australia',
 	AT: 'austria',
@@ -54,17 +58,33 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	SG: 'singapore',
 	SI: 'slovenia',
 	SK: 'slovakia',
-	SW: 'sweden',
+	SE: 'sweden',
 	ES: 'spain',
 	CH: 'switzerland',
-	UK: 'united-kingdom',
+	GB: 'united-kingdom',
 	US: 'united-states',
 	RO: 'romania',
+	// PR (Puerto Rico) needs no entry. It is a supported *store* country but
+	// is not selectable during Stripe account signup, so a Puerto Rico store's
+	// account is created as US and this lookup resolves to 'united-states' —
+	// which is the section describing the rates that account is actually
+	// charged. The fees page has no Puerto Rico section to point at anyway;
+	// its only PR line sits inside the US section, noting that PR-issued cards
+	// trigger the international payment fee.
 };
 
-const getStripeFeeSectionUrl = ( country: string ): string => {
-	return `${ countryFeeStripeDocsBaseLink }#${ countryFeeStripeDocsSectionNumbers[ country ] }`;
-};
+/**
+ * The fees page's fragment slug for an account's country, if the page has a
+ * section for it.
+ *
+ * `hasOwnProperty` rather than a bare lookup: a bare lookup walks the
+ * prototype chain, so a country of `constructor` or `toString` would resolve
+ * to a function and read as a mapped country.
+ */
+const getCountryFeeDocsSlug = ( country: string ): string | undefined =>
+	Object.prototype.hasOwnProperty.call( countryFeeDocsSectionSlugs, country )
+		? countryFeeDocsSectionSlugs[ country ]
+		: undefined;
 
 const getFeeDescriptionString = (
 	fee: BaseFee,
@@ -131,6 +151,19 @@ export const formatMethodFeesTooltip = (
 		return fee.fixed_rate > 0.0 || fee.percentage_rate > 0.0;
 	};
 
+	// The fees above this link come from the Stripe account, so the link has to
+	// describe the account's country. Not `connect.country` — that namespace is
+	// the onboarding form's data (country, availableCountries, availableStates),
+	// where the store address is the only country signal available because no
+	// account exists yet.
+	const country = wcpaySettings?.accountStatus?.country;
+	// Un-anchored fees page for a country the page has no section for, rather
+	// than a "#undefined" fragment.
+	const feeDocsSlug = country ? getCountryFeeDocsSlug( country ) : undefined;
+	const feeDocsUrl = feeDocsSlug
+		? `${ countryFeeDocsBaseLink }#${ feeDocsSlug }`
+		: countryFeeDocsBaseLink;
+
 	return (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
@@ -181,64 +214,38 @@ export const formatMethodFeesTooltip = (
 					{ getFeeDescriptionString( total ) }
 				</div>
 			</div>
-			{ wcpaySettings &&
-			wcpaySettings.connect &&
-			wcpaySettings.connect.country ? (
-				<div className="wcpay-fees-tooltip__hint-text">
-					<span>
-						{ countryFeeStripeDocsSectionNumbers.hasOwnProperty(
-							wcpaySettings.connect.country
-						)
-							? interpolateComponents( {
-									mixedString: sprintf(
-										/* translators: %s: WooPayments */
-										__(
-											'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees in your country',
-											'woocommerce-payments'
-										),
-										'WooPayments'
+			{ /* No country gate: an account whose country is unknown still gets
+			     the un-anchored fees page, the same as a country the page has
+			     no section for. Fees are on screen either way. */ }
+			<div className="wcpay-fees-tooltip__hint-text">
+				<span>
+					{ interpolateComponents( {
+						mixedString: feeDocsSlug
+							? sprintf(
+									/* translators: %s: WooPayments */
+									__(
+										'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees in your country',
+										'woocommerce-payments'
 									),
-									components: {
-										linkToStripePage: (
-											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink
-												href={ getStripeFeeSectionUrl(
-													wcpaySettings.connect
-														.country
-												) }
-											/>
-										),
-									},
-							  } )
-							: interpolateComponents( {
-									mixedString: sprintf(
-										/* translators: %s: WooPayments */
-										__(
-											'{{linkToStripePage /}} about %s Fees',
-											'woocommerce-payments'
-										),
-										'WooPayments'
+									'WooPayments'
+							  )
+							: sprintf(
+									/* translators: %s: WooPayments */
+									__(
+										'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees',
+										'woocommerce-payments'
 									),
-									components: {
-										linkToStripePage: (
-											<ExternalLink
-												href={
-													countryFeeStripeDocsBaseLink
-												}
-											>
-												{ __(
-													'Learn more',
-													'woocommerce-payments'
-												) }
-											</ExternalLink>
-										),
-									},
-							  } ) }
-					</span>
-				</div>
-			) : (
-				''
-			) }
+									'WooPayments'
+							  ),
+						components: {
+							linkToStripePage: (
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink href={ feeDocsUrl } />
+							),
+						},
+					} ) }
+				</span>
+			</div>
 		</div>
 	);
 };

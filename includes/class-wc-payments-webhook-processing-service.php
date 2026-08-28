@@ -198,6 +198,10 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'charge.expired':
 				$this->process_webhook_expired_authorization( $event_body );
 				break;
+			case 'radar.early_fraud_warning.created':
+			case 'radar.early_fraud_warning.updated':
+				$this->process_webhook_early_fraud_warning( $event_body );
+				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
 				$this->token_service->clear_all_cached_payment_methods();
@@ -608,6 +612,13 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		// A paid order already had its token saved at checkout, so this is a redelivered event.
+		// Saving again could re-point sibling subscriptions to a card the customer has since replaced.
+		if ( $order->is_paid() ) {
+			Logger::log( 'Skipping webhook token save for paid order #' . $order->get_id() . '.' );
+			return;
+		}
+
 		$previous_token_id = $this->get_order_last_payment_token_id( $order );
 
 		try {
@@ -688,24 +699,20 @@ class WC_Payments_Webhook_Processing_Service {
 	private function process_webhook_dispute_created( $event_body ) {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
-		$reason       = $this->read_webhook_property( $event_object, 'reason' );
-		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
-		$evidence     = $this->read_webhook_property( $event_object, 'evidence_details' );
-		$status       = $this->read_webhook_property( $event_object, 'status' );
-		$due_by       = $this->read_webhook_property( $evidence, 'due_by' );
+		// Read the dispute ID defensively: only used to keep notes distinct, so a
+		// (theoretical) event without it should still create the note, not fatal.
+		$dispute_id = $this->has_webhook_property( $event_object, 'id' ) ? $this->read_webhook_property( $event_object, 'id' ) : '';
+		$charge_id  = $this->read_webhook_property( $event_object, 'charge' );
+		$reason     = $this->read_webhook_property( $event_object, 'reason' );
+		$amount_raw = $this->read_webhook_property( $event_object, 'amount' );
+		$evidence   = $this->read_webhook_property( $event_object, 'evidence_details' );
+		$status     = $this->read_webhook_property( $event_object, 'status' );
+		$due_by     = $this->read_webhook_property( $evidence, 'due_by' );
 
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 
-		$currency      = $order->get_currency();
-		$amount_string = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
-
-		// Explicitly add currency info if needed (multi-currency stores).
-		$amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount_string, $currency );
-
-		// Convert due_by to a date string in the store timezone.
-		$due_by = date_i18n( wc_date_format(), $due_by );
-
+		// order_from_charge_id() returns false when no order matches, so guard
+		// before dereferencing $order below.
 		if ( ! $order ) {
 			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
@@ -716,7 +723,16 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status );
+		$currency      = $order->get_currency();
+		$amount_string = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
+
+		// Explicitly add currency info if needed (multi-currency stores).
+		$amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount_string, $currency );
+
+		// Convert due_by to a date string in the store timezone.
+		$due_by = date_i18n( wc_date_format(), $due_by );
+
+		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status, $dispute_id );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete_dispute_caches();
@@ -762,7 +778,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary, $dispute_id );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete_dispute_caches();
@@ -779,8 +795,11 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
-		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+		// Read the dispute ID defensively: only used to keep notes distinct, so a
+		// (theoretical) event without it should still create the note, not fatal.
+		$dispute_id = $this->has_webhook_property( $event_object, 'id' ) ? $this->read_webhook_property( $event_object, 'id' ) : '';
+		$charge_id  = $this->read_webhook_property( $event_object, 'charge' );
+		$order      = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
 			throw new Invalid_Webhook_Data_Exception(
@@ -813,14 +832,72 @@ class WC_Payments_Webhook_Processing_Service {
 			)
 		);
 
-		if ( $this->order_service->order_note_exists( $order, $note ) ) {
+		// The message is a fixed string per event type, so a charge's several disputes
+		// all produce byte-identical notes and order_note_exists() collapses them into
+		// one. The dispute ID keeps them distinct while still de-duplicating a
+		// re-delivered webhook for the same dispute.
+		if ( '' !== $dispute_id ) {
+			$note .= ' ' . sprintf(
+				/* translators: %s: the dispute ID */
+				esc_html__( '(Dispute ID: %s)', 'woocommerce-payments' ),
+				esc_html( $dispute_id )
+			);
+		}
+
+		if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+			$order->add_order_note( $note );
+		}
+
+		// Clear dispute caches to trigger a fetch of new data. The dispute changed on
+		// Stripe's side even when its note is a duplicate of one already on the order.
+		$this->database_cache->delete_dispute_caches();
+	}
+
+	/**
+	 * Process webhook for an early fraud warning being created or updated.
+	 *
+	 * The platform only forwards `created` events for charges without a dispute, but always
+	 * forwards `updated` events so a previously stored warning can be resolved. An `updated`
+	 * event for a warning the store never saw is therefore ignored.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
+	 */
+	private function process_webhook_early_fraud_warning( $event_body ) {
+		$event_type   = $this->read_webhook_property( $event_body, 'type' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
+		$efw_id       = $this->read_webhook_property( $event_object, 'id' );
+		$actionable   = $this->read_webhook_property( $event_object, 'actionable' );
+		$created      = $this->read_webhook_property( $event_object, 'created' );
+
+		// Unlike the fields above, `fraud_type` only drives a descriptive label that already
+		// degrades to an empty reason when the value is unknown, so a missing key must not
+		// abort storing the warning — read it optionally and default to an empty string.
+		$fraud_type = $event_object['fraud_type'] ?? '';
+
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		if ( ! $order ) {
+			throw new Invalid_Webhook_Data_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		// An update to a warning the store never received (e.g. its creation was skipped
+		// because the charge was already disputed) would only add a confusing "resolved"
+		// note for a warning the merchant never saw — ignore it.
+		if ( 'radar.early_fraud_warning.updated' === $event_type && null === $this->order_service->get_early_fraud_warning_for_order( $order ) ) {
 			return;
 		}
 
-		$order->add_order_note( $note );
-
-		// Clear dispute caches to trigger a fetch of new data.
-		$this->database_cache->delete_dispute_caches();
+		$this->order_service->mark_payment_early_fraud_warning( $order, $charge_id, $efw_id, (bool) $actionable, (string) $fraud_type, (int) $created );
 	}
 
 	/**
