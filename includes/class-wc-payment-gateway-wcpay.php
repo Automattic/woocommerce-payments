@@ -1217,7 +1217,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// whether the request belongs to the cart it names -- and a Cart-Token is enough to
 			// set it, which any visitor holds for their own cart. Turning card-testing
 			// protection off is not something a shopper should be able to ask for by sending a
-			// header. See WOOPAY-463.
+			// header.
 			if ( WC()->session && ! WooPay_Session::is_request_vouched_by_woopay() ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing

@@ -314,22 +314,20 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		$session_key = hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::SESSION_KEY_PURPOSE );
 
 		// Checked the way the receiver checks it, so this fails if either side of the
-		// contract moves. The HMAC has to cover the IV, not the ciphertext alone —
-		// otherwise the IV can be rewritten in transit. See WOOPAY-461.
+		// contract moves. The HMAC has to cover the IV as well as the ciphertext.
 		$this->assertSame(
 			hash_hmac( 'sha256', $parts['iv'] . $parts['session'], $session_key ),
 			$parts['hash']
 		);
 
-		// And specifically not the form WooPay still accepts from older releases.
+		// And specifically not the older form this direction has moved off.
 		$this->assertNotSame(
 			hash_hmac( 'sha256', $parts['session'], $session_key ),
 			$parts['hash']
 		);
 
-		// Nor sealed with the blog token itself. That is what made this payload
-		// interchangeable with an inbound attestation, since both ends used the same
-		// key and the only thing telling them apart was an array key name.
+		// Nor sealed with the blog token itself, which is what keeps this payload
+		// distinct from an inbound attestation rather than relying on field names.
 		$this->assertNotSame(
 			hash_hmac( 'sha256', $parts['iv'] . $parts['session'], $token ),
 			$parts['hash']
@@ -351,17 +349,14 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * The replay WOOPAY-461 is about: this store's own outbound session payload, renamed
-	 * and handed back to the verifier that reads inbound attestations. Before the keys
-	 * were separated the HMAC verified and it decrypted, and the only thing stopping it
-	 * going further was that the payload happens to carry no `timestamp`.
+	 * Each direction stands on its own key, so a payload this store sealed for WooPay is
+	 * not a payload WooPay sealed for this store, whatever its fields are called.
 	 */
 	public function test_a_payload_this_store_sealed_is_not_a_valid_attestation() {
 		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
 
 		$encrypted = WooPay_Utilities::encrypt_and_sign_data( [ 'blog_id' => 123 ] );
 
-		// The whole transformation: 'session' becomes 'data'.
 		$replayed = [
 			'data' => $encrypted['data']['session'],
 			'iv'   => $encrypted['data']['iv'],

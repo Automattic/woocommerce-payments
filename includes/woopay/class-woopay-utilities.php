@@ -29,7 +29,7 @@ class WooPay_Utilities {
 	 * HKDF label for payloads this store seals and WooPay opens.
 	 *
 	 * Must match the label WooPay derives with. Versioned so the pair can be rotated
-	 * without the two ends having to agree on a flag day. See WOOPAY-461.
+	 * without the two ends having to agree on a flag day.
 	 */
 	const SESSION_KEY_PURPOSE = 'woopay-session-v1';
 
@@ -41,9 +41,9 @@ class WooPay_Utilities {
 	/**
 	 * HKDF label for the envelope WooPay attaches to proxied checkout requests.
 	 *
-	 * Separate from the session envelope on purpose. That one is spent on arrival and
-	 * travels in a POST body; this one rides a header and is replayed by our own retry, so
-	 * it cannot be. Deriving a key per use is what stops one being presented as the other.
+	 * Separate from the session envelope on purpose: the two travel differently and are
+	 * governed by different rules. Deriving a key per use is what stops one being
+	 * presented as the other.
 	 */
 	const VOUCH_KEY_PURPOSE = 'woopay-vouch-v1';
 
@@ -325,13 +325,8 @@ class WooPay_Utilities {
 	 * Derives a key for one use of the blog token, so no two uses share a secret.
 	 *
 	 * The blog token authenticates the Jetpack connection, encrypts these payloads and
-	 * signs them, and until now the two directions of this exchange used it directly and
-	 * therefore used the same key. That made them interchangeable: the session payload this
-	 * store hands the shopper's browser is sealed exactly as an inbound attestation is, so
-	 * renaming one array key was enough to feed the store's own envelope back into
-	 * `decrypt_signed_data()`. What stopped it going further was that the payload happens
-	 * to carry no `timestamp` — an accident, not a boundary, and one innocuous field away
-	 * from becoming an authentication bypass. See WOOPAY-461.
+	 * signs them, so using it directly would leave every exchange sharing one key and
+	 * relying on payload shape to tell them apart. Shape is not a boundary.
 	 *
 	 * HKDF makes the direction part of the key, so an envelope sealed for one is not a
 	 * valid envelope for the other and cannot be made into one without the blog token.
@@ -408,12 +403,10 @@ class WooPay_Utilities {
 	 * the connect exchange this also serves still seals with it for every merchant. It
 	 * cannot be produced without the blog token, so keeping it reachable costs nothing
 	 * beyond keeping it reachable — which is what the follow-up removes, once no WooPay
-	 * release is still sending it. See WOOPAY-461.
+	 * release is still sending it.
 	 *
-	 * Name a purpose wherever one applies. The attestation path does, because the connect
-	 * envelope sealed under the bare token reaches the shopper's browser, and admitting it
-	 * here would leave a route-authorization check standing on the accident that that
-	 * payload carries no `timestamp`.
+	 * Name a purpose wherever one applies, so that each exchange stands on its own key
+	 * rather than on the shape of what it carries.
 	 *
 	 * @param array       $data    The session, iv, and hash data for the encryption.
 	 * @param string|null $purpose HKDF label the envelope was sealed under, or null to accept

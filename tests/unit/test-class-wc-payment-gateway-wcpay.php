@@ -4290,10 +4290,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_still_checks_fraud_when_only_the_cart_token_flag_is_set() {
 		$order = WC_Helper_Order::create_order();
 
-		// What a Cart-Token plus `User-Agent: WooPay` buys, which is what any visitor can
-		// send. This used to be enough to skip card-testing protection entirely -- the
-		// companion test below pins that consulting the service is what a real vouch skips.
-		// See WOOPAY-463.
+		// Only what a Cart-Token plus `User-Agent: WooPay` establishes, which is what any
+		// visitor can send. The companion test below pins that consulting the service is
+		// what a real vouch skips.
 		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
 
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
@@ -4315,7 +4314,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
 
-		// Sealed correctly, but old enough that replaying a captured request no longer works.
+		// Sealed correctly, but outside the freshness window.
 		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header( time() - 3600 );
 
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
@@ -4719,9 +4718,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_vouched_by_woopay() {
 		$order = WC_Helper_Order::create_order();
 
-		// The credential itself, rather than a filter standing in for one. A Cart-Token used
-		// to be enough to reach this branch, and turning card-testing protection off is not
-		// something a shopper should be able to ask for. See WOOPAY-463.
+		// The credential itself, rather than a filter standing in for one. Turning
+		// card-testing protection off is not something a shopper should be able to ask for.
 		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
 
 		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();

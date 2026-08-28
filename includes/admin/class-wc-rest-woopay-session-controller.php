@@ -37,11 +37,6 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base,
 			[
-				// POST only: the envelope travels in the body rather than a URL that reaches
-				// access logs, browser history and Referer headers, and the route was never
-				// idempotent anyway — reaching it creates a Stripe customer. The email rides
-				// inside the envelope, so there is no query arg to declare either. See
-				// WooPay_Session::get_woopay_attestation().
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
@@ -80,7 +75,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 *
 	 * What it accepts instead is an attestation envelope, which proves WooPay composed the
 	 * request without attaching a reusable credential to it. See
-	 * `WooPay_Session::get_woopay_attestation()` and WOOPAY-463.
+	 * `WooPay_Session::get_woopay_attestation()`.
 	 *
 	 * @return bool True if the request is from WooPay and carries proof of it.
 	 */

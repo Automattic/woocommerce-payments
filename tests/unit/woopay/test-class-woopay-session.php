@@ -130,7 +130,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		WooPay_Session::set_woopay_order_customer_ip( $order );
 
 		// The address WooPay saw the shopper arrive from, rather than the WordPress.com
-		// address this request left from. See WOOPAY-415.
+		// address this request left from.
 		$this->assertSame( '203.0.113.10', $order->get_customer_ip_address() );
 	}
 
@@ -172,9 +172,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$order->set_customer_ip_address( '192.0.91.172' );
 
 		// Everything a visitor can arrange for themselves: the User-Agent, a Cart-Token, and
-		// a header naming whatever address they like. Before the value moved inside the
-		// envelope this was enough to stamp it on their own order and walk past the
-		// merchant's IP rules. See WOOPAY-463.
+		// a header naming whatever address they like. None of it may reach the order — the
+		// address counts only when it comes out of the sealed envelope.
 		$_SERVER['HTTP_USER_AGENT']           = 'WooPay';
 		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] = '203.0.113.10';
 		$_SERVER['HTTP_CART_TOKEN']           = WooPay_Store_Api_Token::init()->get_cart_token();

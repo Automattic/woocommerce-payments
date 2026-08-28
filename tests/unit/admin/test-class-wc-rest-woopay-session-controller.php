@@ -14,7 +14,7 @@ use WCPay\WooPay\WooPay_Utilities;
  *
  * This route carries the store's own session material and creates a Stripe customer as a
  * side effect, so it must stay closed to callers who cannot prove they are WooPay — even
- * while proxied Store API traffic moves to Cart-Token authorization. See WOOPAY-463.
+ * while proxied Store API traffic moves to Cart-Token authorization.
  */
 class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 
@@ -102,9 +102,8 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_permission_is_denied_for_an_envelope_sealed_with_the_undifferentiated_blog_token() {
-		// The blog token also seals the connect exchange, whose envelope reaches the
-		// shopper's browser. Accepting it here would make that envelope one innocuous
-		// field — a timestamp — away from opening this route. See WOOPAY-461.
+		// The bare blog token seals other exchanges. This route takes only an envelope
+		// sealed under the attestation key, so none of those can stand in for one.
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', null, self::BLOG_TOKEN );
 
 		$this->assertFalse( $this->controller->check_permission() );
