@@ -182,6 +182,21 @@ describe( 'mapTimelineEvents', () => {
 		).toMatchSnapshot();
 	} );
 
+	test( 'formats refund_failed events without a failure reason', () => {
+		const events = mapTimelineEvents( [
+			{
+				datetime: 1585859207,
+				type: 'refund_failed',
+				failure_reason: null,
+				amount_refunded: '100',
+			},
+		] );
+
+		expect( events[ 0 ].headline ).toBe(
+			'$1.00 USD refund was attempted but failed due to an unknown reason.'
+		);
+	} );
+
 	test( 'formats actionable early_fraud_warning events', () => {
 		expect(
 			mapTimelineEvents(
