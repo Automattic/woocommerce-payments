@@ -981,11 +981,13 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param string|null $email     The email to attest to, or null for a guest shopper.
 	 * @param int|null $timestamp Envelope timestamp. Defaults to now.
+	 * @param string|null $key       Key to seal with. Defaults to the attestation key, which
+	 *                               is the only one WooPay seals an attestation with.
 	 *
 	 * @return array The base64-encoded envelope.
 	 */
-	private function build_envelope( ?string $email = null, ?int $timestamp = null ): array {
-		$key = \WCPay\WooPay\WooPay_Utilities::get_store_blog_token();
+	private function build_envelope( ?string $email = null, ?int $timestamp = null, ?string $key = null ): array {
+		$key = $key ?? \WCPay\WooPay\WooPay_Utilities::derive_key_for( \WCPay\WooPay\WooPay_Utilities::ATTESTATION_KEY_PURPOSE );
 
 		$payload = [ 'timestamp' => $timestamp ?? time() ];
 

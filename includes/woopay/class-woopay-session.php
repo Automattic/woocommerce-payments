@@ -1076,7 +1076,7 @@ class WooPay_Session {
 			return self::$resolved_attestations[ $fingerprint ];
 		}
 
-		$decrypted = WooPay_Utilities::decrypt_signed_data( $parts );
+		$decrypted = WooPay_Utilities::decrypt_signed_data( $parts, WooPay_Utilities::ATTESTATION_KEY_PURPOSE );
 
 		if ( ! is_array( $decrypted ) || ! isset( $decrypted['timestamp'] ) ) {
 			// Distinguished from the other rejections because a bad rollout looks like this

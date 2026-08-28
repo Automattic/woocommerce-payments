@@ -404,15 +404,22 @@ class WooPay_Utilities {
 	 * envelope this store produced is not a valid envelope here, whatever its array keys
 	 * are named. That is the separation `derive_key_for()` exists to provide.
 	 *
-	 * The undifferentiated blog token is still accepted, because WooPay releases before
-	 * the matching change seal with it, and the connect exchange this also serves still
-	 * does for every merchant. Neither can be produced without the blog token, so keeping
-	 * it reachable costs nothing beyond keeping it reachable — which is what the follow-up
-	 * removes, once no WooPay release is still sending it. See WOOPAY-461.
+	 * The undifferentiated blog token is still accepted when no purpose is named, because
+	 * the connect exchange this also serves still seals with it for every merchant. It
+	 * cannot be produced without the blog token, so keeping it reachable costs nothing
+	 * beyond keeping it reachable — which is what the follow-up removes, once no WooPay
+	 * release is still sending it. See WOOPAY-461.
+	 *
+	 * Name a purpose wherever one applies. The attestation path does, because the connect
+	 * envelope sealed under the bare token reaches the shopper's browser, and admitting it
+	 * here would leave a route-authorization check standing on the accident that that
+	 * payload carries no `timestamp`.
 	 *
 	 * @param array       $data    The session, iv, and hash data for the encryption.
 	 * @param string|null $purpose HKDF label the envelope was sealed under, or null to accept
 	 *                             the attestation key and the undifferentiated blog token.
+	 *                             Prefer naming the purpose; null is for the legacy connect
+	 *                             and `encrypted_data` exchanges that predate the split.
 	 * @return mixed The decoded data.
 	 */
 	public static function decrypt_signed_data( $data, ?string $purpose = null ) {

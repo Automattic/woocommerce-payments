@@ -7,6 +7,7 @@
 
 use WCPay\Platform_Checkout\WooPay_Store_Api_Token;
 use WCPay\WooPay\WooPay_Session;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * WC_REST_WooPay_Session_Controller unit tests.
@@ -100,6 +101,15 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
+	public function test_permission_is_denied_for_an_envelope_sealed_with_the_undifferentiated_blog_token() {
+		// The blog token also seals the connect exchange, whose envelope reaches the
+		// shopper's browser. Accepting it here would make that envelope one innocuous
+		// field — a timestamp — away from opening this route. See WOOPAY-461.
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', null, self::BLOG_TOKEN );
+
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
 	public function test_permission_is_denied_for_a_stale_envelope() {
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
 
@@ -146,12 +156,13 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param string|null $email     The email to attest to, or null for a guest shopper.
 	 * @param int|null    $timestamp Envelope timestamp. Defaults to now.
-	 * @param string|null $key       Key to seal with. Defaults to the store blog token.
+	 * @param string|null $key       Key to seal with. Defaults to the attestation key, which
+	 *                               is the only one WooPay seals an attestation with.
 	 *
 	 * @return array The base64-encoded envelope.
 	 */
 	private function build_envelope( ?string $email = null, ?int $timestamp = null, ?string $key = null ): array {
-		$key     = $key ?? self::BLOG_TOKEN;
+		$key     = $key ?? WooPay_Utilities::derive_key_for( WooPay_Utilities::ATTESTATION_KEY_PURPOSE );
 		$payload = [ 'timestamp' => $timestamp ?? time() ];
 
 		if ( null !== $email ) {
