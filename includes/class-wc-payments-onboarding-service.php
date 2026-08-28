@@ -934,6 +934,14 @@ class WC_Payments_Onboarding_Service {
 		update_option( self::TEST_MODE_OPTION, 'no' );
 		self::clear_account_options();
 
+		// Clear the stored flag for whether the store had WooPayments in use,
+		// so incentive eligibility is re-determined for the fresh onboarding.
+		// Deleting is safe even though WooCommerce core shares these options: if an
+		// older core copy re-freezes a stale positive from test-mode usage, the logic
+		// version marker gets it re-determined on the next evaluation. See WOOPMNT-6320.
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_OPTION_NAME );
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME );
+
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		$this->clear_embedded_kyc_in_progress();

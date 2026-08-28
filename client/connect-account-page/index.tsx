@@ -98,7 +98,7 @@ const ConnectAccountPage: React.FC = () => {
 	loaderProgressRef.current = testDriveLoaderProgress;
 
 	// Use a timer to track the elapsed time for the test drive mode setup.
-	let testDriveSetupStartTime: number;
+	const testDriveSetupStartTimeRef = useRef< number >( 0 );
 	// The test drive setup will be forced finished after 40 seconds
 	// (10 seconds for the initial calls plus 30 for checking the account status in a loop).
 	const testDriveSetupMaxDuration = 40;
@@ -198,7 +198,8 @@ const ConnectAccountPage: React.FC = () => {
 						'pending'
 					) ) ||
 				loaderProgressRef.current > 95 ||
-				elapsed( testDriveSetupStartTime ) > testDriveSetupMaxDuration
+				elapsed( testDriveSetupStartTimeRef.current ) >
+					testDriveSetupMaxDuration
 			) {
 				setTestDriveLoaderProgress( 100 );
 				const queryArgs = {
@@ -226,7 +227,7 @@ const ConnectAccountPage: React.FC = () => {
 
 	const handleSetupTestDriveMode = async () => {
 		// Record the start time of the test drive setup.
-		testDriveSetupStartTime = Date.now();
+		testDriveSetupStartTimeRef.current = Date.now();
 		// Initialize the progress bar.
 		setTestDriveLoaderProgress( 5 );
 		setTestDriveModeSubmitted( true );
@@ -339,7 +340,13 @@ const ConnectAccountPage: React.FC = () => {
 			source: determineTrackingSource(),
 		} );
 
-		// Maybe auto-start the test drive onboarding.
+		// URL-parameter-triggered mount workflow: when the page loads with
+		// `?auto_start_test_drive_onboarding=…`, kick off the same async
+		// workflow as the sandbox CTA. It ultimately calls setState (via
+		// handleSetupTestDriveMode) before starting a fetch and navigating,
+		// so the rule fires even though this is a legitimate URL-triggered
+		// mount side effect with no cleaner React 18.3 primitive.
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		autoStartTestDriveOnboarding();
 
 		// We only want to run this once.

@@ -94,7 +94,12 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$menu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		remove_all_filters( 'pre_http_request' );
+		remove_all_filters( 'woocommerce_order_query' );
+		remove_all_filters( 'woocommerce_order_query_args' );
 		remove_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
+
+		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' );
+		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' );
 
 		$this->incentives_service->clear_cache();
 
@@ -369,6 +374,8 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange.
 		set_transient( $this->transient_has_orders_key, 'yes', HOUR_IN_SECONDS );
 		update_option( $had_woopayments_option_key, 'yes' );
+		// A stored positive is only trusted when determined by the current logic version.
+		update_option( $had_woopayments_option_key . '_version', 2 );
 		$call_count = 0;
 		add_filter(
 			'woocommerce_order_query_args',
@@ -388,6 +395,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		// Clean up.
 		delete_transient( $this->transient_has_orders_key );
 		delete_option( $had_woopayments_option_key );
+		delete_option( $had_woopayments_option_key . '_version' );
 	}
 
 	public function test_get_connect_incentive_has_orders_is_cached_longer_when_has_orders() {
@@ -452,6 +460,175 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'pre_set_transient_' . $this->transient_has_orders_key );
 	}
 
+	public function test_has_wcpay_ignores_test_mode_orders() {
+		// Arrange.
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_wcpay_mode', 'test' );
+		$order->save();
+
+		// Act.
+		$result = $this->invoke_has_wcpay( $this->incentives_service );
+
+		// Assert.
+		$this->assertFalse( $result );
+		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+		$this->assertSame( 2, (int) get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' ) );
+
+		// Clean up.
+		$order->delete( true );
+	}
+
+	public function test_has_wcpay_counts_live_mode_orders() {
+		// Arrange.
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->save();
+
+		// Act.
+		$result = $this->invoke_has_wcpay( $this->incentives_service );
+
+		// Assert.
+		$this->assertTrue( $result );
+		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+
+		// Clean up.
+		$order->delete( true );
+	}
+
+	/**
+	 * Such orders predate WooPayments saving the mode meta, or were created outside the checkout flow
+	 * that saves it. Erring towards incentive eligibility is intentional.
+	 */
+	public function test_has_wcpay_ignores_orders_without_mode_meta() {
+		// Arrange.
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->save();
+
+		// Act.
+		$result = $this->invoke_has_wcpay( $this->incentives_service );
+
+		// Assert.
+		$this->assertFalse( $result );
+		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+
+		// Clean up.
+		$order->delete( true );
+	}
+
+	public function test_has_wcpay_ignores_test_drive_account_data() {
+		// Arrange.
+		$service = $this->incentives_service_with_account_data(
+			[
+				'account_id'    => 'acct_123',
+				'is_live'       => false,
+				'is_test_drive' => true,
+			]
+		);
+
+		// Act & assert.
+		$this->assertFalse( $this->invoke_has_wcpay( $service ) );
+		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+	}
+
+	public function test_has_wcpay_ignores_sandbox_account_data() {
+		// Arrange.
+		$service = $this->incentives_service_with_account_data(
+			[
+				'account_id' => 'acct_123',
+				'is_live'    => false,
+			]
+		);
+
+		// Act & assert.
+		$this->assertFalse( $this->invoke_has_wcpay( $service ) );
+		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+	}
+
+	public function test_has_wcpay_counts_live_account_data() {
+		// Arrange.
+		$service = $this->incentives_service_with_account_data(
+			[
+				'account_id'    => 'acct_123',
+				'is_live'       => true,
+				'is_test_drive' => false,
+			]
+		);
+
+		// Act & assert.
+		$this->assertTrue( $this->invoke_has_wcpay( $service ) );
+		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+	}
+
+	/**
+	 * Cached account data written by older WooPayments versions may not carry the mode flags,
+	 * and we'd rather keep counting those stores as WooPayments users than reclassify them on missing data.
+	 */
+	public function test_has_wcpay_counts_account_data_without_mode_flags() {
+		// Arrange.
+		$service = $this->incentives_service_with_account_data( [ 'account_id' => 'acct_123' ] );
+
+		// Act & assert.
+		$this->assertTrue( $this->invoke_has_wcpay( $service ) );
+		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+	}
+
+	/**
+	 * A stored positive determined by an earlier logic version is re-determined.
+	 *
+	 * This is what keeps a value frozen by an earlier revision of this logic - or by a WC core
+	 * copy running an older revision - from disqualifying the store forever.
+	 */
+	public function test_has_wcpay_redetermines_stale_positive() {
+		// Arrange.
+		// A positive stored without a logic version, as an earlier revision would have left it.
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'yes' );
+		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' );
+
+		// Act & assert.
+		$this->assertFalse( $this->invoke_has_wcpay( $this->incentives_service ) );
+		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+		$this->assertSame( 2, (int) get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' ) );
+	}
+
+	public function test_has_wcpay_trusts_current_positive() {
+		// Arrange.
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'yes' );
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version', 2 );
+
+		// Act & assert.
+		$this->assertTrue( $this->invoke_has_wcpay( $this->incentives_service ) );
+		$this->assertSame( 'yes', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+	}
+
+	/**
+	 * A stored negative is trusted regardless of the logic version that determined it.
+	 *
+	 * Each revision of the logic is stricter than the one before it, so a store that didn't
+	 * qualify under an earlier revision can't start qualifying under the current one.
+	 */
+	public function test_has_wcpay_trusts_stale_negative() {
+		// Arrange.
+		// A live-mode order that would determine a positive if the stored value were re-determined.
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_wcpay_mode', 'prod' );
+		$order->save();
+
+		// A negative stored without a logic version, as an earlier revision would have left it.
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'no' );
+		delete_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' );
+
+		// Act & assert.
+		$this->assertFalse( $this->invoke_has_wcpay( $this->incentives_service ) );
+		$this->assertSame( 'no', get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+
+		// Clean up.
+		$order->delete( true );
+	}
+
 	/**
 	 * Mocks the cache with the given incentives list.
 	 *
@@ -500,5 +677,33 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 				return $orders;
 			}
 		);
+	}
+
+	/**
+	 * Invokes the private has_wcpay() method on the given service instance.
+	 *
+	 * @param WC_Payments_Incentives_Service $service The service instance.
+	 *
+	 * @return bool The has_wcpay() result.
+	 */
+	private function invoke_has_wcpay( WC_Payments_Incentives_Service $service ): bool {
+		$has_wcpay = new ReflectionMethod( $service, 'has_wcpay' );
+		$has_wcpay->setAccessible( true );
+
+		return $has_wcpay->invoke( $service );
+	}
+
+	/**
+	 * Builds an incentives service whose account cache returns the given account data.
+	 *
+	 * @param array $account_data The account data the database cache should return.
+	 *
+	 * @return WC_Payments_Incentives_Service The service instance.
+	 */
+	private function incentives_service_with_account_data( array $account_data ): WC_Payments_Incentives_Service {
+		$mock_database_cache = $this->createMock( Database_Cache::class );
+		$mock_database_cache->method( 'get' )->willReturn( $account_data );
+
+		return new WC_Payments_Incentives_Service( $mock_database_cache );
 	}
 }

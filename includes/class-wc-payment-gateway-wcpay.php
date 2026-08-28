@@ -24,6 +24,7 @@ use WCPay\Constants\Refund_Status;
 use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	Amount_Too_Small_Exception,
 	API_Merchant_Exception,
+	Blocked_By_Fraud_Rules_Exception,
 	Process_Payment_Exception,
 	Intent_Authentication_Exception,
 	API_Exception,
@@ -47,6 +48,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Fraud_Prevention\Models\Rule as Fraud_Rule;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
@@ -1257,6 +1259,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_existing_intention;
 			}
 
+			// Runs after the intent check so that a reachable intent still produces the richer
+			// response, including the amount mismatch message. This catches the same-order
+			// resubmission when that check returns empty-handed.
+			$check_order_paid = $this->duplicate_payment_prevention_service->check_order_already_paid( $order );
+			if ( is_array( $check_order_paid ) ) {
+				return $check_order_paid;
+			}
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -1328,7 +1338,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $blocked_by_fraud_rules ) {
-				$this->order_service->mark_order_blocked_for_fraud( $order, '', Intent_Status::CANCELED );
+				$ruleset_results = [];
+				if ( $e instanceof Blocked_By_Fraud_Rules_Exception ) {
+					$ruleset_results = $e->get_ruleset_results();
+				} elseif ( $e instanceof API_Exception && $this->is_blocked_by_avs_verification_fraud_rule( $e->get_error_code(), $e->get_error_type() ) ) {
+					// AVS blocks surface as a Stripe card error rather than a rule engine outcome,
+					// so no ruleset results accompany them; the fired rule is still known here.
+					$ruleset_results = [ Fraud_Risk_Tools::RULE_AVS_VERIFICATION => Fraud_Rule::FRAUD_OUTCOME_BLOCK ];
+				}
+				// AVS/Stripe-declined blocks carry a real (failed) intent id; passing it makes each
+				// blocked attempt's order note link to its own transaction instead of the order's
+				// latest one. Rule engine blocks fire before an intent exists, so this stays empty.
+				$blocked_intent_id = ( $e instanceof API_Exception && ! empty( $e->get_intent_id() ) ) ? $e->get_intent_id() : '';
+				$this->order_service->mark_order_blocked_for_fraud( $order, $blocked_intent_id, Intent_Status::CANCELED, $ruleset_results );
 			} elseif ( ! empty( $payment_information ) ) {
 				/**
 				 * TODO: Move the contents of this else into the Order_Service.
@@ -1860,8 +1882,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( $this->is_mandate_data_required() ) {
-					$request->set_mandate_data( $this->get_mandate_data() );
+				if ( $this->should_send_mandate_data( $payment_information ) ) {
+					$request->set_mandate_data( $this->get_mandate_data( $order ) );
 				}
 
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
@@ -1975,7 +1997,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
 					) {
 						$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
-						$request->set_mandate_data( $this->get_mandate_data() );
+
+						if ( $this->should_send_mandate_data( $payment_information ) ) {
+							$request->set_mandate_data( $this->get_mandate_data( $order ) );
+						}
 					}
 				}
 
@@ -2086,7 +2111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$payment_needed ? 'pi' : 'si',
 						$order_id,
 						$client_secret,
-						wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+						wp_create_nonce( $this->get_update_order_status_nonce_action( $order_id ) ),
 					];
 
 					// For ECE SetupIntents, include the confirmation token so the frontend can
@@ -2393,7 +2418,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
 							$client_secret,
-							wp_create_nonce( 'wcpay_update_order_status_nonce' )
+							wp_create_nonce( $this->get_update_order_status_nonce_action( $order_id ) )
 						);
 						wp_safe_redirect( $redirect_url );
 						exit;
@@ -2564,18 +2589,92 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Get values for Stripe mandate_data parameter
 	 *
+	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 *
 	 * @return array mandate_data values to use in request.
 	 */
-	private function get_mandate_data() {
+	private function get_mandate_data( ?WC_Order $order = null ) {
 		return [
 			'customer_acceptance' => [
 				'type'   => 'online',
 				'online' => [
-					'ip_address' => WC_Geolocation::get_ip_address(),
+					'ip_address' => $this->get_mandate_ip_address( $order ),
 					'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
 				],
 			],
 		];
+	}
+
+	/**
+	 * Resolves the customer IP address to record on the mandate.
+	 *
+	 * Prefers the order, which holds the IP captured while the customer was present, the
+	 * moment they accepted the mandate terms. Falls back to live request state, which is
+	 * empty when no HTTP request exists (CLI cron, WP-CLI) and Stripe then rejects the
+	 * intent with "Invalid IP address".
+	 *
+	 * Only customer-present payments reach here: should_send_mandate_data() sends nothing
+	 * for merchant-initiated ones.
+	 *
+	 * @param WC_Order|null $order Order the mandate is being created for, when available.
+	 *
+	 * @return string Customer IP address, or an empty string when neither source has one.
+	 */
+	private function get_mandate_ip_address( ?WC_Order $order = null ): string {
+		$order_ip_address = $order ? $order->get_customer_ip_address() : '';
+
+		if ( ! empty( $order_ip_address ) ) {
+			return $order_ip_address;
+		}
+
+		return WC_Geolocation::get_ip_address();
+	}
+
+	/**
+	 * Determines whether mandate data should be sent to Stripe for this payment.
+	 *
+	 * Three conditions, none of them method-specific:
+	 *
+	 * - The payment method needs a mandate at all (is_mandate_data_required()).
+	 * - The payment is not merchant-initiated. Stripe authorises those through the MIT /
+	 *   network transaction ID framework established at the original checkout, so SCA
+	 *   exemptions and dispute liability derive from that authentication rather than from
+	 *   repeating acceptance per renewal (confirmed with Stripe, WOOPMNT-6299).
+	 * - A valid customer IP is available. Stripe rejects a malformed ip_address outright but
+	 *   accepts a confirmation carrying no mandate data, so omitting beats sending a payload
+	 *   certain to fail. rest_is_ip_address() is a format check that allows private and
+	 *   loopback addresses on purpose, since Stripe accepts them and loopback cron needs it.
+	 *
+	 * SEPA needs no carve-out: it is not reusable, so every SEPA subscription renews manually
+	 * with the customer present and always reaches the last condition.
+	 *
+	 * @param Payment_Information $payment_information Payment information for the transaction.
+	 *
+	 * @return bool True when mandate data should be sent.
+	 */
+	private function should_send_mandate_data( Payment_Information $payment_information ): bool {
+		if ( ! $this->is_mandate_data_required() ) {
+			return false;
+		}
+
+		if ( $payment_information->is_merchant_initiated() ) {
+			return false;
+		}
+
+		$order = $payment_information->get_order();
+
+		if ( rest_is_ip_address( $this->get_mandate_ip_address( $order ) ) ) {
+			return true;
+		}
+
+		Logger::warning(
+			sprintf(
+				'Skipping mandate data for order %s: no valid customer IP address is available.',
+				$order ? $order->get_id() : 'unknown'
+			)
+		);
+
+		return false;
 	}
 
 	/**
@@ -4051,6 +4150,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Builds the order-scoped nonce action for the update_order_status AJAX handler.
+	 *
+	 * Folding the order id into the action stops a nonce a shopper gets for their
+	 * own order from being replayed against someone else's. See WOOPMNT-6380.
+	 *
+	 * @param int $order_id The order the nonce authorizes.
+	 * @return string The nonce action.
+	 */
+	private function get_update_order_status_nonce_action( int $order_id ): string {
+		return 'wcpay_update_order_status_nonce_' . $order_id;
+	}
+
+	/**
 	 * Handle AJAX request after authenticating payment at checkout.
 	 *
 	 * This function is used to update the order status after the user has
@@ -4066,7 +4178,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent_id_received = null;
 		$order              = null;
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
+			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+
+			// The nonce is bound to the order id, so it is verified against the
+			// requested order rather than accepted for any order. This prevents an
+			// unauthenticated caller from acting on an order it does not own. See
+			// WOOPMNT-6380.
+			$is_nonce_valid = check_ajax_referer( $this->get_update_order_status_nonce_action( $order_id ), false, false );
 			if ( ! $is_nonce_valid ) {
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
@@ -4074,8 +4192,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
-			$order    = wc_get_order( $order_id );
+			$order = wc_get_order( $order_id );
 			if ( ! $order ) {
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),

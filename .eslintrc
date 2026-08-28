@@ -97,10 +97,10 @@
 		"react-hooks/static-components": "error",
 		"react-hooks/purity": "error",
 		"react-hooks/use-memo": "error",
-		/* BEGIN WOOPMNT-6292 — react-hooks v7 new rules, temporarily set to warn until violations are fixed */
+		"react-hooks/immutability": "error",
+		"react-hooks/set-state-in-effect": "error",
+		/* BEGIN WOOPMNT-6292 — react-hooks v7 remaining rule, temporarily set to warn until violations are fixed */
 		"react-hooks/refs": "warn",
-		"react-hooks/set-state-in-effect": "warn",
-		"react-hooks/immutability": "warn",
 		/* END WOOPMNT-6292 */
 		"jest/no-conditional-expect": "off",
 		"jest/valid-title": "off",

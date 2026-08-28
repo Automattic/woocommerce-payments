@@ -221,7 +221,13 @@ class Experimental_Abtest {
 		);
 
 		// The request blocks admin page render, so it must not wait the default 5 seconds.
-		$get = wp_remote_get( $url, [ 'timeout' => 3 ] );
+		$get = wp_remote_get(
+			$url,
+			[
+				'timeout'    => 3,
+				'user-agent' => 'WooPayments/' . WCPAY_VERSION_NUMBER,
+			]
+		);
 
 		return $get;
 	}

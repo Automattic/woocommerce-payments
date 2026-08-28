@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
 use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\FrontendCurrencies;
@@ -106,17 +107,87 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	}
 
 	public function test_get_woocommerce_currency_returns_selected_currency() {
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'EUR' ) );
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( new Currency( $this->localization_service, Currency_Code::EURO ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
 
 		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency() );
 	}
 
 	public function test_get_woocommerce_currency_returns_store_currency() {
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'EUR' ) );
 		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( true );
 
+		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+	}
+
+	public function test_get_woocommerce_currency_passes_through_filtered_currency_when_not_switching() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'GBP', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+	}
+
+	public function test_get_woocommerce_currency_returns_store_currency_when_not_switching_and_nothing_was_filtered() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
 		$this->assertSame( 'USD', $this->frontend_currencies->get_woocommerce_currency() );
+	}
+
+	public function test_get_woocommerce_currency_overrides_filtered_currency_when_switching() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( new Currency( $this->localization_service, Currency_Code::EURO ) );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+	}
+
+	public function test_woocommerce_currency_filter_keeps_value_from_earlier_filters_when_not_switching() {
+		$this->mock_multi_currency->method( 'get_explicit_selected_currency' )->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		// A third-party currency switcher hooked below Multi-Currency's priority.
+		add_filter( 'woocommerce_currency', fn() => 'GBP', 5 );
+
+		// Run the filter chain as WooCommerce does, starting from the store currency.
+		$this->assertSame( 'GBP', apply_filters( 'woocommerce_currency', 'USD' ) ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
+	}
+
+	public function test_get_woocommerce_currency_passes_through_a_second_filtered_currency_when_idle() {
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_explicit_selected_currency' )
+			->willReturn( null );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'GBP', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+		$this->assertSame( 'CAD', $this->frontend_currencies->get_woocommerce_currency( 'CAD' ) );
+	}
+
+	public function test_get_woocommerce_currency_reuses_an_explicit_selection_on_a_second_call() {
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_explicit_selected_currency' )
+			->willReturn( new Currency( $this->localization_service, Currency_Code::EURO ) );
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'GBP' ) );
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'CAD' ) );
+	}
+
+	public function test_get_woocommerce_currency_re_resolves_after_selected_currency_changed() {
+		$this->mock_multi_currency
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_explicit_selected_currency' )
+			->willReturnOnConsecutiveCalls(
+				new Currency( $this->localization_service, Currency_Code::EURO ),
+				new Currency( $this->localization_service, Currency_Code::POUND_STERLING )
+			);
+		$this->mock_compatibility->method( 'should_return_store_currency' )->willReturn( false );
+
+		$this->assertSame( 'EUR', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
+
+		$this->frontend_currencies->selected_currency_changed();
+
+		$this->assertSame( 'GBP', $this->frontend_currencies->get_woocommerce_currency( 'USD' ) );
 	}
 
 	public function test_get_price_decimals_returns_num_decimals() {
