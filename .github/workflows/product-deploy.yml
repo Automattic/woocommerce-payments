@@ -44,7 +44,7 @@ jobs:
           node_version: '24'
           npm_version: '11'
           simulate: ${{ inputs.simulate }}
-          wporg_release: ${{ !inputs.simulate }}
+          wporg_release: true
           # post-release-updates.yml already creates the GitHub release and tag
           github_release: false
           deploy_pat: ${{ secrets.WOO_PRODUCT_DEPLOY_TOKEN }}
