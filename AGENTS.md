@@ -366,11 +366,24 @@ Class and function signatures are not the only contracts. The following are equa
 
 **Hooks and filters are public contracts.** Every `do_action` and `apply_filters` call — the `wcpay_*` hooks and the `woocommerce_*` hooks this plugin fires — is an interface third-party callbacks depend on. Removing a hook, renaming it, or removing/reordering its arguments breaks every attached callback. Changing *when* or *whether* a hook fires can break consumers that depend on its timing. Additive is the safe path: append new arguments at the end, never remove or reorder existing ones. To retire a hook, fire it through `do_action_deprecated()` / `apply_filters_deprecated()` for a deprecation window instead of deleting it.
 
+**Never trust data that flows through hooks.** Keep hook callback parameters untyped and validate or coerce the value before passing it to strictly typed code, since any callback can receive a value another one produced. And when firing a filter, validate the final return value before using it, since any callback in the chain can return the wrong thing.
+
+**Overridable classes are contracts too, including which internal methods get called.** Third-party code subclasses `WC_Payment_Gateway_WCPay` and the payment-method classes and overrides individual public and protected methods, so those methods are contracts: changing their signatures or removing them breaks subclasses even when no caller inside this plugin remains. Adding a fast path or skip that avoids calling an overridable method silently disables those overrides even though no signature changed: the subclass's code simply stops running. When optimizing such a class, ensure overridable methods are still invoked on every code path, or treat the change as breaking.
+
+**Registered script and style handles are public contracts.** Third-party code enqueues this plugin's handles and lists them as dependencies — the `WCPAY_*` handles registered for admin, checkout, and express-checkout assets — including handles that were only ever registered incidentally. Renaming or removing a handle breaks those consumers. To rename with a compatibility window, register the legacy handle as an alias that depends on the new handle (the same pattern WordPress core uses for `jquery` → `jquery-core`); do not register the same file under both handles, or pages with mixed consumers will load it twice.
+
 **Do not assume global state.** WooPayments code runs in admin, REST, CLI, cron, webhook, and front-end contexts, and not all of them set the globals a front-end request does (`$post`, `$wp_query`, an initialized session or cart). Webhook and cron handlers in particular run with no cart and no logged-in customer. A newly introduced read of a global, or of `WC()->…` state, in a path reachable outside a standard request is a fatal or a silent misbehavior in the contexts that do not set it. Guard the exact dependency explicitly: use `function_exists`/`class_exists` for symbols, `isset` for variables, `did_action` for lifecycle state, and verify that `WC()` and the required component are initialized before dereferencing `WC()->…`.
 
 **Do not assume single-site.** Multisite changes where data lives: site-scoped vs network-scoped options (`get_option` vs `get_site_option`), per-site tables, user roles and capabilities, and upload paths all differ. A change that reads or writes site state must state in its PR whether it behaves correctly under multisite — and if it was not tested there, say so explicitly.
 
 **Do not assume install layout.** WordPress could be configured to run in a subdirectory, with relocated `wp-content`, and behind reverse proxies. Never build paths or URLs by concatenation from the domain root; derive them (`plugins_url()`, `plugin_dir_path()`, `wp_upload_dir()`, and mind the `home_url()` vs `site_url()` distinction). A path that works on a root install and breaks elsewhere is a compatibility bug, not an edge case.
+
+### Database migrations
+
+Migration classes live in `includes/migrations/`, gated by `version_compare` against the previously installed version (the threshold must match the `@since` tag — see the note under Agent Rules). Two invariants:
+
+- Migrations are one-shot: they are keyed to the version they ship in, and a site that has updated past that version never re-runs them. A migration added after a version has shipped needs a new version key — never reuse or edit an already-shipped one.
+- Every schema or data update must remain reversible one version back: a rollback to the previous release must not fatal or corrupt data against the migrated state. If old code cannot read the new format, the change needs a deprecation window, not a hard cutover.
 
 ### Before changing any public or externally exposed surface (agent checklist)
 
