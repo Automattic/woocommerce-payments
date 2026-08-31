@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Removes the deprecated qualitative feedback admin note during plugin update.
  *
- * @since 11.1.0
+ * @since 11.2.0
  */
 class Qualitative_Feedback_Admin_Note_Removal {
 
@@ -21,7 +21,7 @@ class Qualitative_Feedback_Admin_Note_Removal {
 	 *
 	 * @var string
 	 */
-	const VERSION_SINCE = '11.1.0';
+	const VERSION_SINCE = '11.2.0';
 
 	/**
 	 * Only execute the migration if it was not applied yet.

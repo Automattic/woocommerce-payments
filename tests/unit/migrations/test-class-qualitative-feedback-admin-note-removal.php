@@ -40,7 +40,7 @@ class Qualitative_Feedback_Admin_Note_Removal_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_it_removes_the_note_when_upgrading_from_an_older_version() {
-		update_option( 'woocommerce_woocommerce_payments_version', '11.0.0' );
+		update_option( 'woocommerce_woocommerce_payments_version', '11.1.0' );
 		$this->create_deprecated_note();
 
 		$this->migration->maybe_migrate();
@@ -81,7 +81,7 @@ class Qualitative_Feedback_Admin_Note_Removal_Test extends WCPAY_UnitTestCase {
 	public function versions_without_applying_migration_provider() {
 		return [
 			'same version'  => [ Qualitative_Feedback_Admin_Note_Removal::VERSION_SINCE ],
-			'newer version' => [ '11.2.0' ],
+			'newer version' => [ '11.3.0' ],
 		];
 	}
 
