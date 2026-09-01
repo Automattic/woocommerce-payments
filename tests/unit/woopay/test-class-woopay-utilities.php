@@ -407,6 +407,44 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	 * which one it is talking to. Accepting it now is what makes that switch a one-line
 	 * change with no window where a store cannot open what it is sent.
 	 */
+	/**
+	 * openssl says nothing when a key is longer than the cipher takes -- it truncates and
+	 * carries on -- so a narrower cipher with the length left at 32 would quietly seal with
+	 * fewer bytes than the name suggests. The two constants describe one choice, and this is
+	 * what notices if they come apart.
+	 */
+	public function test_the_derived_key_length_matches_the_cipher() {
+		if ( ! function_exists( 'openssl_cipher_key_length' ) ) {
+			// PHP 8.2 and up. Left in place rather than dropped, so it starts checking the
+			// moment this suite runs somewhere newer.
+			$this->markTestSkipped( 'openssl_cipher_key_length() is unavailable on this PHP version.' );
+		}
+
+		$this->assertSame(
+			openssl_cipher_key_length( WooPay_Utilities::CIPHER ),
+			WooPay_Utilities::CIPHER_KEY_LENGTH,
+			'The derived key length must be what the cipher requires.'
+		);
+	}
+
+	/**
+	 * Both ends of this exchange have to agree on the cipher, and neither can see the other
+	 * to check. Pinning the values is what makes a one-sided change fail here rather than in
+	 * a shopper's checkout.
+	 */
+	public function test_the_cipher_woopay_expects_is_unchanged() {
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$this->assertSame( 'aes-256-cbc', WooPay_Utilities::CIPHER );
+		$this->assertSame( 32, WooPay_Utilities::CIPHER_KEY_LENGTH );
+
+		$this->assertSame(
+			WooPay_Utilities::CIPHER_KEY_LENGTH,
+			strlen( WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE ) ),
+			'Derived keys must actually come out at that length.'
+		);
+	}
+
 	public function test_a_connect_envelope_sealed_with_the_derived_key_opens() {
 		$token = 'test.blog.token';
 

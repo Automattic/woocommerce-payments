@@ -59,6 +59,16 @@ class WooPay_Utilities {
 	const CONNECT_KEY_PURPOSE = 'woopay-connect-v1';
 
 	/**
+	 * The cipher every envelope in this exchange is sealed with.
+	 */
+	const CIPHER = 'aes-256-cbc';
+
+	/**
+	 * Key length CIPHER requires, in bytes, and what derived keys are cut to.
+	 */
+	const CIPHER_KEY_LENGTH = 32;
+
+	/**
 	 * Check various conditions to determine if we should enable woopay.
 	 *
 	 * @param \WC_Payment_Gateway_WCPay $gateway Gateway instance.
@@ -353,7 +363,7 @@ class WooPay_Utilities {
 			return '';
 		}
 
-		return hash_hkdf( 'sha256', $store_blog_token, 32, $purpose );
+		return hash_hkdf( 'sha256', $store_blog_token, self::CIPHER_KEY_LENGTH, $purpose );
 	}
 
 	/**
@@ -372,10 +382,10 @@ class WooPay_Utilities {
 		$message = wp_json_encode( $data );
 
 		// Generate an initialization vector (IV) for encryption.
-		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( self::CIPHER ) );
 
 		// Encrypt the JSON session.
-		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
+		$session_encrypted = openssl_encrypt( $message, self::CIPHER, $store_blog_token, OPENSSL_RAW_DATA, $iv );
 
 		// Fail closed. Without this, a failed encryption is signed and shipped like any
 		// other payload: hash_hmac() casts false to '', so the receiver is handed an empty
@@ -457,7 +467,7 @@ class WooPay_Utilities {
 		}
 
 		// Decipher the data using the verified key and the IV.
-		$decrypted_data = openssl_decrypt( $decoded_data_request['data'], 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $decoded_data_request['iv'] );
+		$decrypted_data = openssl_decrypt( $decoded_data_request['data'], self::CIPHER, $key, OPENSSL_RAW_DATA, $decoded_data_request['iv'] );
 
 		if ( false === $decrypted_data ) {
 			return null;
