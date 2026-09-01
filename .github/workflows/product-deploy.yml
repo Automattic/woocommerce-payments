@@ -33,7 +33,7 @@ jobs:
           repository: woocommerce/woo-product-deploy
           ref: trunk
           path: ./.github/actions/woo-product-deploy
-          token: ${{ secrets.WOO_PRODUCT_DEPLOY_TOKEN }}
+          token: ${{ secrets.BOTWOO_TOKEN }}
 
       - name: Deploy to WordPress.org
         uses: ./.github/actions/woo-product-deploy
@@ -47,9 +47,8 @@ jobs:
           wporg_release: true
           # post-release-updates.yml already creates the GitHub release and tag
           github_release: false
-          deploy_pat: ${{ secrets.WOO_PRODUCT_DEPLOY_TOKEN }}
+          deploy_pat: ${{ secrets.BOTWOO_TOKEN }}
           wporg_username: ${{ secrets.WPORG_USERNAME }}
           wporg_password: ${{ secrets.WPORG_PASSWORD }}
-          # QIT is skipped while the partner secrets are unset
-          partner_user: ${{ secrets.WOO_PARTNER_USER }}
-          partner_secret: ${{ secrets.WOO_PARTNER_SECRET }}
+          partner_user: ${{ secrets.QIT_CI_USER }}
+          partner_secret: ${{ secrets.QIT_CI_SECRET }}
