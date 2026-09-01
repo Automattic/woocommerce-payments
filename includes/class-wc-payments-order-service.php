@@ -1331,8 +1331,16 @@ class WC_Payments_Order_Service {
 			]
 		);
 
+		$is_test_mode      = WC_Payments::mode()->is_test();
 		$actionable_orders = [];
 		foreach ( $orders as $order ) {
+			// A warning stored in the other mode can never clear: the webhook that would
+			// resolve it is discarded as a mode mismatch. Orders predating the mode meta
+			// read as live, matching has_live_sale().
+			if ( $is_test_mode !== $this->is_order_in_test_mode( $order ) ) {
+				continue;
+			}
+
 			$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
 			if ( empty( $early_fraud_warning['efw_actionable'] ) ) {
 				continue;

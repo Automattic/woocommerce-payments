@@ -1498,13 +1498,18 @@ class WC_Payments_Admin {
 	 * Gets the cached list of orders with an actionable early fraud warning.
 	 *
 	 * Cached for a day; the webhook processing service deletes the cache
-	 * whenever a warning arrives or resolves.
+	 * whenever a warning arrives or resolves. Keyed by mode, since the underlying
+	 * query only returns orders paid in the current one.
 	 *
 	 * @return array Arrays with `order_id`, `charge_id` and `created` keys.
 	 */
 	private function get_active_early_fraud_warnings(): array {
+		$cache_key = WC_Payments::mode()->is_test()
+			? Database_Cache::EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE
+			: Database_Cache::EARLY_FRAUD_WARNING_ORDERS_KEY;
+
 		$early_fraud_warnings = $this->database_cache->get_or_add(
-			Database_Cache::EARLY_FRAUD_WARNING_ORDERS_KEY,
+			$cache_key,
 			function () {
 				return $this->order_service->get_actionable_early_fraud_warning_orders();
 			},

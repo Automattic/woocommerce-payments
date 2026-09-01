@@ -1971,6 +1971,80 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that warnings stored against the other mode's orders are ignored.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_test_mode_orders_when_live() {
+		// Arrange: A live order (no mode meta, as orders predating it are live) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is live.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The test-mode order is left out.
+		$this->assertSame( [ 'ch_live' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that test mode surfaces the test order rather than the live one.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_live_orders_when_in_test_mode() {
+		// Arrange: A live order (no mode meta) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is in test mode.
+		$result = $this->with_payments_mode(
+			true,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: Only the test-mode order surfaces.
+		$this->assertSame( [ 'ch_test' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Runs a callback with WooPayments forced into the given mode, restoring it afterwards.
+	 *
+	 * @param bool     $test_mode Whether to run the callback in test mode.
+	 * @param callable $callback  The callback to run.
+	 *
+	 * @return mixed The callback's return value.
+	 */
+	private function with_payments_mode( bool $test_mode, callable $callback ) {
+		$was_test_mode = WC_Payments::mode()->is_test();
+
+		$test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+
+		try {
+			return $callback();
+		} finally {
+			$was_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+		}
+	}
+
+	/**
 	 * Tests if the order was completed successfully.
 	 */
 	public function test_mark_terminal_payment_completed() {
