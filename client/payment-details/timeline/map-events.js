@@ -1208,30 +1208,6 @@ const mapEventToTimelineItems = (
 					  ] )
 					: null;
 
-			let headlineText;
-			if ( event.reason === 'noncompliant' ) {
-				headlineText = __(
-					// eslint-disable-next-line max-len
-					"<strong>Dispute lost.</strong> Visa reviewed the evidence and decided in the customer's favor.",
-					'woocommerce-payments'
-				);
-			} else {
-				headlineText = bankName
-					? sprintf(
-							__(
-								// eslint-disable-next-line max-len
-								"<strong>Dispute lost.</strong> Your customer's bank, <strong>%s</strong>, reviewed the evidence and decided in the customer's favor.",
-								'woocommerce-payments'
-							),
-							bankName
-					  )
-					: __(
-							// eslint-disable-next-line max-len
-							"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
-							'woocommerce-payments'
-					  );
-			}
-
 			// Only Klarna reports why it decided against the merchant. The event
 			// itself carries no reason, so it comes from the charge's disputes,
 			// matched by id — which every dispute event the server builds sets
@@ -1252,19 +1228,62 @@ const mapEventToTimelineItems = (
 			}
 			// An unstated reason is left to the dispute footer, which has the
 			// room to say Klarna gave none without reading as a missing value.
-			const lossReasonBody =
+			const statedLossReason =
 				klarnaLossReason?.type === 'stated'
-					? [
-							sprintf(
-								/* translators: %s is the reason Klarna gave for the decision, eg "Shipping policy violated" */
-								__(
-									'Klarna listed the reason as “%s”.',
-									'woocommerce-payments'
-								),
-								klarnaLossReason.display
+					? klarnaLossReason.display
+					: null;
+
+			let headlineText;
+			if ( event.reason === 'noncompliant' ) {
+				// Visa compliance disputes are card disputes, so they never
+				// carry a Klarna loss reason.
+				headlineText = __(
+					// eslint-disable-next-line max-len
+					"<strong>Dispute lost.</strong> Visa reviewed the evidence and decided in the customer's favor.",
+					'woocommerce-payments'
+				);
+			} else if ( bankName && statedLossReason ) {
+				// Only Klarna states a reason, so this branch is Klarna's: the
+				// reason replaces the generic outcome clause rather than
+				// trailing it as a separate line, and the provider is a
+				// "payment provider" rather than a bank. See WOOPMNT-6349 for
+				// the same rewording on every other dispute surface.
+				headlineText = sprintf(
+					/* translators: %1$s is the payment provider name, %2$s is the loss reason, eg "Shipping policy violated" */
+					__(
+						// eslint-disable-next-line max-len
+						'<strong>Dispute lost.</strong> The customer’s payment provider, %1$s, decided against you for the following reason: %2$s.',
+						'woocommerce-payments'
+					),
+					bankName,
+					statedLossReason
+				);
+			} else if ( statedLossReason ) {
+				headlineText = sprintf(
+					/* translators: %s is the reason given for the decision, eg "Shipping policy violated" */
+					__(
+						// eslint-disable-next-line max-len
+						'<strong>Dispute lost.</strong> The customer’s payment provider decided against you for the following reason: %s.',
+						'woocommerce-payments'
+					),
+					statedLossReason
+				);
+			} else {
+				headlineText = bankName
+					? sprintf(
+							__(
+								// eslint-disable-next-line max-len
+								"<strong>Dispute lost.</strong> Your customer's bank, <strong>%s</strong>, reviewed the evidence and decided in the customer's favor.",
+								'woocommerce-payments'
 							),
-					  ]
-					: [];
+							bankName
+					  )
+					: __(
+							// eslint-disable-next-line max-len
+							"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
+							'woocommerce-payments'
+					  );
+			}
 
 			return [
 				networkCostItem,
@@ -1280,8 +1299,7 @@ const mapEventToTimelineItems = (
 						createInterpolateElement( headlineText, {
 							strong: <strong />,
 						} ),
-						<CrossIcon className="is-error" />,
-						lossReasonBody
+						<CrossIcon className="is-error" />
 					)
 				),
 			];

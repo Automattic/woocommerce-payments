@@ -1478,7 +1478,9 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 	} );
 
 	// The main "Dispute lost." line is the last item of the event's group.
-	const mainItemBody = ( items ) => items[ items.length - 1 ].body;
+	const mainItem = ( items ) => items[ items.length - 1 ];
+	const headlineText = ( item ) =>
+		render( <>{ item.headline }</> ).container.textContent;
 
 	test( 'adds the reason to the lost item when Klarna stated one', () => {
 		const items = mapTimelineEvents(
@@ -1494,9 +1496,10 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 			}
 		);
 
-		expect( mainItemBody( items ) ).toEqual( [
-			'Klarna listed the reason as “Shipping policy violated”.',
-		] );
+		expect( headlineText( mainItem( items ) ) ).toContain(
+			'The customer’s payment provider, Klarna, decided against you ' +
+				'for the following reason: Shipping policy violated.'
+		);
 	} );
 
 	test( 'matches the reason to the event by dispute id', () => {
@@ -1512,14 +1515,14 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 				},
 				dp_second: {
 					type: 'stated',
-					display: 'Merchant didn’t issue refund',
+					display: 'Merchant did not issue refund',
 				},
 			}
 		);
 
-		expect( mainItemBody( items ) ).toEqual( [
-			'Klarna listed the reason as “Merchant didn’t issue refund”.',
-		] );
+		expect( headlineText( mainItem( items ) ) ).toContain(
+			'following reason: Merchant did not issue refund.'
+		);
 	} );
 
 	test( 'leaves an id-less event unannotated when the charge has several disputes', () => {
@@ -1540,7 +1543,12 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 			}
 		);
 
-		expect( mainItemBody( items ) ).toEqual( [] );
+		expect( headlineText( mainItem( items ) ) ).toContain(
+			"reviewed the evidence and decided in the customer's favor."
+		);
+		expect( headlineText( mainItem( items ) ) ).not.toContain(
+			'following reason'
+		);
 	} );
 
 	test( 'leaves an id-less event unannotated when only one of several disputes stated a reason', () => {
@@ -1557,7 +1565,12 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 			}
 		);
 
-		expect( mainItemBody( items ) ).toEqual( [] );
+		expect( headlineText( mainItem( items ) ) ).toContain(
+			"reviewed the evidence and decided in the customer's favor."
+		);
+		expect( headlineText( mainItem( items ) ) ).not.toContain(
+			'following reason'
+		);
 	} );
 
 	test( 'leaves an unspecified reason to the dispute footer', () => {
@@ -1569,13 +1582,23 @@ describe( 'mapTimelineEvents Klarna loss reasons', () => {
 			{ dp_klarna: { type: 'unspecified' } }
 		);
 
-		expect( mainItemBody( items ) ).toEqual( [] );
+		expect( headlineText( mainItem( items ) ) ).toContain(
+			"reviewed the evidence and decided in the customer's favor."
+		);
+		expect( headlineText( mainItem( items ) ) ).not.toContain(
+			'following reason'
+		);
 	} );
 
 	test( 'adds nothing for disputes without a Klarna loss reason', () => {
 		const items = mapTimelineEvents( [ lostEvent() ], 'Chase Bank' );
 
-		expect( mainItemBody( items ) ).toEqual( [] );
+		expect( headlineText( mainItem( items ) ) ).toContain(
+			"reviewed the evidence and decided in the customer's favor."
+		);
+		expect( headlineText( mainItem( items ) ) ).not.toContain(
+			'following reason'
+		);
 	} );
 } );
 

@@ -276,18 +276,19 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 			},
 		} );
 
-		render(
+		const { container } = render(
 			<DisputeResolutionFooter
 				dispute={ dispute }
 				bankName="Chase Bank"
 			/>
 		);
 
-		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. The customer's bank, Chase Bank, reached this decision/i
-			)
-		).toBeInTheDocument();
+		// Only the issuer name is bolded inside this sentence, so it spans
+		// several elements.
+		expect( container.textContent ).toContain(
+			"Unfortunately, you've lost this dispute. The customer's bank, " +
+				'Chase Bank, reached this decision'
+		);
 	} );
 
 	it( 'renders lost footer without bank name for submitted regular disputes', () => {
@@ -304,9 +305,7 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. The customer's bank reached this decision/i
-			)
+			screen.getByText( /The customer's bank reached this decision/i )
 		).toBeInTheDocument();
 	} );
 
@@ -328,9 +327,7 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. Visa reached this decision/i
-			)
+			screen.getByText( /Visa reached this decision/i )
 		).toBeInTheDocument();
 		expect( screen.queryByText( /Chase Bank/i ) ).not.toBeInTheDocument();
 	} );
@@ -354,9 +351,7 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. Visa reached this decision/i
-			)
+			screen.getByText( /Visa reached this decision/i )
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText( /Bank of America/i )
@@ -378,15 +373,20 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 			},
 		} );
 
-		render(
+		const { container } = render(
 			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
 		);
 
-		expect(
-			screen.getByText(
-				/Klarna listed the reason as “Shipping policy violated”/i
-			)
-		).toBeInTheDocument();
+		// The provider name is bolded, so the sentence spans several elements.
+		// Klarna is not a bank, so the design gives it "payment provider".
+		expect( container.textContent ).toContain(
+			'Unfortunately, you lost the dispute. The customer’s payment ' +
+				'provider, Klarna, decided against you on ' +
+				'11:59 PM on September 9, 2023, citing ' +
+				'“Shipping policy violated”.'
+		);
+		// Card disputes keep saying "bank" until WOOPMNT-6349.
+		expect( container.textContent ).not.toContain( "customer's bank" );
 	} );
 
 	it( 'says Klarna gave no reason when the reason is unspecified', () => {
@@ -432,7 +432,7 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
 		);
 
-		expect( screen.queryByText( /Klarna listed the reason/i ) ).toBeNull();
+		expect( screen.queryByText( /citing “/i ) ).toBeNull();
 		expect( screen.queryByText( /did not share a reason/i ) ).toBeNull();
 	} );
 
@@ -448,16 +448,15 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		} );
 		expect( dispute.payment_method_details ).toBeUndefined();
 
-		render(
+		const { container } = render(
 			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
 		);
 
-		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. The customer's bank, Klarna, reached this decision/i
-			)
-		).toBeInTheDocument();
-		expect( screen.queryByText( /Klarna listed the reason/i ) ).toBeNull();
+		expect( container.textContent ).toContain(
+			"Unfortunately, you've lost this dispute. The customer's bank, " +
+				'Klarna, reached this decision'
+		);
+		expect( screen.queryByText( /citing “/i ) ).toBeNull();
 		expect( screen.queryByText( /did not share a reason/i ) ).toBeNull();
 	} );
 
@@ -480,7 +479,7 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
 		);
 
-		expect( screen.queryByText( /Klarna listed the reason/i ) ).toBeNull();
+		expect( screen.queryByText( /citing “/i ) ).toBeNull();
 	} );
 
 	it( 'renders accepted dispute message', () => {

@@ -395,19 +395,19 @@ export const klarnaChargebackLossReasons: Record< string, string > = {
 	// raw code, so both spellings are mapped. Anything still unmapped falls back
 	// to a humanized form of the code itself.
 	merchant_didnt_counter_dispute: __(
-		'Merchant didn’t counter dispute',
+		'Merchant did not counter dispute',
 		'woocommerce-payments'
 	),
 	merchant_did_not_counter_dispute: __(
-		'Merchant didn’t counter dispute',
+		'Merchant did not counter dispute',
 		'woocommerce-payments'
 	),
 	merchant_didnt_issue_refund: __(
-		'Merchant didn’t issue refund',
+		'Merchant did not issue refund',
 		'woocommerce-payments'
 	),
 	merchant_did_not_issue_refund: __(
-		'Merchant didn’t issue refund',
+		'Merchant did not issue refund',
 		'woocommerce-payments'
 	),
 };
