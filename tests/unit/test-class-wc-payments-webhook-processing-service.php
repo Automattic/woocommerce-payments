@@ -2566,6 +2566,91 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that an update leaving the actionable flag untouched does not drop the cache,
+	 * since that flag is the only thing the cached list is built from.
+	 */
+	public function test_early_fraud_warning_updated_keeps_cache_when_actionable_is_unchanged() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => true,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->with( '_wcpay_early_fraud_warning', true )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
+				]
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_database_cache
+			->expects( $this->never() )
+			->method( 'delete_early_fraud_warning_caches' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that resolving a warning invalidates the cached warning list.
+	 */
+	public function test_early_fraud_warning_updated_invalidates_cache_when_actionable_changes() {
+		// Setup test request data.
+		$this->event_body['type']           = 'radar.early_fraud_warning.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'             => 'issfr_123',
+			'charge'         => 'test_charge_id',
+			'payment_intent' => 'pi_123',
+			'actionable'     => false,
+			'fraud_type'     => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->with( '_wcpay_early_fraud_warning', true )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
+				]
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete_early_fraud_warning_caches' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that an early fraud warning event for an unknown charge throws.
 	 */
 	public function test_early_fraud_warning_throws_exception_when_order_not_found() {
