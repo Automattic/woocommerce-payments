@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove a deprecated inbox note during the plugin update process.

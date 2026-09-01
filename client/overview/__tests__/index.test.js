@@ -12,6 +12,7 @@ import { select } from '@wordpress/data';
 import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
 import { getQuery } from '@woocommerce/navigation';
+import { useGetSettings } from 'wcpay/data/settings';
 
 const settingsMock = {
 	enabled_payment_method_ids: [ 'foo', 'bar' ],
@@ -141,6 +142,15 @@ describe( 'Overview page', () => {
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
+		useGetSettings.mockReturnValue( {
+			enabled_payment_method_ids: [ 'foo', 'bar' ],
+		} );
+	} );
+
+	it( 'Renders even when the settings request has failed', () => {
+		useGetSettings.mockReturnValue( {} );
+
+		expect( () => render( <OverviewPage /> ) ).not.toThrow();
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {

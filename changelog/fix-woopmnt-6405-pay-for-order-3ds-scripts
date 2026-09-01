@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix guest 3-D Secure payments getting stuck on the "Verify email" form when paying an older order via a payment link, by loading the checkout scripts on the Pay for Order endpoint even when the pay-for-order form is not rendered.
