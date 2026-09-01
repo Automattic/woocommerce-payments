@@ -1316,11 +1316,15 @@ class WC_Payments_Order_Service {
 	 * the result is a lower bound on very large stores. Callers should cache
 	 * the result — the meta query is too slow to run on every admin request.
 	 *
+	 * Results are ordered by when the warning arrived, which the query window
+	 * cannot be: the warning date sits inside a serialized meta value, while a
+	 * warning can land weeks after the order was placed.
+	 *
 	 * @param int $limit Maximum number of warning-carrying orders to inspect.
 	 *
-	 * @return array[] Arrays with `order_id`, `charge_id` and `created` keys.
+	 * @return array[] Arrays with `order_id`, `charge_id` and `created` keys, newest warning first.
 	 */
-	public function get_actionable_early_fraud_warning_orders( int $limit = 50 ): array {
+	public function get_actionable_early_fraud_warning_orders( int $limit = 100 ): array {
 		$orders = wc_get_orders(
 			[
 				'limit'    => $limit,
@@ -1359,6 +1363,13 @@ class WC_Payments_Order_Service {
 				'created'   => (int) ( $early_fraud_warning['created'] ?? 0 ),
 			];
 		}
+
+		usort(
+			$actionable_orders,
+			function ( array $a, array $b ): int {
+				return $b['created'] <=> $a['created'];
+			}
+		);
 
 		return $actionable_orders;
 	}

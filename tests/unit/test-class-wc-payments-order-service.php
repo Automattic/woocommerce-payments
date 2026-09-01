@@ -2079,6 +2079,35 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that results are ordered by when the warning arrived, not when the order was placed.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_sorts_by_warning_date_descending() {
+		// Arrange: The older order carries the newer warning, so the two orderings disagree.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->set_charge_id_for_order( $older_order, 'ch_older_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older_order', 'issfr_1', true, 'made_with_stolen_card', 1719900000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer_order', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The newest warning leads, even though its order is the older one.
+		$this->assertSame( [ 'ch_older_order', 'ch_newer_order' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
 	 * Runs a callback with WooPayments forced into the given mode, restoring it afterwards.
 	 *
 	 * @param bool     $test_mode Whether to run the callback in test mode.
