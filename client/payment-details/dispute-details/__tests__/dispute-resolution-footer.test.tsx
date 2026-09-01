@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 import DisputeResolutionFooter from '../dispute-resolution-footer';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { Charge } from 'wcpay/types/charges';
+import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 
 // Mock date formatting utility
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -80,6 +81,14 @@ const getBaseDispute = ( overrides = {} ): Dispute => ( {
 	status: 'needs_response',
 	enhanced_eligibility_types: [],
 	...overrides,
+} );
+
+// The module factory's implementation is not restored between tests, so a
+// `mockReturnValueOnce` that the component stops consuming would otherwise
+// surface as a failure in whichever test runs next.
+beforeEach( () => {
+	( getDisputeFeeFormatted as jest.Mock ).mockReset();
+	( getDisputeFeeFormatted as jest.Mock ).mockReturnValue( '$15.00' );
 } );
 
 describe( 'DisputeResolutionFooter - Under Review Status', () => {
@@ -523,6 +532,42 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect( screen.getByText( /\$15\.00 fee/i ) ).toBeInTheDocument();
+	} );
+
+	// getDisputeFeeFormatted returns undefined for a reversed fee, a missing
+	// fee, and a zero fee alike (see client/disputes/__tests__/utils.test.ts);
+	// this covers what the footer does with that answer.
+	it( 'omits the fee sentence when there is no dispute fee', () => {
+		( getDisputeFeeFormatted as jest.Mock ).mockReturnValueOnce(
+			undefined
+		);
+
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName={ null } />
+		);
+
+		expect( screen.queryByText( /fee has been deducted/i ) ).toBeNull();
+		expect(
+			screen.getByText(
+				/The disputed amount has been returned to your customer/i
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: /Learn more about disputed amounts/i,
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#amounts'
+		);
 	} );
 
 	it( 'renders link to view dispute details for submitted disputes', () => {

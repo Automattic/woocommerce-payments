@@ -90,9 +90,9 @@ const DisputeUnderReviewFooter: React.FC< {
 									strong: <strong />,
 								}
 						  ) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#monitor-status">
 						{ __(
-							'Learn more about the dispute process.',
+							'Learn more about monitoring dispute status.',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>
@@ -180,7 +180,7 @@ const DisputeWonFooter: React.FC< {
 									strong: <strong />,
 								}
 						  ) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
 						{ __(
 							'Learn more about preventing disputes.',
 							'woocommerce-payments'
@@ -231,7 +231,7 @@ const DisputeLostFooter: React.FC< {
 } > = ( { dispute, bankName } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
-	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
+	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true );
 
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? formatDateTimeFromTimestamp(
@@ -321,20 +321,37 @@ const DisputeLostFooter: React.FC< {
 						strong: <strong />,
 					} ) }{ ' ' }
 					{ lossReasonText && <>{ lossReasonText } </> }
-					{ sprintf(
-						/* Translators: %1$s – the formatted dispute fee amount */
-						__(
-							'The %1$s fee has been deducted from your account, and the disputed amount has been returned to your customer.',
-							'woocommerce-payments'
-						),
-						disputeFeeFormatted
-					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
-						{ __(
-							'Learn more about preventing disputes.',
-							'woocommerce-payments'
-						) }
-					</ExternalLink>
+					{ disputeFeeFormatted ? (
+						<>
+							{ sprintf(
+								/* Translators: %1$s – the formatted dispute fee amount */
+								__(
+									'The %1$s fee has been deducted from your account, and the disputed amount has been returned to your customer.',
+									'woocommerce-payments'
+								),
+								disputeFeeFormatted
+							) }{ ' ' }
+							<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#fees">
+								{ __(
+									'Learn more about dispute fees.',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						</>
+					) : (
+						<>
+							{ __(
+								'The disputed amount has been returned to your customer.',
+								'woocommerce-payments'
+							) }{ ' ' }
+							<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#amounts">
+								{ __(
+									'Learn more about disputed amounts.',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						</>
+					) }
 				</FlexItem>
 
 				{ isSubmitted && (
@@ -405,7 +422,7 @@ const InquiryUnderReviewFooter: React.FC< {
 							strong: <strong />,
 						}
 					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries">
 						{ __( 'Learn more.', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</FlexItem>
@@ -460,7 +477,7 @@ const InquiryClosedFooter: React.FC< {
 						),
 						closedDateFormatted
 					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
 						{ __(
 							'Learn more about preventing disputes.',
 							'woocommerce-payments'

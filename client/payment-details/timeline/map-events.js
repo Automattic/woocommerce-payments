@@ -513,6 +513,8 @@ const getRefundFailureReason = ( event ) => {
 				'the card being lost or stolen.',
 				'woocommerce-payments'
 			);
+		default:
+			return __( 'an unknown reason.', 'woocommerce-payments' );
 	}
 };
 

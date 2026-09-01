@@ -27,6 +27,7 @@ import {
 import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,
+	isChargeDisputed,
 	getChargeDisputes,
 	getDisputeOrdinals,
 	getChargeStatus,
@@ -344,9 +345,27 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			( fee ): fee is { amount: number; currency: string } => !! fee
 		);
 	const disputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
+	// Every dispute fee on a charge is already denominated in the settlement
+	// currency, so reading it off `balance.currency` rather than off whichever
+	// dispute happens to sit at index 0 changes nothing rendered — it just
+	// states the denomination the rest of the breakdown uses instead of
+	// relying on the two agreeing by construction.
 	const disputeFee = disputeFeeAmounts.length
-		? formatCurrency( disputeFeeTotal, disputeFeeAmounts[ 0 ].currency )
+		? formatCurrency( disputeFeeTotal, balance.currency )
 		: undefined;
+
+	// The withdrawn-balance line folds refunds and dispute deductions together
+	// (see getChargeAmounts). Call it "Deducted" only when a dispute actually
+	// moved money: an inquiry withdraws nothing, and a won dispute's rows net
+	// back to zero, so in both cases a refund is the only withdrawal.
+	const disputeWithdrawnAmount = isChargeDisputed( charge )
+		? _.sumBy(
+				disputes.flatMap(
+					( dispute ) => dispute.balance_transactions ?? []
+				),
+				'amount'
+		  )
+		: 0;
 
 	// Refunding is blocked while any single dispute blocks it, so the menu is
 	// only refundable when every dispute is.
@@ -511,7 +530,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ balance.refunded ? (
 									<p>
 										{ `${
-											disputeFee
+											disputeWithdrawnAmount !== 0
 												? __(
 														'Deducted',
 														'woocommerce-payments'
@@ -917,7 +936,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							{
 								a: (
 									// @ts-expect-error: children is provided when interpolating the component
-									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
+									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-payments" />
 								),
 							}
 						) }{ ' ' }
