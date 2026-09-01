@@ -167,6 +167,45 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '192.0.91.172', $order->get_customer_ip_address() );
 	}
 
+	/**
+	 * The vouch is what turns card-testing protection off and what puts an address on the
+	 * order, so holding a copy of one cannot be enough -- it has to belong to the request
+	 * presenting it. WooPay binds each envelope to the Cart-Token it travels with.
+	 */
+	public function test_a_vouch_sealed_for_another_cart_is_refused() {
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header();
+
+		// A captured envelope, presented by a caller carrying their own cart.
+		$_SERVER['HTTP_CART_TOKEN'] = 'someone.elses.cart';
+
+		$this->assertNull( WooPay_Session::get_woopay_vouch() );
+		$this->assertFalse( WooPay_Session::is_request_vouched_by_woopay() );
+	}
+
+	public function test_a_vouch_presented_without_a_cart_is_refused() {
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header();
+
+		unset( $_SERVER['HTTP_CART_TOKEN'] );
+
+		$this->assertNull( WooPay_Session::get_woopay_vouch() );
+	}
+
+	public function test_a_vouch_naming_no_cart_is_refused() {
+		// What a WooPay release that predates the binding would send. Accepting it would
+		// leave the envelope exactly as transferable as before.
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header( [ 'cart_token' => null ] );
+
+		$this->assertNull( WooPay_Session::get_woopay_vouch() );
+	}
+
+	public function test_a_vouch_sealed_for_this_cart_is_accepted() {
+		// The control: the binding must not close on the request it was made for, or every
+		// WooPay checkout runs the fraud check.
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header();
+
+		$this->assertTrue( WooPay_Session::is_request_vouched_by_woopay() );
+	}
+
 	public function test_an_unsealed_address_cannot_be_stamped_on_an_order() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_customer_ip_address( '192.0.91.172' );
@@ -198,9 +237,20 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @return string The header value.
 	 */
 	private function build_vouch_header( array $extra = [] ): string {
+		// Bound to the cart the request carries, as WooPay seals it.
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+
 		$key        = WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE );
 		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
-		$plaintext  = wp_json_encode( array_merge( [ 'timestamp' => time() ], $extra ) );
+		$plaintext  = wp_json_encode(
+			array_merge(
+				[
+					'timestamp'  => time(),
+					'cart_token' => hash( 'sha256', $_SERVER['HTTP_CART_TOKEN'] ),
+				],
+				$extra
+			)
+		);
 		$ciphertext = openssl_encrypt( $plaintext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
 
 		$envelope = array_map(

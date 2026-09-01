@@ -54,7 +54,7 @@ class WooPay_Utilities {
 	 * token and cannot stop until every store accepts a derived key, because the connect
 	 * iframe serves stores on every release and nothing on that request tells it which one
 	 * it is talking to. Accepting it here is the half that has to ship first, so the day
-	 * WooPay switches, no store is left unable to open what it is sent. See WOOPAY-461.
+	 * WooPay switches, no store is left unable to open what it is sent.
 	 */
 	const CONNECT_KEY_PURPOSE = 'woopay-connect-v1';
 
@@ -414,7 +414,7 @@ class WooPay_Utilities {
 	 * The undifferentiated blog token is one of the things a caller may list, and exactly
 	 * one does: the connect exchange, which WooPay still seals that way for every store. It
 	 * is listed rather than defaulted to, so deleting it later is a matter of finding the
-	 * call sites that name it. See WOOPAY-461.
+	 * call sites that name it.
 	 *
 	 * @param array $data              The session, iv, and hash data for the encryption.
 	 * @param array $accepted_purposes HKDF labels this caller will open, tried in order. A

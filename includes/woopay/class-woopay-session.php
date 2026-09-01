@@ -549,7 +549,7 @@ class WooPay_Session {
 			// The connect page's envelope. WooPay seals it with the undifferentiated blog token
 			// for every store, so that is listed alongside the derived key it will move to --
 			// this side has to accept the new one before that side can start sending it. The
-			// null entry is what the follow-up deletes. See WOOPAY-461.
+			// null entry is what the follow-up deletes.
 			$decrypted_data = WooPay_Utilities::decrypt_signed_data(
 				$_POST['encrypted_data'],
 				[ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ]
@@ -1274,6 +1274,30 @@ class WooPay_Session {
 
 		if ( ! is_numeric( $payload['timestamp'] ) || abs( time() - (int) $payload['timestamp'] ) > self::ATTESTATION_MAX_AGE ) {
 			Logger::log( 'WooPay vouch rejected: envelope timestamp is missing or stale.' );
+
+			return null;
+		}
+
+		// Freshness says the envelope is recent. It does not say the caller presenting it is
+		// the one WooPay sealed it for, and without that anyone holding a copy has what it
+		// grants: card-testing protection skipped, and the address it names written onto the
+		// order. WooPay binds each envelope to the Cart-Token it travels with, so a captured
+		// one is worth nothing to a caller carrying a different cart.
+		//
+		// Compared as a hash because that is what is sealed -- the merchant already holds the
+		// token itself, so there is no reason for a second copy of it to exist in the payload.
+		$cart_token = isset( $_SERVER['HTTP_CART_TOKEN'] )
+			? sanitize_text_field( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) )
+			: '';
+
+		if ( ! isset( $payload['cart_token'] ) || ! is_string( $payload['cart_token'] ) ) {
+			Logger::log( 'WooPay vouch rejected: envelope names no cart.' );
+
+			return null;
+		}
+
+		if ( ! hash_equals( $payload['cart_token'], hash( 'sha256', $cart_token ) ) ) {
+			Logger::log( 'WooPay vouch rejected: envelope was sealed for a different cart.' );
 
 			return null;
 		}

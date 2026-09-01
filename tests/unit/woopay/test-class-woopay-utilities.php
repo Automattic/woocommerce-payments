@@ -405,7 +405,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	 * undifferentiated blog token, and cannot stop until every store accepts a derived key --
 	 * the connect iframe serves stores on every release and nothing on that request says
 	 * which one it is talking to. Accepting it now is what makes that switch a one-line
-	 * change with no window where a store cannot open what it is sent. See WOOPAY-461.
+	 * change with no window where a store cannot open what it is sent.
 	 */
 	public function test_a_connect_envelope_sealed_with_the_derived_key_opens() {
 		$token = 'test.blog.token';

@@ -4327,7 +4327,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		try {
 			$this->card_gateway->process_payment( $order->get_id() );
 		} finally {
-			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
 		}
 	}
 
@@ -4745,7 +4745,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 
-		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
+		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
 	}
 
 	/**
@@ -4756,9 +4756,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @return string The header value.
 	 */
 	private function build_woopay_vouch_header( ?int $timestamp = null ): string {
+		// Bound to the cart the request carries, as WooPay seals it.
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+
 		$key        = WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE );
 		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
-		$plaintext  = wp_json_encode( [ 'timestamp' => $timestamp ?? time() ] );
+		$plaintext  = wp_json_encode(
+			[
+				'timestamp'  => $timestamp ?? time(),
+				'cart_token' => hash( 'sha256', $_SERVER['HTTP_CART_TOKEN'] ),
+			]
+		);
 		$ciphertext = openssl_encrypt( $plaintext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
 
 		$envelope = array_map(
