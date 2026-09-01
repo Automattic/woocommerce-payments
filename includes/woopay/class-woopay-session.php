@@ -546,7 +546,14 @@ class WooPay_Session {
 
 		if ( ! empty( $_POST['encrypted_data'] ) && is_array( $_POST['encrypted_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$decrypted_data = WooPay_Utilities::decrypt_signed_data( $_POST['encrypted_data'] );
+			// The connect page's envelope. WooPay seals it with the undifferentiated blog token
+			// for every store, so that is listed alongside the derived key it will move to --
+			// this side has to accept the new one before that side can start sending it. The
+			// null entry is what the follow-up deletes. See WOOPAY-461.
+			$decrypted_data = WooPay_Utilities::decrypt_signed_data(
+				$_POST['encrypted_data'],
+				[ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ]
+			);
 
 			if ( ! empty( $decrypted_data['user_email'] ) ) {
 				return sanitize_email( wp_unslash( $decrypted_data['user_email'] ) );
@@ -1070,7 +1077,7 @@ class WooPay_Session {
 			return self::$resolved_attestations[ $fingerprint ];
 		}
 
-		$decrypted = WooPay_Utilities::decrypt_signed_data( $parts, WooPay_Utilities::ATTESTATION_KEY_PURPOSE );
+		$decrypted = WooPay_Utilities::decrypt_signed_data( $parts, [ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ] );
 
 		if ( ! is_array( $decrypted ) || ! isset( $decrypted['timestamp'] ) ) {
 			// Distinguished from the other rejections because a bad rollout looks like this
@@ -1257,7 +1264,7 @@ class WooPay_Session {
 		// Its own derived key, so the session route's envelope cannot be presented here and
 		// this cannot be presented there. The two are governed by different rules, and a
 		// shared key would let either stand in for the other.
-		$payload = WooPay_Utilities::decrypt_signed_data( $parts, WooPay_Utilities::VOUCH_KEY_PURPOSE );
+		$payload = WooPay_Utilities::decrypt_signed_data( $parts, [ WooPay_Utilities::VOUCH_KEY_PURPOSE ] );
 
 		if ( ! is_array( $payload ) || ! isset( $payload['timestamp'] ) ) {
 			Logger::log( 'WooPay vouch rejected: envelope did not open, or carries no timestamp.' );

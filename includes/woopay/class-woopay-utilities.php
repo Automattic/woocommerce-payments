@@ -48,6 +48,17 @@ class WooPay_Utilities {
 	const VOUCH_KEY_PURPOSE = 'woopay-vouch-v1';
 
 	/**
+	 * HKDF label for the envelope WooPay's connect page seals for this store.
+	 *
+	 * Accepted but not yet sent. WooPay seals that exchange with the undifferentiated blog
+	 * token and cannot stop until every store accepts a derived key, because the connect
+	 * iframe serves stores on every release and nothing on that request tells it which one
+	 * it is talking to. Accepting it here is the half that has to ship first, so the day
+	 * WooPay switches, no store is left unable to open what it is sent. See WOOPAY-461.
+	 */
+	const CONNECT_KEY_PURPOSE = 'woopay-connect-v1';
+
+	/**
 	 * Check various conditions to determine if we should enable woopay.
 	 *
 	 * @param \WC_Payment_Gateway_WCPay $gateway Gateway instance.
@@ -395,27 +406,22 @@ class WooPay_Utilities {
 	/**
 	 * Decode data WooPay sealed for this store and return it.
 	 *
-	 * Opens with the attestation key, which this store never seals anything with — so an
-	 * envelope this store produced is not a valid envelope here, whatever its array keys
+	 * Each caller states which keys it will open, so no envelope reaches a verifier that had
+	 * no reason to expect it. This store seals nothing with the keys listed here, so an
+	 * envelope it produced is not a valid envelope at any of them, whatever its array keys
 	 * are named. That is the separation `derive_key_for()` exists to provide.
 	 *
-	 * The undifferentiated blog token is still accepted when no purpose is named, because
-	 * the connect exchange this also serves still seals with it for every merchant. It
-	 * cannot be produced without the blog token, so keeping it reachable costs nothing
-	 * beyond keeping it reachable — which is what the follow-up removes, once no WooPay
-	 * release is still sending it.
+	 * The undifferentiated blog token is one of the things a caller may list, and exactly
+	 * one does: the connect exchange, which WooPay still seals that way for every store. It
+	 * is listed rather than defaulted to, so deleting it later is a matter of finding the
+	 * call sites that name it. See WOOPAY-461.
 	 *
-	 * Name a purpose wherever one applies, so that each exchange stands on its own key
-	 * rather than on the shape of what it carries.
-	 *
-	 * @param array       $data    The session, iv, and hash data for the encryption.
-	 * @param string|null $purpose HKDF label the envelope was sealed under, or null to accept
-	 *                             the attestation key and the undifferentiated blog token.
-	 *                             Prefer naming the purpose; null is for the legacy connect
-	 *                             and `encrypted_data` exchanges that predate the split.
+	 * @param array $data              The session, iv, and hash data for the encryption.
+	 * @param array $accepted_purposes HKDF labels this caller will open, tried in order. A
+	 *                                 null entry accepts the undifferentiated blog token.
 	 * @return mixed The decoded data.
 	 */
-	public static function decrypt_signed_data( $data, ?string $purpose = null ) {
+	public static function decrypt_signed_data( $data, array $accepted_purposes ) {
 		$store_blog_token = self::get_store_blog_token();
 
 		if ( empty( $store_blog_token ) ) {
@@ -430,9 +436,13 @@ class WooPay_Utilities {
 
 		// Verify the HMAC hash before decryption to ensure data integrity, and let whichever
 		// key verified it be the one that decrypts — trying the other would fail anyway.
-		$candidates = null === $purpose
-			? [ self::derive_key_for( self::ATTESTATION_KEY_PURPOSE ), $store_blog_token ]
-			: [ self::derive_key_for( $purpose ) ];
+		$candidates = [];
+
+		foreach ( $accepted_purposes as $accepted_purpose ) {
+			$candidates[] = null === $accepted_purpose
+				? $store_blog_token
+				: self::derive_key_for( $accepted_purpose );
+		}
 
 		foreach ( $candidates as $candidate ) {
 			if ( '' !== $candidate && hash_equals( hash_hmac( 'sha256', $signed_payload, $candidate ), $decoded_data_request['hash'] ) ) {

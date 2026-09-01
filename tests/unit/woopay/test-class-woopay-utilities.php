@@ -363,7 +363,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 			'hash' => $encrypted['data']['hash'],
 		];
 
-		$this->assertNull( WooPay_Utilities::decrypt_signed_data( $replayed ) );
+		$this->assertNull( WooPay_Utilities::decrypt_signed_data( $replayed, [ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ] ) );
 	}
 
 	public function test_an_envelope_woopay_sealed_for_this_store_still_opens() {
@@ -379,7 +379,8 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			$payload,
 			WooPay_Utilities::decrypt_signed_data(
-				$this->seal_for_store( $payload, hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::ATTESTATION_KEY_PURPOSE ) )
+				$this->seal_for_store( $payload, hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::ATTESTATION_KEY_PURPOSE ) ),
+				[ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ]
 			)
 		);
 	}
@@ -396,14 +397,58 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 
 		$payload = [ 'user_email' => 'shopper@example.com' ];
 
-		$this->assertSame( $payload, WooPay_Utilities::decrypt_signed_data( $this->seal_for_store( $payload, $token ) ) );
+		$this->assertSame( $payload, WooPay_Utilities::decrypt_signed_data( $this->seal_for_store( $payload, $token ), [ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ] ) );
+	}
+
+	/**
+	 * The half that has to ship first. WooPay still seals the connect exchange with the
+	 * undifferentiated blog token, and cannot stop until every store accepts a derived key --
+	 * the connect iframe serves stores on every release and nothing on that request says
+	 * which one it is talking to. Accepting it now is what makes that switch a one-line
+	 * change with no window where a store cannot open what it is sent. See WOOPAY-461.
+	 */
+	public function test_a_connect_envelope_sealed_with_the_derived_key_opens() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$payload = [ 'user_email' => 'shopper@example.com' ];
+
+		$this->assertSame(
+			$payload,
+			WooPay_Utilities::decrypt_signed_data(
+				$this->seal_for_store( $payload, hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::CONNECT_KEY_PURPOSE ) ),
+				[ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ]
+			)
+		);
+	}
+
+	/**
+	 * Naming the accepted keys per call site also narrows what each one takes. An attestation
+	 * is sealed for the session route and says who a shopper is; the connect exchange has no
+	 * business opening one, and before the keys were listed explicitly it would have.
+	 */
+	public function test_an_attestation_is_not_accepted_as_connect_data() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$attestation = $this->seal_for_store(
+			[
+				'timestamp'  => time(),
+				'user_email' => 'shopper@example.com',
+			],
+			hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::ATTESTATION_KEY_PURPOSE )
+		);
+
+		$this->assertNull( WooPay_Utilities::decrypt_signed_data( $attestation, [ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ] ) );
 	}
 
 	public function test_an_envelope_sealed_with_the_wrong_key_does_not_open() {
 		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
 
 		$this->assertNull(
-			WooPay_Utilities::decrypt_signed_data( $this->seal_for_store( [ 'timestamp' => time() ], 'not.the.blog.token' ) )
+			WooPay_Utilities::decrypt_signed_data( $this->seal_for_store( [ 'timestamp' => time() ], 'not.the.blog.token' ), [ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ] )
 		);
 	}
 
