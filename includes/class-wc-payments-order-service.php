@@ -1346,6 +1346,13 @@ class WC_Payments_Order_Service {
 				continue;
 			}
 
+			// Refunding is the action the warning asks for, so treat a fully refunded order
+			// as resolved rather than waiting on a webhook that may never arrive.
+			$total = (float) $order->get_total();
+			if ( $total > 0 && (float) $order->get_total_refunded() >= $total ) {
+				continue;
+			}
+
 			$actionable_orders[] = [
 				'order_id'  => $order->get_id(),
 				'charge_id' => $this->get_charge_id_for_order( $order ),

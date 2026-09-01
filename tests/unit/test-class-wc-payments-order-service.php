@@ -2025,6 +2025,60 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that refunding the order resolves the warning without waiting for the webhook.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_fully_refunded_orders() {
+		// Arrange: An actionable warning on an order the merchant has since refunded in full.
+		$refunded_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $refunded_order, 'ch_refunded' );
+		$this->order_service->mark_payment_early_fraud_warning( $refunded_order, 'ch_refunded', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $refunded_order->get_total(),
+				'order_id' => $refunded_order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The refund resolves the warning.
+		$this->assertSame( [], $result );
+	}
+
+	/**
+	 * Tests that a partial refund leaves the warning actionable.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_keeps_partially_refunded_orders() {
+		// Arrange: An actionable warning on an order refunded for less than its total.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $order, 'ch_partial' );
+		$this->order_service->mark_payment_early_fraud_warning( $order, 'ch_partial', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $order->get_total() / 2,
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: A partial refund does not clear the dispute risk.
+		$this->assertSame( [ 'ch_partial' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
 	 * Runs a callback with WooPayments forced into the given mode, restoring it afterwards.
 	 *
 	 * @param bool     $test_mode Whether to run the callback in test mode.
