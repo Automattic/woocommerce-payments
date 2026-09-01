@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -64,19 +64,16 @@ export const getEarlyFraudWarningTask = (
 
 	return {
 		key: taskKey,
-		title:
-			warningCount === 1
-				? __(
-						'Review a payment flagged for potential fraud',
-						'woocommerce-payments'
-				  )
-				: sprintf(
-						__(
-							'Review %d payments flagged for potential fraud',
-							'woocommerce-payments'
-						),
-						warningCount
-				  ),
+		title: sprintf(
+			// The singular form takes no placeholder; sprintf leaves it untouched.
+			_n(
+				'Review a payment flagged for potential fraud',
+				'Review %d payments flagged for potential fraud',
+				warningCount,
+				'woocommerce-payments'
+			),
+			warningCount
+		),
 		content:
 			warningCount === 1
 				? __(
