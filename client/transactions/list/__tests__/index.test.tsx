@@ -724,7 +724,16 @@ describe( 'Transactions list', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		test( 'renders no pill on non-charge rows', () => {
+		test( 'renders the pill on payment rows, which carry the charge too', () => {
+			renderWithEarlyFraudWarning(
+				{ actionable: true, fraud_type: 'made_with_stolen_card' },
+				'payment'
+			);
+
+			expect( screen.getByText( 'Fraud warning' ) ).toBeInTheDocument();
+		} );
+
+		test( 'renders no pill on the refund row sharing the charge', () => {
 			renderWithEarlyFraudWarning(
 				{ actionable: true, fraud_type: 'made_with_stolen_card' },
 				'refund'

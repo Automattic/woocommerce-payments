@@ -18,6 +18,7 @@ import PAYMENT_METHOD_IDS, {
 
 export type TransactionType =
 	| 'charge'
+	| 'payment'
 	| 'refund'
 	| 'card_reader_fee'
 	| 'financing_payout'
