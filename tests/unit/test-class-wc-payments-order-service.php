@@ -2401,6 +2401,105 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() ) );
 	}
 
+	/**
+	 * Refunding a flagged order in full must drop the cached warning list, so the
+	 * refunded-order guard in get_actionable_early_fraud_warning_orders() actually
+	 * runs instead of being skipped by a warm cache.
+	 */
+	public function test_full_refund_of_flagged_order_clears_early_fraud_warning_caches() {
+		// Arrange: A flagged order, and a warm cache holding it.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund the order in full.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => $this->order->get_total(),
+			]
+		);
+
+		// Assert: Both cached lists are gone.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * A store can take many refunds that have nothing to do with a fraud warning.
+	 * Those must not drop the cache, or every refund forces the bounded meta query
+	 * to run again on the next Overview render.
+	 */
+	public function test_refund_of_unflagged_order_leaves_early_fraud_warning_caches() {
+		// Arrange: A warm cache, and an order carrying no early fraud warning.
+		$this->order_service->init_hooks();
+		$this->warm_early_fraud_warning_caches();
+		$unflagged_order = WC_Helper_Order::create_order();
+
+		// Act: Refund the unflagged order in full.
+		wc_create_refund(
+			[
+				'order_id' => $unflagged_order->get_id(),
+				'amount'   => $unflagged_order->get_total(),
+			]
+		);
+
+		// Assert: The cached lists survive.
+		$this->assertNotFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertNotFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * The callback deliberately does not decide what counts as resolved: it drops the
+	 * cache and lets get_actionable_early_fraud_warning_orders() apply the rule. Moving
+	 * a "fully refunded" check into the callback would fail this test.
+	 */
+	public function test_partial_refund_of_flagged_order_clears_cache_but_keeps_it_actionable() {
+		// Arrange: A flagged order and a warm cache.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund a fraction of the order.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => 1,
+			]
+		);
+
+		// Assert: The cache was dropped, and the rebuilt list still carries the order.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertSame(
+			[ $this->order->get_id() ],
+			array_column( $this->order_service->get_actionable_early_fraud_warning_orders(), 'order_id' )
+		);
+	}
+
+	/**
+	 * Seeds both early fraud warning cache keys with a non-empty list.
+	 */
+	private function warm_early_fraud_warning_caches() {
+		foreach ( [ 'wcpay_early_fraud_warning_orders_cache', 'wcpay_test_early_fraud_warning_orders_cache' ] as $key ) {
+			update_option(
+				$key,
+				[
+					'data'    => [
+						[
+							'order_id'  => $this->order->get_id(),
+							'charge_id' => 'ch_flagged',
+							'created'   => 1719800000,
+						],
+					],
+					'fetched' => time(),
+					'errored' => false,
+				]
+			);
+		}
+	}
+
 	public function test_set_payment_transaction_id_for_order() {
 		$transaction_id = 'txn_mock';
 		$this->order_service->set_payment_transaction_id_for_order( $this->order, $transaction_id );

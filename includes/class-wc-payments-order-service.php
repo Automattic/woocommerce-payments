@@ -272,6 +272,7 @@ class WC_Payments_Order_Service {
 	public function init_hooks(): void {
 		add_action( 'woocommerce_order_status_processing', [ $this, 'maybe_record_first_live_sale' ] );
 		add_action( 'woocommerce_order_status_completed', [ $this, 'maybe_record_first_live_sale' ] );
+		add_action( 'woocommerce_order_refunded', [ $this, 'maybe_clear_early_fraud_warning_caches' ] );
 
 		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
 		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
@@ -1372,6 +1373,27 @@ class WC_Payments_Order_Service {
 		);
 
 		return $actionable_orders;
+	}
+
+	/**
+	 * Drops the cached early fraud warning lists when a flagged order is refunded.
+	 *
+	 * Only a warning webhook invalidates them otherwise, which leaves the refunded-order
+	 * guard in get_actionable_early_fraud_warning_orders() unreachable on a cache hit —
+	 * exactly when no resolving webhook is coming. What counts as resolved stays in that
+	 * query, so this only decides that the list may be stale.
+	 *
+	 * @param int $order_id The refunded order's ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_clear_early_fraud_warning_caches( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY ) ) {
+			return;
+		}
+
+		WC_Payments::get_database_cache()->delete_early_fraud_warning_caches();
 	}
 
 	/**
