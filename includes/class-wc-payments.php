@@ -1107,10 +1107,6 @@ class WC_Payments {
 				// before trusting it (it is user-writable JSON).
 				'wc_payments_reports_fees_view',
 
-				// WooPayments review prompt user preferences.
-				'wc_payments_review_prompt_dismissed',
-				'wc_payments_review_prompt_maybe_later',
-
 				// Reports feedback user preferences.
 				'wc_payments_reports_feedback_dismissed',
 			]
