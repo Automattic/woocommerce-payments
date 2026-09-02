@@ -24,6 +24,7 @@ use WCPay\Constants\Refund_Status;
 use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	Amount_Too_Small_Exception,
 	API_Merchant_Exception,
+	Blocked_By_Fraud_Rules_Exception,
 	Process_Payment_Exception,
 	Intent_Authentication_Exception,
 	API_Exception,
@@ -47,6 +48,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Fraud_Prevention\Models\Rule as Fraud_Rule;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
@@ -1257,6 +1259,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_existing_intention;
 			}
 
+			// Runs after the intent check so that a reachable intent still produces the richer
+			// response, including the amount mismatch message. This catches the same-order
+			// resubmission when that check returns empty-handed.
+			$check_order_paid = $this->duplicate_payment_prevention_service->check_order_already_paid( $order );
+			if ( is_array( $check_order_paid ) ) {
+				return $check_order_paid;
+			}
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -1328,7 +1338,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $blocked_by_fraud_rules ) {
-				$this->order_service->mark_order_blocked_for_fraud( $order, '', Intent_Status::CANCELED );
+				$ruleset_results = [];
+				if ( $e instanceof Blocked_By_Fraud_Rules_Exception ) {
+					$ruleset_results = $e->get_ruleset_results();
+				} elseif ( $e instanceof API_Exception && $this->is_blocked_by_avs_verification_fraud_rule( $e->get_error_code(), $e->get_error_type() ) ) {
+					// AVS blocks surface as a Stripe card error rather than a rule engine outcome,
+					// so no ruleset results accompany them; the fired rule is still known here.
+					$ruleset_results = [ Fraud_Risk_Tools::RULE_AVS_VERIFICATION => Fraud_Rule::FRAUD_OUTCOME_BLOCK ];
+				}
+				// AVS/Stripe-declined blocks carry a real (failed) intent id; passing it makes each
+				// blocked attempt's order note link to its own transaction instead of the order's
+				// latest one. Rule engine blocks fire before an intent exists, so this stays empty.
+				$blocked_intent_id = ( $e instanceof API_Exception && ! empty( $e->get_intent_id() ) ) ? $e->get_intent_id() : '';
+				$this->order_service->mark_order_blocked_for_fraud( $order, $blocked_intent_id, Intent_Status::CANCELED, $ruleset_results );
 			} elseif ( ! empty( $payment_information ) ) {
 				/**
 				 * TODO: Move the contents of this else into the Order_Service.

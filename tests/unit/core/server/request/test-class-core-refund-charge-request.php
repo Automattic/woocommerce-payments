@@ -109,6 +109,30 @@ class Refund_Charge_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Customer changed their mind', $params['metadata']['merchant_refund_reason'] );
 	}
 
+	public function test_full_reason_preserves_metadata_at_character_limit() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_full_reason( str_repeat( 'a', 500 ) );
+
+		$this->assertSame( str_repeat( 'a', 500 ), $request->get_params()['metadata']['merchant_refund_reason'] );
+	}
+
+	public function test_full_reason_truncates_metadata_above_character_limit() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_full_reason( str_repeat( 'a', 501 ) );
+
+		$this->assertSame( str_repeat( 'a', 500 ), $request->get_params()['metadata']['merchant_refund_reason'] );
+	}
+
+	public function test_full_reason_truncates_multibyte_metadata_by_character() {
+		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_mock' );
+		$request->set_full_reason( str_repeat( 'é', 500 ) . 'x' );
+
+		$this->assertSame( str_repeat( 'é', 500 ), $request->get_params()['metadata']['merchant_refund_reason'] );
+	}
+
 	public function test_full_reason_with_empty_reason_sets_nothing() {
 		$request = new Refund_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_charge( 'ch_mock' );

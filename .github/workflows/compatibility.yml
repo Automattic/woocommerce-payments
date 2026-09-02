@@ -1,7 +1,11 @@
 name: Compatibility - WC, WP and PHP
 
 on:
-  pull_request
+  pull_request:
+  # Also run on a schedule so WC beta and WP nightly breakage is caught in quiet weeks
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
 
 env:
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
@@ -19,7 +23,7 @@ jobs:
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: "Load version constants"
         id: vc
         uses: ./.github/actions/load-version-constants
@@ -46,7 +50,7 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-wc-compat-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # enable dependencies caching
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -74,6 +78,38 @@ jobs:
           echo "matrix={\"woocommerce\":[\"beta\"],\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
 
   # a dedicated job, as allowed to fail
+  compatibility-wordpress-nightly:
+    name: Environment - WP nightly
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        woocommerce: [ 'latest' ]
+        wordpress: [ 'nightly' ]
+        gutenberg: [ 'latest' ]
+        php: [ '7.4' ]
+    env:
+      WP_VERSION: ${{ matrix.wordpress }}
+      WC_VERSION: ${{ matrix.woocommerce }}
+      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
+    steps:
+      # clone the repository
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # enable dependencies caching
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/composer/
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+      # run CI checks
+      - run: bash bin/run-ci-tests.bash
+
+  # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name: Environment - WC beta
     needs: generate-wc-compat-beta-matrix
@@ -87,7 +123,7 @@ jobs:
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     steps:
       # clone the repository
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # enable dependencies caching
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:

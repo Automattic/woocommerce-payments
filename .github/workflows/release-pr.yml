@@ -22,6 +22,9 @@ on:
       release-pr-id:
         description: "ID of the release PR created"
         value: ${{ jobs.prepare-release.outputs.release-pr-id }}
+      develop-pr-url:
+        description: "URL of the develop sync PR created"
+        value: ${{ jobs.prepare-release.outputs.develop-pr-url }}
 
 
   workflow_dispatch:
@@ -62,13 +65,14 @@ jobs:
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
       release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
+      develop-pr-url: ${{ steps.open-develop-pr.outputs.DEVELOP_PR_URL }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
 
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
@@ -143,19 +147,21 @@ jobs:
           echo "DEVELOP_BRANCH=$DEVELOP_BRANCH" >> "$GITHUB_ENV"
 
       - name: "Open PR against develop"
+        id: open-develop-pr
         if: ${{ ! inputs.dry-run }}
         env:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           RELEASE_PR_ID: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
         run: |
-          PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR after the code freeze process is done successfully.\n\nApplies the changelog entries from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge.\n\nRelated release PR: #${RELEASE_PR_ID}")
+          PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR after the code freeze process is done successfully.\n\nApplies the **version bump and changelog entries** from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge. Since \`trunk\` is no longer merged back, this PR is the only thing that brings the $RELEASE_VERSION version bump onto \`develop\`.\n\nRelated release PR: #${RELEASE_PR_ID}")
           DEVELOP_PR_URL=$(gh pr create \
-            --title "Changelog for develop from version $RELEASE_VERSION" \
+            --title "Sync develop after $RELEASE_VERSION: version bump + changelog" \
             --body "$PR_BODY" \
             --base develop \
             --head "$DEVELOP_BRANCH")
           echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_ENV"
+          echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_OUTPUT"
 
       - name: "Add comment to PR to trunk"
         if: ${{ ! inputs.dry-run }}

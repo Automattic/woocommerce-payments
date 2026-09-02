@@ -21,21 +21,22 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { deletedTodoTasks, dismissedTodoTasks, remindMeLaterTodoTasks } =
 		overviewTasksVisibility;
 
-	const getVisibleTasks = useCallback( () => {
-		const nowTimestamp = Date.now();
-		return tasks.filter(
-			( task ) =>
-				! deletedTodoTasks.includes( task.key ) &&
-				! dismissedTodoTasks.includes( task.key ) &&
-				( ! remindMeLaterTodoTasks[ task.key ] ||
-					remindMeLaterTodoTasks[ task.key ] < nowTimestamp )
-		);
-	}, [
-		deletedTodoTasks,
-		dismissedTodoTasks,
-		remindMeLaterTodoTasks,
-		tasks,
-	] );
+	// Accepts an optional `remindOverride` so callers that have just derived
+	// a new remindMeLaterTodoTasks map can reflect it immediately, without
+	// mutating the underlying object.
+	const getVisibleTasks = useCallback(
+		( remindOverride = remindMeLaterTodoTasks ) => {
+			const nowTimestamp = Date.now();
+			return tasks.filter(
+				( task ) =>
+					! deletedTodoTasks.includes( task.key ) &&
+					! dismissedTodoTasks.includes( task.key ) &&
+					( ! remindOverride[ task.key ] ||
+						remindOverride[ task.key ] < nowTimestamp )
+			);
+		},
+		[ deletedTodoTasks, dismissedTodoTasks, remindMeLaterTodoTasks, tasks ]
+	);
 
 	useEffect( () => {
 		setVisibleTasks( getVisibleTasks() );
@@ -111,8 +112,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 				...updatedRemindMeLaterTasks
 			} = remindMeLaterTodoTasks;
 
-			delete remindMeLaterTodoTasks[ key ];
-			setVisibleTasks( getVisibleTasks() );
+			setVisibleTasks( getVisibleTasks( updatedRemindMeLaterTasks ) );
 
 			saveOption(
 				'woocommerce_remind_me_later_todo_tasks',
@@ -125,13 +125,16 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const remindTaskLater = useCallback(
 		async ( { key, onDismiss } ) => {
 			const dismissTime = Date.now() + TIME.DAY_IN_MS;
-			remindMeLaterTodoTasks[ key ] = dismissTime;
-			setVisibleTasks( getVisibleTasks() );
-
-			saveOption( 'woocommerce_remind_me_later_todo_tasks', {
+			const updatedTasks = {
 				...remindMeLaterTodoTasks,
 				[ key ]: dismissTime,
-			} );
+			};
+			setVisibleTasks( getVisibleTasks( updatedTasks ) );
+
+			saveOption(
+				'woocommerce_remind_me_later_todo_tasks',
+				updatedTasks
+			);
 
 			createNotice(
 				'success',

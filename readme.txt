@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.3
-Stable tag: 11.0.1
+Stable tag: 11.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,40 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 11.1.0 - 2026-09-02 =
+* Add - Show which risk filters fired when a payment is blocked or held for review, in the order note and the Fraud & Risk meta box.
+* Add - Surface Stripe Radar early fraud warnings in order notes and the Fraud & Risk order metabox.
+* Add - Surface Stripe Radar early fraud warnings in the transaction timeline.
+* Fix - Add an accessible label to the Multi-Currency switcher so screen readers announce it correctly
+* Fix - Avoid a PHP 8 "Undefined array key" warning when computing the cache TTL for a legacy cache entry stored before the errored field existed.
+* Fix - fix: inline notices rendering with a cut-off left border on WordPress 7.1
+* Fix - Fixed merchant-facing documentation links that landed on the wrong page or section, and relabelled two links to match their new destinations.
+* Fix - Fixed the payment details summary labelling a disputed amount as refunded: the withdrawn balance line now reads "Deducted" whenever a dispute moved the money, including when the dispute fee was zero or reversed.
+* Fix - Linked the payment method fee tooltip to the fee section for the WooPayments account's country rather than the store's base country, which differ for Puerto Rico stores and for any store that changes its base country after onboarding.
+* Fix - Link the "View more details" in a fraud-blocked order note to the specific payment intent that was blocked, so repeated blocks on the same order each point to their own transaction.
+* Fix - Prevent a second charge when payment is resubmitted for an order that has already been paid.
+* Fix - Prevent long refund reasons from interrupting refunds.
+* Fix - Re-run the sofort cleanup on stores where the payment method registry re-enabled it.
+* Fix - Recover onboarding within minutes instead of a week after a transient error, by backing off errored business-types and onboarding-fields cache entries instead of caching the failure for the full week.
+* Fix - Send a WooPayments user agent on ExPlat assignment requests so experiment assignments are not filtered out as bot traffic.
+* Fix - Show the evidence response deadline on the order screen when a charge has a dispute that still needs a response alongside one that is under review or lost.
+* Fix - Stop a closing dispute from marking an order completed when the charge still has another dispute open, or when the payment has already been fully refunded
+* Fix - Stop charging the additional Stripe Billing fee on subscription renewals that are not billed through Stripe Billing
+* Fix - Stop counting test-mode WooPayments usage - a test-drive account or test-mode orders - when determining WooPayments incentives eligibility, so trialing WooPayments no longer disqualifies a store from incentives. Stores already disqualified this way get their eligibility re-determined once.
+* Fix - Stopped the dispute details from naming a fee that was never charged: a zero or reversed dispute fee now drops the fee wording instead of showing a $0.00 amount or a dash.
+* Update - Clarify where the support phone number appears, mark the field as required, and use one plain validation message.
+* Dev - Add a payment method lifecycle reference doc covering Stripe capability state vs. checkout enablement
+* Dev - Bump WP tested up to version to 7.1 and WC tested up to version to 11.1.0
+* Dev - Fix E2E assertions that could not fail: missing awaits, an assertion-free filter test, and swallowed add-payment-method outcomes.
+* Dev - Fix react-hooks/immutability ESLint violations
+* Dev - Fix react-hooks/set-state-in-effect ESLint violations.
+* Dev - Fix the E2E Action Scheduler helper so it finds the Run link on WordPress 7.1.
+* Dev - Make the subscriptions manage-payments E2E test locate the "Change payment" action by its URL contract instead of its ARIA role.
+* Dev - Make the subscriptions renewal E2E test resilient to Action Scheduler search-box copy changes (fixes the 4.1.0 relabel).
+* Dev - Remove skipped tests for the capital loan notice that was removed from the deposits overview.
+* Dev - Run the PHP test suite against WordPress nightly in the compatibility workflow.
+* Dev - Use a named permission callback for the public multi-currency config REST endpoint.
 
 = 11.0.1 - 2026-08-20 =
 * Fix - Fix the currency switcher not rendering on WordPress 7.1 in Storefront breadcrumbs and the wc_get_currency_switcher_markup() template tag.
