@@ -46,8 +46,7 @@ export const getEarlyFraudWarningTask = (
 				} )
 			);
 		} else {
-			// The list has no early-fraud-warning filter yet; the warning
-			// chips make the affected rows stand out.
+			// The list has no early-fraud-warning filter yet, so this lands unfiltered.
 			history.push(
 				getAdminUrl( {
 					page: 'wc-admin',
