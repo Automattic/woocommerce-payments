@@ -249,6 +249,18 @@ class WC_Payments_Order_Service {
 	const WCPAY_EARLY_FRAUD_WARNING_META_KEY = '_wcpay_early_fraud_warning';
 
 	/**
+	 * Meta key mirroring whether the stored early fraud warning is still actionable.
+	 *
+	 * Present only while actionable, so the bounded warning query can filter on it: the
+	 * warning itself is a serialized array MySQL cannot read, and its row is never removed
+	 * (the order screen keeps showing resolved warnings), so without this key resolved rows
+	 * would hold window slots forever and hide older still-actionable ones.
+	 *
+	 * @const string
+	 */
+	const WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY = '_wcpay_early_fraud_warning_actionable';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -1291,6 +1303,13 @@ class WC_Payments_Order_Service {
 	public function set_early_fraud_warning_for_order( $order, array $early_fraud_warning ) {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, $early_fraud_warning );
+
+		if ( ! empty( $early_fraud_warning['efw_actionable'] ) ) {
+			$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY, '1' );
+		} else {
+			$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY );
+		}
+
 		$order->save_meta_data();
 	}
 
@@ -1332,7 +1351,7 @@ class WC_Payments_Order_Service {
 				'orderby'  => 'date',
 				'order'    => 'DESC',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_key' => self::WCPAY_EARLY_FRAUD_WARNING_META_KEY,
+				'meta_key' => self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
 			]
 		);
 

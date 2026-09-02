@@ -1971,6 +1971,57 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * The query window is bounded, and the warning meta is never removed once written,
+	 * so resolved warnings would otherwise hold window slots forever and hide older
+	 * still-actionable ones. A limit of one makes that crowding-out exact.
+	 */
+	public function test_resolved_warnings_do_not_consume_the_query_window() {
+		// Arrange: An older actionable warning, and a newer resolved one.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Inspect a single order.
+		$result = $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+
+		// Assert: The newer resolved order did not squeeze out the actionable one.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
+	 * Resolving a warning must free its slot in the bounded window, not just stop it
+	 * being reported. A warning that was actionable and later resolved is the common
+	 * case, so the index has to be removed as well as written.
+	 */
+	public function test_resolving_a_warning_frees_its_slot_in_the_query_window() {
+		// Arrange: An older actionable warning, and a newer one that is later resolved.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$later_resolved_order = WC_Helper_Order::create_order();
+		$later_resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$later_resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Resolve the newer warning, then inspect a single order.
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+		$result = $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+
+		// Assert: The slot went back to the still-actionable order.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
 	 * Tests that warnings stored against the other mode's orders are ignored.
 	 */
 	public function test_get_actionable_early_fraud_warning_orders_excludes_test_mode_orders_when_live() {
