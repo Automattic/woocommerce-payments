@@ -310,8 +310,8 @@ class List_Transactions extends Paginated {
 						$early_fraud_warning = $order->get_meta( WC_Payments_Order_Service::WCPAY_EARLY_FRAUD_WARNING_META_KEY, true );
 						if ( is_array( $early_fraud_warning ) && [] !== $early_fraud_warning ) {
 							$transaction['early_fraud_warning'] = [
-								'actionable' => (bool) ( $early_fraud_warning['actionable'] ?? false ),
-								'fraud_type' => (string) ( $early_fraud_warning['fraud_type'] ?? '' ),
+								'actionable' => (bool) ( $early_fraud_warning['efw_actionable'] ?? false ),
+								'fraud_type' => (string) ( $early_fraud_warning['efw_type'] ?? '' ),
 							];
 						}
 					}

@@ -238,16 +238,17 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 	public function test_format_response_adds_early_fraud_warning_from_order_meta() {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_charge_id', 'ch_with_efw' );
-		$order->add_meta_data(
-			'_wcpay_early_fraud_warning',
-			[
-				'efw_id'     => 'issfr_mock',
-				'actionable' => true,
-				'fraud_type' => 'made_with_stolen_card',
-				'created'    => 1752969600,
-			]
-		);
 		$order->save();
+
+		// Store the warning through the writer, so a future rename of the meta keys fails here.
+		WC_Payments::get_order_service()->mark_payment_early_fraud_warning(
+			$order,
+			'ch_with_efw',
+			'issfr_mock',
+			true,
+			'made_with_stolen_card',
+			1752969600
+		);
 
 		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
 
