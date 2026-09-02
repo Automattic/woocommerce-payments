@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
@@ -300,6 +300,291 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			} )
 		);
 		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should work as soon as a newer refresh succeeds, without waiting out a hung one', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Refresh A hangs: it only ever settles by being aborted.
+		let hungSignal;
+		apiFetch.mockImplementation( ( { signal } ) => {
+			hungSignal = signal;
+			return new Promise( ( resolve, reject ) => {
+				signal?.addEventListener( 'abort', () =>
+					reject(
+						Object.assign( new Error( 'Aborted' ), {
+							name: 'AbortError',
+						} )
+					)
+				);
+			} );
+		} );
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		const rejectDuringHungRefresh = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: jest.fn(),
+			reject: rejectDuringHungRefresh,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( rejectDuringHungRefresh ).toHaveBeenCalledTimes( 1 );
+
+		// Refresh B starts and succeeds. Note real timers throughout: nothing
+		// here may depend on A's deadline elapsing.
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithItemsMock ),
+				headers: new Map(),
+			} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+
+		// Starting B aborts A rather than leaving it to gate clicks.
+		expect( hungSignal.aborted ).toBe( true );
+
+		const resolveAfterNewerRefresh = jest.fn();
+		const rejectAfterNewerRefresh = jest.fn();
+		await waitFor( () => {
+			resolveAfterNewerRefresh.mockClear();
+			rejectAfterNewerRefresh.mockClear();
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: resolveAfterNewerRefresh,
+				reject: rejectAfterNewerRefresh,
+				expressPaymentType: 'google_pay',
+			} );
+			expect( resolveAfterNewerRefresh ).toHaveBeenCalledWith(
+				expect.objectContaining( { shippingAddressRequired: true } )
+			);
+		} );
+		expect( rejectAfterNewerRefresh ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should recover, without resolving from stale data, when a cart refresh hangs', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// A hung Store API request: it only ever settles by being aborted.
+		let abortSignal;
+		apiFetch.mockImplementation( ( { signal } ) => {
+			abortSignal = signal;
+			return new Promise( ( resolve, reject ) => {
+				signal?.addEventListener( 'abort', () =>
+					reject(
+						Object.assign( new Error( 'Aborted' ), {
+							name: 'AbortError',
+						} )
+					)
+				);
+			} );
+		} );
+
+		jest.useFakeTimers();
+		try {
+			$( document.body ).trigger( 'updated_checkout' );
+
+			const rejectWhileHung = jest.fn();
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: jest.fn(),
+				reject: rejectWhileHung,
+				expressPaymentType: 'google_pay',
+			} );
+			expect( rejectWhileHung ).toHaveBeenCalledTimes( 1 );
+
+			await jest.advanceTimersByTimeAsync( 10000 );
+
+			// The request is cancelled rather than left running.
+			expect( abortSignal.aborted ).toBe( true );
+
+			// The guard is released, but the button must not fall back to the
+			// pre-refresh snapshot: there is no cart data we can trust.
+			const resolveAfterAbort = jest.fn();
+			const rejectAfterAbort = jest.fn();
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: resolveAfterAbort,
+				reject: rejectAfterAbort,
+				expressPaymentType: 'google_pay',
+			} );
+			expect( resolveAfterAbort ).not.toHaveBeenCalled();
+			expect( rejectAfterAbort ).toHaveBeenCalledTimes( 1 );
+		} finally {
+			jest.useRealTimers();
+		}
+
+		// A later healthy refresh brings the button back.
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithItemsMock ),
+				headers: new Map(),
+			} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+
+		const resolveAfterRecovery = jest.fn();
+		const rejectAfterRecovery = jest.fn();
+		await waitFor( () => {
+			resolveAfterRecovery.mockClear();
+			rejectAfterRecovery.mockClear();
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: resolveAfterRecovery,
+				reject: rejectAfterRecovery,
+				expressPaymentType: 'google_pay',
+			} );
+			expect( resolveAfterRecovery ).toHaveBeenCalledWith(
+				expect.objectContaining( { shippingAddressRequired: true } )
+			);
+		} );
+		expect( rejectAfterRecovery ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should not let a superseded refresh publish its cart data or remount Elements', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Refresh A is slow and carries the coupon cart, whose total is 0. If A
+		// ever published, the button would hide - which is what makes this
+		// observable rather than a no-op assertion.
+		let releaseSlowRefresh;
+		let slowResponseConsumed = false;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseSlowRefresh = () =>
+						resolve( {
+							json: () => {
+								slowResponseConsumed = true;
+								return Promise.resolve(
+									cartWithItemsAndCouponMock
+								);
+							},
+							headers: new Map(),
+						} );
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		// Refresh B starts after A and answers first, with a payable cart.
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithItemsMock ),
+				headers: new Map(),
+			} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+
+		const elementsGenerationsAfterB =
+			stripeInstance.elements.mock.calls.length;
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+
+		// Release A and synchronize on A actually resuming past its fetch, so the
+		// assertions below run after A had its chance to publish.
+		releaseSlowRefresh();
+		await waitFor( () => expect( slowResponseConsumed ).toBe( true ) );
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		// A's zero-total cart was discarded: the button is still B's.
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+		expect( stripeInstance.elements.mock.calls.length ).toBe(
+			elementsGenerationsAfterB
+		);
+
+		const clickEventResolveMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: jest.fn(),
+			expressPaymentType: 'google_pay',
+		} );
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				lineItems: [
+					{ amount: 2399, name: 'Beanie' },
+					{ amount: 1100, name: 'Shipping' },
+					{ amount: 198, name: 'Tax' },
+				],
+			} )
+		);
+	} );
+
+	it( 'should not mount a generation that was superseded after its cart fetch', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		const mountsAfterFirstInit = stripeElementMock.mount.mock.calls.length;
+
+		// Refresh A: hold its cart response so we control when it resumes.
+		let releaseRefreshA;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseRefreshA = () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} );
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		// From here on refreshes answer immediately, so B can overtake A.
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithItemsMock ),
+				headers: new Map(),
+			} )
+		);
+
+		// Start B from inside A's `elements.create()`, i.e. after A already passed
+		// the post-fetch ownership check. Only a recheck before mounting can catch
+		// this; it stands in for a newer refresh landing during `getStripe()`.
+		let supersedeOnNextCreate = true;
+		stripeInstance.elements = jest.fn( () => ( {
+			create: jest.fn( () => {
+				if ( supersedeOnNextCreate ) {
+					supersedeOnNextCreate = false;
+					$( document.body ).trigger( 'updated_checkout' );
+				}
+				return stripeElementMock;
+			} ),
+		} ) );
+
+		releaseRefreshA();
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+		);
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		// Two generations were built, but only B's reached the DOM.
+		expect( stripeElementMock.mount.mock.calls.length ).toBe(
+			mountsAfterFirstInit + 1
+		);
 	} );
 
 	it( 'should reject the click event when the cart data could not be fetched', async () => {

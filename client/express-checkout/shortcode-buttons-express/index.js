@@ -55,10 +55,21 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
-let pendingCartRefreshCount = 0;
-const fetchNewCartData = async () => {
+// The forced refresh that currently owns the button, as `{ id, controller }`,
+// or null when none is in flight. Deliberately one refresh rather than a count:
+// a count would keep rejecting clicks for a refresh that has already been
+// superseded by a newer, successful one.
+let activeForcedRefresh = null;
+// Identifies the most recent forced refresh. A slower, superseded refresh must
+// not publish its cart data or remount Elements behind the newer one's back.
+let latestForcedRefreshId = 0;
+// `fetch` has no timeout of its own, so a stalled Store API response would hold
+// the click guard open for the life of the page. Bound the wait and abort.
+const CART_REFRESH_TIMEOUT_MS = 10000;
+
+const fetchNewCartData = async ( { signal } = {} ) => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
-		return await getCartApiHandler().getCart();
+		return await getCartApiHandler().getCart( { signal } );
 	}
 
 	// creating a new cart and clearing it afterward,
@@ -223,9 +234,19 @@ jQuery( ( $ ) => {
 		 * @param {Object} creationOptions ECE initialization options.
 		 */
 		startExpressCheckoutElement: async ( creationOptions ) => {
+			const { isSuperseded = () => false } = creationOptions;
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
+
+			// Loading Stripe is another await a newer refresh can start across,
+			// so ownership has to be rechecked here and not only after the cart
+			// fetch. Bailing before `elements()` keeps a superseded refresh from
+			// building a generation at all.
+			if ( isSuperseded() ) {
+				return;
+			}
+
 			const useConfirmationToken =
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
@@ -273,6 +294,11 @@ jQuery( ( $ ) => {
 				getExpressCheckoutButtonStyleSettings()
 			);
 
+			// Last check before the generation becomes the one on screen.
+			if ( isSuperseded() ) {
+				return;
+			}
+
 			expressCheckoutButtonUi.renderButton( eceButton );
 
 			eceButton.on( 'loaderror', () => {
@@ -291,8 +317,9 @@ jQuery( ( $ ) => {
 
 				// Stripe keeps the existing Element clickable while WooCommerce refreshes
 				// the cart. Reject the click until the replacement Element is initialized,
-				// so a payment sheet never opens with a stale cart snapshot.
-				if ( pendingCartRefreshCount > 0 ) {
+				// so a payment sheet never opens with a stale cart snapshot. Only the
+				// newest refresh gates this: an older one it superseded is irrelevant.
+				if ( activeForcedRefresh ) {
 					event.reject();
 					return;
 				}
@@ -478,7 +505,17 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: async ( { forceRefresh = false } = {} ) => {
+		init: async ( {
+			forceRefresh = false,
+			signal,
+			refreshId = null,
+		} = {} ) => {
+			// A forced refresh is superseded as soon as a newer one starts. Its
+			// response must not be published: doing so would overwrite fresher
+			// cart data and remount Elements underneath the newer generation.
+			const isSuperseded = () =>
+				refreshId !== null && refreshId !== latestForcedRefreshId;
+
 			removeAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout'
@@ -522,12 +559,23 @@ jQuery( ( $ ) => {
 					needsMethodsReevaluation )
 			) {
 				try {
-					// Assigning only once the response is in keeps the previous cart data
-					// readable while the request is in flight. The button stays mounted and
-					// clickable throughout, so clearing it upfront would leave the click
-					// handler without any data to resolve the payment sheet with.
-					cachedCartData = await fetchNewCartData();
+					const freshCartData = await fetchNewCartData( { signal } );
+
+					if ( isSuperseded() ) {
+						return;
+					}
+
+					cachedCartData = freshCartData;
 				} catch ( e ) {
+					if ( isSuperseded() ) {
+						return;
+					}
+
+					// The refresh failed or timed out, so there is no cart data we
+					// can trust. Clearing it hides the button and makes any click
+					// that still reaches the handler reject, rather than opening a
+					// wallet against the pre-refresh snapshot. A later healthy
+					// refresh restores it.
 					cachedCartData = null;
 				}
 			}
@@ -595,6 +643,7 @@ jQuery( ( $ ) => {
 					enabledMethods: enabledMethodsOverride,
 					setupFutureUsage:
 						getSetupFutureUsageForCart( cachedCartData ),
+					isSuperseded,
 				} );
 			} else if (
 				isProductContext &&
@@ -609,6 +658,7 @@ jQuery( ( $ ) => {
 					)
 						? 'off_session'
 						: null,
+					isSuperseded,
 				} );
 			} else {
 				expressCheckoutButtonUi.hideContainer();
@@ -697,12 +747,38 @@ jQuery( ( $ ) => {
 	};
 
 	const refreshExpressCheckoutElement = async () => {
-		pendingCartRefreshCount++;
+		// Whatever was in flight is now stale. Abort it so its request stops and
+		// it can never publish, rather than leaving it to gate clicks until its
+		// own deadline expires.
+		activeForcedRefresh?.controller.abort();
+
+		const refreshId = ++latestForcedRefreshId;
+		const controller = new AbortController();
+		activeForcedRefresh = { id: refreshId, controller };
+
+		// Aborting is also what bounds a stalled request: it settles the promise,
+		// so `init()` returns and the guard is released. Lowering the guard on a
+		// timer alone would leave the request alive and let a late response
+		// remount Elements under a wallet the shopper had already opened.
+		const timeoutId = setTimeout(
+			() => controller.abort(),
+			CART_REFRESH_TIMEOUT_MS
+		);
 
 		try {
-			await wcpayECE.init( { forceRefresh: true } );
+			await wcpayECE.init( {
+				forceRefresh: true,
+				signal: controller.signal,
+				refreshId,
+			} );
 		} finally {
-			pendingCartRefreshCount--;
+			clearTimeout( timeoutId );
+
+			// Only the refresh that still owns the button may release the guard.
+			// A superseded one finishing later must leave the newer one's alone.
+			if ( activeForcedRefresh?.id === refreshId ) {
+				activeForcedRefresh = null;
+			}
 		}
 	};
 
