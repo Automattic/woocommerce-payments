@@ -10,12 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
 import type { TaskItemProps } from '../types';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
-
-export interface ActiveEarlyFraudWarning {
-	order_id: number;
-	charge_id: string;
-	created: number;
-}
+import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
 
 export const getEarlyFraudWarningTask = (
 	/**

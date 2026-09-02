@@ -12,10 +12,8 @@ import {
 	getDisputeResolutionTask,
 	getDisputesDueWithinDays,
 } from './tasks/dispute-task';
-import {
-	getEarlyFraudWarningTask,
-	ActiveEarlyFraudWarning,
-} from './tasks/early-fraud-warning-task';
+import { getEarlyFraudWarningTask } from './tasks/early-fraud-warning-task';
+import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
 import { getReconnectWpcomTask } from './tasks/reconnect-task';
 import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
 import { CachedDispute } from 'wcpay/types/disputes';

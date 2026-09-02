@@ -25,3 +25,5 @@ export const FILES_STORE_NAME = 'wc/payments/files';
 export const PM_PROMOTIONS_STORE_NAME = 'wc/payments/pmPromotions';
 export const DISPUTE_READINESS_STORE_NAME = 'wc/payments/disputeReadiness';
 export const REPORTS_STORE_NAME = 'wc/payments/reports';
+export const EARLY_FRAUD_WARNINGS_STORE_NAME =
+	'wc/payments/earlyFraudWarnings';

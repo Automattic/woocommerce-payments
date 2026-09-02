@@ -11,6 +11,7 @@ import { select } from '@wordpress/data';
  */
 import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
+import { useActiveEarlyFraudWarnings } from 'wcpay/data/early-fraud-warnings';
 import { getQuery } from '@woocommerce/navigation';
 import { useGetSettings } from 'wcpay/data/settings';
 
@@ -77,6 +78,11 @@ jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputes: jest
 		.fn()
 		.mockReturnValue( { disputes: [], isLoading: false } ),
+} ) );
+jest.mock( 'wcpay/data/early-fraud-warnings', () => ( {
+	useActiveEarlyFraudWarnings: jest
+		.fn()
+		.mockReturnValue( { activeEarlyFraudWarnings: [], hasLoaded: true } ),
 } ) );
 jest.mock( 'wcpay/data/pm-promotions', () => ( {
 	usePmPromotions: jest
@@ -324,5 +330,43 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect( query() ).not.toBeInTheDocument();
+	} );
+	it( 'withholds early fraud warnings from the task list until they have loaded', () => {
+		useActiveEarlyFraudWarnings.mockReturnValue( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 42,
+					charge_id: 'ch_flagged',
+					created: 1719800000,
+				},
+			],
+			hasLoaded: false,
+		} );
+
+		render( <OverviewPage /> );
+
+		expect( getTasks ).toHaveBeenLastCalledWith(
+			expect.objectContaining( { activeEarlyFraudWarnings: [] } )
+		);
+	} );
+
+	it( 'passes early fraud warnings to the task list once they have loaded', () => {
+		const warnings = [
+			{
+				order_id: 42,
+				charge_id: 'ch_flagged',
+				created: 1719800000,
+			},
+		];
+		useActiveEarlyFraudWarnings.mockReturnValue( {
+			activeEarlyFraudWarnings: warnings,
+			hasLoaded: true,
+		} );
+
+		render( <OverviewPage /> );
+
+		expect( getTasks ).toHaveBeenLastCalledWith(
+			expect.objectContaining( { activeEarlyFraudWarnings: warnings } )
+		);
 	} );
 } );
