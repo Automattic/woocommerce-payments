@@ -55,6 +55,7 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
+let pendingCartRefreshCount = 0;
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
 		return await getCartApiHandler().getCart();
@@ -288,6 +289,21 @@ jQuery( ( $ ) => {
 					return;
 				}
 
+				// Stripe keeps the existing Element clickable while WooCommerce refreshes
+				// the cart. Reject the click until the replacement Element is initialized,
+				// so a payment sheet never opens with a stale cart snapshot.
+				if ( pendingCartRefreshCount > 0 ) {
+					event.reject();
+					return;
+				}
+
+				const options = getOnClickOptions();
+				if ( ! options ) {
+					// Without cart (or product) data we can't describe the purchase to the wallet.
+					event.reject();
+					return;
+				}
+
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
@@ -343,14 +359,6 @@ jQuery( ( $ ) => {
 						.finally( () => {
 							addToCartPromise = Promise.resolve();
 						} );
-				}
-
-				const options = getOnClickOptions();
-				if ( ! options ) {
-					// Without cart (or product) data we can't describe the purchase to the wallet.
-					// Leaving the event unresolved keeps the payment sheet closed,
-					// which is preferable to opening it with missing line items or shipping requirements.
-					return;
 				}
 
 				const shippingOptionsWithFallback =
@@ -688,6 +696,16 @@ jQuery( ( $ ) => {
 		},
 	};
 
+	const refreshExpressCheckoutElement = async () => {
+		pendingCartRefreshCount++;
+
+		try {
+			await wcpayECE.init( { forceRefresh: true } );
+		} finally {
+			pendingCartRefreshCount--;
+		}
+	};
+
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
 		getExpressCheckoutData( 'button_context' ) !== 'checkout' ||
@@ -699,12 +717,12 @@ jQuery( ( $ ) => {
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		wcpayECE.init( { forceRefresh: true } );
+		refreshExpressCheckoutElement();
 	} );
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		wcpayECE.init( { forceRefresh: true } );
+		refreshExpressCheckoutElement();
 	} );
 } );

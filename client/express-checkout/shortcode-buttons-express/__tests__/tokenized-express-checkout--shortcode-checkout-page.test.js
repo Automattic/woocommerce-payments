@@ -239,7 +239,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		).not.toBeVisible();
 	} );
 
-	it( 'should still resolve the click event while a cart refresh is in flight', async () => {
+	it( 'should reject the click event while a cart refresh is in flight', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
@@ -268,35 +268,41 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		).toBeVisible();
 
 		const clickEventResolveMock = jest.fn();
+		const clickEventRejectMock = jest.fn();
 		stripeElementMock.__getRegisteredEvent( 'click' )( {
 			resolve: clickEventResolveMock,
+			reject: clickEventRejectMock,
 			expressPaymentType: 'google_pay',
 		} );
 
-		expect( clickEventResolveMock ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				shippingAddressRequired: true,
-				shippingRates: [
-					{
-						amount: 1100,
-						deliveryEstimate: '',
-						displayName: 'Flat rate',
-						id: 'flat_rate:1',
-					},
-					{
-						amount: 2200,
-						deliveryEstimate: '',
-						displayName: 'Express shipping',
-						id: 'flat_rate:5',
-					},
-				],
-			} )
-		);
+		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( clickEventResolveMock ).not.toHaveBeenCalled();
 
 		releaseCart();
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+		);
+
+		// Once the refresh completes, the newly initialized button can open
+		// against the fresh cart data.
+		const postRefreshResolveMock = jest.fn();
+		const postRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: postRefreshResolveMock,
+			reject: postRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+
+		expect( postRefreshResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				shippingAddressRequired: true,
+				shippingRates: expect.any( Array ),
+			} )
+		);
+		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should not resolve the click event when the cart data could not be fetched', async () => {
+	it( 'should reject the click event when the cart data could not be fetched', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
@@ -317,13 +323,16 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		// The element from the previous init can still invoke its handler - it must not throw.
 		const clickEventResolveMock = jest.fn();
+		const clickEventRejectMock = jest.fn();
 		expect( () =>
 			stripeElementMock.__getRegisteredEvent( 'click' )( {
 				resolve: clickEventResolveMock,
+				reject: clickEventRejectMock,
 				expressPaymentType: 'google_pay',
 			} )
 		).not.toThrow();
 		expect( clickEventResolveMock ).not.toHaveBeenCalled();
+		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
