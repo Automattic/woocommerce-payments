@@ -52,8 +52,6 @@ module.exports = {
 			success: './client/success/index.js',
 			'wc-payments-settings-spotlight':
 				'./client/wc-payments-settings-spotlight.js',
-			'wc-payments-review-prompt':
-				'./client/wc-payments-review-prompt.tsx',
 			'wc-payments-test-to-live-notice':
 				'./client/entrypoints/attach-rate/test-to-live-notice/index.tsx',
 			'wc-payments-post-kyc-activation-notice':
