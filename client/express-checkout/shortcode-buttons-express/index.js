@@ -346,6 +346,13 @@ jQuery( ( $ ) => {
 				}
 
 				const options = getOnClickOptions();
+				if ( ! options ) {
+					// Without cart (or product) data we can't describe the purchase to the wallet.
+					// Leaving the event unresolved keeps the payment sheet closed,
+					// which is preferable to opening it with missing line items or shipping requirements.
+					return;
+				}
+
 				const shippingOptionsWithFallback =
 					// server-side data on the product page initialization doesn't provide any shipping rates.
 					! options.shippingRates ||
@@ -463,7 +470,7 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: async () => {
+		init: async ( { forceRefresh = false } = {} ) => {
 			removeAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout'
@@ -502,13 +509,19 @@ jQuery( ( $ ) => {
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
 
 			if (
-				! cachedCartData &&
+				( forceRefresh || ! cachedCartData ) &&
 				( ! getExpressCheckoutData( 'product' ) ||
 					needsMethodsReevaluation )
 			) {
 				try {
+					// Assigning only once the response is in keeps the previous cart data
+					// readable while the request is in flight. The button stays mounted and
+					// clickable throughout, so clearing it upfront would leave the click
+					// handler without any data to resolve the payment sheet with.
 					cachedCartData = await fetchNewCartData();
-				} catch ( e ) {}
+				} catch ( e ) {
+					cachedCartData = null;
+				}
 			}
 
 			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
@@ -686,14 +699,12 @@ jQuery( ( $ ) => {
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
+		wcpayECE.init( { forceRefresh: true } );
 	} );
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
+		wcpayECE.init( { forceRefresh: true } );
 	} );
 } );

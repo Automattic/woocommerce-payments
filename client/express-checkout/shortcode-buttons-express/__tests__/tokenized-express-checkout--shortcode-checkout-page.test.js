@@ -239,6 +239,93 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		).not.toBeVisible();
 	} );
 
+	it( 'should still resolve the click event while a cart refresh is in flight', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Hold the second cart response pending, to sit inside the re-init window.
+		let releaseCart;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseCart = () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} );
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		// The button is still mounted and visible, so it can still be clicked here.
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+
+		const clickEventResolveMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			expressPaymentType: 'google_pay',
+		} );
+
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				shippingAddressRequired: true,
+				shippingRates: [
+					{
+						amount: 1100,
+						deliveryEstimate: '',
+						displayName: 'Flat rate',
+						id: 'flat_rate:1',
+					},
+					{
+						amount: 2200,
+						deliveryEstimate: '',
+						displayName: 'Express shipping',
+						id: 'flat_rate:5',
+					},
+				],
+			} )
+		);
+
+		releaseCart();
+	} );
+
+	it( 'should not resolve the click event when the cart data could not be fetched', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// A failed refresh leaves the button with nothing to describe the purchase with.
+		apiFetch.mockImplementation( async () =>
+			Promise.reject( new Error( 'Store API is unavailable' ) )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'wcpay-express-checkout-element' )
+			).not.toBeVisible()
+		);
+
+		// The element from the previous init can still invoke its handler - it must not throw.
+		const clickEventResolveMock = jest.fn();
+		expect( () =>
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: clickEventResolveMock,
+				expressPaymentType: 'google_pay',
+			} )
+		).not.toThrow();
+		expect( clickEventResolveMock ).not.toHaveBeenCalled();
+	} );
+
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
 		global.wcpayExpressCheckoutParams.has_subscription = false;
 
