@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep WooPayments table column and notice preferences saved when WooCommerce does not send the user's preference data to the browser.

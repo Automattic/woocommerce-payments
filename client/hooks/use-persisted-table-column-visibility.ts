@@ -2,11 +2,15 @@
  * External dependencies
  */
 import { useMemo } from 'react';
-import { useUserPreferences } from '@woocommerce/data';
 import type { TableCardColumn } from '@woocommerce/components';
 
 /**
- * Type for user preferences returned from useUserPreferences hook.
+ * Internal dependencies
+ */
+import { useWcpayUserPreferences } from 'wcpay/hooks/use-wcpay-user-preferences';
+
+/**
+ * Type for user preferences returned from the user preferences hook.
  *
  * These preference keys are defined and managed in:
  *
@@ -28,7 +32,7 @@ interface UserPreferences {
  * Hook to manage column visibility for a TableCard component.
  *
  * This hook is used to manage the visibility of columns in a TableCard component.
- * It uses the `@woocommerce/data` `useUserPreferences` hook to get the user's preferences and store them in the `wp_usermeta` table.
+ * It uses the `useWcpayUserPreferences` hook to get the user's preferences and store them in the `wp_usermeta` table.
  */
 export const usePersistedColumnVisibility = <
 	ColumnType extends TableCardColumn
@@ -61,7 +65,7 @@ export const usePersistedColumnVisibility = <
 	 */
 	columnsToDisplay: ColumnType[];
 } => {
-	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
+	const { updateUserPreferences, ...userPrefs } = useWcpayUserPreferences();
 
 	// If returned value is undefined or empty string, use default visibility value.
 	const userPrefHiddenColumns =

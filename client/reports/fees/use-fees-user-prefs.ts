@@ -4,12 +4,12 @@
  * External dependencies
  */
 import { useCallback, useEffect, useRef } from 'react';
-import { useUserPreferences } from '@woocommerce/data';
 import type { View, ViewTable } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies
  */
+import { useWcpayUserPreferences } from 'wcpay/hooks/use-wcpay-user-preferences';
 import {
 	feesViewUserMetaKey,
 	getFeesTableFields,
@@ -43,7 +43,7 @@ interface UseFeesUserPrefsResult {
 }
 
 export const useFeesUserPrefs = (): UseFeesUserPrefsResult => {
-	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
+	const { updateUserPreferences, ...userPrefs } = useWcpayUserPreferences();
 	const prefs = userPrefs as unknown as Record< string, unknown >;
 	const rawPersisted = prefs[ feesViewUserMetaKey ] as
 		| PersistedFeesView

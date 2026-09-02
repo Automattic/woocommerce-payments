@@ -147,6 +147,7 @@ declare global {
 		dateFormat: string;
 		timeFormat: string;
 		formattedStoreAddress: string;
+		userPreferences: Record< string, string >;
 	};
 
 	const wooPaymentsPaymentMethodDefinitions: Record<

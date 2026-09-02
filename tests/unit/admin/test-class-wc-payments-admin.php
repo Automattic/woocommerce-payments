@@ -845,6 +845,65 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_get_user_preferences_returns_every_declared_field() {
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $user_id );
+		update_user_meta( $user_id, 'woocommerce_admin_wc_payments_payouts_hidden_columns', '["date"]' );
+
+		$preferences = $this->get_user_preferences();
+
+		$this->assertSame(
+			[
+				'wc_payments_overview_inbox_last_read',
+				'wc_payments_transactions_hidden_columns',
+				'wc_payments_transactions_blocked_hidden_columns',
+				'wc_payments_transactions_risk_review_hidden_columns',
+				'wc_payments_transactions_uncaptured_hidden_columns',
+				'wc_payments_payouts_hidden_columns',
+				'wc_payments_disputes_hidden_columns',
+				'wc_payments_documents_hidden_columns',
+				'wc_payments_reports_fees_view',
+				'wc_payments_review_prompt_dismissed',
+				'wc_payments_review_prompt_maybe_later',
+				'wc_payments_reports_feedback_dismissed',
+			],
+			array_keys( $preferences )
+		);
+		$this->assertSame( '["date"]', $preferences['wc_payments_payouts_hidden_columns'] );
+
+		wp_set_current_user( 0 );
+	}
+
+	public function test_get_user_preferences_keeps_fields_with_nothing_stored() {
+		$user_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $user_id );
+
+		$preferences = $this->get_user_preferences();
+
+		$this->assertArrayHasKey( 'wc_payments_payouts_hidden_columns', $preferences );
+		$this->assertSame( '', $preferences['wc_payments_payouts_hidden_columns'] );
+
+		wp_set_current_user( 0 );
+	}
+
+	public function test_get_user_preferences_returns_nothing_without_a_user() {
+		wp_set_current_user( 0 );
+
+		$this->assertSame( [], $this->get_user_preferences() );
+	}
+
+	/**
+	 * Calls the private method under test.
+	 *
+	 * @return array
+	 */
+	private function get_user_preferences(): array {
+		$method = new ReflectionMethod( WC_Payments_Admin::class, 'get_user_preferences' );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->payments_admin );
+	}
+
 	/**
 	 * Returns an object mocking what we need from \WP_Screen.
 	 *

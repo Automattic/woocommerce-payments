@@ -1071,6 +1071,7 @@ class WC_Payments_Admin {
 			'woopayFontRules'                    => WC_Payments_Styles_Cache::get_woopay_font_rules(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
+			'userPreferences'                    => $this->get_user_preferences(),
 			'formattedStoreAddress'              => WC()->countries->get_formatted_address(
 				[
 					'address_1' => get_option( 'woocommerce_store_address', '' ),
@@ -1108,6 +1109,36 @@ class WC_Payments_Admin {
 		 * @since 7.8.0
 		 */
 		return apply_filters( 'wcpay_plugins_page_js_settings', $plugins_page_settings );
+	}
+
+	/**
+	 * Get the current user's WooPayments preferences to be sent to JS.
+	 *
+	 * These live in `woocommerce_meta` on the user, which WooCommerce Admin normally hands to
+	 * the browser inside its own `currentUserData` payload. That payload is built without
+	 * booting the REST API, so on stores where nothing else boots it the WooCommerce-registered
+	 * fields are missing and every preference reads back empty. Shipping our own copy keeps the
+	 * values available regardless.
+	 *
+	 * Values are passed through exactly as stored; the client decodes them the same way
+	 * WooCommerce Admin does.
+	 *
+	 * @return array Map of preference name to raw stored value, empty when there is no user.
+	 */
+	private function get_user_preferences(): array {
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return [];
+		}
+
+		$preferences = [];
+
+		foreach ( WC_Payments::add_user_data_fields( [] ) as $field ) {
+			$preferences[ $field ] = get_user_meta( $user_id, 'woocommerce_admin_' . $field, true );
+		}
+
+		return $preferences;
 	}
 
 	/**

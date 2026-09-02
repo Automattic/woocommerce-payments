@@ -3,12 +3,12 @@
  */
 import { useCallback, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
-import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
  */
 import { NAMESPACE } from 'wcpay/data/constants';
+import { useWcpayUserPreferences } from 'wcpay/hooks/use-wcpay-user-preferences';
 import type { ReportFeedbackRating } from './tracks';
 
 interface SubmitFeedbackParams {
@@ -16,7 +16,7 @@ interface SubmitFeedbackParams {
 	rating: ReportFeedbackRating;
 }
 
-interface UserPreferences extends ReturnType< typeof useUserPreferences > {
+interface UserPreferences extends ReturnType< typeof useWcpayUserPreferences > {
 	wc_payments_reports_feedback_dismissed?: number;
 }
 
@@ -46,7 +46,7 @@ export const useReportFeedbackState = () => {
 	const {
 		updateUserPreferences,
 		wc_payments_reports_feedback_dismissed: dismissedAt,
-	} = useUserPreferences() as UserPreferences;
+	} = useWcpayUserPreferences() as UserPreferences;
 
 	const dismiss = () =>
 		updateUserPreferences( {
