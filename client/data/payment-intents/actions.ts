@@ -18,7 +18,10 @@ import {
 	UpdatePaymentIntentAction,
 } from './types';
 import { Charge } from 'wcpay/types/charges';
-import { PAYMENT_INTENTS_STORE_NAME as STORE_NAME } from '../store-names';
+import {
+	PAYMENT_INTENTS_STORE_NAME as STORE_NAME,
+	EARLY_FRAUD_WARNINGS_STORE_NAME,
+} from '../store-names';
 // getTimeline lives in the timeline store; importing its name both registers
 // that store and lets us invalidate the timeline after a refund.
 import { STORE_NAME as TIMELINE_STORE_NAME } from '../timeline/store';
@@ -72,6 +75,14 @@ export function* refundCharge(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getPaymentIntent'
+		);
+
+		// A full refund resolves the warning on the server, so drop the cached list
+		// rather than leave the Overview task pointing at a payment already refunded.
+		yield controls.dispatch(
+			EARLY_FRAUD_WARNINGS_STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getActiveEarlyFraudWarnings'
 		);
 
 		yield controls.dispatch(
