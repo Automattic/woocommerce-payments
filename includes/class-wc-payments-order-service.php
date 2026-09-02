@@ -1334,7 +1334,7 @@ class WC_Payments_Order_Service {
 		$actionable_orders = [];
 		foreach ( $orders as $order ) {
 			$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
-			if ( empty( $early_fraud_warning['actionable'] ) ) {
+			if ( empty( $early_fraud_warning['efw_actionable'] ) ) {
 				continue;
 			}
 
