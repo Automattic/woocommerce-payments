@@ -14,12 +14,13 @@ import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ) )
 );
 jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
-	showErrorMessage: () => null,
+	showErrorMessage: jest.fn(),
 } ) );
 jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
 	WooPayConnectIframe: () => null,
@@ -79,7 +80,6 @@ jest.mock( '../preferred-card-utils', () => ( {
 	...jest.requireActual( '../preferred-card-utils' ),
 } ) );
 
-jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
 global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
 
@@ -498,7 +498,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
-		test( 'should show an alert when clicking the button when add to cart button is disabled', async () => {
+		test( 'should show inline notice when clicking the button when add to cart button is disabled', async () => {
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
@@ -529,7 +529,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 			await userEvent.click( expressButton );
 
-			expect( window.alert ).toHaveBeenCalledWith(
+			expect( showErrorMessage ).toHaveBeenCalledWith(
+				buttonSettings.context,
 				'Please select your product options before proceeding.'
 			);
 
