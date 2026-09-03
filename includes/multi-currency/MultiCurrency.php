@@ -2128,7 +2128,7 @@ class MultiCurrency {
 	 */
 	private function add_simulation_params_to_preview_urls() {
 		$params = $this->simulation_params;
-		add_filter(
+		add_action(
 			'wp_footer',
 			function () use ( $params ) {
 				?>
