@@ -5491,10 +5491,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Logs when the `setup_future_usage` a ConfirmationToken was minted with disagrees with
 	 * what this payment is doing. Both directions are worth knowing about, for opposite reasons.
 	 *
-	 * Stripe fixes that value on the token before the wallet sheet opens, and the express
-	 * checkout predicate is re-evaluated here to infer what the token carries. Both values
-	 * compared below are server-side, so a client that mints a token differing from what it was
-	 * told to goes unseen here — Stripe's own rejection is what surfaces that case.
+	 * Stripe fixes that value on the token before the wallet sheet opens, and the client posts
+	 * back what Stripe recorded on it. Comparing that against what this payment does means a
+	 * client minting a token that differs from what it was told is seen here too, rather than
+	 * only when Stripe rejects the confirmation.
 	 *
 	 * **Token lacks it, this payment saves the method.** Stripe rejects the confirmation, so
 	 * the purchase fails every time. Something decided to save the payment method that the
@@ -5520,29 +5520,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$express_checkout_helper = WC_Payments::get_express_checkout_helper();
-		if ( ! $express_checkout_helper ) {
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$posted_setup_future_usage = $_POST['wcpay-express-setup-future-usage'] ?? null;
+
+		// Missing or malformed means the client never told us — a cached asset from before this
+		// shipped, or a mint path that does not post it. Re-deriving the value is exactly what
+		// this replaced: the shopper's cart is still loaded on the order-pay Store API route, so
+		// a cart-based guess reports a mismatch on payments that were entirely correct. Rather
+		// than guess, say nothing.
+		if ( ! is_string( $posted_setup_future_usage ) ) {
 			return;
 		}
 
-		$order    = $payment_information->get_order();
-		$order_id = $order->get_id();
+		$posted_setup_future_usage = sanitize_text_field( wp_unslash( $posted_setup_future_usage ) );
 
-		// Both surfaces the token can be minted from: the cart, and — on the order-pay page,
-		// which processes with an empty cart — the order. Asking the cart alone would report
-		// a mismatch on every successful renewal paid from that page.
-		//
-		// `get_setup_future_usage()` fires `wcpay_express_checkout_setup_future_usage`, a
-		// hook whose callbacks are written for button render time and may not survive being
-		// called mid-payment. Nothing here is worth failing an order over, so a throwing
-		// callback costs the log line and no more.
-		try {
-			$token_declares_off_session = null !== $express_checkout_helper->get_setup_future_usage( 'cart' )
-				|| $this->is_payment_recurring( $order_id );
-		} catch ( Throwable $e ) {
-			Logger::error( 'Could not check setup_future_usage for order ' . $order_id . ': ' . $e->getMessage() );
-			return;
-		}
+		$order_id = $payment_information->get_order()->get_id();
+
+		// Stripe's own vocabulary for the field: either value means the token asks for the payment
+		// method to be kept, and an empty string means it carries none.
+		$token_declares_off_session = in_array( $posted_setup_future_usage, [ 'off_session', 'on_session' ], true );
 
 		$intent_requests_off_session = $save_payment_method_to_store && $this->payment_method->is_reusable();
 
@@ -5553,8 +5549,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $intent_requests_off_session ) {
 			Logger::error(
 				sprintf(
-					'Order %s saves the payment method, but express checkout was told to mint its confirmation token without setup_future_usage, '
-					. 'so Stripe will reject this payment if the token followed that. Something outside WooCommerce Subscriptions is requesting the save. '
+					'Order %s saves the payment method, but its express checkout confirmation token carries no setup_future_usage, '
+					. 'so Stripe rejects this payment. Something outside WooCommerce Subscriptions is requesting the save. '
 					. 'Declare it with the wcpay_express_checkout_setup_future_usage filter so the token is minted with off_session.',
 					$order_id
 				)
@@ -5564,10 +5560,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		Logger::error(
 			sprintf(
-				'Order %s declared off_session to express checkout, but this payment does not save the payment method. '
-				. 'If the token was minted with it, Stripe applies the token\'s setup_future_usage regardless, so the card is attached to the customer '
-				. 'with no WooPayments token recorded against it. Check whatever filters wcpay_express_checkout_setup_future_usage — declare off_session '
-				. 'only when the payment method will genuinely be saved.',
+				'Order %s minted its express checkout confirmation token with setup_future_usage, but this payment does not save the '
+				. 'payment method. Stripe applies the token\'s setup_future_usage even though the intent omits it, so the card is attached '
+				. 'to the customer with no WooPayments token recorded against it. Check whatever filters '
+				. 'wcpay_express_checkout_setup_future_usage — declare off_session only when the payment method will genuinely be saved.',
 				$order_id
 			)
 		);
