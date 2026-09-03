@@ -42,6 +42,14 @@ import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 /**
+ * Checks if a deposit is an instant payout (as opposed to a manual deposit).
+ * Both instant and manual deposits have `automatic: false`, but only instant
+ * deposits have a non-zero service fee.
+ */
+const isInstant = ( deposit: CachedDeposit ): boolean =>
+	! deposit.automatic && ( deposit.fee > 0 || deposit.fee_percentage > 0 );
+
+/**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
  */
 const DepositStatusIndicator: React.FC< {
@@ -107,8 +115,10 @@ interface DepositDateItemProps {
 
 const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 	let depositDateLabel = __( 'Payout date', 'woocommerce-payments' );
-	if ( ! deposit.automatic ) {
+	if ( isInstant( deposit ) ) {
 		depositDateLabel = __( 'Instant payout date', 'woocommerce-payments' );
+	} else if ( ! deposit.automatic ) {
+		depositDateLabel = __( 'Manual payout date', 'woocommerce-payments' );
 	}
 	if ( deposit.type === 'withdrawal' ) {
 		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
@@ -160,7 +170,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					</ul>
 				</Card>
 			) : (
-				<SummaryList // For instant deposits only
+				<SummaryList // For non-automatic (instant or manual) deposits
 					label={
 						isWithdrawal
 							? __(
@@ -310,7 +320,8 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 } ) => {
 	const { deposit, isLoading } = useDeposit( depositId );
 
-	const isInstantDeposit = ! isLoading && deposit && ! deposit.automatic;
+	const isInstantDeposit =
+		! isLoading && deposit && isInstant( deposit );
 
 	return (
 		<Page>
