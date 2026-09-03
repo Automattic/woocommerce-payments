@@ -198,6 +198,27 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( WooPay_Session::get_woopay_vouch() );
 	}
 
+	/**
+	 * The one the hash comparison cannot catch on its own: an envelope sealed with an empty
+	 * token names `hash( 'sha256', '' )`, which is exactly what a request carrying no
+	 * Cart-Token hashes to -- so it would be accepted from any caller that sends none, which
+	 * is what an ordinary checkout on this store looks like.
+	 */
+	public function test_a_vouch_bound_to_no_cart_at_all_is_refused() {
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header( [ 'cart_token' => hash( 'sha256', '' ) ] );
+
+		unset( $_SERVER['HTTP_CART_TOKEN'] );
+
+		$this->assertNull( WooPay_Session::get_woopay_vouch() );
+		$this->assertFalse( WooPay_Session::is_request_vouched_by_woopay() );
+	}
+
+	public function test_a_vouch_naming_an_empty_cart_is_refused() {
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_vouch_header( [ 'cart_token' => '' ] );
+
+		$this->assertNull( WooPay_Session::get_woopay_vouch() );
+	}
+
 	public function test_a_vouch_sealed_for_this_cart_is_accepted() {
 		// The control: the binding must not close on the request it was made for, or every
 		// WooPay checkout runs the fraud check.

@@ -1290,7 +1290,13 @@ class WooPay_Session {
 			? sanitize_text_field( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ) )
 			: '';
 
-		if ( ! isset( $payload['cart_token'] ) || ! is_string( $payload['cart_token'] ) ) {
+		if ( '' === $cart_token ) {
+			Logger::log( 'WooPay vouch rejected: request carries no cart to bind the envelope to.' );
+
+			return null;
+		}
+
+		if ( ! isset( $payload['cart_token'] ) || ! is_string( $payload['cart_token'] ) || '' === $payload['cart_token'] ) {
 			Logger::log( 'WooPay vouch rejected: envelope names no cart.' );
 
 			return null;
