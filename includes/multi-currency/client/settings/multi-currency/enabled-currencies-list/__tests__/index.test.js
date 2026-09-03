@@ -259,10 +259,10 @@ describe( 'Multi-Currency enabled currencies list', () => {
 
 	test( 'Remove currency modal renders correctly', () => {
 		window.multiCurrencyPaymentMethodsMap = {
-			EUR: {
-				giropay: 'giropay',
-				sofort: 'Sofort',
-				sepa_debit: 'SEPA Direct Debit',
+			giropay: { title: 'Giropay', currencies: [ 'EUR' ] },
+			amazon_pay: {
+				title: 'Amazon Pay',
+				currencies: [ 'USD', 'EUR' ],
 			},
 		};
 		getContainer();
@@ -277,6 +277,79 @@ describe( 'Multi-Currency enabled currencies list', () => {
 		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
 		expect( modal ).toBeInTheDocument();
 		expect( modal ).toMatchSnapshot();
+		window.multiCurrencyPaymentMethodsMap = undefined;
+	} );
+
+	test( 'Remove currency modal separates unavailable and limited payment methods', () => {
+		// giropay supports only EUR, so removing EUR makes it unavailable.
+		// amazon_pay also supports USD (still enabled), so it stays limited.
+		window.multiCurrencyPaymentMethodsMap = {
+			giropay: { title: 'Giropay', currencies: [ 'EUR' ] },
+			amazon_pay: {
+				title: 'Amazon Pay',
+				currencies: [ 'USD', 'EUR' ],
+			},
+		};
+		getContainer();
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /remove euro as an enabled currency/i,
+			} )
+		);
+
+		expect(
+			screen.getByText( /no longer be available at checkout/i )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				/stay available in your other currencies, but not for payments in Euro/i
+			)
+		).toBeInTheDocument();
+		expect( screen.getByText( 'Giropay' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Amazon Pay' ) ).toBeInTheDocument();
+		window.multiCurrencyPaymentMethodsMap = undefined;
+	} );
+
+	test( 'Remove currency modal omits the limited tier when every method becomes unavailable', () => {
+		window.multiCurrencyPaymentMethodsMap = {
+			giropay: { title: 'Giropay', currencies: [ 'EUR' ] },
+		};
+		getContainer();
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /remove euro as an enabled currency/i,
+			} )
+		);
+
+		expect(
+			screen.getByText( /no longer be available at checkout/i )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /stay available in your other currencies/i )
+		).not.toBeInTheDocument();
+		window.multiCurrencyPaymentMethodsMap = undefined;
+	} );
+
+	test( 'Remove currency modal omits the unavailable tier when every method keeps another currency', () => {
+		window.multiCurrencyPaymentMethodsMap = {
+			amazon_pay: {
+				title: 'Amazon Pay',
+				currencies: [ 'USD', 'EUR' ],
+			},
+		};
+		getContainer();
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /remove euro as an enabled currency/i,
+			} )
+		);
+
+		expect(
+			screen.getByText( /stay available in your other currencies/i )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /no longer be available at checkout/i )
+		).not.toBeInTheDocument();
 		window.multiCurrencyPaymentMethodsMap = undefined;
 	} );
 
