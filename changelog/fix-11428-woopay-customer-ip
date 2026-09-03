@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed WooPay storing server IP instead of customer IP on orders

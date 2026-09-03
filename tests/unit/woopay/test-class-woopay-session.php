@@ -92,6 +92,10 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 
+		// Clean up IP-related headers that tests may have set.
+		unset( $_SERVER['HTTP_X_FORWARDED_FOR'] );
+		unset( $_SERVER['HTTP_X_REAL_IP'] );
+
 		parent::tear_down();
 	}
 
@@ -355,6 +359,115 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( WooPay_Session::determine_current_user_for_woopay( $guest_user ), $woopay_user->ID );
 
 		unset( $_REQUEST['rest_route'] );
+	}
+
+	/**
+	 * Tests for maybe_override_customer_ip().
+	 */
+
+	public function test_maybe_override_customer_ip_sets_remote_addr_from_x_forwarded_for() {
+		$original_remote_addr            = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR']          = '192.0.91.172';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.50';
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		$this->assertEquals( '203.0.113.50', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR'] = $original_remote_addr;
+	}
+
+	public function test_maybe_override_customer_ip_uses_first_ip_from_x_forwarded_for_chain() {
+		$original_remote_addr            = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR']          = '192.0.91.172';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.50, 198.51.100.10, 192.0.89.12';
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		$this->assertEquals( '203.0.113.50', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR'] = $original_remote_addr;
+	}
+
+	public function test_maybe_override_customer_ip_falls_back_to_x_real_ip() {
+		$original_remote_addr      = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR']    = '192.0.91.172';
+		$_SERVER['HTTP_X_REAL_IP'] = '198.51.100.25';
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		$this->assertEquals( '198.51.100.25', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR'] = $original_remote_addr;
+	}
+
+	public function test_maybe_override_customer_ip_prefers_x_forwarded_for_over_x_real_ip() {
+		$original_remote_addr            = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR']          = '192.0.91.172';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.50';
+		$_SERVER['HTTP_X_REAL_IP']       = '198.51.100.25';
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		$this->assertEquals( '203.0.113.50', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR'] = $original_remote_addr;
+	}
+
+	public function test_maybe_override_customer_ip_ignores_non_woopay_requests() {
+		$_SERVER['HTTP_USER_AGENT']      = 'Mozilla/5.0';
+		$original_remote_addr            = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR']          = '192.0.91.172';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.50';
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		// REMOTE_ADDR should NOT be changed.
+		$this->assertEquals( '192.0.91.172', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR']     = $original_remote_addr;
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+	}
+
+	public function test_maybe_override_customer_ip_ignores_invalid_ip() {
+		$original_remote_addr            = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR']          = '192.0.91.172';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = 'not-an-ip-address';
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		// REMOTE_ADDR should NOT be changed when the header has an invalid IP.
+		$this->assertEquals( '192.0.91.172', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR'] = $original_remote_addr;
+	}
+
+	public function test_maybe_override_customer_ip_no_change_when_no_ip_headers() {
+		$original_remote_addr   = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR'] = '192.0.91.172';
+
+		// No X-Forwarded-For or X-Real-IP set.
+		unset( $_SERVER['HTTP_X_FORWARDED_FOR'] );
+		unset( $_SERVER['HTTP_X_REAL_IP'] );
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		// REMOTE_ADDR should remain unchanged.
+		$this->assertEquals( '192.0.91.172', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR'] = $original_remote_addr;
+	}
+
+	public function test_maybe_override_customer_ip_handles_ipv6() {
+		$original_remote_addr            = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+		$_SERVER['REMOTE_ADDR']          = '192.0.91.172';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '2001:db8::1';
+
+		WooPay_Session::maybe_override_customer_ip();
+
+		$this->assertEquals( '2001:db8::1', $_SERVER['REMOTE_ADDR'] );
+
+		$_SERVER['REMOTE_ADDR'] = $original_remote_addr;
 	}
 
 	private function setup_session( $customer_id, $customer_email = null ) {
