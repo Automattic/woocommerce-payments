@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Tighten validation of the checkout payment-authentication request.

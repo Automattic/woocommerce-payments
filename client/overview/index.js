@@ -145,9 +145,10 @@ const OverviewPage = () => {
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
+			// The settings can be empty when the request fails; don't crash the page.
 			const isPaymentMethodEnabled =
 				! settingsIsLoading &&
-				settings.enabled_payment_method_ids.filter(
+				( settings.enabled_payment_method_ids ?? [] ).filter(
 					( enabledMethod ) => {
 						return enabledMethod === key;
 					}

@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Make the subscriptions renewal E2E test resilient to Action Scheduler search-box copy changes (fixes the 4.1.0 relabel).

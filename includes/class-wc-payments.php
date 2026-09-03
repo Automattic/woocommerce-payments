@@ -372,7 +372,6 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
-		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		// Invalidate styles cache and recompute WooPay appearance when theme or styles change.
@@ -745,6 +744,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
+		require_once __DIR__ . '/migrations/class-qualitative-feedback-admin-note-removal.php';
 		require_once __DIR__ . '/migrations/class-link-woopay-mutual-exclusion-handler.php';
 		require_once __DIR__ . '/migrations/class-gateway-settings-sync.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
@@ -761,6 +761,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Qualitative_Feedback_Admin_Note_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
@@ -1088,9 +1089,6 @@ class WC_Payments {
 		return array_merge(
 			$user_data_fields,
 			[
-				// Inbox notifications.
-				'wc_payments_overview_inbox_last_read',
-
 				// Column visibility preferences.
 				'wc_payments_transactions_hidden_columns',
 				'wc_payments_transactions_blocked_hidden_columns',

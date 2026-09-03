@@ -111,3 +111,34 @@ export const paymentFailureMapping = {
 	// Default fallback
 	default: __( 'The payment was declined', 'woocommerce-payments' ),
 };
+
+/**
+ * Human-readable labels for Stripe's `fraud_type` enum on the early fraud
+ * warning object, carried on timeline events as `efw_type`. Keep in sync with
+ * the PHP counterpart,
+ * `WC_Payments_Utils::get_early_fraud_warning_fraud_type_description()`,
+ * introduced with the order-screen early fraud warning surfaces.
+ * See https://docs.stripe.com/api/radar/early_fraud_warnings/object
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const earlyFraudWarningFraudTypeMapping = {
+	card_never_received: __( 'Card never received', 'woocommerce-payments' ),
+	fraudulent_card_application: __(
+		'Fraudulent card application',
+		'woocommerce-payments'
+	),
+	made_with_counterfeit_card: __(
+		'Made with counterfeit card',
+		'woocommerce-payments'
+	),
+	made_with_lost_card: __( 'Made with lost card', 'woocommerce-payments' ),
+	made_with_stolen_card: __(
+		'Made with stolen card',
+		'woocommerce-payments'
+	),
+	misc: __( 'Other', 'woocommerce-payments' ),
+	unauthorized_use_of_card: __(
+		'Unauthorized use of card',
+		'woocommerce-payments'
+	),
+};
