@@ -84,7 +84,8 @@ export const getHiddenBillingFields = ( enabledBillingFields ) => {
  */
 function shouldIncludeTerms( paymentMethodType ) {
 	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
-		return true;
+		// Don't show terms when manual renewal is required — the card won't be charged automatically.
+		return ! getUPEConfig( 'subscriptionRequiresManualRenewal' );
 	}
 
 	const paymentsForm = document.querySelector(

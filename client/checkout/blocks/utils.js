@@ -64,10 +64,11 @@ export const getStripeElementOptions = (
 		},
 	};
 
+	const hasAutoRenewingSubscription =
+		getUPEConfig( 'cartContainsSubscription' ) &&
+		! getUPEConfig( 'subscriptionRequiresManualRenewal' );
 	const showTerms =
-		shouldSavePayment || getUPEConfig( 'cartContainsSubscription' )
-			? 'always'
-			: 'never';
+		shouldSavePayment || hasAutoRenewingSubscription ? 'always' : 'never';
 
 	options.terms = getTerms( paymentMethodsConfig, showTerms );
 
