@@ -288,6 +288,15 @@ jQuery( ( $ ) => {
 					return;
 				}
 
+				const options = getOnClickOptions();
+				// Neither cart nor product data is available, so there is
+				// nothing to hand the wallet sheet. Reject instead of opening
+				// it half-configured.
+				if ( ! options ) {
+					event.reject();
+					return;
+				}
+
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
@@ -345,7 +354,6 @@ jQuery( ( $ ) => {
 						} );
 				}
 
-				const options = getOnClickOptions();
 				const shippingOptionsWithFallback =
 					// server-side data on the product page initialization doesn't provide any shipping rates.
 					! options.shippingRates ||
@@ -462,8 +470,11 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Initialize event handlers and UI state
+		 *
+		 * @param {Object}  options              Init options.
+		 * @param {boolean} options.forceRefresh Re-fetch the cart even if a snapshot is already cached.
 		 */
-		init: async () => {
+		init: async ( { forceRefresh = false } = {} ) => {
 			removeAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout'
@@ -502,11 +513,14 @@ jQuery( ( $ ) => {
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
 
 			if (
-				! cachedCartData &&
+				( forceRefresh || ! cachedCartData ) &&
 				( ! getExpressCheckoutData( 'product' ) ||
 					needsMethodsReevaluation )
 			) {
 				try {
+					// The assignment only happens when the fetch resolves, so a
+					// failed refresh keeps the last good snapshot rather than
+					// making the button disappear over a network blip.
 					cachedCartData = await fetchNewCartData();
 				} catch ( e ) {}
 			}
@@ -669,10 +683,28 @@ jQuery( ( $ ) => {
 						}
 					} catch ( e ) {
 						expressCheckoutButtonUi.hideContainer();
+						// Leaving the overlay on would keep `blockUI.isBlocked` truthy,
+						// so `blockButton()` early-returns for the rest of the page life.
+						expressCheckoutButtonUi.unblock();
 					}
 				}
 			);
 		},
+	};
+
+	// The refresh is asynchronous, and the element mounted before it started
+	// stays clickable throughout. The overlay stops the shopper from opening a
+	// wallet sheet against cart data we are in the middle of replacing.
+	const refreshExpressCheckoutElement = async () => {
+		expressCheckoutButtonUi.blockButton();
+
+		try {
+			await wcpayECE.init( { forceRefresh: true } );
+		} finally {
+			// `init()` already decided whether the container belongs on
+			// screen, so only the overlay comes off here.
+			expressCheckoutButtonUi.unblock();
+		}
 	};
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
@@ -684,16 +716,11 @@ jQuery( ( $ ) => {
 	}
 
 	// We need to refresh ECE data when total is updated.
-	$( document.body ).on( 'updated_cart_totals', () => {
-		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
-	} );
+	$( document.body ).on(
+		'updated_cart_totals',
+		refreshExpressCheckoutElement
+	);
 
 	// We need to refresh ECE data when total is updated.
-	$( document.body ).on( 'updated_checkout', () => {
-		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
-	} );
+	$( document.body ).on( 'updated_checkout', refreshExpressCheckoutElement );
 } );

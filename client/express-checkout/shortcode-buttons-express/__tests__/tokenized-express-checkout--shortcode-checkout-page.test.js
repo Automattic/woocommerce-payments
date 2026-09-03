@@ -38,6 +38,13 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		$.fn.ready = ( callback ) => callback( $ );
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
+		// The element-level half of jquery-blockui, which `button-ui` uses.
+		$.fn.block = function () {
+			return this;
+		};
+		$.fn.unblock = function () {
+			return this;
+		};
 
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.nonce = {
