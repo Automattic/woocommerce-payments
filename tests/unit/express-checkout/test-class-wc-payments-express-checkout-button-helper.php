@@ -463,7 +463,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 *
 	 * @dataProvider provider_unauthorized_order_pay_requests
 	 *
-	 * @param string $key_mode Whether the request carries a 'valid', 'missing', 'wrong' or 'empty' order key.
+	 * @param string $key_mode Whether the request carries a 'valid', 'missing', 'wrong', 'empty' or 'array' order key.
 	 * @param bool   $as_guest Whether to make the request logged out.
 	 */
 	public function test_get_setup_future_usage_does_not_read_an_order_without_authorization( string $key_mode, bool $as_guest ) {
@@ -491,6 +491,11 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			case 'empty':
 				$_GET['key'] = '';
 				break;
+			case 'array':
+				// `wc_clean()` recurses into arrays, so an unguarded key reaches `hash_equals()`
+				// as an array and fatals instead of failing closed.
+				$_GET['key'] = [ $order->get_order_key() ];
+				break;
 		}
 
 		if ( $as_guest ) {
@@ -508,6 +513,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			'no order key'                   => [ 'missing', false ],
 			'wrong order key'                => [ 'wrong', false ],
 			'empty order key'                => [ 'empty', false ],
+			'order key sent as an array'     => [ 'array', false ],
 			'valid key but not the customer' => [ 'valid', true ],
 		];
 	}

@@ -417,7 +417,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			$order = wc_get_order( absint( $wp->query_vars['order-pay'] ) );
 
 			// Note: there is no nonce verification for the "pay for order" action — the URL is long living.
-			$order_key = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			// `is_string()` before `wc_clean()`, which recurses into arrays: `?key[]=x` would otherwise reach `hash_equals()` as an array and fatal.
+			$order_key = isset( $_GET['key'] ) && is_string( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 			if ( $order && hash_equals( $order->get_order_key(), $order_key ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
 				return $order;
