@@ -96,6 +96,21 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 - `$order->set_status()`/`$order->update_status()` — always trace what hooks and emails fire
 - Code hooking into `admin_init` or `init` — trace performance implications
 
+## Transact Platform Server Reference
+
+WooPayments' server-side counterpart (webhook handlers, dispute/notification link-building, account backend) lives in `transact-platform-server`, a separate wpcom-side repo — not in this one.
+
+**Locations (priority order, matches `bin/setup-e2e-local.sh` auto-detection):**
+1. `../transact-platform-server` — sibling checkout (if available)
+2. `~/src/transact-platform-server`
+3. `~/projects/transact-platform-server`
+
+**Key paths:** `server/wp-content/rest-api-plugins/endpoints/wcpay/` (dispute/email/webhook logic), `server/wp-content/rest-api-plugins/endpoints/transact/` (core Transact API)
+
+**Caveat:** `server/` and `missioncontrol/` are gitignored rsync mirrors of the wpcom sandbox — no git history locally, content reflects whatever was last pulled. See `tests/e2e/README.md` for the `TRANSACT_PLATFORM_SERVER_REPO` env var used to wire a checkout into E2E tests.
+
+**Check it when** an investigation bottoms out at "this must be server-side" — webhook processing, dispute/reminder notification links, account/onboarding backend logic not found in `includes/wc-payment-api/` or `src/`.
+
 ## Directory Structure
 
 | Directory | Purpose | Notes |
