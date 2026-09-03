@@ -1923,7 +1923,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719800000 );
 
 		// Act: Fetch the orders with an actionable warning.
-		$result = $this->order_service->get_actionable_early_fraud_warning_orders();
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
 
 		// Assert: Only the actionable order is returned.
 		$this->assertSame(
@@ -1955,7 +1960,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
 
 		// Act: Fetch with a limit of one.
-		$result = $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
 
 		// Assert: Only the newest order is inspected.
 		$this->assertSame(
@@ -1989,7 +1999,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
 
 		// Act: Inspect a single order.
-		$result = $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
 
 		// Assert: The newer resolved order did not squeeze out the actionable one.
 		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
@@ -2015,7 +2030,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Act: Resolve the newer warning, then inspect a single order.
 		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
-		$result = $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
 
 		// Assert: The slot went back to the still-actionable order.
 		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
@@ -2523,10 +2543,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: The cache was dropped, and the rebuilt list still carries the order.
 		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
-		$this->assertSame(
-			[ $this->order->get_id() ],
-			array_column( $this->order_service->get_actionable_early_fraud_warning_orders(), 'order_id' )
+		$actionable = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
 		);
+		$this->assertSame( [ $this->order->get_id() ], array_column( $actionable, 'order_id' ) );
 	}
 
 	/**
