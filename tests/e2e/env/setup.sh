@@ -722,6 +722,11 @@ fi
 
 cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 
+# Install the ECE test-proxy mu-plugin; it fakes the Apple/Google/Amazon Pay
+# wallet sheet that headless Playwright can't drive. WordPress only auto-loads
+# top-level mu-plugin PHP, so copy the loader and its sibling proxy/ dir too.
+cli sh -c 'mkdir -p /var/www/html/wp-content/mu-plugins && cp /var/www/html/wp-content/plugins/woocommerce-payments/tests/e2e/mu-plugins/wcpay-ece-test-proxy.php /var/www/html/wp-content/mu-plugins/ && cp -r /var/www/html/wp-content/plugins/woocommerce-payments/tests/e2e/mu-plugins/wcpay-ece-test-proxy /var/www/html/wp-content/mu-plugins/'
+
 info "Activating dev tools..."
 cli wp plugin activate "$DEV_TOOLS_DIR"
 cli wp option set wcpaydev_proxy 0
