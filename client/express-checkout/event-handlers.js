@@ -192,12 +192,14 @@ export const onConfirmHandler = async (
 	const useConfirmationTokens = shouldUseConfirmationTokens();
 
 	let credentialId;
+	let mintedSetupFutureUsage;
 	try {
-		credentialId = await createPaymentCredential(
-			stripe,
-			elements,
-			useConfirmationTokens
-		);
+		( { id: credentialId, setupFutureUsage: mintedSetupFutureUsage } =
+			await createPaymentCredential(
+				stripe,
+				elements,
+				useConfirmationTokens
+			) );
 	} catch ( credentialError ) {
 		return abortPayment( credentialError.message );
 	}
@@ -211,7 +213,8 @@ export const onConfirmHandler = async (
 				event,
 				credentialId,
 				useConfirmationTokens,
-				paymentMethodTypes
+				paymentMethodTypes,
+				mintedSetupFutureUsage
 			),
 			extensions: applyFilters(
 				'wcpay.express-checkout.cart-place-order-extension-data',
