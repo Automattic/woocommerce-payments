@@ -114,5 +114,40 @@ describe( 'stripe-to-wc transformers', () => {
 
 			expect( result.billing_address.postcode ).toBe( '新界' );
 		} );
+
+		const paymentDataValue = ( result, key ) =>
+			result.payment_data.find( ( entry ) => entry.key === key )?.value;
+
+		// The server compares this against what the payment actually does, so it has to
+		// carry the token's value rather than being derived again server-side.
+		it( "posts back the token's setup_future_usage", () => {
+			const result = transformStripePaymentMethodForStoreApi(
+				basePaymentData( { country: 'US' } ),
+				'ctoken_123',
+				true,
+				[ 'card' ],
+				'off_session'
+			);
+
+			expect(
+				paymentDataValue( result, 'wcpay-express-setup-future-usage' )
+			).toBe( 'off_session' );
+		} );
+
+		// Present but empty, so the server can tell "the token carries none" apart from
+		// "this client never told us" — which it must stay silent about.
+		it( 'posts an empty setup_future_usage when the token carries none', () => {
+			const result = transformStripePaymentMethodForStoreApi(
+				basePaymentData( { country: 'US' } ),
+				'ctoken_123',
+				true,
+				[ 'card' ],
+				null
+			);
+
+			expect(
+				paymentDataValue( result, 'wcpay-express-setup-future-usage' )
+			).toBe( '' );
+		} );
 	} );
 } );

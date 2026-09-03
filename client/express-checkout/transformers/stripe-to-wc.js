@@ -25,10 +25,13 @@ export const transformStripeShippingAddressForStoreApi = (
 /**
  * Transform order data from Stripe's object to the expected format for WC.
  *
- * @param {Object}   paymentData          Stripe's order object.
- * @param {string}   paymentCredentialId  Stripe's confirmation token id or payment method id.
- * @param {boolean}  useConfirmationToken Whether the payment credential is a confirmation token.
- * @param {string[]} paymentMethodTypes   Array of Stripe payment method types used for Elements initialization.
+ * @param {Object}      paymentData          Stripe's order object.
+ * @param {string}      paymentCredentialId  Stripe's confirmation token id or payment method id.
+ * @param {boolean}     useConfirmationToken Whether the payment credential is a confirmation token.
+ * @param {string[]}    paymentMethodTypes   Array of Stripe payment method types used for Elements initialization.
+ * @param {string|null} setupFutureUsage     The `setup_future_usage` Stripe recorded on the confirmation
+ *                                           token, so the server can compare the token against what the
+ *                                           payment actually does rather than re-deriving it.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
@@ -36,7 +39,8 @@ export const transformStripePaymentMethodForStoreApi = (
 	paymentData,
 	paymentCredentialId,
 	useConfirmationToken = true,
-	paymentMethodTypes = []
+	paymentMethodTypes = [],
+	setupFutureUsage = null
 ) => {
 	const name = paymentData.billingDetails?.name || '';
 	const billing = paymentData.billingDetails?.address ?? {};
@@ -98,6 +102,10 @@ export const transformStripePaymentMethodForStoreApi = (
 			{
 				key: 'wcpay-express-payment-method-types',
 				value: JSON.stringify( paymentMethodTypes ),
+			},
+			{
+				key: 'wcpay-express-setup-future-usage',
+				value: setupFutureUsage ?? '',
 			},
 		],
 	};
