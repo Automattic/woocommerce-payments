@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix E2E assertions that could not fail: missing awaits, an assertion-free filter test, and swallowed add-payment-method outcomes.

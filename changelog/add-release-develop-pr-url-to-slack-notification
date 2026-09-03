@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Expose develop sync PR URL from release-pr.yml as a workflow output so release-code-freeze.yml can include it in the Slack notification.
-

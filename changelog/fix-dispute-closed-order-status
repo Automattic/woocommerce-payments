@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Stop a closing dispute from marking an order completed when the charge still has another dispute open, or when the payment has already been fully refunded
