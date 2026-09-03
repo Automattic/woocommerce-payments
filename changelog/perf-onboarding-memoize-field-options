@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Build the onboarding country, business type and MCC option lists once per mount instead of on every render, and stop the business type reorder mutating the shared list. No change in behaviour.

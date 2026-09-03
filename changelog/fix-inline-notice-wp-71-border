@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: inline notices rendering with a cut-off left border on WordPress 7.1
