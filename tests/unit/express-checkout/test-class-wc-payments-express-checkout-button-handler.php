@@ -147,6 +147,8 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		$params = $this->system_under_test->get_express_checkout_params();
 		$this->assertArrayHasKey( 'store_name', $params );
 		$this->assertEquals( get_bloginfo( 'name' ), $params['store_name'] );
+		$this->assertContains( 'jpy', $params['checkout']['zero_decimal_currencies'] );
+		$this->assertNotContains( 'usd', $params['checkout']['zero_decimal_currencies'] );
 	}
 
 	public function test_payment_fields_js_config_on_cart_page_with_cart_disabled() {

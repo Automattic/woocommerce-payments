@@ -12,12 +12,11 @@ global.wcpayExpressCheckoutParams = {};
 describe( 'wc-to-stripe transformers', () => {
 	beforeEach( () => {
 		// Mirrors the production payload built in
-		// class-wc-payments-express-checkout-button-handler.php. stripe_minor_unit
-		// is the server-resolved count of decimals Stripe expects for the active
-		// currency (0 for true zero-decimal, 2 otherwise).
+		// class-wc-payments-express-checkout-button-handler.php.
 		global.wcpayExpressCheckoutParams.checkout = {
 			display_prices_with_tax: false,
 			stripe_minor_unit: 2,
+			zero_decimal_currencies: [ 'jpy' ],
 		};
 	} );
 
@@ -627,20 +626,24 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 
 		it( 'transforms the price if the currency is a zero decimal currency (e.g.: Yen)', () => {
-			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
 			// with zero decimals, `18` would mean `18`.
-			expect( transformPrice( 18, { currency_minor_unit: 0 } ) ).toBe(
-				18
-			);
+			expect(
+				transformPrice( 18, {
+					currency_minor_unit: 0,
+					currency_code: 'JPY',
+				} )
+			).toBe( 18 );
 		} );
 
 		it( 'transforms the price if the currency a zero decimal currency (e.g.: Yen) but it is configured with one decimal', () => {
-			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
 			// with zero decimals, `18` would mean `18`.
 			// But since Stripe expects the price to be in the minimum currency amount, the return value should be `18`
-			expect( transformPrice( 180, { currency_minor_unit: 1 } ) ).toBe(
-				18
-			);
+			expect(
+				transformPrice( 180, {
+					currency_minor_unit: 1,
+					currency_code: 'JPY',
+				} )
+			).toBe( 18 );
 		} );
 
 		it( 'rounds when narrowing precision to avoid Stripe rejecting non-integer amounts', () => {
@@ -649,10 +652,47 @@ describe( 'wc-to-stripe transformers', () => {
 			// Stripe expects an integer in whole yen. Without rounding, the math
 			// produces 541.25 and Stripe rejects, causing the wallet sheet to show
 			// "Invalid shipping address". The rounded result is the closest legal value.
+			expect(
+				transformPrice( 54125, {
+					currency_minor_unit: 2,
+					currency_code: 'JPY',
+				} )
+			).toBe( 541 );
+		} );
+
+		it( 'uses the resolved zero-decimal currency when the localized currency has two decimals', () => {
+			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 2;
+
+			expect(
+				transformPrice( 541, {
+					currency_minor_unit: 0,
+					currency_code: 'JPY',
+				} )
+			).toBe( 541 );
+		} );
+
+		it( 'uses the resolved two-decimal currency when the localized currency has zero decimals', () => {
 			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
-			expect( transformPrice( 54125, { currency_minor_unit: 2 } ) ).toBe(
-				541
-			);
+
+			expect(
+				transformPrice( 54125, {
+					currency_minor_unit: 2,
+					currency_code: 'USD',
+				} )
+			).toBe( 54125 );
+		} );
+
+		it( 'falls back to the localized minor unit when the currency list is unavailable', () => {
+			delete global.wcpayExpressCheckoutParams.checkout
+				.zero_decimal_currencies;
+			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
+
+			expect(
+				transformPrice( 54125, {
+					currency_minor_unit: 2,
+					currency_code: 'JPY',
+				} )
+			).toBe( 541 );
 		} );
 
 		it( 'multiplies the price by 100 for a Stripe special-case currency (e.g. TWD) configured with zero decimals', () => {
