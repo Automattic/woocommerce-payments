@@ -52,6 +52,7 @@ use WCPay\Fraud_Prevention\Models\Rule as Fraud_Rule;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
@@ -1208,15 +1209,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'invalid_phone_number'
 				);
 			}
-			// Check if session exists and we're currently not processing a WooPay request before instantiating `Fraud_Prevention_Service`.
-			/**
-			 * Filters whether the current request is a WooPay Store API request.
-			 *
-			 * @since 7.2.0
-			 *
-			 * @param bool $is_woopay_store_api_request Whether this is a WooPay Store API request.
-			 */
-			if ( WC()->session && ! apply_filters( 'wcpay_is_woopay_store_api_request', false ) ) {
+			// Check if session exists and we're currently not processing a WooPay request before
+			// instantiating `Fraud_Prevention_Service`.
+			//
+			// This asks for proof that WooPay composed the request, rather than reading
+			// `wcpay_is_woopay_store_api_request`. That filter answers a different question --
+			// whether the request belongs to the cart it names -- and a Cart-Token is enough to
+			// set it, which any visitor holds for their own cart. Turning card-testing
+			// protection off is not something a shopper should be able to ask for by sending a
+			// header.
+			if ( WC()->session && ! WooPay_Session::is_request_vouched_by_woopay() ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
