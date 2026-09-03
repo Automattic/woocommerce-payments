@@ -68,6 +68,48 @@ class WC_Payments_DB_Test extends WCPAY_UnitTestCase {
 		$result = $this->wcpay_db->order_from_charge_id( $charge_id );
 		$this->assertSame( $order->get_id(), $result->get_id() );
 	}
+	public function test_order_from_intent_id_uses_transaction_id() {
+		$intent_id = 'pi_123';
+		$order     = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->save();
+
+		$result = $this->wcpay_db->order_from_intent_id( $intent_id );
+		$this->assertSame( $order->get_id(), $result->get_id() );
+	}
+
+	public function test_order_from_intent_id_falls_back_to_meta() {
+		$intent_id = 'pi_456';
+		$order     = WC_Helper_Order::create_order();
+		// Only set the meta, not the transaction_id — simulates a historical order.
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		$result = $this->wcpay_db->order_from_intent_id( $intent_id );
+		$this->assertSame( $order->get_id(), $result->get_id() );
+	}
+
+	public function test_order_from_intent_id_returns_false_if_empty() {
+		$result = $this->wcpay_db->order_from_intent_id( '' );
+		$this->assertFalse( $result );
+
+		$result = $this->wcpay_db->order_from_intent_id( null );
+		$this->assertFalse( $result );
+	}
+
+	public function test_order_from_intent_id_prefers_transaction_id_over_meta() {
+		$intent_id = 'pi_789';
+
+		// Create an order with both transaction_id and _intent_id set (normal case).
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+
+		$result = $this->wcpay_db->order_from_intent_id( $intent_id );
+		$this->assertSame( $order->get_id(), $result->get_id() );
+	}
+
 	public function test_order_from_charge_id_will_return_false_if_value_is_empty() {
 		$charge_id = 'ch_123';
 		$order     = WC_Helper_Order::create_order();
