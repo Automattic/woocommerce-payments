@@ -6,8 +6,10 @@ import {
 	mountStripePaymentElement,
 	processPayment,
 	renderTerms,
+	trackMountInProgress,
 	__resetGatewayUPEComponentsElement,
 	__resetHasCheckoutCompleted,
+	__resetMountInProgress,
 	isMissingRequiredAddressFieldsForBNPL,
 } from '../payment-processing';
 import { getAppearance } from '../../upe-styles';
@@ -110,6 +112,14 @@ const apiMock = {
 		} )
 	),
 	setupIntent: jest.fn().mockResolvedValue( {} ),
+};
+
+// Flush the fire-and-forget async IIFE inside processPayment.
+const flushPromises = async () => {
+	for ( let i = 0; i < 20; i++ ) {
+		// eslint-disable-next-line no-await-in-loop
+		await Promise.resolve();
+	}
 };
 
 describe( 'Stripe Payment Element mounting', () => {
@@ -365,6 +375,7 @@ describe( 'Payment processing', () => {
 			document.body.removeChild( element );
 		} );
 		__resetHasCheckoutCompleted();
+		__resetMountInProgress();
 		jest.clearAllMocks();
 	} );
 
@@ -405,6 +416,49 @@ describe( 'Payment processing', () => {
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 		expect( checkoutResult ).toBe( false );
+	} );
+
+	test( 'waits for an in-flight re-mount before creating the payment method', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return 'fingerprint';
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		// Simulate an `updated_checkout` re-mount that is still in flight.
+		let resolveMount;
+		trackMountInProgress(
+			new Promise( ( resolve ) => {
+				resolveMount = resolve;
+			} )
+		);
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		processPayment( apiMock, checkoutForm, 'card' );
+		await flushPromises();
+
+		// Submission is held until the re-mount settles.
+		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+
+		// Re-mount completes; the submission then proceeds normally.
+		resolveMount();
+		await flushPromises();
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 	} );
 
 	test( 'Payment processing creates the correct `name` attribute when both last/first name fields are removed', async () => {
