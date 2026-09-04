@@ -48,9 +48,6 @@ export const getDisputeResolutionTask = (
 			  )
 			: [];
 
-	amountEntries.sort( ( [ currencyA ], [ currencyB ] ) =>
-		currencyA.localeCompare( currencyB )
-	);
 	const canOpenSingleDispute =
 		activeDisputeCount === 1 && !! activeDispute?.charge_id;
 
