@@ -569,6 +569,54 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
+	it( 'should guard the button from `update_checkout` onwards, before WooCommerce has refreshed', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.block.mockClear();
+
+		// WooCommerce fires this before its own `update_order_review` request.
+		// Our container sits outside what core blocks, so the old button is
+		// still tappable and `cachedCartData` is the pre-change snapshot.
+		$( document.body ).trigger( 'update_checkout' );
+
+		expect( $.fn.block ).toHaveBeenCalled();
+
+		const clickEventResolveMock = jest.fn();
+		const clickEventRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: clickEventRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( clickEventResolveMock ).not.toHaveBeenCalled();
+
+		// Core finished: our refresh runs and the button opens again.
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+		);
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		const postRefreshResolveMock = jest.fn();
+		const postRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: postRefreshResolveMock,
+			reject: postRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( postRefreshResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( { shippingAddressRequired: true } )
+		);
+		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
+	} );
+
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
 		global.wcpayExpressCheckoutParams.has_subscription = false;
 

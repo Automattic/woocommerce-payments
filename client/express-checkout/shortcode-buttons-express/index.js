@@ -63,6 +63,12 @@ let latestForcedRefreshId = 0;
 // rejecting clicks for a refresh that has already been superseded by a newer,
 // successful one, and a hung refresh would never give its count back.
 let activeForcedRefreshId = null;
+// Set from WooCommerce's `update_checkout`, which fires before its own
+// `update_order_review` request. Our container sits outside what core blocks
+// during that request, so the old button stays tappable while `cachedCartData`
+// is still the pre-change snapshot. Raising the guard here closes that window;
+// the forced refresh that follows `updated_checkout` takes it over.
+let coreCheckoutRefreshPending = false;
 
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
@@ -312,7 +318,10 @@ jQuery( ( $ ) => {
 				// the cart. Reject the click until the replacement Element is initialized,
 				// so a payment sheet never opens with a stale cart snapshot. Only the
 				// newest refresh gates this: an older one it superseded is irrelevant.
-				if ( activeForcedRefreshId !== null ) {
+				if (
+					activeForcedRefreshId !== null ||
+					coreCheckoutRefreshPending
+				) {
 					event.reject();
 					return;
 				}
@@ -746,6 +755,7 @@ jQuery( ( $ ) => {
 		// refresh simply takes over.
 		const refreshId = ++latestForcedRefreshId;
 		activeForcedRefreshId = refreshId;
+		coreCheckoutRefreshPending = false;
 
 		// The element mounted before the refresh stays clickable throughout.
 		// The overlay tells the shopper why a tap does nothing, the same way
@@ -767,6 +777,17 @@ jQuery( ( $ ) => {
 			}
 		}
 	};
+
+	// Guard from the moment core starts refreshing, not only once it is done.
+	// Checkout only: `init_checkout` fires `update_checkout` on the order-pay
+	// page too, where core bails out without ever firing `updated_checkout`,
+	// so a guard raised there would never come down.
+	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
+		$( document.body ).on( 'update_checkout', () => {
+			coreCheckoutRefreshPending = true;
+			expressCheckoutButtonUi.blockButton();
+		} );
+	}
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
