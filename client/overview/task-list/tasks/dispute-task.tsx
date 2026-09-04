@@ -10,10 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import type { TaskItemProps } from '../types';
 import type { CachedDispute, DisputesSummaryData } from 'wcpay/types/disputes';
-import {
-	formatCurrency,
-	formatExplicitCurrency,
-} from 'multi-currency/interface/functions';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';
@@ -151,31 +148,6 @@ export const getDisputeResolutionTask = (
 			),
 			activeDisputeCount,
 			formatCurrency( amount, currency )
-		);
-	} else if ( amountEntries.length === 2 ) {
-		disputeTask.title = sprintf(
-			__(
-				'Respond to %1$d active disputes for totals of %2$s and %3$s',
-				'woocommerce-payments'
-			),
-			activeDisputeCount,
-			formatExplicitCurrency(
-				amountEntries[ 0 ][ 1 ],
-				amountEntries[ 0 ][ 0 ]
-			),
-			formatExplicitCurrency(
-				amountEntries[ 1 ][ 1 ],
-				amountEntries[ 1 ][ 0 ]
-			)
-		);
-	} else if ( amountEntries.length >= 3 ) {
-		disputeTask.title = sprintf(
-			__(
-				'Respond to %1$d active disputes in %2$d currencies',
-				'woocommerce-payments'
-			),
-			activeDisputeCount,
-			amountEntries.length
 		);
 	} else {
 		disputeTask.title = sprintf(

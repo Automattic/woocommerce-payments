@@ -419,7 +419,7 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task-summary',
 					completed: false,
 					level: 1,
-					title: 'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD',
+					title: 'Respond to 3 active disputes',
 					content: 'Respond today by 6:59 PM',
 					actionLabel: 'See disputes',
 				} ),
@@ -473,7 +473,7 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task-summary',
 					completed: false,
 					level: 1,
-					title: 'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD',
+					title: 'Respond to 3 active disputes',
 					content: 'By Feb 1, 2023 – 6 days left to respond',
 					actionLabel: 'See disputes',
 				} ),
@@ -541,42 +541,24 @@ describe( 'getDisputeResolutionTask()', () => {
 		);
 	} );
 
-	it( 'shows two summary totals with stable ISO currency codes', () => {
+	it( 'does not show totals for multiple summary currencies', () => {
 		const task = getDisputeResolutionTask( {
 			count: 3,
 			amount_by_currency: { usd: 2000, eur: 1000 },
 			earliest_due_by: nextWeekDeadline,
 		} );
 
-		expect( task?.title ).toBe(
-			'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD'
-		);
+		expect( task?.title ).toBe( 'Respond to 3 active disputes' );
 	} );
 
-	it( 'honors the explicit price setting for two summary totals', () => {
-		global.wcpaySettings.shouldUseExplicitPrice = false;
-
-		const task = getDisputeResolutionTask( {
-			count: 3,
-			amount_by_currency: { usd: 2000, eur: 1000 },
-			earliest_due_by: nextWeekDeadline,
-		} );
-
-		expect( task?.title ).toBe(
-			'Respond to 3 active disputes for totals of €10.00 and $20.00'
-		);
-	} );
-
-	it( 'shows a currency count instead of totals for three currencies', () => {
+	it( 'keeps the same title for three or more summary currencies', () => {
 		const task = getDisputeResolutionTask( {
 			count: 3,
 			amount_by_currency: { usd: 1000, eur: 1000, gbp: 1000 },
 			earliest_due_by: nextWeekDeadline,
 		} );
 
-		expect( task?.title ).toBe(
-			'Respond to 3 active disputes in 3 currencies'
-		);
+		expect( task?.title ).toBe( 'Respond to 3 active disputes' );
 		expect( task?.title ).not.toContain( '$' );
 		expect( task?.title ).not.toContain( '€' );
 		expect( task?.title ).not.toContain( '£' );
