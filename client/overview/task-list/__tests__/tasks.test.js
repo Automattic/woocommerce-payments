@@ -10,6 +10,15 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { getTasks, taskSort } from '../tasks';
+import { getDisputeResolutionTask } from '../tasks/dispute-task';
+import { getAdminUrl } from 'wcpay/utils';
+
+const mockHistoryPush = jest.fn();
+jest.mock( '@woocommerce/navigation', () => ( {
+	getHistory: () => ( {
+		push: mockHistoryPush,
+	} ),
+} ) );
 
 const mockActiveDisputes = [
 	{
@@ -130,6 +139,22 @@ describe( 'getTasks()', () => {
 				US: {
 					code: 'USD',
 					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
 					symbolPosition: 'left',
 					thousandSeparator: ',',
 					decimalSeparator: '.',
@@ -304,6 +329,37 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual( [] );
 	} );
 
+	it( 'does not include the dispute task while its summary is loading', () => {
+		const actual = getTasks( {
+			activeDisputes: [ mockActiveDisputes[ 0 ] ],
+			activeDisputesSummary: {
+				count: 1,
+				amount_by_currency: { usd: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
+			activeDisputesSummaryIsLoading: true,
+		} );
+
+		expect( actual ).toEqual( [] );
+	} );
+
+	it( 'uses the row fallback after an old-server summary finishes loading', () => {
+		const actual = getTasks( {
+			activeDisputes: [ mockActiveDisputes[ 0 ] ],
+			activeDisputesSummary: { count: 1 },
+			activeDisputesSummaryIsLoading: false,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'dispute-resolution-task-dp_1',
+					title: 'Respond to a dispute for $10.00 – Last day',
+				} ),
+			] )
+		);
+	} );
+
 	it( 'should not include the dispute resolution task if dispute due_by > 7 days', () => {
 		// Set Date.now to - 7 days to reduce urgency of disputes.
 		Date.now = jest.fn( () => new Date( '2023-01-24T08:00:00.000Z' ) );
@@ -365,8 +421,8 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
 					completed: false,
 					level: 1,
-					title: 'Respond to 3 active disputes',
-					content: 'Final day to respond to 1 of the disputes',
+					title: 'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD',
+					content: 'Respond today by 6:59 PM',
 					actionLabel: 'See disputes',
 				} ),
 			] )
@@ -391,7 +447,7 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 1,
 					title: 'Respond to 2 active disputes for a total of $20.00',
-					content: 'Final day to respond to 1 of the disputes',
+					content: 'Respond today by 6:59 PM',
 					actionLabel: 'See disputes',
 				} ),
 			] )
@@ -411,13 +467,242 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
 					completed: false,
 					level: 1,
-					title: 'Respond to 3 active disputes',
-					content: 'Last week to respond to 1 of the disputes',
+					title: 'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD',
+					content: 'By Feb 1, 2023 – 6 days left to respond',
 					actionLabel: 'See disputes',
 				} ),
 			] )
 		);
 	} );
+} );
+
+describe( 'getDisputeResolutionTask()', () => {
+	const nextWeekDeadline = '2023-02-03 23:59:59';
+	const createDisputes = ( count, overrides = {} ) =>
+		Array.from( { length: count }, ( unused, index ) => ( {
+			...mockActiveDisputes[ 0 ],
+			dispute_id: `dp_${ index + 1 }`,
+			charge_id: `ch_${ index + 1 }`,
+			...overrides,
+		} ) );
+
+	beforeEach( () => {
+		moment.tz.setDefault( 'Etc/GMT+5' );
+		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
+		mockHistoryPush.mockClear();
+
+		global.wcpaySettings.currencyData.FR = {
+			code: 'EUR',
+			symbol: '€',
+			symbolPosition: 'left',
+			thousandSeparator: ',',
+			decimalSeparator: '.',
+			precision: 2,
+		};
+		global.wcpaySettings.currencyData.GB = {
+			code: 'GBP',
+			symbol: '£',
+			symbolPosition: 'left',
+			thousandSeparator: ',',
+			decimalSeparator: '.',
+			precision: 2,
+		};
+	} );
+
+	it( 'uses the complete summary count and amount when only 50 rows are loaded', () => {
+		const task = getDisputeResolutionTask( createDisputes( 50 ), {
+			count: 51,
+			amount_by_currency: { usd: 51000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				title: 'Respond to 51 active disputes for a total of $510.00',
+				content: 'By Feb 3, 2023 – 3 days left to respond',
+			} )
+		);
+	} );
+
+	it( 'shows two summary totals with stable ISO currency codes', () => {
+		const task = getDisputeResolutionTask( createDisputes( 3 ), {
+			count: 3,
+			amount_by_currency: { usd: 2000, eur: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe(
+			'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD'
+		);
+	} );
+
+	it( 'shows a currency count instead of totals for three currencies', () => {
+		const task = getDisputeResolutionTask( createDisputes( 3 ), {
+			count: 3,
+			amount_by_currency: { usd: 1000, eur: 1000, gbp: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe(
+			'Respond to 3 active disputes in 3 currencies'
+		);
+		expect( task?.title ).not.toContain( '$' );
+		expect( task?.title ).not.toContain( '€' );
+		expect( task?.title ).not.toContain( '£' );
+	} );
+
+	it( 'uses the summary deadline for the urgent state and subtitle', () => {
+		const task = getDisputeResolutionTask(
+			createDisputes( 2, { due_by: '2023-02-07 23:59:59' } ),
+			{
+				count: 2,
+				amount_by_currency: { usd: 2000 },
+				earliest_due_by: '2023-02-01 20:00:00',
+			}
+		);
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				content: 'Respond today by 3:00 PM',
+				dataAttrs: { 'data-urgent': true },
+			} )
+		);
+	} );
+
+	it( 'uses the dated subtitle for a deadline tomorrow with less than 24 hours remaining', () => {
+		Date.now = jest.fn( () => new Date( '2023-02-01T23:00:00.000Z' ) );
+		const task = getDisputeResolutionTask( createDisputes( 1 ), {
+			count: 1,
+			amount_by_currency: { usd: 1000 },
+			earliest_due_by: '2023-02-02 13:00:00',
+		} );
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				title: 'Respond to a dispute for $10.00',
+				content: 'By Feb 2, 2023 – 14 hours left to respond',
+				dataAttrs: { 'data-urgent': true },
+			} )
+		);
+	} );
+
+	it.each( [
+		[ 'a zero count', { count: 0, earliest_due_by: nextWeekDeadline } ],
+		[ 'a null deadline', { count: 1, earliest_due_by: null } ],
+		[
+			'a past deadline',
+			{ count: 1, earliest_due_by: '2023-01-31 23:59:59' },
+		],
+		[
+			'a deadline after seven days',
+			{ count: 1, earliest_due_by: '2023-02-09 23:59:59' },
+		],
+	] )( 'does not return a task for %s', ( unused, summary ) => {
+		expect(
+			getDisputeResolutionTask( [ mockActiveDisputes[ 0 ] ], summary )
+		).toBeNull();
+	} );
+
+	it( 'uses complete rows when an old response omits the new fields', () => {
+		const task = getDisputeResolutionTask(
+			mockActiveDisputes.slice( 0, 3 ),
+			{
+				count: 3,
+			}
+		);
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				title: 'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD',
+				content: 'Respond today by 6:59 PM',
+			} )
+		);
+	} );
+
+	it( 'treats an empty amount array as empty and uses a complete row total', () => {
+		const task = getDisputeResolutionTask( createDisputes( 2 ), {
+			count: 2,
+			amount_by_currency: [],
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe(
+			'Respond to 2 active disputes for a total of $20.00'
+		);
+	} );
+
+	it( 'does not label a partial row amount as the total', () => {
+		const task = getDisputeResolutionTask( createDisputes( 2 ), {
+			count: 3,
+			amount_by_currency: {},
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe( 'Respond to 3 active disputes' );
+		expect( task?.title ).not.toContain( '$20.00' );
+	} );
+
+	it( 'opens one loaded dispute directly even when its row has no deadline', () => {
+		const dispute = { ...mockActiveDisputes[ 0 ], due_by: '' };
+		const task = getDisputeResolutionTask( [ dispute ], {
+			count: 1,
+			amount_by_currency: { usd: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		task?.action();
+
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: 'ch_mock',
+			} )
+		);
+	} );
+
+	it( 'opens the filtered list when the only loaded row has no charge ID', () => {
+		const dispute = { ...mockActiveDisputes[ 0 ], charge_id: '' };
+		const task = getDisputeResolutionTask( [ dispute ], {
+			count: 1,
+			amount_by_currency: { usd: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		task?.action();
+
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} )
+		);
+	} );
+
+	it.each( [
+		[ 'no loaded row', [] ],
+		[ 'more than one loaded row', mockActiveDisputes.slice( 0, 2 ) ],
+	] )(
+		'opens the filtered list when the summary has one dispute but %s',
+		( unused, disputes ) => {
+			const task = getDisputeResolutionTask( disputes, {
+				count: 1,
+				amount_by_currency: { usd: 1000 },
+				earliest_due_by: nextWeekDeadline,
+			} );
+
+			task?.action();
+
+			expect( mockHistoryPush ).toHaveBeenCalledWith(
+				getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/disputes',
+					filter: 'awaiting_response',
+				} )
+			);
+		}
+	);
 } );
 
 describe( 'taskSort()', () => {

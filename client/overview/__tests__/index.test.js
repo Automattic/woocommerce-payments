@@ -13,6 +13,7 @@ import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
 import { getQuery } from '@woocommerce/navigation';
 import { useGetSettings } from 'wcpay/data/settings';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
 
 const settingsMock = {
 	enabled_payment_method_ids: [ 'foo', 'bar' ],
@@ -77,6 +78,10 @@ jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputes: jest
 		.fn()
 		.mockReturnValue( { disputes: [], isLoading: false } ),
+	useDisputesSummary: jest.fn().mockReturnValue( {
+		disputesSummary: {},
+		isLoading: false,
+	} ),
 } ) );
 jest.mock( 'wcpay/data/pm-promotions', () => ( {
 	usePmPromotions: jest
@@ -145,6 +150,50 @@ describe( 'Overview page', () => {
 		useGetSettings.mockReturnValue( {
 			enabled_payment_method_ids: [ 'foo', 'bar' ],
 		} );
+		useDisputes.mockReturnValue( { disputes: [], isLoading: false } );
+		useDisputesSummary.mockReturnValue( {
+			disputesSummary: {},
+			isLoading: false,
+		} );
+	} );
+
+	it( 'requests dispute rows and summary with the awaiting response filter', () => {
+		render( <OverviewPage /> );
+
+		expect( useDisputes ).toHaveBeenCalledWith( {
+			filter: 'awaiting_response',
+			per_page: 50,
+		} );
+		expect( useDisputesSummary ).toHaveBeenCalledWith( {
+			filter: 'awaiting_response',
+		} );
+	} );
+
+	it( 'passes the dispute summary and loading state to the task builder', () => {
+		const activeDisputes = [ { dispute_id: 'dp_1' } ];
+		const activeDisputesSummary = {
+			count: 51,
+			amount_by_currency: { usd: 51000 },
+			earliest_due_by: '2023-02-01 23:59:59',
+		};
+		useDisputes.mockReturnValue( {
+			disputes: activeDisputes,
+			isLoading: false,
+		} );
+		useDisputesSummary.mockReturnValue( {
+			disputesSummary: activeDisputesSummary,
+			isLoading: true,
+		} );
+
+		render( <OverviewPage /> );
+
+		expect( getTasks ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				activeDisputes,
+				activeDisputesSummary,
+				activeDisputesSummaryIsLoading: true,
+			} )
+		);
 	} );
 
 	it( 'Renders even when the settings request has failed', () => {
