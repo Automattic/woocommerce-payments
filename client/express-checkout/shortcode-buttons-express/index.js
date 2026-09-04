@@ -729,6 +729,10 @@ jQuery( ( $ ) => {
 						}
 					} catch ( e ) {
 						expressCheckoutButtonUi.hideContainer();
+						// Leaving the overlay on would keep `blockUI.isBlocked`
+						// truthy, so `blockButton()` would skip the overlay for
+						// the rest of the page life.
+						expressCheckoutButtonUi.unblock();
 					}
 				}
 			);
@@ -743,13 +747,23 @@ jQuery( ( $ ) => {
 		const refreshId = ++latestForcedRefreshId;
 		activeForcedRefreshId = refreshId;
 
+		// The element mounted before the refresh stays clickable throughout.
+		// The overlay tells the shopper why a tap does nothing, the same way
+		// core greys out the order review; the click guard above is what
+		// actually stops keyboard and assistive-tech activation, which an
+		// element-level blockUI overlay does not intercept.
+		expressCheckoutButtonUi.blockButton();
+
 		try {
 			await wcpayECE.init( { forceRefresh: true, refreshId } );
 		} finally {
-			// Only the refresh that still owns the button may release the guard.
-			// A superseded one finishing later must leave the newer one's alone.
+			// Only the refresh that still owns the button may release the guard
+			// and lift the overlay. A superseded one finishing later must leave
+			// the newer one's alone. `init()` already decided whether the
+			// container belongs on screen, so only the overlay comes off.
 			if ( activeForcedRefreshId === refreshId ) {
 				activeForcedRefreshId = null;
+				expressCheckoutButtonUi.unblock();
 			}
 		}
 	};

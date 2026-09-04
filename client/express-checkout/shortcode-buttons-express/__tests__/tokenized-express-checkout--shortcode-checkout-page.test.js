@@ -38,6 +38,14 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		$.fn.ready = ( callback ) => callback( $ );
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
+		// The element-level half of jquery-blockui, which `button-ui` uses to
+		// overlay the button. Spies, so tests can assert on the overlay.
+		$.fn.block = jest.fn( function () {
+			return this;
+		} );
+		$.fn.unblock = jest.fn( function () {
+			return this;
+		} );
 
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.nonce = {
@@ -461,6 +469,104 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		).not.toThrow();
 		expect( clickEventResolveMock ).not.toHaveBeenCalled();
 		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'should overlay the button while a cart refresh is in flight and lift it once the refresh settles', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.block.mockClear();
+		$.fn.unblock.mockClear();
+
+		let releaseCart;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseCart = () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} );
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		// Same white overlay WooCommerce paints over the order review.
+		expect( $.fn.block ).toHaveBeenCalledWith( {
+			message: null,
+			overlayCSS: { background: '#fff', opacity: 0.6 },
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		releaseCart();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+	} );
+
+	it( 'should keep the overlay up until the newest refresh settles, even if a superseded one finishes first', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		const releases = [];
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releases.push( () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} )
+					);
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+		$.fn.unblock.mockClear();
+
+		// A (superseded) settles first: B still owns the button, so no unblock.
+		releases[ 0 ]();
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		releases[ 1 ]();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	it( 'should lift the overlay when the cart refresh fails', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.unblock.mockClear();
+
+		apiFetch.mockImplementation( async () =>
+			Promise.reject( new Error( 'Store API is unavailable' ) )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+
+		// The button hides, but the overlay must not be left latched on the
+		// container: `blockButton()` would then skip the next refresh's overlay.
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'wcpay-express-checkout-element' )
+			).not.toBeVisible()
+		);
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
