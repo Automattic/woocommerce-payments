@@ -18,6 +18,7 @@ import PAYMENT_METHOD_IDS, {
 
 export type TransactionType =
 	| 'charge'
+	| 'payment'
 	| 'refund'
 	| 'card_reader_fee'
 	| 'financing_payout'
@@ -66,6 +67,11 @@ export interface Transaction {
 		interval_to: string;
 	};
 	payment_intent_id?: string;
+	// Present only when the charge's order received an early fraud warning.
+	early_fraud_warning?: {
+		actionable: boolean;
+		fraud_type: string;
+	};
 }
 
 interface Transactions {
