@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Share the client build across pull request E2E jobs.
