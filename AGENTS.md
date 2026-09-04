@@ -58,6 +58,13 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
    - Checkout JS creates Stripe PaymentMethod/confirmation token client-side, passes ID to PHP.
    - Check WordPress/WooCommerce Storybooks before building custom components.
 
+### Checkout context and data ownership
+
+- Before changing shared checkout code, identify the affected entry points: product, classic cart/checkout, Blocks, and pay-for-order. Trace which cart or order owns each decision, when authorization occurs, and when assets are localized. Pay-for-order can have an unrelated live cart, and guest email verification can omit the payment form.
+- Keep the order identity consistent through nonce creation, redirects, and verification. Revalidate persisted order IDs for the intended operation, including resumability when reusing a draft, and discard stale session pointers. Test the reported context and a neighboring context affected by the change.
+- Choose the field that represents the business fact: store country differs from account country, fee presence differs from money movement, and an explicit selection differs from a default. Stripe capability and merchant checkout enablement are separate; see [payment-method lifecycle](.claude/docs/payment-method-lifecycle.md). Preserve the amount's currency, distinguish zero, missing, and reversed amounts, and test a realistic case where a convenient proxy would give the wrong answer.
+- Do not derive collection-wide counts, totals, or currency sets from a paginated subset. Use a complete aggregate or explicitly label the result as applying only to the loaded page.
+
 ### Key Docs
 
 **Architectural (read when working in these areas):**
@@ -386,6 +393,11 @@ Migration classes live in `includes/migrations/` and run on `woocommerce_woocomm
 - **A missing version option runs everything.** `get_option( 'woocommerce_woocommerce_payments_version' )` returns `false` on a fresh install, which makes the `'>'` threshold gate true and the `'<='` early-return guard false - both styles in use, so every migration also fires on brand-new stores, and again if the option is ever lost. Guard `empty( $previous_version )` when running on a fresh store would be wrong, as `Multi_Currency_Cache_Autodetect_Existing_Install` does.
 - **A downgrade must not fatal or corrupt data.** Deleting a dead option is fine - old code reads the default. Dropping a key old code still reads costs the merchant that setting: `Migrate_Express_Checkout_Locations` and `Migrate_Payment_Request_To_Express_Checkout_Enabled` do exactly that, a deliberate trade, not a pattern to copy. Reshaping a value in place fatals or silently misbehaves, since old code still parses that key: put the new shape under a new key, prefer leaving the old key readable for a release, and if you cut over, state what a downgrade costs in the PR description.
 
+### Persisted caches
+
+- When changing a cache, inspect its writer and every read/TTL path. Older entries may lack new fields; cover that case with a legacy entry written directly to storage, rather than only through the current writer.
+- Specify success and error TTLs separately, reuse the existing error backoff where appropriate, and check sibling keys for the same failure pattern. A transient fetch failure must not accidentally inherit a long success TTL.
+
 ### Before changing any public or externally exposed surface (agent checklist)
 
 1. Identify the contract you are touching: signature, hook, global/scope expectation, site topology, or install layout.
@@ -437,6 +449,7 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 
 ## Agent Rules
 
+- Area-specific guidance lives in [client/AGENTS.md](client/AGENTS.md), [client/express-checkout/AGENTS.md](client/express-checkout/AGENTS.md), [tests/AGENTS.md](tests/AGENTS.md), [tests/e2e/AGENTS.md](tests/e2e/AGENTS.md), and [.github/AGENTS.md](.github/AGENTS.md).
 - Prefer editing existing files over creating new ones
 - Check both `src/` and `includes/` when searching for PHP code
 - New PHP code in `src/` must follow PSR-4 class/file naming and existing folder conventions. Prefer `WCPay\Internal\Service\PascalCaseService` in `src/Internal/Service/`, register services in the appropriate `src/Internal/DependencyManagement/ServiceProvider/*ServiceProvider.php`, resolve them through `wcpay_get_container()` from legacy `includes/` code, and place matching tests under `tests/unit/src/...` with namespaced PascalCase test classes.
@@ -446,10 +459,22 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 - PHP tests require Docker — ensure it's running before executing
 - Always push only current branch: `git push origin HEAD`
 - Always pull with rebase: `git pull origin $(git branch --show-current) --rebase`
-- **PHPCS class structure ordering:** `SlevomatCodingStandard.Classes.ClassStructure.IncorrectGroupOrder` requires methods in order: public → protected → private. When adding new private methods, place them after all public and protected methods. Run `vendor/bin/phpcbf --standard=phpcs.xml.dist <file>` to auto-fix ordering violations.
+- **PHPCS method ordering applies to `src/`:** `SlevomatCodingStandard.Classes.ClassStructure` requires public, protected, then private methods in `src/*` and excludes tests. Do not report this sniff against `includes/` or `tests/`. Check the configured scope in `phpcs.xml.dist` and run PHPCS on the file before claiming a lint violation.
 - **Migration version_compare:** When adding a migration class in `includes/migrations/`, the `version_compare()` threshold names the release that ships it (e.g., `version_compare( '10.6.0', $previous_version, '>' )` for a migration shipping in 10.6.0) - not the release that introduced the old behavior. `@since` starts out matching it but stays put if the threshold is later bumped; see Database migrations for when bumping is allowed.
 - **Styles cache invalidation on plugin update:** `WC_Payments_Styles_Cache::compute_styles_cache_version()` in `includes/class-wc-payments-styles-cache.php` uses `WCPAY_VERSION_NUMBER`, while its cached options persist across updates. Keep `WC_Payments_Styles_Cache::handle_theme_change()` hooked to `woocommerce_woocommerce_payments_updated` so the styles version and stored WooPay appearance are invalidated.
 - **Abilities API registrations** (`src/Internal/Abilities/AbilitiesRegistrar.php` + `src/Internal/Abilities/Domain/*.php`): each ability lives in its own `Domain/<AbilityName>.php` class implementing `Automattic\WooCommerce\Abilities\AbilityDefinition`. When you change the code path behind a registered ability (REST controller callback, backing Request class, capability gate), audit the relevant Domain class for required updates (annotations, `input_schema`, `output_schema`, description). List abilities use the WC 10.9 paginated output envelope (`{ <collection>: [...], total_pages, page, per_page }`) via the `AbstractWCPayAbility` base. The feature gates on `class_exists('\Automattic\WooCommerce\Internal\Abilities\AbilitiesLoader')` and silently no-ops on WC < 10.9. Each Domain class points at the controller method that backs it with `@see`; the controller method points back at the Domain class with the same `@see` so the connection is visible from both sides — keep that pairing when adding a new ability. Run `vendor/bin/phpunit --filter 'Abilities'` after such changes — covers both the registrar coordinator and per-ability Domain tests.
 - **ExPlat experiments — assign on the Tracks anon-ID from `WC_Tracks_Client::get_identity()`:** ExPlat joins an experiment's assignments to its Tracks events on identity, so any other assignment key reports zero conversions with no error. Resolve the anon-ID through the same helper that stamps the events rather than reading `$_COOKIE['tk_ai']` or minting one via `Jetpack_Tracks_Client`; those diverge when the cookie is absent, and the wrong ID then sticks in user meta. A `wpcom:user_id` identity (stores running the standalone Jetpack plugin) has no joinable key, so sit the experiment out. Resolve identity only after the consent check, since it persists user meta. Consent means `WC_Site_Tracking::is_tracking_enabled()`, the predicate that gates the events; the raw `woocommerce_allow_tracking` option misses the kill-switch filters. Implement this in the `assignment_key()` of each `WCPay\Internal\Experiment\Experiment` subclass.
 - **`rawurlencode()` query values before `add_query_arg()`:** it appends values as-is, so a `+` in the base64 anon-ID arrives as a space and keys the assignment on a different identity than the Tracks events. Same pattern as WooCommerce core's copy of this class and PR #11815. See `Experimental_Abtest::request_variation()`.
 - **Constants in tests — literals on the assert side:** When a value has a named constant (currency codes like `WCPay\Constants\Currency_Code`, status/enum constants, etc.), use the constant for *incidental* values in the **arrange/act** phases — fixtures, mock return values, setup, and values passed *into* the system under test in their own statements. Use **plain literals** for anything that is the point of an assertion: the expected value, mock `->with()` payloads, **and even an act-input nested inside an `assert*()` wrapper**. Rationale (Meszaros *xUnit Test Patterns* / Fowler): an assertion should pin its expected value *independently* of the code under test — reusing the system-under-test's own constant on both sides couples them and can mask a wrong/drifted constant, and a bare literal (`'EUR'`, `'complete'`) reads better as an expected value than the constant. Don't convert literals where the literal *is* the point: array **keys**, values whose **case** or invalidity is load-bearing (e.g. lowercase Stripe-response codes, rejection-path sentinels), or tests of the constant/formatting logic itself (literals there are the independent oracle). Quick guard: a constant shouldn't appear inside an `assert*()` call — e.g. `grep -n 'assert.*Currency_Code::'` returns nothing.
+
+### Regression tests and verification
+
+- Exercise the real failure path and assert an observable outcome. Do not mock away the behavior being checked. For a subtle guard, verify that reverting the fix or removing the guard makes the focused test fail for the expected reason.
+- When deleting feature tests, preserve coverage of shared code that remains in use. Avoid adding tests that only repeat existing coverage or mirror the implementation.
+- Check version and feature gates before citing green CI as evidence that a changed path ran. Identify the dependency copy actually loaded by that path, which may differ from the development dependency in this repo.
+
+### Comments and documentation
+
+- Explain a non-obvious constraint once, near its owner. Avoid narrating the code or repeating the same rationale at every call site.
+- Verify behavioral claims against the current implementation, including both repos for client/server flows. Check revision freshness before relying on a local reference checkout. After changing an approach, update the PR description and affected reference docs to match the final behavior.
+- Before adding an AGENTS.md rule, check its configured scope and reconcile existing guidance on the same subject. Keep detailed investigations in the documented analysis/review locations and link to living references where useful.
