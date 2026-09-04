@@ -118,7 +118,7 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		activeDispute: activeDisputes[ 0 ],
 		activeDisputesSummary,
-		activeDisputesSummaryIsLoading:
+		activeDisputeTaskIsLoading:
 			activeDisputesSummaryIsLoading || activeDisputesIsLoading,
 	} );
 	const tasks =

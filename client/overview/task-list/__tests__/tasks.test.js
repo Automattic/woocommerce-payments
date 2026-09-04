@@ -327,14 +327,14 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual( [] );
 	} );
 
-	it( 'does not include the dispute task while its summary is loading', () => {
+	it( 'does not include the dispute task while its data is loading', () => {
 		const actual = getTasks( {
 			activeDisputesSummary: {
 				count: 1,
 				amount_by_currency: { usd: 1000 },
 				earliest_due_by: '2023-02-01 23:59:59',
 			},
-			activeDisputesSummaryIsLoading: true,
+			activeDisputeTaskIsLoading: true,
 		} );
 
 		expect( actual ).toEqual( [] );
@@ -755,9 +755,7 @@ describe( 'taskSort()', () => {
 	it( 'should sort the tasks', () => {
 		const unsortedTasks = getTasks( {
 			activeDisputesSummary: {
-				count: mockActiveDisputes.filter(
-					( dispute ) => dispute.due_by
-				).length,
+				count: 3,
 				amount_by_currency: { usd: 2000, eur: 1000 },
 				earliest_due_by: '2023-02-01 23:59:59',
 			},

@@ -201,7 +201,7 @@ describe( 'Overview page', () => {
 			expect.objectContaining( {
 				activeDispute,
 				activeDisputesSummary,
-				activeDisputesSummaryIsLoading: true,
+				activeDisputeTaskIsLoading: true,
 			} )
 		);
 	} );

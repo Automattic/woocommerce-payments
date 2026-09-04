@@ -24,7 +24,7 @@ interface TaskListProps {
 	wpcomReconnectUrl: string;
 	activeDispute?: CachedDispute;
 	activeDisputesSummary?: DisputesSummaryData;
-	activeDisputesSummaryIsLoading?: boolean;
+	activeDisputeTaskIsLoading?: boolean;
 	showGoLiveTask: boolean;
 }
 
@@ -33,7 +33,7 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	activeDispute,
 	activeDisputesSummary,
-	activeDisputesSummaryIsLoading = false,
+	activeDisputeTaskIsLoading = false,
 	showGoLiveTask = false,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
@@ -69,7 +69,7 @@ export const getTasks = ( {
 
 	const isUpdateDetailsTaskVisible = showUpdateDetailsTask;
 
-	const disputeResolutionTask = activeDisputesSummaryIsLoading
+	const disputeResolutionTask = activeDisputeTaskIsLoading
 		? null
 		: getDisputeResolutionTask( activeDisputesSummary, activeDispute );
 

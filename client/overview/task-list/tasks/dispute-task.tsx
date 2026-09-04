@@ -92,7 +92,7 @@ export const getDisputeResolutionTask = (
 				moment.utc().format( 'YYYY-MM-DD HH:mm:ss' ),
 				{ customFormat: 'Y-m-d' }
 			);
-	const isDueWithin72h =
+	const isUrgent =
 		isPastDue || isDueWithin( { dueBy: earliestDueBy, days: 3 } );
 
 	const disputeTask: TaskItemProps = {
@@ -115,7 +115,7 @@ export const getDisputeResolutionTask = (
 			// Only handle clicks on the action button.
 		},
 		dataAttrs: {
-			'data-urgent': isDueWithin72h,
+			'data-urgent': isUrgent,
 		},
 	};
 
