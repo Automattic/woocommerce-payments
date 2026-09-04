@@ -127,18 +127,12 @@ export default class ExpressCheckoutCartApi {
 	 * Returns the customer's cart object.
 	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/cart.md#get-cart
 	 *
-	 * @param {Object}      [options]        Request options.
-	 * @param {AbortSignal} [options.signal] Aborts the request when signalled.
-	 *                                       `fetch` has no timeout of its own,
-	 *                                       so callers that must not wait
-	 *                                       indefinitely pass one.
 	 * @return {Promise} Cart response object.
 	 */
-	async getCart( { signal } = {} ) {
+	async getCart() {
 		return await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
-			signal,
 		} );
 	}
 
