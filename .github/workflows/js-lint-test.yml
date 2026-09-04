@@ -49,4 +49,14 @@ jobs:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
       # install dependencies and run linter
-      - run: pnpm install --frozen-lockfile && pnpm run test:js
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Jest transforms
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.cache/jest
+          key: ${{ runner.os }}-jest-${{ hashFiles('.nvmrc', 'pnpm-lock.yaml', 'babel.config.js', 'tsconfig.json', 'tests/js/**') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ hashFiles('.nvmrc', 'pnpm-lock.yaml', 'babel.config.js', 'tsconfig.json', 'tests/js/**') }}-
+      - run: pnpm run test:js
+      - name: Profile warm Jest cache
+        run: pnpm run test:js
