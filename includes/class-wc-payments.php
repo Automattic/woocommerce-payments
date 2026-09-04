@@ -1089,9 +1089,6 @@ class WC_Payments {
 		return array_merge(
 			$user_data_fields,
 			[
-				// Inbox notifications.
-				'wc_payments_overview_inbox_last_read',
-
 				// Column visibility preferences.
 				'wc_payments_transactions_hidden_columns',
 				'wc_payments_transactions_blocked_hidden_columns',

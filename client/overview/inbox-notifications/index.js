@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, _n } from '@wordpress/i18n';
-import { useEffect, useState, useRef } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { EmptyContent, Section } from '@woocommerce/components';
 import { NOTES_STORE_NAME, QUERY_DEFAULTS } from '@woocommerce/data';
 import { useSelect, useDispatch } from '@wordpress/data';
@@ -17,7 +17,6 @@ import {
  * Internal dependencies
  */
 import { recordEvent } from 'tracks';
-import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
 import './index.scss';
 
 const INBOX_QUERY = {
@@ -73,7 +72,6 @@ const onBodyLinkClick = ( note, innerLink ) => {
 const renderNotes = ( {
 	hasNotes,
 	batchUpdating,
-	lastRead,
 	notes,
 	onDismiss,
 	onNoteActionClick,
@@ -113,7 +111,6 @@ const renderNotes = ( {
 						<InboxNoteCard
 							key={ noteId }
 							note={ note }
-							lastRead={ lastRead }
 							onDismiss={ onDismiss }
 							onNoteActionClick={ onNoteActionClick }
 							onBodyLinkClick={ onBodyLinkClick }
@@ -130,15 +127,10 @@ const InboxPanel = () => {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { batchUpdateNotes, removeNote, updateNote, triggerNoteAction } =
 		useDispatch( NOTES_STORE_NAME );
-	const { isError, resolving, batchUpdating, notes, overviewInboxLastRead } =
-		useSelect( ( select ) => {
+	const { isError, resolving, batchUpdating, notes } = useSelect(
+		( select ) => {
 			const { getNotes, getNotesError, isResolving, isNotesRequesting } =
 				select( NOTES_STORE_NAME );
-			const { getCurrentUser } = select( 'core' );
-			const currentUser = getCurrentUser();
-			const woocommerceMeta = currentUser
-				? currentUser.woocommerce_meta
-				: {};
 
 			return {
 				notes: getNotes( INBOX_QUERY ),
@@ -147,29 +139,10 @@ const InboxPanel = () => {
 				),
 				resolving: isResolving( 'getNotes', [ INBOX_QUERY ] ),
 				batchUpdating: isNotesRequesting( 'batchUpdateNotes' ),
-				overviewInboxLastRead:
-					woocommerceMeta.wc_payments_overview_inbox_last_read
-						? JSON.parse(
-								woocommerceMeta.wc_payments_overview_inbox_last_read
-						  )
-						: undefined,
 			};
-		} );
+		}
+	);
 	const [ dismiss, setDismiss ] = useState();
-	// Make sure we only set lastRead at component mount.
-	const lastReadRef = useRef( overviewInboxLastRead );
-	if ( ! lastReadRef.current && overviewInboxLastRead ) {
-		lastReadRef.current = overviewInboxLastRead;
-	}
-
-	useEffect( () => {
-		const mountTime = Date.now();
-
-		const userDataFields = {
-			wc_payments_overview_inbox_last_read: mountTime,
-		};
-		updateWoocommerceUserMeta( userDataFields );
-	}, [] );
 
 	if ( isError ) {
 		const title = __(
@@ -291,7 +264,6 @@ const InboxPanel = () => {
 						renderNotes( {
 							hasNotes,
 							batchUpdating,
-							lastRead: lastReadRef.current,
 							notes,
 							onDismiss,
 							onNoteActionClick,
