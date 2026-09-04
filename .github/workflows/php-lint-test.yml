@@ -69,16 +69,9 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    xdebug2
+          coverage:    none
       # run CI checks
-      - name: Profile PHP tests with and without Xdebug
-        run: |
-          echo 'PROFILE: baseline with Xdebug'
-          bash bin/run-ci-tests.bash
-          sudo phpdismod xdebug
-          if php -m | grep -qi xdebug; then exit 1; fi
-          echo 'PROFILE: same suite without Xdebug'
-          bash bin/phpunit.sh -c phpunit.xml.dist
+      - run: bash bin/run-ci-tests.bash
         env:
           WC_VERSION: ${{ env.WC_MIN_SUPPORTED_VERSION }}
           GUTENBERG_VERSION: ${{ matrix.gutenberg }}
