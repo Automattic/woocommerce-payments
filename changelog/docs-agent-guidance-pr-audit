@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Clarify agent guidance for checkout state, caches, frontend integration, and regression testing.
+Clarify general agent guidance for implementation, verification, and documentation.

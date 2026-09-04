@@ -58,13 +58,6 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
    - Checkout JS creates Stripe PaymentMethod/confirmation token client-side, passes ID to PHP.
    - Check WordPress/WooCommerce Storybooks before building custom components.
 
-### Checkout context and data ownership
-
-- Before changing shared checkout code, identify the affected entry points: product, classic cart/checkout, Blocks, and pay-for-order. Trace which cart or order owns each decision, when authorization occurs, and when assets are localized. Pay-for-order can have an unrelated live cart, and guest email verification can omit the payment form.
-- Keep the order identity consistent through nonce creation, redirects, and verification. Revalidate persisted order IDs for the intended operation, including resumability when reusing a draft, and discard stale session pointers. Test the reported context and a neighboring context affected by the change.
-- Choose the field that represents the business fact: store country differs from account country, fee presence differs from money movement, and an explicit selection differs from a default. Stripe capability and merchant checkout enablement are separate; see [payment-method lifecycle](.claude/docs/payment-method-lifecycle.md). Preserve the amount's currency, distinguish zero, missing, and reversed amounts, and test a realistic case where a convenient proxy would give the wrong answer.
-- Do not derive collection-wide counts, totals, or currency sets from a paginated subset. Use a complete aggregate or explicitly label the result as applying only to the loaded page.
-
 ### Key Docs
 
 **Architectural (read when working in these areas):**
@@ -393,11 +386,6 @@ Migration classes live in `includes/migrations/` and run on `woocommerce_woocomm
 - **A missing version option runs everything.** `get_option( 'woocommerce_woocommerce_payments_version' )` returns `false` on a fresh install, which makes the `'>'` threshold gate true and the `'<='` early-return guard false - both styles in use, so every migration also fires on brand-new stores, and again if the option is ever lost. Guard `empty( $previous_version )` when running on a fresh store would be wrong, as `Multi_Currency_Cache_Autodetect_Existing_Install` does.
 - **A downgrade must not fatal or corrupt data.** Deleting a dead option is fine - old code reads the default. Dropping a key old code still reads costs the merchant that setting: `Migrate_Express_Checkout_Locations` and `Migrate_Payment_Request_To_Express_Checkout_Enabled` do exactly that, a deliberate trade, not a pattern to copy. Reshaping a value in place fatals or silently misbehaves, since old code still parses that key: put the new shape under a new key, prefer leaving the old key readable for a release, and if you cut over, state what a downgrade costs in the PR description.
 
-### Persisted caches
-
-- When changing a cache, inspect its writer and every read/TTL path. Older entries may lack new fields; cover that case with a legacy entry written directly to storage, rather than only through the current writer.
-- Specify success and error TTLs separately, reuse the existing error backoff where appropriate, and check sibling keys for the same failure pattern. A transient fetch failure must not accidentally inherit a long success TTL.
-
 ### Before changing any public or externally exposed surface (agent checklist)
 
 1. Identify the contract you are touching: signature, hook, global/scope expectation, site topology, or install layout.
@@ -449,7 +437,6 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 
 ## Agent Rules
 
-- Area-specific guidance lives in [client/AGENTS.md](client/AGENTS.md), [client/express-checkout/AGENTS.md](client/express-checkout/AGENTS.md), [tests/AGENTS.md](tests/AGENTS.md), [tests/e2e/AGENTS.md](tests/e2e/AGENTS.md), and [.github/AGENTS.md](.github/AGENTS.md).
 - Prefer editing existing files over creating new ones
 - Check both `src/` and `includes/` when searching for PHP code
 - New PHP code in `src/` must follow PSR-4 class/file naming and existing folder conventions. Prefer `WCPay\Internal\Service\PascalCaseService` in `src/Internal/Service/`, register services in the appropriate `src/Internal/DependencyManagement/ServiceProvider/*ServiceProvider.php`, resolve them through `wcpay_get_container()` from legacy `includes/` code, and place matching tests under `tests/unit/src/...` with namespaced PascalCase test classes.
@@ -467,14 +454,15 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 - **`rawurlencode()` query values before `add_query_arg()`:** it appends values as-is, so a `+` in the base64 anon-ID arrives as a space and keys the assignment on a different identity than the Tracks events. Same pattern as WooCommerce core's copy of this class and PR #11815. See `Experimental_Abtest::request_variation()`.
 - **Constants in tests — literals on the assert side:** When a value has a named constant (currency codes like `WCPay\Constants\Currency_Code`, status/enum constants, etc.), use the constant for *incidental* values in the **arrange/act** phases — fixtures, mock return values, setup, and values passed *into* the system under test in their own statements. Use **plain literals** for anything that is the point of an assertion: the expected value, mock `->with()` payloads, **and even an act-input nested inside an `assert*()` wrapper**. Rationale (Meszaros *xUnit Test Patterns* / Fowler): an assertion should pin its expected value *independently* of the code under test — reusing the system-under-test's own constant on both sides couples them and can mask a wrong/drifted constant, and a bare literal (`'EUR'`, `'complete'`) reads better as an expected value than the constant. Don't convert literals where the literal *is* the point: array **keys**, values whose **case** or invalidity is load-bearing (e.g. lowercase Stripe-response codes, rejection-path sentinels), or tests of the constant/formatting logic itself (literals there are the independent oracle). Quick guard: a constant shouldn't appear inside an `assert*()` call — e.g. `grep -n 'assert.*Currency_Code::'` returns nothing.
 
-### Regression tests and verification
+### Implementation and verification
 
-- Exercise the real failure path and assert an observable outcome. Do not mock away the behavior being checked. For a subtle guard, verify that reverting the fix or removing the guard makes the focused test fail for the expected reason.
-- When deleting feature tests, preserve coverage of shared code that remains in use. Avoid adding tests that only repeat existing coverage or mirror the implementation.
-- Check version and feature gates before citing green CI as evidence that a changed path ran. Identify the dependency copy actually loaded by that path, which may differ from the development dependency in this repo.
+- Verify assumptions against the current implementation and configured rules. Trace affected callers and the source of the data before changing shared behavior; check the relevant upstream version when relying on a dependency.
+- Handle failures, missing data, and successful empty results explicitly. Preserve meaningful `false`, `0`, and `null` values rather than treating them as interchangeable with absence.
+- When fixing a bug, check nearby code and other callers for the same cause. Report related issues outside the change's scope rather than silently expanding it.
+- Tests should exercise the changed behavior and assert an observable outcome. Do not mock away the behavior being checked; await asynchronous assertions and restore shared test state. For regression tests, confirm that the test fails without the fix where practical.
+- Match verification to the affected path. Check version and feature gates before citing green CI, and distinguish checks that ran from checks that were skipped or could not run.
 
 ### Comments and documentation
 
-- Explain a non-obvious constraint once, near its owner. Avoid narrating the code or repeating the same rationale at every call site.
-- Verify behavioral claims against the current implementation, including both repos for client/server flows. Check revision freshness before relying on a local reference checkout. After changing an approach, update the PR description and affected reference docs to match the final behavior.
-- Before adding an AGENTS.md rule, check its configured scope and reconcile existing guidance on the same subject. Keep detailed investigations in the documented analysis/review locations and link to living references where useful.
+- Explain non-obvious constraints once, near their owner. Avoid comments that narrate the code. Update affected comments, reference docs, and the PR description when the implementation changes.
+- Add agent rules only when they apply beyond the incident that prompted them. Check their scope, avoid duplicating existing guidance, and keep incident-specific details in reference or investigation docs.
