@@ -148,6 +148,4 @@ export type MerchantEvent =
 	| 'wcpay_reports_fees_reload_click'
 	| 'wcpay_reports_fees_search'
 	| 'wcpay_reports_tab_change'
-	| 'wcpay_review_prompt_action'
-	| 'wcpay_review_prompt_shown'
 	| string;

@@ -4226,6 +4226,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test is_review_prompt_eligible method with various account data scenarios.
 	 *
+	 * @testdox The deprecated method still reports review prompt eligibility.
 	 * @dataProvider provider_is_review_prompt_eligible
 	 *
 	 * @param array $account_data The account data to cache.
