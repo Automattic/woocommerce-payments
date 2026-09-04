@@ -90,23 +90,27 @@ export const useDisputeEvidence = (): {
 	return { updateDispute };
 };
 
-export const useDisputes = ( {
-	paged,
-	per_page: perPage,
-	store_currency_is: storeCurrencyIs,
-	match,
-	date_before: dateBefore,
-	date_after: dateAfter,
-	date_between: dateBetween,
-	filter,
-	status_is: statusIs,
-	status_is_not: statusIsNot,
-	orderby: orderBy,
-	order,
-}: Query ): CachedDisputes =>
+export const useDisputes = (
+	{
+		paged,
+		per_page: perPage,
+		store_currency_is: storeCurrencyIs,
+		match,
+		date_before: dateBefore,
+		date_after: dateAfter,
+		date_between: dateBetween,
+		filter,
+		status_is: statusIs,
+		status_is_not: statusIsNot,
+		orderby: orderBy,
+		order,
+	}: Query,
+	shouldLoad?: boolean
+): CachedDisputes =>
 	useSelect(
 		( select ) => {
-			const { getDisputes, isResolving } = select( STORE_NAME );
+			const { getDisputes, isResolving, hasFinishedResolution } =
+				select( STORE_NAME );
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -131,9 +135,16 @@ export const useDisputes = ( {
 				order: order || 'desc',
 			};
 
+			if ( shouldLoad === false ) {
+				return { disputes: [], isLoading: false };
+			}
+
 			return {
 				disputes: getDisputes( query ),
-				isLoading: isResolving( 'getDisputes', [ query ] ),
+				isLoading:
+					isResolving( 'getDisputes', [ query ] ) ||
+					( shouldLoad === true &&
+						! hasFinishedResolution( 'getDisputes', [ query ] ) ),
 			};
 		},
 		[
@@ -149,6 +160,7 @@ export const useDisputes = ( {
 			statusIsNot,
 			orderBy,
 			order,
+			shouldLoad,
 		]
 	);
 

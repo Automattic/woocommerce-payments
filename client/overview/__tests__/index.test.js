@@ -157,39 +157,49 @@ describe( 'Overview page', () => {
 		} );
 	} );
 
-	it( 'requests dispute rows and summary with the awaiting response filter', () => {
+	it( 'does not load dispute rows before the summary finds one dispute', () => {
 		render( <OverviewPage /> );
 
-		expect( useDisputes ).toHaveBeenCalledWith( {
-			filter: 'awaiting_response',
-			per_page: 50,
-		} );
 		expect( useDisputesSummary ).toHaveBeenCalledWith( {
 			filter: 'awaiting_response',
 		} );
+		expect( useDisputes ).toHaveBeenCalledWith(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			false
+		);
 	} );
 
-	it( 'passes the dispute summary and loading state to the task builder', () => {
-		const activeDisputes = [ { dispute_id: 'dp_1' } ];
+	it( 'loads and passes one dispute when the summary count is one', () => {
+		const activeDispute = { dispute_id: 'dp_1', charge_id: 'ch_1' };
 		const activeDisputesSummary = {
-			count: 51,
-			amount_by_currency: { usd: 51000 },
+			count: 1,
+			amount_by_currency: { usd: 1000 },
 			earliest_due_by: '2023-02-01 23:59:59',
 		};
 		useDisputes.mockReturnValue( {
-			disputes: activeDisputes,
-			isLoading: false,
+			disputes: [ activeDispute ],
+			isLoading: true,
 		} );
 		useDisputesSummary.mockReturnValue( {
 			disputesSummary: activeDisputesSummary,
-			isLoading: true,
+			isLoading: false,
 		} );
 
 		render( <OverviewPage /> );
 
+		expect( useDisputes ).toHaveBeenCalledWith(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			true
+		);
 		expect( getTasks ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				activeDisputes,
+				activeDispute,
 				activeDisputesSummary,
 				activeDisputesSummaryIsLoading: true,
 			} )

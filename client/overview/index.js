@@ -97,23 +97,29 @@ const OverviewPage = () => {
 		useState( false );
 	const settings = useGetSettings();
 
-	const { disputes: activeDisputes } = useDisputes( {
-		filter: 'awaiting_response',
-		per_page: 50,
-	} );
 	const {
 		disputesSummary: activeDisputesSummary,
 		isLoading: activeDisputesSummaryIsLoading,
 	} = useDisputesSummary( {
 		filter: 'awaiting_response',
 	} );
+	const shouldLoadSingleDispute = activeDisputesSummary?.count === 1;
+	const { disputes: activeDisputes, isLoading: activeDisputesIsLoading } =
+		useDisputes(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			shouldLoadSingleDispute
+		);
 
 	const tasksUnsorted = getTasks( {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		activeDisputes,
+		activeDispute: activeDisputes[ 0 ],
 		activeDisputesSummary,
-		activeDisputesSummaryIsLoading,
+		activeDisputesSummaryIsLoading:
+			activeDisputesSummaryIsLoading || activeDisputesIsLoading,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );

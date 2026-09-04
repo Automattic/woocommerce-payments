@@ -18,35 +18,13 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 export const getDisputeResolutionTask = (
 	/**
-	 * Active disputes (awaiting a response) to generate the notice string for.
+	 * Summary of active disputes (awaiting a response) for the notice.
 	 */
-	activeDisputes: CachedDispute[],
-	activeDisputesSummary?: DisputesSummaryData
+	activeDisputesSummary?: DisputesSummaryData,
+	activeDispute?: CachedDispute
 ): TaskItemProps | null => {
-	let disputesWithDeadlines: CachedDispute[] | undefined;
-	const getDisputesWithDeadlines = (): CachedDispute[] => {
-		disputesWithDeadlines ??= [ ...activeDisputes ]
-			.filter( ( dispute ) => dispute.due_by !== '' )
-			.sort( ( a, b ) => moment( a.due_by ).diff( moment( b.due_by ) ) );
-
-		return disputesWithDeadlines;
-	};
-
-	const fallbackDisputes =
-		activeDisputesSummary?.count === undefined
-			? getDisputesWithDeadlines()
-			: activeDisputes;
-	const activeDisputeCount =
-		activeDisputesSummary?.count ?? fallbackDisputes.length;
-	const hasSummaryDeadline =
-		activeDisputesSummary !== undefined &&
-		Object.prototype.hasOwnProperty.call(
-			activeDisputesSummary,
-			'earliest_due_by'
-		);
-	const earliestDueBy = hasSummaryDeadline
-		? activeDisputesSummary.earliest_due_by
-		: getDisputesWithDeadlines()[ 0 ]?.due_by;
+	const activeDisputeCount = activeDisputesSummary?.count ?? 0;
+	const earliestDueBy = activeDisputesSummary?.earliest_due_by;
 
 	if (
 		activeDisputeCount === 0 ||
@@ -57,7 +35,7 @@ export const getDisputeResolutionTask = (
 	}
 
 	const summaryAmounts = activeDisputesSummary?.amount_by_currency;
-	let amountEntries =
+	const amountEntries =
 		summaryAmounts && ! Array.isArray( summaryAmounts )
 			? Object.entries( summaryAmounts ).filter(
 					( [ currency, amount ] ) =>
@@ -67,26 +45,11 @@ export const getDisputeResolutionTask = (
 			  )
 			: [];
 
-	if (
-		amountEntries.length === 0 &&
-		fallbackDisputes.length === activeDisputeCount
-	) {
-		const rowAmounts = fallbackDisputes.reduce( ( amounts, dispute ) => {
-			amounts[ dispute.currency ] =
-				( amounts[ dispute.currency ] ?? 0 ) + dispute.amount;
-
-			return amounts;
-		}, {} as Record< string, number > );
-		amountEntries = Object.entries( rowAmounts );
-	}
-
 	amountEntries.sort( ( [ currencyA ], [ currencyB ] ) =>
 		currencyA.localeCompare( currencyB )
 	);
 	const canOpenSingleDispute =
-		activeDisputeCount === 1 &&
-		activeDisputes.length === 1 &&
-		!! activeDisputes[ 0 ].charge_id;
+		activeDisputeCount === 1 && !! activeDispute?.charge_id;
 
 	const handleClick = () => {
 		recordEvent( 'wcpay_overview_task_click', {
@@ -95,24 +58,23 @@ export const getDisputeResolutionTask = (
 		} );
 		const history = getHistory();
 		if ( canOpenSingleDispute ) {
-			// Redirect to the transaction details page if there is only one dispute.
-			const chargeId = activeDisputes[ 0 ].charge_id;
 			history.push(
 				getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions/details',
-					id: chargeId,
+					id: activeDispute.charge_id,
 				} )
 			);
-		} else {
-			history.push(
-				getAdminUrl( {
-					page: 'wc-admin',
-					path: '/payments/disputes',
-					filter: 'awaiting_response',
-				} )
-			);
+			return;
 		}
+
+		history.push(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} )
+		);
 	};
 
 	const isDueToday =
@@ -125,18 +87,10 @@ export const getDisputeResolutionTask = (
 		);
 	const isDueWithin72h = isDueWithin( { dueBy: earliestDueBy, days: 3 } );
 
-	// Create a unique key for each combination of dispute IDs
-	// to ensure the task is rendered if a previous task was dismissed.
-	const keyDisputes = hasSummaryDeadline
-		? activeDisputes
-		: getDisputesWithDeadlines();
-	const disputeTaskKey = `dispute-resolution-task-${
-		keyDisputes.map( ( dispute ) => dispute.dispute_id ).join( '-' ) ||
-		'summary'
-	}`;
-
 	const disputeTask: TaskItemProps = {
-		key: disputeTaskKey,
+		key: `dispute-resolution-task-${
+			activeDispute?.dispute_id ?? 'summary'
+		}`,
 		title: '', // Title text defined below.
 		content: '', // Subtitle text defined below.
 		level: 1,

@@ -22,7 +22,7 @@ const requirementBlacklist = [ 'invalid_value_other' ];
 interface TaskListProps {
 	showUpdateDetailsTask: boolean;
 	wpcomReconnectUrl: string;
-	activeDisputes?: CachedDispute[];
+	activeDispute?: CachedDispute;
 	activeDisputesSummary?: DisputesSummaryData;
 	activeDisputesSummaryIsLoading?: boolean;
 	showGoLiveTask: boolean;
@@ -31,7 +31,7 @@ interface TaskListProps {
 export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
-	activeDisputes = [],
+	activeDispute,
 	activeDisputesSummary,
 	activeDisputesSummaryIsLoading = false,
 	showGoLiveTask = false,
@@ -71,7 +71,7 @@ export const getTasks = ( {
 
 	const disputeResolutionTask = activeDisputesSummaryIsLoading
 		? null
-		: getDisputeResolutionTask( activeDisputes, activeDisputesSummary );
+		: getDisputeResolutionTask( activeDisputesSummary, activeDispute );
 
 	const isGoLiveTaskVisible =
 		wcpaySettings.isAccountConnected &&
