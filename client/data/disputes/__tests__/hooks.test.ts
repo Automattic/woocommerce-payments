@@ -38,6 +38,26 @@ describe( 'Dispute data hooks', () => {
 		expect( getDisputes ).not.toHaveBeenCalled();
 	} );
 
+	it( 'uses the existing loading behavior when shouldLoad is omitted', () => {
+		const result = useDisputes( {
+			filter: 'awaiting_response',
+			per_page: '1',
+		} );
+
+		expect( result ).toEqual( { disputes: [], isLoading: false } );
+		expect( getDisputes ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				filter: 'awaiting_response',
+				perPage: '1',
+			} )
+		);
+		expect( isResolving ).toHaveBeenCalledWith(
+			'getDisputes',
+			expect.any( Array )
+		);
+		expect( hasFinishedResolution ).not.toHaveBeenCalled();
+	} );
+
 	it( 'stays loading during the first explicitly enabled resolution', () => {
 		const result = useDisputes(
 			{ filter: 'awaiting_response', per_page: '1' },
