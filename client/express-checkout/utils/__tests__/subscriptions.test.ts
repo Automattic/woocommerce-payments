@@ -4,6 +4,7 @@
 import {
 	cartHasAnySubscription,
 	getSetupFutureUsageForCart,
+	getSetupFutureUsageForContext,
 } from '../subscriptions';
 
 const buildSubscriptionSchedule = ( { billingPeriod = 'month' } = {} ) => ( {
@@ -175,18 +176,183 @@ describe( 'cartHasAnySubscription', () => {
 } );
 
 describe( 'getSetupFutureUsageForCart', () => {
-	it( 'returns null for a regular cart', () => {
+	describe( 'falling back to the WC Subscriptions heuristic', () => {
+		// A cart response that carries no `wcpay` extension degrades to the old
+		// WC Subscriptions detection rather than to "never save".
+		it( 'returns null for a regular cart', () => {
+			expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
+		} );
+
+		it( 'returns off_session when the cart contains a subscription', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					items: [],
+					extensions: {
+						subscriptions: [ buildSubscriptionSchedule() ],
+					},
+				} )
+			).toBe( 'off_session' );
+		} );
+
+		it( 'falls back when the wcpay extension omits the key', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					items: [],
+					extensions: {
+						subscriptions: [ buildSubscriptionSchedule() ],
+						wcpay: {},
+					},
+				} )
+			).toBe( 'off_session' );
+		} );
+	} );
+
+	describe( 'preferring the server-computed value', () => {
+		// The WOOPMNT-6335 case: a cart with no subscription the client can see, whose
+		// payment method the server will nonetheless save.
+		it( 'returns off_session the server declares for a cart with no subscription', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					...regularCart,
+					extensions: {
+						wcpay: { setup_future_usage: 'off_session' },
+					},
+				} )
+			).toBe( 'off_session' );
+		} );
+
+		// Presence beats truthiness: an explicit null is the server deciding, not an absence.
+		it( 'returns null the server declares even when the heuristic would say off_session', () => {
+			expect(
+				getSetupFutureUsageForCart( {
+					items: [],
+					extensions: {
+						subscriptions: [ buildSubscriptionSchedule() ],
+						wcpay: { setup_future_usage: null },
+					},
+				} )
+			).toBeNull();
+		} );
+	} );
+} );
+
+describe( 'getSetupFutureUsageForContext', () => {
+	afterEach( () => {
+		delete ( global as Record< string, unknown > )
+			.wcpayExpressCheckoutParams;
+	} );
+
+	it( 'returns the localized value', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			setup_future_usage: 'off_session',
+		};
+
+		expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+	} );
+
+	it( 'returns null when the localized value is absent', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
+
+		expect( getSetupFutureUsageForContext() ).toBeNull();
+	} );
+
+	// `wcpay_express_checkout_js_params` is a documented extension point, and
+	// `has_subscription` was the only lever before `setup_future_usage` existed — quite
+	// possibly forced by an integration working around this very bug.
+	describe( 'legacy has_subscription overrides', () => {
+		// The two are computed by different predicates over different state:
+		// `has_subscription` reads the live cart, `setup_future_usage` reads the order on
+		// the order-pay page. A shopper with a subscription in the cart paying an unrelated
+		// one-off order would otherwise mint a token declaring off_session against an intent
+		// that never asks for it — Stripe then vaults the card silently.
+		it( 'prefers an explicit server null over the legacy flag', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					setup_future_usage: null,
+					has_subscription: true,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBeNull();
+		} );
+
+		// Presence, not truthiness: only a payload missing the key falls back.
+		it( 'honours has_subscription when the server sent no key at all', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					has_subscription: true,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+		} );
+
+		it( 'returns null when the key is absent and the legacy flag is false', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					has_subscription: false,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBeNull();
+		} );
+
+		it( 'prefers the server value over the legacy flag', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					setup_future_usage: 'off_session',
+					has_subscription: false,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+		} );
+
+		it( 'returns null when neither is set', () => {
+			( global as Record< string, unknown > ).wcpayExpressCheckoutParams =
+				{
+					setup_future_usage: null,
+					has_subscription: false,
+				};
+
+			expect( getSetupFutureUsageForContext() ).toBeNull();
+		} );
+	} );
+} );
+
+// Pay-for-order swaps the cart API for an order API, and the Store API extension registers
+// on the cart schema only — so the response can never carry it. The subscription being
+// renewed lives on the order, which only the server can see.
+describe( 'getSetupFutureUsageForCart on pay-for-order', () => {
+	afterEach( () => {
+		delete ( global as Record< string, unknown > )
+			.wcpayExpressCheckoutParams;
+	} );
+
+	it( 'falls back to the localized value instead of the cart heuristic', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'pay_for_order',
+			setup_future_usage: 'off_session',
+		};
+
+		// An order response: no `wcpay` extension, and no WC Subscriptions cart data.
+		expect( getSetupFutureUsageForCart( regularCart ) ).toBe(
+			'off_session'
+		);
+	} );
+
+	it( 'still returns null when the order carries no subscription', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'pay_for_order',
+			setup_future_usage: null,
+		};
+
 		expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
 	} );
 
-	it( 'returns off_session when the cart contains a subscription', () => {
-		expect(
-			getSetupFutureUsageForCart( {
-				items: [],
-				extensions: {
-					subscriptions: [ buildSubscriptionSchedule() ],
-				},
-			} )
-		).toBe( 'off_session' );
+	it( 'does not use the localized value in other contexts', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'checkout',
+			setup_future_usage: 'off_session',
+		};
+
+		// The cart is the source of truth off the order-pay page.
+		expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
 	} );
 } );
