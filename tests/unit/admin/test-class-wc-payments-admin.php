@@ -607,59 +607,68 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Transactions', $transactions_menu_item );
 	}
 
-	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_wrong_page() {
-		global $wp_scripts, $wp_styles;
-
-		// Arrange.
-		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-
-		$_GET['page'] = 'wc-payments';
-		$_GET['tab']  = 'products'; // Wrong WC settings tab.
-
-		// Mock the current screen.
-		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
-
-		// Mock the WooCommerce version to be at the minimum required version.
-		Constants::set_constant( 'WC_VERSION', '9.9.2' );
-
-		// Act.
-		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
-
-		// Assert.
-		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-
-		// Clean up.
-		unset( $_GET['page'], $_GET['tab'] );
-		Constants::clear_constants();
+	/**
+	 * Data provider for test_enqueue_wc_payment_settings_spotlight.
+	 *
+	 * @return array
+	 */
+	public function provider_enqueue_wc_payment_settings_spotlight(): array {
+		return [
+			'wrong settings tab'              => [
+				'page=wc-settings&tab=products',
+				'9.9.2',
+				false,
+			],
+			'payment method section'          => [
+				'page=wc-settings&tab=checkout&section=woocommerce_payments',
+				'9.9.2',
+				false,
+			],
+			'top-level page with a spotlight' => [
+				'page=wc-settings&tab=checkout',
+				'9.9.2',
+				true,
+			],
+			'unsupported WooCommerce version' => [
+				'page=wc-settings&tab=checkout',
+				'9.9.1',
+				false,
+			],
+		];
 	}
 
-	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_old_wc_version() {
+	/**
+	 * @testdox The settings spotlight is enqueued only on the supported top-level Payments page.
+	 * @dataProvider provider_enqueue_wc_payment_settings_spotlight
+	 *
+	 * @param string $request_query  Request parameters as a query string.
+	 * @param string $wc_version    WooCommerce version.
+	 * @param bool   $should_enqueue Whether the spotlight assets should be enqueued.
+	 */
+	public function test_enqueue_wc_payment_settings_spotlight( string $request_query, string $wc_version, bool $should_enqueue ) {
 		global $wp_scripts, $wp_styles;
 
-		// Arrange.
 		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		parse_str( $request_query, $_REQUEST );
 
-		$_GET['page'] = 'wc-payments';
-		$_GET['tab']  = 'checkout';
-
-		// Mock the current screen.
 		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+		Constants::set_constant( 'WC_VERSION', $wc_version );
+		$this->mock_pm_promotions_service->method( 'get_visible_promotions' )->willReturn( [ [ 'type' => 'spotlight' ] ] );
 
-		// Mock the WooCommerce version to NOT be at the minimum required version.
-		Constants::set_constant( 'WC_VERSION', '9.9.1' );
+		wp_register_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', false, [], '1.0', true );
+		wp_register_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', false, [], '1.0' );
 
-		// Act.
 		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
 
-		// Assert.
-		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertSame( $should_enqueue, wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertSame( $should_enqueue, wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
 
-		// Clean up.
-		unset( $_GET['page'], $_GET['tab'] );
+		wp_dequeue_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_dequeue_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_deregister_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_deregister_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		$_REQUEST = [];
 		Constants::clear_constants();
 	}
 
