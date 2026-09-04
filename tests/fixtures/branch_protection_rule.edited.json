@@ -1,0 +1,11 @@
+{
+  "action": "edited",
+  "rule": { "name": "develop" },
+  "changes": {
+    "required_pull_request_reviews_enforcement_level": {
+      "from": "off \"was disabled\""
+    }
+  },
+  "repository": { "full_name": "Automattic/woocommerce-payments" },
+  "sender": { "login": "octocat" }
+}
