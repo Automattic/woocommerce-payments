@@ -642,8 +642,8 @@ fi
 
 info "Installing REST API auth plugin..."
 # Prefer the zip cached by CI (see env-setup action); fall back to GitHub.
-if [[ -f "${E2E_ROOT}/deps/basic-auth.zip" ]]; then
-	retry cli wp plugin install /var/www/html/wp-content/plugins/woocommerce-payments/tests/e2e/deps/basic-auth.zip --activate --force
+if [[ -f "${E2E_ROOT}/.cache/basic-auth.zip" ]]; then
+	retry cli wp plugin install /var/www/html/wp-content/plugins/woocommerce-payments/tests/e2e/.cache/basic-auth.zip --activate --force
 else
 	retry cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
 fi
