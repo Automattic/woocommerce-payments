@@ -138,7 +138,8 @@ jobs:
         run: |
           cp tests/e2e/utils/shopper.ts /tmp/shopper-after.ts
           trap 'cp /tmp/shopper-after.ts tests/e2e/utils/shopper.ts' EXIT
-          git show 9d990a718:tests/e2e/utils/shopper.ts > tests/e2e/utils/shopper.ts
+          git fetch --depth=1 origin 9d990a7189550b4b8da95dbcc9a69c675c186870
+          git show FETCH_HEAD:tests/e2e/utils/shopper.ts > tests/e2e/utils/shopper.ts
           echo 'PROFILE: baseline Blocks checkout'
           pnpm run test:e2e-ci --project=chromium --reporter=line --retries=0 --repeat-each=2 shopper-wc-blocks-checkout-purchase shopper-wc-blocks-saved-card-checkout-and-usage shopper-wc-blocks-checkout-failures
           cp /tmp/shopper-after.ts tests/e2e/utils/shopper.ts
