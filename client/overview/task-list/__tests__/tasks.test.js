@@ -131,6 +131,7 @@ describe( 'getTasks()', () => {
 				detailsSubmitted: true,
 			},
 			zeroDecimalCurrencies: [],
+			shouldUseExplicitPrice: true,
 			connect: {
 				country: 'US',
 			},
@@ -489,21 +490,39 @@ describe( 'getDisputeResolutionTask()', () => {
 		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
 		mockHistoryPush.mockClear();
 
-		global.wcpaySettings.currencyData.FR = {
-			code: 'EUR',
-			symbol: '€',
-			symbolPosition: 'left',
-			thousandSeparator: ',',
-			decimalSeparator: '.',
-			precision: 2,
-		};
-		global.wcpaySettings.currencyData.GB = {
-			code: 'GBP',
-			symbol: '£',
-			symbolPosition: 'left',
-			thousandSeparator: ',',
-			decimalSeparator: '.',
-			precision: 2,
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			shouldUseExplicitPrice: true,
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 
@@ -531,6 +550,20 @@ describe( 'getDisputeResolutionTask()', () => {
 
 		expect( task?.title ).toBe(
 			'Respond to 3 active disputes for totals of €10.00 EUR and $20.00 USD'
+		);
+	} );
+
+	it( 'honors the explicit price setting for two summary totals', () => {
+		global.wcpaySettings.shouldUseExplicitPrice = false;
+
+		const task = getDisputeResolutionTask( {
+			count: 3,
+			amount_by_currency: { usd: 2000, eur: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe(
+			'Respond to 3 active disputes for totals of €10.00 and $20.00'
 		);
 	} );
 
@@ -585,15 +618,26 @@ describe( 'getDisputeResolutionTask()', () => {
 		[ 'a zero count', { count: 0, earliest_due_by: nextWeekDeadline } ],
 		[ 'a null deadline', { count: 1, earliest_due_by: null } ],
 		[
-			'a past deadline',
-			{ count: 1, earliest_due_by: '2023-01-31 23:59:59' },
-		],
-		[
 			'a deadline after seven days',
 			{ count: 1, earliest_due_by: '2023-02-09 23:59:59' },
 		],
 	] )( 'does not return a task for %s', ( unused, summary ) => {
 		expect( getDisputeResolutionTask( summary ) ).toBeNull();
+	} );
+
+	it( 'keeps an actionable task visible when its earliest deadline is past', () => {
+		const task = getDisputeResolutionTask( {
+			count: 2,
+			amount_by_currency: { usd: 2000 },
+			earliest_due_by: '2023-01-31 23:59:59',
+		} );
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				content: 'Response overdue',
+				dataAttrs: { 'data-urgent': true },
+			} )
+		);
 	} );
 
 	it( 'treats an empty amount array as no amount', () => {
@@ -652,6 +696,24 @@ describe( 'getDisputeResolutionTask()', () => {
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
 				id: 'ch_mock',
+			} )
+		);
+	} );
+
+	it( 'opens the filtered dispute list for multiple disputes', () => {
+		const task = getDisputeResolutionTask( {
+			count: 2,
+			amount_by_currency: { usd: 2000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		task?.action();
+
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
 			} )
 		);
 	} );

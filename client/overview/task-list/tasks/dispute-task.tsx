@@ -10,7 +10,10 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import type { TaskItemProps } from '../types';
 import type { CachedDispute, DisputesSummaryData } from 'wcpay/types/disputes';
-import { formatCurrency } from 'multi-currency/interface/functions';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+} from 'multi-currency/interface/functions';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';
@@ -25,11 +28,14 @@ export const getDisputeResolutionTask = (
 ): TaskItemProps | null => {
 	const activeDisputeCount = activeDisputesSummary?.count ?? 0;
 	const earliestDueBy = activeDisputesSummary?.earliest_due_by;
+	const isPastDue =
+		!! earliestDueBy &&
+		moment.utc( earliestDueBy ).isBefore( moment.utc() );
 
 	if (
 		activeDisputeCount === 0 ||
 		! earliestDueBy ||
-		! isDueWithin( { dueBy: earliestDueBy, days: 7 } )
+		( ! isPastDue && ! isDueWithin( { dueBy: earliestDueBy, days: 7 } ) )
 	) {
 		return null;
 	}
@@ -78,14 +84,16 @@ export const getDisputeResolutionTask = (
 	};
 
 	const isDueToday =
+		! isPastDue &&
 		formatDateTimeFromString( earliestDueBy, {
 			customFormat: 'Y-m-d',
 		} ) ===
-		formatDateTimeFromString(
-			moment.utc().format( 'YYYY-MM-DD HH:mm:ss' ),
-			{ customFormat: 'Y-m-d' }
-		);
-	const isDueWithin72h = isDueWithin( { dueBy: earliestDueBy, days: 3 } );
+			formatDateTimeFromString(
+				moment.utc().format( 'YYYY-MM-DD HH:mm:ss' ),
+				{ customFormat: 'Y-m-d' }
+			);
+	const isDueWithin72h =
+		isPastDue || isDueWithin( { dueBy: earliestDueBy, days: 3 } );
 
 	const disputeTask: TaskItemProps = {
 		key: `dispute-resolution-task-${
@@ -145,25 +153,20 @@ export const getDisputeResolutionTask = (
 			formatCurrency( amount, currency )
 		);
 	} else if ( amountEntries.length === 2 ) {
-		const formatAmountWithCurrencyCode = ( [ currency, amount ]: [
-			string,
-			number
-		] ): string => {
-			const formattedAmount = formatCurrency( amount, currency );
-			const currencyCode = currency.toUpperCase();
-
-			return formattedAmount.toUpperCase().includes( currencyCode )
-				? formattedAmount
-				: `${ formattedAmount } ${ currencyCode }`;
-		};
 		disputeTask.title = sprintf(
 			__(
 				'Respond to %1$d active disputes for totals of %2$s and %3$s',
 				'woocommerce-payments'
 			),
 			activeDisputeCount,
-			formatAmountWithCurrencyCode( amountEntries[ 0 ] ),
-			formatAmountWithCurrencyCode( amountEntries[ 1 ] )
+			formatExplicitCurrency(
+				amountEntries[ 0 ][ 1 ],
+				amountEntries[ 0 ][ 0 ]
+			),
+			formatExplicitCurrency(
+				amountEntries[ 1 ][ 1 ],
+				amountEntries[ 1 ][ 0 ]
+			)
 		);
 	} else if ( amountEntries.length >= 3 ) {
 		disputeTask.title = sprintf(
@@ -181,20 +184,24 @@ export const getDisputeResolutionTask = (
 		);
 	}
 
-	disputeTask.content = isDueToday
-		? sprintf(
-				__( 'Respond today by %s', 'woocommerce-payments' ),
-				// Show the deadline time in the local timezone: e.g. "11:59 PM".
-				formatDateTimeFromString( earliestDueBy, {
-					customFormat: 'g:i A',
-				} )
-		  )
-		: sprintf(
-				__( 'By %s – %s left to respond', 'woocommerce-payments' ),
-				// Show the deadline date in the local timezone: e.g. "Jan 1, 2021".
-				formatDateTimeFromString( earliestDueBy ),
-				moment.utc( earliestDueBy ).fromNow( true ) // E.g. "2 days".
-		  );
+	if ( isPastDue ) {
+		disputeTask.content = __( 'Response overdue', 'woocommerce-payments' );
+	} else if ( isDueToday ) {
+		disputeTask.content = sprintf(
+			__( 'Respond today by %s', 'woocommerce-payments' ),
+			// Show the deadline time in the local timezone: e.g. "11:59 PM".
+			formatDateTimeFromString( earliestDueBy, {
+				customFormat: 'g:i A',
+			} )
+		);
+	} else {
+		disputeTask.content = sprintf(
+			__( 'By %s – %s left to respond', 'woocommerce-payments' ),
+			// Show the deadline date in the local timezone: e.g. "Jan 1, 2021".
+			formatDateTimeFromString( earliestDueBy ),
+			moment.utc( earliestDueBy ).fromNow( true ) // E.g. "2 days".
+		);
+	}
 
 	return disputeTask;
 };

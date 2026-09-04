@@ -20,6 +20,11 @@ import type { ChargeDispute } from 'wcpay/types/charges';
 import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from './store';
 
+const emptyCachedDisputes: CachedDisputes = {
+	disputes: [],
+	isLoading: false,
+};
+
 /**
  * Returns the dispute object, error object, and loading state.
  * Fetches the dispute object if it is not already cached.
@@ -109,6 +114,10 @@ export const useDisputes = (
 ): CachedDisputes =>
 	useSelect(
 		( select ) => {
+			if ( shouldLoad === false ) {
+				return emptyCachedDisputes;
+			}
+
 			const { getDisputes, isResolving, hasFinishedResolution } =
 				select( STORE_NAME );
 
@@ -134,10 +143,6 @@ export const useDisputes = (
 				orderBy: orderBy || 'created',
 				order: order || 'desc',
 			};
-
-			if ( shouldLoad === false ) {
-				return { disputes: [], isLoading: false };
-			}
 
 			return {
 				disputes: getDisputes( query ),
