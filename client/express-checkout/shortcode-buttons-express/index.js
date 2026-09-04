@@ -55,6 +55,21 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
+// Identifies the most recent forced refresh. A slower, superseded refresh must
+// not publish its cart data or remount Elements behind the newer one's back.
+let latestForcedRefreshId = 0;
+// The forced refresh that currently owns the button, or null when none is in
+// flight. Deliberately one refresh rather than a count: a count would keep
+// rejecting clicks for a refresh that has already been superseded by a newer,
+// successful one, and a hung refresh would never give its count back.
+let activeForcedRefreshId = null;
+// Set from WooCommerce's `update_checkout`, which fires before its own
+// `update_order_review` request. Our container sits outside what core blocks
+// during that request, so the old button stays tappable while `cachedCartData`
+// is still the pre-change snapshot. Raising the guard here closes that window;
+// the forced refresh that follows `updated_checkout` takes it over.
+let coreCheckoutRefreshPending = false;
+
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
 		return await getCartApiHandler().getCart();
@@ -222,9 +237,20 @@ jQuery( ( $ ) => {
 		 * @param {Object} creationOptions ECE initialization options.
 		 */
 		startExpressCheckoutElement: async ( creationOptions ) => {
+			const { isSuperseded = () => false } = creationOptions;
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
+
+			// Loading Stripe is another await a newer refresh can start across,
+			// so ownership has to be rechecked here and not only after the cart
+			// fetch. Everything from here to `mount()` is synchronous, so this
+			// is the last check needed: a superseded refresh never builds a
+			// generation, let alone puts one on screen.
+			if ( isSuperseded() ) {
+				return;
+			}
+
 			const useConfirmationToken =
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
@@ -288,6 +314,25 @@ jQuery( ( $ ) => {
 					return;
 				}
 
+				// Stripe keeps the existing Element clickable while WooCommerce refreshes
+				// the cart. Reject the click until the replacement Element is initialized,
+				// so a payment sheet never opens with a stale cart snapshot. Only the
+				// newest refresh gates this: an older one it superseded is irrelevant.
+				if (
+					activeForcedRefreshId !== null ||
+					coreCheckoutRefreshPending
+				) {
+					event.reject();
+					return;
+				}
+
+				const options = getOnClickOptions();
+				if ( ! options ) {
+					// Without cart (or product) data we can't describe the purchase to the wallet.
+					event.reject();
+					return;
+				}
+
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
@@ -345,7 +390,6 @@ jQuery( ( $ ) => {
 						} );
 				}
 
-				const options = getOnClickOptions();
 				const shippingOptionsWithFallback =
 					// server-side data on the product page initialization doesn't provide any shipping rates.
 					! options.shippingRates ||
@@ -463,7 +507,13 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: async () => {
+		init: async ( { forceRefresh = false, refreshId = null } = {} ) => {
+			// A forced refresh is superseded as soon as a newer one starts. Its
+			// response must not be published: doing so would overwrite fresher
+			// cart data and remount Elements underneath the newer generation.
+			const isSuperseded = () =>
+				refreshId !== null && refreshId !== latestForcedRefreshId;
+
 			removeAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout'
@@ -502,13 +552,30 @@ jQuery( ( $ ) => {
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
 
 			if (
-				! cachedCartData &&
+				( forceRefresh || ! cachedCartData ) &&
 				( ! getExpressCheckoutData( 'product' ) ||
 					needsMethodsReevaluation )
 			) {
 				try {
-					cachedCartData = await fetchNewCartData();
-				} catch ( e ) {}
+					const freshCartData = await fetchNewCartData();
+
+					if ( isSuperseded() ) {
+						return;
+					}
+
+					cachedCartData = freshCartData;
+				} catch ( e ) {
+					if ( isSuperseded() ) {
+						return;
+					}
+
+					// The refresh failed, so there is no cart data we can trust.
+					// Clearing it hides the button and makes any click that still
+					// reaches the handler reject, rather than opening a wallet
+					// against the pre-refresh snapshot. A later healthy refresh
+					// restores it.
+					cachedCartData = null;
+				}
 			}
 
 			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
@@ -574,6 +641,7 @@ jQuery( ( $ ) => {
 					enabledMethods: enabledMethodsOverride,
 					setupFutureUsage:
 						getSetupFutureUsageForCart( cachedCartData ),
+					isSuperseded,
 				} );
 			} else if (
 				isProductContext &&
@@ -588,6 +656,7 @@ jQuery( ( $ ) => {
 					)
 						? 'off_session'
 						: null,
+					isSuperseded,
 				} );
 			} else {
 				expressCheckoutButtonUi.hideContainer();
@@ -669,11 +738,56 @@ jQuery( ( $ ) => {
 						}
 					} catch ( e ) {
 						expressCheckoutButtonUi.hideContainer();
+						// Leaving the overlay on would keep `blockUI.isBlocked`
+						// truthy, so `blockButton()` would skip the overlay for
+						// the rest of the page life.
+						expressCheckoutButtonUi.unblock();
 					}
 				}
 			);
 		},
 	};
+
+	const refreshExpressCheckoutElement = async () => {
+		// Starting a refresh supersedes whatever was in flight: the older one
+		// may still settle, but `init()` will discard its result. That is also
+		// what keeps a hung request from gating clicks forever - the next
+		// refresh simply takes over.
+		const refreshId = ++latestForcedRefreshId;
+		activeForcedRefreshId = refreshId;
+		coreCheckoutRefreshPending = false;
+
+		// The element mounted before the refresh stays clickable throughout.
+		// The overlay tells the shopper why a tap does nothing, the same way
+		// core greys out the order review; the click guard above is what
+		// actually stops keyboard and assistive-tech activation, which an
+		// element-level blockUI overlay does not intercept.
+		expressCheckoutButtonUi.blockButton();
+
+		try {
+			await wcpayECE.init( { forceRefresh: true, refreshId } );
+		} finally {
+			// Only the refresh that still owns the button may release the guard
+			// and lift the overlay. A superseded one finishing later must leave
+			// the newer one's alone. `init()` already decided whether the
+			// container belongs on screen, so only the overlay comes off.
+			if ( activeForcedRefreshId === refreshId ) {
+				activeForcedRefreshId = null;
+				expressCheckoutButtonUi.unblock();
+			}
+		}
+	};
+
+	// Guard from the moment core starts refreshing, not only once it is done.
+	// Checkout only: `init_checkout` fires `update_checkout` on the order-pay
+	// page too, where core bails out without ever firing `updated_checkout`,
+	// so a guard raised there would never come down.
+	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
+		$( document.body ).on( 'update_checkout', () => {
+			coreCheckoutRefreshPending = true;
+			expressCheckoutButtonUi.blockButton();
+		} );
+	}
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
@@ -686,14 +800,12 @@ jQuery( ( $ ) => {
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
+		refreshExpressCheckoutElement();
 	} );
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
+		refreshExpressCheckoutElement();
 	} );
 } );

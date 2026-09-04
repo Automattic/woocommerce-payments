@@ -29,6 +29,12 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		$.fn.ready = ( callback ) => callback( $ );
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
+		$.fn.block = jest.fn( function () {
+			return this;
+		} );
+		$.fn.unblock = jest.fn( function () {
+			return this;
+		} );
 
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.flags = {};
@@ -636,5 +642,31 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 				setupFutureUsage: 'off_session',
 			} )
 		);
+	} );
+
+	it( 'should lift the overlay when the cart refresh behind `update-button-data` fails', async () => {
+		apiFetch.mockImplementation( async () => Promise.reject() );
+
+		// The action must be dispatched on the hooks registry the isolated
+		// module registered with, not the test file's own copy.
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.unblock.mockClear();
+
+		doAction( 'wcpay.express-checkout.update-button-data' );
+
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'wcpay-express-checkout-element' )
+			).not.toBeVisible()
+		);
+		// Otherwise `blockUI.isBlocked` stays truthy on the container and
+		// `blockButton()` skips the overlay for the rest of the page life.
+		expect( $.fn.block ).toHaveBeenCalled();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 } );
