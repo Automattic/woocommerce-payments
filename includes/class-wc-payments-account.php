@@ -2865,8 +2865,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return bool
 	 */
 	public function is_review_prompt_eligible(): bool {
-		wc_deprecated_function( __FUNCTION__, '11.2.0' );
-
 		$account = $this->get_cached_account_data();
 		return (bool) ( $account['eligibility_review_prompt'] ?? false );
 	}
