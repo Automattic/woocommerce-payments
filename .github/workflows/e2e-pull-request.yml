@@ -132,19 +132,5 @@ jobs:
         shell: bash
         run: pnpm exec playwright install chromium
 
-      - name: Profile Blocks checkout before and after
-        if: ${{ matrix.test_groups == 'blocks' && matrix.woocommerce == 'latest' }}
-        shell: bash
-        run: |
-          cp tests/e2e/utils/shopper.ts /tmp/shopper-after.ts
-          trap 'cp /tmp/shopper-after.ts tests/e2e/utils/shopper.ts' EXIT
-          git fetch --depth=1 origin 9d990a7189550b4b8da95dbcc9a69c675c186870
-          git show FETCH_HEAD:tests/e2e/utils/shopper.ts > tests/e2e/utils/shopper.ts
-          echo 'PROFILE: baseline Blocks checkout'
-          pnpm run test:e2e-ci --project=chromium --reporter=line --retries=0 --repeat-each=2 shopper-wc-blocks-checkout-purchase shopper-wc-blocks-saved-card-checkout-and-usage shopper-wc-blocks-checkout-failures
-          cp /tmp/shopper-after.ts tests/e2e/utils/shopper.ts
-          echo 'PROFILE: Blocks checkout readiness'
-          pnpm run test:e2e-ci --project=chromium --reporter=line --retries=0 --repeat-each=2 shopper-wc-blocks-checkout-purchase shopper-wc-blocks-saved-card-checkout-and-usage shopper-wc-blocks-checkout-failures
-
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
