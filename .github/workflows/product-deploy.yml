@@ -1,0 +1,54 @@
+name: Deploy - WordPress.org
+
+# Deploys the plugin to WordPress.org with the Woo Product Deploy Action.
+# Runs in simulation mode by default; untick "simulate" for a live deploy.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (x.y.z)'
+        required: true
+      branch:
+        description: 'Branch to deploy from (e.g. trunk or release/x.y.z)'
+        required: true
+        default: 'trunk'
+      simulate:
+        description: 'Simulation mode (dry run)'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }}${{ inputs.simulate && ' (simulation)' || '' }}"
+    runs-on: ubuntu-latest
+    steps:
+      # woo-product-deploy is a private repo, so it needs a token to check out
+      - name: Checkout woo-product-deploy action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: woocommerce/woo-product-deploy
+          ref: trunk
+          path: ./.github/actions/woo-product-deploy
+          token: ${{ secrets.BOTWOO_TOKEN }}
+
+      - name: Deploy to WordPress.org
+        uses: ./.github/actions/woo-product-deploy
+        with:
+          repo_url: ${{ github.server_url }}/${{ github.repository }}
+          branch: ${{ inputs.branch }}
+          version: ${{ inputs.version }}
+          node_version: '24'
+          npm_version: '11'
+          simulate: ${{ inputs.simulate }}
+          wporg_release: true
+          # post-release-updates.yml already creates the GitHub release and tag
+          github_release: false
+          deploy_pat: ${{ secrets.BOTWOO_TOKEN }}
+          wporg_username: ${{ secrets.WPORG_USERNAME }}
+          wporg_password: ${{ secrets.WPORG_PASSWORD }}
+          partner_user: ${{ secrets.QIT_CI_USER }}
+          partner_secret: ${{ secrets.QIT_CI_SECRET }}

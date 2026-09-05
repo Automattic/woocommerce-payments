@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add a workflow for deploying the plugin to WordPress.org with the Woo Product Deploy Action.
