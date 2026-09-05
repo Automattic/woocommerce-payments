@@ -65,4 +65,3 @@ Migration classes live in `includes/migrations/` and run on `woocommerce_woocomm
 5. If you cannot establish the impact, stop and flag it to the user as needing review.
 
 > Core's [AGENTS.md Backward Compatibility](https://github.com/woocommerce/woocommerce/blob/trunk/AGENTS.md#backward-compatibility) section carries the same guardrail.
-

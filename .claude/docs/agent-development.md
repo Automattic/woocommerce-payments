@@ -203,4 +203,3 @@ pnpm run tube:stop
 - `bin/jurassictube/` is gitignored — config and keys are never committed
 - Port is resolved at runtime from `WORDPRESS_PORT` in `.env` (never hardcoded in config)
 - WordPress URLs resolve automatically via `wp-config.php` (`DOCKER_HOST` from `HTTP_HOST`) — no DB updates needed
-

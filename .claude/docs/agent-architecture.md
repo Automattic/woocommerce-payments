@@ -160,4 +160,3 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 | `docker/README.md` | Docker setup |
 | `includes/core/README.md` | Extensibility docs |
 | `docs/` | Additional documentation |
-
