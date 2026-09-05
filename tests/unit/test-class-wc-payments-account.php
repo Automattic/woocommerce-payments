@@ -3252,6 +3252,67 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_refresh_test_account_data_keeps_pending_response_out_of_cache() {
+		$request = $this->mock_wcpay_request( Get_Account::class );
+		$request->expects( $this->once() )->method( 'set_test_drive_readiness' );
+		$request->method( 'format_response' )->willReturn(
+			new Response(
+				[
+					'test_drive_readiness' => true,
+					'payments_enabled'     => false,
+				]
+			)
+		);
+		$this->mock_database_cache->expects( $this->never() )->method( 'get_or_add' );
+		$this->mock_database_cache->expects( $this->never() )->method( 'add' );
+		$refreshes = did_action( 'woocommerce_payments_account_refreshed' );
+
+		$this->assertFalse( $this->wcpay_account->refresh_test_account_data() );
+		$this->assertSame( $refreshes, did_action( 'woocommerce_payments_account_refreshed' ) );
+	}
+
+	/**
+	 * @dataProvider account_readiness_responses_provider
+	 */
+	public function test_refresh_test_account_data_fetches_full_account_when_ready_or_unsupported( array $response ) {
+		$this->mock_jetpack_connection();
+		$request = $this->mock_wcpay_request( Get_Account::class );
+		$request->method( 'format_response' )->willReturn( new Response( $response ) );
+		$this->mock_database_cache->expects( $this->once() )->method( 'get_or_add' )->with(
+			Database_Cache::ACCOUNT_KEY,
+			$this->isType( 'callable' ),
+			$this->isType( 'callable' ),
+			true
+		)->willReturn( [ 'account_id' => 'acct_full' ] );
+
+		$this->assertSame( [ 'account_id' => 'acct_full' ], $this->wcpay_account->refresh_test_account_data() );
+	}
+
+	public function account_readiness_responses_provider(): array {
+		return [
+			'ready'      => [
+				[
+					'test_drive_readiness' => true,
+					'payments_enabled'     => true,
+				],
+			],
+			'old server' => [
+				[
+					'account_id'       => 'acct_old',
+					'payments_enabled' => false,
+				],
+			],
+			'no account' => [ [] ],
+		];
+	}
+
+	public function test_refresh_test_account_data_preserves_cache_on_error() {
+		$request = $this->mock_wcpay_request( Get_Account::class );
+		$request->method( 'format_response' )->willThrowException( new API_Exception( 'Unavailable', 'test_error', 503 ) );
+		$this->mock_database_cache->expects( $this->never() )->method( 'get_or_add' );
+		$this->assertFalse( $this->wcpay_account->refresh_test_account_data() );
+	}
+
 	public function test_is_account_partially_onboarded_returns_false_if_account_not_connected() {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();

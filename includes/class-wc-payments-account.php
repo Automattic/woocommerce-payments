@@ -2536,6 +2536,28 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Refresh the full Test Drive account only when it is ready to accept payments.
+	 *
+	 * @return array|bool Refreshed account data, or false while pending or unavailable.
+	 */
+	public function refresh_test_account_data() {
+		try {
+			$request = Get_Account::create();
+			$request->set_test_drive_readiness();
+			$account = $request->send()->to_array();
+		} catch ( API_Exception $e ) {
+			return false;
+		}
+
+		if ( ! empty( $account['test_drive_readiness'] ) && empty( $account['payments_enabled'] ) ) {
+			return false;
+		}
+
+		// Keep partial responses out of the shared cache and its refresh hooks.
+		return $this->refresh_account_data();
+	}
+
+	/**
 	 * Change the account cache to hold the connected-but-no-account value (empty array).
 	 *
 	 * @return void

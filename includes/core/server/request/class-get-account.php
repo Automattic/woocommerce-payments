@@ -47,4 +47,11 @@ class Get_Account extends Request {
 	public function set_woocommerce_store_id( string $woocommerce_store_id ): void {
 		$this->set_param( 'woocommerce_store_id', $woocommerce_store_id );
 	}
+
+	/**
+	 * Request only payment readiness for a Test Drive account.
+	 */
+	public function set_test_drive_readiness(): void {
+		$this->set_param( 'test_drive_readiness', true );
+	}
 }

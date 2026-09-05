@@ -46,6 +46,13 @@ class Get_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'GET', $request->get_method() );
 	}
 
+	public function test_readiness_request_is_opt_in() {
+		$request = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->assertArrayNotHasKey( 'test_drive_readiness', $request->get_params() );
+		$request->set_test_drive_readiness();
+		$this->assertSame( 'true', $request->get_params()['test_drive_readiness'] );
+	}
+
 	public function test_set_woocommerce_store_id() {
 		$request  = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$store_id = 'test-store-uuid-1234';
