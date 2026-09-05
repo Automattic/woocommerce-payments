@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Avoid fetching full account details while Test Drive is still being prepared.
