@@ -5,11 +5,20 @@
  */
 
 import moment from 'moment';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { getTasks, taskSort } from '../tasks';
+import { recordEvent } from 'tracks';
+
+jest.mock( '@woocommerce/navigation', () => ( {
+	getHistory: jest.fn(),
+} ) );
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
 
 const mockActiveDisputes = [
 	{
@@ -416,6 +425,106 @@ describe( 'getTasks()', () => {
 					actionLabel: 'See disputes',
 				} ),
 			] )
+		);
+	} );
+
+	it( 'should not include the early fraud warning task without active warnings', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [],
+		} );
+
+		expect( actual ).toEqual( [] );
+	} );
+
+	it( 'should include the early fraud warning task with a single warning', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+			],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'early-fraud-warning-task-ch_efw_1',
+					completed: false,
+					level: 2,
+					title: 'Review a payment flagged for potential fraud',
+					content: 'Refunding it now can prevent a dispute.',
+					actionLabel: 'Review payment',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include the early fraud warning task with multiple warnings', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+				{ order_id: 13, charge_id: 'ch_efw_2', created: 1719900000 },
+			],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'early-fraud-warning-task-ch_efw_1-ch_efw_2',
+					completed: false,
+					level: 2,
+					title: 'Review 2 payments flagged for potential fraud',
+					content:
+						'Refunding flagged payments now can prevent disputes.',
+					actionLabel: 'See transactions',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'early fraud warning task action opens the payment for a single warning and records the event', () => {
+		const pushMock = jest.fn();
+		getHistory.mockReturnValue( { push: pushMock } );
+
+		const [ task ] = getTasks( {
+			activeEarlyFraudWarnings: [
+				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+			],
+		} );
+		task.action();
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_overview_task_click',
+			{
+				task: 'early-fraud-warning-task',
+				active_early_fraud_warning_count: 1,
+			}
+		);
+		expect( pushMock ).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'path=%2Fpayments%2Ftransactions%2Fdetails'
+			)
+		);
+		expect( pushMock ).toHaveBeenCalledWith(
+			expect.stringContaining( 'id=ch_efw_1' )
+		);
+	} );
+
+	it( 'early fraud warning task action opens the transactions list for multiple warnings', () => {
+		const pushMock = jest.fn();
+		getHistory.mockReturnValue( { push: pushMock } );
+
+		const [ task ] = getTasks( {
+			activeEarlyFraudWarnings: [
+				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+				{ order_id: 13, charge_id: 'ch_efw_2', created: 1719900000 },
+			],
+		} );
+		task.action();
+
+		expect( pushMock ).toHaveBeenCalledWith(
+			expect.stringContaining( 'path=%2Fpayments%2Ftransactions' )
+		);
+		expect( pushMock ).not.toHaveBeenCalledWith(
+			expect.stringContaining( 'details' )
 		);
 	} );
 } );

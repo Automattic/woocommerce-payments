@@ -28,6 +28,7 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import DisputeReadinessCard from './dispute-readiness';
 import { useDisputes } from 'wcpay/data/disputes';
+import { useActiveEarlyFraudWarnings } from 'wcpay/data/early-fraud-warnings';
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
@@ -102,10 +103,18 @@ const OverviewPage = () => {
 		per_page: 50,
 	} );
 
+	const { activeEarlyFraudWarnings, hasLoaded: hasLoadedEarlyFraudWarnings } =
+		useActiveEarlyFraudWarnings();
+
 	const tasksUnsorted = getTasks( {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
+		// Withhold the list until the request settles, so the task does not render
+		// absent and then appear a beat later.
+		activeEarlyFraudWarnings: hasLoadedEarlyFraudWarnings
+			? activeEarlyFraudWarnings
+			: [],
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
