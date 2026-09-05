@@ -27,7 +27,7 @@ import InboxNotifications from './inbox-notifications';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import DisputeReadinessCard from './dispute-readiness';
-import { useDisputes } from 'wcpay/data/disputes';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
@@ -97,15 +97,29 @@ const OverviewPage = () => {
 		useState( false );
 	const settings = useGetSettings();
 
-	const { disputes: activeDisputes } = useDisputes( {
+	const {
+		disputesSummary: activeDisputesSummary,
+		isLoading: activeDisputesSummaryIsLoading,
+	} = useDisputesSummary( {
 		filter: 'awaiting_response',
-		per_page: 50,
 	} );
+	const shouldLoadSingleDispute = activeDisputesSummary?.count === 1;
+	const { disputes: activeDisputes, isLoading: activeDisputesIsLoading } =
+		useDisputes(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			shouldLoadSingleDispute
+		);
 
 	const tasksUnsorted = getTasks( {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		activeDisputes,
+		activeDispute: activeDisputes[ 0 ],
+		activeDisputesSummary,
+		activeDisputeTaskIsLoading:
+			activeDisputesSummaryIsLoading || activeDisputesIsLoading,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
