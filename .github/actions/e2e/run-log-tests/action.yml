@@ -9,7 +9,12 @@ runs:
       # Use +e to trap errors when running E2E tests.
       shell: /bin/bash +e {0}
       run: |
-        pnpm run test:e2e-ci
+        # Run only this job's shard when the matrix defines one.
+        if [[ -n "${E2E_SHARD_INDEX:-}" && -n "${E2E_SHARD_TOTAL:-}" ]]; then
+          pnpm run test:e2e-ci --shard="$E2E_SHARD_INDEX/$E2E_SHARD_TOTAL"
+        else
+          pnpm run test:e2e-ci
+        fi
         RESULTS_JSON="$E2E_RESULT_FILEPATH"
         if [[ -f "$RESULTS_JSON" ]]; then
           # Count spec files with tests that truly failed (status "unexpected").
@@ -59,7 +64,11 @@ runs:
 
         if [[ ${#FAILED_SPECS[@]} -eq 0 ]]; then
           echo "::notice::No failed specs found in results file. Re-running full suite instead."
-          pnpm run test:e2e-ci
+          if [[ -n "${E2E_SHARD_INDEX:-}" && -n "${E2E_SHARD_TOTAL:-}" ]]; then
+            pnpm run test:e2e-ci --shard="$E2E_SHARD_INDEX/$E2E_SHARD_TOTAL"
+          else
+            pnpm run test:e2e-ci
+          fi
           exit 0
         fi
 
@@ -81,7 +90,7 @@ runs:
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-          name: wp(${{ env.E2E_WP_VERSION }})-wc(${{ env.E2E_WC_VERSION }})-${{ env.E2E_GROUP }}-${{ env.E2E_BRANCH }}
+          name: wp(${{ env.E2E_WP_VERSION }})-wc(${{ env.E2E_WC_VERSION }})-${{ env.E2E_GROUP }}-${{ env.E2E_BRANCH }}${{ env.E2E_SHARD_INDEX && format('-shard-{0}', env.E2E_SHARD_INDEX) || '' }}
           path: |
             playwright-report/
             tests/e2e/test-results
