@@ -52,7 +52,7 @@ pnpm run test:e2e-down               # Stop E2E containers
 # Run specific tests
 pnpm run test:e2e tests/e2e/specs/wcpay/merchant/  # All merchant tests
 pnpm run test:e2e tests/e2e/specs/wcpay/shopper/   # All shopper tests
-pnpm run test:e2e -- -g "dispute"                   # By test name
+pnpm run test:e2e -g "dispute"                   # By test name
 ```
 
 **E2E environment ports:** WordPress `:8084` | phpMyAdmin `:8085` | Transact Server `:8088` | Playwright UI `:8077`
