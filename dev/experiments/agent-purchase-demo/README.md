@@ -1,8 +1,16 @@
 # WooPayments agent purchase demo
 
-A local companion plugin that lets an agent quote a real WooCommerce product, hand approval to the shopper in a browser, then complete a WooPayments **test** payment using the existing V1 path.
+A native WooPayments experiment that lets an agent quote a real WooCommerce product, hand approval to the shopper in a browser, then complete a WooPayments **test** payment using the existing V1 path. The feature is disabled by default. This directory contains the local demo harness that enables and exercises it.
 
 This is new experimental code. It is not a released WooPayments capability or an integration with an external agent payment network.
+
+## Code ownership
+
+The proposed feature lives in [`src/Internal/Service/AgentPurchases`](../../../src/Internal/Service/AgentPurchases): authenticated agent routes, WooCommerce quote calculation, browser-only shopper approval, order/payment state safeguards, and merchant channel controls. WooPayments loads this feature behind `wcpay_agent_purchases_experiment_enabled=yes`; with the flag absent or disabled its routes, approval page, and website visibility behavior are inactive.
+
+`demo-support.php` is a separate **fixture adapter**, with no routes, approval UI, or merchant settings. It supplies `pm_card_visa`, validates the local V1 backend, temporarily enables tax calculation for the fixture, suppresses fixture payment emails, and restores the local Docker port in WordPress-generated links. The native feature has no fixed test payment method: without a payment-method adapter, payment completion fails closed. A production integration still needs a reviewed source of shopper-authorized payment credentials.
+
+`setup.php` creates the disposable product, shopper, shipping and tax data, credentials, and explicitly enables the native experiment. `agent.mjs` acts as the shopper's agent through the native `/wcpay/agent-purchases/v1` API. It sends the demo shipping address; the native API does not hard-code that address.
 
 ## What we are exploring
 
@@ -35,7 +43,7 @@ Each quote uses the dedicated test shipping address in San Francisco, one marked
 
 ## Merchant control
 
-WordPress admin → WooCommerce → Agent purchase demo exposes independent agent-purchase and website-visibility switches. The website switch hides WooPayments from available website gateways; the gateway's underlying enabled setting is not changed. Another configured website gateway can remain available. Both switches default to on when first installed. WooPayments must already be enabled and connected in test mode.
+WordPress admin → WooCommerce → Agent purchases exposes independent agent-purchase and website-visibility switches. The website switch hides WooPayments from available website gateways; the gateway's underlying enabled setting is not changed. Another configured website gateway can remain available. The demo installer enables the experiment and initializes both channel switches to on; WooPayments itself leaves the experiment disabled by default. WooPayments must already be enabled and connected in test mode.
 
 ## Install / refresh
 
@@ -55,7 +63,7 @@ Container name and ports are intentionally fixed in this first experiment. Check
 ./install.sh
 ```
 
-Installation copies only four named plugin source files, runs idempotent fixtures through WP-CLI, writes private local credentials, and activates the companion plugin on the default store. Setup rotates the demo shopper password and agent key. Existing fixtures are reused; product ID can be obtained with `search`.
+Installation uses the native WooPayments source mounted from this checkout. It deactivates the old companion implementation if present, removes its four explicitly named public source files, copies only `demo-support.php`, runs idempotent fixtures through WP-CLI, writes private local credentials, and activates the fixture adapter on the default store. Setup rotates the demo shopper password and agent key. Existing fixtures are reused; product ID can be obtained with `search`.
 
 Do not install on production. Payment and approval fail closed outside the configured local development/test path. Payments use the fixed `pm_card_visa` test fixture via the WooPayments gateway, with its fraud token and the V1 request path; no raw card data is collected.
 
@@ -64,21 +72,15 @@ Do not install on production. Payment and approval fail closed outside the confi
 ```sh
 node verify.mjs
 # WP-CLI checks: copy source/test files into /tmp, never .runtime into web root.
-docker cp class-demo-quote.php wcpay_wp_default:/tmp/class-demo-quote.php
 docker cp verify-quote.php wcpay_wp_default:/tmp/verify-quote.php
 docker exec -e AGENT_DEMO_PRODUCT_ID=PRODUCT_ID wcpay_wp_default wp --allow-root eval-file /tmp/verify-quote.php
 docker cp verify-state.php wcpay_wp_default:/tmp/verify-state.php
 docker exec wcpay_wp_default wp --allow-root eval-file /tmp/verify-state.php
 ```
 
-Observed September 7, 2026:
+The scripts check HTTP authentication, real catalog/totals, payment-before-approval rejection, absent approval API, quote invalidation, shopper state isolation, and completion locks/expiry. They exercise the native feature through its API and services. Browser approval and test payment/refund verification are separate steps.
 
-- Eleven HTTP checks pass: real catalog and totals, auth, pending approval, no approval route, payment-before-approval rejection.
-- Real quote/order integration passes, including price mutation invalidation and shopper cart/session restoration.
-- Ten state checks pass, including an existing shared lock, expiry, record preservation, and zero network calls.
-- Browser login, invalid nonce rejection, explicit approval, and receipt verified.
-- Two real V1 test orders paid $15.66; both were fully refunded after verification. One succeeded with WooPayments hidden from website checkout. Website setting restored afterward.
-- Repeated completion before refund returned the same order. A payment order is persisted before processing, and unresolved attempts cannot create another order automatically.
+Native refactor verified September 7, 2026: 12 PHPUnit tests / 47 assertions, 13 HTTP assertions, and quote/order plus state/lock integration checks pass. Browser approval and receipt were verified against the native feature. A $15.66 V1 test purchase succeeded, repeated completion returned the same order, and the charge was fully refunded. Independent website/agent settings checks passed. The screenshot below is from the earlier companion implementation and illustrates the same receipt layout.
 
 `wp eval-file /tmp/verify-payment.php ORDER_ID` (after copying that script into the container) verifies a paid marked test order and **refunds it**. It is not a read-only check. Never run against an unrelated order.
 
@@ -88,4 +90,4 @@ Observed September 7, 2026:
 
 The demo uses one configured shopper, address, product family and test payment fixture. It does not implement delegated budgets, wallets, external agent identity/payment credentials, arbitrary storefront compatibility, 3DS completion, or production authorization. Ambiguous payment outcomes stop for review. A crash holding a quote lock requires operator investigation, not an automatic new payment attempt. Quote storage has no scheduled retention cleanup. Quotes record purchase completion and do not track later refunds.
 
-The dedicated shipping zone, test product, tax class and customer remain in the local store. Deactivate `woopayments-agent-demo` to remove the API, approval page and website-visibility filter. Fixtures are intentionally retained for subsequent demos.
+The dedicated shipping zone, test product, tax class and customer remain in the local store. Disable the native feature with `wp option update wcpay_agent_purchases_experiment_enabled no` to remove its API, approval page and website-visibility behavior on subsequent requests. Deactivating `woopayments-agent-demo/demo-support.php` only removes fixture adapters; it does not disable the native feature. Fixtures are intentionally retained for subsequent demos.

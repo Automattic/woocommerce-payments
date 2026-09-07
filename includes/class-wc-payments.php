@@ -788,6 +788,9 @@ class WC_Payments {
 
 		AbilitiesRegistrar::init();
 
+		// The experiment registers no surfaces until explicitly enabled in test development mode.
+		wcpay_get_container()->get( \WCPay\Internal\Service\AgentPurchases\Feature::class )->register();
+
 		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';

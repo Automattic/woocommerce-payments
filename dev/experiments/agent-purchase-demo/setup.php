@@ -81,7 +81,8 @@ try {
 		file_put_contents( $shopper_path, wp_json_encode( array( 'username' => $username, 'password' => $password ) ) );
 		chmod( $shopper_path, 0600 );
 	}
-	update_option( 'wcpay_agent_demo_shopper_id', $shopper_id, false );
+	update_option( 'wcpay_agent_purchase_product_ids', array( $product_id ), false );
+	update_option( 'wcpay_agent_purchase_shopper_id', $shopper_id, false );
 	$agent_path = '/tmp/wcpay-agent-demo-agent.json';
 	$config = file_exists( $agent_path ) ? json_decode( file_get_contents( $agent_path ), true ) : null;
 	if ( ! is_array( $config ) || empty( $config['key'] ) ) {
@@ -89,8 +90,9 @@ try {
 		file_put_contents( $agent_path, wp_json_encode( $config ) );
 		chmod( $agent_path, 0600 );
 	}
-	update_option( 'wcpay_agent_demo_key_hash', hash( 'sha256', $config['key'] ), false );
-	foreach ( array( 'wcpay_agent_demo_enabled' => 'yes', 'wcpay_agent_demo_web_enabled' => 'yes', 'wcpay_agent_demo_origin' => 'http://localhost:8082' ) as $option => $value ) {
+	update_option( 'wcpay_agent_purchase_key_hash', hash( 'sha256', $config['key'] ), false );
+	update_option( 'wcpay_agent_purchases_experiment_enabled', 'yes', false );
+	foreach ( array( 'wcpay_agent_purchases_enabled' => 'yes', 'wcpay_agent_purchases_web_enabled' => 'yes' ) as $option => $value ) {
 		if ( false === get_option( $option, false ) ) {
 			add_option( $option, $value, '', false );
 		}

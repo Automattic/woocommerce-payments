@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Add a local experiment for shopper-approved agent test purchases.
+Add a disabled-by-default agent purchase experiment in WooPayments with local demo tooling.
