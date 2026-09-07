@@ -114,10 +114,8 @@ const OverviewPage = () => {
 			shouldLoadSingleDispute
 		);
 
-	const {
-		activeEarlyFraudWarnings,
-		hasLoaded: hasLoadedEarlyFraudWarnings,
-	} = useActiveEarlyFraudWarnings();
+	const { activeEarlyFraudWarnings, hasLoaded: hasLoadedEarlyFraudWarnings } =
+		useActiveEarlyFraudWarnings();
 
 	const tasksUnsorted = getTasks( {
 		showUpdateDetailsTask,
