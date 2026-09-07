@@ -18,13 +18,12 @@ import {
 	UpdatePaymentIntentAction,
 } from './types';
 import { Charge } from 'wcpay/types/charges';
-import {
-	PAYMENT_INTENTS_STORE_NAME as STORE_NAME,
-	EARLY_FRAUD_WARNINGS_STORE_NAME,
-} from '../store-names';
-// getTimeline lives in the timeline store; importing its name both registers
-// that store and lets us invalidate the timeline after a refund.
+import { PAYMENT_INTENTS_STORE_NAME as STORE_NAME } from '../store-names';
+// Take these two names from their store modules, not from `store-names`: the import
+// is also what registers the store, and neither is otherwise loaded on the payment
+// details page, so invalidating them after a refund would throw on a hard refresh.
 import { STORE_NAME as TIMELINE_STORE_NAME } from '../timeline/store';
+import { STORE_NAME as EARLY_FRAUD_WARNINGS_STORE_NAME } from '../early-fraud-warnings/store';
 
 export function updatePaymentIntent(
 	id: string,
