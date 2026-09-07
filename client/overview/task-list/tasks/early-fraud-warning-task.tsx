@@ -12,14 +12,50 @@ import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
 
+const taskKeyPrefix = 'early-fraud-warning-task-';
+
+// Charge IDs carry no hyphen, so joining on one keeps the charges recoverable.
+const taskKeySeparator = '-';
+
+const buildTaskKey = ( chargeIds: string[] ): string =>
+	taskKeyPrefix + [ ...chargeIds ].sort().join( taskKeySeparator );
+
+/**
+ * The charges a merchant has already dismissed, read back out of the keys the task
+ * list stored for them.
+ *
+ * Dismissal has to survive the task's own key changing, because the key names the
+ * warnings the task covered at the time. Without this, resolving one of two dismissed
+ * warnings would leave a key nothing matches and bring the other one back.
+ *
+ * @param dismissedTasks Keys the merchant has dismissed, ours and everything else's.
+ */
+const getDismissedChargeIds = ( dismissedTasks: string[] ): Set< string > =>
+	new Set(
+		dismissedTasks
+			.filter( ( key ) => key.startsWith( taskKeyPrefix ) )
+			.flatMap( ( key ) =>
+				key.slice( taskKeyPrefix.length ).split( taskKeySeparator )
+			)
+	);
+
 export const getEarlyFraudWarningTask = (
 	/**
 	 * Orders whose latest early fraud warning is still actionable, as exposed
 	 * by wcpaySettings.activeEarlyFraudWarnings.
 	 */
-	activeEarlyFraudWarnings: ActiveEarlyFraudWarning[]
+	activeEarlyFraudWarnings: ActiveEarlyFraudWarning[],
+	/**
+	 * Task keys the merchant has dismissed, from
+	 * wcpaySettings.overviewTasksVisibility.dismissedTodoTasks.
+	 */
+	dismissedTasks: string[] = []
 ): TaskItemProps | null => {
-	const warningCount = activeEarlyFraudWarnings.length;
+	const dismissedChargeIds = getDismissedChargeIds( dismissedTasks );
+	const warnings = activeEarlyFraudWarnings.filter(
+		( warning ) => ! dismissedChargeIds.has( warning.charge_id )
+	);
+	const warningCount = warnings.length;
 
 	if ( warningCount === 0 ) {
 		return null;
@@ -37,7 +73,7 @@ export const getEarlyFraudWarningTask = (
 				getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions/details',
-					id: activeEarlyFraudWarnings[ 0 ].charge_id,
+					id: warnings[ 0 ].charge_id,
 				} )
 			);
 		} else {
@@ -51,13 +87,9 @@ export const getEarlyFraudWarningTask = (
 		}
 	};
 
-	// Key the task by the affected charges so a new warning renders a fresh task.
-	const taskKey = `early-fraud-warning-task-${ activeEarlyFraudWarnings
-		.map( ( warning ) => warning.charge_id )
-		.join( '-' ) }`;
-
 	return {
-		key: taskKey,
+		// Key the task by the affected charges so a new warning renders a fresh task.
+		key: buildTaskKey( warnings.map( ( warning ) => warning.charge_id ) ),
 		title: sprintf(
 			// The singular form takes no placeholder; sprintf leaves it untouched.
 			_n(
@@ -82,7 +114,10 @@ export const getEarlyFraudWarningTask = (
 		completed: false,
 		expanded: true,
 		expandable: true,
-		isDismissable: false,
+		// A merchant who has looked at a flagged payment and decided against refunding
+		// has no other way to clear the task: the warning only resolves on a full refund
+		// or a platform update, and neither is theirs to trigger.
+		isDismissable: true,
 		showActionButton: true,
 		actionLabel:
 			warningCount === 1

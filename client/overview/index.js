@@ -129,6 +129,10 @@ const OverviewPage = () => {
 		activeEarlyFraudWarnings: hasLoadedEarlyFraudWarnings
 			? activeEarlyFraudWarnings
 			: [],
+		// The task list filters on its own key, which names the warnings the task covered
+		// when it was dismissed. The task needs the same list to keep individual warnings
+		// dismissed once that key changes.
+		dismissedTasks: overviewTasksVisibility?.dismissedTodoTasks,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
