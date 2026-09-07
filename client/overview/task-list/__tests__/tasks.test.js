@@ -484,6 +484,8 @@ describe( 'getTasks()', () => {
 
 describe( 'getDisputeResolutionTask()', () => {
 	const nextWeekDeadline = '2023-02-03 23:59:59';
+	// Get current timezone
+	const currentTimezone = moment.tz.guess();
 
 	beforeEach( () => {
 		moment.tz.setDefault( 'Etc/GMT+5' );
@@ -524,6 +526,11 @@ describe( 'getDisputeResolutionTask()', () => {
 			},
 			dateFormat: 'M j, Y',
 		};
+	} );
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date();
+		moment.tz.setDefault( currentTimezone );
 	} );
 
 	it( 'uses the complete summary count and amount', () => {
