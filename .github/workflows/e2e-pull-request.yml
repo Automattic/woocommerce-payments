@@ -105,6 +105,7 @@ jobs:
   build-client:
     if: ${{ ! inputs.wcpay-use-build-artifact }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     outputs:
       revision: ${{ steps.revision.outputs.sha }}
     steps:
