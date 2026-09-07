@@ -27,7 +27,7 @@ import InboxNotifications from './inbox-notifications';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import DisputeReadinessCard from './dispute-readiness';
-import { useDisputes } from 'wcpay/data/disputes';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
 import { useActiveEarlyFraudWarnings } from 'wcpay/data/early-fraud-warnings';
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
@@ -98,18 +98,34 @@ const OverviewPage = () => {
 		useState( false );
 	const settings = useGetSettings();
 
-	const { disputes: activeDisputes } = useDisputes( {
+	const {
+		disputesSummary: activeDisputesSummary,
+		isLoading: activeDisputesSummaryIsLoading,
+	} = useDisputesSummary( {
 		filter: 'awaiting_response',
-		per_page: 50,
 	} );
+	const shouldLoadSingleDispute = activeDisputesSummary?.count === 1;
+	const { disputes: activeDisputes, isLoading: activeDisputesIsLoading } =
+		useDisputes(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			shouldLoadSingleDispute
+		);
 
-	const { activeEarlyFraudWarnings, hasLoaded: hasLoadedEarlyFraudWarnings } =
-		useActiveEarlyFraudWarnings();
+	const {
+		activeEarlyFraudWarnings,
+		hasLoaded: hasLoadedEarlyFraudWarnings,
+	} = useActiveEarlyFraudWarnings();
 
 	const tasksUnsorted = getTasks( {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		activeDisputes,
+		activeDispute: activeDisputes[ 0 ],
+		activeDisputesSummary,
+		activeDisputeTaskIsLoading:
+			activeDisputesSummaryIsLoading || activeDisputesIsLoading,
 		// Withhold the list until the request settles, so the task does not render
 		// absent and then appear a beat later.
 		activeEarlyFraudWarnings: hasLoadedEarlyFraudWarnings

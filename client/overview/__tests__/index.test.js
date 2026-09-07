@@ -14,6 +14,7 @@ import { getTasks } from '../task-list/tasks';
 import { useActiveEarlyFraudWarnings } from 'wcpay/data/early-fraud-warnings';
 import { getQuery } from '@woocommerce/navigation';
 import { useGetSettings } from 'wcpay/data/settings';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
 
 const settingsMock = {
 	enabled_payment_method_ids: [ 'foo', 'bar' ],
@@ -78,6 +79,10 @@ jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputes: jest
 		.fn()
 		.mockReturnValue( { disputes: [], isLoading: false } ),
+	useDisputesSummary: jest.fn().mockReturnValue( {
+		disputesSummary: {},
+		isLoading: false,
+	} ),
 } ) );
 jest.mock( 'wcpay/data/early-fraud-warnings', () => ( {
 	useActiveEarlyFraudWarnings: jest
@@ -151,6 +156,60 @@ describe( 'Overview page', () => {
 		useGetSettings.mockReturnValue( {
 			enabled_payment_method_ids: [ 'foo', 'bar' ],
 		} );
+		useDisputes.mockReturnValue( { disputes: [], isLoading: false } );
+		useDisputesSummary.mockReturnValue( {
+			disputesSummary: {},
+			isLoading: false,
+		} );
+	} );
+
+	it( 'does not load dispute rows before the summary finds one dispute', () => {
+		render( <OverviewPage /> );
+
+		expect( useDisputesSummary ).toHaveBeenCalledWith( {
+			filter: 'awaiting_response',
+		} );
+		expect( useDisputes ).toHaveBeenCalledWith(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			false
+		);
+	} );
+
+	it( 'loads and passes one dispute when the summary count is one', () => {
+		const activeDispute = { dispute_id: 'dp_1', charge_id: 'ch_1' };
+		const activeDisputesSummary = {
+			count: 1,
+			amount_by_currency: { usd: 1000 },
+			earliest_due_by: '2023-02-01 23:59:59',
+		};
+		useDisputes.mockReturnValue( {
+			disputes: [ activeDispute ],
+			isLoading: true,
+		} );
+		useDisputesSummary.mockReturnValue( {
+			disputesSummary: activeDisputesSummary,
+			isLoading: false,
+		} );
+
+		render( <OverviewPage /> );
+
+		expect( useDisputes ).toHaveBeenCalledWith(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			true
+		);
+		expect( getTasks ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				activeDispute,
+				activeDisputesSummary,
+				activeDisputeTaskIsLoading: true,
+			} )
+		);
 	} );
 
 	it( 'Renders even when the settings request has failed', () => {
