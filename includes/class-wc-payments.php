@@ -1089,9 +1089,6 @@ class WC_Payments {
 		return array_merge(
 			$user_data_fields,
 			[
-				// Inbox notifications.
-				'wc_payments_overview_inbox_last_read',
-
 				// Column visibility preferences.
 				'wc_payments_transactions_hidden_columns',
 				'wc_payments_transactions_blocked_hidden_columns',
@@ -1106,10 +1103,6 @@ class WC_Payments {
 				// any future PHP-side consumer MUST validate this shape
 				// before trusting it (it is user-writable JSON).
 				'wc_payments_reports_fees_view',
-
-				// WooPayments review prompt user preferences.
-				'wc_payments_review_prompt_dismissed',
-				'wc_payments_review_prompt_maybe_later',
 
 				// Reports feedback user preferences.
 				'wc_payments_reports_feedback_dismissed',

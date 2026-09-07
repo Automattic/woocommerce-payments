@@ -188,9 +188,11 @@ class WCPay_Changelog_Formatter extends Parser implements FormatterPlugin {
 
 			foreach ( $entry->getChanges() as $change ) {
 				$text = trim( $change->getContent() );
-				if ( '' !== $text ) {
-					$ret .= $this->bullet . ' ' . $change->getSubheading() . ' ' . $this->separator . ' ' . $text . "\n";
+				// Text starting with "Comment:" is an internal note authored as entry content, so keep it out of the changelog.
+				if ( '' === $text || preg_match( '/^comment:/i', $text ) ) {
+					continue;
 				}
+				$ret .= $this->bullet . ' ' . $change->getSubheading() . ' ' . $this->separator . ' ' . $text . "\n";
 			}
 
 			$ret = trim( $ret ) . "\n\n";

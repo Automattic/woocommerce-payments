@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add an accessible label to the Multi-Currency switcher so screen readers announce it correctly

@@ -21,6 +21,7 @@ import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import {
 	getDisputeFeeFormatted,
+	getKlarnaLossReason,
 	isVisaComplianceDispute,
 } from 'wcpay/disputes/utils';
 import './style.scss';
@@ -224,6 +225,7 @@ const DisputeLostFooter: React.FC< {
 		| 'balance_transactions'
 		| 'reason'
 		| 'enhanced_eligibility_types'
+		| 'payment_method_details'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
@@ -257,12 +259,70 @@ const DisputeLostFooter: React.FC< {
 		);
 	}
 
+	// Klarna is the only provider that reports why it decided against the
+	// merchant. Show it only once evidence was submitted: that's the case where
+	// the merchant is left asking how their evidence was weighed, and where a
+	// "Klarna gave no reason" statement is worth making. The accepted and
+	// non-response paths already explain themselves.
+	const klarnaLossReason = isSubmitted
+		? getKlarnaLossReason( dispute )
+		: null;
+	const statedLossReason =
+		klarnaLossReason?.type === 'stated' ? klarnaLossReason.display : null;
+
+	// Klarna disputes get their own voice, per the design: Klarna is not a bank,
+	// so it's "payment provider" here. The other methods keep saying "bank"
+	// until WOOPMNT-6349 reworks that wording across every dispute surface.
+	const isKlarnaDispute = dispute.payment_method_details?.type === 'klarna';
+
 	if ( isSubmitted ) {
 		if ( isVisaComplianceDispute( dispute ) ) {
+			// Visa compliance disputes are card disputes, so they never carry a
+			// Klarna loss reason.
 			messagePrefix = sprintf(
 				/* Translators: %1$s - formatted date */
 				__(
-					"<strong>Unfortunately, you've lost this dispute. Visa reached this decision on %1$s.</strong>",
+					"<strong>Unfortunately, you've lost this dispute.</strong> Visa reached this decision on %1$s.",
+					'woocommerce-payments'
+				),
+				closedDateFormatted
+			);
+		} else if ( isKlarnaDispute && bankName && statedLossReason ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - payment provider name, %2$s - formatted date, %3$s - the reason given for the decision, eg "Shipping policy violated" */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider, <strong>%1$s</strong>, decided against you on %2$s, citing “%3$s”.',
+					'woocommerce-payments'
+				),
+				bankName,
+				closedDateFormatted,
+				statedLossReason
+			);
+		} else if ( isKlarnaDispute && bankName ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - payment provider name, %2$s - formatted date */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider, <strong>%1$s</strong>, decided against you on %2$s.',
+					'woocommerce-payments'
+				),
+				bankName,
+				closedDateFormatted
+			);
+		} else if ( isKlarnaDispute && statedLossReason ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - formatted date, %2$s - the reason given for the decision, eg "Shipping policy violated" */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider decided against you on %1$s, citing “%2$s”.',
+					'woocommerce-payments'
+				),
+				closedDateFormatted,
+				statedLossReason
+			);
+		} else if ( isKlarnaDispute ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - formatted date */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider decided against you on %1$s.',
 					'woocommerce-payments'
 				),
 				closedDateFormatted
@@ -271,7 +331,7 @@ const DisputeLostFooter: React.FC< {
 			messagePrefix = sprintf(
 				/* Translators: %1$s - bank name, %2$s - formatted date */
 				__(
-					"<strong>Unfortunately, you've lost this dispute. The customer's bank, %1$s, reached this decision on %2$s.</strong>",
+					"<strong>Unfortunately, you've lost this dispute.</strong> The customer's bank, <strong>%1$s</strong>, reached this decision on %2$s.",
 					'woocommerce-payments'
 				),
 				bankName,
@@ -281,13 +341,24 @@ const DisputeLostFooter: React.FC< {
 			messagePrefix = sprintf(
 				/* Translators: %s - formatted date */
 				__(
-					"<strong>Unfortunately, you've lost this dispute. The customer's bank reached this decision on %1$s.</strong>",
+					"<strong>Unfortunately, you've lost this dispute.</strong> The customer's bank reached this decision on %1$s.",
 					'woocommerce-payments'
 				),
 				closedDateFormatted
 			);
 		}
 	}
+
+	// An unstated reason has no sentence to fold into, so it stays a statement
+	// of its own: the merchant's complaint is not knowing, and silence here
+	// reads as a gap in our UI rather than an answer from Klarna.
+	const lossReasonText =
+		klarnaLossReason?.type === 'unspecified'
+			? __(
+					'Klarna did not share a reason for this decision.',
+					'woocommerce-payments'
+			  )
+			: '';
 
 	return (
 		<CardFooter className="transaction-details-dispute-footer">
@@ -296,6 +367,7 @@ const DisputeLostFooter: React.FC< {
 					{ createInterpolateElement( messagePrefix, {
 						strong: <strong />,
 					} ) }{ ' ' }
+					{ lossReasonText && <>{ lossReasonText } </> }
 					{ disputeFeeFormatted ? (
 						<>
 							{ sprintf(
@@ -500,6 +572,7 @@ const DisputeResolutionFooter: React.FC< {
 		| 'balance_transactions'
 		| 'reason'
 		| 'enhanced_eligibility_types'
+		| 'payment_method_details'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {

@@ -777,10 +777,11 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 /**
  * Formats an event into one or more payment timeline items
  *
- * @param {Object}        event        An event data
- * @param {string | null} bankName     The name of the bank
- * @param {Object}        disputeOrder Shared "Dispute N of M" numbering ({ orderById, total })
- * @param {Function}      [onRefund]   Opens the payment details refund modal; when omitted, refund CTAs render as plain text
+ * @param {Object}        event             An event data
+ * @param {string | null} bankName          The name of the bank
+ * @param {Object}        disputeOrder      Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]        Opens the payment details refund modal; when omitted, refund CTAs render as plain text
+ * @param {Object}        klarnaLossReasons Klarna's loss reasons, keyed by dispute id
  *
  * @return {Array} Payment timeline items
  */
@@ -788,7 +789,8 @@ const mapEventToTimelineItems = (
 	event,
 	bankName = null,
 	disputeOrder,
-	onRefund
+	onRefund,
+	klarnaLossReasons
 ) => {
 	const { type } = event;
 
@@ -1206,12 +1208,65 @@ const mapEventToTimelineItems = (
 					  ] )
 					: null;
 
+			// Only Klarna reports why it decided against the merchant. The event
+			// itself carries no reason, so it comes from the charge's disputes,
+			// matched by id — which every dispute event the server builds sets
+			// from the Stripe dispute. The id-less branch is defensive: it fires
+			// only when the charge has a single dispute for the event to belong
+			// to. The reason map is keyed by dispute but holds just the disputes
+			// that stated a reason, so its size can't stand in for the charge's
+			// dispute count — disputeOrder.total can.
+			const lossReasons = Object.values( klarnaLossReasons ?? {} );
+			let klarnaLossReason;
+			if ( event.dispute_id ) {
+				klarnaLossReason = klarnaLossReasons?.[ event.dispute_id ];
+			} else if (
+				lossReasons.length === 1 &&
+				( disputeOrder?.total ?? 1 ) === 1
+			) {
+				klarnaLossReason = lossReasons[ 0 ];
+			}
+			// An unstated reason is left to the dispute footer, which has the
+			// room to say Klarna gave none without reading as a missing value.
+			const statedLossReason =
+				klarnaLossReason?.type === 'stated'
+					? klarnaLossReason.display
+					: null;
+
 			let headlineText;
 			if ( event.reason === 'noncompliant' ) {
+				// Visa compliance disputes are card disputes, so they never
+				// carry a Klarna loss reason.
 				headlineText = __(
 					// eslint-disable-next-line max-len
 					"<strong>Dispute lost.</strong> Visa reviewed the evidence and decided in the customer's favor.",
 					'woocommerce-payments'
+				);
+			} else if ( bankName && statedLossReason ) {
+				// Only Klarna states a reason, so this branch is Klarna's: the
+				// reason replaces the generic outcome clause rather than
+				// trailing it as a separate line, and the provider is a
+				// "payment provider" rather than a bank. See WOOPMNT-6349 for
+				// the same rewording on every other dispute surface.
+				headlineText = sprintf(
+					/* translators: %1$s is the payment provider name, %2$s is the loss reason, eg "Shipping policy violated" */
+					__(
+						// eslint-disable-next-line max-len
+						'<strong>Dispute lost.</strong> The customer’s payment provider, %1$s, decided against you for the following reason: %2$s.',
+						'woocommerce-payments'
+					),
+					bankName,
+					statedLossReason
+				);
+			} else if ( statedLossReason ) {
+				headlineText = sprintf(
+					/* translators: %s is the reason given for the decision, eg "Shipping policy violated" */
+					__(
+						// eslint-disable-next-line max-len
+						'<strong>Dispute lost.</strong> The customer’s payment provider decided against you for the following reason: %s.',
+						'woocommerce-payments'
+					),
+					statedLossReason
 				);
 			} else {
 				headlineText = bankName
@@ -1404,19 +1459,32 @@ const mapEventToTimelineItems = (
 /**
  * Maps the timeline events coming from the server to items that can be used in Timeline component
  *
- * @param {Array}         timelineEvents array of events
- * @param {string | null} bankName       The name of the bank
- * @param {Object}        disputeOrder   Shared "Dispute N of M" numbering ({ orderById, total })
- * @param {Function}      [onRefund]     Opens the payment details refund modal; when omitted, refund CTAs render as plain text
+ * @param {Array}         timelineEvents    array of events
+ * @param {string | null} bankName          The name of the bank
+ * @param {Object}        disputeOrder      Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]        Opens the payment details refund modal; when omitted, refund CTAs render as plain text
+ * @param {Object}        klarnaLossReasons Klarna's loss reasons, keyed by dispute id
  *
  * @return {Array} Array of view items
  */
-export default ( timelineEvents, bankName = null, disputeOrder, onRefund ) => {
+export default (
+	timelineEvents,
+	bankName = null,
+	disputeOrder,
+	onRefund,
+	klarnaLossReasons
+) => {
 	if ( ! timelineEvents ) {
 		return [];
 	}
 
 	return flatMap( timelineEvents, ( event ) =>
-		mapEventToTimelineItems( event, bankName, disputeOrder, onRefund )
+		mapEventToTimelineItems(
+			event,
+			bankName,
+			disputeOrder,
+			onRefund,
+			klarnaLossReasons
+		)
 	).filter( Boolean );
 };
