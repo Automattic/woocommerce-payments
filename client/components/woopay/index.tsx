@@ -10,6 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import { getConfig } from 'utils/checkout';
+import { redirectTo } from 'utils';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 interface woopayButtonProps {
@@ -45,7 +46,7 @@ const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
 
 		setIsLoading( true );
 		promise.then( ( response ) => {
-			window.location.href = response.url;
+			redirectTo( response.url );
 			setIsLoading( false );
 		} );
 	};

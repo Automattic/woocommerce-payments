@@ -2,6 +2,13 @@
  * Internal dependencies
  */
 import WooPayDirectCheckout from '../woopay-direct-checkout';
+import { redirectTo } from 'wcpay/utils/navigation';
+
+// jsdom marks `window.location` unforgeable, so the redirect is asserted
+// through the `redirectTo` helper the direct-checkout flow calls.
+jest.mock( 'wcpay/utils/navigation', () => ( {
+	redirectTo: jest.fn(),
+} ) );
 
 jest.spyOn( WooPayDirectCheckout, 'isWooPayReachable' ).mockResolvedValue(
 	true
@@ -9,13 +16,9 @@ jest.spyOn( WooPayDirectCheckout, 'isWooPayReachable' ).mockResolvedValue(
 
 describe( 'WooPayDirectCheckout', () => {
 	describe( 'addRedirectToWooPayEventListener', () => {
-		const originalLocation = window.location;
 		let elements;
 
 		beforeEach( () => {
-			delete window.location;
-			window.location = { href: jest.fn() };
-
 			const checkoutButton = document.createElement( 'a' );
 			checkoutButton.href = 'https://merchant.test/checkout';
 			checkoutButton.classList.add( 'checkout-button' );
@@ -38,7 +41,6 @@ describe( 'WooPayDirectCheckout', () => {
 		} );
 
 		afterEach( () => {
-			window.location = originalLocation;
 			elements.forEach( ( el ) => el.parentElement.remove() );
 			jest.clearAllMocks();
 		} );
@@ -91,7 +93,7 @@ describe( 'WooPayDirectCheckout', () => {
 				WooPayDirectCheckout.getWooPayMinimumSessionUrl
 			).toHaveBeenCalled();
 			expect( WooPayDirectCheckout.teardown ).toHaveBeenCalled();
-			expect( window.location.href ).toBe(
+			expect( redirectTo ).toHaveBeenCalledWith(
 				'https://woopay.test/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
 			);
 		} );
@@ -114,7 +116,7 @@ describe( 'WooPayDirectCheckout', () => {
 				WooPayDirectCheckout.getWooPayCheckoutUrl
 			).toHaveBeenCalled();
 			expect( WooPayDirectCheckout.teardown ).toHaveBeenCalled();
-			expect( window.location.href ).toBe(
+			expect( redirectTo ).toHaveBeenCalledWith(
 				'https://woopay.test/woopay?platform_checkout_key=1234567890'
 			);
 		} );
@@ -138,7 +140,7 @@ describe( 'WooPayDirectCheckout', () => {
 				WooPayDirectCheckout.getWooPayCheckoutUrl
 			).toHaveBeenCalled();
 			expect( WooPayDirectCheckout.teardown ).toHaveBeenCalled();
-			expect( window.location.href ).toBe(
+			expect( redirectTo ).toHaveBeenCalledWith(
 				'https://merchant.test/checkout'
 			);
 		} );

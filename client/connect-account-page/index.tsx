@@ -33,7 +33,7 @@ import InlineNotice from 'components/inline-notice';
 import { WooPaymentsMethodsLogos } from 'components/payment-method-logos';
 import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
-import { isInTestModeOnboarding } from 'wcpay/utils';
+import { isInTestModeOnboarding, redirectTo } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import { decodeEntities } from '@wordpress/html-entities';
@@ -212,10 +212,12 @@ const ConnectAccountPage: React.FC = () => {
 				};
 
 				// Redirect to the Connect URL and let it figure it out where to point the merchant.
-				window.location.href = addQueryArgs( connectUrl, {
-					...queryArgs,
-					...extraQueryArgs,
-				} );
+				redirectTo(
+					addQueryArgs( connectUrl, {
+						...queryArgs,
+						...extraQueryArgs,
+					} )
+				);
 			} else {
 				// Schedule another check after 2.5 seconds.
 				// 2.5 seconds plus 0.5 seconds for the fetch request is 3 seconds.
@@ -266,11 +268,10 @@ const ConnectAccountPage: React.FC = () => {
 					) {
 						// If we didn't get a redirect_to URL,
 						// refresh the page with an error flag to show the error message.
-						window.location.href = addQueryArgs(
-							window.location.href,
-							{
+						redirectTo(
+							addQueryArgs( window.location.href, {
 								test_drive_error: 'true',
-							}
+							} )
 						);
 						return;
 					}
@@ -296,26 +297,29 @@ const ConnectAccountPage: React.FC = () => {
 					} else {
 						// Redirect to the response URL, but attach our test drive flags.
 						// This URL is generally a Connect page URL.
-						window.location.href = addQueryArgs(
-							response.data.redirect_to,
-							{
+						redirectTo(
+							addQueryArgs( response.data.redirect_to, {
 								test_drive: 'true',
 								test_drive_error: 'true',
-							}
+							} )
 						);
 					}
 				} )
 				.catch( () => {
 					// If the fetch request fails, refresh the page with an error flag to show the error message.
-					window.location.href = addQueryArgs( window.location.href, {
-						test_drive_error: 'true',
-					} );
+					redirectTo(
+						addQueryArgs( window.location.href, {
+							test_drive_error: 'true',
+						} )
+					);
 				} );
 		} else {
 			// Redirect to the connect URL to set up the Jetpack connection.
-			window.location.href = addQueryArgs( customizedConnectUrl, {
-				auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
-			} );
+			redirectTo(
+				addQueryArgs( customizedConnectUrl, {
+					auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
+				} )
+			);
 		}
 	};
 
@@ -360,10 +364,12 @@ const ConnectAccountPage: React.FC = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			window.location.href = addQueryArgs( connectUrl, {
-				source: determineTrackingSource(),
-				from: 'WCPAY_CONNECT',
-			} );
+			redirectTo(
+				addQueryArgs( connectUrl, {
+					source: determineTrackingSource(),
+					from: 'WCPAY_CONNECT',
+				} )
+			);
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
@@ -413,18 +419,22 @@ const ConnectAccountPage: React.FC = () => {
 			return handleLocationCheck();
 		}
 
-		window.location.href = addQueryArgs( connectUrl, {
-			source: determineTrackingSource(),
-			from: 'WCPAY_CONNECT',
-		} );
+		redirectTo(
+			addQueryArgs( connectUrl, {
+				source: determineTrackingSource(),
+				from: 'WCPAY_CONNECT',
+			} )
+		);
 	};
 
 	const handleReset = () => {
-		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-reset-account': 'true',
-			from: 'WCPAY_CONNECT',
-			source: determineTrackingSource(),
-		} );
+		redirectTo(
+			addQueryArgs( wcpaySettings.connectUrl, {
+				'wcpay-reset-account': 'true',
+				from: 'WCPAY_CONNECT',
+				source: determineTrackingSource(),
+			} )
+		);
 	};
 
 	let isAccountSetupSessionError = false;

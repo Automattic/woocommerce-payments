@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { getExpressCheckoutData } from './express-checkout-data';
+import { redirectTo } from 'wcpay/utils/navigation';
 
 export type ExpressPaymentType =
 	| 'apple_pay'
@@ -44,6 +45,6 @@ export const displayLoginConfirmation = (
 
 	if ( confirm( message ) ) {
 		// Redirect to my account page.
-		window.location.href = loginConfirmation.redirect_url;
+		redirectTo( loginConfirmation.redirect_url );
 	}
 };

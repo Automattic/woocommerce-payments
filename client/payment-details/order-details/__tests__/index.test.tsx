@@ -16,6 +16,14 @@ import { useAuthorization } from 'wcpay/data/authorizations';
 import { useChargeFromOrder } from 'wcpay/data/charges';
 import { useTimeline } from 'wcpay/data/timeline';
 import { ApiError } from 'wcpay/types/errors';
+import { redirectTo } from 'wcpay/utils';
+
+// jsdom marks `window.location` unforgeable, so navigation is asserted through
+// the `redirectTo` helper the component calls instead of the location itself.
+jest.mock( 'wcpay/utils', () => ( {
+	...jest.requireActual( 'wcpay/utils' ),
+	redirectTo: jest.fn(),
+} ) );
 
 // Suppress React 18 deprecation warnings from external @woocommerce/components
 // eslint-disable-next-line no-console
@@ -161,8 +169,6 @@ const mockUseTimeline = useTimeline as jest.MockedFunction<
 >;
 
 describe( 'Order details page', () => {
-	const { location } = window;
-
 	const orderId = '42';
 
 	const redirectUrl =
@@ -208,10 +214,6 @@ describe( 'Order details page', () => {
 			( cb: ( callback: any ) => jest.Mock ) => cb( selectMock )
 		);
 
-		Object.defineProperty( window, 'location', {
-			value: { href: 'http://example.com' },
-		} );
-
 		mockUseAuthorization.mockReturnValue( {
 			authorization: {
 				created: '2022-09-27 17:07:09',
@@ -225,10 +227,10 @@ describe( 'Order details page', () => {
 
 	afterAll( () => {
 		jest.useRealTimers();
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: location,
-		} );
+	} );
+
+	beforeEach( () => {
+		( redirectTo as jest.Mock ).mockClear();
 	} );
 
 	it( 'should match the snapshot - Charge without payment intent', () => {
@@ -246,7 +248,7 @@ describe( 'Order details page', () => {
 
 		const { container } = render( <PaymentOrderDetails id={ orderId } /> );
 
-		expect( window.location.href ).toEqual( 'http://example.com' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 
 		expect( container ).toMatchSnapshot();
 
@@ -272,6 +274,6 @@ describe( 'Order details page', () => {
 
 		render( <PaymentOrderDetails id={ orderId } /> );
 
-		expect( window.location.href ).toEqual( redirectUrl );
+		expect( redirectTo ).toHaveBeenCalledWith( redirectUrl );
 	} );
 } );
