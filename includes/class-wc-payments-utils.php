@@ -61,6 +61,8 @@ class WC_Payments_Utils {
 	 * PHP 8.1 changed the default flags. Specify those defaults explicitly so
 	 * quotes and invalid character sequences are handled consistently on older PHP versions too.
 	 *
+	 * @todo Simplify this helper when PHP 8.1 becomes the minimum supported version.
+	 *
 	 * @param string $value Text containing HTML entities.
 	 * @return string Decoded text.
 	 */
