@@ -788,7 +788,7 @@ class WC_Payments_Utils {
 					'The selected payment method requires a total amount of at least %s.',
 					'woocommerce-payments'
 				),
-				wp_strip_all_tags( html_entity_decode( $price ) )
+				wp_strip_all_tags( html_entity_decode( $price, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 ) )
 			);
 		} elseif ( $e instanceof API_Exception && 'amount_too_large' === $e->get_error_code() ) {
 			$error_message = $e->getMessage();
@@ -1203,7 +1203,8 @@ class WC_Payments_Utils {
 					$amount,
 					self::get_currency_format_for_wc_price( $currency )
 				)
-			)
+			),
+			ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401
 		);
 
 		return $formatted;
@@ -1232,7 +1233,7 @@ class WC_Payments_Utils {
 			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
 		);
 
-		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
+		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
 
 		if ( $skip_symbol ) {
 			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );

@@ -59,6 +59,19 @@ class WCPay_Multi_Currency_Currency_Tests extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_should_decode_quotes_in_currency_data_when_serialized() {
+		$currency = $this->getMockBuilder( Currency::class )
+			->setConstructorArgs( [ $this->localization_service, 'USD' ] )
+			->onlyMethods( [ 'get_name', 'get_symbol' ] )
+			->getMock();
+		$currency->method( 'get_name' )->willReturn( 'Dollar &#039;single&#039; &quot;double&quot; &amp; cents' );
+		$currency->method( 'get_symbol' )->willReturn( '&#039;&quot;&amp;' );
+
+		$data = json_decode( wp_json_encode( $currency ), true );
+		$this->assertSame( 'Dollar \'single\' "double" & cents', $data['name'] );
+		$this->assertSame( '\'"&', $data['symbol'] );
+	}
+
 	public function test_is_zero_decimal_returns_right_value() {
 		$decimal_currency      = new Currency( $this->localization_service, 'USD' );
 		$zero_decimal_currency = new Currency( $this->localization_service, 'BIF' );

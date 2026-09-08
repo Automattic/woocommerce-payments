@@ -516,6 +516,10 @@ Full E2E suite re-run against the release branch to catch any regressions introd
 
 QIT E2E and security tests run against the release branch. Uses `qit-e2e-prerelease.yml` workflow.
 
+Package preparation also runs **QIT release checks** in `build-zip-and-run-smoke-tests.yml`, alongside smoke tests, against the built release ZIP. The suite uses the deployment action's pinned release configuration: activation, compatibility activation, security, malware, PHP compatibility, and WooCommerce API tests. Skipping smoke tests does not skip QIT.
+
+The release lead should confirm this job passes during release preparation and after every rebuild following cherry-picks, including patch releases, before starting deployment. The deployment workflow runs QIT again against its own build.
+
 ---
 
 ### Release Review & Communication
