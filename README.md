@@ -72,7 +72,7 @@ We currently support the following variables:
 
 ## Test account setup
 
-For setting up a test account follow [these instructions](https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/).
+For setting up a test account follow [these instructions](https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/).
 
 You will need an externally accessible URL to set up the plugin. You can use ngrok for this.
 

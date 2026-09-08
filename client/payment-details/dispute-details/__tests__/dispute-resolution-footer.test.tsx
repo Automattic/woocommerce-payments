@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 import DisputeResolutionFooter from '../dispute-resolution-footer';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { Charge } from 'wcpay/types/charges';
+import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 
 // Mock date formatting utility
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -33,6 +34,7 @@ jest.mock( 'wcpay/utils', () => ( {
 
 // Mock dispute utils
 jest.mock( 'wcpay/disputes/utils', () => ( {
+	...jest.requireActual( 'wcpay/disputes/utils' ),
 	getDisputeFeeFormatted: jest.fn( () => '$15.00' ),
 	isVisaComplianceDispute: jest.fn( ( dispute ) => {
 		if ( ! dispute ) {
@@ -79,6 +81,14 @@ const getBaseDispute = ( overrides = {} ): Dispute => ( {
 	status: 'needs_response',
 	enhanced_eligibility_types: [],
 	...overrides,
+} );
+
+// The module factory's implementation is not restored between tests, so a
+// `mockReturnValueOnce` that the component stops consuming would otherwise
+// surface as a failure in whichever test runs next.
+beforeEach( () => {
+	( getDisputeFeeFormatted as jest.Mock ).mockReset();
+	( getDisputeFeeFormatted as jest.Mock ).mockReturnValue( '$15.00' );
 } );
 
 describe( 'DisputeResolutionFooter - Under Review Status', () => {
@@ -266,18 +276,19 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 			},
 		} );
 
-		render(
+		const { container } = render(
 			<DisputeResolutionFooter
 				dispute={ dispute }
 				bankName="Chase Bank"
 			/>
 		);
 
-		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. The customer's bank, Chase Bank, reached this decision/i
-			)
-		).toBeInTheDocument();
+		// Only the issuer name is bolded inside this sentence, so it spans
+		// several elements.
+		expect( container.textContent ).toContain(
+			"Unfortunately, you've lost this dispute. The customer's bank, " +
+				'Chase Bank, reached this decision'
+		);
 	} );
 
 	it( 'renders lost footer without bank name for submitted regular disputes', () => {
@@ -294,9 +305,7 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. The customer's bank reached this decision/i
-			)
+			screen.getByText( /The customer's bank reached this decision/i )
 		).toBeInTheDocument();
 	} );
 
@@ -318,9 +327,7 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. Visa reached this decision/i
-			)
+			screen.getByText( /Visa reached this decision/i )
 		).toBeInTheDocument();
 		expect( screen.queryByText( /Chase Bank/i ) ).not.toBeInTheDocument();
 	} );
@@ -344,13 +351,135 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect(
-			screen.getByText(
-				/Unfortunately, you've lost this dispute\. Visa reached this decision/i
-			)
+			screen.getByText( /Visa reached this decision/i )
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText( /Bank of America/i )
 		).not.toBeInTheDocument();
+	} );
+
+	it( "renders Klarna's stated loss reason for submitted disputes", () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {
+					chargeback_loss_reason_code: 'shipping_policy_violated',
+				},
+			},
+		} );
+
+		const { container } = render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		// The provider name is bolded, so the sentence spans several elements.
+		// Klarna is not a bank, so the design gives it "payment provider".
+		expect( container.textContent ).toContain(
+			'Unfortunately, you lost the dispute. The customer’s payment ' +
+				'provider, Klarna, decided against you on ' +
+				'11:59 PM on September 9, 2023, citing ' +
+				'“Shipping policy violated”.'
+		);
+		// Card disputes keep saying "bank" until WOOPMNT-6349.
+		expect( container.textContent ).not.toContain( "customer's bank" );
+	} );
+
+	it( 'says Klarna gave no reason when the reason is unspecified', () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {
+					chargeback_loss_reason_code: 'reason_unspecified',
+				},
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect(
+			screen.getByText(
+				/Klarna did not share a reason for this decision/i
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'omits the loss reason when Klarna supplied none', () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {},
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect( screen.queryByText( /citing “/i ) ).toBeNull();
+		expect( screen.queryByText( /did not share a reason/i ) ).toBeNull();
+	} );
+
+	it( 'renders the plain lost footer when payment_method_details is absent', () => {
+		// The shape older servers and the cached disputes list send: the field
+		// isn't empty, it isn't there at all.
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+		} );
+		expect( dispute.payment_method_details ).toBeUndefined();
+
+		const { container } = render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect( container.textContent ).toContain(
+			"Unfortunately, you've lost this dispute. The customer's bank, " +
+				'Klarna, reached this decision'
+		);
+		expect( screen.queryByText( /citing “/i ) ).toBeNull();
+		expect( screen.queryByText( /did not share a reason/i ) ).toBeNull();
+	} );
+
+	it( 'omits the loss reason when no evidence was submitted', () => {
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__dispute_closed_at: '1693453017',
+			},
+			payment_method_details: {
+				type: 'klarna',
+				klarna: {
+					chargeback_loss_reason_code:
+						'merchant_didnt_counter_dispute',
+				},
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName="Klarna" />
+		);
+
+		expect( screen.queryByText( /citing “/i ) ).toBeNull();
 	} );
 
 	it( 'renders accepted dispute message', () => {
@@ -402,6 +531,42 @@ describe( 'DisputeResolutionFooter - Lost Status', () => {
 		);
 
 		expect( screen.getByText( /\$15\.00 fee/i ) ).toBeInTheDocument();
+	} );
+
+	// getDisputeFeeFormatted returns undefined for a reversed fee, a missing
+	// fee, and a zero fee alike (see client/disputes/__tests__/utils.test.ts);
+	// this covers what the footer does with that answer.
+	it( 'omits the fee sentence when there is no dispute fee', () => {
+		( getDisputeFeeFormatted as jest.Mock ).mockReturnValueOnce(
+			undefined
+		);
+
+		const dispute = getBaseDispute( {
+			status: 'lost',
+			metadata: {
+				__evidence_submitted_at: '1693453017',
+				__dispute_closed_at: '1693453017',
+			},
+		} );
+
+		render(
+			<DisputeResolutionFooter dispute={ dispute } bankName={ null } />
+		);
+
+		expect( screen.queryByText( /fee has been deducted/i ) ).toBeNull();
+		expect(
+			screen.getByText(
+				/The disputed amount has been returned to your customer/i
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: /Learn more about disputed amounts/i,
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#amounts'
+		);
 	} );
 
 	it( 'renders link to view dispute details for submitted disputes', () => {

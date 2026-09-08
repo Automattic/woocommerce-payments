@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # clone the repository
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
       # blocked by the Automattic enterprise Actions allowlist.
       - run: corepack enable
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # clone the repository
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
       # blocked by the Automattic enterprise Actions allowlist.
       - run: corepack enable
@@ -49,4 +49,12 @@ jobs:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
       # install dependencies and run linter
-      - run: pnpm install --frozen-lockfile && pnpm run test:js
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Jest transforms
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.cache/jest
+          key: ${{ runner.os }}-jest-${{ hashFiles('.nvmrc', 'pnpm-lock.yaml', 'babel.config.js', 'tsconfig.json', 'tests/js/**') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ hashFiles('.nvmrc', 'pnpm-lock.yaml', 'babel.config.js', 'tsconfig.json', 'tests/js/**') }}-
+      - run: pnpm run test:js

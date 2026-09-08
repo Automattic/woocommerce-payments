@@ -85,7 +85,7 @@ export default {
 				// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 				// eslint-disable-next-line jsx-a11y/anchor-has-content
 				<a
-					href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
+					href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/"
 					target="_blank"
 					rel="noreferrer"
 				/>

@@ -102,7 +102,7 @@ const DepositsDescription = () => {
 			</p>
 			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
-					'Learn more about pending schedules',
+					'Learn more about payout schedules',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>

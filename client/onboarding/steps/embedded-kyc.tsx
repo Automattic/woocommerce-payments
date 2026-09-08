@@ -119,7 +119,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 								// @ts-expect-error: children is provided when interpolating the component
 								<ExternalLink
 									href={
-										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/'
 									}
 								/>
 							),

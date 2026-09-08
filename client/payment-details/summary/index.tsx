@@ -27,6 +27,7 @@ import {
 import {
 	canUseFeeBreakdownData,
 	getChargeAmounts,
+	isChargeDisputed,
 	getChargeDisputes,
 	getDisputeOrdinals,
 	getChargeStatus,
@@ -85,6 +86,12 @@ interface PaymentDetailsSummaryProps {
 	metadata?: Record< string, any >;
 	fraudOutcome?: FraudOutcome;
 	paymentIntent?: PaymentIntent;
+	/**
+	 * Called with a function that opens the refund modal, letting sibling
+	 * surfaces (e.g. the timeline's early-fraud-warning CTA) trigger the
+	 * modal, which lives here along with the charge-derived props it needs.
+	 */
+	onRegisterRefundOpener?: ( open: () => void ) => void;
 }
 
 const placeholderValues = {
@@ -280,6 +287,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	metadata = {},
 	isLoading,
 	paymentIntent,
+	onRegisterRefundOpener,
 } ) => {
 	const balance = charge.amount
 		? getChargeAmounts( charge )
@@ -337,9 +345,27 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			( fee ): fee is { amount: number; currency: string } => !! fee
 		);
 	const disputeFeeTotal = _.sumBy( disputeFeeAmounts, 'amount' );
+	// Every dispute fee on a charge is already denominated in the settlement
+	// currency, so reading it off `balance.currency` rather than off whichever
+	// dispute happens to sit at index 0 changes nothing rendered — it just
+	// states the denomination the rest of the breakdown uses instead of
+	// relying on the two agreeing by construction.
 	const disputeFee = disputeFeeAmounts.length
-		? formatCurrency( disputeFeeTotal, disputeFeeAmounts[ 0 ].currency )
+		? formatCurrency( disputeFeeTotal, balance.currency )
 		: undefined;
+
+	// The withdrawn-balance line folds refunds and dispute deductions together
+	// (see getChargeAmounts). Call it "Deducted" only when a dispute actually
+	// moved money: an inquiry withdraws nothing, and a won dispute's rows net
+	// back to zero, so in both cases a refund is the only withdrawal.
+	const disputeWithdrawnAmount = isChargeDisputed( charge )
+		? _.sumBy(
+				disputes.flatMap(
+					( dispute ) => dispute.balance_transactions ?? []
+				),
+				'amount'
+		  )
+		: 0;
 
 	// Refunding is blocked while any single dispute blocks it, so the menu is
 	// only refundable when every dispute is.
@@ -433,6 +459,29 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		dispute?: ChargeDispute;
 	} | null >( null );
 
+	// Expose the refund-modal opener to sibling surfaces (the timeline's
+	// early-fraud-warning CTA); the modal state is invoked only from the
+	// resulting click handler, never during render or the effect itself.
+	useEffect( () => {
+		onRegisterRefundOpener?.( () => {
+			// The timeline fetches independently and can render its refund CTA
+			// while the charge is still loading; the modal would render broken
+			// amounts from the incomplete charge, so ignore clicks until then.
+			if ( isLoading || ! charge.id ) {
+				return;
+			}
+			setRefundTarget( {} );
+			recordEvent( 'payments_transactions_details_refund_modal_open', {
+				payment_intent_id: charge.payment_intent,
+			} );
+		} );
+	}, [
+		onRegisterRefundOpener,
+		charge.id,
+		charge.payment_intent,
+		isLoading,
+	] );
+
 	const bankName = getBankName( charge );
 
 	return (
@@ -481,7 +530,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								{ balance.refunded ? (
 									<p>
 										{ `${
-											disputeFee
+											disputeWithdrawnAmount !== 0
 												? __(
 														'Deducted',
 														'woocommerce-payments'
@@ -887,7 +936,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							{
 								a: (
 									// @ts-expect-error: children is provided when interpolating the component
-									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
+									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-payments" />
 								),
 							}
 						) }{ ' ' }

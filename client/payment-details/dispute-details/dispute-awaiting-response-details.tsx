@@ -126,6 +126,8 @@ function getAcceptDisputeProps( {
 	>;
 	isDisputeAcceptRequestPending: boolean;
 } ): AcceptDisputeProps {
+	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true );
+
 	return {
 		acceptButtonLabel: __( 'Accept dispute', 'woocommerce-payments' ),
 		acceptButtonTracksEvent: 'wcpay_dispute_accept_modal_view',
@@ -134,14 +136,23 @@ function getAcceptDisputeProps( {
 			{
 				icon: <Icon icon={ backup } size={ 24 } />,
 				description: createInterpolateElement(
-					sprintf(
-						/* translators: %s: dispute fee, <em>: emphasis HTML element. */
-						__(
-							'Accepting the dispute marks it as <em>Lost</em>. The disputed amount and the %s dispute fee will not be returned to you.',
-							'woocommerce-payments'
-						),
-						getDisputeFeeFormatted( dispute, true ) ?? '-'
-					),
+					// Drop the fee clause entirely when no fee was charged,
+					// rather than telling a merchant about a "-" fee at the
+					// moment they are about to forfeit funds.
+					disputeFeeFormatted
+						? sprintf(
+								/* translators: %s: dispute fee, <em>: emphasis HTML element. */
+								__(
+									'Accepting the dispute marks it as <em>Lost</em>. The disputed amount and the %s dispute fee will not be returned to you.',
+									'woocommerce-payments'
+								),
+								disputeFeeFormatted
+						  )
+						: /* translators: <em>: emphasis HTML element. */
+						  __(
+								'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will not be returned to you.',
+								'woocommerce-payments'
+						  ),
 					{
 						em: <em />,
 					}

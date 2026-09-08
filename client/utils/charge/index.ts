@@ -199,27 +199,31 @@ export const canUseFeeBreakdownData = ( charge: Charge ): boolean => {
  * @return {ChargeAmounts} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
-	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-	// `balance.fee` below must represent the *full* Stripe deduction in
-	// store currency (pre-tax fee + tax), because the downstream
-	// `net = amount - fee - refunded` needs to absorb BOTH components to
-	// match `totals.net.amount` — and that formula has to stay in charge
-	// of later-arriving customer-refunds and dispute adjustments, which
-	// the envelope doesn't cover. Using only `totals.fee.amount` here
-	// (pre-tax) would drop the tax from the net calculation.
+	// FEE_BREAKDOWN_FORK_PATCH: remove the legacy branch when the envelope
+	// is the only path. The two branches answer the same question from
+	// different sources — the envelope reports the charge's current state,
+	// the legacy path reconstructs it from balance transactions — and they
+	// derive opposite fields: the envelope is handed `net` and works out
+	// `refunded`, the legacy path accumulates `refunded` and works out
+	// `net`. A change to either needs checking against the other.
 	const breakdown = charge.fee_breakdown_v1;
 	if (
 		canUseFeeBreakdownData( charge ) &&
 		breakdown?.totals?.net &&
 		breakdown.totals.gross
 	) {
-		// Envelope is authoritative for the charge's *current* state:
-		// the server has already folded customer-refunds, dispute fees,
-		// and dispute balance adjustments into `totals.fee` / `totals.net`.
-		// No client-side subtraction needed. `refunded` is derived for
-		// backward compatibility with consumers that still read it.
-		// Prefer the server-pre-summed fee_plus_tax; fall back to fee+tax
-		// for older servers.
+		// Envelope is authoritative for the charge's *current* state: the
+		// server has already folded customer-refunds, dispute fees, and
+		// dispute balance adjustments into `totals.fee` / `totals.net`, so
+		// there is no client-side subtraction here. `refunded` is derived
+		// for backward compatibility with consumers that still read it.
+		//
+		// `totalFee` has to be the full Stripe deduction — fee plus tax,
+		// not `totals.fee.amount` alone — because it is both what we report
+		// as the fee and what gets subtracted to derive `refunded`. Dropping
+		// the tax would understate the first and overstate the second.
+		// Prefer the server-pre-summed `fee_plus_tax`; fall back to
+		// fee + tax for older servers.
 		const totalFee =
 			breakdown.totals.fee_plus_tax?.amount ??
 			breakdown.totals.fee.amount + ( breakdown.totals.tax?.amount ?? 0 );

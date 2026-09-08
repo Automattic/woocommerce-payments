@@ -30,7 +30,7 @@ const failures = [
 	},
 	{
 		card: config.cards[ 'invalid-cvv-number' ],
-		error: /Your card.s security code is incomplete\./,
+		error: 'Your security code is incomplete.',
 	},
 	{
 		card: config.cards[ 'declined-funds' ],

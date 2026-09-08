@@ -2111,7 +2111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$payment_needed ? 'pi' : 'si',
 						$order_id,
 						$client_secret,
-						wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+						wp_create_nonce( $this->get_update_order_status_nonce_action( $order_id ) ),
 					];
 
 					// For ECE SetupIntents, include the confirmation token so the frontend can
@@ -2418,7 +2418,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
 							$client_secret,
-							wp_create_nonce( 'wcpay_update_order_status_nonce' )
+							wp_create_nonce( $this->get_update_order_status_nonce_action( $order_id ) )
 						);
 						wp_safe_redirect( $redirect_url );
 						exit;
@@ -4150,6 +4150,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Builds the order-scoped nonce action for the update_order_status AJAX handler.
+	 *
+	 * Folding the order id into the action stops a nonce a shopper gets for their
+	 * own order from being replayed against someone else's. See WOOPMNT-6380.
+	 *
+	 * @param int $order_id The order the nonce authorizes.
+	 * @return string The nonce action.
+	 */
+	private function get_update_order_status_nonce_action( int $order_id ): string {
+		return 'wcpay_update_order_status_nonce_' . $order_id;
+	}
+
+	/**
 	 * Handle AJAX request after authenticating payment at checkout.
 	 *
 	 * This function is used to update the order status after the user has
@@ -4165,7 +4178,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent_id_received = null;
 		$order              = null;
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
+			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+
+			// The nonce is bound to the order id, so it is verified against the
+			// requested order rather than accepted for any order. This prevents an
+			// unauthenticated caller from acting on an order it does not own. See
+			// WOOPMNT-6380.
+			$is_nonce_valid = check_ajax_referer( $this->get_update_order_status_nonce_action( $order_id ), false, false );
 			if ( ! $is_nonce_valid ) {
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
@@ -4173,8 +4192,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
-			$order    = wc_get_order( $order_id );
+			$order = wc_get_order( $order_id );
 			if ( ! $order ) {
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),

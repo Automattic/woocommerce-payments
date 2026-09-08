@@ -670,4 +670,78 @@ describe( 'Transactions list', () => {
 			} );
 		} );
 	} );
+
+	describe( 'early fraud warning pill', () => {
+		beforeEach( () => {
+			mockUseTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 1,
+					currency: 'usd',
+					store_currencies: [ 'usd' ],
+					fees: 30,
+					total: 300,
+					net: 270,
+				},
+				isLoading: false,
+			} );
+		} );
+
+		function renderWithEarlyFraudWarning(
+			earlyFraudWarning: Transaction[ 'early_fraud_warning' ],
+			type: Transaction[ 'type' ] = 'charge'
+		) {
+			mockUseTransactions.mockReturnValue( {
+				transactions: [
+					{
+						...getMockTransactions()[ 1 ],
+						type,
+						early_fraud_warning: earlyFraudWarning,
+					},
+				],
+				transactionsError: undefined,
+				isLoading: false,
+			} );
+			return render( <TransactionsList /> );
+		}
+
+		test( 'renders the pill for a charge with an actionable warning', () => {
+			renderWithEarlyFraudWarning( {
+				actionable: true,
+				fraud_type: 'made_with_stolen_card',
+			} );
+
+			expect( screen.getByText( 'Fraud warning' ) ).toBeInTheDocument();
+		} );
+
+		test( 'renders no pill when the warning is no longer actionable', () => {
+			renderWithEarlyFraudWarning( {
+				actionable: false,
+				fraud_type: 'made_with_stolen_card',
+			} );
+
+			expect(
+				screen.queryByText( 'Fraud warning' )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'renders the pill on payment rows, which carry the charge too', () => {
+			renderWithEarlyFraudWarning(
+				{ actionable: true, fraud_type: 'made_with_stolen_card' },
+				'payment'
+			);
+
+			expect( screen.getByText( 'Fraud warning' ) ).toBeInTheDocument();
+		} );
+
+		test( 'renders no pill on the refund row sharing the charge', () => {
+			renderWithEarlyFraudWarning(
+				{ actionable: true, fraud_type: 'made_with_stolen_card' },
+				'refund'
+			);
+
+			expect(
+				screen.queryByText( 'Fraud warning' )
+			).not.toBeInTheDocument();
+		} );
+	} );
 } );

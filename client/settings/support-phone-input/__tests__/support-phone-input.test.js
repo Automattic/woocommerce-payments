@@ -25,6 +25,13 @@ jest.mock( 'wcpay/data/settings', () => ( {
 const waitForPhoneInputReady = () =>
 	screen.findByRole( 'combobox', { name: /:\s*\+/ } );
 
+const LABEL = 'Support phone number (required)';
+const ERROR_MESSAGE =
+	'A support phone number is required. Please enter a valid phone number.';
+const HELP_TEXT =
+	// eslint-disable-next-line max-len
+	"This number may appear on customer bank statements and in-person purchase receipts, but not in order emails. Use a number you're comfortable sharing publicly.";
+
 describe( 'SupportPhoneInput', () => {
 	beforeEach( () => {
 		useAccountBusinessSupportPhone.mockReturnValue( [
@@ -32,11 +39,20 @@ describe( 'SupportPhoneInput', () => {
 			jest.fn(),
 		] );
 		useGetSavingError.mockReturnValue( null );
+		useTestModeOnboarding.mockReturnValue( false );
 		window.wcpaySettings = {
 			accountStatus: {
 				country: 'US',
 			},
 		};
+	} );
+
+	it( 'explains where the number is exposed', async () => {
+		render( <SupportPhoneInput /> );
+
+		await waitForPhoneInputReady();
+
+		expect( screen.getByText( HELP_TEXT ) ).toBeInTheDocument();
 	} );
 
 	it( 'updates phone input', async () => {
@@ -50,7 +66,7 @@ describe( 'SupportPhoneInput', () => {
 		await waitForPhoneInputReady();
 
 		const newPhone = '+12377778888';
-		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+		fireEvent.change( screen.getByLabelText( LABEL ), {
 			target: { value: newPhone },
 		} );
 
@@ -74,7 +90,7 @@ describe( 'SupportPhoneInput', () => {
 		// Mock that the phone number input is set to empty.
 		useAccountBusinessSupportPhone.mockReturnValue( [ '', jest.fn() ] );
 
-		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+		fireEvent.change( screen.getByLabelText( LABEL ), {
 			target: { value: '' },
 		} );
 
@@ -83,9 +99,7 @@ describe( 'SupportPhoneInput', () => {
 			expect(
 				container.querySelector( '.components-notice.is-error' )
 					.textContent
-			).toMatch(
-				/Support phone number cannot be empty once it has been set before, please specify\./
-			)
+			).toMatch( ERROR_MESSAGE )
 		);
 	} );
 
@@ -100,7 +114,7 @@ describe( 'SupportPhoneInput', () => {
 			expect(
 				container.querySelector( '.components-notice.is-error' )
 					.textContent
-			).toMatch( /Support phone number cannot be empty\./ )
+			).toMatch( ERROR_MESSAGE )
 		);
 	} );
 
@@ -118,7 +132,7 @@ describe( 'SupportPhoneInput', () => {
 			expect(
 				container.querySelector( '.components-notice.is-error' )
 					.textContent
-			).toMatch( /Please enter a valid phone number\./ )
+			).toMatch( ERROR_MESSAGE )
 		);
 	} );
 
@@ -146,7 +160,7 @@ describe( 'SupportPhoneInput', () => {
 			'+6580800000',
 			'+6580900000',
 		] ) {
-			fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			fireEvent.change( screen.getByLabelText( LABEL ), {
 				target: { value },
 			} );
 			await waitFor( () =>
@@ -179,7 +193,7 @@ describe( 'SupportPhoneInput', () => {
 			'+85271234567',
 			'+85281234567',
 		] ) {
-			fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			fireEvent.change( screen.getByLabelText( LABEL ), {
 				target: { value },
 			} );
 			await waitFor( () =>

@@ -1,6 +1,6 @@
 # Payment Flow — Detailed Reference
 
-**Last updated:** 2026-03-04
+**Last updated:** 2026-08-21
 
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
@@ -204,8 +204,9 @@ Appearance objects for Stripe Elements are cached **client-side in localStorage*
 woocommerce-payments.php (plugin file)
   → WC_Payments::init()
     → Creates WC_Payments_API_Client (with WC_Payments_Http)
-    → Creates WC_Payment_Gateway_WCPay (with api_client, account, customer_service, ...)
-    → Registers gateway via 'woocommerce_payment_gateways' filter
+    → Creates one WC_Payment_Gateway_WCPay per payment method (card gateway + a split
+      gateway for each other registered method), with api_client, account, customer_service, ...
+    → Registers gateways via 'woocommerce_payment_gateways' filter (card once; Link is skipped)
     → Registers Blocks integration via 'woocommerce_blocks_payment_method_type_registration'
     → Creates 25+ service instances (Account, Customer, Token, Order, Webhook, etc.)
 ```

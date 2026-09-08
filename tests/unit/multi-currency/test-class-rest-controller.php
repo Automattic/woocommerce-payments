@@ -386,6 +386,12 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'private, max-age=300', $headers['Cache-Control'] );
 	}
 
+	public function test_check_public_config_permission_allows_anonymous_access() {
+		// Act & Assert: The public config endpoint permission callback allows any visitor, logged in or not.
+		wp_set_current_user( 0 );
+		$this->assertTrue( $this->controller->check_public_config_permission() );
+	}
+
 	public function test_update_multi_currency_settings() {
 		// Arrange: Add the settings.
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
