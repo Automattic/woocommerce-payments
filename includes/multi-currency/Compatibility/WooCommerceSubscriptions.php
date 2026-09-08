@@ -382,7 +382,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		$currency_code = $this->current_my_account_subscription->get_currency() ?? get_woocommerce_currency();
 
 		// This is sourced from WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency.
-		$price_to_check = html_entity_decode( wp_strip_all_tags( $html_price ) );
+		$price_to_check = html_entity_decode( wp_strip_all_tags( $html_price ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
 
 		if ( false === strpos( $price_to_check, trim( $currency_code ) ) ) {
 			return $html_price . ' ' . $currency_code;

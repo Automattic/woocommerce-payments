@@ -64,7 +64,7 @@ class Tracking {
 	private function get_currency_data_array( Currency $currency ): array {
 		$data = [
 			'code' => $currency->get_code(),
-			'name' => html_entity_decode( $currency->get_name() ),
+			'name' => html_entity_decode( $currency->get_name(), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 ),
 		];
 
 		// Return early if it's the default currency.
