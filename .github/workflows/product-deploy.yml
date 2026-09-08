@@ -23,6 +23,8 @@ concurrency:
 
 jobs:
   deploy:
+    permissions:
+      contents: read
     name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }}${{ inputs.simulate && ' (simulation)' || '' }}"
     runs-on: ubuntu-latest
     steps:
@@ -31,7 +33,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: woocommerce/woo-product-deploy
-          ref: trunk
+          ref: 5f5b49d49b8a3681a7a99efec089187666885759 # pnpm build support
           path: ./.github/actions/woo-product-deploy
           token: ${{ secrets.BOTWOO_TOKEN }}
 
