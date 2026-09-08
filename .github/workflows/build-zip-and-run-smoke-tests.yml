@@ -15,6 +15,10 @@ on:
         description: "Branch to be used for building zip file"
   workflow_dispatch:
     inputs:
+      repo-branch:
+        type: string
+        required: false
+        description: "Branch to build and test (defaults to the workflow branch)"
       skip-smoke-tests:
         type: boolean
         required: false
