@@ -1,10 +1,21 @@
-name: Validate - WordPress.org deployment simulation
+name: Deploy - WordPress.org
 
-# Temporary pre-merge validation. All deployment inputs are fixed to simulation.
+# Deploys the plugin to WordPress.org with the Woo Product Deploy Action.
+# Runs in simulation mode by default; untick "simulate" for a live deploy.
 on:
-  push:
-    branches:
-      - test/product-deploy-simulation-20260908
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (x.y.z)'
+        required: true
+      branch:
+        description: 'Branch to deploy from (e.g. trunk or release/x.y.z)'
+        required: true
+        default: 'trunk'
+      simulate:
+        description: 'Simulation mode (dry run)'
+        type: boolean
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}
@@ -14,7 +25,7 @@ jobs:
   deploy:
     permissions:
       contents: read
-    name: Simulate 11.1.0 from add/product-deploy-workflow
+    name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }}${{ inputs.simulate && ' (simulation)' || '' }}"
     runs-on: ubuntu-latest
     steps:
       # woo-product-deploy is a private repo, so it needs a token to check out
@@ -30,11 +41,11 @@ jobs:
         uses: ./.github/actions/woo-product-deploy
         with:
           repo_url: ${{ github.server_url }}/${{ github.repository }}
-          branch: add/product-deploy-workflow
-          version: '11.1.0'
+          branch: ${{ inputs.branch }}
+          version: ${{ inputs.version }}
           node_version: '24'
           npm_version: '11'
-          simulate: true
+          simulate: ${{ inputs.simulate }}
           wporg_release: true
           # post-release-updates.yml already creates the GitHub release and tag
           github_release: false
