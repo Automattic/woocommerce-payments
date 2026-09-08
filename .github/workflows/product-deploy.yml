@@ -35,7 +35,7 @@ jobs:
           repository: woocommerce/woo-product-deploy
           ref: 5f5b49d49b8a3681a7a99efec089187666885759 # pnpm build support
           path: ./.github/actions/woo-product-deploy
-          token: ${{ secrets.BOTWOO_TOKEN }}
+          token: ${{ secrets.WOO_DEPLOY_SECRET }}
 
       - name: Deploy to WordPress.org
         uses: ./.github/actions/woo-product-deploy
@@ -49,7 +49,7 @@ jobs:
           wporg_release: true
           # post-release-updates.yml already creates the GitHub release and tag
           github_release: false
-          deploy_pat: ${{ secrets.BOTWOO_TOKEN }}
+          deploy_pat: ${{ secrets.WOO_DEPLOY_SECRET }}
           wporg_username: ${{ secrets.WPORG_USERNAME }}
           wporg_password: ${{ secrets.WPORG_PASSWORD }}
           partner_user: ${{ secrets.QIT_CI_USER }}
