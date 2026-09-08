@@ -1,0 +1,81 @@
+name: Diagnose deployment token access
+
+on:
+  push:
+    branches:
+      - diagnose-product-deploy-auth-20260908
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check token identity and repository read access
+        env:
+          DEPLOY_DIAGNOSTIC_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
+        shell: python
+        run: |
+          import base64
+          import json
+          import os
+          import subprocess
+          import urllib.error
+          import urllib.request
+
+          token = os.environ['DEPLOY_DIAGNOSTIC_TOKEN']
+          if not token:
+              raise SystemExit('BOTWOO_TOKEN is empty')
+          kind = 'fine-grained PAT' if token.startswith('github_pat_') else 'classic PAT' if token.startswith('ghp_') else 'other or legacy format'
+          print('Token format:', kind)
+
+          def probe(path):
+              request = urllib.request.Request(
+                  'https://api.github.com' + path,
+                  headers={
+                      'Authorization': 'Bearer ' + token,
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                  },
+              )
+              try:
+                  response = urllib.request.urlopen(request, timeout=30)
+              except urllib.error.HTTPError as error:
+                  response = error
+              with response:
+                  data = json.load(response)
+                  result = {'endpoint': path, 'status': response.status}
+                  for field in ('login', 'full_name', 'permissions', 'message'):
+                      if field in data:
+                          result[field] = data[field]
+                  for header in ('X-OAuth-Scopes', 'X-Accepted-OAuth-Scopes', 'X-Accepted-GitHub-Permissions'):
+                      if header in response.headers:
+                          result[header] = response.headers[header]
+                  if 'X-GitHub-SSO' in response.headers:
+                      result['sso_status'] = response.headers['X-GitHub-SSO'].split(';')[0]
+                  print(json.dumps(result).replace(token, '***'))
+
+          probe('/user')
+          for repo in ('Automattic/woocommerce-payments', 'woocommerce/woo-product-deploy', 'woocommerce/qit-action'):
+              probe('/repos/' + repo)
+          probe('/repos/woocommerce/woo-product-deploy/contents/action.yml?ref=5f5b49d49b8a3681a7a99efec089187666885759')
+
+          auth = base64.b64encode(('x-access-token:' + token).encode()).decode()
+          git_env = dict(os.environ)
+          git_env.update({
+              'GIT_TERMINAL_PROMPT': '0',
+              'GIT_CONFIG_COUNT': '1',
+              'GIT_CONFIG_KEY_0': 'http.https://github.com/.extraheader',
+              'GIT_CONFIG_VALUE_0': 'AUTHORIZATION: basic ' + auth,
+          })
+          result = subprocess.run(
+              ['git', 'ls-remote', 'https://github.com/woocommerce/woo-product-deploy.git', 'HEAD'],
+              env=git_env, capture_output=True, text=True, timeout=60,
+          )
+          print('Direct git ls-remote exit code:', result.returncode)
+          if result.returncode:
+              print(result.stderr.replace(token, '***').replace(auth, '***')[:1500])
+          else:
+              print('Direct Git read succeeded')
