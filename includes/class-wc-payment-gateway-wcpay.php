@@ -817,7 +817,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Note: Payments Task is not a very accurate from value, but it is the best we can do, for now.
-		return html_entity_decode( WC_Payments_Account::get_connect_url( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
+		return WC_Payments_Utils::decode_html_entities( WC_Payments_Account::get_connect_url( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK ) );
 	}
 
 	/**

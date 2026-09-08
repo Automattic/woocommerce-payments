@@ -146,7 +146,7 @@ class Analytics {
 
 			$currency_details   = $available_currencies[ $currency ];
 			$currency_options[] = [
-				'label' => html_entity_decode( $currency_details->get_name(), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 ),
+				'label' => \WC_Payments_Utils::decode_html_entities( $currency_details->get_name() ),
 				'value' => $currency_details->get_code(),
 			];
 		}

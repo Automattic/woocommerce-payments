@@ -164,7 +164,7 @@ class CurrencySwitcherBlock {
 	 */
 	private function render_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ): string {
 		$code        = $currency->get_code();
-		$same_symbol = html_entity_decode( $currency->get_symbol(), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 ) === $code;
+		$same_symbol = \WC_Payments_Utils::decode_html_entities( $currency->get_symbol() ) === $code;
 		$text        = $code;
 		$selected    = $this->multi_currency->get_selected_currency()->code === $code ? 'selected' : '';
 
