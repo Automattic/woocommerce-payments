@@ -28,6 +28,17 @@ jobs:
     name: "Deploy ${{ inputs.version }} from ${{ inputs.branch }}${{ inputs.simulate && ' (simulation)' || '' }}"
     runs-on: ubuntu-latest
     steps:
+      - name: Validate QIT credentials
+        shell: bash
+        env:
+          QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
+          QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}
+        run: |
+          if [[ -z "$QIT_CI_USER" || -z "$QIT_CI_SECRET" ]]; then
+            echo "::error::QIT_CI_USER and QIT_CI_SECRET must both be configured before deployment."
+            exit 1
+          fi
+
       # woo-product-deploy is a private repo, so it needs a token to check out
       - name: Checkout woo-product-deploy action
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -36,6 +47,7 @@ jobs:
           ref: 5f5b49d49b8a3681a7a99efec089187666885759 # pnpm build support
           path: ./.github/actions/woo-product-deploy
           token: ${{ secrets.WOO_DEPLOY_SECRET }}
+          persist-credentials: false
 
       - name: Deploy to WordPress.org
         uses: ./.github/actions/woo-product-deploy
