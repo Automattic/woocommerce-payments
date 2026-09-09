@@ -50,9 +50,7 @@ rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
 
-// Webpack emits hidden source maps that nothing references, so shipping them only
-// costs merchants download size. The glob must be recursive: chunk maps land in
-// dist/chunks/, and -f keeps a zero-match run from tripping config.fatal.
+// -f so that a build with no maps doesn't trip config.fatal.
 rm( '-f', 'dist/**/*.map' );
 
 // copy the directories to the release folder
