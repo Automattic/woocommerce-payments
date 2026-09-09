@@ -2,6 +2,9 @@
 /* eslint no-process-exit: 0, no-undef: 0, strict: 0 */
 'use strict';
 require( 'shelljs/global' );
+// shelljs only warns on a failed command, so without this a missing source
+// directory would still produce a zip and exit 0.
+config.fatal = true;
 const chalk = require( 'chalk' );
 const archiver = require( 'archiver' );
 const fs = require( 'fs' );
@@ -29,14 +32,16 @@ const filesToCopy = [
 
 // run npm dist
 rm( '-rf', 'dist' );
-// shelljs never throws, so an unchecked exec() would package an empty dist
-// and exit 0 when webpack fails.
-const clientBuild = exec( 'SOURCEMAP=hidden pnpm run build:client' );
-if ( clientBuild.code !== 0 ) {
+// fatal: false to name the step that broke instead of throwing. A command
+// killed by a signal still reports code 0, so check the output too.
+const clientBuild = exec( 'SOURCEMAP=hidden pnpm run build:client', {
+	fatal: false,
+} );
+if ( clientBuild.code !== 0 || ! fs.existsSync( 'dist' ) ) {
 	console.error(
 		chalk.red( 'The client build failed; nothing was packaged.' )
 	);
-	process.exit( clientBuild.code );
+	process.exit( clientBuild.code || 1 );
 }
 
 // start with a clean release folder
@@ -45,7 +50,7 @@ mkdir( releaseFolder );
 mkdir( targetFolder );
 
 // remove the 'hidden' source maps; they are used to generate the POT file and are not referenced in the source files.
-rm( 'dist/*.map' );
+rm( '-f', 'dist/*.map' );
 
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );

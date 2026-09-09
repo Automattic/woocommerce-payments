@@ -44,9 +44,6 @@ jobs:
                   # bash -c: @actions/exec splits the command itself, so &&
                   # needs an explicit shell.
                   install-script: bash -c "rm -rf node_modules && pnpm install --no-frozen-lockfile --ignore-scripts --config.engine-strict=false --config.strict-dep-builds=false"
+                  # No exclude: composer-managed assets under vendor/ ship
+                  # to merchants too, so a dependency bump should show up here.
                   pattern: '{release/**/*.js,release/**/*.css}'
-                  # No braces: the action feeds this to Node's fs.globSync,
-                  # which reads a single-item {…} as a literal and matches
-                  # nothing. The wildcard covers the plugin-slug folder.
-                  exclude: 'release/*/vendor/**'
-                  package-manager: pnpm
