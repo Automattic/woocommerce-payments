@@ -29,7 +29,15 @@ const filesToCopy = [
 
 // run npm dist
 rm( '-rf', 'dist' );
-exec( 'SOURCEMAP=hidden pnpm run build:client' );
+// shelljs never throws, so an unchecked exec() lets a failed webpack build
+// package a release with an empty dist and still exit 0.
+const clientBuild = exec( 'SOURCEMAP=hidden pnpm run build:client' );
+if ( clientBuild.code !== 0 ) {
+	console.error(
+		chalk.red( 'The client build failed; nothing was packaged.' )
+	);
+	process.exit( clientBuild.code );
+}
 
 // start with a clean release folder
 rm( '-rf', releaseFolder );

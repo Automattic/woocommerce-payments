@@ -37,7 +37,19 @@ jobs:
                   # reinstall re-checks builds approved by this branch's
                   # allowBuilds against the base's older or absent allowlist
                   # and hard-fails (seen on release→trunk PRs).
-                  install-script: pnpm install --no-frozen-lockfile --ignore-scripts --config.engine-strict=false --config.strict-dep-builds=false
+                  # rm -rf node_modules: both installs share one node_modules
+                  # and pnpm only reconciles forward. A package this branch
+                  # declares directly is linked at node_modules/<pkg> and left
+                  # out of the hoisted node_modules/.pnpm/node_modules, so the
+                  # base reinstall drops it outright and the base build fails
+                  # on an import the base branch resolves from a clean install.
+                  # bash -c: @actions/exec splits the command itself rather
+                  # than handing it to a shell, so && needs an explicit one.
+                  install-script: bash -c "rm -rf node_modules && pnpm install --no-frozen-lockfile --ignore-scripts --config.engine-strict=false --config.strict-dep-builds=false"
                   pattern: '{release/**/*.js,release/**/*.css}'
-                  exclude: '{release/vendor/**}'
+                  # No braces: the action feeds this to Node's fs.globSync,
+                  # which leaves a single-item {…} literal, so it matched
+                  # nothing. The wildcard covers the plugin-slug folder the
+                  # release task nests everything under.
+                  exclude: 'release/*/vendor/**'
                   package-manager: pnpm
