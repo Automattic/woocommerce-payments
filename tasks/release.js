@@ -50,7 +50,8 @@ rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
 
-// -f so that a build with no maps doesn't trip config.fatal.
+// combine-pot-files.php reads these to reference the built bundles in the POT,
+// which already ran as part of build:client above.
 rm( '-f', 'dist/**/*.map' );
 
 // copy the directories to the release folder
