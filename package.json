@@ -228,6 +228,7 @@
 		"ts-loader": "9.5.7",
 		"typescript": "5.9.3",
 		"util": "0.12.5",
+		"uuid": "8.3.2",
 		"webpack": "5.106.2",
 		"webpack-cli": "7.0.2",
 		"webpack-dev-server": "5.2.3",
