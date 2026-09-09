@@ -50,8 +50,8 @@ rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
 
-// build:client above already used these: combine-pot-files.php reads them to
-// reference the built bundles in the POT.
+// combine-pot-files.php reads the top-level maps to reference the built bundles
+// in the POT; that ran during build:client above.
 rm( '-f', 'dist/**/*.map' );
 
 // copy the directories to the release folder
