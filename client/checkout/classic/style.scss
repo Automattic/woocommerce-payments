@@ -35,6 +35,11 @@
 				object-fit: cover;
 				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
 				border-radius: 4.6875% / 7.5%;
+
+				// Art carries its own brand frame (Discover, Diners) — no UI ring on top.
+				&.has-brand-frame {
+					box-shadow: none;
+				}
 			}
 
 			img:last-of-type {
@@ -80,6 +85,11 @@
 				// baked corner (3/64, 3/40). Same as the strip and block popover.
 				object-fit: cover;
 				border-radius: 4.6875% / 7.5%;
+
+				// Art carries its own brand frame (Discover, Diners) — no UI ring on top.
+				&.has-brand-frame {
+					box-shadow: none;
+				}
 			}
 		}
 	}

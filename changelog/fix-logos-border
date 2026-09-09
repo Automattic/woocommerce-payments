@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Restore the Discover and Diners Club brand frames and remove JCB's non-brand blue background in the payment method logos, exempting brand-framed badges from the generic UI ring.

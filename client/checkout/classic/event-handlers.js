@@ -232,6 +232,9 @@ jQuery( function ( $ ) {
 				img.alt = pm.name;
 				img.width = 38;
 				img.height = 24;
+				if ( pm.hasBrandFrame ) {
+					img.classList.add( 'has-brand-frame' );
+				}
 				popover.appendChild( img );
 			} );
 
@@ -278,6 +281,9 @@ jQuery( function ( $ ) {
 				brandImg.alt = pm.name;
 				brandImg.width = 38;
 				brandImg.height = 24;
+				if ( pm.hasBrandFrame ) {
+					brandImg.classList.add( 'has-brand-frame' );
+				}
 				innerContainer.appendChild( brandImg );
 			} );
 
