@@ -248,7 +248,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 *
 	 * @param array  $a         First item to be compared.
 	 * @param array  $b         Second item to be compared.
-	 * @param array  $sort      Sort key.
+	 * @param string $sort      Sort key.
 	 * @param string $direction Sort direction.
 	 *
 	 * @return int
