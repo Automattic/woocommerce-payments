@@ -29,8 +29,8 @@ const filesToCopy = [
 
 // run npm dist
 rm( '-rf', 'dist' );
-// shelljs never throws, so an unchecked exec() lets a failed webpack build
-// package a release with an empty dist and still exit 0.
+// shelljs never throws, so an unchecked exec() would package an empty dist
+// and exit 0 when webpack fails.
 const clientBuild = exec( 'SOURCEMAP=hidden pnpm run build:client' );
 if ( clientBuild.code !== 0 ) {
 	console.error(
