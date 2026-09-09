@@ -1,6 +1,6 @@
 # GitHub Actions Scripts
 
-This directory contains scripts used by GitHub Actions workflows for dynamic version management and matrix generation.
+This directory contains scripts used by GitHub Actions workflows for dynamic version management, matrix generation, and governance alerting.
 
 ## Scripts
 
@@ -42,6 +42,28 @@ Single JSON object containing versions array and metadata:
 - Outputs structured JSON for easy parsing
 - Skips beta versions when not available
 - Provides debug output to stderr for troubleshooting
+
+### `branch-protection-event.sh`
+
+Builds the alert payload for the branch-protection change workflow
+(`.github/workflows/branch-protection-alert.yml`) from a `branch_protection_rule`
+event. Using `jq` guarantees valid, injection-safe JSON regardless of rule names
+or change values. Refs WOOPMNT-6229.
+
+**Usage:**
+
+```bash
+# Canonical flat audit JSON (default) — the structured event shape, for
+# downstream logging/retention consumers
+.github/scripts/branch-protection-event.sh "$GITHUB_EVENT_PATH"
+
+# Slack Block Kit JSON — for the #payments-engineering alert
+.github/scripts/branch-protection-event.sh --slack "$GITHUB_EVENT_PATH"
+```
+
+The event file argument defaults to `$GITHUB_EVENT_PATH` when omitted. Canonical
+output fields: `repository`, `action`, `rule`, `actor`, `timestamp` (UTC),
+`settings_url`, `changes` (before/after on edits).
 
 ## Matrix Generation Strategy
 

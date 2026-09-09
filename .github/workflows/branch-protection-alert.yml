@@ -13,42 +13,49 @@ permissions:
 jobs:
   alert:
     name: Notify Slack of branch protection change
-    # Only the upstream repo carries the webhook secret; skip on forks so the
-    # absence of the secret doesn't surface as a misleading failed run.
+    # Only the upstream repo carries the secrets; skip on forks so their
+    # absence doesn't surface as a misleading failed run.
     if: github.repository == 'Automattic/woocommerce-payments'
     runs-on: ubuntu-latest
     steps:
+      - name: Check out scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Build Slack payload
+        run: |
+          .github/scripts/branch-protection-event.sh --slack "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/slack.json"
+
       - name: Slack ping
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           webhook: ${{ secrets.BRANCH_PROTECTION_ALERT_SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": ":lock: Branch protection changed",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
-                    { "type": "mrkdwn", "text": "*Action:*\n${{ github.event.action }}" },
-                    { "type": "mrkdwn", "text": "*Branch rule:*\n${{ github.event.rule.name }}" },
-                    { "type": "mrkdwn", "text": "*Changed by:*\n${{ github.event.sender.login }}" }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<https://github.com/${{ github.repository }}/settings/branches|Review branch protection settings>"
-                  }
-                }
-              ]
-            }
+          payload-file-path: ${{ runner.temp }}/slack.json
+
+  outage:
+    name: Flag detection outage
+    needs: alert
+    # Runs only if the alert job failed — the detector may be blind
+    # (most likely a revoked/missing webhook secret). Uses the built-in
+    # token so it does not depend on the external webhook.
+    if: failure() && needs.alert.result == 'failure' && github.repository == 'Automattic/woocommerce-payments'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update an outage issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Branch-protection alert failed — change detector may be blind"
+          existing="$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          body="The branch-protection change alert workflow failed. Until fixed, changes to branch protection may go unnoticed. Check the webhook secret and the run: $RUN_URL  (Refs WOOPMNT-6229)"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
