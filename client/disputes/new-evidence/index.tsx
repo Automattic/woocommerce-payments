@@ -1151,7 +1151,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 0 ] = el ) }
+						ref={ ( el ) => {
+							stepHeadingRefs.current[ 0 ] = el;
+						} }
 						tabIndex={ -1 }
 					>
 						{ steps[ 0 ].heading }
@@ -1200,7 +1202,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 1 ] = el ) }
+						ref={ ( el ) => {
+							stepHeadingRefs.current[ 1 ] = el;
+						} }
 						tabIndex={ -1 }
 					>
 						{ steps[ 1 ].heading }
@@ -1238,9 +1242,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) =>
-							( stepHeadingRefs.current[ reviewStep ] = el )
-						}
+						ref={ ( el ) => {
+							stepHeadingRefs.current[ reviewStep ] = el;
+						} }
 						tabIndex={ -1 }
 					>
 						{ steps[ 2 ].heading }
