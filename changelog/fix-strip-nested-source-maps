@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop shipping webpack source maps in the released plugin package.
