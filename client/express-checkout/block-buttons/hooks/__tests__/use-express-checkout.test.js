@@ -463,6 +463,64 @@ describe( 'useExpressCheckout', () => {
 		);
 	} );
 
+	it( 'should use the updated currency code when transforming shipping rates', () => {
+		const event = { resolve: jest.fn() };
+		const shippingData = {
+			needsShipping: true,
+			shippingRates: [
+				{
+					shipping_rates: [
+						{
+							rate_id: 'flat_rate',
+							price: '500',
+							name: 'Flat Rate',
+						},
+					],
+				},
+			],
+		};
+		window.wcpayExpressCheckoutParams.checkout.zero_decimal_currencies = [
+			'jpy',
+		];
+
+		const { result, rerender } = renderHook(
+			( { currencyCode } ) =>
+				useExpressCheckout( {
+					billing: {
+						cartTotalItems: [],
+						cartTotal: {
+							label: 'Total',
+							value: 500,
+						},
+						currency: {
+							code: currencyCode,
+							minorUnit: 2,
+						},
+					},
+					shippingData,
+					onClick: jest.fn(),
+					onClose: {},
+					setExpressPaymentError: {},
+				} ),
+			{ initialProps: { currencyCode: 'USD' } }
+		);
+
+		rerender( { currencyCode: 'JPY' } );
+		result.current.onButtonClick( event );
+
+		expect( event.resolve ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				shippingRates: [
+					{
+						id: 'flat_rate',
+						displayName: 'Flat Rate',
+						amount: 5,
+					},
+				],
+			} )
+		);
+	} );
+
 	it( 'should transform shipping rate amounts correctly with USD configured to display zero decimals', () => {
 		const event = { resolve: jest.fn() };
 		// Mocking USD configured to display with 0 decimals - Stripe still needs cents.
