@@ -36,8 +36,9 @@ const clientBuild = exec( 'SOURCEMAP=hidden pnpm run build:client', {
 	// using fatal: false so that it doesn't throw
 	fatal: false,
 } );
-// checking both the code and the output, just to be safe
-if ( clientBuild.code !== 0 || ! fs.existsSync( 'dist' ) ) {
+// shelljs reports 0 when a command dies from a signal, and webpack creates
+// dist before it finishes emitting - so look for an entry file, not the folder.
+if ( clientBuild.code !== 0 || ! fs.existsSync( 'dist/index.js' ) ) {
 	console.error(
 		chalk.red( 'The client build failed; nothing was packaged.' )
 	);
