@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80219826825e9c66556eecd1ea433c28",
+    "content-hash": "ebaf463d1da69cf8a739dc6bc6c4f8a7",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -4447,16 +4447,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.13.5",
+            "version": "3.13.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPCSStandards/PHP_CodeSniffer.git",
-                "reference": "0ca86845ce43291e8f5692c7356fccf3bcf02bf4"
+                "reference": "4c378e1a528ea066890fc2397cbdd2f94eb2fc91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/0ca86845ce43291e8f5692c7356fccf3bcf02bf4",
-                "reference": "0ca86845ce43291e8f5692c7356fccf3bcf02bf4",
+                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/4c378e1a528ea066890fc2397cbdd2f94eb2fc91",
+                "reference": "4c378e1a528ea066890fc2397cbdd2f94eb2fc91",
                 "shasum": ""
             },
             "require": {
@@ -4522,7 +4522,7 @@
                     "type": "thanks_dev"
                 }
             ],
-            "time": "2025-11-04T16:30:35+00:00"
+            "time": "2026-08-06T00:17:32+00:00"
         },
         {
             "name": "symfony/console",
@@ -5690,23 +5690,23 @@
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
-            "version": "1.0.1",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/woocommerce-sniffs.git",
-                "reference": "e6da0c372573724806b270ec1d5d94988b8aec52"
+                "reference": "906c75a4127adeb835ddbc859a99a9dbff8891c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/woocommerce-sniffs/zipball/e6da0c372573724806b270ec1d5d94988b8aec52",
-                "reference": "e6da0c372573724806b270ec1d5d94988b8aec52",
+                "url": "https://api.github.com/repos/woocommerce/woocommerce-sniffs/zipball/906c75a4127adeb835ddbc859a99a9dbff8891c0",
+                "reference": "906c75a4127adeb835ddbc859a99a9dbff8891c0",
                 "shasum": ""
             },
             "require": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
-                "php": ">=7.0",
-                "phpcompatibility/phpcompatibility-wp": "^2.1.0",
-                "wp-coding-standards/wpcs": "^3.0.0"
+                "php": ">=7.2",
+                "phpcompatibility/phpcompatibility-wp": "^2.1.7",
+                "wp-coding-standards/wpcs": "^3.4.1"
             },
             "type": "phpcodesniffer-standard",
             "notification-url": "https://packagist.org/downloads/",
@@ -5723,9 +5723,9 @@
             ],
             "support": {
                 "issues": "https://github.com/woocommerce/woocommerce-sniffs/issues",
-                "source": "https://github.com/woocommerce/woocommerce-sniffs/tree/1.0.1"
+                "source": "https://github.com/woocommerce/woocommerce-sniffs/tree/2.0.0"
             },
-            "time": "2025-09-03T13:34:27+00:00"
+            "time": "2026-07-31T13:27:58+00:00"
         },
         {
             "name": "wp-coding-standards/wpcs",
@@ -5925,9 +5925,9 @@
         "php": ">=7.3",
         "ext-json": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
