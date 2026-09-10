@@ -96,18 +96,26 @@ class WC_Payments_Webhook_Processing_Service {
 	private $token_service;
 
 	/**
+	 * Historical report invalidation.
+	 *
+	 * @var \WCPay\Internal\Service\PaymentEventWebhook|null
+	 */
+	private $reporting;
+
+	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
-	 * @param WC_Payments_API_Client                          $api_client          WooCommerce Payments API client.
-	 * @param WC_Payments_DB                                  $wcpay_db            WC_Payments_DB instance.
-	 * @param WC_Payments_Account                             $account             WC_Payments_Account instance.
-	 * @param WC_Payments_Remote_Note_Service                 $remote_note_service WC_Payments_Remote_Note_Service instance.
-	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
-	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
-	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
-	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
-	 * @param WC_Payments_Onboarding_Service                  $onboarding_service  WC_Payments_Onboarding_Service instance.
-	 * @param WC_Payments_Token_Service                       $token_service       WC_Payments_Token_Service instance.
+	 * @param WC_Payments_API_Client                           $api_client          WooCommerce Payments API client.
+	 * @param WC_Payments_DB                                   $wcpay_db            WC_Payments_DB instance.
+	 * @param WC_Payments_Account                              $account             WC_Payments_Account instance.
+	 * @param WC_Payments_Remote_Note_Service                  $remote_note_service WC_Payments_Remote_Note_Service instance.
+	 * @param WC_Payments_Order_Service                        $order_service       WC_Payments_Order_Service instance.
+	 * @param WC_Payments_In_Person_Payments_Receipts_Service  $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
+	 * @param WC_Payment_Gateway_WCPay                         $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
+	 * @param Database_Cache                                   $database_cache      Database_Cache instance.
+	 * @param WC_Payments_Onboarding_Service                   $onboarding_service  WC_Payments_Onboarding_Service instance.
+	 * @param WC_Payments_Token_Service                        $token_service       WC_Payments_Token_Service instance.
+	 * @param \WCPay\Internal\Service\PaymentEventWebhook|null $reporting Historical reporting invalidation.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -119,7 +127,8 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
 		Database_Cache $database_cache,
 		WC_Payments_Onboarding_Service $onboarding_service,
-		WC_Payments_Token_Service $token_service
+		WC_Payments_Token_Service $token_service,
+		?\WCPay\Internal\Service\PaymentEventWebhook $reporting = null
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -131,6 +140,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->database_cache      = $database_cache;
 		$this->onboarding_service  = $onboarding_service;
 		$this->token_service       = $token_service;
+		$this->reporting           = $reporting;
 	}
 
 	/**
@@ -158,6 +168,10 @@ class WC_Payments_Webhook_Processing_Service {
 				'body' => WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ),
 			]
 		);
+
+		if ( null !== $this->reporting ) {
+			$this->reporting->process( $event_body, (int) $this->api_client->get_blog_id(), get_woocommerce_currency() );
+		}
 
 		if ( $this->is_webhook_mode_mismatch( $event_body ) ) {
 			return;

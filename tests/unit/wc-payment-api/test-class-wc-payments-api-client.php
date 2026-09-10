@@ -68,6 +68,514 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Traverse real typed requests while mocking only the remote HTTP boundary.
+	 *
+	 * @dataProvider refund_collection_provider
+	 */
+	public function test_refund_history_collection( $scenario, $reason, $calls, $count ) {
+		require_once dirname( __DIR__, 3 ) . '/src/Internal/Service/RefundHistoryCollection.php';
+		$factory = function ( $existing, $request_class ) {
+			return \WCPay\Core\Server\Request\List_Charge_Refunds::class === $request_class
+				? new $request_class( $this->payments_api_client, $this->mock_http_client ) : $existing;
+		};
+		add_filter( 'wcpay_create_request', $factory, 10, 2 );
+		$index = 0;
+		$this->mock_http_client->expects( $this->exactly( $calls ) )->method( 'remote_request' )->willReturnCallback(
+			function ( $args ) use ( &$index, $scenario ) {
+				parse_str( wp_parse_url( $args['url'], PHP_URL_QUERY ), $query );
+				$this->assertSame( '0', $query['test_mode'] );
+				$this->assertSame( 'ch_history', $query['charge'] );
+				$this->assertSame( '1', $query['include_reporting_context'] );
+				$this->assertSame( [ 'data.balance_transaction', 'data.failure_balance_transaction' ], $query['expand'] );
+				if ( $index ) {
+					$this->assertSame( 're_page' . $index, $query['starting_after'] );
+				} else {
+					$this->assertArrayNotHasKey( 'starting_after', $query );
+				}
+				++$index;
+				if ( 'offline' === $scenario && 2 === $index ) {
+					throw new RuntimeException( 'Synthetic offline response' );
+				}
+				$id                              = 'repeat' === $scenario ? 're_page1' : 're_page' . $index;
+				$data                            = [
+					'object'   => 'list',
+					'has_more' => $index < 2 || 'limit' === $scenario,
+					'data'     => [
+						[
+							'object'                      => 'refund',
+							'id'                          => $id,
+							'charge'                      => 'ch_history',
+							'status'                      => 'failed',
+							'balance_transaction'         => 'txn_debit',
+							'failure_balance_transaction' => 'txn_reversal',
+						],
+					],
+				];
+				$data['wcpay_reporting_context'] = [
+					'version'    => 1,
+					'account_id' => 'acct_original',
+					'site_id'    => 123,
+					'test_mode'  => false,
+				];
+				if ( 'context_missing' === $scenario ) {
+					unset( $data['wcpay_reporting_context'] );
+				} elseif ( 2 === $index && 'context_account' === $scenario ) {
+					$data['wcpay_reporting_context']['account_id'] = 'acct_other';
+				} elseif ( 2 === $index && 'context_mode' === $scenario ) {
+					$data['wcpay_reporting_context']['test_mode'] = true;
+				} elseif ( 2 === $index && 'context_site' === $scenario ) {
+					$data['wcpay_reporting_context']['site_id'] = 456;
+				}
+				if ( 'missing_marker' === $scenario ) {
+					unset( $data['has_more'] );
+				} elseif ( 'empty_more' === $scenario ) {
+					$data['data'] = [];
+				} elseif ( 'wrong_charge' === $scenario ) {
+					$data['data'][0]['charge'] = 'ch_other';
+				} elseif ( 'empty_complete' === $scenario ) {
+					$data['data']     = [];
+					$data['has_more'] = false;
+				}
+				return [
+					'body'     => wp_json_encode( $data ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+					'headers'  => [],
+					'cookies'  => [],
+				];
+			}
+		);
+		try {
+			$started_at = time();
+			$result     = ( new \WCPay\Internal\Service\RefundHistoryCollection() )->collect(
+				'ch_history',
+				false,
+				[
+					'version'    => 1,
+					'account_id' => 'acct_original',
+					'site_id'    => 123,
+					'test_mode'  => false,
+				]
+			);
+			$this->assertIsArray( $result['retrieval'] ?? null );
+			$this->assertGreaterThanOrEqual( $started_at, $result['retrieval']['started_at'] );
+			$this->assertGreaterThanOrEqual( $result['retrieval']['started_at'], $result['retrieval']['completed_at'] );
+			$this->assertLessThanOrEqual( time(), $result['retrieval']['completed_at'] );
+			$this->assertSame( 'ch_history', $result['charge_id'] );
+			$this->assertSame( $reason ? 'incomplete' : 'listed', $result['state'] );
+			$this->assertSame( $reason, $result['reason'] ?? null );
+			$this->assertCount( $count, $result['refunds'] );
+			$this->assertSame(
+				[
+					'version'    => 1,
+					'account_id' => 'acct_original',
+					'site_id'    => 123,
+					'test_mode'  => false,
+				],
+				$result['reporting_context']
+			);
+			if ( $count ) {
+				$this->assertSame( 'txn_reversal', $result['refunds'][0]['failure_balance_transaction'] );
+			}
+		} finally {
+			remove_filter( 'wcpay_create_request', $factory, 10 );
+		}
+	}
+
+	/**
+	 * Invalid queued provenance cannot trigger a remote request.
+	 */
+	public function test_refund_collection_rejects_invalid_expected_context() {
+		require_once dirname( __DIR__, 3 ) . '/src/Internal/Service/RefundHistoryCollection.php';
+		$this->mock_http_client->expects( $this->never() )->method( 'remote_request' );
+		$valid = [
+			'version'    => 1,
+			'account_id' => 'acct_original',
+			'site_id'    => 123,
+			'test_mode'  => false,
+		];
+		foreach ( [ [], array_merge( $valid, [ 'version' => 2 ] ), array_merge( $valid, [ 'account_id' => '' ] ), array_merge( $valid, [ 'site_id' => '123' ] ), array_merge( $valid, [ 'test_mode' => 0 ] ), array_merge( $valid, [ 'extra' => true ] ) ] as $context ) {
+			$this->assertSame(
+				[
+					'state'   => 'incomplete',
+					'reason'  => 'refund_expected_context_invalid',
+					'refunds' => [],
+				],
+				( new \WCPay\Internal\Service\RefundHistoryCollection() )->collect( 'ch_history', false, $context )
+			);
+		}
+	}
+
+	/**
+	 * Traversal cases, not accounting qualification cases.
+	 *
+	 * @return array Test scenarios.
+	 */
+	public function refund_collection_provider() {
+		return [
+			'missing server context'      => [ 'context_missing', 'refund_context_mismatch', 1, 0 ],
+			'account changes on page two' => [ 'context_account', 'refund_context_mismatch', 2, 1 ],
+			'mode changes on page two'    => [ 'context_mode', 'refund_context_mismatch', 2, 1 ],
+			'site changes on page two'    => [ 'context_site', 'refund_context_mismatch', 2, 1 ],
+			'two pages'                   => [ 'normal', null, 2, 2 ],
+			'old server repeats'          => [ 'repeat', 'refund_pagination_repeated', 2, 1 ],
+			'missing coverage marker'     => [ 'missing_marker', 'refund_response_invalid', 1, 0 ],
+			'empty unfinished page'       => [ 'empty_more', 'refund_pagination_empty', 1, 0 ],
+			'wrong charge'                => [ 'wrong_charge', 'refund_identity_invalid', 1, 0 ],
+			'empty complete list'         => [ 'empty_complete', null, 1, 0 ],
+			'offline after first page'    => [ 'offline', 'refund_retrieval_failed', 2, 1 ],
+			'bounded traversal'           => [ 'limit', 'refund_page_limit', 20, 20 ],
+		];
+	}
+
+	/**
+	 * Historical refund mode survives the real API client's default parameters.
+	 */
+	public function test_refund_request_historical_mode_reaches_http_boundary() {
+		$mode_property = new ReflectionProperty( \WCPay\Core\Mode::class, 'test_mode' );
+		$mode_property->setAccessible( true );
+		$previous_mode = $mode_property->getValue( WC_Payments::mode() );
+		$observed      = [];
+		$this->mock_http_client->expects( $this->exactly( 4 ) )->method( 'remote_request' )->willReturnCallback(
+			function ( $args ) use ( &$observed ) {
+				parse_str( wp_parse_url( $args['url'], PHP_URL_QUERY ), $query );
+				$observed[] = $query['test_mode'];
+				$this->assertSame( 'py_historical', $query['charge'] );
+				if ( count( $observed ) % 2 ) {
+					$this->assertSame( 're_previous', $query['starting_after'] );
+					$this->assertSame( [ 'data.balance_transaction', 'data.failure_balance_transaction' ], $query['expand'] );
+				} else {
+					$this->assertArrayNotHasKey( 'starting_after', $query );
+					$this->assertArrayNotHasKey( 'expand', $query );
+				}
+				return [
+					'body'     => '[]',
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+					'headers'  => [],
+					'cookies'  => [],
+				];
+			}
+		);
+		try {
+			foreach ( [ false, true ] as $historical_mode ) {
+				$mode_property->setValue( WC_Payments::mode(), ! $historical_mode );
+				foreach ( [ true, false ] as $explicit ) {
+					$request = new \WCPay\Core\Server\Request\List_Charge_Refunds( $this->payments_api_client, $this->mock_http_client );
+					$request->set_charge( 'py_historical' );
+					if ( $explicit ) {
+						$request->set_test_mode( $historical_mode );
+						$request->set_starting_after( 're_previous' );
+						$request->set_expand_balance_transactions();
+					}
+					$this->assertSame( [], $request->send()->to_array() );
+					$this->assertSame( ! $historical_mode, WC_Payments::mode()->is_test() );
+				}
+			}
+			$this->assertSame( [ '0', '1', '1', '0' ], $observed );
+		} finally {
+			$mode_property->setValue( WC_Payments::mode(), $previous_mode );
+		}
+	}
+
+	/**
+	 * Charge enrichment must preserve historical evidence and not invent missing fields.
+	 *
+	 * @dataProvider charge_snapshot_response_provider
+	 */
+	public function test_charge_request_preserves_snapshot_evidence( $scenario, $reason, $hpos, $test_mode ) {
+		require_once dirname( __DIR__, 3 ) . '/src/Internal/Service/CapturedPaymentSnapshot.php';
+		$request          = new \WCPay\Core\Server\Request\Get_Charge( $this->payments_api_client, $this->mock_http_client, 'ch_fixture' );
+		$validator        = new \WCPay\Internal\Service\CapturedPaymentSnapshot();
+		$expected_context = [
+			'version'    => 1,
+			'account_id' => 'acct_original',
+			'site_id'    => 123,
+			'test_mode'  => $test_mode,
+		];
+		$charge           = [
+			'wcpay_reporting_context' => $expected_context,
+			'id'                      => 'ch_fixture',
+			'livemode'                => ! $test_mode,
+			'paid'                    => true,
+			'captured'                => true,
+			'status'                  => 'succeeded',
+			'amount'                  => 3600,
+			'amount_captured'         => 3600,
+			'currency'                => 'gbp',
+			'amount_refunded'         => 0,
+			'disputed'                => false,
+			'balance_transaction'     => [
+				'id'            => 'txn_fixture',
+				'amount'        => 4190,
+				'currency'      => 'eur',
+				'created'       => 1700000000,
+				'fee'           => 193,
+				'net'           => 3997,
+				'exchange_rate' => 1.16,
+			],
+		];
+		if ( 'missing_id' === $scenario ) {
+			unset( $charge['balance_transaction']['id'] );
+		} elseif ( 'unexpanded' === $scenario ) {
+			$charge['balance_transaction'] = 'txn_fixture';
+		} elseif ( 'wrong_currency' === $scenario ) {
+			$charge['balance_transaction']['currency'] = 'usd';
+		}
+		$fail_request   = false;
+		$during_request = null;
+		$observed_mode  = null;
+		$wire_mode      = null;
+		$wire_context   = null;
+		$request_count  = 0;
+		$this->mock_http_client->method( 'remote_request' )->willReturnCallback(
+			static function ( $args ) use ( &$charge, &$fail_request, &$during_request, &$observed_mode, &$wire_mode, &$wire_context, &$request_count ) {
+				parse_str( wp_parse_url( $args['url'], PHP_URL_QUERY ), $query );
+				$wire_mode    = $query['test_mode'] ?? null;
+				$wire_context = $query['include_reporting_context'] ?? null;
+				++$request_count;
+				// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Observes the existing mode hook for request isolation.
+				$observed_mode = apply_filters( 'wcpay_test_mode', false );
+				if ( $during_request ) {
+					$during_request();
+				}
+				if ( $fail_request ) {
+					return new WP_Error( 'http_request_failed', 'Synthetic unavailable transport' );
+				}
+				return [
+					'headers'  => [],
+					'body'     => wp_json_encode( $charge ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+					'cookies'  => [],
+					'filename' => null,
+				];
+			}
+		);
+		$formatted = $request->send();
+		$this->assertSame( $charge['balance_transaction'], $formatted['balance_transaction'] );
+		$result = $validator->build( $formatted, 'ch_fixture', 'GBP', 3600, 'EUR' );
+		require_once dirname( __DIR__, 3 ) . '/src/Internal/Service/CapturedPaymentSnapshotStore.php';
+		require_once dirname( __DIR__, 3 ) . '/src/Internal/Service/CapturedPaymentSnapshotRecovery.php';
+		$previous_storage = get_option( 'woocommerce_custom_orders_table_enabled', 'no' );
+		update_option( 'woocommerce_custom_orders_table_enabled', $hpos ? 'yes' : 'no' );
+		$this->assertSame( $hpos, \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() );
+		$order = new WC_Order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_currency( 'GBP' );
+		$order->set_total( 36 );
+		$order->update_meta_data( '_charge_id', 'ch_fixture' );
+		$order->update_meta_data( '_wcpay_mode', $test_mode ? 'test' : 'prod' );
+		$order->save();
+		$factory = function ( $existing, $request_class, $id ) {
+			return \WCPay\Core\Server\Request\Get_Charge::class === $request_class
+				? new $request_class( $this->payments_api_client, $this->mock_http_client, $id ) : $existing;
+		};
+		add_filter( 'wcpay_create_request', $factory, 10, 3 );
+		$mode_property = new ReflectionProperty( \WCPay\Core\Mode::class, 'test_mode' );
+		$mode_property->setAccessible( true );
+		$previous_mode = $mode_property->getValue( WC_Payments::mode() );
+		try {
+			// Simulate an already initialized ambient mode opposite to the order.
+			$mode_property->setValue( WC_Payments::mode(), ! $test_mode );
+			$this->assertSame( ! $test_mode, WC_Payments::mode()->is_test() );
+			$store    = new \WCPay\Internal\Service\CapturedPaymentSnapshotStore( $validator );
+			$recovery = new \WCPay\Internal\Service\CapturedPaymentSnapshotRecovery( $store );
+			// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Observes the existing mode hook for request isolation.
+			$ambient_mode = apply_filters( 'wcpay_test_mode', false );
+			$this->assertSame( $result, $recovery->recover( $order, 'EUR', $expected_context ) );
+			$this->assertSame( $ambient_mode, $observed_mode );
+			$this->assertSame( $test_mode ? '1' : '0', $wire_mode );
+			$this->assertSame( '1', $wire_context );
+			// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Observes the existing mode hook for request isolation.
+			$this->assertSame( $ambient_mode, apply_filters( 'wcpay_test_mode', false ) );
+			$this->assertSame( $result, $store->read( $order, 'EUR', $expected_context ) );
+			$fresh = wc_get_order( $order->get_id() );
+			$this->assertEquals( 36, $fresh->get_total() );
+			$this->assertSame( 'GBP', $fresh->get_currency() );
+			$before = $fresh->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::CURRENT_META );
+			$this->assertEquals( $expected_context, $before['context']['reporting_context'] ?? null );
+			$reordered_context = array_reverse( $expected_context, true );
+			$this->assertSame( $result, $store->read( $order, 'EUR', $reordered_context ) );
+			$this->assertSame( $result, $store->record( $order, $charge, 'EUR', $reordered_context ) );
+			$this->assertSame( $before, wc_get_order( $order->get_id() )->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::CURRENT_META ) );
+			$other_context = array_merge( $expected_context, [ 'account_id' => 'acct_other' ] );
+			$this->assertSame( 'snapshot_stale', $store->read( $order, 'EUR', $other_context )['reason'] );
+			$other_charge = array_merge( $charge, [ 'wcpay_reporting_context' => $other_context ] );
+			$this->assertSame( 'snapshot_context_mismatch', $store->record( $order, $other_charge, 'EUR', $other_context )['reason'] );
+			$this->assertSame( $before, wc_get_order( $order->get_id() )->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::CURRENT_META ) );
+			$this->assertSame( $result, $store->read( $order, 'EUR', $expected_context ) );
+			$this->assertSame( $result, $recovery->recover( $order, 'EUR', $expected_context ) );
+			$repeated = wc_get_order( $order->get_id() );
+			$this->assertCount( 1, $repeated->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::REVISION_META, false ) );
+			if ( null === $reason ) {
+				$requests_before = $request_count;
+				foreach ( [ [], array_merge( $expected_context, [ 'version' => 2 ] ), array_merge( $expected_context, [ 'account_id' => '' ] ), array_merge( $expected_context, [ 'site_id' => '123' ] ), array_merge( $expected_context, [ 'test_mode' => ! $test_mode ] ), array_merge( $expected_context, [ 'extra' => true ] ) ] as $invalid_context ) {
+					$this->assertSame( 'charge_expected_context_invalid', ( $recovery->recover( $order, 'EUR', $invalid_context )['reason'] ?? null ) );
+				}
+				$this->assertSame( $requests_before, $request_count );
+				$complete_charge = $charge;
+				foreach ( [ null, [], array_merge( $expected_context, [ 'account_id' => 'acct_changed' ] ), array_merge( $expected_context, [ 'site_id' => 456 ] ), array_merge( $expected_context, [ 'test_mode' => ! $test_mode ] ), array_merge( $expected_context, [ 'version' => 2 ] ) ] as $wrong_context ) {
+					$charge['wcpay_reporting_context'] = $wrong_context;
+					$this->assertSame( 'charge_context_mismatch', ( $recovery->recover( $order, 'EUR', $expected_context )['reason'] ?? null ) );
+					$this->assertSame( $before, wc_get_order( $order->get_id() )->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::CURRENT_META ) );
+				}
+				$charge             = $complete_charge;
+				$charge['livemode'] = $test_mode;
+				$this->assertSame( 'payment_mode_mismatch', $recovery->recover( $order, 'EUR', $expected_context )['reason'] );
+				$this->assertSame( $result, $store->read( $order, 'EUR', $expected_context ) );
+				$charge = $complete_charge;
+				foreach ( [ 'unexpanded', 'missing_id', 'missing_time' ] as $missing ) {
+					$charge = $complete_charge;
+					if ( 'unexpanded' === $missing ) {
+						$charge['balance_transaction'] = 'txn_fixture';
+					} elseif ( 'missing_id' === $missing ) {
+						unset( $charge['balance_transaction']['id'] );
+					} else {
+						unset( $charge['balance_transaction']['created'] );
+					}
+					$this->assertSame( 'incomplete', $recovery->recover( $order, 'EUR', $expected_context )['state'] );
+					$this->assertSame( $result, $store->read( $order, 'EUR', $expected_context ) );
+				}
+				foreach ( [ 'amount', 'currency' ] as $changed_field ) {
+					$conflict_order = new WC_Order();
+					$conflict_order->set_payment_method( 'woocommerce_payments' );
+					$conflict_order->set_currency( 'GBP' );
+					$conflict_order->set_total( 36 );
+					$conflict_order->update_meta_data( '_charge_id', 'ch_fixture' );
+					$conflict_order->update_meta_data( '_wcpay_mode', $test_mode ? 'test' : 'prod' );
+					$conflict_order->save();
+					try {
+						$store->record( $conflict_order, $complete_charge, 'EUR', $expected_context );
+						$contradiction = $complete_charge;
+						if ( 'amount' === $changed_field ) {
+							$contradiction['balance_transaction']['amount'] = 4290;
+							$contradiction['balance_transaction']['net']    = 4097;
+							unset( $contradiction['balance_transaction']['created'] );
+						} else {
+							$contradiction['balance_transaction']['currency'] = 'usd';
+						}
+						$this->assertSame( 'inconsistent', $store->record( $conflict_order, $contradiction, 'EUR', $expected_context )['state'] );
+					} finally {
+						$conflict_order->delete( true );
+					}
+				}
+				$charge = $complete_charge;
+				$this->assertSame( $result, $recovery->recover( $order, 'EUR', $expected_context ) );
+				$this->assertCount( 1, wc_get_order( $order->get_id() )->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::REVISION_META, false ) );
+
+				$this->assertSame(
+					[
+						'state'  => 'incomplete',
+						'reason' => 'reporting_currency_mismatch',
+					],
+					$recovery->recover( $order, 'USD', $expected_context )
+				);
+				$this->assertSame( $result, $store->read( $order, 'EUR', $expected_context ) );
+				$this->assertSame( $result, $recovery->recover( $order, 'EUR', $expected_context ) );
+			}
+			$fail_request = true;
+			$this->assertSame(
+				[
+					'state'  => 'incomplete',
+					'reason' => 'charge_retrieval_failed',
+				],
+				$recovery->recover( $order, 'EUR', $expected_context )
+			);
+			$this->assertSame( $result, $store->read( $order, 'EUR', $expected_context ) );
+			$after = wc_get_order( $order->get_id() );
+			$this->assertSame( $before, $after->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::CURRENT_META ) );
+			$fail_request = false;
+			if ( null === $reason ) {
+				foreach ( [ null, 'invalid' ] as $invalid_mode ) {
+					$during_request = static function () use ( $order, $invalid_mode ) {
+						$changed = wc_get_order( $order->get_id() );
+						if ( null === $invalid_mode ) {
+							$changed->delete_meta_data( '_wcpay_mode' );
+						} else {
+							$changed->update_meta_data( '_wcpay_mode', $invalid_mode );
+						}
+						$changed->save_meta_data();
+					};
+					$this->assertSame( 'payment_mode_missing', ( $recovery->recover( $order, 'EUR', $expected_context )['reason'] ?? null ) );
+					$this->assertNotSame( 'ready', $store->read( $order, 'EUR', $expected_context )['state'] );
+					$this->assertSame( $before, wc_get_order( $order->get_id() )->get_meta( \WCPay\Internal\Service\CapturedPaymentSnapshotStore::CURRENT_META ) );
+					$during_request = null;
+					$restore        = wc_get_order( $order->get_id() );
+					$restore->update_meta_data( '_wcpay_mode', $test_mode ? 'test' : 'prod' );
+					$restore->save_meta_data();
+				}
+				$during_request = static function () use ( $order, $test_mode ) {
+					$changed = wc_get_order( $order->get_id() );
+					$changed->update_meta_data( '_wcpay_mode', $test_mode ? 'prod' : 'test' );
+					$changed->save_meta_data();
+				};
+				$this->assertSame( 'payment_mode_mismatch', $recovery->recover( $order, 'EUR', $expected_context )['reason'] );
+				$this->assertNotSame( 'ready', $store->read( $order, 'EUR', $expected_context )['state'] );
+				$during_request = null;
+				$restore        = wc_get_order( $order->get_id() );
+				$restore->update_meta_data( '_wcpay_mode', $test_mode ? 'test' : 'prod' );
+				$restore->save_meta_data();
+				$this->assertSame( $result, $recovery->recover( $order, 'EUR', $expected_context ) );
+			}
+			$during_request = static function () use ( $order ) {
+				$changed = wc_get_order( $order->get_id() );
+				$changed->update_meta_data( '_charge_id', 'ch_replaced' );
+				$changed->save_meta_data();
+			};
+			$stale          = $recovery->recover( $order, 'EUR', $expected_context );
+			$this->assertNotSame( 'ready', $stale['state'] );
+			$this->assertNotSame( 'ready', $store->read( $order, 'EUR', $expected_context )['state'] );
+			$this->assertSame( 'ch_replaced', wc_get_order( $order->get_id() )->get_meta( '_charge_id' ) );
+
+		} finally {
+			$mode_property->setValue( WC_Payments::mode(), $previous_mode );
+			remove_filter( 'wcpay_create_request', $factory, 10 );
+			$order->delete( true );
+			update_option( 'woocommerce_custom_orders_table_enabled', $previous_storage );
+		}
+
+		if ( null !== $reason ) {
+			$this->assertSame(
+				[
+					'state'  => 'incomplete',
+					'reason' => $reason,
+				],
+				$result
+			);
+			return;
+		}
+		$this->assertSame( 'ready', $result['state'] );
+		$this->assertSame( 4190, $result['amount'] );
+		$this->assertSame( 3997, $result['net_amount'] );
+	}
+
+	/** Historical evidence cases delivered through the HTTP test boundary. */
+	public function charge_snapshot_response_provider() {
+		$cases  = [
+			'complete historical event'            => [ 'complete', null ],
+			'missing transaction identity'         => [ 'missing_id', 'balance_transaction_missing' ],
+			'unexpanded transaction'               => [ 'unexpanded', 'balance_transaction_missing' ],
+			'account currency differs from report' => [ 'wrong_currency', 'reporting_currency_mismatch' ],
+		];
+		$result = [];
+		foreach ( $cases as $label => $case ) {
+			foreach ( [ false, true ] as $test_mode ) {
+				$suffix                               = $test_mode ? ' test' : ' production';
+				$result[ $label . ' CPT' . $suffix ]  = array_merge( $case, [ false, $test_mode ] );
+				$result[ $label . ' HPOS' . $suffix ] = array_merge( $case, [ true, $test_mode ] );
+			}
+		}
+		return $result;
+	}
+
+	/**
 	 * Test a successful fetch of a single transaction.
 	 *
 	 * @throws Exception In case of test failure.
@@ -1959,6 +2467,36 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'YmFzZTY0ZGF0YQ==', (string) $captured_body );
 		$this->assertStringContainsString( 'receipt.pdf', (string) $captured_body );
 		$this->assertStringContainsString( 'dispute_evidence', (string) $captured_body );
+	}
+
+	/** Typed retrieval context survives deserialization without entering shopper JSON. */
+	public function test_deserialize_payment_intention_reporting_context() {
+		$source  = [
+			'id'            => 'pi_context',
+			'amount'        => 3600,
+			'currency'      => 'gbp',
+			'created'       => 1700000000,
+			'status'        => 'succeeded',
+			'client_secret' => 'fixture',
+			'metadata'      => [],
+			'charges'       => [
+				'total_count' => 0,
+				'data'        => [],
+			],
+		];
+		$context = [
+			'version'    => 1,
+			'account_id' => 'acct_fixture',
+			'site_id'    => 123,
+			'test_mode'  => false,
+		];
+		foreach ( [ null, $context, array_merge( $context, [ 'test_mode' => true ] ), array_merge( $context, [ 'site_id' => '123' ] ), array_merge( $context, [ 'version' => 2 ] ), array_merge( $context, [ 'test_mode' => 0 ] ) ] as $value ) {
+			$source['wcpay_reporting_context'] = $value;
+			$intent                            = $this->payments_api_client->deserialize_payment_intention_object_from_array( $source );
+			$expected                          = is_array( $value ) && 1 === $value['version'] && is_int( $value['site_id'] ) && is_bool( $value['test_mode'] ) ? $value : null;
+			$this->assertSame( $expected, $intent->get_reporting_context() );
+			$this->assertArrayNotHasKey( 'wcpay_reporting_context', $intent->jsonSerialize() );
+		}
 	}
 
 	/**

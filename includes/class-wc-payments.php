@@ -651,7 +651,7 @@ class WC_Payments {
 		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway, self::$order_service );
 		self::$post_kyc_activation_email_service->init_hooks();
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service, wcpay_get_container()->get( \WCPay\Internal\Service\PaymentEventWebhook::class ) );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 		self::$webhook_reliability_service->init_hooks();
 
@@ -663,6 +663,9 @@ class WC_Payments {
 		// Only register hooks of the new `src` service with the same feature of Duplicate_Payment_Prevention_Service.
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
+		wcpay_get_container()->get( \WCPay\Internal\Service\PaymentActivityReader::class )->init_hooks();
+		wcpay_get_container()->get( \WCPay\Internal\Service\CheckoutSalesSnapshot::class )->init_hooks();
+		wcpay_get_container()->get( \WCPay\Internal\Service\HistoricalPaymentValuation::class )->init_hooks();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();
@@ -1556,6 +1559,8 @@ class WC_Payments {
 	 * Handles upgrade routines.
 	 */
 	public static function install_actions() {
+		// Schema retries must not depend on the plugin upgrade marker advancing.
+		wcpay_get_container()->get( \WCPay\Internal\Service\PaymentEventSchema::class )->maybe_install();
 		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
 			/**
 			 * Fires after WooPayments has been updated to a newer version.

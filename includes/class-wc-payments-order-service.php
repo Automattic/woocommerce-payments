@@ -256,12 +256,30 @@ class WC_Payments_Order_Service {
 	protected $api_client;
 
 	/**
+	 * Optional evidence recorder, resolved lazily for responses with provenance.
+	 *
+	 * @var \WCPay\Internal\Service\PaymentEventRecorder|null
+	 */
+	private $payment_event_recorder;
+
+	/**
+	 * Optional recovery queue, resolved lazily in production.
+	 *
+	 * @var \WCPay\Internal\Service\PaymentEventRecoveryScheduler|null
+	 */
+	private $payment_event_scheduler;
+
+	/**
 	 * WC_Payments_Order_Service constructor.
 	 *
-	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_API_Client                                     $api_client - WooCommerce Payments API client.
+	 * @param \WCPay\Internal\Service\PaymentEventRecorder|null          $payment_event_recorder Optional evidence recorder.
+	 * @param \WCPay\Internal\Service\PaymentEventRecoveryScheduler|null $payment_event_scheduler Optional recovery queue.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client ) {
-		$this->api_client = $api_client;
+	public function __construct( WC_Payments_API_Client $api_client, ?\WCPay\Internal\Service\PaymentEventRecorder $payment_event_recorder = null, ?\WCPay\Internal\Service\PaymentEventRecoveryScheduler $payment_event_scheduler = null ) {
+		$this->api_client              = $api_client;
+		$this->payment_event_recorder  = $payment_event_recorder;
+		$this->payment_event_scheduler = $payment_event_scheduler;
 	}
 
 	/**
@@ -270,6 +288,8 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function init_hooks(): void {
+		add_action( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::HOOK, [ $this, 'discover_payment_attempts' ], 10, 4 );
+		add_action( \WCPay\Internal\Service\PaymentEventRecoveryScheduler::HOOK, [ $this, 'recover_payment_events' ], 10, 3 );
 		add_action( 'woocommerce_order_status_processing', [ $this, 'maybe_record_first_live_sale' ] );
 		add_action( 'woocommerce_order_status_completed', [ $this, 'maybe_record_first_live_sale' ] );
 
@@ -446,6 +466,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function process_captured_payment( $order, $intent ) {
 		$this->mark_payment_capture_completed( $order, $intent );
+		$this->record_payment_context( $order, $intent );
 		$this->complete_order_processing( $order, $intent->get_status() );
 	}
 
@@ -1351,6 +1372,7 @@ class WC_Payments_Order_Service {
 	public function attach_intent_info_to_order( WC_Order $order, $intent, $allow_update_on_success = false ) {
 		// We don't want to allow metadata for a successful payment to be disrupted (except for when changing payment method for subscription or renewing subscription).
 		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) && ! $allow_update_on_success ) {
+			$this->record_payment_context( $order, $intent );
 			return;
 		}
 		// first, let's prepare all the metadata needed for refunds, required for status change etc.
@@ -1368,6 +1390,7 @@ class WC_Payments_Order_Service {
 
 		// next, save it in order meta.
 		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
+		$this->record_payment_context( $order, $intent );
 
 		// Store payment method details when available.
 		if ( null !== $charge ) {
@@ -1383,6 +1406,62 @@ class WC_Payments_Order_Service {
 		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
 		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
 			$this->set_ipp_channel_for_order( $order, $ipp_channel );
+		}
+	}
+
+	/**
+	 * Resolve discovery in the current blog without hiding scheduling failures.
+	 *
+	 * @param array  $scope Authorized discovery generation.
+	 * @param string $currency Saved reporting currency.
+	 * @param int    $step Worker step.
+	 * @param int    $attempt Retry attempt.
+	 */
+	public function discover_payment_attempts( array $scope, string $currency, int $step = 0, int $attempt = 0 ): void {
+		wcpay_get_container()->get( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::class )->run( $scope, $currency, $step, $attempt );
+	}
+
+	/**
+	 * Resolve the worker in the current blog and let failures reach Action Scheduler.
+	 *
+	 * @param array  $scope Persisted payment receipt scope.
+	 * @param string $currency Reporting currency when queued.
+	 * @param int    $attempt Recovery attempt.
+	 */
+	public function recover_payment_events( array $scope, string $currency, int $attempt = 0 ): void {
+		$scheduler = $this->payment_event_scheduler ?? wcpay_get_container()->get( \WCPay\Internal\Service\PaymentEventRecoveryScheduler::class );
+		$scheduler->run( $scope, $currency, $attempt );
+	}
+
+	/**
+	 * Record matching provenance without making reporting storage a checkout dependency.
+	 *
+	 * @param WC_Order                           $order Order with persisted payment identity.
+	 * @param WC_Payments_API_Abstract_Intention $intent Payment or setup response.
+	 */
+	private function record_payment_context( WC_Order $order, $intent ): void {
+		if ( ! $intent instanceof WC_Payments_API_Payment_Intention || null === $intent->get_reporting_context() ) {
+			return;
+		}
+		try {
+			$recorder = $this->payment_event_recorder ?? wcpay_get_container()->get( \WCPay\Internal\Service\PaymentEventRecorder::class );
+			$result   = $recorder->record_intent( $order, $intent );
+			if ( 'recorded' !== $result['state'] ) {
+				Logger::log( 'Payment reporting context could not be recorded for order ' . $order->get_id() );
+				return;
+			}
+			$context   = $intent->get_reporting_context();
+			$scope     = [
+				'account_id' => $context['account_id'],
+				'site_id'    => $context['site_id'],
+				'test_mode'  => $context['test_mode'],
+				'order_id'   => $order->get_id(),
+				'event_id'   => $intent->get_id(),
+			];
+			$scheduler = $this->payment_event_scheduler ?? wcpay_get_container()->get( \WCPay\Internal\Service\PaymentEventRecoveryScheduler::class );
+			$scheduler->enqueue( $scope, get_woocommerce_currency() );
+		} catch ( \Throwable $exception ) {
+			Logger::log( 'Payment reporting context storage or recovery scheduling failed for order ' . $order->get_id() );
 		}
 	}
 

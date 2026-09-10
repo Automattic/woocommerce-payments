@@ -1819,6 +1819,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_methods = $this->get_payment_method_types( $payment_information );
 
 				$request = Create_And_Confirm_Intention::create();
+				$request->set_include_reporting_context();
 				$request->set_amount( $converted_amount );
 				$request->set_currency_code( $currency );
 				$payment_credential = $payment_information->get_payment_method();
@@ -3978,6 +3979,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$merged_metadata     = array_merge( (array) $metadata_from_order, (array) $intent_metadata ); // prioritize metadata from mobile app.
 
 			$capture_intention_request = Capture_Intention::create( $intent_id );
+			$capture_intention_request->set_include_reporting_context();
 			$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 			$capture_intention_request->set_metadata( $merged_metadata );
 			$capture_intention_request->set_hook_args( $order );

@@ -72,6 +72,32 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
+			$this->rest_base . '/(?P<order_id>\d+)/payment-history/refresh',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'refresh_payment_history' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'order_id'  => [
+						'required' => true,
+						'type'     => 'integer',
+						'minimum'  => 1,
+					],
+					'currency'  => [
+						'required' => true,
+						'type'     => 'string',
+						'pattern'  => '^[A-Z]{3}$',
+					],
+					'test_mode' => [
+						'required' => true,
+						'type'     => 'boolean',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			$this->rest_base . '/(?P<order_id>\w+)/capture_terminal_payment',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -148,6 +174,36 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'callback'            => [ $this, 'create_customer' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
+		);
+	}
+
+	/**
+	 * Queue discovery without changing native order or transaction amounts.
+	 *
+	 * @param WP_REST_Request $request Validated refresh request.
+	 * @return WP_REST_Response|WP_Error Queue acknowledgement or failure.
+	 */
+	public function refresh_payment_history( WP_REST_Request $request ) {
+		try {
+			$result = wcpay_get_container()->get( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::class )->start( (int) $request['order_id'], $request['currency'], (bool) $request['test_mode'] );
+		} catch ( \Throwable $exception ) {
+			return new WP_Error( 'wcpay_history_queue_unavailable', __( 'Payment history refresh could not be queued.', 'woocommerce-payments' ), [ 'status' => 503 ] );
+		}
+		if ( 'queued' !== $result['state'] ) {
+			$status = [
+				'forbidden'   => 403,
+				'invalid'     => 400,
+				'unavailable' => 503,
+			];
+			return new WP_Error( 'wcpay_history_refresh_unavailable', __( 'Payment history refresh is unavailable.', 'woocommerce-payments' ), [ 'status' => $status[ $result['state'] ] ?? 503 ] );
+		}
+		return new WP_REST_Response(
+			[
+				'state'     => 'queued',
+				'coverage'  => 'unknown',
+				'action_id' => $result['action_id'],
+			],
+			202
 		);
 	}
 

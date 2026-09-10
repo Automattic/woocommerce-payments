@@ -179,6 +179,47 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 	}
 
+	/** A reporting persistence exception remains retryable at the REST boundary. */
+	public function test_reporting_failure_returns_retryable_http_response() {
+		$processing = $this->createMock( WC_Payments_Webhook_Processing_Service::class );
+		$processing->expects( $this->once() )->method( 'process' )->willThrowException( new \RuntimeException( 'Reporting persistence unavailable' ) );
+		$controller = new WC_REST_Payments_Webhook_Controller( $this->mock_api_client, $processing );
+		$request    = new WP_REST_Request( 'POST' );
+		$request->set_header( 'content-type', 'application/json' );
+		$request->set_body( wp_json_encode( [ 'type' => 'charge.refunded' ] ) );
+		$response = $controller->handle_webhook( $request );
+		$this->assertSame( 500, $response->get_status() );
+		$this->assertSame( [ 'result' => 'error' ], $response->get_data() );
+	}
+
+	/** Reporting failures propagate even when legacy handling skips the event mode. */
+	public function test_reporting_invalidation_precedes_mode_filter() {
+		$reporting = $this->createMock( \WCPay\Internal\Service\PaymentEventWebhook::class );
+		$body      = [
+			'id'       => 'evt_reporting',
+			'type'     => 'charge.refunded',
+			'livemode' => false,
+		];
+		$this->mock_api_client->method( 'get_blog_id' )->willReturn( 123 );
+		$reporting->expects( $this->once() )->method( 'process' )->with( $body, 123, get_woocommerce_currency() )->willThrowException( new \RuntimeException( 'Reporting storage unavailable' ) );
+		$service = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$this->mock_db_wrapper,
+			$this->createMock( WC_Payments_Account::class ),
+			$this->mock_remote_note_service,
+			$this->order_service,
+			$this->mock_receipt_service,
+			$this->mock_wcpay_gateway,
+			$this->mock_database_cache,
+			$this->mock_onboarding_service,
+			$this->mock_token_service,
+			$reporting
+		);
+		$this->expectException( \RuntimeException::class );
+		$this->expectExceptionMessage( 'Reporting storage unavailable' );
+		$service->process( $body );
+	}
+
 	/**
 	 * Test processing a webhook that requires no action.
 	 */

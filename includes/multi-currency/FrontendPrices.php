@@ -76,6 +76,8 @@ class FrontendPrices {
 
 		// Order hooks.
 		add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'capture_classic_sales_snapshot' ], 99, 3 );
+		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'capture_sales_snapshot' ], 99 );
 
 		// Price Filter Hooks.
 		add_filter( 'rest_post_dispatch', [ $this, 'maybe_modify_price_ranges_rest_response' ], 10, 3 );
@@ -355,6 +357,76 @@ class FrontendPrices {
 	}
 
 	/**
+	 * Capture classic checkout through the shared checkout-ready boundary.
+	 *
+	 * @param int      $order_id Order ID.
+	 * @param array    $posted_data Checkout fields, not stored in the snapshot.
+	 * @param WC_Order $order Checkout order.
+	 */
+	public function capture_classic_sales_snapshot( $order_id, $posted_data, $order ) {
+		if ( $order instanceof WC_Order && $order->get_id() === $order_id ) {
+			$this->capture_sales_snapshot( $order );
+		}
+	}
+
+	/**
+	 * Preserve checkout valuation inputs; this is not evidence of received funds.
+	 *
+	 * Repeated processing never replaces an existing snapshot. Readers must reject
+	 * duplicate metadata rows and changed canonical inputs before using a snapshot.
+	 *
+	 * @param WC_Order $order Checkout order ready for payment.
+	 */
+	public function capture_sales_snapshot( $order ) {
+		if ( ! $order instanceof WC_Order || $order->get_id() <= 0 || 'shop_order' !== $order->get_type() ) {
+			return;
+		}
+		$key = '_wcpay_checkout_sales_snapshot';
+		if ( $order->meta_exists( $key ) ) {
+			return;
+		}
+		$currency  = $order->get_currency( 'edit' );
+		$reporting = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
+		$rate      = $order->get_meta( '_wcpay_multi_currency_order_valuation_rate', true );
+		if ( $currency !== $order->get_meta( '_wcpay_multi_currency_order_rate_currency', true ) ) {
+			return;
+		}
+		if ( ! is_string( $reporting ) || ! preg_match( '/^[A-Z]{3}$/D', $reporting ) || ! preg_match( '/^[A-Z]{3}$/D', $currency ) || $currency === $reporting || ! is_numeric( $rate ) || ! is_finite( (float) $rate ) || (float) $rate <= 0 ) {
+			return;
+		}
+		// At checkout only, refuse stale draft rates or a changed reporting currency.
+		$selected = $this->multi_currency->get_selected_currency();
+		if ( $currency !== $selected->get_code() || $reporting !== $this->multi_currency->get_default_currency()->get_code() || wc_float_to_string( $selected->get_rate() ) !== (string) $rate ) {
+			return;
+		}
+		$inputs = [
+			'order_id'           => $order->get_id(),
+			'order_key'          => $order->get_order_key(),
+			'currency'           => $currency,
+			'reporting_currency' => $reporting,
+			'total'              => (string) $order->get_total( 'edit' ),
+			'tax'                => (string) $order->get_total_tax( 'edit' ),
+			'shipping'           => (string) $order->get_shipping_total( 'edit' ),
+			'rate'               => (string) $rate,
+			'rate_direction'     => 'order_per_reporting',
+			// Use store reporting precision, not the selected-currency frontend filter.
+			'precision'          => absint( get_option( 'woocommerce_price_num_decimals', 2 ) ),
+		];
+		$order->add_meta_data(
+			$key,
+			[
+				'version'     => 1,
+				'basis'       => 'checkout',
+				'captured_at' => time(),
+				'inputs'      => $inputs,
+				'fingerprint' => hash( 'sha256', wp_json_encode( $inputs ) ),
+			],
+			false
+		);
+		$order->save_meta_data();
+	}
+
+	/**
 	 * Adds the exchange rate and default currency to the order's meta if prices have been converted.
 	 *
 	 * @param int      $order_id The order ID.
@@ -371,6 +443,10 @@ class FrontendPrices {
 		$exchange_rate = $this->multi_currency->get_price( 1, 'exchange_rate' );
 
 		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $exchange_rate );
+		// Preserve the selected rate separately from the legacy money-rounded rate.
+		$selected_currency = $this->multi_currency->get_selected_currency();
+		$order->update_meta_data( '_wcpay_multi_currency_order_valuation_rate', wc_float_to_string( $selected_currency->get_rate() ) );
+		$order->update_meta_data( '_wcpay_multi_currency_order_rate_currency', $selected_currency->get_code() );
 		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', $default_currency->get_code() );
 		$order->save_meta_data();
 	}

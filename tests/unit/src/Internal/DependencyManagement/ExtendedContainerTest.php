@@ -34,6 +34,14 @@ class ExtendedContainerTest extends WCPAY_UnitTestCase {
 		$this->sut = new ExtendedContainer();
 	}
 
+	/** The historical activity reader is available through normal provider registration. */
+	public function test_payment_activity_reader_is_registered() {
+		$this->sut->addServiceProvider( new \WCPay\Internal\DependencyManagement\ServiceProvider\GenericServiceProvider() );
+		$this->assertTrue( $this->sut->has( \WCPay\Internal\Service\PaymentActivityReader::class ) );
+		$this->assertInstanceOf( \WCPay\Internal\Service\PaymentActivityReader::class, $this->sut->get( \WCPay\Internal\Service\PaymentActivityReader::class ) );
+		$this->assertSame( $this->sut->get( \WCPay\Internal\Service\PaymentActivityReader::class ), $this->sut->get( \WCPay\Internal\Service\PaymentActivityReader::class ) );
+	}
+
 	/**
 	 * Tests that there is nothing done whenever a replacement to reset has been not found.
 	 */

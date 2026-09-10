@@ -70,6 +70,134 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_charge_created = 1653076178;
 
+	/** An authorized refresh acknowledges a real queued action, not recovered history. */
+	public function test_discovery_route_queues_action() {
+		rest_get_server();
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'rest_api_init' );
+		$order = new WC_Order();
+		$order->save();
+		$discovery = $this->createMock( \WCPay\Internal\Service\PaymentAttemptDiscovery::class );
+		$discovery->expects( $this->once() )->method( 'resolve_context' )->with( false )->willReturn(
+			[
+				'version'    => 1,
+				'account_id' => 'acct_rest',
+				'site_id'    => 123,
+				'test_mode'  => false,
+			]
+		);
+		$repository = $this->createMock( \WCPay\Internal\Service\PaymentEventRepository::class );
+		$repository->method( 'is_schema_compatible' )->willReturn( true );
+		$scheduler = new \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler( $discovery, $repository, $this->createMock( \WCPay\Internal\Service\PaymentEventRecoveryScheduler::class ) );
+		$container = wcpay_get_test_container();
+		$container->replace( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::class, $scheduler );
+		$data = [];
+		try {
+			$request = new WP_REST_Request( 'POST', '/wc/v3/payments/orders/' . $order->get_id() . '/payment-history/refresh' );
+			$request->set_body_params(
+				[
+					'currency'  => 'EUR',
+					'test_mode' => false,
+				]
+			);
+			$response = rest_do_request( $request );
+			$data     = $response->get_data();
+			$this->assertSame( 202, $response->get_status() );
+			$this->assertSame( [ 'state', 'coverage', 'action_id' ], array_keys( $data ) );
+			$this->assertSame( 'queued', $data['state'] );
+			$this->assertSame( 'unknown', $data['coverage'] );
+			$action = ActionScheduler::store()->fetch_action( $data['action_id'] );
+			$this->assertSame( $scheduler::HOOK, $action->get_hook() );
+			$args = $action->get_args();
+			$this->assertSame( $order->get_id(), $args[0]['order_id'] );
+			$this->assertSame( 'acct_rest', $args[0]['account_id'] );
+			$this->assertSame( 123, $args[0]['site_id'] );
+			$this->assertFalse( $args[0]['test_mode'] );
+			$this->assertSame( [ 'EUR', 0, 0 ], array_slice( $args, 1 ) );
+		} finally {
+			if ( ! empty( $data['action_id'] ) ) {
+				ActionScheduler::store()->delete_action( $data['action_id'] );
+			}
+			$container->reset_replacement( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::class );
+			$order->delete( true );
+		}
+	}
+
+	/** Queue transport failures must not acknowledge recovery or expose private details. */
+	public function test_discovery_route_queue_failure() {
+		rest_get_server();
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'rest_api_init' );
+		$scheduler = $this->createMock( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::class );
+		$scheduler->expects( $this->once() )->method( 'start' )->with( 456, 'EUR', false )->willThrowException( new RuntimeException( 'Private account transport detail' ) );
+		$container = wcpay_get_test_container();
+		$container->replace( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::class, $scheduler );
+		try {
+			$request = new WP_REST_Request( 'POST', '/wc/v3/payments/orders/456/payment-history/refresh' );
+			$request->set_body_params(
+				[
+					'currency'  => 'EUR',
+					'test_mode' => false,
+				]
+			);
+			$response = rest_do_request( $request );
+			$this->assertSame( 503, $response->get_status() );
+			$this->assertSame( 'wcpay_history_queue_unavailable', $response->get_data()['code'] );
+			$this->assertStringNotContainsString( 'Private account', wp_json_encode( $response->get_data() ) );
+			$this->assertArrayNotHasKey( 'action_id', $response->get_data() );
+		} finally {
+			$container->reset_replacement( \WCPay\Internal\Service\PaymentAttemptDiscoveryScheduler::class );
+		}
+	}
+
+	public function test_discovery_route_validates_input() {
+		rest_get_server();
+		// Exercise the production REST initialization hook across isolated tests.
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'rest_api_init' );
+		foreach ( [
+			[
+				'currency'  => 'eur',
+				'test_mode' => false,
+			],
+			[ 'currency' => 'EUR' ],
+			[
+				'currency'  => 'EUR',
+				'test_mode' => 'invalid',
+			],
+			[
+				'currency'  => [ 'EUR' ],
+				'test_mode' => false,
+			],
+		] as $params ) {
+			$request = new WP_REST_Request( 'POST', '/wc/v3/payments/orders/456/payment-history/refresh' );
+			$request->set_body_params( $params );
+			$this->assertSame( 400, rest_do_request( $request )->get_status() );
+		}
+	}
+
+	public function test_discovery_route_requires_permission() {
+		rest_get_server();
+		// Exercise the production REST initialization hook across isolated tests.
+		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		do_action( 'rest_api_init' );
+		$user = get_current_user_id();
+		wp_set_current_user( 0 );
+		try {
+			$request = new WP_REST_Request( 'POST', '/wc/v3/payments/orders/456/payment-history/refresh' );
+			$request->set_body_params(
+				[
+					'currency'  => 'EUR',
+					'test_mode' => false,
+				]
+			);
+			$response = rest_do_request( $request );
+			$this->assertSame( 401, $response->get_status() );
+		} finally {
+			wp_set_current_user( $user );
+		}
+	}
+
 	public function set_up() {
 		parent::set_up();
 
