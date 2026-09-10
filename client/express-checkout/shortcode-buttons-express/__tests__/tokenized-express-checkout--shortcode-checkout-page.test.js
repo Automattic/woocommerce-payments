@@ -440,6 +440,78 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		);
 	} );
 
+	it( 'should not let a refresh superseded while Stripe.js is still loading build Elements over the newer one', async () => {
+		// `getStripe()` polls `window.Stripe` every 100 ms until Stripe.js has
+		// loaded, so a refresh can be superseded while it waits there, after it
+		// has already published its cart data.
+		jest.useFakeTimers();
+		const StripeConstructor = global.Stripe;
+		delete global.Stripe;
+
+		try {
+			// Refresh A carries a different total than B, so the generation
+			// that ends up owning Elements is observable.
+			apiFetch.mockImplementation( async () =>
+				Promise.resolve( {
+					json: () =>
+						Promise.resolve( {
+							...cartWithItemsMock,
+							totals: {
+								...cartWithItemsMock.totals,
+								total_price: '5000',
+							},
+						} ),
+					headers: new Map(),
+				} )
+			);
+			await jest.isolateModulesAsync( async () => {
+				await import( '..' );
+			} );
+			$( document.body ).trigger( 'updated_checkout' );
+			await act( async () => {
+				await Promise.resolve();
+			} );
+
+			// Refresh B starts 50 ms later, so its poll ticks between A's.
+			apiFetch.mockImplementation( async () =>
+				Promise.resolve( {
+					json: () => Promise.resolve( cartWithItemsMock ),
+					headers: new Map(),
+				} )
+			);
+			await act( async () => {
+				jest.advanceTimersByTime( 50 );
+			} );
+			$( document.body ).trigger( 'updated_checkout' );
+			await act( async () => {
+				await Promise.resolve();
+			} );
+
+			// Stripe.js lands right after A's tick at 100 ms found it missing:
+			// B's tick at 150 ms proceeds first, A's at 200 ms resumes last.
+			await act( async () => {
+				jest.advanceTimersByTime( 60 );
+			} );
+			global.Stripe = StripeConstructor;
+			await act( async () => {
+				jest.advanceTimersByTime( 50 );
+			} );
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 1 );
+			await act( async () => {
+				jest.advanceTimersByTime( 100 );
+			} );
+
+			// Only B built and mounted a generation; A's stale total never did.
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 1 );
+			expect( stripeInstance.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { amount: 3697 } )
+			);
+			expect( stripeElementMock.mount ).toHaveBeenCalledTimes( 1 );
+		} finally {
+			jest.useRealTimers();
+		}
+	} );
+
 	it( 'should reject the click event when the cart data could not be fetched', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
