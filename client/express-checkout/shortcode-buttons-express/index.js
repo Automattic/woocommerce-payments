@@ -753,13 +753,12 @@ jQuery( ( $ ) => {
 		}
 	};
 
-	// Our checkout container sits outside what core blocks during its own
-	// request, so cover it from `update_checkout`, not only from `updated_checkout`.
-	// Checkout only: only `updated_checkout` lifts the overlay, and core fires
-	// that only where a `form.checkout` exists.
+	// Core greys out the order review during its request, but not our container,
+	// so cover it from `update_checkout`. Checkout only: `updated_checkout` below
+	// runs the refresh that lifts it again.
 	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
 		$( document.body ).on( 'update_checkout', () => {
-			// Supersede a refresh in flight; the coming `updated_checkout` restarts it.
+			// Supersede any refresh in flight; `updated_checkout` starts a fresh one.
 			latestForcedRefreshId++;
 			expressCheckoutButtonUi.blockButton();
 		} );
