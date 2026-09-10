@@ -41,9 +41,11 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		// The element-level half of jquery-blockui, which `button-ui` uses to
 		// overlay the button. Spies, so tests can assert on the overlay.
 		$.fn.block = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 1 );
 			return this;
 		} );
 		$.fn.unblock = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 0 );
 			return this;
 		} );
 
@@ -615,6 +617,61 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			expect.objectContaining( { shippingAddressRequired: true } )
 		);
 		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should keep the button guarded when `update_checkout` fires again while a refresh is in flight', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		const releases = [];
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releases.push( () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} )
+					);
+				} )
+		);
+
+		// Core's first refresh completes and our refresh A starts.
+		$( document.body ).trigger( 'update_checkout' );
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+		$.fn.unblock.mockClear();
+
+		// Core starts a second refresh while A is still waiting on the cart.
+		$( document.body ).trigger( 'update_checkout' );
+
+		// A settles, but core's second request is still pending: the button
+		// must stay covered and clicks must still be rejected.
+		releases[ 0 ]();
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		const midRefreshResolveMock = jest.fn();
+		const midRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: midRefreshResolveMock,
+			reject: midRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( midRefreshRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( midRefreshResolveMock ).not.toHaveBeenCalled();
+
+		// Core finishes the second refresh: our refresh B releases the button.
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+		releases[ 1 ]();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {

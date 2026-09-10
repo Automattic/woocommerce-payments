@@ -198,9 +198,11 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
 		$.fn.block = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 1 );
 			return this;
 		} );
 		$.fn.unblock = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 0 );
 			return this;
 		} );
 

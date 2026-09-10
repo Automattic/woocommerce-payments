@@ -56,14 +56,8 @@ import {
 
 let cachedCartData = null;
 // Forced refreshes are numbered so that a slower, superseded one never publishes
-// its cart data or remounts Elements over a newer one. The refresh that owns the
-// button is tracked as an id rather than a count: a count would keep rejecting
-// clicks after a superseded refresh is done, and a hung one would never give it back.
+// its cart data, remounts Elements, or lifts the overlay over a newer one.
 let latestForcedRefreshId = 0;
-let activeForcedRefreshId = null;
-// Core's `update_checkout` fires before its own `update_order_review` request,
-// and our checkout container sits outside what core blocks during it.
-let coreCheckoutRefreshPending = false;
 
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
@@ -307,10 +301,7 @@ jQuery( ( $ ) => {
 				// The Element mounted before a refresh stays clickable throughout it.
 				// The overlay alone is not enough: an element-level blockUI block
 				// intercepts pointers, not keyboard or assistive-tech activation.
-				if (
-					activeForcedRefreshId !== null ||
-					coreCheckoutRefreshPending
-				) {
+				if ( expressCheckoutButtonUi.isBlocked() ) {
 					event.reject();
 					return;
 				}
@@ -732,28 +723,26 @@ jQuery( ( $ ) => {
 
 	const refreshExpressCheckoutElement = async () => {
 		const refreshId = ++latestForcedRefreshId;
-		activeForcedRefreshId = refreshId;
-		coreCheckoutRefreshPending = false;
 
 		expressCheckoutButtonUi.blockButton();
 
 		try {
 			await wcpayECE.init( { forceRefresh: true, refreshId } );
 		} finally {
-			if ( activeForcedRefreshId === refreshId ) {
-				activeForcedRefreshId = null;
+			if ( refreshId === latestForcedRefreshId ) {
 				expressCheckoutButtonUi.unblock();
 			}
 		}
 	};
 
-	// Guard from the moment core starts refreshing, not only once it is done.
-	// Checkout only: the guard is released by `updated_checkout`, which core
-	// fires only where a `form.checkout` exists. Anywhere else a stray
-	// `update_checkout` would raise a guard nothing brings down.
+	// Our checkout container sits outside what core blocks during its own
+	// request, so cover it from `update_checkout`, not only from `updated_checkout`.
+	// Checkout only: only `updated_checkout` lifts the overlay, and core fires
+	// that only where a `form.checkout` exists.
 	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
 		$( document.body ).on( 'update_checkout', () => {
-			coreCheckoutRefreshPending = true;
+			// Supersede a refresh in flight; the coming `updated_checkout` restarts it.
+			latestForcedRefreshId++;
 			expressCheckoutButtonUi.blockButton();
 		} );
 	}

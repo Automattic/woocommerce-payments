@@ -15,10 +15,12 @@ const expressCheckoutButtonUi = {
 		return $expressCheckoutSeparator;
 	},
 
+	// blockUI clears this on `unblock()`, before the overlay finishes fading.
+	isBlocked: () => !! get$Container().data( 'blockUI.isBlocked' ),
+
 	blockButton: () => {
-		// check if element isn't already blocked before calling block() to avoid blinking overlay issues
-		// blockUI.isBlocked is either undefined or 0 when element is not blocked
-		if ( get$Container().data( 'blockUI.isBlocked' ) ) {
+		// re-blocking a blocked element would blink the overlay.
+		if ( expressCheckoutButtonUi.isBlocked() ) {
 			return;
 		}
 

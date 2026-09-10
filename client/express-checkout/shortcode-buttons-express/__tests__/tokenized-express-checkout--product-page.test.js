@@ -5,6 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
+import { cartWithItemsMock } from '../../__fixtures__/cart';
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
@@ -30,9 +31,11 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
 		$.fn.block = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 1 );
 			return this;
 		} );
 		$.fn.unblock = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 0 );
 			return this;
 		} );
 
@@ -668,5 +671,53 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		// `blockButton()` skips the overlay for the rest of the page life.
 		expect( $.fn.block ).toHaveBeenCalled();
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+	it( 'should reject the click while the cart refresh behind `update-button-data` is in flight', async () => {
+		let releaseCart;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseCart = () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} );
+				} )
+		);
+
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Variation or quantity change: `cachedCartData` still describes the
+		// previous selection until the re-fetch lands.
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () => expect( $.fn.block ).toHaveBeenCalled() );
+
+		const midRefreshResolveMock = jest.fn();
+		const midRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: midRefreshResolveMock,
+			reject: midRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( midRefreshRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( midRefreshResolveMock ).not.toHaveBeenCalled();
+
+		releaseCart();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+
+		const postRefreshResolveMock = jest.fn();
+		const postRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: postRefreshResolveMock,
+			reject: postRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
+		expect( postRefreshResolveMock ).toHaveBeenCalled();
 	} );
 } );
