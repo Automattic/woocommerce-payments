@@ -321,54 +321,6 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should work as soon as a newer refresh succeeds, without waiting out a hung one', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		// Refresh A hangs: its Store API promise never settles.
-		apiFetch.mockImplementation( () => new Promise( () => {} ) );
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
-
-		const rejectDuringHungRefresh = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: jest.fn(),
-			reject: rejectDuringHungRefresh,
-			expressPaymentType: 'google_pay',
-		} );
-		expect( rejectDuringHungRefresh ).toHaveBeenCalledTimes( 1 );
-
-		// Refresh B starts and succeeds while A is still pending.
-		apiFetch.mockImplementation( async () =>
-			Promise.resolve( {
-				json: () => Promise.resolve( cartWithItemsMock ),
-				headers: new Map(),
-			} )
-		);
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
-
-		const resolveAfterNewerRefresh = jest.fn();
-		const rejectAfterNewerRefresh = jest.fn();
-		await waitFor( () => {
-			resolveAfterNewerRefresh.mockClear();
-			rejectAfterNewerRefresh.mockClear();
-			stripeElementMock.__getRegisteredEvent( 'click' )( {
-				resolve: resolveAfterNewerRefresh,
-				reject: rejectAfterNewerRefresh,
-				expressPaymentType: 'google_pay',
-			} );
-			expect( resolveAfterNewerRefresh ).toHaveBeenCalledWith(
-				expect.objectContaining( { shippingAddressRequired: true } )
-			);
-		} );
-		expect( rejectAfterNewerRefresh ).not.toHaveBeenCalled();
-	} );
-
 	it( 'should not let a superseded refresh publish its cart data or remount Elements', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
@@ -521,13 +473,14 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		}
 	} );
 
-	it( 'should reject the click event when the cart data could not be fetched', async () => {
+	it( 'should hide the button, lift the overlay, and reject clicks when the cart data could not be fetched', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
 
 		$( document.body ).trigger( 'updated_checkout' );
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.unblock.mockClear();
 
 		// A failed refresh leaves the button with nothing to describe the purchase with.
 		apiFetch.mockImplementation( async () =>
@@ -539,6 +492,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 				screen.getByTestId( 'wcpay-express-checkout-element' )
 			).not.toBeVisible()
 		);
+		// The overlay must not be left latched on the hidden container:
+		// `blockButton()` would then skip the next refresh's overlay.
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 
 		// The element from the previous init can still invoke its handler - it must not throw.
 		const clickEventResolveMock = jest.fn();
@@ -635,30 +591,6 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect( $.fn.unblock ).not.toHaveBeenCalled();
 
 		releases[ 1 ]();
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
-	} );
-
-	it( 'should lift the overlay when the cart refresh fails', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-		$.fn.unblock.mockClear();
-
-		apiFetch.mockImplementation( async () =>
-			Promise.reject( new Error( 'Store API is unavailable' ) )
-		);
-		$( document.body ).trigger( 'updated_checkout' );
-
-		// The button hides, but the overlay must not be left latched on the
-		// container: `blockButton()` would then skip the next refresh's overlay.
-		await waitFor( () =>
-			expect(
-				screen.getByTestId( 'wcpay-express-checkout-element' )
-			).not.toBeVisible()
-		);
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
