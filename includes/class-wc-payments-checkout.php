@@ -100,6 +100,12 @@ class WC_Payments_Checkout {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		// Hooked to wp_footer (like the Stripe gateway) rather than wp_enqueue_scripts on purpose:
+		// on a normal pay-for-order page payment_fields() enqueues during the body render, so by
+		// wp_footer the script is already enqueued and this loader no-ops — letting payment_fields()
+		// own the full setup (CSS, wcpayCustomerData, action hooks). It only acts when the form was
+		// not rendered (the guest verification interstitial). Priority stays below wp_print_footer_scripts (20).
+		add_action( 'wp_footer', [ $this, 'maybe_load_pay_for_order_scripts' ] );
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
 		add_filter( 'woocommerce_update_order_review_fragments', [ $this, 'add_payment_methods_config_to_update_order_review_fragments' ] );
 	}
@@ -163,6 +169,75 @@ class WC_Payments_Checkout {
 		if ( is_checkout() && ! wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
 			$this->load_checkout_scripts();
 		}
+	}
+
+	/**
+	 * Ensures the checkout scripts load on the Pay for Order endpoint even when the
+	 * pay-for-order form is not rendered.
+	 *
+	 * For guest orders past WooCommerce's email-verification grace period, core renders
+	 * the "Verify email" form instead of the pay-for-order form. In that case neither
+	 * `payment_fields()` nor the `woocommerce_after_checkout_form` fallback runs, so
+	 * `wcpay-upe-checkout` is not enqueued. When a 3DS payment then returns to the
+	 * order-pay URL with a `#wcpay-confirm-...` fragment, there is no script to process
+	 * the authentication continuation and the shopper is stuck on the verification form.
+	 *
+	 * Loading the scripts here — keyed on the checkout pay page rather than on the
+	 * form being rendered — lets
+	 * the existing on-load continuation logic complete the payment. It runs on wp_footer so that, on a
+	 * normal pay-for-order page, payment_fields() has already enqueued the script during the
+	 * render and the not-already-enqueued guard below makes this a no-op — payment_fields()
+	 * keeps ownership of the full asset setup (CSS, wcpayCustomerData, action hooks). See
+	 * WOOPMNT-6405.
+	 */
+	public function maybe_load_pay_for_order_scripts() {
+		if ( 'yes' !== $this->gateway->enabled ) {
+			return;
+		}
+
+		if ( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
+			return;
+		}
+
+		if ( ! $this->is_valid_pay_for_order_endpoint() ) {
+			return;
+		}
+
+		$this->load_checkout_scripts();
+	}
+
+	/**
+	 * Checks whether the current request is a Pay for Order checkout page the current user is
+	 * allowed to pay, independent of whether the pay-for-order form is rendered.
+	 *
+	 * The request must be on the checkout pay page with a `key` matching the order, the order must still need
+	 * payment, and the current user must be allowed to pay for it (guests are allowed to
+	 * pay for guest orders by order key). See WOOPMNT-6405.
+	 *
+	 * @return bool
+	 */
+	private function is_valid_pay_for_order_endpoint(): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
+		// is_string() guards against an array being passed (e.g. ?key[]=x): wc_clean() would return
+		// an array and hash_equals() would throw a TypeError. The checkout pay page is public, so
+		// malformed query string input is reachable unauthenticated.
+		if ( ! is_checkout_pay_page() || ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+			return false;
+		}
+
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		$order    = wc_get_order( $order_id );
+
+		if ( ! $order || ! hash_equals( (string) $order->get_order_key(), wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
+			return false;
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $order->needs_payment() ) {
+			return false;
+		}
+
+		return current_user_can( 'pay_for_order', $order->get_id() );
 	}
 
 	/**
