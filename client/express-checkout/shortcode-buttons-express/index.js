@@ -57,6 +57,10 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
+// Forced refreshes are numbered so that a slower, superseded one never publishes
+// its cart data, remounts Elements, or lifts the overlay over a newer one.
+let latestForcedRefreshId = 0;
+
 // The overlay says nothing to screen-reader users, so a rejected tap is announced.
 // Leading-edge debounce: one announcement per burst of taps.
 const announceRefreshInProgress = debounce(
@@ -71,9 +75,6 @@ const announceRefreshInProgress = debounce(
 	1000,
 	{ leading: true, trailing: false }
 );
-// Forced refreshes are numbered so that a slower, superseded one never publishes
-// its cart data, remounts Elements, or lifts the overlay over a newer one.
-let latestForcedRefreshId = 0;
 
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
