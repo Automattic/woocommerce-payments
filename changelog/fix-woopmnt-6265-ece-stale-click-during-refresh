@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix a crash when an express checkout button is tapped while the cart is being refreshed on classic cart and checkout pages.
+Fix express checkout buttons opening or crashing on stale cart data while the cart is being refreshed on classic pages.
