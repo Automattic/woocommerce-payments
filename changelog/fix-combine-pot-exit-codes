@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Make the POT combine build script exit non-zero on failure so broken translation builds stop instead of shipping.

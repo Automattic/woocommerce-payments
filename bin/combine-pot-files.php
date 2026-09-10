@@ -10,15 +10,15 @@
 /**
  * Get the two file names from the command line.
  */
-if ( $argc < 2 ) {
-	echo "Usage: php -f {$argv[0]} source-file.pot destination-file.pot\n";
-	exit;
+if ( $argc < 3 ) {
+	fwrite( STDERR, "Usage: php -f {$argv[0]} source-file.pot destination-file.pot\n" );
+	exit( 2 );
 }
 
 for ( $index = 1; $index <= 2; $index++ ) {
 	if ( ! is_file( $argv[ $index ] ) ) {
-		echo "File not found: {$argv[ $index ]}\n";
-		exit;
+		fwrite( STDERR, "File not found: {$argv[ $index ]}\n" );
+		exit( 1 );
 	}
 }
 
@@ -92,12 +92,12 @@ function load_js_transpiling_source_maps(): array {
 	foreach ( glob( "dist/*.js.map", GLOB_NOSORT ) as $filename ) {
 		$file_content = file_get_contents( $filename );
 		if ( $file_content === false ) {
-			echo "[WARN] Unable to read file '". $filename . "'. Some translation strings might not have the correct references as a result.\n";
+			fwrite( STDERR, "[WARN] Unable to read file '". $filename . "'. Some translation strings might not have the correct references as a result.\n" );
 			continue;
 		}
 		$file_json = json_decode( $file_content, true );
 		if ( $file_json === null ) {
-			echo "[WARN] Unable to parse JSON file: '". $filename . "'. Some translation strings might not have the correct references as a result.\n";
+			fwrite( STDERR, "[WARN] Unable to parse JSON file: '". $filename . "'. Some translation strings might not have the correct references as a result.\n" );
 			continue;
 		}
 
@@ -110,8 +110,8 @@ function load_js_transpiling_source_maps(): array {
 	}
 
 	if ( empty( $mappings ) ) {
-		echo "[ERROR] Unable to load JS transpiling mappings from 'dist/*.js.map' files. Make sure the JS assets compilation was successful.\n";
-		die();
+		fwrite( STDERR, "[ERROR] Unable to load JS transpiling mappings from 'dist/*.js.map' files. Make sure the JS assets compilation was successful.\n" );
+		exit( 1 );
 	}
 
 	return $mappings;
