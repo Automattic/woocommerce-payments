@@ -61,6 +61,18 @@ class AsyncPriceRenderer {
 	}
 
 	/**
+	 * Remove async rendering when a session requires server-side prices.
+	 *
+	 * @return void
+	 */
+	public function remove_hooks() {
+		remove_filter( 'wc_price', [ $this, 'wrap_price_with_skeleton' ], 999 );
+		remove_filter( 'woocommerce_format_sale_price', [ $this, 'annotate_sale_price_sr_text' ], 999 );
+		remove_filter( 'woocommerce_format_price_range', [ $this, 'annotate_price_range_sr_text' ], 999 );
+		remove_action( 'wp_enqueue_scripts', [ $this, 'enqueue_async_renderer' ] );
+	}
+
+	/**
 	 * Wraps a price with skeleton markup for client-side conversion.
 	 *
 	 * @param string $price_html        The formatted price string.

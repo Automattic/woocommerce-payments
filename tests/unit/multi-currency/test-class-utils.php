@@ -53,13 +53,13 @@ class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_admin_api_request_returns_true() {
-		$_SERVER['HTTP_REFERER'] = 'http://example.org/wp-admin/';
+		$_SERVER['HTTP_REFERER'] = admin_url();
 		$_SERVER['REQUEST_URI']  = trailingslashit( rest_get_url_prefix() );
 		$this->assertTrue( $this->utils->is_admin_api_request() );
 	}
 
 	public function test_is_admin_api_request_returns_false_with_store_api() {
-		$_SERVER['HTTP_REFERER'] = 'http://example.org/wp-admin/';
+		$_SERVER['HTTP_REFERER'] = admin_url();
 		$_SERVER['REQUEST_URI']  = trailingslashit( rest_get_url_prefix() ) . 'wc/store/v1/checkout';
 
 		$this->assertFalse( $this->utils->is_admin_api_request() );
