@@ -123,6 +123,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			stripeInstance = {
 				elements: jest.fn( () => ( {
 					create: jest.fn( () => stripeElementMock ),
+					update: jest.fn(),
 				} ) ),
 			};
 
@@ -709,6 +710,11 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 		releaseCart();
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+		// The re-fetch succeeded, so the button is back for real, not hidden
+		// by the failure path (which also unblocks).
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
 
 		const postRefreshResolveMock = jest.fn();
 		const postRefreshRejectMock = jest.fn();
