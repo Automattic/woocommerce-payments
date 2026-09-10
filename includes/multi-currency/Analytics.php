@@ -336,12 +336,14 @@ class Analytics {
 				$condition     = $this->get_reporting_condition_sql();
 				$currency_args = $this->get_customer_currency_args_from_request();
 				if ( 'orders' === $context_page && ! empty( $currency_args['currency'] ) && $currency_args['currency'] !== $this->multi_currency->get_default_currency()->get_code() ) {
-					$condition = $wpdb->prepare( '%i.source_currency = %s', $table, $currency_args['currency'] ) . " AND $table.source_net_total IS NOT NULL";
+					// Interpolate the table name rather than using %i: the identifier
+					// placeholder needs WP 6.2, and $table is code-derived. Values stay prepared.
+					$condition = $table . '.source_currency = ' . $wpdb->prepare( '%s', $currency_args['currency'] ) . " AND $table.source_net_total IS NOT NULL";
 				}
 				$indicator = "COUNT(DISTINCT CASE WHEN $condition THEN NULL ELSE CASE WHEN $table.parent_id > 0 THEN $table.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
 				$replaced  = 0;
 				if ( 'orders' === $context_page ) {
-					$core_currency  = $wpdb->prepare( '%i.reporting_currency = %s', $table, get_woocommerce_currency() );
+					$core_currency  = $table . '.reporting_currency = ' . $wpdb->prepare( '%s', get_woocommerce_currency() );
 					$core_condition = "$core_currency AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
 					$core_indicator = "COUNT(DISTINCT CASE WHEN $core_condition THEN NULL ELSE CASE WHEN $table.parent_id > 0 THEN $table.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
 					foreach ( $new_clauses as &$new_clause ) {
@@ -865,7 +867,7 @@ class Analytics {
 		global $wpdb;
 		$table    = $wpdb->prefix . 'wc_order_stats';
 		$currency = $this->multi_currency->get_default_currency()->get_code();
-		return $wpdb->prepare( '%i.reporting_currency = %s', $table, $currency ) . " AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
+		return $table . '.reporting_currency = ' . $wpdb->prepare( '%s', $currency ) . " AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
 	}
 
 	/**

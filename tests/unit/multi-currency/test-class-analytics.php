@@ -368,7 +368,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_default_currency' )
 			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 		$table          = $wpdb->prefix . 'wc_order_stats';
-		$core_currency  = $wpdb->prepare( '%i.reporting_currency = %s', $table, get_woocommerce_currency() );
+		$core_currency  = $table . '.reporting_currency = ' . $wpdb->prepare( '%s', get_woocommerce_currency() );
 		$core_condition = "$core_currency AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
 		$core_indicator = "COUNT(DISTINCT CASE WHEN $core_condition THEN NULL ELSE CASE WHEN $table.parent_id > 0 THEN $table.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
 		$metrics        = 'COUNT(DISTINCT CASE WHEN parent_id = 0 THEN order_id ELSE NULL END) AS orders_count, SUM(net_total) AS net_revenue';
