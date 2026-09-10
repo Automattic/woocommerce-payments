@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add a dependency check to the release PR checklist.
