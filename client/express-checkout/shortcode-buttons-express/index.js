@@ -3,6 +3,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { speak } from '@wordpress/a11y';
+import { debounce } from 'lodash';
 import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
 
 /**
@@ -55,6 +57,20 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
+// The overlay says nothing to screen-reader users, so a rejected tap is announced.
+// Leading-edge debounce: one announcement per burst of taps.
+const announceRefreshInProgress = debounce(
+	() =>
+		speak(
+			__(
+				'Your cart is being updated. Please try again in a moment.',
+				'woocommerce-payments'
+			),
+			'assertive'
+		),
+	1000,
+	{ leading: true, trailing: false }
+);
 // Forced refreshes are numbered so that a slower, superseded one never publishes
 // its cart data, remounts Elements, or lifts the overlay over a newer one.
 let latestForcedRefreshId = 0;
@@ -303,6 +319,7 @@ jQuery( ( $ ) => {
 				// intercepts pointers, not keyboard or assistive-tech activation.
 				if ( expressCheckoutButtonUi.isBlocked() ) {
 					event.reject();
+					announceRefreshInProgress();
 					return;
 				}
 

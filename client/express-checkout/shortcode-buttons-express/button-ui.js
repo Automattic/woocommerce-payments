@@ -25,15 +25,17 @@ const expressCheckoutButtonUi = {
 		}
 
 		// Same overlay WooCommerce paints over the order review during a refresh.
-		get$Container().block( {
-			message: null,
-			overlayCSS: { background: '#fff', opacity: 0.6 },
-		} );
+		get$Container()
+			.attr( 'aria-busy', 'true' )
+			.block( {
+				message: null,
+				overlayCSS: { background: '#fff', opacity: 0.6 },
+			} );
 	},
 
 	// Lifts the overlay without touching visibility, unlike `unblockButton()`.
 	unblock: () => {
-		get$Container().unblock();
+		get$Container().removeAttr( 'aria-busy' ).unblock();
 	},
 
 	unblockButton: () => {

@@ -5,6 +5,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
+import { speak } from '@wordpress/a11y';
 import {
 	cartWithItemsMock,
 	cartWithItemsAndCouponMock,
@@ -12,6 +13,9 @@ import {
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
+} ) );
+jest.mock( '@wordpress/a11y', () => ( {
+	speak: jest.fn(),
 } ) );
 jest.mock( 'lodash', () => ( {
 	...jest.requireActual( 'lodash' ),
@@ -287,6 +291,11 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
 		expect( clickEventResolveMock ).not.toHaveBeenCalled();
+		// The overlay is visual only; screen-reader users get told why the tap did nothing.
+		expect( speak ).toHaveBeenCalledWith(
+			'Your cart is being updated. Please try again in a moment.',
+			'assertive'
+		);
 
 		releaseCart();
 		await waitFor( () =>
@@ -575,12 +584,18 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			overlayCSS: { background: '#fff', opacity: 0.6 },
 		} );
 		expect( $.fn.unblock ).not.toHaveBeenCalled();
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toHaveAttribute( 'aria-busy', 'true' );
 
 		releaseCart();
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).toBeVisible();
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).not.toHaveAttribute( 'aria-busy' );
 	} );
 
 	it( 'should keep the overlay up until the newest refresh settles, even if a superseded one finishes first', async () => {
