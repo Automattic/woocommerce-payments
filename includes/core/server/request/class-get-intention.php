@@ -47,6 +47,20 @@ class Get_Intention extends Request {
 	}
 
 	/**
+	 * Pin retrieval to the expected payment mode.
+	 *
+	 * @param bool $test_mode Whether the intent belongs to test mode.
+	 */
+	public function set_test_mode( bool $test_mode ) {
+		$this->set_param( 'test_mode', $test_mode ? 1 : 0 );
+	}
+
+	/** Request server-generated retrieval provenance. */
+	public function set_include_reporting_context() {
+		$this->set_param( 'include_reporting_context', 1 );
+	}
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

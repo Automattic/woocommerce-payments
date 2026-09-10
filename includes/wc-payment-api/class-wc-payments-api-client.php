@@ -2431,6 +2431,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$order
 		);
 
+		$intent->set_reporting_context( $intention_array['wcpay_reporting_context'] ?? null );
+
 		return $intent;
 	}
 

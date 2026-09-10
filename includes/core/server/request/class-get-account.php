@@ -17,6 +17,16 @@ class Get_Account extends Request {
 	use Use_Test_Mode_Only_When_Test_Mode_Onboarding;
 
 	/**
+	 * Return the site identity from the same client used to send this request.
+	 *
+	 * @return int|null Connected remote site ID, or null when unavailable.
+	 */
+	public function get_connection_site_id(): ?int {
+		$id = $this->api_client->get_blog_id();
+		return is_int( $id ) && $id > 0 ? $id : null;
+	}
+
+	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
 	 * @var string

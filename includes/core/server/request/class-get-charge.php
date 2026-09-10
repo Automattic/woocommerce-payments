@@ -40,6 +40,22 @@ class Get_Charge extends Request {
 	}
 
 	/**
+	 * Pin historical retrieval to the payment's original mode.
+	 *
+	 * @param bool $test_mode Whether the charge belongs to test mode.
+	 */
+	public function set_test_mode( bool $test_mode ) {
+		$this->set_param( 'test_mode', $test_mode ? 1 : 0 );
+	}
+
+	/**
+	 * Request server-generated provenance for historical payment evidence.
+	 */
+	public function set_include_reporting_context() {
+		$this->set_param( 'include_reporting_context', 1 );
+	}
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

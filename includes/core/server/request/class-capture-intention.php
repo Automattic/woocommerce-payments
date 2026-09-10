@@ -32,6 +32,11 @@ class Capture_Intention extends Request {
 	 */
 	protected $hook = 'wcpay_capture_intent_request';
 
+	/** Request server-generated account provenance for this payment operation. */
+	public function set_include_reporting_context() {
+		$this->set_param( 'include_reporting_context', 1 );
+	}
+
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *

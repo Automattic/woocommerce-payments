@@ -29,6 +29,11 @@ class Create_Intention extends Request {
 	 */
 	protected $hook = 'wcpay_create_intent_request';
 
+	/** Request server-generated account provenance for this payment operation. */
+	public function set_include_reporting_context() {
+		$this->set_param( 'include_reporting_context', 1 );
+	}
+
 	/**
 	 * Returns the request's API.
 	 *

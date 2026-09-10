@@ -49,4 +49,15 @@ class Get_Intention_Test extends WCPAY_UnitTestCase {
 		$request = new Get_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, 'pi_1' );
 		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API . '/pi_1', $request->get_api() );
 	}
+	/** Explicit live mode is preserved and provenance remains opt-in. */
+	public function test_reporting_context_request_parameters() {
+		$request = new Get_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, 'pi_1' );
+		$this->assertArrayNotHasKey( 'include_reporting_context', $request->get_params() );
+		$request->set_include_reporting_context();
+		$request->set_test_mode( false );
+		$this->assertSame( 1, $request->get_params()['include_reporting_context'] );
+		$this->assertSame( 0, $request->get_params()['test_mode'] );
+		$request->set_test_mode( true );
+		$this->assertSame( 1, $request->get_params()['test_mode'] );
+	}
 }

@@ -59,6 +59,40 @@ class List_Charge_Refunds extends Request {
 	}
 
 	/**
+	 * Pin refund retrieval to the original payment's mode.
+	 *
+	 * @param bool $test_mode Whether the payment belongs to test mode.
+	 */
+	public function set_test_mode( bool $test_mode ) {
+		$this->set_param( 'test_mode', $test_mode ? 1 : 0 );
+	}
+
+	/**
+	 * Continue after the last refund ID returned on the preceding page.
+	 *
+	 * @param string $refund_id Provider refund cursor.
+	 * @throws Invalid_Request_Parameter_Exception Invalid provider ID.
+	 */
+	public function set_starting_after( string $refund_id ) {
+		$this->validate_stripe_id( $refund_id );
+		$this->set_param( 'starting_after', $refund_id );
+	}
+
+	/**
+	 * Request historical refund balance impacts and failed-refund reversals.
+	 */
+	public function set_expand_balance_transactions() {
+		$this->set_param( 'expand', [ 'data.balance_transaction', 'data.failure_balance_transaction' ] );
+	}
+
+	/**
+	 * Request server-generated provenance for historical payment evidence.
+	 */
+	public function set_include_reporting_context() {
+		$this->set_param( 'include_reporting_context', 1 );
+	}
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

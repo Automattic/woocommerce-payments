@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add internal historical payment provenance checks, refund retrieval controls, bounded traversal balance-event qualification, and an internal immutable event repository with independently retried schema installation.

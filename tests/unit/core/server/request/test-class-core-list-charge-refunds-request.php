@@ -76,4 +76,39 @@ class List_Charge_Refunds_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $limit, $params['limit'] );
 		$this->assertSame( $charge, $params['charge'] );
 	}
+	/**
+	 * Historical refund retrieval must not inherit a changed store mode.
+	 */
+	public function test_explicit_historical_mode_preserves_false_and_true() {
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'py_historical' );
+		$this->assertArrayNotHasKey( 'test_mode', $request->get_params() );
+		$request->set_test_mode( false );
+		$this->assertSame( 0, $request->get_params()['test_mode'] );
+		$request->set_test_mode( true );
+		$this->assertSame( 1, $request->get_params()['test_mode'] );
+		$this->assertSame( 'py_historical', $request->get_params()['charge'] );
+	}
+	/**
+	 * Optional historical fields do not alter existing request defaults.
+	 */
+	public function test_historical_cursor_and_expansion_parameters() {
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge( 'ch_history' );
+		$this->assertArrayNotHasKey( 'expand', $request->get_params() );
+		$this->assertArrayNotHasKey( 'starting_after', $request->get_params() );
+		$request->set_starting_after( 're_previous' );
+		$request->set_expand_balance_transactions();
+		$this->assertSame( 're_previous', $request->get_params()['starting_after'] );
+		$this->assertSame( [ 'data.balance_transaction', 'data.failure_balance_transaction' ], $request->get_params()['expand'] );
+	}
+
+	/**
+	 * A cursor is a provider object ID, not an arbitrary query fragment.
+	 */
+	public function test_invalid_historical_cursor_is_rejected() {
+		$request = new List_Charge_Refunds( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_starting_after( 're_previous&charge=ch_other' );
+	}
 }

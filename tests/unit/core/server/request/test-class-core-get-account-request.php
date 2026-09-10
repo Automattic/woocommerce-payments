@@ -40,6 +40,12 @@ class Get_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_wc_payments_http_client = $this->createMock( WC_Payments_Http_Interface::class );
 	}
 
+	public function test_connection_site_uses_request_client() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_blog_id' )->willReturn( 123 );
+		$request = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->assertSame( 123, $request->get_connection_site_id() );
+	}
+
 	public function test_get_account_will_be_request_with_correct_method_and_endpoint() {
 		$request = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->assertSame( WC_Payments_API_Client::ACCOUNTS_API, $request->get_api() );

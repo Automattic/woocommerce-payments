@@ -14,6 +14,35 @@ use WCPay\Constants\Intent_Status;
  */
 abstract class WC_Payments_API_Abstract_Intention implements \JsonSerializable {
 	/**
+	 * Typed retrieval provenance, not proof of historical ownership.
+	 *
+	 * @var array|null
+	 */
+	private $reporting_context = null;
+
+	/**
+	 * Keep valid server provenance for internal evidence consumers.
+	 *
+	 * @param mixed $context Server response context, never order metadata.
+	 */
+	public function set_reporting_context( $context ): void {
+		$this->reporting_context = null;
+		if ( ! is_array( $context ) || 4 !== count( $context ) || 1 !== ( $context['version'] ?? null ) || ! is_string( $context['account_id'] ?? null ) || ! preg_match( '/^acct_[a-zA-Z0-9]+$/D', $context['account_id'] ) || ! is_int( $context['site_id'] ?? null ) || $context['site_id'] <= 0 || ! is_bool( $context['test_mode'] ?? null ) ) {
+			return;
+		}
+		$this->reporting_context = $context;
+	}
+
+	/**
+	 * Return retrieval provenance; callers must compare it with their expected context.
+	 *
+	 * @return array|null Typed context or unavailable. Excluded from shopper JSON.
+	 */
+	public function get_reporting_context(): ?array {
+		return $this->reporting_context;
+	}
+
+	/**
 	 * Intention ID
 	 *
 	 * @var string
