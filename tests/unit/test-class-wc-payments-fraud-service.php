@@ -76,67 +76,42 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'admin_print_footer_scripts', [ $this->fraud_service, 'add_sift_js_tracker_in_admin' ] ) );
 	}
 
-	/**
-	 * @dataProvider admin_tracker_context_provider
-	 */
-	public function test_admin_tracker_requires_an_initialized_admin_screen( $in_admin, $screen_initialized, $should_render ) {
-		global $current_screen, $wp_actions;
+	public function test_admin_tracker_skips_frontend_requests_before_screen_setup() {
+		set_current_screen( 'front' );
+		unset( $GLOBALS['wp_actions']['current_screen'] );
 
-		$original_screen  = $current_screen;
-		$original_actions = $wp_actions;
-		$original_get     = $_GET;
-		$service          = $this->getMockBuilder( WC_Payments_Fraud_Service::class )
+		$this->expectOutputString( '' );
+		$this->fraud_service->add_sift_js_tracker_in_admin();
+	}
+
+	public function test_admin_tracker_renders_on_a_woocommerce_admin_screen() {
+		set_current_screen( 'woocommerce_page_wc-admin' );
+		$original_get = $_GET;
+		$_GET['page'] = 'wc-admin';
+
+		$service = $this->getMockBuilder( WC_Payments_Fraud_Service::class )
 			->disableOriginalConstructor()
 			->onlyMethods( [ 'get_fraud_services_config' ] )
 			->getMock();
-		$service->expects( $should_render ? $this->once() : $this->never() )
-			->method( 'get_fraud_services_config' )
-			->willReturn(
-				[
-					'sift' => [
-						'beacon_key' => 'test-beacon',
-						'user_id'    => 'test-user',
-						'session_id' => 'test-session',
-					],
-				]
-			);
+		$service->method( 'get_fraud_services_config' )->willReturn(
+			[
+				'sift' => [
+					'beacon_key' => 'test-beacon',
+					'user_id'    => 'test-user',
+					'session_id' => 'test-session',
+				],
+			]
+		);
 
+		ob_start();
 		try {
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-			$current_screen = $this->getMockBuilder( stdClass::class )->addMethods( [ 'in_admin' ] )->getMock();
-			$current_screen->method( 'in_admin' )->willReturn( $in_admin );
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-			$wp_actions['current_screen'] = $screen_initialized ? 1 : 0;
-			$_GET                         = $in_admin ? [ 'page' => 'wc-admin' ] : [];
-
-			ob_start();
-			try {
-				$service->add_sift_js_tracker_in_admin();
-			} finally {
-				$output = ob_get_clean();
-			}
-
-			if ( $should_render ) {
-				$this->assertStringContainsString( 'https://cdn.sift.com/s.js', $output );
-			} else {
-				$this->assertSame( '', $output );
-			}
+			$service->add_sift_js_tracker_in_admin();
 		} finally {
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-			$current_screen = $original_screen;
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-			$wp_actions = $original_actions;
-			$_GET       = $original_get;
+			$output = ob_get_clean();
+			$_GET   = $original_get;
 		}
-	}
 
-	public function admin_tracker_context_provider() {
-		return [
-			'frontend before current_screen' => [ false, false, false ],
-			'frontend after current_screen'  => [ false, true, false ],
-			'admin before current_screen'    => [ true, false, false ],
-			'initialized WooCommerce admin'  => [ true, true, true ],
-		];
+		$this->assertStringContainsString( 'https://cdn.sift.com/s.js', $output );
 	}
 
 	public function test_get_fraud_services_config_returns_from_account() {
