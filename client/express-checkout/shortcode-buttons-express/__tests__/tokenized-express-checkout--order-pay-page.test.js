@@ -342,15 +342,15 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		).toBeVisible();
 	} );
 
-	it( 'should not guard the button on `update_checkout`, which fires here without a matching `updated_checkout`', async () => {
+	it( 'should ignore a stray `update_checkout`, which core never answers with `updated_checkout` here', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 
-		// `init_checkout` fires `update_checkout` on the order-pay page too, but
-		// core bails out (no `form.checkout`) and never fires `updated_checkout`.
-		// A guard raised here would never come down.
+		// Core itself never fires `update_checkout` on order-pay, but a plugin
+		// might. There is no `form.checkout`, so core would never answer with
+		// `updated_checkout`, and a guard raised here would never come down.
 		$( document.body ).trigger( 'update_checkout' );
 
 		const clickEventResolveMock = jest.fn();

@@ -748,9 +748,9 @@ jQuery( ( $ ) => {
 	};
 
 	// Guard from the moment core starts refreshing, not only once it is done.
-	// Checkout only: `init_checkout` fires `update_checkout` on the order-pay
-	// page too, where core bails out without ever firing `updated_checkout`,
-	// so a guard raised there would never come down.
+	// Checkout only: the guard is released by `updated_checkout`, which core
+	// fires only where a `form.checkout` exists. Anywhere else a stray
+	// `update_checkout` would raise a guard nothing brings down.
 	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
 		$( document.body ).on( 'update_checkout', () => {
 			coreCheckoutRefreshPending = true;
