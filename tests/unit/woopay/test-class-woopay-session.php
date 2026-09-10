@@ -801,7 +801,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// rows for an INSERT that changes nothing, which only holds while every request
 		// writes the same value. A timestamp here would make two requests either side of a
 		// second boundary look like a change, and both would be told they spent the envelope.
-		$this->assertEquals( 1, get_transient( WooPay_Session::ATTESTATION_CLAIM_PREFIX . md5( $envelope['hash'] ) ) );
+		$this->assertEquals( 1, get_transient( $this->attestation_claim_key( $envelope['hash'] ) ) );
 	}
 
 	public function test_spending_one_envelope_does_not_affect_another() {
@@ -1040,7 +1040,20 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @return bool True if the envelope was claimed.
 	 */
 	private function attestation_was_claimed( string $hash ): bool {
-		return false !== get_transient( WooPay_Session::ATTESTATION_CLAIM_PREFIX . md5( $hash ) );
+		return false !== get_transient( $this->attestation_claim_key( $hash ) );
+	}
+
+	/**
+	 * The transient key an envelope's claim is recorded under.
+	 *
+	 * Keyed on the decoded bytes, so respelling a spent envelope buys no second claim.
+	 *
+	 * @param string $hash The envelope's `hash` field.
+	 *
+	 * @return string The claim key.
+	 */
+	private function attestation_claim_key( string $hash ): string {
+		return WooPay_Session::ATTESTATION_CLAIM_PREFIX . hash( 'sha256', base64_decode( $hash, true ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
 	}
 
 	/**

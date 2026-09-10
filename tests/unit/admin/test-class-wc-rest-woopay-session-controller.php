@@ -127,6 +127,48 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->controller->check_permission() );
 	}
 
+	/**
+	 * @dataProvider provider_other_spellings_of_one_envelope
+	 *
+	 * @param callable $respell Rewrites the `hash` field as another spelling of itself.
+	 */
+	public function test_permission_is_denied_for_a_replay_spelled_differently( callable $respell ) {
+		$envelope = $this->build_envelope( 'shopper@example.com' );
+
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
+
+		$this->assertTrue( $this->controller->check_permission() );
+
+		$this->reset_resolved_attestations();
+
+		// One sealed envelope has several spellings that all verify, so single use has to
+		// recognise them as the same envelope -- otherwise replaying costs only a rewrite.
+		$replayed         = $envelope;
+		$replayed['hash'] = $respell( $envelope['hash'] );
+
+		$this->assertNotSame( $envelope['hash'], $replayed['hash'], 'The spelling under test changed nothing.' );
+
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $replayed;
+
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
+	public function provider_other_spellings_of_one_envelope() {
+		return [
+			'padding dropped'     => [ fn( $hash ) => rtrim( $hash, '=' ) ],
+			'whitespace inserted' => [ fn( $hash ) => substr( $hash, 0, 8 ) . ' ' . substr( $hash, 8 ) ],
+		];
+	}
+
+	public function test_permission_is_denied_for_an_envelope_whose_hash_is_not_base64() {
+		$envelope         = $this->build_envelope( 'shopper@example.com' );
+		$envelope['hash'] = 'not base64 at all!';
+
+		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
+
+		$this->assertFalse( $this->controller->check_permission() );
+	}
+
 	public function test_permission_is_denied_when_the_user_agent_is_not_woopay() {
 		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
 

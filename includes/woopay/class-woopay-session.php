@@ -1071,7 +1071,19 @@ class WooPay_Session {
 
 		// The HMAC covers the IV and the ciphertext, and WooPay seals each envelope under a
 		// fresh IV, so it identifies this one envelope and nothing else.
-		$fingerprint = md5( $parts['hash'] );
+		//
+		// Fingerprint the bytes, not the base64 text: one envelope has several spellings that
+		// all verify -- padding dropped, whitespace inserted -- so keying single use on the
+		// text would let a spent envelope be respelled into a fresh claim.
+		$decoded_hash = base64_decode( $parts['hash'], true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+
+		if ( false === $decoded_hash ) {
+			Logger::log( 'WooPay attestation rejected: envelope "hash" field is not base64.' );
+
+			return null;
+		}
+
+		$fingerprint = hash( 'sha256', $decoded_hash );
 
 		if ( array_key_exists( $fingerprint, self::$resolved_attestations ) ) {
 			return self::$resolved_attestations[ $fingerprint ];
