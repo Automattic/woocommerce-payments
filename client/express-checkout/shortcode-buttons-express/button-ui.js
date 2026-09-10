@@ -22,18 +22,14 @@ const expressCheckoutButtonUi = {
 			return;
 		}
 
-		// Match the white overlay WooCommerce paints over the order review
-		// during the same refresh; blockUI's own default is black with a wait
-		// cursor.
+		// Same overlay WooCommerce paints over the order review during a refresh.
 		get$Container().block( {
 			message: null,
 			overlayCSS: { background: '#fff', opacity: 0.6 },
 		} );
 	},
 
-	// Removes the overlay but leaves visibility alone. Callers that let
-	// another routine decide whether the button belongs on screen need this:
-	// `unblockButton()` would reveal a container that routine hid.
+	// Lifts the overlay without touching visibility, unlike `unblockButton()`.
 	unblock: () => {
 		get$Container().unblock();
 	},

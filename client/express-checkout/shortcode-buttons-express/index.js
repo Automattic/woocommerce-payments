@@ -55,19 +55,14 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
-// Identifies the most recent forced refresh. A slower, superseded refresh must
-// not publish its cart data or remount Elements behind the newer one's back.
+// Forced refreshes are numbered so that a slower, superseded one never publishes
+// its cart data or remounts Elements over a newer one. The refresh that owns the
+// button is tracked as an id rather than a count: a count would keep rejecting
+// clicks after a superseded refresh is done, and a hung one would never give it back.
 let latestForcedRefreshId = 0;
-// The forced refresh that currently owns the button, or null when none is in
-// flight. Deliberately one refresh rather than a count: a count would keep
-// rejecting clicks for a refresh that has already been superseded by a newer,
-// successful one, and a hung refresh would never give its count back.
 let activeForcedRefreshId = null;
-// Set from WooCommerce's `update_checkout`, which fires before its own
-// `update_order_review` request. Our container sits outside what core blocks
-// during that request, so the old button stays tappable while `cachedCartData`
-// is still the pre-change snapshot. Raising the guard here closes that window;
-// the forced refresh that follows `updated_checkout` takes it over.
+// Core's `update_checkout` fires before its own `update_order_review` request,
+// and our checkout container sits outside what core blocks during it.
 let coreCheckoutRefreshPending = false;
 
 const fetchNewCartData = async () => {
@@ -242,11 +237,6 @@ jQuery( ( $ ) => {
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
 
-			// Loading Stripe is another await a newer refresh can start across,
-			// so ownership has to be rechecked here and not only after the cart
-			// fetch. Everything from here to `mount()` is synchronous, so this
-			// is the last check needed: a superseded refresh never builds a
-			// generation, let alone puts one on screen.
 			if ( isSuperseded() ) {
 				return;
 			}
@@ -314,10 +304,9 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				// Stripe keeps the existing Element clickable while WooCommerce refreshes
-				// the cart. Reject the click until the replacement Element is initialized,
-				// so a payment sheet never opens with a stale cart snapshot. Only the
-				// newest refresh gates this: an older one it superseded is irrelevant.
+				// The Element mounted before a refresh stays clickable throughout it.
+				// The overlay alone is not enough: an element-level blockUI block
+				// intercepts pointers, not keyboard or assistive-tech activation.
 				if (
 					activeForcedRefreshId !== null ||
 					coreCheckoutRefreshPending
@@ -328,7 +317,6 @@ jQuery( ( $ ) => {
 
 				const options = getOnClickOptions();
 				if ( ! options ) {
-					// Without cart (or product) data we can't describe the purchase to the wallet.
 					event.reject();
 					return;
 				}
@@ -508,9 +496,6 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: async ( { forceRefresh = false, refreshId = null } = {} ) => {
-			// A forced refresh is superseded as soon as a newer one starts. Its
-			// response must not be published: doing so would overwrite fresher
-			// cart data and remount Elements underneath the newer generation.
 			const isSuperseded = () =>
 				refreshId !== null && refreshId !== latestForcedRefreshId;
 
@@ -569,11 +554,9 @@ jQuery( ( $ ) => {
 						return;
 					}
 
-					// The refresh failed, so there is no cart data we can trust.
-					// Clearing it hides the button and makes any click that still
-					// reaches the handler reject, rather than opening a wallet
-					// against the pre-refresh snapshot. A later healthy refresh
-					// restores it.
+					// Nothing trustworthy is left, so hide the button and reject
+					// clicks until a later refresh succeeds, rather than keep
+					// the pre-refresh snapshot.
 					cachedCartData = null;
 				}
 			}
@@ -738,9 +721,8 @@ jQuery( ( $ ) => {
 						}
 					} catch ( e ) {
 						expressCheckoutButtonUi.hideContainer();
-						// Leaving the overlay on would keep `blockUI.isBlocked`
-						// truthy, so `blockButton()` would skip the overlay for
-						// the rest of the page life.
+						// A lingering block would make `blockButton()` a no-op
+						// for the rest of the page life.
 						expressCheckoutButtonUi.unblock();
 					}
 				}
@@ -749,28 +731,15 @@ jQuery( ( $ ) => {
 	};
 
 	const refreshExpressCheckoutElement = async () => {
-		// Starting a refresh supersedes whatever was in flight: the older one
-		// may still settle, but `init()` will discard its result. That is also
-		// what keeps a hung request from gating clicks forever - the next
-		// refresh simply takes over.
 		const refreshId = ++latestForcedRefreshId;
 		activeForcedRefreshId = refreshId;
 		coreCheckoutRefreshPending = false;
 
-		// The element mounted before the refresh stays clickable throughout.
-		// The overlay tells the shopper why a tap does nothing, the same way
-		// core greys out the order review; the click guard above is what
-		// actually stops keyboard and assistive-tech activation, which an
-		// element-level blockUI overlay does not intercept.
 		expressCheckoutButtonUi.blockButton();
 
 		try {
 			await wcpayECE.init( { forceRefresh: true, refreshId } );
 		} finally {
-			// Only the refresh that still owns the button may release the guard
-			// and lift the overlay. A superseded one finishing later must leave
-			// the newer one's alone. `init()` already decided whether the
-			// container belongs on screen, so only the overlay comes off.
 			if ( activeForcedRefreshId === refreshId ) {
 				activeForcedRefreshId = null;
 				expressCheckoutButtonUi.unblock();
