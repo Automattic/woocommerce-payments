@@ -618,10 +618,14 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 					);
 				} )
 		);
+		$.fn.block.mockClear();
 		$( document.body ).trigger( 'updated_checkout' );
 		$( document.body ).trigger( 'updated_checkout' );
 		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
 		$.fn.unblock.mockClear();
+
+		// B found the button already covered by A: re-blocking would blink the overlay.
+		expect( $.fn.block ).toHaveBeenCalledTimes( 1 );
 
 		// A (superseded) settles first: B still owns the button, so no unblock.
 		releases[ 0 ]();
