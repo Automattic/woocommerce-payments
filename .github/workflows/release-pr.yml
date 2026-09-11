@@ -154,7 +154,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           RELEASE_PR_ID: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
         run: |
-          PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR after the code freeze process is done successfully.\n\nApplies the **version bump and changelog entries** from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge. Since \`trunk\` is no longer merged back, this PR is the only thing that brings the $RELEASE_VERSION version bump onto \`develop\`.\n\nRelated release PR: #${RELEASE_PR_ID}")
+          PR_BODY=$(echo -e "> [!NOTE]\n> As the release lead, please approve and merge this PR on release day, once $RELEASE_VERSION has shipped. Please don't merge it at code freeze: post-freeze cherry-picks and date changes amend the release changelog, and the version bump should only land on \`develop\` once the release is out.\n\nApplies the **version bump and changelog entries** from \`release/$RELEASE_VERSION\` to \`develop\` so that \`develop\` stays in sync without a \`trunk → develop\` merge. Since \`trunk\` is no longer merged back, this PR is the only thing that brings the $RELEASE_VERSION version bump onto \`develop\`.\n\nRelated release PR: #${RELEASE_PR_ID}")
           DEVELOP_PR_URL=$(gh pr create \
             --title "Sync develop after $RELEASE_VERSION: version bump + changelog" \
             --body "$PR_BODY" \
