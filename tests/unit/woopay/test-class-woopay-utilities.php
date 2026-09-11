@@ -284,4 +284,231 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
 	}
+
+	public function test_encrypt_and_sign_data_returns_nothing_without_a_blog_token() {
+		Jetpack_Options::update_option( 'blog_token', '' );
+
+		$this->assertSame(
+			[],
+			WooPay_Utilities::encrypt_and_sign_data( [ 'wcpay_version' => '1.0.0' ] )
+		);
+	}
+
+	public function test_encrypt_and_sign_data_produces_a_payload_the_receiver_can_open() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$session = [
+			'wcpay_version' => '1.0.0',
+			'blog_id'       => 123,
+		];
+
+		$encrypted = WooPay_Utilities::encrypt_and_sign_data( $session );
+
+		$this->assertArrayHasKey( 'data', $encrypted );
+
+		$parts = array_map( 'base64_decode', $encrypted['data'] );
+
+		// The key WooPay derives to open this direction.
+		$session_key = hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::SESSION_KEY_PURPOSE );
+
+		// Checked the way the receiver checks it, so this fails if either side of the
+		// contract moves. The HMAC has to cover the IV as well as the ciphertext.
+		$this->assertSame(
+			hash_hmac( 'sha256', $parts['iv'] . $parts['session'], $session_key ),
+			$parts['hash']
+		);
+
+		// And specifically not the older form this direction has moved off.
+		$this->assertNotSame(
+			hash_hmac( 'sha256', $parts['session'], $session_key ),
+			$parts['hash']
+		);
+
+		// Nor sealed with the blog token itself, which is what keeps this payload
+		// distinct from an inbound attestation rather than relying on field names.
+		$this->assertNotSame(
+			hash_hmac( 'sha256', $parts['iv'] . $parts['session'], $token ),
+			$parts['hash']
+		);
+
+		$this->assertSame(
+			$session,
+			json_decode(
+				openssl_decrypt(
+					$parts['session'],
+					'aes-256-cbc',
+					$session_key,
+					OPENSSL_RAW_DATA,
+					$parts['iv']
+				),
+				true
+			)
+		);
+	}
+
+	/**
+	 * Each direction stands on its own key, so a payload this store sealed for WooPay is
+	 * not a payload WooPay sealed for this store, whatever its fields are called.
+	 */
+	public function test_a_payload_this_store_sealed_is_not_a_valid_attestation() {
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$encrypted = WooPay_Utilities::encrypt_and_sign_data( [ 'blog_id' => 123 ] );
+
+		$replayed = [
+			'data' => $encrypted['data']['session'],
+			'iv'   => $encrypted['data']['iv'],
+			'hash' => $encrypted['data']['hash'],
+		];
+
+		$this->assertNull( WooPay_Utilities::decrypt_signed_data( $replayed, [ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ] ) );
+	}
+
+	public function test_an_envelope_woopay_sealed_for_this_store_still_opens() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$payload = [
+			'timestamp'  => time(),
+			'user_email' => 'shopper@example.com',
+		];
+
+		$this->assertSame(
+			$payload,
+			WooPay_Utilities::decrypt_signed_data(
+				$this->seal_for_store( $payload, hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::ATTESTATION_KEY_PURPOSE ) ),
+				[ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ]
+			)
+		);
+	}
+
+	/**
+	 * WooPay releases that predate the derived key seal with the blog token itself, and
+	 * so does the connect exchange, for every merchant. Both have to keep opening until
+	 * the follow-up removes the fallback.
+	 */
+	public function test_an_envelope_sealed_with_the_undifferentiated_blog_token_still_opens() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$payload = [ 'user_email' => 'shopper@example.com' ];
+
+		$this->assertSame( $payload, WooPay_Utilities::decrypt_signed_data( $this->seal_for_store( $payload, $token ), [ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ] ) );
+	}
+
+	/**
+	 * The half that has to ship first. WooPay still seals the connect exchange with the
+	 * undifferentiated blog token, and cannot stop until every store accepts a derived key --
+	 * the connect iframe serves stores on every release and nothing on that request says
+	 * which one it is talking to. Accepting it now is what makes that switch a one-line
+	 * change with no window where a store cannot open what it is sent.
+	 */
+	/**
+	 * openssl says nothing when a key is longer than the cipher takes -- it truncates and
+	 * carries on -- so a narrower cipher with the length left at 32 would quietly seal with
+	 * fewer bytes than the name suggests. The two constants describe one choice, and this is
+	 * what notices if they come apart.
+	 */
+	public function test_the_derived_key_length_matches_the_cipher() {
+		if ( ! function_exists( 'openssl_cipher_key_length' ) ) {
+			// PHP 8.2 and up. Left in place rather than dropped, so it starts checking the
+			// moment this suite runs somewhere newer.
+			$this->markTestSkipped( 'openssl_cipher_key_length() is unavailable on this PHP version.' );
+		}
+
+		$this->assertSame(
+			openssl_cipher_key_length( WooPay_Utilities::CIPHER ),
+			WooPay_Utilities::CIPHER_KEY_LENGTH,
+			'The derived key length must be what the cipher requires.'
+		);
+	}
+
+	/**
+	 * Both ends of this exchange have to agree on the cipher, and neither can see the other
+	 * to check. Pinning the values is what makes a one-sided change fail here rather than in
+	 * a shopper's checkout.
+	 */
+	public function test_the_cipher_woopay_expects_is_unchanged() {
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$this->assertSame( 'aes-256-cbc', WooPay_Utilities::CIPHER );
+		$this->assertSame( 32, WooPay_Utilities::CIPHER_KEY_LENGTH );
+
+		$this->assertSame(
+			WooPay_Utilities::CIPHER_KEY_LENGTH,
+			strlen( WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE ) ),
+			'Derived keys must actually come out at that length.'
+		);
+	}
+
+	public function test_a_connect_envelope_sealed_with_the_derived_key_opens() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$payload = [ 'user_email' => 'shopper@example.com' ];
+
+		$this->assertSame(
+			$payload,
+			WooPay_Utilities::decrypt_signed_data(
+				$this->seal_for_store( $payload, hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::CONNECT_KEY_PURPOSE ) ),
+				[ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ]
+			)
+		);
+	}
+
+	/**
+	 * Naming the accepted keys per call site also narrows what each one takes. An attestation
+	 * is sealed for the session route and says who a shopper is; the connect exchange has no
+	 * business opening one, and before the keys were listed explicitly it would have.
+	 */
+	public function test_an_attestation_is_not_accepted_as_connect_data() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$attestation = $this->seal_for_store(
+			[
+				'timestamp'  => time(),
+				'user_email' => 'shopper@example.com',
+			],
+			hash_hkdf( 'sha256', $token, 32, WooPay_Utilities::ATTESTATION_KEY_PURPOSE )
+		);
+
+		$this->assertNull( WooPay_Utilities::decrypt_signed_data( $attestation, [ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ] ) );
+	}
+
+	public function test_an_envelope_sealed_with_the_wrong_key_does_not_open() {
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$this->assertNull(
+			WooPay_Utilities::decrypt_signed_data( $this->seal_for_store( [ 'timestamp' => time() ], 'not.the.blog.token' ), [ WooPay_Utilities::ATTESTATION_KEY_PURPOSE ] )
+		);
+	}
+
+	/**
+	 * Seals a payload the way WooPay's encrypt_data() does.
+	 *
+	 * @param array  $payload The payload to seal.
+	 * @param string $key     The key to seal it with.
+	 *
+	 * @return array The envelope, in the shape decrypt_signed_data() reads.
+	 */
+	private function seal_for_store( array $payload, string $key ): array {
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$ciphertext = openssl_encrypt( wp_json_encode( $payload ), 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		return array_map(
+			'base64_encode',
+			[
+				'data' => $ciphertext,
+				'iv'   => $iv,
+				'hash' => hash_hmac( 'sha256', $iv . $ciphertext, $key ),
+			]
+		);
+	}
 }
