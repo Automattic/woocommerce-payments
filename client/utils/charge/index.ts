@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { sumBy, get } from 'lodash';
+import { sumBy } from 'lodash';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -51,6 +51,10 @@ export const getDisputeOrdinals = ( charge: Charge ): DisputeOrder => {
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
+const unsuccessfulRefundStatuses = [ 'failed', 'canceled' ];
+
+const isUnsuccessfulRefund = ( refund: { status?: string | null } ): boolean =>
+	unsuccessfulRefundStatuses.includes( refund.status ?? '' );
 
 export const getDisputeStatus = (
 	dispute: null | Pick< Dispute, 'status' > = <Dispute>{}
@@ -79,8 +83,16 @@ export const isChargeDisputed = ( charge: Charge = <Charge>{} ): boolean =>
 export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	charge.amount_refunded > 0;
 
-export const isChargeRefundFailed = ( charge: Charge = <Charge>{} ): boolean =>
-	charge.refunded === false && get( charge, 'refunds.data', [] ).length > 0;
+export const isChargeRefundFailed = (
+	charge: Charge = <Charge>{}
+): boolean => {
+	const refunds = charge.refunds?.data ?? [];
+	return (
+		charge.refunded === false &&
+		refunds.length > 0 &&
+		refunds.every( isUnsuccessfulRefund )
+	);
+};
 
 export const isChargeFullyRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	charge.refunded === true;
@@ -152,14 +164,14 @@ export const getChargeStatus = (
 	if ( isChargeDisputed( charge ) ) {
 		return 'disputed_' + getDisputeStatus( charge.dispute );
 	}
+	if ( isChargeRefundFailed( charge ) ) {
+		return 'refund_failed';
+	}
 	if ( isChargePartiallyRefunded( charge ) ) {
 		return 'refunded_partial';
 	}
 	if ( isChargeFullyRefunded( charge ) ) {
 		return 'refunded_full';
-	}
-	if ( isChargeRefundFailed( charge ) ) {
-		return 'refund_failed';
 	}
 	const paymentIntentStatus = getPaymentIntentDerivedStatus( paymentIntent );
 	if ( paymentIntentStatus ) {
@@ -260,7 +272,9 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 
 	if ( isChargeRefunded( charge ) ) {
 		balance.refunded -= sumBy(
-			charge.refunds?.data,
+			( charge.refunds?.data ?? [] ).filter(
+				( refund ) => ! isUnsuccessfulRefund( refund )
+			),
 			'balance_transaction.amount'
 		);
 	}
