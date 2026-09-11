@@ -64,7 +64,7 @@ class Tracking {
 	private function get_currency_data_array( Currency $currency ): array {
 		$data = [
 			'code' => $currency->get_code(),
-			'name' => html_entity_decode( $currency->get_name() ),
+			'name' => \WC_Payments_Utils::decode_html_entities( $currency->get_name() ),
 		];
 
 		// Return early if it's the default currency.

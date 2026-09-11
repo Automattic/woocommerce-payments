@@ -1,4 +1,4 @@
-name: "Build zip file & Run smoke tests"
+name: "Build zip file & Run release tests"
 
 # This action will run inside the package creation workflows or when it is triggered manually
 on:
@@ -15,6 +15,10 @@ on:
         description: "Branch to be used for building zip file"
   workflow_dispatch:
     inputs:
+      repo-branch:
+        type: string
+        required: false
+        description: "Branch to build and test (defaults to the workflow branch)"
       skip-smoke-tests:
         type: boolean
         required: false
@@ -50,6 +54,61 @@ jobs:
           name: "woocommerce-payments"
           path: release
           retention-days: 14
+
+      - name: "Upload release ZIP for QIT"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: woocommerce-payments-zip
+          path: ${{ steps.build_plugin.outputs.release-filename }}
+          if-no-files-found: error
+          retention-days: 14
+
+  qit-tests:
+    name: "QIT release checks"
+    needs: build-zip
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: "Download release ZIP"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: woocommerce-payments-zip
+
+      - name: "Checkout deployment test configuration"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: woocommerce/woo-product-deploy
+          # Keep this ref aligned with product-deploy.yml to run the same release suite.
+          ref: 5f5b49d49b8a3681a7a99efec089187666885759
+          path: .github/actions/woo-product-deploy
+          token: ${{ secrets.WOO_DEPLOY_SECRET }}
+          persist-credentials: false
+
+      - name: "Checkout QIT action"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: woocommerce/qit-action
+          ref: 7ced10796939ca2338430b9d226603738fdd95fd
+          path: .github/actions/qit-action
+          token: ${{ secrets.WOO_DEPLOY_SECRET }}
+          persist-credentials: false
+
+      - name: "Set up PHP"
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          tools: composer
+          coverage: none
+
+      - name: "Run release QIT suite"
+        uses: ./.github/actions/qit-action
+        with:
+          extension: woocommerce-payments
+          zip: woocommerce-payments.zip
+          config: .github/actions/woo-product-deploy/.github/workflows/bin/release.json
+          partner-user: ${{ secrets.QIT_CI_USER }}
+          partner-secret: ${{ secrets.QIT_CI_SECRET }}
 
   smoke-tests:
     name: "Smoke tests"
