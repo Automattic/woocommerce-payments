@@ -105,6 +105,11 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions::wcs_cart_contains_renewal( null );
 		WC_Subscriptions::wcs_cart_contains_resubscribe( null );
 		WC_Subscriptions::wcs_cart_contains_switches( null );
+		WC_Subscriptions::set_wcs_order_contains_subscription( null );
+		WC_Subscriptions::wcs_order_contains_renewal( null );
+		unset( $GLOBALS['wp']->query_vars['order-pay'] );
+		unset( $_GET['key'] );
+		wp_set_current_user( 0 );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
 		WC()->cart->empty_cart();
@@ -294,6 +299,370 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_checkout' )->willReturn( false );
 
 		$this->assertFalse( $helper->has_subscription_product() );
+	}
+
+	public function test_named_cart_context_reads_cart_state_without_page_context() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		// No is_cart()/is_checkout() stubbing: the point is that this works with no page context.
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'cart' ) );
+	}
+
+	public function test_named_cart_context_detects_renewal_carts() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'cart' ) );
+	}
+
+	public function test_named_cart_context_is_null_for_a_plain_cart() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$this->assertNull( $this->system_under_test->get_setup_future_usage( 'cart' ) );
+	}
+
+	public function test_get_setup_future_usage_is_off_session_for_a_subscription_cart() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$helper = $this->make_helper_for_context( 'cart' );
+
+		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
+	}
+
+	public function test_get_setup_future_usage_is_null_for_a_plain_cart() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->make_helper_for_context( 'cart' );
+
+		$this->assertNull( $helper->get_setup_future_usage() );
+	}
+
+	public function test_get_setup_future_usage_is_off_session_on_a_subscription_product_page() {
+		WC_Subscriptions_Product::$is_subscription = true;
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->make_helper_for_context( 'product' );
+
+		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
+	}
+
+	/**
+	 * Counterpart to the test above. The subscription-product stub defaults to true, so
+	 * without this the product branch would assert `off_session` for every product page
+	 * and pin nothing.
+	 */
+	public function test_get_setup_future_usage_is_null_on_a_non_subscription_product_page() {
+		WC_Subscriptions_Product::$is_subscription = false;
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$helper = $this->make_helper_for_context( 'product' );
+
+		$this->assertNull( $helper->get_setup_future_usage() );
+	}
+
+	/**
+	 * The Store API cart endpoint carries no page context, so it names the context instead.
+	 * Without that, is_cart()/is_checkout() are both false and the cart would look plain.
+	 */
+	public function test_get_setup_future_usage_honours_a_named_cart_context_with_no_page_context() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'cart' ) );
+	}
+
+	public function test_get_setup_future_usage_filter_can_declare_off_session() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$seen_context = null;
+		$filter       = function ( $value, $context ) use ( &$seen_context ) {
+			$seen_context = $context;
+			return 'off_session';
+		};
+		add_filter( 'wcpay_express_checkout_setup_future_usage', $filter, 10, 2 );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'cart' );
+
+		remove_filter( 'wcpay_express_checkout_setup_future_usage', $filter, 10 );
+
+		$this->assertSame( 'off_session', $actual );
+		$this->assertSame( 'cart', $seen_context );
+	}
+
+	public function test_get_setup_future_usage_filter_can_suppress_off_session() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$filter = function () {
+			return null;
+		};
+		add_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'cart' );
+
+		remove_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * Paying an existing order runs with an empty cart, so the cart and product predicates
+	 * both report false while the gateway still saves the payment method for the
+	 * subscription on the order.
+	 */
+	public function test_get_setup_future_usage_reads_the_order_for_pay_for_order() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertSame( 'off_session', $actual );
+	}
+
+	public function test_get_setup_future_usage_is_null_for_a_pay_for_order_without_a_subscription() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * The order-pay page carries the order in a query var. `get_current_order()` reads the
+	 * admin globals, where `$post` is the checkout page on the front end — so resolving
+	 * through it returns no order and the subscription goes undetected.
+	 */
+	public function test_pay_for_order_resolves_the_order_from_the_query_var() {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function ( $order_id ) use ( $order ) {
+				// Answers only for this exact order, so resolving the checkout page — or
+				// nothing at all — cannot pass this.
+				return (int) $order_id === $order->get_id();
+			}
+		);
+		$this->set_order_pay_endpoint( $order );
+
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'pay_for_order' ) );
+	}
+
+	/**
+	 * Scripts are enqueued on `wp_enqueue_scripts`, while core validates the order key on
+	 * `the_content` — so without a key check here, an anonymous visitor walking order IDs
+	 * would read each order's `setup_future_usage` out of the localized params.
+	 *
+	 * @dataProvider provider_unauthorized_order_pay_requests
+	 *
+	 * @param string $key_mode Whether the request carries a 'valid', 'missing', 'wrong', 'empty' or 'array' order key.
+	 * @param bool   $as_guest Whether to make the request logged out.
+	 */
+	public function test_get_setup_future_usage_does_not_read_an_order_without_authorization( string $key_mode, bool $as_guest ) {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function ( $order_id ) use ( $order ) {
+				return (int) $order_id === $order->get_id();
+			}
+		);
+
+		// The authorized request first, so the assertion below is about authorization and
+		// not about the order failing to look like a subscription.
+		$this->set_order_pay_endpoint( $order );
+		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'pay_for_order' ) );
+
+		switch ( $key_mode ) {
+			case 'missing':
+				unset( $_GET['key'] );
+				break;
+			case 'wrong':
+				$_GET['key'] = 'wc_order_notthekey';
+				break;
+			case 'empty':
+				$_GET['key'] = '';
+				break;
+			case 'array':
+				// `wc_clean()` recurses into arrays, so an unguarded key reaches `hash_equals()`
+				// as an array and fatals instead of failing closed.
+				$_GET['key'] = [ $order->get_order_key() ];
+				break;
+		}
+
+		if ( $as_guest ) {
+			wp_set_current_user( 0 );
+		}
+
+		$this->assertNull( $this->system_under_test->get_setup_future_usage( 'pay_for_order' ) );
+	}
+
+	/**
+	 * @return array<string, array{0: string, 1: bool}>
+	 */
+	public function provider_unauthorized_order_pay_requests() {
+		return [
+			'no order key'                   => [ 'missing', false ],
+			'wrong order key'                => [ 'wrong', false ],
+			'empty order key'                => [ 'empty', false ],
+			'order key sent as an array'     => [ 'array', false ],
+			'valid key but not the customer' => [ 'valid', true ],
+		];
+	}
+
+	/**
+	 * A renewal order carries the renewed subscription by reference rather than as a
+	 * subscription line item, so `wcs_order_contains_subscription()` alone misses it.
+	 */
+	public function test_get_setup_future_usage_recognises_a_renewal_order() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return false;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertSame( 'off_session', $actual );
+	}
+
+	/**
+	 * Off the order-pay endpoint there is no order to read, and the subscription
+	 * predicates must not be handed a non-order in its place.
+	 */
+	public function test_get_setup_future_usage_is_null_when_no_order_resolves() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'pay_for_order' );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * The handler calls `get_setup_future_usage()` with no argument, so the shipped value
+	 * comes from `get_button_context()`. Passing the context by hand in every other test
+	 * leaves that wiring unpinned for the branch this PR added.
+	 */
+	public function test_get_setup_future_usage_resolves_pay_for_order_with_no_argument() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+		$this->set_order_pay_endpoint( WC_Helper_Order::create_order() );
+
+		$helper = $this->make_helper_for_context( 'pay_for_order' );
+
+		$this->assertSame( 'off_session', $helper->get_setup_future_usage() );
+	}
+
+	/**
+	 * Every client consumer gates on truthiness while the server infers from `null !==`, so
+	 * a filter returning anything other than 'off_session' or null has the two sides
+	 * disagreeing about the same payment.
+	 *
+	 * @dataProvider provider_non_canonical_filter_returns
+	 *
+	 * @param mixed $returned What the filter hands back.
+	 */
+	public function test_get_setup_future_usage_normalises_non_canonical_filter_returns( $returned ) {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$filter = function () use ( $returned ) {
+			return $returned;
+		};
+		add_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$actual = $this->system_under_test->get_setup_future_usage( 'cart' );
+
+		remove_filter( 'wcpay_express_checkout_setup_future_usage', $filter );
+
+		$this->assertNull( $actual );
+	}
+
+	/**
+	 * Data provider for the filter normalisation test.
+	 *
+	 * @return array
+	 */
+	public function provider_non_canonical_filter_returns() {
+		return [
+			'__return_false' => [ false ],
+			'__return_true'  => [ true ],
+			'empty string'   => [ '' ],
+			'on_session'     => [ 'on_session' ],
+			'zero'           => [ 0 ],
+		];
+	}
+
+	/**
+	 * Puts a real order on the order-pay endpoint, the way the front end does. Resolution
+	 * is deliberately left unmocked — mocking it is what hid the order going unresolved
+	 * outside the admin.
+	 *
+	 * @param WC_Order $order Order being paid.
+	 */
+	private function set_order_pay_endpoint( WC_Order $order ) {
+		global $wp;
+
+		$wp->query_vars['order-pay'] = (string) $order->get_id();
+
+		// An authorized request: the payment link carries the order key, and the visitor is
+		// the customer it belongs to. Both are what core requires before it will render the
+		// pay form, so anything less never reaches the express checkout button either.
+		$_GET['key'] = $order->get_order_key();
+		wp_set_current_user( $order->get_user_id() );
+	}
+
+	/**
+	 * Builds a helper whose page context is pinned, so context-dependent predicates
+	 * can be exercised off an actual request.
+	 *
+	 * @param string $context Button context to report: 'product', 'cart', 'checkout' or
+	 *                        'pay_for_order'.
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private function make_helper_for_context( string $context ) {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( 'product' === $context );
+		$helper->method( 'is_cart' )->willReturn( 'cart' === $context );
+		// The order-pay page is part of checkout, so `is_checkout()` is true there too.
+		$helper->method( 'is_checkout' )->willReturn( in_array( $context, [ 'checkout', 'pay_for_order' ], true ) );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( 'pay_for_order' === $context );
+
+		return $helper;
 	}
 
 	public function test_common_get_button_settings() {

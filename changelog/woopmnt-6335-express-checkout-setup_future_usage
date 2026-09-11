@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix express checkout payments failing when the payment method will be saved for a subscription the page cannot see, such as one from a subscriptions plugin other than WooCommerce Subscriptions, or a subscription order paid from the order-pay page
