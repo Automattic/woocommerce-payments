@@ -32,7 +32,7 @@ const filesToCopy = [
 
 // run npm dist
 rm( '-rf', 'dist' );
-const clientBuild = exec( 'SOURCEMAP=hidden pnpm run build:client', {
+const clientBuild = exec( 'pnpm run build:client', {
 	// using fatal: false so that it doesn't throw
 	fatal: false,
 } );
@@ -50,8 +50,9 @@ rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
 
-// remove the 'hidden' source maps; they are used to generate the POT file and are not referenced in the source files.
-rm( '-f', 'dist/*.map' );
+// combine-pot-files.php reads the top-level maps to reference the built bundles
+// in the POT; that ran during build:client above.
+rm( '-f', 'dist/**/*.map' );
 
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
