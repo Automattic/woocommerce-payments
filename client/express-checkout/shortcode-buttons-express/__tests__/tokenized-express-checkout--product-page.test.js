@@ -1,10 +1,11 @@
 /**
  * External dependencies
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
+import { cartWithItemsMock } from '../../__fixtures__/cart';
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
@@ -29,6 +30,14 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		$.fn.ready = ( callback ) => callback( $ );
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
+		$.fn.block = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 1 );
+			return this;
+		} );
+		$.fn.unblock = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 0 );
+			return this;
+		} );
 
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.flags = {};
@@ -114,6 +123,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			stripeInstance = {
 				elements: jest.fn( () => ( {
 					create: jest.fn( () => stripeElementMock ),
+					update: jest.fn(),
 				} ) ),
 			};
 
@@ -636,5 +646,228 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 				setupFutureUsage: 'off_session',
 			} )
 		);
+	} );
+
+	it( 'should lift the overlay when the cart refresh behind `update-button-data` fails', async () => {
+		apiFetch.mockImplementation( async () => Promise.reject() );
+
+		// The action must be dispatched on the hooks registry the isolated
+		// module registered with, not the test file's own copy.
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.unblock.mockClear();
+
+		doAction( 'wcpay.express-checkout.update-button-data' );
+
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'wcpay-express-checkout-element' )
+			).not.toBeVisible()
+		);
+		// Otherwise `blockUI.isBlocked` stays truthy on the container and
+		// `blockButton()` skips the overlay for the rest of the page life.
+		expect( $.fn.block ).toHaveBeenCalled();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+	it( 'should reject the click while the cart refresh behind `update-button-data` is in flight', async () => {
+		let releaseCart;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseCart = () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} );
+				} )
+		);
+
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Variation or quantity change: `cachedCartData` still describes the
+		// previous selection until the re-fetch lands.
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () => expect( $.fn.block ).toHaveBeenCalled() );
+
+		const midRefreshResolveMock = jest.fn();
+		const midRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: midRefreshResolveMock,
+			reject: midRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( midRefreshRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( midRefreshResolveMock ).not.toHaveBeenCalled();
+
+		releaseCart();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+		// The re-fetch succeeded, so the button is back for real, not hidden
+		// by the failure path (which also unblocks).
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+
+		const postRefreshResolveMock = jest.fn();
+		const postRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: postRefreshResolveMock,
+			reject: postRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
+		expect( postRefreshResolveMock ).toHaveBeenCalled();
+	} );
+	it( 'should not let a superseded refetch publish its cart data', async () => {
+		const supersededVariation = {
+			...cartWithItemsMock,
+			totals: { ...cartWithItemsMock.totals, total_price: '4000' },
+			items: [
+				{
+					...cartWithItemsMock.items[ 0 ],
+					name: 'Superseded variation',
+				},
+			],
+		};
+		const selectedVariation = {
+			...cartWithItemsMock,
+			totals: { ...cartWithItemsMock.totals, total_price: '5000' },
+			items: [
+				{ ...cartWithItemsMock.items[ 0 ], name: 'Selected variation' },
+			],
+		};
+
+		// `elements()` hands back a fresh object per generation, so hold a single
+		// `update` spy that outlives them all.
+		const updateMock = jest.fn();
+		global.Stripe = jest.fn( () => {
+			stripeInstance = {
+				elements: jest.fn( () => ( {
+					create: jest.fn( () => stripeElementMock ),
+					update: updateMock,
+				} ) ),
+			};
+
+			return stripeInstance;
+		} );
+
+		let releaseSupersededRefetch;
+		let supersededResponseConsumed = false;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseSupersededRefetch = () =>
+						resolve( {
+							json: () => {
+								supersededResponseConsumed = true;
+								return Promise.resolve( supersededVariation );
+							},
+							headers: new Map(),
+						} );
+				} )
+		);
+
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Two variation changes in a row: `woocommerce_variation_has_changed` is
+		// not debounced, so both refetches are in flight at the same time.
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 1 ) );
+
+		// The second change answers first, carrying the variation the shopper is
+		// actually looking at.
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( selectedVariation ),
+				headers: new Map(),
+			} )
+		);
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () =>
+			expect( updateMock ).toHaveBeenCalledWith(
+				expect.objectContaining( { amount: 5000 } )
+			)
+		);
+
+		// Release the first refetch and synchronize on it resuming, so the
+		// assertions below run after it had its chance to publish.
+		releaseSupersededRefetch();
+		await waitFor( () =>
+			expect( supersededResponseConsumed ).toBe( true )
+		);
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		expect( updateMock ).toHaveBeenCalledTimes( 1 );
+
+		const clickEventResolveMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: jest.fn(),
+			expressPaymentType: 'google_pay',
+		} );
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				lineItems: expect.arrayContaining( [
+					expect.objectContaining( { name: 'Selected variation' } ),
+				] ),
+			} )
+		);
+	} );
+	it( 'should reject the click after a failed refetch leaves no cart data', async () => {
+		let refetchCount = 0;
+		apiFetch.mockImplementation( () => {
+			refetchCount++;
+
+			// The first refetch publishes cart data and clears the localized
+			// product data, so the second one fails with nothing to fall back on.
+			return refetchCount === 1
+				? Promise.resolve( {
+						json: () => Promise.resolve( cartWithItemsMock ),
+						headers: new Map(),
+				  } )
+				: Promise.reject( new Error( 'Store API is unavailable' ) );
+		} );
+
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'wcpay-express-checkout-element' )
+			).not.toBeVisible()
+		);
+
+		const afterFailureResolveMock = jest.fn();
+		const afterFailureRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: afterFailureResolveMock,
+			reject: afterFailureRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( afterFailureRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( afterFailureResolveMock ).not.toHaveBeenCalled();
 	} );
 } );

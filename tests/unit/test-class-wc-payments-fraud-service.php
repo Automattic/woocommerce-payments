@@ -76,6 +76,51 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'admin_print_footer_scripts', [ $this->fraud_service, 'add_sift_js_tracker_in_admin' ] ) );
 	}
 
+	public function test_admin_tracker_skips_frontend_requests_before_screen_setup() {
+		set_current_screen( 'front' );
+		unset( $GLOBALS['wp_actions']['current_screen'] );
+
+		$this->expectOutputString( '' );
+		$this->fraud_service->add_sift_js_tracker_in_admin();
+	}
+
+	public function test_admin_tracker_skips_admin_requests_before_screen_setup() {
+		$this->mock_in_admin();
+
+		$this->expectOutputString( '' );
+		$this->fraud_service->add_sift_js_tracker_in_admin();
+	}
+
+	public function test_admin_tracker_renders_on_a_woocommerce_admin_screen() {
+		set_current_screen( 'woocommerce_page_wc-admin' );
+		$original_get = $_GET;
+		$_GET['page'] = 'wc-admin';
+
+		$service = $this->getMockBuilder( WC_Payments_Fraud_Service::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_fraud_services_config' ] )
+			->getMock();
+		$service->method( 'get_fraud_services_config' )->willReturn(
+			[
+				'sift' => [
+					'beacon_key' => 'test-beacon',
+					'user_id'    => 'test-user',
+					'session_id' => 'test-session',
+				],
+			]
+		);
+
+		ob_start();
+		try {
+			$service->add_sift_js_tracker_in_admin();
+		} finally {
+			$output = ob_get_clean();
+			$_GET   = $original_get;
+		}
+
+		$this->assertStringContainsString( 'https://cdn.sift.com/s.js', $output );
+	}
+
 	public function test_get_fraud_services_config_returns_from_account() {
 		wp_set_current_user( 1 );
 		$this->mock_in_admin();

@@ -179,11 +179,15 @@ export interface CachedDispute {
 	due_by: string;
 }
 
+export interface DisputesSummaryData {
+	count?: number;
+	currencies?: string[];
+	amount_by_currency?: Record< string, number > | [];
+	earliest_due_by?: string | null;
+}
+
 export interface DisputesSummary {
-	disputesSummary: {
-		count?: number;
-		currencies?: string[];
-	};
+	disputesSummary: DisputesSummaryData;
 	isLoading: boolean;
 }
 
