@@ -128,6 +128,15 @@ function _manually_load_plugin() {
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
+/**
+ * Add WooCommerce roles and capabilities after WordPress installs the test database.
+ */
+function wcpay_install_woocommerce_roles() {
+	WC_Install::create_roles();
+}
+
+tests_add_filter( 'setup_theme', 'wcpay_install_woocommerce_roles' );
+
 // Need those polyfills to run tests in CI.
 require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
