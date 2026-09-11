@@ -230,7 +230,7 @@ describe( 'WooPayPreview', () => {
 			'.preview-layout__right-column'
 		);
 		// darkenColor('#ffffff', 6) = #f0f0f0
-		expect( rightColumn.style.borderColor ).toBe( '#f0f0f0' );
+		expect( rightColumn.style.borderColor ).toBe( 'rgb(240, 240, 240)' );
 	} );
 
 	it( 'applies text color to field values', () => {

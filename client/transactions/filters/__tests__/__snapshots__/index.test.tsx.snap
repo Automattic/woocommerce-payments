@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Transactions filters when filtering by channel should render all types 1`] = `
 HTMLOptionsCollection [

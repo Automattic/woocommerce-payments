@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`DisputeNotice - Visa Compliance renders Visa compliance notice with bank name 1`] = `
 .emotion-2 {

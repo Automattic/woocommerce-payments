@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Account fees utility functions formatMethodFeesTooltip() displays base fee, when only promo discount without percentage or fixed 1`] = `
 <div>

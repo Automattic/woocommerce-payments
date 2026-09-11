@@ -121,6 +121,30 @@
 		]
 	},
 	"overrides": [
+		// Jest reads its per-file configuration from the leading docblock, so
+		// test files carry `@jest-environment*` pragmas that are not JSDoc tags.
+		{
+			"files": [
+				"**/__tests__/**",
+				"**/test/**",
+				"*.test.js",
+				"*.test.ts",
+				"*.test.tsx"
+			],
+			"rules": {
+				"jsdoc/check-tag-names": [
+					"error",
+					{
+						"definedTags": [
+							"format",
+							"jest-environment",
+							"jest-environment-options"
+						]
+					}
+				],
+				"jsdoc/valid-types": "off"
+			}
+		},
 		{
 			"files": [ "*.js", "*.jsx" ],
 			"rules": {
