@@ -17,6 +17,23 @@ class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->dependency_service = new WC_Payments_Dependency_Service();
+		delete_transient( WC_Payments_Dependency_Service::UPDATE_WC_REQUIREMENT_TRANSIENT );
+	}
+
+	/**
+	 * Builds a mock update_plugins transient offering the given version of this plugin.
+	 *
+	 * @param string $new_version Version to offer.
+	 *
+	 * @return object
+	 */
+	private function build_update_transient( $new_version ) {
+		return (object) [
+			'response'  => [
+				plugin_basename( WCPAY_PLUGIN_FILE ) => (object) [ 'new_version' => $new_version ],
+			],
+			'no_update' => [],
+		];
 	}
 
 	public function test_get_invalid_dependencies() {
@@ -60,6 +77,210 @@ class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertContains( WC_Payments_Dependency_Service::WOOADMIN_NOT_FOUND, $invalid_deps );
 		$this->assertNotContains( WC_Payments_Dependency_Service::WOOADMIN_INCOMPATIBLE, $invalid_deps );
 		$this->assertContains( WC_Payments_Dependency_Service::WP_INCOMPATIBLE, $invalid_deps );
+	}
+
+	public function test_get_invalid_dependencies_ignores_cached_account_connection() {
+		update_option( WCPay\Database_Cache::ACCOUNT_KEY, [ 'data' => [ 'account_id' => 'acct_123' ] ] );
+
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'get_invalid_dependencies' ] )
+			->getMock();
+
+		$dependency_service->method( 'is_woo_core_active' )->willReturn( true );
+		$dependency_service->method( 'is_woo_core_version_compatible' )->willReturn( false );
+		$dependency_service->method( 'is_wc_admin_enabled' )->willReturn( true );
+		$dependency_service->method( 'is_wc_admin_version_compatible' )->willReturn( true );
+		$dependency_service->method( 'is_wp_version_compatible' )->willReturn( true );
+
+		// The removed second argument used to skip version checks for connected accounts.
+		$invalid_deps = $dependency_service->get_invalid_dependencies( true );
+
+		$this->assertEquals( [ 'woocore_outdated' ], $invalid_deps );
+
+		delete_option( WCPay\Database_Cache::ACCOUNT_KEY );
+	}
+
+	public function test_get_blocking_dependencies_excludes_version_incompatibilities() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'get_blocking_dependencies', 'get_invalid_dependencies' ] )
+			->getMock();
+
+		$dependency_service->method( 'is_woo_core_active' )->willReturn( true );
+		$dependency_service->method( 'is_woo_core_version_compatible' )->willReturn( false );
+		$dependency_service->method( 'is_wc_admin_enabled' )->willReturn( true );
+		$dependency_service->method( 'is_wc_admin_version_compatible' )->willReturn( false );
+		$dependency_service->method( 'is_wp_version_compatible' )->willReturn( false );
+
+		$this->assertEquals( [], $dependency_service->get_blocking_dependencies() );
+	}
+
+	public function test_get_blocking_dependencies_includes_missing_woo_core() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'get_blocking_dependencies', 'get_invalid_dependencies' ] )
+			->getMock();
+
+		$dependency_service->method( 'is_woo_core_active' )->willReturn( false );
+		$dependency_service->method( 'is_woo_core_version_compatible' )->willReturn( true );
+		$dependency_service->method( 'is_wc_admin_enabled' )->willReturn( true );
+		$dependency_service->method( 'is_wc_admin_version_compatible' )->willReturn( true );
+		$dependency_service->method( 'is_wp_version_compatible' )->willReturn( true );
+
+		$this->assertEquals( [ 'woocore_disabled' ], $dependency_service->get_blocking_dependencies() );
+	}
+
+	public function test_display_admin_notices_renders_version_incompatibility_as_warning() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'display_admin_notices' ] )
+			->getMock();
+
+		$dependency_service->method( 'are_assets_built' )->willReturn( true );
+		$dependency_service
+			->method( 'get_invalid_dependencies' )
+			->willReturn( [ WC_Payments_Dependency_Service::WOOCORE_INCOMPATIBLE ] );
+
+		ob_start();
+		$dependency_service->display_admin_notices();
+		$result = ob_get_clean();
+
+		$this->assertStringContainsString( 'notice-warning', $result );
+		$this->assertStringNotContainsString( 'notice-error', $result );
+	}
+
+	public function test_display_admin_notices_renders_blocking_dependency_as_error() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'display_admin_notices' ] )
+			->getMock();
+
+		$dependency_service->method( 'are_assets_built' )->willReturn( true );
+		$dependency_service
+			->method( 'get_invalid_dependencies' )
+			->willReturn( [ WC_Payments_Dependency_Service::WOOCORE_INCOMPATIBLE, WC_Payments_Dependency_Service::WOOCORE_NOT_FOUND ] );
+
+		ob_start();
+		$dependency_service->display_admin_notices();
+		$result = ob_get_clean();
+
+		$this->assertStringContainsString( 'notice-error', $result );
+		$this->assertStringContainsString( 'to be installed and active', $result );
+	}
+
+	public function test_gate_plugin_updates_withholds_incompatible_offer() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'gate_plugin_updates' ] )
+			->getMock();
+		$dependency_service->method( 'get_wc_version_required_by' )->willReturn( '99.0' );
+
+		$transient = $dependency_service->gate_plugin_updates( $this->build_update_transient( '99.9.9' ) );
+
+		$this->assertArrayNotHasKey( plugin_basename( WCPAY_PLUGIN_FILE ), $transient->response );
+		$this->assertArrayHasKey( plugin_basename( WCPAY_PLUGIN_FILE ), $transient->no_update );
+	}
+
+	public function test_gate_plugin_updates_keeps_compatible_offer() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'gate_plugin_updates' ] )
+			->getMock();
+		$dependency_service->method( 'get_wc_version_required_by' )->willReturn( '0.1' );
+
+		$transient = $dependency_service->gate_plugin_updates( $this->build_update_transient( '99.9.9' ) );
+
+		$this->assertArrayHasKey( plugin_basename( WCPAY_PLUGIN_FILE ), $transient->response );
+		$this->assertArrayNotHasKey( plugin_basename( WCPAY_PLUGIN_FILE ), $transient->no_update );
+	}
+
+	public function test_gate_plugin_updates_fails_open_when_requirement_unknown() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'gate_plugin_updates' ] )
+			->getMock();
+		$dependency_service->method( 'get_wc_version_required_by' )->willReturn( null );
+
+		$transient = $dependency_service->gate_plugin_updates( $this->build_update_transient( '99.9.9' ) );
+
+		$this->assertArrayHasKey( plugin_basename( WCPAY_PLUGIN_FILE ), $transient->response );
+	}
+
+	public function test_gate_plugin_updates_ignores_transient_without_an_offer() {
+		$transient = (object) [
+			'response'  => [],
+			'no_update' => [],
+		];
+
+		$this->assertSame( $transient, $this->dependency_service->gate_plugin_updates( $transient ) );
+		$this->assertFalse( $this->dependency_service->gate_plugin_updates( false ) );
+	}
+
+	public function test_get_wc_version_required_by_fetches_and_caches_the_header() {
+		set_current_screen( 'plugins' );
+
+		$request_count = 0;
+		$fake_response = function ( $preempt, $parsed_args, $url ) use ( &$request_count ) {
+			++$request_count;
+			$this->assertStringContainsString( 'plugins.svn.wordpress.org/woocommerce-payments/tags/99.9.9/', $url );
+			return [
+				'response' => [ 'code' => 200 ],
+				'body'     => '<?php
+/**
+ * Plugin Name: WooPayments
+ * WC requires at least: 9.9
+ * Version: 99.9.9
+ */
+',
+			];
+		};
+		add_filter( 'pre_http_request', $fake_response, 10, 3 );
+
+		$this->assertEquals( '9.9', $this->dependency_service->get_wc_version_required_by( '99.9.9' ) );
+		$this->assertEquals( '9.9', $this->dependency_service->get_wc_version_required_by( '99.9.9' ) );
+		$this->assertEquals( 1, $request_count, 'The second lookup should be served from the cached transient.' );
+
+		remove_filter( 'pre_http_request', $fake_response );
+		set_current_screen( 'front' );
+	}
+
+	public function test_get_wc_version_required_by_returns_null_on_fetch_failure() {
+		set_current_screen( 'plugins' );
+
+		$fake_response = function () {
+			return new WP_Error( 'http_request_failed', 'timeout' );
+		};
+		add_filter( 'pre_http_request', $fake_response );
+
+		$this->assertNull( $this->dependency_service->get_wc_version_required_by( '99.9.9' ) );
+
+		remove_filter( 'pre_http_request', $fake_response );
+		set_current_screen( 'front' );
+	}
+
+	public function test_display_gated_update_row_notice_renders_after_gating() {
+		$dependency_service = $this->getMockBuilder( WC_Payments_Dependency_Service::class )
+			->setConstructorArgs( [] )
+			->setMethodsExcept( [ 'gate_plugin_updates', 'display_gated_update_row_notice' ] )
+			->getMock();
+		$dependency_service->method( 'get_wc_version_required_by' )->willReturn( '99.0' );
+
+		$dependency_service->gate_plugin_updates( $this->build_update_transient( '99.9.9' ) );
+
+		ob_start();
+		$dependency_service->display_gated_update_row_notice( plugin_basename( WCPAY_PLUGIN_FILE ) );
+		$result = ob_get_clean();
+
+		$this->assertStringContainsString( 'requires WooCommerce 99.0 or greater', $result );
+	}
+
+	public function test_display_gated_update_row_notice_renders_nothing_without_a_gated_update() {
+		ob_start();
+		$this->dependency_service->display_gated_update_row_notice( plugin_basename( WCPAY_PLUGIN_FILE ) );
+		$result = ob_get_clean();
+
+		$this->assertSame( '', $result );
 	}
 
 	public function test_display_admin_notices() {
