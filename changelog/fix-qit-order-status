@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Make QIT and E2E order status assertions wait for the selected option.
