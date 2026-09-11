@@ -6,7 +6,6 @@
  */
 
 use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore as OrderStatsDataStore;
 use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\MultiCurrency\Analytics;
@@ -28,13 +27,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 * @var Analytics
 	 */
 	private $analytics;
-
-	/**
-	 * Request URI restored after each test.
-	 *
-	 * @var string|null
-	 */
-	private $original_request_uri;
 
 	/**
 	 * Mock MultiCurrency
@@ -79,8 +71,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 		$this->add_mock_order_with_meta();
 		$this->set_is_admin( true );
-		$this->original_request_uri = $_SERVER['REQUEST_URI'] ?? null;
-		$_SERVER['REQUEST_URI']     = '/wp-json/wc-analytics/reports/products';
 		add_filter( 'woocommerce_is_rest_api_request', '__return_true' );
 		// Add manage_woocommerce capability to user.
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
@@ -120,12 +110,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		$this->delete_mock_orders();
 
-		if ( null === $this->original_request_uri ) {
-			unset( $_SERVER['REQUEST_URI'] );
-		} else {
-			$_SERVER['REQUEST_URI'] = $this->original_request_uri;
-		}
-
 		remove_filter( 'woocommerce_is_rest_api_request', '__return_true' );
 
 		parent::tear_down();
@@ -144,10 +128,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			'admin scripts enqueued with default priority' => [ 'admin_enqueue_scripts', 'enqueue_admin_scripts', 10 ],
 			'select clause filters added with late priority' => [ 'woocommerce_analytics_clauses_select', 'filter_select_clauses', 20 ],
 			'join clause filters added with late priority' => [ 'woocommerce_analytics_clauses_join', 'filter_join_clauses', 20 ],
-			'product segment filters added with late priority' => [ 'woocommerce_analytics_products_segment_columns', 'filter_product_segment_columns', 20 ],
-			'tax segment filters added with late priority' => [ 'woocommerce_analytics_taxes_segment_columns', 'filter_tax_segment_columns', 20 ],
-			'coupon segment filters added with late priority' => [ 'woocommerce_analytics_coupons_segment_columns', 'filter_coupon_segment_columns', 20 ],
-			'coupon product segment filters added with late priority' => [ 'woocommerce_analytics_coupons_product_segment_columns', 'filter_coupon_product_segment_columns', 20 ],
 		];
 	}
 
@@ -243,7 +223,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Invalid evidence must not produce a qualified conversion or a partial update.
+	 * Invalid saved rates must not produce a conversion or a partial update.
 	 *
 	 * @dataProvider invalid_historical_rates_provider
 	 * @param mixed $order_rate Saved order rate.
@@ -258,12 +238,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_rate );
 		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $processor_rate );
 		$args = [
-			'net_total'          => 36.0,
-			'shipping_total'     => 0.0,
-			'tax_total'          => 0.0,
-			'total_sales'        => 36.0,
-			'reporting_currency' => 'GBP',
-			'reporting_basis'    => 'native',
+			'net_total'      => 36.0,
+			'shipping_total' => 0.0,
+			'tax_total'      => 0.0,
+			'total_sales'    => 36.0,
 		];
 		$this->assertSame( $args, $this->analytics->update_order_stats_data( $args, $order ) );
 	}
@@ -307,42 +285,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		];
 		$result = $this->analytics->update_order_stats_data( $args, $order );
 		$this->assertEquals( 41.90, $result['total_sales'] );
-		$this->assertArrayNotHasKey( 'reporting_currency', $result, 'Older core must not receive unknown database columns.' );
-	}
-
-	/**
-	 * Product coupon allocations use the saved rate and disclose unknown orders.
-	 */
-	public function test_coupon_product_segment_amounts_and_missing_rates() {
-		if ( ! method_exists( OrderStatsDataStore::class, 'has_reporting_currency_columns' ) || ! OrderStatsDataStore::has_reporting_currency_columns() ) {
-			$this->markTestSkipped( 'Requires the core reporting currency contract.' );
-		}
-		global $wpdb;
-		$this->mock_multi_currency->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-		$table   = $wpdb->prefix . 'wc_order_product_lookup';
-		$stats   = $wpdb->prefix . 'wc_order_stats';
-		$columns = $this->analytics->filter_coupon_product_segment_columns(
-			[
-				'amount'                   => 'SUM(coupon_amount) AS amount',
-				'reporting_missing_orders' => '0 AS reporting_missing_orders',
-			],
-			$table
-		);
-		// Derived rows exercise the real SQL without changing the report tables.
-		$select = implode( ', ', $columns );
-		foreach ( [ [ '1.16388888888889', '5.82', '0' ], [ 'NULL', null, '1' ], [ '0', null, '1' ] ] as $case ) {
-			[ $rate, $amount, $missing ] = $case;
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Fixed test expressions and table names, no external input.
-			$row = $wpdb->get_row( "SELECT $select FROM (SELECT 1 AS order_id, 5 AS coupon_amount) AS $table CROSS JOIN (SELECT 0 AS parent_id, 'USD' AS reporting_currency, 'historical_processor_rate' AS reporting_basis, $rate AS reporting_exchange_rate) AS $stats", ARRAY_A );
-			$this->assertSame( '', $wpdb->last_error );
-			if ( null === $amount ) {
-				$this->assertNull( $row['amount'] );
-			} else {
-				$this->assertEqualsWithDelta( (float) $amount, (float) $row['amount'], 0.001 );
-			}
-			$this->assertSame( $missing, $row['reporting_missing_orders'] );
-		}
 	}
 
 	public function test_deferred_initialization_registers_one_converter() {
@@ -354,61 +296,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( Analytics::PRIORITY_LATEST, has_filter( 'woocommerce_analytics_update_order_stats_data', $callback ) );
 	}
 
-	public function test_order_stats_preserves_extension_completeness_indicator() {
-		$this->mock_multi_currency->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-		$selection = 'SUM(net_total) AS net_revenue, COUNT(DISTINCT order_id) AS reporting_missing_orders';
-		$clauses   = $this->analytics->filter_select_clauses( [ $selection ], 'orders_stats_total' );
-		$this->assertSame( $selection, $clauses[0] );
-		$this->assertSame( 1, substr_count( implode( ' ', $clauses ), ' AS reporting_missing_orders' ) );
-	}
-
-	public function test_order_stats_replaces_core_completeness_indicator_once() {
-		global $wpdb;
-		$this->mock_multi_currency->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-		$table          = $wpdb->prefix . 'wc_order_stats';
-		$core_currency  = $table . '.reporting_currency = ' . $wpdb->prepare( '%s', get_woocommerce_currency() );
-		$core_condition = "$core_currency AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
-		$core_indicator = "COUNT(DISTINCT CASE WHEN $core_condition THEN NULL ELSE CASE WHEN $table.parent_id > 0 THEN $table.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-		$metrics        = 'COUNT(DISTINCT CASE WHEN parent_id = 0 THEN order_id ELSE NULL END) AS orders_count, SUM(net_total) AS net_revenue';
-		$clauses        = $this->analytics->filter_select_clauses( [ $metrics . ', ' . $core_indicator ], 'orders_stats_total' );
-		$sql            = implode( ' ', $clauses );
-		$this->assertSame( 1, substr_count( $sql, ' AS reporting_missing_orders' ) );
-		$this->assertStringContainsString( $metrics, $clauses[0] );
-		// Execute the combined core selection; provider metadata joins are independent.
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Executes generated SQL against fixed test rows and an internal table alias; no external input.
-		$row = $wpdb->get_row( "SELECT {$clauses[0]} FROM (SELECT 1 AS order_id, 0 AS parent_id, 41.9 AS net_total, 'USD' AS reporting_currency, 1 AS reporting_exchange_rate, 'native' AS reporting_basis UNION ALL SELECT 2, 0, 36, 'GBP', 1, 'native') AS $table", ARRAY_A );
-		$this->assertSame( '', $wpdb->last_error );
-		$this->assertSame( '2', $row['orders_count'] );
-		$this->assertEquals( 77.9, $row['net_revenue'] );
-		$this->assertSame( '1', $row['reporting_missing_orders'] );
-	}
-
 	/**
 	 * @dataProvider select_clause_provider
 	 */
 	public function test_filter_select_clauses( $context, $clauses, $expected ) {
-		global $wpdb;
-
-		$this->mock_multi_currency->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-		$this->analytics->init();
-
-		if ( method_exists( OrderStatsDataStore::class, 'has_reporting_currency_columns' ) && OrderStatsDataStore::has_reporting_currency_columns() ) {
-			$table     = $wpdb->prefix . 'wc_order_stats';
-			$condition = "`$table`.reporting_currency = 'USD' AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
-			foreach ( $expected as &$clause ) {
-				if ( 0 === strpos( $clause, 'CASE WHEN wcpay_multicurrency_default_currency_meta' ) ) {
-					$clause = "CASE WHEN $condition THEN CASE WHEN $table.reporting_basis = 'native' THEN product_net_revenue ELSE ROUND(product_net_revenue * $table.reporting_exchange_rate, 2) END ELSE NULL END, CASE WHEN $condition THEN CASE WHEN $table.reporting_basis = 'native' THEN product_gross_revenue ELSE ROUND(product_gross_revenue * $table.reporting_exchange_rate, 2) END ELSE NULL END";
-				}
-			}
-			unset( $clause );
-			if ( 'unknown_stats_interval' === $context ) {
-				$expected[] = ", COUNT(DISTINCT CASE WHEN $condition THEN NULL ELSE CASE WHEN $table.parent_id > 0 THEN $table.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-			}
-		}
-
 		$this->assertEquals( $expected, $this->analytics->filter_select_clauses( $clauses, $context ) );
 	}
 
@@ -685,18 +576,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 * @dataProvider select_orders_clause_provider
 	 */
 	public function test_filter_select_orders_clauses( $clauses, $expected ) {
-		global $wpdb;
-		$store = \Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore::class;
-		if ( method_exists( $store, 'has_reporting_currency_columns' ) && $store::has_reporting_currency_columns() ) {
-			foreach ( $expected as &$clause ) {
-				$clause = preg_replace(
-					'/CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta\\.meta_value IS NOT NULL THEN .*? END/',
-					"CASE WHEN {$wpdb->prefix}wc_order_stats.source_currency <> '' AND {$wpdb->prefix}wc_order_stats.source_net_total IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.source_net_total ELSE $0 END",
-					$clause
-				);
-			}
-			unset( $clause );
-		}
 		$this->assertEquals( $expected, $this->analytics->filter_select_orders_clauses( $clauses ) );
 	}
 

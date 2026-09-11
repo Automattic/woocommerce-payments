@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Validate saved exchange rates before converting Analytics totals and preserve native amounts in currency-filtered reports when the reporting basis is available.
+Validate saved exchange rates before converting Analytics totals.

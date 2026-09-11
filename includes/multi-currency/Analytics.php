@@ -7,7 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore as OrderStatsDataStore;
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use Automattic\WooCommerce\Utilities\OrderUtil;
@@ -97,10 +96,6 @@ class Analytics {
 		$this->set_sql_replacements();
 
 		// Add the filters that are applied in each analytics query.
-		add_filter( 'woocommerce_analytics_products_segment_columns', [ $this, 'filter_product_segment_columns' ], self::PRIORITY_LATE, 2 );
-		add_filter( 'woocommerce_analytics_taxes_segment_columns', [ $this, 'filter_tax_segment_columns' ], self::PRIORITY_LATE, 2 );
-		add_filter( 'woocommerce_analytics_coupons_segment_columns', [ $this, 'filter_coupon_segment_columns' ], self::PRIORITY_LATE, 2 );
-		add_filter( 'woocommerce_analytics_coupons_product_segment_columns', [ $this, 'filter_coupon_product_segment_columns' ], self::PRIORITY_LATE, 2 );
 		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_LATE, 2 );
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ], self::PRIORITY_LATE, 2 );
 
@@ -237,21 +232,8 @@ class Analytics {
 		if ( ! is_finite( $converted['total_sales'] ) ) {
 			return $args;
 		}
-		if ( array_key_exists( 'source_net_total', $args ) ) {
-			$converted['source_net_total'] = (float) $args['net_total'];
-			$converted['source_currency']  = $order->get_currency();
-		}
-		if ( array_key_exists( 'reporting_exchange_rate', $args ) ) {
-			$converted['reporting_exchange_rate'] = $exchange_rate;
-		}
-		$args = $converted;
-		// Only newer core versions expose these columns in the import contract.
-		if ( array_key_exists( 'reporting_currency', $args ) ) {
-			$args['reporting_currency'] = strtoupper( $this->multi_currency->get_default_currency()->get_code() );
-			$args['reporting_basis']    = $has_processor_rate ? 'historical_processor_rate' : 'historical_order_rate';
-		}
 
-		return $args;
+		return $converted;
 	}
 
 	/**
@@ -263,7 +245,6 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_select_clauses( array $clauses, $context ): array {
-		global $wpdb;
 		// If we are unable to identify a context, just return the clauses as is.
 		if ( is_null( $context ) ) {
 			return $clauses;
@@ -293,16 +274,6 @@ class Analytics {
 		$sql_replacements = $this->get_sql_replacements();
 
 		foreach ( $clauses as $clause ) {
-			// Core can only qualify native product amounts. This provider converts
-			// product revenue at query time using the recorded reporting rate.
-			if ( in_array( $context_page, [ 'products', 'variations', 'categories', 'taxes', 'coupons' ], true ) && false !== strpos( $clause, ' AS reporting_missing_orders' ) && method_exists( OrderStatsDataStore::class, 'has_reporting_currency_columns' ) && OrderStatsDataStore::has_reporting_currency_columns() ) {
-				$stats  = $wpdb->prefix . 'wc_order_stats';
-				$clause = str_replace(
-					"$stats.reporting_exchange_rate = 1 AND $stats.reporting_basis = 'native'",
-					"$stats.reporting_exchange_rate > 0 AND $stats.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')",
-					$clause
-				);
-			}
 			if ( ! array_key_exists( $context_page, $sql_replacements ) ) {
 				$replacements_array = $sql_replacements['generic'] ?? [];
 			} else {
@@ -331,33 +302,6 @@ class Analytics {
 			$new_clauses[] = ', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency';
 			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate';
 			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate';
-			if ( 'stats' === $context_type && ! ( in_array( $context_page, [ 'products', 'taxes', 'coupons' ], true ) && false !== strpos( implode( ' ', $clauses ), ' AS reporting_missing_orders' ) ) && method_exists( OrderStatsDataStore::class, 'has_reporting_currency_columns' ) && OrderStatsDataStore::has_reporting_currency_columns() ) {
-				$table         = $wpdb->prefix . 'wc_order_stats';
-				$condition     = $this->get_reporting_condition_sql();
-				$currency_args = $this->get_customer_currency_args_from_request();
-				if ( 'orders' === $context_page && ! empty( $currency_args['currency'] ) && $currency_args['currency'] !== $this->multi_currency->get_default_currency()->get_code() ) {
-					// Interpolate the table name rather than using %i: the identifier
-					// placeholder needs WP 6.2, and $table is code-derived. Values stay prepared.
-					$condition = $table . '.source_currency = ' . $wpdb->prepare( '%s', $currency_args['currency'] ) . " AND $table.source_net_total IS NOT NULL";
-				}
-				$indicator = "COUNT(DISTINCT CASE WHEN $condition THEN NULL ELSE CASE WHEN $table.parent_id > 0 THEN $table.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-				$replaced  = 0;
-				if ( 'orders' === $context_page ) {
-					$core_currency  = $table . '.reporting_currency = ' . $wpdb->prepare( '%s', get_woocommerce_currency() );
-					$core_condition = "$core_currency AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
-					$core_indicator = "COUNT(DISTINCT CASE WHEN $core_condition THEN NULL ELSE CASE WHEN $table.parent_id > 0 THEN $table.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-					foreach ( $new_clauses as &$new_clause ) {
-						$new_clause = str_replace( $core_indicator, $indicator, $new_clause, $count );
-						$replaced  += $count;
-					}
-					unset( $new_clause );
-				}
-				// Preserve an extension's qualification expression instead of creating an ambiguous duplicate alias.
-				$has_indicator = preg_match( '/\bAS\s+`?reporting_missing_orders`?\b/i', implode( ' ', $new_clauses ) );
-				if ( ! $replaced && ! $has_indicator ) {
-					$new_clauses[] = ', ' . $indicator;
-				}
-			}
 		}
 
 		/**
@@ -519,16 +463,15 @@ class Analytics {
 				$alias              = $is_orders_subquery ? ' as net_total,' : '';
 				$dp                 = wc_get_price_decimals();
 
-				$converted = $this->generate_case_when(
-					$stripe_exchange_rate,
-					"ROUND($net_total / $stripe_exchange_rate, $dp)",
-					"ROUND($net_total * $exchange_rate, $dp)"
+				$clauses[ $k ] = str_replace(
+					$variable,
+					$this->generate_case_when(
+						$stripe_exchange_rate,
+						"ROUND($net_total / $stripe_exchange_rate, $dp)",
+						"ROUND($net_total * $exchange_rate, $dp)"
+					) . $alias,
+					$clause
 				);
-				// Use the native import input instead of reversing rounded totals with mutable metadata.
-				if ( method_exists( OrderStatsDataStore::class, 'has_reporting_currency_columns' ) && OrderStatsDataStore::has_reporting_currency_columns() ) {
-					$converted = "CASE WHEN {$wpdb->prefix}wc_order_stats.source_currency <> '' AND {$wpdb->prefix}wc_order_stats.source_net_total IS NOT NULL THEN {$wpdb->prefix}wc_order_stats.source_net_total ELSE $converted END";
-				}
-				$clauses[ $k ] = str_replace( $variable, $converted . $alias, $clause );
 			}
 		}
 
@@ -716,10 +659,6 @@ class Analytics {
 		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
 		$product_gross_revenue = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_gross_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_gross_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_gross_revenue' );
 
-		$discount_amount       = $this->get_historical_amount_sql( 'discount_amount', $discount_amount );
-		$product_net_revenue   = $this->get_historical_amount_sql( 'product_net_revenue', $product_net_revenue );
-		$product_gross_revenue = $this->get_historical_amount_sql( 'product_gross_revenue', $product_gross_revenue );
-
 		$this->sql_replacements = [
 			'generic'    => [
 				'discount_amount'       => $discount_amount,
@@ -742,132 +681,14 @@ class Analytics {
 				'product_gross_revenue' => $product_gross_revenue,
 			],
 			'taxes'      => [
-				'SUM(total_tax)'    => 'SUM(' . $this->get_historical_amount_sql( 'total_tax', $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(total_tax * {$stripe_exchange_rate}, 2)", "ROUND(total_tax * (1 / {$exchange_rate} ), 2)" ), 'total_tax' ) ) . ')',
-				'SUM(order_tax)'    => 'SUM(' . $this->get_historical_amount_sql( 'order_tax', $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(order_tax * {$stripe_exchange_rate}, 2)", "ROUND(order_tax * (1 / {$exchange_rate} ), 2)" ), 'order_tax' ) ) . ')',
-				'SUM(shipping_tax)' => 'SUM(' . $this->get_historical_amount_sql( 'shipping_tax', $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(shipping_tax * {$stripe_exchange_rate}, 2)", "ROUND(shipping_tax * (1 / {$exchange_rate} ), 2)" ), 'shipping_tax' ) ) . ')',
+				'SUM(total_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(total_tax * {$stripe_exchange_rate}, 2)", "ROUND(total_tax * (1 / {$exchange_rate} ), 2)" ), 'total_tax' ) . ')',
+				'SUM(order_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(order_tax * {$stripe_exchange_rate}, 2)", "ROUND(order_tax * (1 / {$exchange_rate} ), 2)" ), 'order_tax' ) . ')',
+				'SUM(shipping_tax)' => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(shipping_tax * {$stripe_exchange_rate}, 2)", "ROUND(shipping_tax * (1 / {$exchange_rate} ), 2)" ), 'shipping_tax' ) . ')',
 			],
 			'coupons'    => [
 				'discount_amount' => $discount_amount,
 			],
 		];
-	}
-
-	/**
-	 * Convert coupon-code segments using the order import's historical rate.
-	 *
-	 * @param array  $columns Segment SELECT expressions.
-	 * @param string $table Coupon lookup table.
-	 * @return array
-	 */
-	public function filter_coupon_segment_columns( array $columns, string $table ): array {
-		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Filter documented in filter_select_clauses().
-		if ( ! isset( $columns['reporting_missing_orders'], $columns['amount'] ) || apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
-			return $columns;
-		}
-		global $wpdb;
-		$stats                               = $wpdb->prefix . 'wc_order_stats';
-		$condition                           = $this->get_reporting_condition_sql();
-		$amount                              = $this->get_historical_amount_sql( "$table.discount_amount", "$table.discount_amount" );
-		$columns['amount']                   = "SUM($amount) AS amount";
-		$columns['reporting_missing_orders'] = "COUNT(DISTINCT CASE WHEN $condition THEN NULL ELSE CASE WHEN $stats.parent_id > 0 THEN $stats.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-		return $columns;
-	}
-
-	/**
-	 * Convert product-level coupon segments using the order import's historical rate.
-	 *
-	 * @param array  $columns Segment SELECT expressions.
-	 * @param string $table Product lookup table.
-	 * @return array
-	 */
-	public function filter_coupon_product_segment_columns( array $columns, string $table ): array {
-		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Filter documented in filter_select_clauses().
-		if ( ! isset( $columns['reporting_missing_orders'], $columns['amount'] ) || apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
-			return $columns;
-		}
-		global $wpdb;
-		$stats                               = $wpdb->prefix . 'wc_order_stats';
-		$condition                           = $this->get_reporting_condition_sql();
-		$amount                              = $this->get_historical_amount_sql( "$table.coupon_amount", "$table.coupon_amount" );
-		$columns['amount']                   = "SUM($amount) AS amount";
-		$columns['reporting_missing_orders'] = "COUNT(DISTINCT CASE WHEN $condition THEN NULL ELSE CASE WHEN $stats.parent_id > 0 THEN $stats.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-		return $columns;
-	}
-
-	/**
-	 * Convert product segments using the order import's historical rate.
-	 *
-	 * @param array  $columns Segment SELECT expressions.
-	 * @param string $table Product lookup table.
-	 * @return array
-	 */
-	public function filter_product_segment_columns( array $columns, string $table ): array {
-		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Filter documented in filter_select_clauses().
-		if ( ! isset( $columns['reporting_missing_orders'], $columns['net_revenue'] ) || apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
-			return $columns;
-		}
-		global $wpdb;
-		$stats                               = $wpdb->prefix . 'wc_order_stats';
-		$condition                           = $this->get_reporting_condition_sql();
-		$amount                              = $this->get_historical_amount_sql( "$table.product_net_revenue", "$table.product_net_revenue" );
-		$columns['net_revenue']              = "SUM($amount) AS net_revenue";
-		$columns['reporting_missing_orders'] = "COUNT(DISTINCT CASE WHEN $condition THEN NULL ELSE CASE WHEN $stats.parent_id > 0 THEN $stats.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-		return $columns;
-	}
-
-	/**
-	 * Convert tax segments using the order import's historical rate.
-	 *
-	 * @param array  $columns Segment SELECT expressions.
-	 * @param string $table Tax lookup table.
-	 * @return array
-	 */
-	public function filter_tax_segment_columns( array $columns, string $table ): array {
-		// phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Filter documented in filter_select_clauses().
-		if ( ! isset( $columns['reporting_missing_orders'] ) || apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
-			return $columns;
-		}
-		global $wpdb;
-		$stats     = $wpdb->prefix . 'wc_order_stats';
-		$condition = $this->get_reporting_condition_sql();
-		foreach ( [ 'total_tax', 'order_tax', 'shipping_tax' ] as $metric ) {
-			if ( isset( $columns[ $metric ] ) ) {
-				$amount             = $this->get_historical_amount_sql( "$table.$metric", "$table.$metric" );
-				$columns[ $metric ] = "SUM($amount) AS $metric";
-			}
-		}
-		$columns['reporting_missing_orders'] = "COUNT(DISTINCT CASE WHEN $condition THEN NULL ELSE CASE WHEN $stats.parent_id > 0 THEN $stats.parent_id ELSE $table.order_id END END) AS reporting_missing_orders";
-		return $columns;
-	}
-
-	/**
-	 * Use the rate recorded by the same import as the order reporting totals.
-	 *
-	 * @param string $amount Native amount SQL expression.
-	 * @param string $legacy Expression for core versions without the contract.
-	 * @return string
-	 */
-	private function get_historical_amount_sql( string $amount, string $legacy ): string {
-		if ( ! method_exists( OrderStatsDataStore::class, 'has_reporting_currency_columns' ) || ! OrderStatsDataStore::has_reporting_currency_columns() ) {
-			return $legacy;
-		}
-		global $wpdb;
-		$table     = $wpdb->prefix . 'wc_order_stats';
-		$condition = $this->get_reporting_condition_sql();
-		$dp        = wc_get_price_decimals();
-		return "CASE WHEN $condition THEN CASE WHEN $table.reporting_basis = 'native' THEN $amount ELSE ROUND($amount * $table.reporting_exchange_rate, $dp) END ELSE NULL END";
-	}
-
-	/**
-	 * Qualification shared by converted amounts and their missing-order count.
-	 *
-	 * @return string
-	 */
-	private function get_reporting_condition_sql(): string {
-		global $wpdb;
-		$table    = $wpdb->prefix . 'wc_order_stats';
-		$currency = $this->multi_currency->get_default_currency()->get_code();
-		return $table . '.reporting_currency = ' . $wpdb->prepare( '%s', $currency ) . " AND $table.reporting_exchange_rate > 0 AND $table.reporting_basis IN ('native', 'historical_order_rate', 'historical_processor_rate')";
 	}
 
 	/**
