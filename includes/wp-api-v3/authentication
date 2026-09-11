@@ -1,0 +1,24 @@
+<h1 id='authentication'>Authentication</h1>
+<p>WooCommerce includes two ways to authenticate with the WP REST API. It is also possible to authenticate using any <a href="http://v3.wp-api.org/guide/authentication/">WP REST API authentication</a> plugin or method.</p>
+
+<p>Refer to the <a href="http://woocommerce.github.io/woocommerce-rest-api-docs/#authentication">WooCommerce REST API docs</a> for more options and possibilities.</p>
+<h2 id='generate-api-keys'>Generate API keys</h2>
+<p>Pre-generated keys can be used to authenticate use of the REST API endpoints. New keys can be generated either through the WordPress admin interface or they can be auto-generated through an endpoint.</p>
+
+<p>To create or manage keys for a specific WordPress user, go to WooCommerce &gt; Settings &gt; Advanced &gt; REST API.</p>
+
+<p><em>Note: Keys/Apps was found at WooCommerce &gt; Settings &gt; API &gt; Key/Apps prior to WooCommerce 3.4.</em></p>
+
+<p><img src="/images/woocommerce-api-keys-settings-02dfb1f9.png" alt="WooCommerce REST API keys settings" /></p>
+
+<p>Click the &quot;Add Key&quot; button. In the next screen, add a description and select the WordPress user you would like to generate the key for. Use of the REST API with the generated keys will conform to that user&#39;s WordPress roles and capabilities.</p>
+
+<p>Choose the level of access for this REST API key, which can be <em>Read</em> access, <em>Write</em> access or <em>Read/Write</em> access. Then click the &quot;Generate API Key&quot; button and WooCommerce will generate REST API keys for the selected user.</p>
+
+<p><img src="/images/woocommerce-creating-api-keys-0f78883a.png" alt="Creating a new REST API key" /></p>
+
+<p>Now that keys have been generated, you should see two new keys, a QRCode, and a Revoke API Key button. These two keys are your Consumer Key and Consumer Secret.</p>
+
+<p><img src="/images/woocommerce-api-key-generated-9004dc03.png" alt="Generated REST API key" /></p>
+
+<p>If the WordPress user associated with an API key is deleted, the API key will cease to function. API keys are not transferred to other users.</p>
