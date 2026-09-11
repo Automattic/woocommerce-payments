@@ -1,6 +1,6 @@
 {
 	"name": "woocommerce-payments",
-	"version": "11.0.1",
+	"version": "11.1.0",
 	"main": "webpack.config.js",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -228,6 +228,7 @@
 		"ts-loader": "9.5.7",
 		"typescript": "5.9.3",
 		"util": "0.12.5",
+		"uuid": "8.3.2",
 		"webpack": "5.106.2",
 		"webpack-cli": "7.0.2",
 		"webpack-dev-server": "5.2.3",

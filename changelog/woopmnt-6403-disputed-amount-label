@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixed the payment details summary labelling a disputed amount as refunded: the withdrawn balance line now reads "Deducted" whenever a dispute moved the money, including when the dispute fee was zero or reversed.
