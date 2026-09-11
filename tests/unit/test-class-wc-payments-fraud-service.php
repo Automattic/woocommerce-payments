@@ -84,6 +84,13 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 		$this->fraud_service->add_sift_js_tracker_in_admin();
 	}
 
+	public function test_admin_tracker_skips_admin_requests_before_screen_setup() {
+		$this->mock_in_admin();
+
+		$this->expectOutputString( '' );
+		$this->fraud_service->add_sift_js_tracker_in_admin();
+	}
+
 	public function test_admin_tracker_renders_on_a_woocommerce_admin_screen() {
 		set_current_screen( 'woocommerce_page_wc-admin' );
 		$original_get = $_GET;
