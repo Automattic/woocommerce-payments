@@ -23,12 +23,12 @@
     "require": {
         "php": ">=7.3",
         "ext-json": "*",
-        "automattic/jetpack-connection": "6.19.12",
-        "automattic/jetpack-config": "3.1.3",
-        "automattic/jetpack-autoloader": "5.0.16",
-        "automattic/jetpack-sync": "4.24.1",
+        "automattic/jetpack-connection": "9.1.2",
+        "automattic/jetpack-config": "4.0.0",
+        "automattic/jetpack-autoloader": "6.0.0",
+        "automattic/jetpack-sync": "5.1.0",
         "woocommerce/subscriptions-core": "6.7.1",
-        "automattic/jetpack-constants": "3.0.12"
+        "automattic/jetpack-constants": "4.0.0"
     },
     "require-dev": {
         "composer/installers": "1.10.0",

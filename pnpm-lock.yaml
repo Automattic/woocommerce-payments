@@ -427,6 +427,9 @@ importers:
       util:
         specifier: 0.12.5
         version: 0.12.5
+      uuid:
+        specifier: 8.3.2
+        version: 8.3.2
       webpack:
         specifier: 5.106.2
         version: 5.106.2(esbuild@0.25.12)(postcss@8.3.5)(webpack-cli@7.0.2)
