@@ -197,6 +197,14 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		$.fn.ready = ( callback ) => callback( $ );
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
+		$.fn.block = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 1 );
+			return this;
+		} );
+		$.fn.unblock = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 0 );
+			return this;
+		} );
 
 		global.wcpayConfig = {
 			order_id: 999,
@@ -334,5 +342,30 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).toBeVisible();
+	} );
+
+	it( 'should ignore a stray `update_checkout`, which core never answers with `updated_checkout` here', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Core itself never fires `update_checkout` on order-pay, but a plugin
+		// might. There is no `form.checkout`, so core would never answer with
+		// `updated_checkout`, and a guard raised here would never come down.
+		$( document.body ).trigger( 'update_checkout' );
+
+		const clickEventResolveMock = jest.fn();
+		const clickEventRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: clickEventRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( clickEventRejectMock ).not.toHaveBeenCalled();
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( { shippingAddressRequired: false } )
+		);
+		expect( $.fn.block ).not.toHaveBeenCalled();
 	} );
 } );
