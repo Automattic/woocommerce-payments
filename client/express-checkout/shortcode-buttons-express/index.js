@@ -746,6 +746,10 @@ jQuery( ( $ ) => {
 							return;
 						}
 
+						// Nothing trustworthy is left, so hide the button and
+						// reject clicks until a later refetch succeeds, rather
+						// than keep the pre-refetch snapshot.
+						cachedCartData = null;
 						expressCheckoutButtonUi.hideContainer();
 						// A lingering block would make `blockButton()` a no-op
 						// for the rest of the page life.

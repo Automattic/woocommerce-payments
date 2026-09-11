@@ -828,4 +828,46 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			} )
 		);
 	} );
+	it( 'should reject the click after a failed refetch leaves no cart data', async () => {
+		let refetchCount = 0;
+		apiFetch.mockImplementation( () => {
+			refetchCount++;
+
+			// The first refetch publishes cart data and clears the localized
+			// product data, so the second one fails with nothing to fall back on.
+			return refetchCount === 1
+				? Promise.resolve( {
+						json: () => Promise.resolve( cartWithItemsMock ),
+						headers: new Map(),
+				  } )
+				: Promise.reject( new Error( 'Store API is unavailable' ) );
+		} );
+
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'wcpay-express-checkout-element' )
+			).not.toBeVisible()
+		);
+
+		const afterFailureResolveMock = jest.fn();
+		const afterFailureRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: afterFailureResolveMock,
+			reject: afterFailureRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( afterFailureRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( afterFailureResolveMock ).not.toHaveBeenCalled();
+	} );
 } );
