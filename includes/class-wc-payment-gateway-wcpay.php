@@ -1874,6 +1874,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$request->setup_future_usage();
 					}
 				}
+				// Outside the branch above: a confirmation token can disagree with this payment
+				// in either direction, and the direction that does not save is the silent one.
+				$this->log_setup_future_usage_mismatch( $payment_information, $save_payment_method_to_store );
 				if ( $scheduled_subscription_payment ) {
 					$mandate = $this->get_mandate_param_for_renewal_order( $order );
 					if ( $mandate ) {
@@ -5482,6 +5485,88 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
 		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
+	}
+
+	/**
+	 * Logs when the `setup_future_usage` a ConfirmationToken was minted with disagrees with
+	 * what this payment is doing. Both directions are worth knowing about, for opposite reasons.
+	 *
+	 * Stripe fixes that value on the token before the wallet sheet opens, and the client posts
+	 * back what Stripe recorded on it. Comparing that against what this payment does means a
+	 * client minting a token that differs from what it was told is seen here too, rather than
+	 * only when Stripe rejects the confirmation.
+	 *
+	 * **Token lacks it, this payment saves the method.** Stripe rejects the confirmation, so
+	 * the purchase fails every time. Something decided to save the payment method that the
+	 * predicate could not see while the cart was open — typically a subscriptions plugin other
+	 * than WooCommerce Subscriptions, or an integration setting
+	 * `wc-woocommerce_payments-new-payment-method` as the order is processed.
+	 *
+	 * **Token carries it, this payment does not save.** Stripe applies the token's value even
+	 * though the intent omits it, so the card is attached to the customer while WooPayments
+	 * records no token against it. That one is silent, which is precisely why it is logged.
+	 *
+	 * Diagnostic only in both directions. The request is deliberately left alone: dropping
+	 * `setup_future_usage` would let a rejected payment through, but Stripe attaches the payment
+	 * method to the customer precisely because that parameter is present, so the token saved
+	 * afterwards would point at an unattached payment method and the first renewal would fail
+	 * instead — a quiet failure in place of a loud one.
+	 *
+	 * @param Payment_Information $payment_information         The payment information for this order.
+	 * @param bool                $save_payment_method_to_store Whether this payment saves the payment method.
+	 */
+	private function log_setup_future_usage_mismatch( Payment_Information $payment_information, bool $save_payment_method_to_store ) {
+		if ( ! $payment_information->is_using_confirmation_token() ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$posted_setup_future_usage = $_POST['wcpay-express-setup-future-usage'] ?? null;
+
+		// Missing or malformed means the client never told us — a cached asset from before this
+		// shipped, or a mint path that does not post it. Re-deriving the value is exactly what
+		// this replaced: the shopper's cart is still loaded on the order-pay Store API route, so
+		// a cart-based guess reports a mismatch on payments that were entirely correct. Rather
+		// than guess, say nothing.
+		if ( ! is_string( $posted_setup_future_usage ) ) {
+			return;
+		}
+
+		$posted_setup_future_usage = sanitize_text_field( wp_unslash( $posted_setup_future_usage ) );
+
+		$order_id = $payment_information->get_order()->get_id();
+
+		// Stripe's own vocabulary for the field: either value means the token asks for the payment
+		// method to be kept, and an empty string means it carries none.
+		$token_declares_off_session = in_array( $posted_setup_future_usage, [ 'off_session', 'on_session' ], true );
+
+		$intent_requests_off_session = $save_payment_method_to_store && $this->payment_method->is_reusable();
+
+		if ( $token_declares_off_session === $intent_requests_off_session ) {
+			return;
+		}
+
+		if ( $intent_requests_off_session ) {
+			Logger::error(
+				sprintf(
+					'Order %s saves the payment method, but its express checkout confirmation token carries no setup_future_usage, '
+					. 'so Stripe rejects this payment. Something outside WooCommerce Subscriptions is requesting the save. '
+					. 'Declare it with the wcpay_express_checkout_setup_future_usage filter so the token is minted with off_session.',
+					$order_id
+				)
+			);
+			return;
+		}
+
+		Logger::error(
+			sprintf(
+				'Order %s minted its express checkout confirmation token with setup_future_usage, but this payment does not save the '
+				. 'payment method. Stripe applies the token\'s setup_future_usage even though the intent omits it, so the card is attached '
+				. 'to the customer with no WooPayments token recorded against it. Check whatever filters '
+				. 'wcpay_express_checkout_setup_future_usage — declare off_session only when the payment method will genuinely be saved.',
+				$order_id
+			)
+		);
 	}
 
 	/**

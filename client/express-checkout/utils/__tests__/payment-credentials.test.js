@@ -30,7 +30,32 @@ describe( 'createPaymentCredential', () => {
 			expect( stripeMock.createConfirmationToken ).toHaveBeenCalledWith( {
 				elements: elementsMock,
 			} );
-			expect( result ).toBe( 'ctoken_123' );
+			expect( result ).toEqual( {
+				id: 'ctoken_123',
+				setupFutureUsage: null,
+			} );
+		} );
+
+		// Read back off the token rather than echoed from the Elements options, so the
+		// server learns what Stripe actually recorded.
+		test( "reports the token's own setup_future_usage", async () => {
+			stripeMock.createConfirmationToken.mockResolvedValue( {
+				confirmationToken: {
+					id: 'ctoken_123',
+					setup_future_usage: 'off_session',
+				},
+			} );
+
+			const result = await createPaymentCredential(
+				stripeMock,
+				elementsMock,
+				true
+			);
+
+			expect( result ).toEqual( {
+				id: 'ctoken_123',
+				setupFutureUsage: 'off_session',
+			} );
 		} );
 
 		test( 'throws on Stripe error', async () => {
@@ -60,7 +85,11 @@ describe( 'createPaymentCredential', () => {
 			expect( stripeMock.createPaymentMethod ).toHaveBeenCalledWith( {
 				elements: elementsMock,
 			} );
-			expect( result ).toBe( 'pm_456' );
+			// A PaymentMethod pins no setup_future_usage, so there is nothing to report.
+			expect( result ).toEqual( {
+				id: 'pm_456',
+				setupFutureUsage: null,
+			} );
 		} );
 
 		test( 'throws on Stripe error', async () => {
