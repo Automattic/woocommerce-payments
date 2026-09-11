@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
@@ -725,5 +725,107 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		} );
 		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
 		expect( postRefreshResolveMock ).toHaveBeenCalled();
+	} );
+	it( 'should not let a superseded refetch publish its cart data', async () => {
+		const supersededVariation = {
+			...cartWithItemsMock,
+			totals: { ...cartWithItemsMock.totals, total_price: '4000' },
+			items: [
+				{
+					...cartWithItemsMock.items[ 0 ],
+					name: 'Superseded variation',
+				},
+			],
+		};
+		const selectedVariation = {
+			...cartWithItemsMock,
+			totals: { ...cartWithItemsMock.totals, total_price: '5000' },
+			items: [
+				{ ...cartWithItemsMock.items[ 0 ], name: 'Selected variation' },
+			],
+		};
+
+		// `elements()` hands back a fresh object per generation, so hold a single
+		// `update` spy that outlives them all.
+		const updateMock = jest.fn();
+		global.Stripe = jest.fn( () => {
+			stripeInstance = {
+				elements: jest.fn( () => ( {
+					create: jest.fn( () => stripeElementMock ),
+					update: updateMock,
+				} ) ),
+			};
+
+			return stripeInstance;
+		} );
+
+		let releaseSupersededRefetch;
+		let supersededResponseConsumed = false;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseSupersededRefetch = () =>
+						resolve( {
+							json: () => {
+								supersededResponseConsumed = true;
+								return Promise.resolve( supersededVariation );
+							},
+							headers: new Map(),
+						} );
+				} )
+		);
+
+		let doAction;
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+			( { doAction } = await import( '@wordpress/hooks' ) );
+		} );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Two variation changes in a row: `woocommerce_variation_has_changed` is
+		// not debounced, so both refetches are in flight at the same time.
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 1 ) );
+
+		// The second change answers first, carrying the variation the shopper is
+		// actually looking at.
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( selectedVariation ),
+				headers: new Map(),
+			} )
+		);
+		doAction( 'wcpay.express-checkout.update-button-data' );
+		await waitFor( () =>
+			expect( updateMock ).toHaveBeenCalledWith(
+				expect.objectContaining( { amount: 5000 } )
+			)
+		);
+
+		// Release the first refetch and synchronize on it resuming, so the
+		// assertions below run after it had its chance to publish.
+		releaseSupersededRefetch();
+		await waitFor( () =>
+			expect( supersededResponseConsumed ).toBe( true )
+		);
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		expect( updateMock ).toHaveBeenCalledTimes( 1 );
+
+		const clickEventResolveMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: jest.fn(),
+			expressPaymentType: 'google_pay',
+		} );
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				lineItems: expect.arrayContaining( [
+					expect.objectContaining( { name: 'Selected variation' } ),
+				] ),
+			} )
+		);
 	} );
 } );

@@ -659,6 +659,13 @@ jQuery( ( $ ) => {
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
 				async () => {
+					// Numbered off the same counter as the forced refreshes, so
+					// two variation or quantity changes in a row can't let the
+					// slower one publish over the newer one.
+					const refetchId = ++latestForcedRefreshId;
+					const isSupersededRefetch = () =>
+						refetchId !== latestForcedRefreshId;
+
 					// A blocked product (no variation selected, out of stock…) would
 					// fail the cart fetch, so skip the refresh.
 					if (
@@ -678,7 +685,13 @@ jQuery( ( $ ) => {
 
 						const prevTotal = getTotalAmount();
 
-						cachedCartData = await fetchNewCartData();
+						const freshCartData = await fetchNewCartData();
+
+						if ( isSupersededRefetch() ) {
+							return;
+						}
+
+						cachedCartData = freshCartData;
 
 						// We need to re init the payment request button to ensure the shipping options & taxes are re-fetched.
 						// The cachedCartData from the Store API will be used from now on,
@@ -729,6 +742,10 @@ jQuery( ( $ ) => {
 							expressCheckoutButtonUi.getButtonSeparator().show();
 						}
 					} catch ( e ) {
+						if ( isSupersededRefetch() ) {
+							return;
+						}
+
 						expressCheckoutButtonUi.hideContainer();
 						// A lingering block would make `blockButton()` a no-op
 						// for the rest of the page life.
