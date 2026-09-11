@@ -1911,6 +1911,294 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that only orders with an actionable early fraud warning are returned.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_filters_resolved_and_unaffected() {
+		// Arrange: One actionable, one resolved, and one unaffected order ($this->order).
+		$actionable_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Fetch the orders with an actionable warning.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: Only the actionable order is returned.
+		$this->assertSame(
+			[
+				[
+					'order_id'  => $actionable_order->get_id(),
+					'charge_id' => 'ch_actionable',
+					'created'   => 1719800000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
+	 * Tests that the warning query inspects at most $limit orders, newest first.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_respects_limit() {
+		// Arrange: Two actionable orders created two weeks apart.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch with a limit of one.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: Only the newest order is inspected.
+		$this->assertSame(
+			[
+				[
+					'order_id'  => $newer_order->get_id(),
+					'charge_id' => 'ch_newer',
+					'created'   => 1719900000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
+	 * The query window is bounded, and the warning meta is never removed once written,
+	 * so resolved warnings would otherwise hold window slots forever and hide older
+	 * still-actionable ones. A limit of one makes that crowding-out exact.
+	 */
+	public function test_resolved_warnings_do_not_consume_the_query_window() {
+		// Arrange: An older actionable warning, and a newer resolved one.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Inspect a single order.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: The newer resolved order did not squeeze out the actionable one.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
+	 * Resolving a warning must free its slot in the bounded window, not just stop it
+	 * being reported. A warning that was actionable and later resolved is the common
+	 * case, so the index has to be removed as well as written.
+	 */
+	public function test_resolving_a_warning_frees_its_slot_in_the_query_window() {
+		// Arrange: An older actionable warning, and a newer one that is later resolved.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$later_resolved_order = WC_Helper_Order::create_order();
+		$later_resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$later_resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Resolve the newer warning, then inspect a single order.
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: The slot went back to the still-actionable order.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
+	 * Tests that warnings stored against the other mode's orders are ignored.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_test_mode_orders_when_live() {
+		// Arrange: A live order (no mode meta, as orders predating it are live) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is live.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The test-mode order is left out.
+		$this->assertSame( [ 'ch_live' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that test mode surfaces the test order rather than the live one.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_live_orders_when_in_test_mode() {
+		// Arrange: A live order (no mode meta) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is in test mode.
+		$result = $this->with_payments_mode(
+			true,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: Only the test-mode order surfaces.
+		$this->assertSame( [ 'ch_test' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that refunding the order resolves the warning without waiting for the webhook.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_fully_refunded_orders() {
+		// Arrange: An actionable warning on an order the merchant has since refunded in full.
+		$refunded_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $refunded_order, 'ch_refunded' );
+		$this->order_service->mark_payment_early_fraud_warning( $refunded_order, 'ch_refunded', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $refunded_order->get_total(),
+				'order_id' => $refunded_order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The refund resolves the warning.
+		$this->assertSame( [], $result );
+	}
+
+	/**
+	 * Tests that a partial refund leaves the warning actionable.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_keeps_partially_refunded_orders() {
+		// Arrange: An actionable warning on an order refunded for less than its total.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $order, 'ch_partial' );
+		$this->order_service->mark_payment_early_fraud_warning( $order, 'ch_partial', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $order->get_total() / 2,
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: A partial refund does not clear the dispute risk.
+		$this->assertSame( [ 'ch_partial' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that results are ordered by when the warning arrived, not when the order was placed.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_sorts_by_warning_date_descending() {
+		// Arrange: The older order carries the newer warning, so the two orderings disagree.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->set_charge_id_for_order( $older_order, 'ch_older_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older_order', 'issfr_1', true, 'made_with_stolen_card', 1719900000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer_order', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The newest warning leads, even though its order is the older one.
+		$this->assertSame( [ 'ch_older_order', 'ch_newer_order' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Runs a callback with WooPayments forced into the given mode, restoring it afterwards.
+	 *
+	 * @param bool     $test_mode Whether to run the callback in test mode.
+	 * @param callable $callback  The callback to run.
+	 *
+	 * @return mixed The callback's return value.
+	 */
+	private function with_payments_mode( bool $test_mode, callable $callback ) {
+		$was_test_mode = WC_Payments::mode()->is_test();
+
+		$test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+
+		try {
+			return $callback();
+		} finally {
+			$was_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+		}
+	}
+
+	/**
 	 * Tests if the order was completed successfully.
 	 */
 	public function test_mark_terminal_payment_completed() {
@@ -2182,6 +2470,108 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_early_fraud_warning_for_order_returns_null_when_not_set() {
 		$this->assertNull( $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() ) );
+	}
+
+	/**
+	 * Refunding a flagged order in full must drop the cached warning list, so the
+	 * refunded-order guard in get_actionable_early_fraud_warning_orders() actually
+	 * runs instead of being skipped by a warm cache.
+	 */
+	public function test_full_refund_of_flagged_order_clears_early_fraud_warning_caches() {
+		// Arrange: A flagged order, and a warm cache holding it.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund the order in full.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => $this->order->get_total(),
+			]
+		);
+
+		// Assert: Both cached lists are gone.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * A store can take many refunds that have nothing to do with a fraud warning.
+	 * Those must not drop the cache, or every refund forces the bounded meta query
+	 * to run again on the next Overview render.
+	 */
+	public function test_refund_of_unflagged_order_leaves_early_fraud_warning_caches() {
+		// Arrange: A warm cache, and an order carrying no early fraud warning.
+		$this->order_service->init_hooks();
+		$this->warm_early_fraud_warning_caches();
+		$unflagged_order = WC_Helper_Order::create_order();
+
+		// Act: Refund the unflagged order in full.
+		wc_create_refund(
+			[
+				'order_id' => $unflagged_order->get_id(),
+				'amount'   => $unflagged_order->get_total(),
+			]
+		);
+
+		// Assert: The cached lists survive.
+		$this->assertNotFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertNotFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * The callback deliberately does not decide what counts as resolved: it drops the
+	 * cache and lets get_actionable_early_fraud_warning_orders() apply the rule. Moving
+	 * a "fully refunded" check into the callback would fail this test.
+	 */
+	public function test_partial_refund_of_flagged_order_clears_cache_but_keeps_it_actionable() {
+		// Arrange: A flagged order and a warm cache.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund a fraction of the order.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => 1,
+			]
+		);
+
+		// Assert: The cache was dropped, and the rebuilt list still carries the order.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$actionable = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+		$this->assertSame( [ $this->order->get_id() ], array_column( $actionable, 'order_id' ) );
+	}
+
+	/**
+	 * Seeds both early fraud warning cache keys with a non-empty list.
+	 */
+	private function warm_early_fraud_warning_caches() {
+		foreach ( [ 'wcpay_early_fraud_warning_orders_cache', 'wcpay_test_early_fraud_warning_orders_cache' ] as $key ) {
+			update_option(
+				$key,
+				[
+					'data'    => [
+						[
+							'order_id'  => $this->order->get_id(),
+							'charge_id' => 'ch_flagged',
+							'created'   => 1719800000,
+						],
+					],
+					'fetched' => time(),
+					'errored' => false,
+				]
+			);
+		}
 	}
 
 	public function test_set_payment_transaction_id_for_order() {

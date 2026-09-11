@@ -249,6 +249,18 @@ class WC_Payments_Order_Service {
 	const WCPAY_EARLY_FRAUD_WARNING_META_KEY = '_wcpay_early_fraud_warning';
 
 	/**
+	 * Meta key mirroring whether the stored early fraud warning is still actionable.
+	 *
+	 * Present only while actionable, so the bounded warning query can filter on it: the
+	 * warning itself is a serialized array MySQL cannot read, and its row is never removed
+	 * (the order screen keeps showing resolved warnings), so without this key resolved rows
+	 * would hold window slots forever and hide older still-actionable ones.
+	 *
+	 * @const string
+	 */
+	const WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY = '_wcpay_early_fraud_warning_actionable';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -272,6 +284,7 @@ class WC_Payments_Order_Service {
 	public function init_hooks(): void {
 		add_action( 'woocommerce_order_status_processing', [ $this, 'maybe_record_first_live_sale' ] );
 		add_action( 'woocommerce_order_status_completed', [ $this, 'maybe_record_first_live_sale' ] );
+		add_action( 'woocommerce_order_refunded', [ $this, 'maybe_clear_early_fraud_warning_caches' ] );
 
 		// Flag test-mode orders in the emails merchants and shoppers rely on, so an accidental
 		// test-mode sale is noticed before fulfilment. The mode is read from the order meta at
@@ -1290,6 +1303,13 @@ class WC_Payments_Order_Service {
 	public function set_early_fraud_warning_for_order( $order, array $early_fraud_warning ) {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, $early_fraud_warning );
+
+		if ( ! empty( $early_fraud_warning['efw_actionable'] ) ) {
+			$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY, '1' );
+		} else {
+			$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY );
+		}
+
 		$order->save_meta_data();
 	}
 
@@ -1307,6 +1327,92 @@ class WC_Payments_Order_Service {
 		$early_fraud_warning = $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, true );
 
 		return is_array( $early_fraud_warning ) ? $early_fraud_warning : null;
+	}
+
+	/**
+	 * Returns orders whose latest early fraud warning is still actionable.
+	 *
+	 * Inspects the $limit most recent orders that ever received a warning, so
+	 * the result is a lower bound on very large stores. Callers should cache
+	 * the result — the meta query is too slow to run on every admin request.
+	 *
+	 * Results are ordered by when the warning arrived, which the query window
+	 * cannot be: the warning date sits inside a serialized meta value, while a
+	 * warning can land weeks after the order was placed.
+	 *
+	 * @param int $limit Maximum number of warning-carrying orders to inspect.
+	 *
+	 * @return array[] Arrays with `order_id`, `charge_id` and `created` keys, newest warning first.
+	 */
+	public function get_actionable_early_fraud_warning_orders( int $limit = 100 ): array {
+		$orders = wc_get_orders(
+			[
+				'limit'    => $limit,
+				'orderby'  => 'date',
+				'order'    => 'DESC',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key' => self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
+			]
+		);
+
+		$is_test_mode      = WC_Payments::mode()->is_test();
+		$actionable_orders = [];
+		foreach ( $orders as $order ) {
+			// A warning stored in the other mode can never clear: the webhook that would
+			// resolve it is discarded as a mode mismatch. Orders predating the mode meta
+			// read as live, matching has_live_sale().
+			if ( $is_test_mode !== $this->is_order_in_test_mode( $order ) ) {
+				continue;
+			}
+
+			$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
+			if ( empty( $early_fraud_warning['efw_actionable'] ) ) {
+				continue;
+			}
+
+			// Refunding is the action the warning asks for, so treat a fully refunded order
+			// as resolved rather than waiting on a webhook that may never arrive.
+			$total = (float) $order->get_total();
+			if ( $total > 0 && (float) $order->get_total_refunded() >= $total ) {
+				continue;
+			}
+
+			$actionable_orders[] = [
+				'order_id'  => $order->get_id(),
+				'charge_id' => $this->get_charge_id_for_order( $order ),
+				'created'   => (int) ( $early_fraud_warning['created'] ?? 0 ),
+			];
+		}
+
+		usort(
+			$actionable_orders,
+			function ( array $a, array $b ): int {
+				return $b['created'] <=> $a['created'];
+			}
+		);
+
+		return $actionable_orders;
+	}
+
+	/**
+	 * Drops the cached early fraud warning lists when a flagged order is refunded.
+	 *
+	 * Only a warning webhook invalidates them otherwise, which leaves the refunded-order
+	 * guard in get_actionable_early_fraud_warning_orders() unreachable on a cache hit —
+	 * exactly when no resolving webhook is coming. What counts as resolved stays in that
+	 * query, so this only decides that the list may be stale.
+	 *
+	 * @param int $order_id The refunded order's ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_clear_early_fraud_warning_caches( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY ) ) {
+			return;
+		}
+
+		WC_Payments::get_database_cache()->delete_early_fraud_warning_caches();
 	}
 
 	/**
