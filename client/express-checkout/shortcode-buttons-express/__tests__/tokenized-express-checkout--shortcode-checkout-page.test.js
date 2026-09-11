@@ -293,7 +293,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect( clickEventResolveMock ).not.toHaveBeenCalled();
 		// The overlay is visual only; screen-reader users get told why the tap did nothing.
 		expect( speak ).toHaveBeenCalledWith(
-			'Your cart is being updated. Please try again in a moment.',
+			'Updating payment details. Please try again in a moment.',
 			'assertive'
 		);
 

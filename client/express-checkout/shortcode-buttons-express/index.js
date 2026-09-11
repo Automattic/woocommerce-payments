@@ -67,7 +67,7 @@ const announceRefreshInProgress = debounce(
 	() =>
 		speak(
 			__(
-				'Your cart is being updated. Please try again in a moment.',
+				'Updating payment details. Please try again in a moment.',
 				'woocommerce-payments'
 			),
 			'assertive'
