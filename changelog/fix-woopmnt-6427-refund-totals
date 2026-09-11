@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Exclude failed and canceled refunds from transaction totals and refund status calculations.

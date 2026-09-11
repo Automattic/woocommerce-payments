@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Update the Jetpack packages: connection to 9.1.2, sync to 5.1.0, config to 4.0.0, autoloader to 6.0.0, constants to 4.0.0.
