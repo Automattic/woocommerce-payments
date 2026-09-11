@@ -237,7 +237,7 @@ export const placeOrderWCB = async (
 	} );
 
 	await placeOrderButton.focus();
-	await waitForUiRefresh( page );
+	await expect( placeOrderButton ).toBeEnabled();
 
 	await placeOrderButton.click();
 

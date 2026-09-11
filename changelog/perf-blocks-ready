@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Wait for Blocks checkout readiness instead of classic checkout AJAX in E2E tests.
