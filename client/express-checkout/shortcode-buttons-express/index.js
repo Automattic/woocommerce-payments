@@ -504,9 +504,10 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: async ( { forceRefresh = false, refreshId = null } = {} ) => {
+		init: async ( { refreshId = null } = {} ) => {
+			const isForcedRefresh = refreshId !== null;
 			const isSuperseded = () =>
-				refreshId !== null && refreshId !== latestForcedRefreshId;
+				isForcedRefresh && refreshId !== latestForcedRefreshId;
 
 			removeAction(
 				'wcpay.express-checkout.update-button-data',
@@ -546,7 +547,7 @@ jQuery( ( $ ) => {
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
 
 			if (
-				( forceRefresh || ! cachedCartData ) &&
+				( isForcedRefresh || ! cachedCartData ) &&
 				( ! getExpressCheckoutData( 'product' ) ||
 					needsMethodsReevaluation )
 			) {
@@ -766,7 +767,7 @@ jQuery( ( $ ) => {
 		expressCheckoutButtonUi.blockButton();
 
 		try {
-			await wcpayECE.init( { forceRefresh: true, refreshId } );
+			await wcpayECE.init( { refreshId } );
 		} finally {
 			if ( refreshId === latestForcedRefreshId ) {
 				expressCheckoutButtonUi.unblock();
