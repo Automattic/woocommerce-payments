@@ -133,6 +133,10 @@ tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
  */
 function wcpay_install_woocommerce_roles() {
 	WC_Install::create_roles();
+
+	// Reload the role objects after adding capabilities. See WordPress Trac #28374.
+	$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	wp_roles();
 }
 
 tests_add_filter( 'setup_theme', 'wcpay_install_woocommerce_roles' );
