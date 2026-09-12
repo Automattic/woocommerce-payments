@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stopped the test mode notice on details pages from stating that live orders, payouts and disputes were created in test mode.
