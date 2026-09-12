@@ -547,6 +547,9 @@ else
 	success "Dev tools already present"
 fi
 
+git -C "$DEV_TOOLS_PATH" fetch --depth=1 origin 12fb2bfdbe804c6f6b22e4f233194dc26adb6133
+git -C "$DEV_TOOLS_PATH" checkout --detach 12fb2bfdbe804c6f6b22e4f233194dc26adb6133
+
 if [[ -d "$DEV_TOOLS_PATH" && ! -f "$DEV_TOOLS_PATH/vendor/autoload.php" ]]; then
 	info "Installing dev tools dependencies..."
 	composer install --no-dev --no-interaction --working-dir="$DEV_TOOLS_PATH"
@@ -758,7 +761,7 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	cd "$E2E_ROOT"/deps
 
 	# --fail + --retry-all-errors: retry transient HTTP errors (GH 5xx / rate-limit) instead of saving an error body as the zip.
-	LATEST_RELEASE_ASSET_ID=$(curl --retry 3 --retry-all-errors --fail -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/latest | jq -r '.assets[0].id')
+	LATEST_RELEASE_ASSET_ID=550745607
 
 	curl -LJ \
 		--retry 3 \
