@@ -1,6 +1,9 @@
 name: JS linting and tests
 
 on:
+  workflow_dispatch:
+  push:
+    branches: [ 'benchmark/tests-before-20260912' ]
   pull_request:
   merge_group:
 
@@ -11,7 +14,7 @@ concurrency:
 jobs:
   lint:
     name:    JS linting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # clone the repository
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,7 +35,7 @@ jobs:
 
   test:
     name:    JS testing
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # clone the repository
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

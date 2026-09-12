@@ -12,6 +12,7 @@ runs:
         pnpm run test:e2e-ci
         RESULTS_JSON="$E2E_RESULT_FILEPATH"
         if [[ -f "$RESULTS_JSON" ]]; then
+          cp "$RESULTS_JSON" tests/e2e/results-first-run.json
           # Count spec files with tests that truly failed (status "unexpected").
           # Exclude "flaky" tests — those failed on the first attempt but passed
           # on Playwright's built-in retry, so they don't need a full spec re-run.
@@ -83,6 +84,7 @@ runs:
       with:
           name: wp(${{ env.E2E_WP_VERSION }})-wc(${{ env.E2E_WC_VERSION }})-${{ env.E2E_GROUP }}-${{ env.E2E_BRANCH }}
           path: |
+            tests/e2e/results-first-run.json
             playwright-report/
             tests/e2e/test-results
             ${{ env.E2E_RESULT_FILEPATH }}

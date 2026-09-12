@@ -1,6 +1,8 @@
 name: E2E Tests - Pull Request
 
 on:
+  push:
+    branches: [ 'benchmark/tests-before-20260912' ]
   pull_request:
     branches:
       - develop
@@ -28,8 +30,8 @@ env:
   E2E_JP_USER_TOKEN:             ${{ secrets.E2E_JP_USER_TOKEN }}
   WC_E2E_SCREENSHOTS:            1
   # Empty creds on pull_request runs keep the Slack reporter silent. See WOOPMNT-6174.
-  E2E_SLACK_CHANNEL_ID:          ${{ github.event_name != 'pull_request' && secrets.E2E_SLACK_CHANNEL_ID || '' }}
-  E2E_SLACK_TOKEN:               ${{ github.event_name != 'pull_request' && secrets.E2E_SLACK_TOKEN || '' }}
+  E2E_SLACK_CHANNEL_ID: ''
+  E2E_SLACK_TOKEN: ''
   E2E_USE_LOCAL_SERVER:          false
   E2E_RESULT_FILEPATH:           'tests/e2e/results.json'
   WCPAY_USE_BUILD_ARTIFACT:      ${{ inputs.wcpay-use-build-artifact }}
@@ -43,7 +45,7 @@ concurrency:
 
 jobs:
   generate-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -56,7 +58,7 @@ jobs:
         id: generate_matrix
         run: |
           # Use dynamic script to get WooCommerce versions (L-1 policy)
-          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
+          SCRIPT_RESULT='{"metadata":{"l1_version":"10.9.4"}}'
 
           # Extract versions and metadata from JSON
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
@@ -83,11 +85,11 @@ jobs:
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add latest with PHP 8.3
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"11.1.0\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"11.1.0\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"11.1.0\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"11.1.0\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"11.1.0\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Convert array to JSON
           MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
@@ -95,7 +97,8 @@ jobs:
           echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
 
   wcpay-e2e-tests:
-    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
     needs: generate-matrix
     strategy:
       fail-fast:     false
@@ -104,7 +107,7 @@ jobs:
     name: WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
-      E2E_WP_VERSION: 'latest'
+      E2E_WP_VERSION: '7.1'
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_PHP_VERSION: ${{ matrix.php }}
       E2E_GROUP:  ${{ matrix.test_groups }}
