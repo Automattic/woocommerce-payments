@@ -54,11 +54,14 @@ class Analytics {
 	 *
 	 * @param MultiCurrency                  $multi_currency   Instance of MultiCurrency.
 	 * @param MultiCurrencySettingsInterface $settings_service Instance of MultiCurrencySettingsInterface.
+	 * @param bool                           $initialize Whether to register hooks immediately.
 	 */
-	public function __construct( MultiCurrency $multi_currency, MultiCurrencySettingsInterface $settings_service ) {
+	public function __construct( MultiCurrency $multi_currency, MultiCurrencySettingsInterface $settings_service, bool $initialize = true ) {
 		$this->multi_currency   = $multi_currency;
 		$this->settings_service = $settings_service;
-		$this->init();
+		if ( $initialize ) {
+			$this->init();
+		}
 	}
 
 	/**
@@ -204,20 +207,33 @@ class Analytics {
 			return $args;
 		}
 
-		$stripe_exchange_rate = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
-			? (float) $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
-			: null;
-		$order_exchange_rate  = ( 1 / (float) $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
+		$stripe_exchange_rate = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
+		$has_processor_rate   = '' !== $stripe_exchange_rate && null !== $stripe_exchange_rate;
+		$saved_rate           = $has_processor_rate ? $stripe_exchange_rate : $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
 
-		$exchange_rate = $stripe_exchange_rate ?? $order_exchange_rate;
+		// An explicitly invalid processor rate must not silently fall back to a different basis.
+		if ( ! is_numeric( $saved_rate ) || ! is_finite( (float) $saved_rate ) || (float) $saved_rate <= 0 ) {
+			return $args;
+		}
+		$exchange_rate = $has_processor_rate ? (float) $saved_rate : 1 / (float) $saved_rate;
+		if ( ! is_finite( $exchange_rate ) ) {
+			return $args;
+		}
 
-		$dp                     = wc_get_price_decimals();
-		$args['net_total']      = round( $this->convert_amount( (float) $args['net_total'], $exchange_rate ), $dp );
-		$args['shipping_total'] = round( $this->convert_amount( (float) $args['shipping_total'], $exchange_rate ), $dp );
-		$args['tax_total']      = round( $this->convert_amount( (float) $args['tax_total'], $exchange_rate ), $dp );
-		$args['total_sales']    = $args['net_total'] + $args['shipping_total'] + $args['tax_total'];
+		$dp        = wc_get_price_decimals();
+		$converted = $args;
+		foreach ( [ 'net_total', 'shipping_total', 'tax_total' ] as $key ) {
+			$converted[ $key ] = round( $this->convert_amount( (float) $args[ $key ], $exchange_rate ), $dp );
+			if ( ! is_finite( $converted[ $key ] ) ) {
+				return $args;
+			}
+		}
+		$converted['total_sales'] = $converted['net_total'] + $converted['shipping_total'] + $converted['tax_total'];
+		if ( ! is_finite( $converted['total_sales'] ) ) {
+			return $args;
+		}
 
-		return $args;
+		return $converted;
 	}
 
 	/**

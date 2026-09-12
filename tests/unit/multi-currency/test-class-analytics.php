@@ -223,6 +223,80 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Invalid saved rates must not produce a conversion or a partial update.
+	 *
+	 * @dataProvider invalid_historical_rates_provider
+	 * @param mixed $order_rate Saved order rate.
+	 * @param mixed $processor_rate Saved processor rate.
+	 */
+	public function test_invalid_historical_rates_preserve_native_amounts( $order_rate, $processor_rate ) {
+		$this->mock_multi_currency->method( 'get_default_currency' )
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
+		$order = new WC_Order();
+		$order->set_currency( 'GBP' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_rate );
+		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $processor_rate );
+		$args = [
+			'net_total'      => 36.0,
+			'shipping_total' => 0.0,
+			'tax_total'      => 0.0,
+			'total_sales'    => 36.0,
+		];
+		$this->assertSame( $args, $this->analytics->update_order_stats_data( $args, $order ) );
+	}
+
+	/**
+	 * Rates read from order metadata may contain invalid or overflowing values.
+	 *
+	 * @return array
+	 */
+	public function invalid_historical_rates_provider() {
+		return [
+			'order text'         => [ 'invalid', '' ],
+			'order negative'     => [ -1, '' ],
+			'order zero'         => [ '0', '' ],
+			'order infinite'     => [ '1e999', '' ],
+			'inverse overflow'   => [ '1e-320', '' ],
+			'processor text'     => [ 0.75, 'invalid' ],
+			'processor zero'     => [ 0.75, '0' ],
+			'processor negative' => [ 0.75, -1 ],
+			'processor infinite' => [ 0.75, '1e999' ],
+			'amount overflow'    => [ 0.75, '1e308' ],
+		];
+	}
+
+	/**
+	 * A valid processor rate does not need an inverse of the unused order rate.
+	 */
+	public function test_processor_rate_does_not_invert_unused_order_rate() {
+		$this->mock_multi_currency->method( 'get_default_currency' )
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
+		$order = new WC_Order();
+		$order->set_currency( 'GBP' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', 'invalid' );
+		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', 41.90 / 36 );
+		$args   = [
+			'net_total'      => 36.0,
+			'shipping_total' => 0.0,
+			'tax_total'      => 0.0,
+			'total_sales'    => 36.0,
+		];
+		$result = $this->analytics->update_order_stats_data( $args, $order );
+		$this->assertEquals( 41.90, $result['total_sales'] );
+	}
+
+	public function test_deferred_initialization_registers_one_converter() {
+		$analytics = new Analytics( $this->mock_multi_currency, $this->createMock( MultiCurrencySettingsInterface::class ), false );
+		$callback  = [ $analytics, 'update_order_stats_data' ];
+		$this->assertFalse( has_filter( 'woocommerce_analytics_update_order_stats_data', $callback ) );
+		$analytics->init();
+		$analytics->init();
+		$this->assertSame( Analytics::PRIORITY_LATEST, has_filter( 'woocommerce_analytics_update_order_stats_data', $callback ) );
+	}
+
+	/**
 	 * @dataProvider select_clause_provider
 	 */
 	public function test_filter_select_clauses( $context, $clauses, $expected ) {
@@ -621,17 +695,13 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 * This will create a mock order with the appropriate Multi-Currency meta data.
 	 */
 	private function add_mock_order_with_meta() {
-		$order_id = wp_insert_post(
-			[
-				'post_type'   => 'shop_order',
-				'post_status' => 'wc-processing',
-			]
-		);
-
-		update_post_meta( $order_id, '_wcpay_multi_currency_order_exchange_rate', 0.5353 );
-		update_post_meta( $order_id, '_payment_method', 'stripe' );
-		update_post_meta( $order_id, '_order_total', 12.64 );
-		update_post_meta( $order_id, '_order_currency', 'EUR' );
+		$order = new WC_Order();
+		$order->set_status( 'processing' );
+		$order->set_payment_method( 'stripe' );
+		$order->set_total( 12.64 );
+		$order->set_currency( 'EUR' );
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', 0.5353 );
+		$order_id = $order->save();
 
 		// Add to the array of mock order IDs so we can delete it later.
 		$this->mock_orders[] = $order_id;
@@ -639,7 +709,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 	private function delete_mock_orders() {
 		foreach ( $this->mock_orders as $order_id ) {
-			wp_delete_post( $order_id, true );
+			$order = wc_get_order( $order_id );
+			if ( $order ) {
+				$order->delete( true );
+			}
 		}
 	}
 }

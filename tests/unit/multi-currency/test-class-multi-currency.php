@@ -143,6 +143,153 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency();
 	}
 
+	/** An early getter followed by scheduled init must not register a second converter. */
+	public function test_early_getter_then_init_registers_one_analytics_converter() {
+		update_option( '_wcpay_feature_customer_multi_currency', '1' );
+		$this->init_multi_currency( null, true, null, null, null, false );
+		$count  = static function () {
+			global $wp_filter;
+			$total = 0;
+			foreach ( $wp_filter['woocommerce_analytics_update_order_stats_data']->callbacks ?? [] as $callbacks ) {
+				foreach ( $callbacks as $callback ) {
+					$function = $callback['function'];
+					if ( is_array( $function ) && $function[0] instanceof \WCPay\MultiCurrency\Analytics && 'update_order_stats_data' === $function[1] ) {
+						++$total;
+					}
+				}
+			}
+			return $total;
+		};
+		$before = $count();
+		$this->multi_currency->get_default_currency();
+		$this->assertSame( $before + 1, $count() );
+		$this->multi_currency->init();
+		$this->assertSame( $before + 1, $count() );
+	}
+
+	/** Repeated initialization must preserve the historical amount on import and rebuild. */
+	public function test_reinitialized_analytics_import_and_rebuild_convert_once() {
+		global $wpdb;
+		$currency = get_option( 'woocommerce_currency' );
+		$order    = new WC_Order();
+		try {
+			update_option( 'woocommerce_currency', 'EUR' );
+			$this->init_multi_currency( null, true, null, null, null, false );
+			$this->multi_currency->get_default_currency();
+			$this->multi_currency->init();
+			$order->set_currency( 'GBP' );
+			$order->set_total( 36 );
+			$order->set_status( 'completed' );
+			$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'EUR' );
+			$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', '0.85' );
+			$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', '1.16388' );
+			$order->save();
+
+			foreach ( [ 'initial import', 'historical rebuild' ] as $phase ) {
+				$wpdb->delete( $wpdb->prefix . 'wc_order_stats', [ 'order_id' => $order->get_id() ], [ '%d' ] );
+				\Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore::sync_order( $order->get_id() );
+				$row = $wpdb->get_row( $wpdb->prepare( "SELECT total_sales, net_total FROM {$wpdb->prefix}wc_order_stats WHERE order_id = %d", $order->get_id() ), ARRAY_A );
+				$this->assertNotNull( $row, $phase );
+				$this->assertEquals( 41.90, (float) $row['total_sales'], $phase );
+				$this->assertEquals( 41.90, (float) $row['net_total'], $phase );
+				$persisted = wc_get_order( $order->get_id() );
+				$this->assertSame( 'GBP', $persisted->get_currency(), $phase );
+				$this->assertEquals( 36, (float) $persisted->get_total(), $phase );
+			}
+		} finally {
+			if ( $order->get_id() ) {
+				$order->delete( true );
+			}
+			update_option( 'woocommerce_currency', $currency );
+		}
+	}
+
+	/** A getter before session creation must not prevent later price hooks. */
+	public function test_early_getter_before_session_preserves_price_hooks() {
+		remove_filter( 'woocommerce_product_get_price', [ $this->multi_currency->get_frontend_prices(), 'get_product_price_string' ], 99 );
+		$this->mock_currency_settings(
+			'CAD',
+			[
+				'price_rounding' => '0',
+				'price_charm'    => '0',
+			]
+		);
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( MultiCurrency::RENDERING_MODE_OPTION, 'cache' );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->init_multi_currency( null, true, null, null, null, false );
+		$session = WC()->session;
+		try {
+			WC()->session = null;
+			$this->multi_currency->get_default_currency();
+			$this->assertStringContainsString( 'wcpay-async-price', wc_price( 10 ) );
+			$this->assertFalse( has_filter( 'woocommerce_product_get_price', [ $this->multi_currency->get_frontend_prices(), 'get_product_price_string' ] ) );
+			$active = $this->createMock( WC_Session_Handler::class );
+			$active->method( 'has_session' )->willReturn( true );
+			$active->method( 'get' )->willReturn( 'CAD' );
+			WC()->session = $active;
+			$this->multi_currency->init();
+			$this->assertStringNotContainsString( 'wcpay-async-price', wc_price( 10 ) );
+			$this->assertSame( 99, has_filter( 'woocommerce_product_get_price', [ $this->multi_currency->get_frontend_prices(), 'get_product_price_string' ] ) );
+			$product = new WC_Product_Simple();
+			$product->set_price( 10 );
+			foreach ( [ 1, 2 ] as $repeat ) {
+				$this->multi_currency->init();
+				$this->assertSame( 'CAD', get_woocommerce_currency(), 'Initialization ' . $repeat );
+				$this->assertEquals( 12.07, (float) $product->get_price() );
+				$this->assertStringContainsString( '12.07', wc_price( $product->get_price() ) );
+				$this->assertStringNotContainsString( 'wcpay-async-price', wc_price( $product->get_price() ) );
+			}
+		} finally {
+			WC()->session = $session;
+			$this->remove_currency_settings_mock( 'CAD', [ 'price_rounding', 'price_charm' ] );
+		}
+	}
+
+
+	/** An exception after hook registration must not orphan a converter on retry. */
+	public function test_analytics_initialization_retry_keeps_one_converter() {
+		$this->init_multi_currency( null, true, null, null, null, false );
+		$count                  = static function () {
+			global $wp_filter;
+			$total = 0;
+			foreach ( $wp_filter['woocommerce_analytics_update_order_stats_data']->callbacks ?? [] as $callbacks ) {
+				foreach ( $callbacks as $callback ) {
+					if ( is_array( $callback['function'] ) && $callback['function'][0] instanceof \WCPay\MultiCurrency\Analytics ) {
+						++$total; }
+				}
+			}
+			return $total;
+		};
+		$before                 = $count();
+		$uri                    = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc-analytics/reports/orders';
+		$thrown                 = false;
+		$interrupt              = static function ( $value ) use ( &$thrown, $count, $before ) {
+			if ( ! $thrown && $count() > $before ) {
+				$thrown = true;
+				throw new RuntimeException( 'Synthetic initialization interruption' ); }
+			return $value;
+		};
+		add_filter( 'woocommerce_is_rest_api_request', $interrupt );
+		try {
+			try {
+				$this->multi_currency->init(); } catch ( RuntimeException $exception ) {
+				$this->assertSame( 'Synthetic initialization interruption', $exception->getMessage() ); }
+				$this->assertTrue( $thrown );
+				$this->multi_currency->init();
+				$this->assertSame( $before + 1, $count() );
+				$this->assertSame( 50, has_action( 'woocommerce_order_refunded', [ $this->multi_currency, 'add_order_meta_on_refund' ] ) );
+		} finally {
+			remove_filter( 'woocommerce_is_rest_api_request', $interrupt );
+			if ( null === $uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $uri; }
+		}
+	}
+
+
 	public function tear_down() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );

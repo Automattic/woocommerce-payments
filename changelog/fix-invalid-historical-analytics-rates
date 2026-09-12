@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Validate saved exchange rates before converting Analytics totals.
