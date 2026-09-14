@@ -37,7 +37,7 @@ jobs:
                   # reinstall re-checks builds approved by this branch's
                   # allowBuilds against the base's older or absent allowlist
                   # and hard-fails (seen on release→trunk PRs).
-                  install-script: pnpm install --no-frozen-lockfile --ignore-scripts --config.engine-strict=false --config.strict-dep-builds=false
+                  #
+                  # deleting `node_modules to ensure the directory isn't shared between the two installs.
+                  install-script: bash -c "rm -rf node_modules && pnpm install --no-frozen-lockfile --ignore-scripts --config.engine-strict=false --config.strict-dep-builds=false"
                   pattern: '{release/**/*.js,release/**/*.css}'
-                  exclude: '{release/vendor/**}'
-                  package-manager: pnpm

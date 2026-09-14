@@ -8,11 +8,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import ConfirmationScreen from '../confirmation-screen';
+import { redirectTo } from 'wcpay/utils';
 
-// Mock window.location.href assignments - JSDOM's window.location is read-only by default
-// Our component's button click handlers need to set window.location.href for navigation
-delete ( window as any ).location;
-( window as any ).location = { href: '' };
+// jsdom marks `window.location` unforgeable, so the button handlers' navigation
+// is asserted through the `redirectTo` helper instead.
+jest.mock( 'wcpay/utils', () => ( {
+	...jest.requireActual( 'wcpay/utils' ),
+	redirectTo: jest.fn(),
+} ) );
 
 // Mock window.scrollTo - Jest environment doesn't have this method implemented
 Object.defineProperty( window, 'scrollTo', {
@@ -30,7 +33,6 @@ describe( 'ConfirmationScreen', () => {
 
 	beforeEach( () => {
 		jest.clearAllMocks();
-		( window as any ).location.href = '';
 	} );
 
 	describe( 'Basic rendering', () => {
@@ -210,7 +212,7 @@ describe( 'ConfirmationScreen', () => {
 			} );
 			fireEvent.click( returnButton );
 
-			expect( ( window as any ).location.href ).toBe(
+			expect( redirectTo ).toHaveBeenCalledWith(
 				'admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes'
 			);
 		} );
@@ -223,7 +225,7 @@ describe( 'ConfirmationScreen', () => {
 			} );
 			fireEvent.click( viewButton );
 
-			expect( ( window as any ).location.href ).toBe(
+			expect( redirectTo ).toHaveBeenCalledWith(
 				'admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_test_123'
 			);
 		} );
@@ -241,7 +243,7 @@ describe( 'ConfirmationScreen', () => {
 			} );
 			fireEvent.click( viewButton );
 
-			expect( ( window as any ).location.href ).toBe(
+			expect( redirectTo ).toHaveBeenCalledWith(
 				'admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_different_id'
 			);
 		} );

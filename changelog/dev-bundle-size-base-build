@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fail the release build when the client bundle fails, and fix the bundle-size CI comparison.

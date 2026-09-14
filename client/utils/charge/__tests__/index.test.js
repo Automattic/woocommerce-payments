@@ -121,6 +121,63 @@ describe( 'Charge utilities', () => {
 				false
 			);
 		} );
+
+		test.each( [ 'failed', 'canceled' ] )(
+			'should identify a charge with only %s refunds as refund failed',
+			( status ) => {
+				const charge = {
+					...paidCharge,
+					refunded: false,
+					amount_refunded: 300,
+					refunds: {
+						data: [
+							{
+								status,
+								balance_transaction: { amount: -300 },
+							},
+						],
+					},
+				};
+
+				expect( utils.getChargeStatus( charge ) ).toEqual(
+					'refund_failed'
+				);
+			}
+		);
+
+		test.each( [ 'succeeded', 'future_status', undefined, null ] )(
+			'should not identify a %s refund as refund failed',
+			( status ) => {
+				const charge = {
+					...paidCharge,
+					refunded: false,
+					amount_refunded: 0,
+					refunds: {
+						data: [
+							{
+								status,
+								balance_transaction: { amount: -300 },
+							},
+						],
+					},
+				};
+
+				expect( utils.isChargeRefundFailed( charge ) ).toEqual( false );
+				expect( utils.getChargeStatus( charge ) ).toEqual( 'paid' );
+			}
+		);
+
+		test( 'should not identify an empty refund list as refund failed', () => {
+			const charge = {
+				...paidCharge,
+				refunded: false,
+				amount_refunded: 0,
+				refunds: { data: [] },
+			};
+
+			expect( utils.isChargeRefundFailed( charge ) ).toEqual( false );
+			expect( utils.getChargeStatus( charge ) ).toEqual( 'paid' );
+		} );
 	} );
 
 	describe( 'getChargeStatus', () => {
@@ -302,6 +359,80 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 				charge.amount_refunded,
 			fee: charge.application_fee_amount,
 			refunded: charge.amount_refunded,
+		} );
+	} );
+
+	test.each( [ 'failed', 'canceled' ] )(
+		'does not deduct a %s refund from legacy amounts',
+		( status ) => {
+			const charge = {
+				amount: 1800,
+				currency: 'usd',
+				application_fee_amount: 82,
+				amount_refunded: 300,
+				balance_transaction: {
+					amount: 1800,
+					currency: 'usd',
+					fee: 82,
+				},
+				refunds: {
+					data: [
+						{
+							status,
+							balance_transaction: { amount: -300 },
+						},
+					],
+				},
+			};
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				amount: 1800,
+				currency: 'usd',
+				net: 1718,
+				fee: 82,
+				refunded: 0,
+			} );
+		}
+	);
+
+	test( 'deducts compatible refunds from mixed legacy amounts', () => {
+		const charge = {
+			amount: 1800,
+			currency: 'usd',
+			application_fee_amount: 82,
+			amount_refunded: 900,
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			refunds: {
+				data: [
+					{
+						status: 'failed',
+						balance_transaction: { amount: -100 },
+					},
+					{
+						status: 'succeeded',
+						balance_transaction: { amount: -200 },
+					},
+					{
+						status: 'future_status',
+						balance_transaction: { amount: -300 },
+					},
+					{
+						balance_transaction: { amount: -400 },
+					},
+				],
+			},
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
+			net: 818,
+			fee: 82,
+			refunded: 900,
 		} );
 	} );
 

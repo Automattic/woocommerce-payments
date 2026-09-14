@@ -1,10 +1,11 @@
 /**
  * External dependencies
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
+import { speak } from '@wordpress/a11y';
 import {
 	cartWithItemsMock,
 	cartWithItemsAndCouponMock,
@@ -12,6 +13,9 @@ import {
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
+} ) );
+jest.mock( '@wordpress/a11y', () => ( {
+	speak: jest.fn(),
 } ) );
 jest.mock( 'lodash', () => ( {
 	...jest.requireActual( 'lodash' ),
@@ -38,6 +42,16 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		$.fn.ready = ( callback ) => callback( $ );
 		global.jQuery.blockUI = () => null;
 		global.jQuery.unblockUI = () => null;
+		// The element-level half of jquery-blockui, which `button-ui` uses to
+		// overlay the button. Spies, so tests can assert on the overlay.
+		$.fn.block = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 1 );
+			return this;
+		} );
+		$.fn.unblock = jest.fn( function () {
+			this.data( 'blockUI.isBlocked', 0 );
+			return this;
+		} );
 
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.nonce = {
@@ -237,6 +251,450 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).not.toBeVisible();
+	} );
+
+	it( 'should reject the click event while a cart refresh is in flight', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Hold the second cart response pending, to sit inside the re-init window.
+		let releaseCart;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseCart = () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} );
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		// The button is still mounted and visible, so it can still be clicked here.
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+
+		const clickEventResolveMock = jest.fn();
+		const clickEventRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: clickEventRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+
+		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( clickEventResolveMock ).not.toHaveBeenCalled();
+		// The overlay is visual only; screen-reader users get told why the tap did nothing.
+		expect( speak ).toHaveBeenCalledWith(
+			'Updating payment details. Please try again in a moment.',
+			'assertive'
+		);
+
+		releaseCart();
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+		);
+
+		// Once the refresh completes, the newly initialized button can open
+		// against the fresh cart data.
+		const postRefreshResolveMock = jest.fn();
+		const postRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: postRefreshResolveMock,
+			reject: postRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+
+		expect( postRefreshResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				shippingAddressRequired: true,
+				shippingRates: expect.any( Array ),
+			} )
+		);
+		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should not let a superseded refresh publish its cart data or remount Elements', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		// Refresh A is slow and carries the coupon cart, whose total is 0. If A
+		// ever published, the button would hide - which is what makes this
+		// observable rather than a no-op assertion.
+		let releaseSlowRefresh;
+		let slowResponseConsumed = false;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseSlowRefresh = () =>
+						resolve( {
+							json: () => {
+								slowResponseConsumed = true;
+								return Promise.resolve(
+									cartWithItemsAndCouponMock
+								);
+							},
+							headers: new Map(),
+						} );
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		// Refresh B starts after A and answers first, with a payable cart.
+		apiFetch.mockImplementation( async () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( cartWithItemsMock ),
+				headers: new Map(),
+			} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+
+		const elementsGenerationsAfterB =
+			stripeInstance.elements.mock.calls.length;
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+
+		// Release A and synchronize on A actually resuming past its fetch, so the
+		// assertions below run after A had its chance to publish.
+		releaseSlowRefresh();
+		await waitFor( () => expect( slowResponseConsumed ).toBe( true ) );
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		// A's zero-total cart was discarded: the button is still B's.
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+		expect( stripeInstance.elements.mock.calls.length ).toBe(
+			elementsGenerationsAfterB
+		);
+
+		const clickEventResolveMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: jest.fn(),
+			expressPaymentType: 'google_pay',
+		} );
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				lineItems: [
+					{ amount: 2399, name: 'Beanie' },
+					{ amount: 1100, name: 'Shipping' },
+					{ amount: 198, name: 'Tax' },
+				],
+			} )
+		);
+	} );
+
+	it( 'should not let a refresh superseded while Stripe.js is still loading build Elements over the newer one', async () => {
+		// `getStripe()` polls `window.Stripe` every 100 ms until Stripe.js has
+		// loaded, so a refresh can be superseded while it waits there, after it
+		// has already published its cart data.
+		jest.useFakeTimers();
+		const StripeConstructor = global.Stripe;
+		delete global.Stripe;
+
+		try {
+			// Refresh A carries a different total than B, so the generation
+			// that ends up owning Elements is observable.
+			apiFetch.mockImplementation( async () =>
+				Promise.resolve( {
+					json: () =>
+						Promise.resolve( {
+							...cartWithItemsMock,
+							totals: {
+								...cartWithItemsMock.totals,
+								total_price: '5000',
+							},
+						} ),
+					headers: new Map(),
+				} )
+			);
+			await jest.isolateModulesAsync( async () => {
+				await import( '..' );
+			} );
+			$( document.body ).trigger( 'updated_checkout' );
+			await act( async () => {
+				await Promise.resolve();
+			} );
+
+			// Refresh B starts 50 ms later, so its poll ticks between A's.
+			apiFetch.mockImplementation( async () =>
+				Promise.resolve( {
+					json: () => Promise.resolve( cartWithItemsMock ),
+					headers: new Map(),
+				} )
+			);
+			await act( async () => {
+				jest.advanceTimersByTime( 50 );
+			} );
+			$( document.body ).trigger( 'updated_checkout' );
+			await act( async () => {
+				await Promise.resolve();
+			} );
+
+			// Stripe.js lands right after A's tick at 100 ms found it missing:
+			// B's tick at 150 ms proceeds first, A's at 200 ms resumes last.
+			await act( async () => {
+				jest.advanceTimersByTime( 60 );
+			} );
+			global.Stripe = StripeConstructor;
+			await act( async () => {
+				jest.advanceTimersByTime( 50 );
+			} );
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 1 );
+			await act( async () => {
+				jest.advanceTimersByTime( 100 );
+			} );
+
+			// Only B built and mounted a generation; A's stale total never did.
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 1 );
+			expect( stripeInstance.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { amount: 3697 } )
+			);
+			expect( stripeElementMock.mount ).toHaveBeenCalledTimes( 1 );
+		} finally {
+			jest.useRealTimers();
+		}
+	} );
+
+	it( 'should hide the button, lift the overlay, and reject clicks when the cart data could not be fetched', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.unblock.mockClear();
+
+		// A failed refresh leaves the button with nothing to describe the purchase with.
+		apiFetch.mockImplementation( async () =>
+			Promise.reject( new Error( 'Store API is unavailable' ) )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () =>
+			expect(
+				screen.getByTestId( 'wcpay-express-checkout-element' )
+			).not.toBeVisible()
+		);
+		// The overlay must not be left latched on the hidden container:
+		// `blockButton()` would then skip the next refresh's overlay.
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+
+		// The element from the previous init can still invoke its handler - it must not throw.
+		const clickEventResolveMock = jest.fn();
+		const clickEventRejectMock = jest.fn();
+		expect( () =>
+			stripeElementMock.__getRegisteredEvent( 'click' )( {
+				resolve: clickEventResolveMock,
+				reject: clickEventRejectMock,
+				expressPaymentType: 'google_pay',
+			} )
+		).not.toThrow();
+		expect( clickEventResolveMock ).not.toHaveBeenCalled();
+		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'should overlay the button while a cart refresh is in flight and lift it once the refresh settles', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.block.mockClear();
+		$.fn.unblock.mockClear();
+
+		let releaseCart;
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releaseCart = () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} );
+				} )
+		);
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+
+		// Same white overlay WooCommerce paints over the order review.
+		expect( $.fn.block ).toHaveBeenCalledWith( {
+			message: null,
+			overlayCSS: { background: '#fff', opacity: 0.6 },
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toHaveAttribute( 'aria-busy', 'true' );
+
+		releaseCart();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).toBeVisible();
+		expect(
+			screen.getByTestId( 'wcpay-express-checkout-element' )
+		).not.toHaveAttribute( 'aria-busy' );
+	} );
+
+	it( 'should keep the overlay up until the newest refresh settles, even if a superseded one finishes first', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		const releases = [];
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releases.push( () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} )
+					);
+				} )
+		);
+		$.fn.block.mockClear();
+		$( document.body ).trigger( 'updated_checkout' );
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+		$.fn.unblock.mockClear();
+
+		// B found the button already covered by A: re-blocking would blink the overlay.
+		expect( $.fn.block ).toHaveBeenCalledTimes( 1 );
+
+		// A (superseded) settles first: B still owns the button, so no unblock.
+		releases[ 0 ]();
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		releases[ 1 ]();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	it( 'should guard the button from `update_checkout` onwards, before WooCommerce has refreshed', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+		$.fn.block.mockClear();
+
+		// WooCommerce fires this before its own `update_order_review` request.
+		// Our container sits outside what core blocks, so the old button is
+		// still tappable and `cachedCartData` is the pre-change snapshot.
+		$( document.body ).trigger( 'update_checkout' );
+
+		expect( $.fn.block ).toHaveBeenCalled();
+
+		const clickEventResolveMock = jest.fn();
+		const clickEventRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: clickEventResolveMock,
+			reject: clickEventRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( clickEventResolveMock ).not.toHaveBeenCalled();
+
+		// Core finished: our refresh runs and the button opens again.
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+		);
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		const postRefreshResolveMock = jest.fn();
+		const postRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: postRefreshResolveMock,
+			reject: postRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( postRefreshResolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( { shippingAddressRequired: true } )
+		);
+		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should keep the button guarded when `update_checkout` fires again while a refresh is in flight', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		const releases = [];
+		apiFetch.mockImplementation(
+			() =>
+				new Promise( ( resolve ) => {
+					releases.push( () =>
+						resolve( {
+							json: () => Promise.resolve( cartWithItemsMock ),
+							headers: new Map(),
+						} )
+					);
+				} )
+		);
+
+		// Core's first refresh completes and our refresh A starts.
+		$( document.body ).trigger( 'update_checkout' );
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
+		$.fn.unblock.mockClear();
+
+		// Core starts a second refresh while A is still waiting on the cart.
+		$( document.body ).trigger( 'update_checkout' );
+
+		// A settles, but core's second request is still pending: the button
+		// must stay covered and clicks must still be rejected.
+		releases[ 0 ]();
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		const midRefreshResolveMock = jest.fn();
+		const midRefreshRejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: midRefreshResolveMock,
+			reject: midRefreshRejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( midRefreshRejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( midRefreshResolveMock ).not.toHaveBeenCalled();
+
+		// Core finishes the second refresh: our refresh B releases the button.
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
+		releases[ 1 ]();
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
