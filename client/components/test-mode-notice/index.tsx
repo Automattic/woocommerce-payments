@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -29,22 +29,15 @@ interface Props {
 	isTestModeOnboarding?: boolean;
 }
 
-const nounToUse = {
-	documents: __( 'document', 'woocommerce-payments' ),
-	deposits: __( 'payout', 'woocommerce-payments' ),
-	disputes: __( 'dispute', 'woocommerce-payments' ),
-	loans: __( 'loan', 'woocommerce-payments' ),
-	payments: __( 'order', 'woocommerce-payments' ),
-	transactions: __( 'order', 'woocommerce-payments' ),
-};
-
-const verbToUse = {
-	documents: __( 'created', 'woocommerce-payments' ),
-	deposits: __( 'created', 'woocommerce-payments' ),
-	disputes: __( 'created', 'woocommerce-payments' ),
-	loans: __( 'created', 'woocommerce-payments' ),
-	payments: __( 'placed', 'woocommerce-payments' ),
-	transactions: __( 'placed', 'woocommerce-payments' ),
+// Plural forms, supplied per locale rather than derived by appending "s" to a
+// translated singular — that only works in English.
+const pluralNounToUse = {
+	documents: __( 'documents', 'woocommerce-payments' ),
+	deposits: __( 'payouts', 'woocommerce-payments' ),
+	disputes: __( 'disputes', 'woocommerce-payments' ),
+	loans: __( 'loans', 'woocommerce-payments' ),
+	payments: __( 'orders', 'woocommerce-payments' ),
+	transactions: __( 'orders', 'woocommerce-payments' ),
 };
 
 const getNoticeContent = (
@@ -187,16 +180,13 @@ const getNoticeContent = (
 					<>
 						{ interpolateComponents( {
 							mixedString: sprintf(
-								/* translators: %1$s: WooPayments */
-								_n(
-									'%1$s was in test mode when this %2$s was %3$s. To view live %2$ss, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
-									'%1$s was in test mode when these %2$ss were %3$s. To view live %2$ss, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
-									currentPage === 'deposits' ? 2 : 1,
+								/* translators: %1$s: WooPayments, %2$s: plural record type, e.g. "orders" */
+								__(
+									'%1$s is in test mode, so only test %2$s are shown. To view live %2$s, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
 									'woocommerce-payments'
 								),
 								'WooPayments',
-								nounToUse[ currentPage ],
-								verbToUse[ currentPage ]
+								pluralNounToUse[ currentPage ]
 							),
 							components: {
 								settingsLink: (
