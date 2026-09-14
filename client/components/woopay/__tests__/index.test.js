@@ -10,15 +10,14 @@ import userEvent from '@testing-library/user-event';
  */
 import { woopayPaymentMethod } from '..';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
-import { redirectTo } from 'utils';
+import { redirectTo } from 'wcpay/utils/navigation';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 // jsdom marks `window.location` unforgeable, so the navigation is asserted
 // through the `redirectTo` helper the component calls.
-jest.mock( 'utils', () => ( {
-	...jest.requireActual( 'utils' ),
+jest.mock( 'wcpay/utils/navigation', () => ( {
 	redirectTo: jest.fn(),
 } ) );
 jest.mock( 'wcpay/checkout/woopay/init-woopay', () => ( {

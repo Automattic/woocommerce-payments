@@ -10,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import { getConfig } from 'utils/checkout';
-import { redirectTo } from 'utils';
+import { redirectTo } from 'wcpay/utils/navigation';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 interface woopayButtonProps {
