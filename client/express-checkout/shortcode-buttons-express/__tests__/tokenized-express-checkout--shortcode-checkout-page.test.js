@@ -114,7 +114,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 	afterEach( async () => {
 		delete global.Stripe;
 		// removing all the registered event handlers so they don't leak between tests.
+		// jQuery's global ajax events are bound on `document`, not `document.body`.
 		global.$( document.body ).off();
+		global.$( document ).off();
 	} );
 
 	it( 'should not initialize Stripe if there is no publishable key', async () => {
@@ -695,6 +697,107 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
 		releases[ 1 ]();
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	it( "should lift the guard when WooCommerce's order-review request fails", async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+
+		// Core's `update_order_review` has only a `success` callback, so a 500
+		// means `updated_checkout` never fires and nothing else lifts the overlay.
+		$( document ).trigger( 'ajaxError', [
+			{ status: 500, statusText: 'Internal Server Error' },
+			{ url: '/?wc-ajax=update_order_review' },
+		] );
+
+		await waitFor( () =>
+			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
+		);
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).toHaveBeenCalled();
+
+		const resolveMock = jest.fn();
+		const rejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: resolveMock,
+			reject: rejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( resolveMock ).toHaveBeenCalledWith(
+			expect.objectContaining( { shippingAddressRequired: true } )
+		);
+		expect( rejectMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should keep the guard when WooCommerce aborts the order-review request', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+		apiFetch.mockClear();
+
+		// Core aborts the in-flight request when a newer `update_checkout` starts.
+		// That newer one guards the button itself, so recovering here would open
+		// the button over a request that is still running.
+		$( document ).trigger( 'ajaxError', [
+			{ status: 0, statusText: 'abort' },
+			{ url: '/?wc-ajax=update_order_review' },
+		] );
+
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( apiFetch ).not.toHaveBeenCalled();
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		const resolveMock = jest.fn();
+		const rejectMock = jest.fn();
+		stripeElementMock.__getRegisteredEvent( 'click' )( {
+			resolve: resolveMock,
+			reject: rejectMock,
+			expressPaymentType: 'google_pay',
+		} );
+		expect( rejectMock ).toHaveBeenCalledTimes( 1 );
+		expect( resolveMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should keep the guard when some other request fails during the update', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+		apiFetch.mockClear();
+
+		// Another plugin's request dying says nothing about core's order review.
+		$( document ).trigger( 'ajaxError', [
+			{ status: 500, statusText: 'Internal Server Error' },
+			{ url: '/?wc-ajax=some_other_plugin_endpoint' },
+		] );
+
+		await act( async () => {
+			await Promise.resolve();
+		} );
+		expect( apiFetch ).not.toHaveBeenCalled();
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {

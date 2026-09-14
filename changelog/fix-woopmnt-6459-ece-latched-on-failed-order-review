@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix the express checkout button staying unclickable on the shortcode checkout page after a failed checkout update.

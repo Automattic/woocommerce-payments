@@ -777,12 +777,28 @@ jQuery( ( $ ) => {
 
 	// Core greys out the order review during its request, but not our container,
 	// so cover it from `update_checkout`. Checkout only: `updated_checkout` below
-	// runs the refresh that lifts it again.
+	// runs the refresh that lifts it again, and `ajaxError` covers the rest.
 	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
 		$( document.body ).on( 'update_checkout', () => {
 			// Supersede any refresh in flight; `updated_checkout` starts a fresh one.
 			latestForcedRefreshId++;
 			expressCheckoutButtonUi.blockButton();
+		} );
+
+		// Core's `update_order_review` has only a `success` callback, so a failed one
+		// never reaches `updated_checkout`. Refresh rather than just unblock: the
+		// Store API cart has its own nonce, so it can succeed where core's did not.
+		$( document ).on( 'ajaxError', ( event, jqXHR, settings ) => {
+			if ( ! String( settings?.url ).includes( 'update_order_review' ) ) {
+				return;
+			}
+
+			// Core only aborts to start a newer request, which guards the button itself.
+			if ( jqXHR?.statusText === 'abort' ) {
+				return;
+			}
+
+			refreshExpressCheckoutElement();
 		} );
 	}
 
