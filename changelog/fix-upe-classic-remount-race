@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid classic checkout submissions failing while the Payment Element re-mounts after a checkout update

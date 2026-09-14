@@ -40,6 +40,72 @@ import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 const gatewayUPEComponents = {};
 let fingerprint = null;
 
+// WooCommerce re-renders the payment box on every `updated_checkout`, so the
+// Payment Element is torn down and re-mounted asynchronously. A submission
+// landing in that window would read a detached element and post an empty
+// payment method field, failing the payment. Submissions wait on this tracker.
+let mountInProgress = null;
+
+// Safety valve so a (re)mount that never settles can't freeze the submit path
+// forever — after this we proceed regardless (form is blocked meanwhile).
+const MOUNT_IN_PROGRESS_TIMEOUT_MS = 5000;
+
+/**
+ * Registers a (re)mount promise for submissions to wait on. Composes with any
+ * existing one so overlapping `updated_checkout` cycles all settle before a
+ * submission proceeds, and clears itself once settled.
+ *
+ * @param {Promise<*>} promise The (re)mount promise to track.
+ */
+export function trackMountInProgress( promise ) {
+	// Swallow rejections so awaiting this in processPayment never throws.
+	const trackedPromise = Promise.resolve( promise ).catch( () => {} );
+	const composed = mountInProgress
+		? Promise.allSettled( [ mountInProgress, trackedPromise ] ).then(
+				() => {}
+		  )
+		: trackedPromise;
+	mountInProgress = composed;
+
+	composed.finally( () => {
+		if ( mountInProgress === composed ) {
+			mountInProgress = null;
+		}
+	} );
+}
+
+/**
+ * Waits for any in-flight Payment Element (re)mount to settle before a
+ * submission reads the Elements instance, bounded so it can never hang forever.
+ *
+ * @return {Promise<void>} Resolves once no (re)mount is in flight or the bound elapses.
+ */
+async function awaitMountInProgress() {
+	const deadline = Date.now() + MOUNT_IN_PROGRESS_TIMEOUT_MS;
+
+	// Back-to-back re-renders can each start a new (re)mount, so re-read the
+	// tracker after every wait until none is left or the deadline passes.
+	while ( mountInProgress && Date.now() < deadline ) {
+		const inFlight = mountInProgress;
+		let timeoutId;
+		const timeout = new Promise( ( resolve ) => {
+			timeoutId = setTimeout( resolve, deadline - Date.now() );
+		} );
+
+		// eslint-disable-next-line no-await-in-loop
+		await Promise.race( [ inFlight, timeout ] );
+		clearTimeout( timeoutId );
+
+		if ( mountInProgress === inFlight ) {
+			// Either it settled or the deadline won the race against a hung
+			// mount. Clear it (identity-guarded, like the tracker's `finally`)
+			// so the next submit isn't made to wait the full timeout again.
+			mountInProgress = null;
+			break;
+		}
+	}
+}
+
 for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
@@ -450,10 +516,18 @@ export const processPayment = (
 		try {
 			await blockUI( $form );
 
+			// Wait out any in-flight re-mount before reading the Elements
+			// instance, so a submit during an `updated_checkout` re-render gets
+			// the fresh element instead of a detached one.
+			await awaitMountInProgress();
+
 			const { elements, hasLoadError } =
 				gatewayUPEComponents[ paymentMethodType ];
 
-			if ( hasLoadError ) {
+			// If the wait ended without a mounted element (e.g. a mount that
+			// never settled), surface a normal checkout error instead of a raw
+			// TypeError from reading `elements` further down.
+			if ( hasLoadError || ! elements ) {
 				throw new Error(
 					__(
 						'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
@@ -509,6 +583,15 @@ export const processPayment = (
  */
 export function __resetHasCheckoutCompleted() {
 	hasCheckoutCompleted = false;
+}
+
+/**
+ * Used only for testing, clears any tracked in-flight (re)mount.
+ *
+ * @return {void}
+ */
+export function __resetMountInProgress() {
+	mountInProgress = null;
 }
 
 /**
