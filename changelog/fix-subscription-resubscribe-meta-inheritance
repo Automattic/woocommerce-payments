@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Clear inherited Stripe identifiers on subscription resubscribe orders so the customer's new checkout runs against fresh state.
