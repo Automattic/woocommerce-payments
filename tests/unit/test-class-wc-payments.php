@@ -42,6 +42,41 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10, $install_actions_priority );
 	}
 
+	public function test_deactivation_without_initialized_note_service() {
+		$property = new ReflectionProperty( WC_Payments::class, 'remote_note_service' );
+		$property->setAccessible( true );
+		$service = $property->getValue();
+		$property->setValue( null, null );
+		set_transient( 'woocommerce_admin_pes_incentive_woopayments_cache', [ 'cached' ] );
+
+		try {
+			wcpay_deactivated();
+			$this->assertFalse( get_transient( 'woocommerce_admin_pes_incentive_woopayments_cache' ) );
+		} finally {
+			$property->setValue( null, $service );
+		}
+	}
+
+	public function test_blocked_initialization_does_not_register_woopay_session_hooks() {
+		$property = new ReflectionProperty( WC_Payments::class, 'initialized' );
+		$property->setAccessible( true );
+		$initialized = $property->getValue();
+		$property->setValue( null, false );
+		$callback = [ WooPay_Session::class, 'determine_current_user_for_woopay' ];
+		$priority = has_filter( 'determine_current_user', $callback );
+		remove_filter( 'determine_current_user', $callback, 20 );
+
+		try {
+			wcpay_init();
+			$this->assertFalse( has_filter( 'determine_current_user', $callback ) );
+		} finally {
+			$property->setValue( null, $initialized );
+			if ( false !== $priority ) {
+				add_filter( 'determine_current_user', $callback, $priority );
+			}
+		}
+	}
+
 	public function test_it_does_not_clean_up_deprecated_notes_on_admin_init() {
 		$this->assertFalse( has_action( 'admin_init', [ WC_Payments::class, 'remove_deprecated_notes' ] ) );
 	}
