@@ -21,4 +21,6 @@ export { shouldUseConfirmationTokens } from './confirmation-tokens';
 export {
 	cartHasAnySubscription,
 	getSetupFutureUsageForCart,
+	getSetupFutureUsageForContext,
 } from './subscriptions';
+export type { SetupFutureUsage } from './subscriptions';
