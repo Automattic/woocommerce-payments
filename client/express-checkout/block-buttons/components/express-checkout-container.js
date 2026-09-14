@@ -43,9 +43,13 @@ const ExpressCheckoutContainer = ( props ) => {
 				?.express_checkout_methods,
 		[]
 	);
-	const enabledMethods = Array.isArray( enabledMethodsFromCart )
-		? filterCartMethodsByLocation( enabledMethodsFromCart )
-		: getExpressCheckoutData( 'enabled_methods' );
+	const enabledMethods = useMemo(
+		() =>
+			Array.isArray( enabledMethodsFromCart )
+				? filterCartMethodsByLocation( enabledMethodsFromCart )
+				: getExpressCheckoutData( 'enabled_methods' ),
+		[ enabledMethodsFromCart ]
+	);
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.
 	const paymentMethodTypes = useMemo( () => {
@@ -59,29 +63,60 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const elementCurrency = billing.currency.code.toLowerCase();
 
-	const options = {
-		mode: 'payment',
-		...( useConfirmationToken
-			? { paymentMethodTypes }
-			: { paymentMethodCreation: 'manual' } ),
-		...( useConfirmationToken && isManualCaptureEnabled
-			? { captureMethod: 'manual' }
-			: {} ),
-		...( useConfirmationToken
-			? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
-			: {} ),
-		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-		amount: applyFilters(
-			'wcpay.express-checkout.total-amount',
-			transformPrice( billing.cartTotal.value, {
-				currency_minor_unit: billing.currency.minorUnit ?? 0,
-			} ),
-			cartData
-		),
-		currency: rememberElementCurrency( elementCurrency ),
-		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
-		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
-	};
+	// `buttonAttributes` arrives as a fresh object on every render; key the
+	// appearance on the one primitive it actually reads so its reference stays
+	// stable across renders that don't touch the button styling.
+	const hasButtonAttributes = typeof buttonAttributes !== 'undefined';
+	const buttonBorderRadius = buttonAttributes?.borderRadius;
+	const appearance = useMemo(
+		() =>
+			getExpressCheckoutButtonAppearance(
+				hasButtonAttributes
+					? { borderRadius: buttonBorderRadius }
+					: undefined
+			),
+		[ hasButtonAttributes, buttonBorderRadius ]
+	);
+
+	// Blocks re-renders this component on every cart tick with fresh prop refs.
+	// Memoise the options on the primitives Stripe actually consumes so a render
+	// that changes nothing relevant reuses the same options reference (and skips
+	// re-deriving the amount/setup-future-usage/appearance each time).
+	const options = useMemo(
+		() => ( {
+			mode: 'payment',
+			...( useConfirmationToken
+				? { paymentMethodTypes }
+				: { paymentMethodCreation: 'manual' } ),
+			...( useConfirmationToken && isManualCaptureEnabled
+				? { captureMethod: 'manual' }
+				: {} ),
+			...( useConfirmationToken
+				? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+				: {} ),
+			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+			amount: applyFilters(
+				'wcpay.express-checkout.total-amount',
+				transformPrice( billing.cartTotal.value, {
+					currency_minor_unit: billing.currency.minorUnit ?? 0,
+				} ),
+				cartData
+			),
+			currency: rememberElementCurrency( elementCurrency ),
+			appearance,
+			locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
+		} ),
+		[
+			useConfirmationToken,
+			isManualCaptureEnabled,
+			paymentMethodTypes,
+			cartData,
+			billing.cartTotal.value,
+			billing.currency.minorUnit,
+			elementCurrency,
+			appearance,
+		]
+	);
 
 	return (
 		<div style={ { minHeight: '40px' } }>

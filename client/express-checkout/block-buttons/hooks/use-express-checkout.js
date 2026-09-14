@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback } from '@wordpress/element';
+import { useCallback, useMemo } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
@@ -42,17 +42,20 @@ export const useExpressCheckout = ( {
 	const stripe = useStripe();
 	const elements = useElements();
 
-	const buttonOptions = getExpressCheckoutButtonStyleSettings();
+	const buttonOptions = useMemo(
+		() => getExpressCheckoutButtonStyleSettings(),
+		[]
+	);
 
-	const onCancel = () => {
+	const onCancel = useCallback( () => {
 		onCancelHandler();
 		onClose();
-	};
+	}, [ onClose ] );
 
-	const completePayment = ( redirectUrl ) => {
+	const completePayment = useCallback( ( redirectUrl ) => {
 		onCompletePaymentHandler();
 		window.location = redirectUrl;
-	};
+	}, [] );
 
 	const abortPayment = useCallback(
 		( message ) => {
@@ -151,22 +154,32 @@ export const useExpressCheckout = ( {
 		]
 	);
 
-	const onConfirm = async ( event ) => {
-		onConfirmHandler(
+	const onConfirm = useCallback(
+		async ( event ) => {
+			onConfirmHandler(
+				api,
+				stripe,
+				elements,
+				completePayment,
+				abortPayment,
+				{
+					...event,
+					order_comments: wp?.data
+						?.select( 'wc/store/checkout' )
+						?.getOrderNotes(),
+				},
+				paymentMethodTypes
+			);
+		},
+		[
 			api,
 			stripe,
 			elements,
 			completePayment,
 			abortPayment,
-			{
-				...event,
-				order_comments: wp?.data
-					?.select( 'wc/store/checkout' )
-					?.getOrderNotes(),
-			},
-			paymentMethodTypes
-		);
-	};
+			paymentMethodTypes,
+		]
+	);
 
 	return {
 		buttonOptions,
