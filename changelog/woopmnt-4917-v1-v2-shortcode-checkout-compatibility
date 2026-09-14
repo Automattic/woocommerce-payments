@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix shortcode checkout requiring two clicks on Place Order when multiple payment gateways are active.
