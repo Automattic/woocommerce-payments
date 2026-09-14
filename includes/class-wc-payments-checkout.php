@@ -224,9 +224,7 @@ class WC_Payments_Checkout {
 		$order_id = absint( get_query_var( 'order-pay' ) );
 		$order    = wc_get_order( $order_id );
 
-		// wc_get_order() also returns refunds (WC_Order_Refund extends WC_Abstract_Order, not
-		// WC_Order), which have no order key. The order-pay query var is attacker-controlled, so
-		// an ID that resolves to one must not reach the WC_Order-typed helper below.
+		// The ID comes from the URL, so it can resolve to a refund, which has no order key.
 		if ( ! $order instanceof \WC_Order || ! $this->request_has_valid_order_key( $order ) ) {
 			return false;
 		}
@@ -239,12 +237,11 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Checks whether the request carries the order key matching the given order.
+	 * Checks the request's `key` against the order's own.
 	 *
-	 * The `pay_for_order` capability is not enough on its own: WooCommerce grants it to everyone,
-	 * logged-out visitors included, for any order without a customer. The order key is what
-	 * separates a shopper following their own payment link from someone walking order IDs, which
-	 * is why core pairs the two checks. See wc_customer_has_capability().
+	 * Pair this with the `pay_for_order` capability, which WooCommerce grants to everyone —
+	 * logged-out visitors included — for any order without a customer, so it cannot gate an order
+	 * on its own. See wc_customer_has_capability().
 	 *
 	 * @param \WC_Order $order The order being paid.
 	 *
@@ -252,9 +249,7 @@ class WC_Payments_Checkout {
 	 */
 	private function request_has_valid_order_key( \WC_Order $order ): bool {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
-		// is_string() guards against an array being passed (e.g. ?key[]=x): wc_clean() would return
-		// an array and hash_equals() would throw a TypeError. The checkout pay page is public, so
-		// malformed query string input is reachable unauthenticated.
+		// is_string() first: wc_clean() hands back an array for ?key[]=x, and hash_equals() fatals on one.
 		if ( ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
 			return false;
 		}

@@ -315,8 +315,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Stubs the gateway call that get_payment_fields_js_config() needs to build
-	 * paymentMethodsConfig, which is irrelevant to the order-pay gating under test.
+	 * Stubs out paymentMethodsConfig, which is irrelevant to the order-pay gating under test.
 	 */
 	private function stub_enabled_payment_methods() {
 		$this->mock_wcpay_gateway
@@ -326,8 +325,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Creates a guest order that still needs payment, priced in a currency other than the
-	 * store currency so the assertions can tell the order values apart from the cart fallbacks.
+	 * Creates a guest order priced in a currency other than the store's, so the assertions can
+	 * tell the order's values apart from the fallbacks.
 	 *
 	 * @return \WC_Order
 	 */
@@ -372,8 +371,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( 'isOrderPay', $payment_fields );
 		$this->assertArrayNotHasKey( 'orderId', $payment_fields );
 
-		// Pin the fallbacks, not just "not the order's values": the store currency and the
-		// (empty) cart total.
 		$this->assertSame( 'USD', $payment_fields['currency'] );
 		$this->assertSame( 0, $payment_fields['cartTotal'] );
 	}
@@ -393,7 +390,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					$_GET['key'] = 'wc_order_wrongkey';
 				},
 			],
-			// An array key (e.g. ?key[]=x) must not reach hash_equals(), which would throw a TypeError.
 			'array key' => [
 				function () {
 					$_GET['key'] = [ 'x' ];
@@ -426,8 +422,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_valid_pay_for_order_endpoint_false_for_refund_id_without_error() {
-		// wc_get_order() returns a WC_Order_Refund for a refund ID. It extends WC_Abstract_Order,
-		// not WC_Order, and has no get_order_key(), so it must not reach the order-key helper.
 		$order  = $this->create_guest_order_needing_payment();
 		$refund = wc_create_refund(
 			[
