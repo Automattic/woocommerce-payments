@@ -46,11 +46,13 @@ export const CBIcon = iconComponent(
 );
 export const DinersClubIcon = iconComponent(
 	DinersClubAsset,
-	__( 'Diners Club', 'woocommerce-payments' )
+	__( 'Diners Club', 'woocommerce-payments' ),
+	false
 );
 export const DiscoverIcon = iconComponent(
 	DiscoverAsset,
-	__( 'Discover', 'woocommerce-payments' )
+	__( 'Discover', 'woocommerce-payments' ),
+	false
 );
 export const JCBIcon = iconComponent(
 	JCBAsset,
