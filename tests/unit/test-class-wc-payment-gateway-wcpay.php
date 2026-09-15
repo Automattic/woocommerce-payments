@@ -32,6 +32,7 @@ use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
@@ -4286,6 +4287,50 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_process_payment_still_checks_fraud_when_only_the_cart_token_flag_is_set() {
+		$order = WC_Helper_Order::create_order();
+
+		// Only what a Cart-Token plus `User-Agent: WooPay` establishes, which is what any
+		// visitor can send. The companion test below pins that consulting the service is
+		// what a real vouch skips.
+		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} finally {
+			remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		}
+	}
+
+	public function test_process_payment_still_checks_fraud_when_the_vouch_is_stale() {
+		$order = WC_Helper_Order::create_order();
+
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		// Sealed correctly, but outside the freshness window.
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header( time() - 3600 );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} finally {
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+		}
+	}
+
 	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
 
@@ -4670,10 +4715,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
-	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_from_woopay() {
+	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_vouched_by_woopay() {
 		$order = WC_Helper_Order::create_order();
 
-		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		// The credential itself, rather than a filter standing in for one. Turning
+		// card-testing protection off is not something a shopper should be able to ask for.
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
 
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 
@@ -4696,7 +4745,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 
-		remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+	}
+
+	/**
+	 * Seals a vouch envelope the way WooPay does, and encodes it for the header.
+	 *
+	 * @param int|null $timestamp Envelope timestamp, defaulting to now.
+	 *
+	 * @return string The header value.
+	 */
+	private function build_woopay_vouch_header( ?int $timestamp = null ): string {
+		// Bound to the cart the request carries, as WooPay seals it.
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+
+		$key        = WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE );
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$plaintext  = wp_json_encode(
+			[
+				'timestamp'  => $timestamp ?? time(),
+				'cart_token' => hash( 'sha256', $_SERVER['HTTP_CART_TOKEN'] ),
+			]
+		);
+		$ciphertext = openssl_encrypt( $plaintext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		$envelope = array_map(
+			'base64_encode',
+			[
+				'data' => $ciphertext,
+				'iv'   => $iv,
+				'hash' => hash_hmac( 'sha256', $iv . $ciphertext, $key ),
+			]
+		);
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		return base64_encode( wp_json_encode( $envelope ) );
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {

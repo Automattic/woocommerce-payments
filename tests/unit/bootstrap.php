@@ -100,6 +100,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
