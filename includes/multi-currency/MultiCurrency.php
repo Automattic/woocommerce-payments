@@ -25,13 +25,6 @@ defined( 'ABSPATH' ) || exit;
  * Class that controls Multi-Currency functionality.
  */
 class MultiCurrency {
-	/**
-	 * Analytics instance retained before its hooks are initialized.
-	 *
-	 * @var Analytics|null
-	 */
-	private $analytics;
-
 
 	const CURRENCY_SESSION_KEY    = 'wcpay_currency';
 	const CURRENCY_META_KEY       = 'wcpay_currency';
@@ -220,13 +213,6 @@ class MultiCurrency {
 	private $init_ran = false;
 
 	/**
-	 * Whether initialization completed and frontend hooks can be refreshed.
-	 *
-	 * @var bool
-	 */
-	private $init_completed = false;
-
-	/**
 	 * Class constructor.
 	 *
 	 * @param MultiCurrencySettingsInterface     $settings_service     Settings service.
@@ -338,7 +324,6 @@ class MultiCurrency {
 	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
 	 * default currency and enabled currencies for the Multi-Currency plugin.
 	 *
-	 * @throws \Throwable When Analytics hook initialization fails.
 	 * @return void
 	 */
 	public function init() {
@@ -346,9 +331,6 @@ class MultiCurrency {
 		// a getter before `init` fires would otherwise initialize twice, leaving two sets of price
 		// and currency objects hooked at the same priority.
 		if ( $this->init_ran ) {
-			if ( $this->init_completed && static::is_enabled() && ( ! $this->should_use_async_rendering() || isset( $_GET['currency'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-				$this->enable_server_price_hooks();
-			}
 			return;
 		}
 
@@ -397,17 +379,7 @@ class MultiCurrency {
 
 		$admin_notices = new AdminNotices();
 		$user_settings = new UserSettings( $this );
-		if ( null === $this->analytics ) {
-			$this->analytics = new Analytics( $this, $this->settings_service, false );
-		}
-		try {
-			$this->analytics->init();
-		} catch ( \Throwable $exception ) {
-			// Retry with the retained Analytics instance if hook registration was interrupted.
-			// Frontend, notice and user-settings hooks have not been initialized yet.
-			$this->init_ran = false;
-			throw $exception;
-		}
+		$analytics     = new Analytics( $this, $this->settings_service );
 
 		$this->build_frontend_objects();
 		$this->tracking = new Tracking( $this );
@@ -415,6 +387,7 @@ class MultiCurrency {
 		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
+		$analytics->init_hooks();
 
 		// Use async (client-side) rendering only when should_use_async_rendering()
 		// is true: cache-optimized mode, no active session, and not a Store API
@@ -431,7 +404,8 @@ class MultiCurrency {
 		}
 
 		if ( ! $use_async_rendering || $has_pending_currency_switch ) {
-			$this->enable_server_price_hooks();
+			$this->frontend_prices->init_hooks();
+			$this->frontend_currencies->init_hooks();
 		}
 
 		$this->tracking->init_hooks();
@@ -452,7 +426,6 @@ class MultiCurrency {
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
 
 		static::$is_initialized = true;
-		$this->init_completed   = true;
 	}
 
 	/**
@@ -1911,17 +1884,6 @@ class MultiCurrency {
 		$this->enabled_currencies   = [];
 		$this->default_currency     = new Currency( $this->localization_service, $this->get_store_currency_code() );
 		$this->build_frontend_objects();
-	}
-
-	/**
-	 * Switch to server price hooks without replacing their owning instances.
-	 *
-	 * @return void
-	 */
-	private function enable_server_price_hooks() {
-		$this->async_renderer->remove_hooks();
-		$this->frontend_prices->init_hooks();
-		$this->frontend_currencies->init_hooks();
 	}
 
 	/**

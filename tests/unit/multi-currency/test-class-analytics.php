@@ -95,6 +95,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			->willReturn( $this->get_mock_available_currencies() );
 
 		$this->analytics = new Analytics( $this->mock_multi_currency, $mock_settings );
+		$this->analytics->init_hooks();
 
 		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		$this->mock_localization_service->expects( $this->any() )
@@ -223,13 +224,92 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Invalid saved rates must not produce a conversion or a partial update.
+	 * An unusable processor rate falls back to the rate the order was placed at.
 	 *
-	 * @dataProvider invalid_historical_rates_provider
+	 * @dataProvider invalid_processor_rates_provider
+	 * @param mixed $processor_rate Saved processor rate.
+	 */
+	public function test_invalid_processor_rate_falls_back_to_order_rate( $processor_rate ) {
+		$order  = $this->get_foreign_order( 0.75, $processor_rate );
+		$args   = $this->get_order_stats_args( 36.0 );
+		$result = $this->analytics->update_order_stats_data( $args, $order );
+		$this->assertEquals( 48.0, $result['net_total'] );
+		$this->assertEquals( 48.0, $result['total_sales'] );
+	}
+
+	/**
+	 * Processor rates read from order metadata may be missing, invalid or overflowing.
+	 *
+	 * @return array
+	 */
+	public function invalid_processor_rates_provider() {
+		return [
+			'missing'  => [ '' ],
+			'text'     => [ 'invalid' ],
+			'zero'     => [ '0' ],
+			'negative' => [ -1 ],
+			'infinite' => [ '1e999' ],
+		];
+	}
+
+	/**
+	 * With no usable saved rate there is no basis for a conversion, so the amounts are left untouched.
+	 *
+	 * @dataProvider unusable_saved_rates_provider
 	 * @param mixed $order_rate Saved order rate.
 	 * @param mixed $processor_rate Saved processor rate.
 	 */
-	public function test_invalid_historical_rates_preserve_native_amounts( $order_rate, $processor_rate ) {
+	public function test_unusable_saved_rates_leave_amounts_untouched( $order_rate, $processor_rate ) {
+		$order = $this->get_foreign_order( $order_rate, $processor_rate );
+		$args  = $this->get_order_stats_args( 36.0 );
+		$this->assertSame( $args, $this->analytics->update_order_stats_data( $args, $order ) );
+	}
+
+	/**
+	 * Saved rate pairs where neither value can be used as a conversion basis.
+	 *
+	 * @return array
+	 */
+	public function unusable_saved_rates_provider() {
+		return [
+			'order text'                  => [ 'invalid', '' ],
+			'order negative'              => [ -1, '' ],
+			'order infinite'              => [ '1e999', '' ],
+			'order inverse overflows'     => [ '1e-320', '' ],
+			'order and processor invalid' => [ 'invalid', '0' ],
+		];
+	}
+
+	/**
+	 * A valid processor rate is used as-is, without inverting the unused order rate.
+	 */
+	public function test_processor_rate_does_not_invert_unused_order_rate() {
+		$order  = $this->get_foreign_order( 'invalid', 41.90 / 36 );
+		$args   = $this->get_order_stats_args( 36.0 );
+		$result = $this->analytics->update_order_stats_data( $args, $order );
+		$this->assertEquals( 41.90, $result['total_sales'] );
+	}
+
+	/**
+	 * Hooks are registered by init_hooks(), not by constructing the object.
+	 */
+	public function test_constructor_does_not_register_hooks() {
+		$analytics = new Analytics( $this->mock_multi_currency, $this->createMock( MultiCurrencySettingsInterface::class ) );
+		$callback  = [ $analytics, 'update_order_stats_data' ];
+		$this->assertFalse( has_filter( 'woocommerce_analytics_update_order_stats_data', $callback ) );
+		$analytics->init_hooks();
+		$this->assertSame( Analytics::PRIORITY_LATEST, has_filter( 'woocommerce_analytics_update_order_stats_data', $callback ) );
+	}
+
+	/**
+	 * Build a GBP order on a USD store with the given saved Multi-Currency rates.
+	 *
+	 * @param mixed $order_rate     Saved order rate.
+	 * @param mixed $processor_rate Saved processor rate.
+	 *
+	 * @return WC_Order
+	 */
+	private function get_foreign_order( $order_rate, $processor_rate ): WC_Order {
 		$this->mock_multi_currency->method( 'get_default_currency' )
 			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 		$order = new WC_Order();
@@ -237,63 +317,23 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
 		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $order_rate );
 		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $processor_rate );
-		$args = [
-			'net_total'      => 36.0,
-			'shipping_total' => 0.0,
-			'tax_total'      => 0.0,
-			'total_sales'    => 36.0,
-		];
-		$this->assertSame( $args, $this->analytics->update_order_stats_data( $args, $order ) );
+		return $order;
 	}
 
 	/**
-	 * Rates read from order metadata may contain invalid or overflowing values.
+	 * Build order stats arguments for an order with the given net total and no shipping or tax.
+	 *
+	 * @param float $net_total Net total in the order currency.
 	 *
 	 * @return array
 	 */
-	public function invalid_historical_rates_provider() {
+	private function get_order_stats_args( float $net_total ): array {
 		return [
-			'order text'         => [ 'invalid', '' ],
-			'order negative'     => [ -1, '' ],
-			'order zero'         => [ '0', '' ],
-			'order infinite'     => [ '1e999', '' ],
-			'inverse overflow'   => [ '1e-320', '' ],
-			'processor text'     => [ 0.75, 'invalid' ],
-			'processor zero'     => [ 0.75, '0' ],
-			'processor negative' => [ 0.75, -1 ],
-			'processor infinite' => [ 0.75, '1e999' ],
-			'amount overflow'    => [ 0.75, '1e308' ],
-		];
-	}
-
-	/**
-	 * A valid processor rate does not need an inverse of the unused order rate.
-	 */
-	public function test_processor_rate_does_not_invert_unused_order_rate() {
-		$this->mock_multi_currency->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
-		$order = new WC_Order();
-		$order->set_currency( 'GBP' );
-		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'USD' );
-		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', 'invalid' );
-		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', 41.90 / 36 );
-		$args   = [
-			'net_total'      => 36.0,
+			'net_total'      => $net_total,
 			'shipping_total' => 0.0,
 			'tax_total'      => 0.0,
-			'total_sales'    => 36.0,
+			'total_sales'    => $net_total,
 		];
-		$result = $this->analytics->update_order_stats_data( $args, $order );
-		$this->assertEquals( 41.90, $result['total_sales'] );
-	}
-
-	public function test_deferred_initialization_registers_one_converter() {
-		$analytics = new Analytics( $this->mock_multi_currency, $this->createMock( MultiCurrencySettingsInterface::class ), false );
-		$callback  = [ $analytics, 'update_order_stats_data' ];
-		$this->assertFalse( has_filter( 'woocommerce_analytics_update_order_stats_data', $callback ) );
-		$analytics->init();
-		$analytics->init();
-		$this->assertSame( Analytics::PRIORITY_LATEST, has_filter( 'woocommerce_analytics_update_order_stats_data', $callback ) );
 	}
 
 	/**

@@ -54,14 +54,10 @@ class Analytics {
 	 *
 	 * @param MultiCurrency                  $multi_currency   Instance of MultiCurrency.
 	 * @param MultiCurrencySettingsInterface $settings_service Instance of MultiCurrencySettingsInterface.
-	 * @param bool                           $initialize Whether to register hooks immediately.
 	 */
-	public function __construct( MultiCurrency $multi_currency, MultiCurrencySettingsInterface $settings_service, bool $initialize = true ) {
+	public function __construct( MultiCurrency $multi_currency, MultiCurrencySettingsInterface $settings_service ) {
 		$this->multi_currency   = $multi_currency;
 		$this->settings_service = $settings_service;
-		if ( $initialize ) {
-			$this->init();
-		}
 	}
 
 	/**
@@ -69,7 +65,7 @@ class Analytics {
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public function init_hooks() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 			$this->register_customer_currencies();
@@ -207,33 +203,31 @@ class Analytics {
 			return $args;
 		}
 
-		$stripe_exchange_rate = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
-		$has_processor_rate   = '' !== $stripe_exchange_rate && null !== $stripe_exchange_rate;
-		$saved_rate           = $has_processor_rate ? $stripe_exchange_rate : $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		// Prefer the rate the payment processor applied, and fall back to the rate the order was placed at.
+		$stripe_exchange_rate = $this->get_valid_exchange_rate( $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) );
+		$order_exchange_rate  = $this->get_valid_exchange_rate( $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
 
-		// An explicitly invalid processor rate must not silently fall back to a different basis.
-		if ( ! is_numeric( $saved_rate ) || ! is_finite( (float) $saved_rate ) || (float) $saved_rate <= 0 ) {
-			return $args;
-		}
-		$exchange_rate = $has_processor_rate ? (float) $saved_rate : 1 / (float) $saved_rate;
-		if ( ! is_finite( $exchange_rate ) ) {
-			return $args;
+		$exchange_rate = $stripe_exchange_rate;
+		if ( null === $exchange_rate && null !== $order_exchange_rate ) {
+			// The order rate converts store currency to order currency, so invert it. Re-validate the
+			// inverse: a tiny saved value overflows to infinity.
+			$exchange_rate = $this->get_valid_exchange_rate( 1 / $order_exchange_rate );
 		}
 
-		$dp        = wc_get_price_decimals();
-		$converted = $args;
-		foreach ( [ 'net_total', 'shipping_total', 'tax_total' ] as $key ) {
-			$converted[ $key ] = round( $this->convert_amount( (float) $args[ $key ], $exchange_rate ), $dp );
-			if ( ! is_finite( $converted[ $key ] ) ) {
-				return $args;
-			}
-		}
-		$converted['total_sales'] = $converted['net_total'] + $converted['shipping_total'] + $converted['tax_total'];
-		if ( ! is_finite( $converted['total_sales'] ) ) {
+		if ( null === $exchange_rate ) {
+			// Neither saved rate is usable, so there is no basis for a conversion. Leave the amounts as
+			// WooCommerce recorded them rather than inventing a figure, and make the order findable.
+			Logger::error( sprintf( 'Multi-Currency Analytics: order %d has no valid saved exchange rate, its order stats were not converted.', $order->get_id() ) );
 			return $args;
 		}
 
-		return $converted;
+		$dp                     = wc_get_price_decimals();
+		$args['net_total']      = round( $this->convert_amount( (float) $args['net_total'], $exchange_rate ), $dp );
+		$args['shipping_total'] = round( $this->convert_amount( (float) $args['shipping_total'], $exchange_rate ), $dp );
+		$args['tax_total']      = round( $this->convert_amount( (float) $args['tax_total'], $exchange_rate ), $dp );
+		$args['total_sales']    = $args['net_total'] + $args['shipping_total'] + $args['tax_total'];
+
+		return $args;
 	}
 
 	/**
@@ -517,6 +511,29 @@ class Analytics {
 	 */
 	private function convert_amount( float $amount, float $exchange_rate ): float {
 		return $amount * $exchange_rate;
+	}
+
+	/**
+	 * Validate an exchange rate read from order meta.
+	 *
+	 * Meta values are strings and may be missing, non-numeric, zero, negative or overflow to infinity.
+	 * None of those can be used as a conversion basis.
+	 *
+	 * @param mixed $rate The saved exchange rate.
+	 *
+	 * @return float|null The rate as a float, or null when it cannot be used.
+	 */
+	private function get_valid_exchange_rate( $rate ): ?float {
+		if ( ! is_numeric( $rate ) ) {
+			return null;
+		}
+
+		$rate = (float) $rate;
+		if ( ! is_finite( $rate ) || $rate <= 0 ) {
+			return null;
+		}
+
+		return $rate;
 	}
 
 	/**
