@@ -849,6 +849,74 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect( $.fn.unblock ).not.toHaveBeenCalled();
 	} );
 
+	// Core debounces `update_checkout` by 5 ms before it sends, so a request that
+	// settles inside that window leaves nothing in flight while our refresh runs. The
+	// refresh resolves on a cart from before the queued update, so the guard has to
+	// hold until the request core is about to send has landed.
+	it( 'should keep the guard when a failed request settles inside the debounce window', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		const request = orderReviewRequest();
+		request.send();
+
+		// The shopper changes another field, so core queues a newer update.
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+		request.fail();
+
+		await act( async () => {
+			await Promise.resolve();
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		// Core sends the queued update and it lands, which releases the button.
+		const queued = orderReviewRequest();
+		queued.send();
+		$( document.body ).trigger( 'updated_checkout' );
+		queued.succeed();
+
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	it( 'should keep the guard when a successful request settles inside the debounce window', async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		const request = orderReviewRequest();
+		request.send();
+
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+
+		// Core fires `updated_checkout` from `success` without checking for the
+		// queued update, so this half needs no failure at all.
+		$( document.body ).trigger( 'updated_checkout' );
+		request.succeed();
+
+		await act( async () => {
+			await Promise.resolve();
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		const queued = orderReviewRequest();
+		queued.send();
+		$( document.body ).trigger( 'updated_checkout' );
+		queued.succeed();
+
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
 		global.wcpayExpressCheckoutParams.has_subscription = false;
 

@@ -61,6 +61,13 @@ let cachedCartData = null;
 // its cart data, remounts Elements, or lifts the overlay over a newer one.
 let latestForcedRefreshId = 0;
 
+// Where core is in its order-review cycle: `queued` during the 5 ms it debounces
+// before sending, `sent` while the request is in flight. Core runs at most one,
+// aborting the previous before it sends the next. A refresh that resolves while
+// this is not `idle` fetched a cart from before the update core is still working
+// on, so it must not lift the overlay on those totals.
+let orderReviewUpdate = 'idle';
+
 // The overlay says nothing to screen-reader users, so a rejected tap is announced.
 // Leading-edge debounce: one announcement per burst of taps.
 const announceRefreshInProgress = debounce(
@@ -769,11 +776,17 @@ jQuery( ( $ ) => {
 		try {
 			await wcpayECE.init( { refreshId } );
 		} finally {
-			if ( refreshId === latestForcedRefreshId ) {
+			if (
+				refreshId === latestForcedRefreshId &&
+				orderReviewUpdate === 'idle'
+			) {
 				expressCheckoutButtonUi.unblock();
 			}
 		}
 	};
+
+	const isOrderReviewRequest = ( settings ) =>
+		String( settings?.url ).includes( 'update_order_review' );
 
 	// Core greys out the order review during its request, but not our container,
 	// so cover it from `update_checkout`. Checkout only: `updated_checkout` below
@@ -782,14 +795,38 @@ jQuery( ( $ ) => {
 		$( document.body ).on( 'update_checkout', () => {
 			// Supersede any refresh in flight; `updated_checkout` starts a fresh one.
 			latestForcedRefreshId++;
+			orderReviewUpdate = 'queued';
 			expressCheckoutButtonUi.blockButton();
+		} );
+
+		// Core's `success` fires `updated_checkout` without checking whether a newer
+		// update is already queued, so a request that settles inside the debounce
+		// starts a refresh which outranks the guard. Following core's cycle lets that
+		// refresh hold the overlay until the update core is working on has landed.
+		$( document ).on( 'ajaxSend', ( event, jqXHR, settings ) => {
+			if ( isOrderReviewRequest( settings ) ) {
+				orderReviewUpdate = 'sent';
+			}
+		} );
+
+		// `ajaxComplete` rather than `ajaxSuccess`/`ajaxError`, because it is the only
+		// one that fires for every outcome, aborts included. Only a request we saw go
+		// out settles the cycle: while `queued`, core has another one still to send,
+		// which is also why an abort leaves the guard up.
+		$( document ).on( 'ajaxComplete', ( event, jqXHR, settings ) => {
+			if (
+				isOrderReviewRequest( settings ) &&
+				orderReviewUpdate === 'sent'
+			) {
+				orderReviewUpdate = 'idle';
+			}
 		} );
 
 		// Core's `update_order_review` has only a `success` callback, so a failed one
 		// never reaches `updated_checkout`. Refresh rather than just unblock: the
 		// Store API cart has its own nonce, so it can succeed where core's did not.
 		$( document ).on( 'ajaxError', ( event, jqXHR, settings ) => {
-			if ( ! String( settings?.url ).includes( 'update_order_review' ) ) {
+			if ( ! isOrderReviewRequest( settings ) ) {
 				return;
 			}
 
