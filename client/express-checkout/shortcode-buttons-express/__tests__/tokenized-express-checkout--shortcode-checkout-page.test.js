@@ -28,6 +28,40 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
+
+	// Core brackets its `update_order_review` request with jQuery's global ajax
+	// events, and the guard follows that cycle to know when core is done. Tests that
+	// drive `update_checkout` have to play the same events, or core looks stuck
+	// mid-update and the button stays covered.
+	const orderReviewRequest = () => {
+		const settings = { url: '/?wc-ajax=update_order_review' };
+
+		return {
+			send: () => $( document ).trigger( 'ajaxSend', [ {}, settings ] ),
+			fail: ( status = 500 ) => {
+				$( document ).trigger( 'ajaxError', [ { status }, settings ] );
+				$( document ).trigger( 'ajaxComplete', [
+					{ status },
+					settings,
+				] );
+			},
+			succeed: () =>
+				$( document ).trigger( 'ajaxComplete', [
+					{ status: 200 },
+					settings,
+				] ),
+			abort: () => {
+				$( document ).trigger( 'ajaxError', [
+					{ status: 0, statusText: 'abort' },
+					settings,
+				] );
+				$( document ).trigger( 'ajaxComplete', [
+					{ status: 0 },
+					settings,
+				] );
+			},
+		};
+	};
 	beforeEach( () => {
 		apiFetch.mockClear();
 		apiFetch.mockImplementation( async () =>
@@ -609,6 +643,8 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		// Our container sits outside what core blocks, so the old button is
 		// still tappable and `cachedCartData` is the pre-change snapshot.
 		$( document.body ).trigger( 'update_checkout' );
+		const request = orderReviewRequest();
+		request.send();
 
 		expect( $.fn.block ).toHaveBeenCalled();
 
@@ -624,6 +660,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		// Core finished: our refresh runs and the button opens again.
 		$( document.body ).trigger( 'updated_checkout' );
+		request.succeed();
 		await waitFor( () =>
 			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
 		);
@@ -667,12 +704,17 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		// Core's first refresh completes and our refresh A starts.
 		$( document.body ).trigger( 'update_checkout' );
+		const firstRequest = orderReviewRequest();
+		firstRequest.send();
 		$( document.body ).trigger( 'updated_checkout' );
+		firstRequest.succeed();
 		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
 		$.fn.unblock.mockClear();
 
 		// Core starts a second refresh while A is still waiting on the cart.
 		$( document.body ).trigger( 'update_checkout' );
+		const secondRequest = orderReviewRequest();
+		secondRequest.send();
 
 		// A settles, but core's second request is still pending: the button
 		// must stay covered and clicks must still be rejected.
@@ -694,6 +736,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		// Core finishes the second refresh: our refresh B releases the button.
 		$( document.body ).trigger( 'updated_checkout' );
+		secondRequest.succeed();
 		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
 		releases[ 1 ]();
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
@@ -708,14 +751,13 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 
 		$( document.body ).trigger( 'update_checkout' );
+		const request = orderReviewRequest();
+		request.send();
 		$.fn.unblock.mockClear();
 
 		// Core's `update_order_review` has only a `success` callback, so a 500
 		// means `updated_checkout` never fires and nothing else lifts the overlay.
-		$( document ).trigger( 'ajaxError', [
-			{ status: 500, statusText: 'Internal Server Error' },
-			{ url: '/?wc-ajax=update_order_review' },
-		] );
+		request.fail();
 
 		await waitFor( () =>
 			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
@@ -746,6 +788,8 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		$( document.body ).trigger( 'updated_checkout' );
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 
+		const aborted = orderReviewRequest();
+		aborted.send();
 		$( document.body ).trigger( 'update_checkout' );
 		$.fn.unblock.mockClear();
 		apiFetch.mockClear();
@@ -753,10 +797,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		// Core aborts the in-flight request when a newer `update_checkout` starts.
 		// That newer one guards the button itself, so recovering here would open
 		// the button over a request that is still running.
-		$( document ).trigger( 'ajaxError', [
-			{ status: 0, statusText: 'abort' },
-			{ url: '/?wc-ajax=update_order_review' },
-		] );
+		aborted.abort();
 
 		await act( async () => {
 			await Promise.resolve();
@@ -773,6 +814,14 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		} );
 		expect( rejectMock ).toHaveBeenCalledTimes( 1 );
 		expect( resolveMock ).not.toHaveBeenCalled();
+
+		// Core sends the replacement in the same breath, and that one releases it.
+		const replacement = orderReviewRequest();
+		replacement.send();
+		$( document.body ).trigger( 'updated_checkout' );
+		replacement.succeed();
+
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
 	it( 'should keep the guard when some other request fails during the update', async () => {
