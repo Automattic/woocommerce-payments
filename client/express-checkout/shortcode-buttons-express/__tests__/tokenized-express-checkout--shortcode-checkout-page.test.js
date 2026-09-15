@@ -832,31 +832,6 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
-	it( 'should keep the guard when some other request fails during the update', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		$( document.body ).trigger( 'update_checkout' );
-		$.fn.unblock.mockClear();
-		apiFetch.mockClear();
-
-		// Its URL carries the endpoint name, but it is not core's request.
-		$( document ).trigger( 'ajaxError', [
-			{ status: 500, statusText: 'Internal Server Error' },
-			{ url: '/wp-json/my-plugin/update_order_review' },
-		] );
-
-		await act( async () => {
-			await Promise.resolve();
-		} );
-		expect( apiFetch ).not.toHaveBeenCalled();
-		expect( $.fn.unblock ).not.toHaveBeenCalled();
-	} );
-
 	// Core debounces `update_checkout` by 5 ms, so a request settling inside that
 	// window leaves nothing in flight while our refresh resolves on a stale cart.
 	it( 'should keep the guard when a failed request settles inside the debounce window', async () => {
@@ -920,7 +895,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
-	it( "should not let a third-party request carrying the endpoint name end core's cycle", async () => {
+	it( 'should ignore a third-party request carrying the endpoint name', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
@@ -940,12 +915,13 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			'/wp-json/my-plugin/update_order_review'
 		);
 		impostor.send();
-		impostor.succeed();
+		impostor.fail();
 
 		await act( async () => {
 			await Promise.resolve();
 			await Promise.resolve();
 		} );
+		expect( apiFetch ).toHaveBeenCalledTimes( 2 );
 		expect( $.fn.unblock ).not.toHaveBeenCalled();
 
 		// Only core's own request releases it.
