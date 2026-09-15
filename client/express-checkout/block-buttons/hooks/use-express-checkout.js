@@ -101,6 +101,7 @@ export const useExpressCheckout = ( {
 									{
 										currency_minor_unit:
 											billing.currency.minorUnit ?? 0,
+										currency_code: billing.currency.code,
 									}
 								),
 								displayName: rate.name,
@@ -147,6 +148,7 @@ export const useExpressCheckout = ( {
 			onClick,
 			shippingData.needsShipping,
 			shippingData.shippingRates,
+			billing.currency.code,
 			billing.currency.minorUnit,
 		]
 	);
