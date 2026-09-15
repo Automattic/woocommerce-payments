@@ -163,6 +163,15 @@ function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session.php';
 	WC_Payments::init();
+
+	/**
+	 * Stop when WC_Payments could not initialize: the components below rely on its services.
+	 * Check https://github.com/Automattic/woocommerce-payments/issues/7147
+	 */
+	if ( ! WC_Payments::is_initialized() ) {
+		return;
+	}
+
 	/**
 	 * Needs to be loaded as soon as possible
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759

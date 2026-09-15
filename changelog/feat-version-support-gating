@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Keep WooPayments running with a warning notice when the installed WooCommerce version is below the minimum supported one, and stop offering updates that require a newer WooCommerce version.
