@@ -112,11 +112,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
 
-		unset(
-			$_GET[ WooPay_Session::ATTESTATION_PARAM ],
-			$_POST[ WooPay_Session::ATTESTATION_PARAM ],
-			$_SERVER[ WooPay_Session::VOUCH_HEADER ]
-		);
+		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
 
 		parent::tear_down();
 	}
@@ -643,26 +639,28 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_email_is_not_attested_without_an_envelope() {
-		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$woopay_request = $this->attested_request();
+
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com', $woopay_request ) );
 	}
 
 	public function test_email_is_attested_by_a_fresh_envelope_for_that_email() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
-		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com', $woopay_request ) );
 	}
 
 	public function test_envelope_does_not_attest_to_a_different_email() {
 		// The envelope is valid, but names someone else, so it vouches only for that address.
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'other@example.com' );
+		$woopay_request = $this->attested_request( $this->build_envelope( 'other@example.com' ) );
 
-		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com', $woopay_request ) );
 	}
 
 	public function test_stale_envelope_does_not_attest() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+		$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com', time() - 3600 ) );
 
-		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com', $woopay_request ) );
 	}
 
 	/**
@@ -671,11 +669,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @param mixed $envelope The malformed value arriving as the attestation param.
 	 */
 	public function test_malformed_envelope_does_not_attest( $envelope ) {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
+		$woopay_request = $this->attested_request( $envelope );
 
 		// decrypt_signed_data() indexes data/iv/hash directly, so these have to be refused
 		// here rather than reaching it and warning on an undefined index.
-		$this->assertNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 	}
 
 	public function provider_malformed_envelopes() {
@@ -725,42 +723,44 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_guest_envelope_attests_without_naming_an_email() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope();
+		$woopay_request = $this->attested_request( $this->build_envelope() );
 
 		// A guest shopper has no account to name. The attestation still stands — it is
 		// what admits the request — but there is no email for it to vouch for.
-		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
-		$this->assertNull( WooPay_Session::get_woopay_attested_account_email() );
-		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
+		$this->assertNull( WooPay_Session::get_woopay_attested_account_email( $woopay_request ) );
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com', $woopay_request ) );
 	}
 
 	public function test_absent_envelope_does_not_attest() {
+		$woopay_request = $this->attested_request();
+
 		// Carrying no envelope at all is the ordinary case, not a malformed one.
-		$this->assertNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 	}
 
 	public function test_envelope_is_refused_on_a_second_request() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
-		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 
 		// A second request replaying the same envelope is the attack: it is still fresh,
 		// still sealed correctly, and would otherwise mint a nonce for that shopper.
 		$this->reset_resolved_attestations();
 
-		$this->assertNull( WooPay_Session::get_woopay_attestation() );
-		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+		$this->assertNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
+		$this->assertFalse( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com', $woopay_request ) );
 	}
 
 	public function test_envelope_serves_every_caller_within_one_request() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
 		// The permission check, the email lookup and the nonce gate each resolve the
 		// envelope independently. Spending it on the first of them would break checkout.
-		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
-		$this->assertSame( 'shopper@example.com', WooPay_Session::get_woopay_attested_account_email() );
-		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
-		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
+		$this->assertSame( 'shopper@example.com', WooPay_Session::get_woopay_attested_account_email( $woopay_request ) );
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com', $woopay_request ) );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 	}
 
 	public function test_envelope_is_refused_on_a_second_request_under_a_persistent_object_cache() {
@@ -778,13 +778,13 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$was_using_ext_object_cache = wp_using_ext_object_cache( true );
 
 		try {
-			$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+			$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
-			$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+			$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 
 			$this->reset_resolved_attestations();
 
-			$this->assertNull( WooPay_Session::get_woopay_attestation() );
+			$this->assertNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 		} finally {
 			wp_using_ext_object_cache( $was_using_ext_object_cache );
 		}
@@ -793,9 +793,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_the_recorded_claim_does_not_carry_a_timestamp() {
 		$envelope = $this->build_envelope( 'shopper@example.com' );
 
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
+		$woopay_request = $this->attested_request( $envelope );
 
-		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 
 		// On the database path a duplicate claim is refused by MySQL reporting zero affected
 		// rows for an INSERT that changes nothing, which only holds while every request
@@ -805,30 +805,31 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_spending_one_envelope_does_not_affect_another() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
-		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+		$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 
 		// A shopper's envelope being spent must not lock anyone else out.
 		$this->reset_resolved_attestations();
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'other@example.com' );
+		$woopay_request = $this->attested_request( $this->build_envelope( 'other@example.com' ) );
 
-		$this->assertNotNull( WooPay_Session::get_woopay_attestation() );
+		$this->assertNotNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
 	}
 
 	public function test_stale_envelope_is_not_spent_before_it_is_rejected() {
 		// A stale envelope is refused on freshness, so it never reaches the claim — the
 		// rejection reason stays 'stale' rather than turning into 'already used'.
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+		$envelope       = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+		$woopay_request = $this->attested_request( $envelope );
 
-		$this->assertNull( WooPay_Session::get_woopay_attestation() );
-		$this->assertFalse( $this->attestation_was_claimed( $_POST[ WooPay_Session::ATTESTATION_PARAM ]['hash'] ) );
+		$this->assertNull( WooPay_Session::get_woopay_attestation( $woopay_request ) );
+		$this->assertFalse( $this->attestation_was_claimed( $envelope['hash'] ) );
 	}
 
 	public function test_attested_account_email_outranks_a_caller_supplied_email() {
-		$_GET['email']                              = 'other@example.com';
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$_GET['email']  = 'other@example.com';
+		$woopay_request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
-		$this->assertSame( 'shopper@example.com', WooPay_Session::get_user_email( wp_get_current_user() ) );
+		$this->assertSame( 'shopper@example.com', WooPay_Session::get_user_email( wp_get_current_user(), $woopay_request ) );
 
 		unset( $_GET['email'] );
 	}
@@ -896,12 +897,14 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_nonce_is_withheld_from_the_rest_route_when_the_email_is_not_attested() {
+		$woopay_request = $this->attested_request();
+
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		// Names the shopper in a plain parameter, which anyone can do.
 		$_GET['email'] = $shopper->user_email;
 
-		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
 		// The REST route hands this array back in plaintext, so an unattested caller must
 		// not be able to name an email and be given a nonce minted for that account.
@@ -913,9 +916,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_nonce_is_minted_for_the_rest_route_when_the_email_is_attested() {
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( $shopper->user_email );
+		$woopay_request = $this->attested_request( $this->build_envelope( $shopper->user_email ) );
 
-		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
 		// This is the flow the gate exists to permit: WooPay vouched for the email, so the
 		// shopper gets the nonce that unlocks their balance.
@@ -938,12 +941,14 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_rest_route_withholds_extension_data_for_an_email_it_was_only_told_about() {
+		$woopay_request = $this->attested_request();
+
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
 		// Names the shopper in a plain parameter, which anyone can do.
 		$_GET['email'] = $shopper->user_email;
 
-		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
 		// The nonce was already withheld here, but the balance it guards was not: this route
 		// returns adapted extension data in plaintext, so naming an address must not be enough
@@ -964,10 +969,10 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// A guest shopper has no account to name, so their envelope carries no email — and it
 		// still authorizes the route. That combination is the one worth pinning: the envelope
 		// gets the caller in, and the parameter must not then decide whose data comes back.
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope();
-		$_POST['email']                             = $shopper->user_email;
+		$woopay_request = $this->attested_request( $this->build_envelope() );
+		$_POST['email'] = $shopper->user_email;
 
-		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
 		$this->assertArrayNotHasKey( 'adapted_extensions', $request );
 		$this->assertArrayNotHasKey( 'email_verified_session_nonce', $request );
@@ -981,9 +986,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function test_rest_route_returns_extension_data_for_an_attested_email() {
 		$shopper = $this->setup_shopper_with_adapted_extension_balance();
 
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( $shopper->user_email );
+		$woopay_request = $this->attested_request( $this->build_envelope( $shopper->user_email ) );
 
-		$request = WooPay_Session::get_init_session_request( null, null, null, new WP_REST_Request() );
+		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
 
 		// The control for the two above: withholding is the point, but not at the cost of the
 		// flow this route exists to serve.
@@ -1088,6 +1093,25 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			'iv'   => base64_encode( $iv ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 			'hash' => base64_encode( hash_hmac( 'sha256', $iv . $ciphertext, $key ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		];
+	}
+
+	/**
+	 * Builds a POST to the session route carrying the envelope in a JSON body, or a bare
+	 * POST when there is none.
+	 *
+	 * @param mixed $envelope The sealed envelope, or null for a bare request.
+	 *
+	 * @return WP_REST_Request
+	 */
+	private function attested_request( $envelope = null ): WP_REST_Request {
+		$request = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+
+		if ( null !== $envelope ) {
+			$request->set_header( 'Content-Type', 'application/json' );
+			$request->set_body( wp_json_encode( [ WooPay_Session::ATTESTATION_PARAM => $envelope ] ) );
+		}
+
+		return $request;
 	}
 
 	/**

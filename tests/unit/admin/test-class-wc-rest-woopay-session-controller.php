@@ -40,91 +40,100 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		unset(
 			$_SERVER['HTTP_USER_AGENT'],
-			$_SERVER['HTTP_CART_TOKEN'],
-			$_GET[ WooPay_Session::ATTESTATION_PARAM ],
-			$_POST[ WooPay_Session::ATTESTATION_PARAM ],
-			$_POST['encrypted_data']
+			$_SERVER['HTTP_CART_TOKEN']
 		);
 
 		parent::tear_down();
 	}
 
 	public function test_permission_is_granted_for_an_attested_email() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
-		$this->assertTrue( $this->controller->check_permission() );
+		$this->assertTrue( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_granted_for_a_guest_envelope_naming_no_email() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope();
+		$request = $this->attested_request( $this->build_envelope() );
 
 		// A guest shopper has no account to name, so the envelope carries no email. It
 		// still proves WooPay composed the request, which is what this route asks for.
-		$this->assertTrue( $this->controller->check_permission() );
+		$this->assertTrue( $this->controller->check_permission( $request ) );
+	}
+
+	public function test_permission_is_granted_for_a_form_encoded_body() {
+		$request = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+		$request->set_body_params( [ WooPay_Session::ATTESTATION_PARAM => $this->build_envelope( 'shopper@example.com' ) ] );
+
+		$this->assertTrue( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_an_unauthenticated_request() {
-		$this->assertFalse( $this->controller->check_permission() );
+		$request = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_a_cart_token_only_request() {
 		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
 
+		$request = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+
 		// A Cart-Token authorizes proxied Store API traffic, but never this route: any
 		// visitor can obtain one for their own cart, so it establishes too little here.
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_an_envelope_sent_in_the_query_string() {
-		$_GET[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$request = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+		$request->set_query_params( [ WooPay_Session::ATTESTATION_PARAM => $this->build_envelope( 'shopper@example.com' ) ] );
 
 		// The envelope travels in a POST body so it stays out of access logs, browser
 		// history and Referer headers — a property the sender provides and the receiver
 		// would hand straight back by reading the query string too. It is this store's own
 		// access log that would record valid envelopes. WooPay only ever POSTs, so nothing
 		// legitimate is turned away here.
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_an_envelope_under_the_old_parameter() {
-		$_POST['encrypted_data'] = $this->build_envelope( 'shopper@example.com' );
+		$request = $this->json_request( [ 'encrypted_data' => $this->build_envelope( 'shopper@example.com' ) ] );
 
 		// `encrypted_data` is an older exchange that get_user_email() reads, with a
 		// different payload and different rules. Giving the attestation its own name is
 		// what stops one being mistaken for the other.
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_an_envelope_sealed_with_the_wrong_key() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', null, 'not.the.blog.token' );
+		$request = $this->attested_request( $this->build_envelope( 'shopper@example.com', null, 'not.the.blog.token' ) );
 
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_an_envelope_sealed_with_the_undifferentiated_blog_token() {
 		// The bare blog token seals other exchanges. This route takes only an envelope
 		// sealed under the attestation key, so none of those can stand in for one.
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', null, self::BLOG_TOKEN );
+		$request = $this->attested_request( $this->build_envelope( 'shopper@example.com', null, self::BLOG_TOKEN ) );
 
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_a_stale_envelope() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com', time() - 3600 );
+		$request = $this->attested_request( $this->build_envelope( 'shopper@example.com', time() - 3600 ) );
 
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_for_a_replayed_envelope() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
-		$this->assertTrue( $this->controller->check_permission() );
+		$this->assertTrue( $this->controller->check_permission( $request ) );
 
 		// The body keeps the envelope out of logs and history, but not out of anything
 		// that saw the request itself. Once delivered it has to be worthless to replay.
 		$this->reset_resolved_attestations();
 
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	/**
@@ -135,9 +144,9 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_permission_is_denied_for_a_replay_spelled_differently( callable $respell ) {
 		$envelope = $this->build_envelope( 'shopper@example.com' );
 
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
+		$request = $this->attested_request( $envelope );
 
-		$this->assertTrue( $this->controller->check_permission() );
+		$this->assertTrue( $this->controller->check_permission( $request ) );
 
 		$this->reset_resolved_attestations();
 
@@ -148,9 +157,9 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertNotSame( $envelope['hash'], $replayed['hash'], 'The spelling under test changed nothing.' );
 
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $replayed;
+		$request = $this->attested_request( $replayed );
 
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function provider_other_spellings_of_one_envelope() {
@@ -164,17 +173,43 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 		$envelope         = $this->build_envelope( 'shopper@example.com' );
 		$envelope['hash'] = 'not base64 at all!';
 
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $envelope;
+		$request = $this->attested_request( $envelope );
 
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_denied_when_the_user_agent_is_not_woopay() {
-		$_POST[ WooPay_Session::ATTESTATION_PARAM ] = $this->build_envelope( 'shopper@example.com' );
+		$request = $this->attested_request( $this->build_envelope( 'shopper@example.com' ) );
 
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0';
 
-		$this->assertFalse( $this->controller->check_permission() );
+		$this->assertFalse( $this->controller->check_permission( $request ) );
+	}
+
+	/**
+	 * Builds a POST to the session route carrying the envelope in a JSON body.
+	 *
+	 * @param array $envelope The sealed envelope.
+	 *
+	 * @return WP_REST_Request
+	 */
+	private function attested_request( array $envelope ): WP_REST_Request {
+		return $this->json_request( [ WooPay_Session::ATTESTATION_PARAM => $envelope ] );
+	}
+
+	/**
+	 * Builds a POST to the session route with the given JSON body.
+	 *
+	 * @param array $body The body, before encoding.
+	 *
+	 * @return WP_REST_Request
+	 */
+	private function json_request( array $body ): WP_REST_Request {
+		$request = new WP_REST_Request( 'POST', '/payments/woopay/session' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body( wp_json_encode( $body ) );
+
+		return $request;
 	}
 
 	/**

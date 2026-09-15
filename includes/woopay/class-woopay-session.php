@@ -524,13 +524,14 @@ class WooPay_Session {
 	/**
 	 * Retrieves the user email from the current session.
 	 *
-	 * @param \WP_User $user The user object.
+	 * @param \WP_User             $user    The user object.
+	 * @param WP_REST_Request|null $request The request that may carry an attestation envelope.
 	 * @return string The user email.
 	 */
-	public static function get_user_email( $user ) {
+	public static function get_user_email( $user, ?WP_REST_Request $request = null ) {
 		// An email WooPay attested to outranks anything a caller can put in a plain request
 		// parameter, and is the only source here that carries any proof of origin.
-		$attested_email = self::get_woopay_attested_account_email();
+		$attested_email = self::get_woopay_attested_account_email( $request );
 
 		if ( null !== $attested_email ) {
 			return $attested_email;
@@ -645,7 +646,7 @@ class WooPay_Session {
 		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
 
-		$email = self::get_user_email( $user );
+		$email = self::get_user_email( $user, $woopay_request );
 
 		if ( $woopay_request ) {
 			$order_id = $checkout_data['order_id'] ?? null;
@@ -718,7 +719,7 @@ class WooPay_Session {
 			 * given.
 			 */
 			$extensions_email = null !== $woopay_request
-				? ( self::get_woopay_attested_account_email() ?? '' )
+				? ( self::get_woopay_attested_account_email( $woopay_request ) ?? '' )
 				: $email;
 
 			if ( empty( $extensions_email ) ) {
@@ -742,7 +743,7 @@ class WooPay_Session {
 			if (
 				! is_user_logged_in() &&
 				count( $request['adapted_extensions'] ) > 0 &&
-				( ! $nonce_would_be_disclosed || self::is_email_attested_by_woopay( $extensions_email ) )
+				( ! $nonce_would_be_disclosed || self::is_email_attested_by_woopay( $extensions_email, $woopay_request ) )
 			) {
 				$store_user_email_registered = get_user_by( 'email', $extensions_email );
 
@@ -1029,21 +1030,34 @@ class WooPay_Session {
 	 * would otherwise stay valid indefinitely. It is also spent on first use and refused
 	 * thereafter. See `claim_attestation()`.
 	 *
-	 * Read from the POST body only. Keeping it out of access logs, browser history and
+	 * Read from the request body only. Keeping it out of access logs, browser history and
 	 * Referer headers is a property of the request WooPay sends, and reading the query
 	 * string as well would hand that property back: it is the store's own access log that
-	 * would then record valid envelopes. WooPay only ever POSTs, so nothing legitimate is
-	 * turned away by refusing to look.
+	 * would then record valid envelopes.
 	 *
 	 * Carried under its own parameter, deliberately not the `encrypted_data` key
 	 * `get_user_email()` reads: that is an older exchange with a different shape and
 	 * different rules, and sharing a name would invite one to be mistaken for the other.
 	 *
+	 * @param WP_REST_Request|null $request The request that may carry the envelope.
+	 *
 	 * @return array|null The attested payload, or null when absent, malformed, stale, or spent.
 	 */
-	public static function get_woopay_attestation(): ?array {
-		// phpcs:ignore WordPress.Security.NonceVerification
-		$envelope = $_POST[ self::ATTESTATION_PARAM ] ?? null;
+	public static function get_woopay_attestation( ?WP_REST_Request $request = null ): ?array {
+		if ( null === $request ) {
+			return null;
+		}
+
+		// Body params only, never the query string.
+		$envelope = null;
+
+		foreach ( [ $request->get_json_params(), $request->get_body_params() ] as $params ) {
+			if ( is_array( $params ) && array_key_exists( self::ATTESTATION_PARAM, $params ) ) {
+				$envelope = $params[ self::ATTESTATION_PARAM ];
+
+				break;
+			}
+		}
 
 		if ( ! is_array( $envelope ) ) {
 			// Carrying no envelope is ordinary — proxied Store API traffic never does — so
@@ -1134,10 +1148,12 @@ class WooPay_Session {
 	 * do, such as which user a nonce is minted for: this one is bound to a fresh envelope
 	 * WooPay sealed, and the sources that one accepts are not all equivalent.
 	 *
+	 * @param WP_REST_Request|null $request The request that may carry the envelope.
+	 *
 	 * @return string|null The attested account email, or null when the attestation names none.
 	 */
-	public static function get_woopay_attested_account_email(): ?string {
-		$attestation = self::get_woopay_attestation();
+	public static function get_woopay_attested_account_email( ?WP_REST_Request $request = null ): ?string {
+		$attestation = self::get_woopay_attestation( $request );
 
 		if ( null === $attestation || empty( $attestation['user_email'] ) ) {
 			return null;
@@ -1158,12 +1174,13 @@ class WooPay_Session {
 	 *
 	 * The attestation envelope is the only thing that vouches for one.
 	 *
-	 * @param string $email The email to check.
+	 * @param string               $email   The email to check.
+	 * @param WP_REST_Request|null $request The request that may carry the envelope.
 	 *
 	 * @return bool True if WooPay attested to this email.
 	 */
-	public static function is_email_attested_by_woopay( string $email ): bool {
-		$attested_email = self::get_woopay_attested_account_email();
+	public static function is_email_attested_by_woopay( string $email, ?WP_REST_Request $request = null ): bool {
+		$attested_email = self::get_woopay_attested_account_email( $request );
 
 		return null !== $attested_email && 0 === strcasecmp( $attested_email, $email );
 	}

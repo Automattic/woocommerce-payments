@@ -77,9 +77,11 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 * request without attaching a reusable credential to it. See
 	 * `WooPay_Session::get_woopay_attestation()`.
 	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 *
 	 * @return bool True if the request is from WooPay and carries proof of it.
 	 */
-	public function check_permission() {
+	public function check_permission( WP_REST_Request $request ) {
 		if ( ! $this->is_request_from_woopay() ) {
 			Logger::log( 'WooPay session route denied: the request does not identify as WooPay.' );
 
@@ -88,7 +90,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 
 		// Not the attested *email*: a guest shopper has no email to name, and the envelope
 		// still proves the request came from WooPay.
-		if ( null !== WooPay_Session::get_woopay_attestation() ) {
+		if ( null !== WooPay_Session::get_woopay_attestation( $request ) ) {
 			return true;
 		}
 
