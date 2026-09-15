@@ -61,6 +61,10 @@ let cachedCartData = null;
 // its cart data, remounts Elements, or lifts the overlay over a newer one.
 let latestForcedRefreshId = 0;
 
+// Keep the button covered while WooCommerce queues or sends an order update,
+// so an older cart refresh cannot show stale totals.
+let orderReviewUpdate = 'idle';
+
 // The overlay says nothing to screen-reader users, so a rejected tap is announced.
 // Leading-edge debounce: one announcement per burst of taps.
 const announceRefreshInProgress = debounce(
@@ -769,20 +773,93 @@ jQuery( ( $ ) => {
 		try {
 			await wcpayECE.init( { refreshId } );
 		} finally {
-			if ( refreshId === latestForcedRefreshId ) {
+			if (
+				refreshId === latestForcedRefreshId &&
+				orderReviewUpdate === 'idle'
+			) {
 				expressCheckoutButtonUi.unblock();
 			}
 		}
 	};
 
+	// Use WooCommerce's localized URL so endpoint filters are respected.
+	const orderReviewUrl = () =>
+		window.wc_checkout_params?.wc_ajax_url
+			?.toString()
+			.replace( '%%endpoint%%', 'update_order_review' );
+
+	const isOrderReviewRequest = ( settings ) => {
+		const expected = orderReviewUrl();
+
+		if ( ! expected ) {
+			return false;
+		}
+
+		try {
+			const base = window.location.href;
+			const target = new URL( String( settings?.url ?? '' ), base );
+			const reference = new URL( expected, base );
+
+			if (
+				target.origin !== reference.origin ||
+				target.pathname !== reference.pathname
+			) {
+				return false;
+			}
+
+			// Allow extra query parameters added by Ajax prefilters.
+			return Array.from( reference.searchParams ).every(
+				( [ key, value ] ) => target.searchParams.get( key ) === value
+			);
+		} catch {
+			return false;
+		}
+	};
+
 	// Core greys out the order review during its request, but not our container,
 	// so cover it from `update_checkout`. Checkout only: `updated_checkout` below
-	// runs the refresh that lifts it again.
+	// runs the refresh that lifts it again, and `ajaxError` covers the rest.
 	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
 		$( document.body ).on( 'update_checkout', () => {
 			// Supersede any refresh in flight; `updated_checkout` starts a fresh one.
 			latestForcedRefreshId++;
+			// Do not wait for a request we cannot identify.
+			orderReviewUpdate = orderReviewUrl() ? 'queued' : 'idle';
 			expressCheckoutButtonUi.blockButton();
+		} );
+
+		// Track the active order update so an older cart refresh cannot uncover
+		// the button before the latest totals arrive.
+		$( document ).on( 'ajaxSend', ( event, jqXHR, settings ) => {
+			if ( isOrderReviewRequest( settings ) ) {
+				orderReviewUpdate = 'sent';
+			}
+		} );
+
+		// `ajaxComplete` handles every outcome. Keep a queued replacement pending
+		// so the button stays covered.
+		$( document ).on( 'ajaxComplete', ( event, jqXHR, settings ) => {
+			if (
+				isOrderReviewRequest( settings ) &&
+				orderReviewUpdate === 'sent'
+			) {
+				orderReviewUpdate = 'idle';
+			}
+		} );
+
+		// A failed order update does not trigger `updated_checkout`, so fetch fresh
+		// totals from the Store API, which uses a separate nonce.
+		$( document ).on( 'ajaxError', ( event, jqXHR, settings ) => {
+			if ( ! isOrderReviewRequest( settings ) ) {
+				return;
+			}
+
+			// An abort means WooCommerce is starting a replacement request.
+			if ( jqXHR?.statusText === 'abort' ) {
+				return;
+			}
+
+			refreshExpressCheckoutElement();
 		} );
 	}
 
