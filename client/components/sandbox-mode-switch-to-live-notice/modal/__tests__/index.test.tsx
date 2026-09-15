@@ -9,12 +9,15 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import SetupLivePaymentsModal from '..';
+import { redirectTo } from 'utils';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
 } ) );
 
-// Mock the getAdminUrl utility to return an absolute URL
+// Mock the getAdminUrl utility to return an absolute URL. `redirectTo` is
+// mocked too: jsdom marks `window.location` unforgeable, so the redirect is
+// asserted through the helper rather than through the location itself.
 jest.mock( 'utils', () => ( {
 	getAdminUrl: jest.fn(
 		( args: Record< string, any > ) =>
@@ -22,6 +25,7 @@ jest.mock( 'utils', () => ( {
 				args
 			).toString() }`
 	),
+	redirectTo: jest.fn(),
 } ) );
 
 declare const global: {
@@ -52,12 +56,6 @@ describe( 'Setup Live Payments Modal', () => {
 	} );
 
 	it( 'calls `handleSetup` when setup button is clicked', async () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			enumerable: true,
-			value: new URL( window.location.href ),
-		} );
-
 		render(
 			<SetupLivePaymentsModal
 				from="somewhere"
@@ -72,7 +70,7 @@ describe( 'Setup Live Payments Modal', () => {
 			} )
 		);
 
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			`http://localhost/wp-admin/admin.php?page=wc-settings&tab=checkout&path=%2Fwoopayments%2Fonboarding&source=bogus-source&from=wcpay-setup-live-payments`
 		);
 	} );
