@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
+import { redirectTo } from 'wcpay/utils/navigation';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 
 export const shouldSavePaymentPaymentMethod = () => {
@@ -36,7 +37,7 @@ export const showAuthenticationModalIfRequired = ( api ) => {
 
 	return confirmationRequest
 		.then( ( redirectUrl ) => {
-			window.location = redirectUrl;
+			redirectTo( redirectUrl );
 		} )
 		.catch( ( error ) => {
 			let errorMessage = error.message;

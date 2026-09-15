@@ -205,6 +205,10 @@ class WC_Payments_Fraud_Service {
 	 *                    This means that the method is called before the `init` hook.
 	 */
 	public function add_sift_js_tracker_in_admin() {
+		if ( ! is_admin() || ! did_action( 'current_screen' ) ) {
+			return;
+		}
+
 		// If the current page is a WooPayments dashboard page bail as there's separate logic
 		// that will include the Sift JS tracker on its own.
 		if ( isset( $_GET['path'] ) && strpos( $_GET['path'], '/payments/' ) === 0 ) { // phpcs:ignore WordPress.Security
