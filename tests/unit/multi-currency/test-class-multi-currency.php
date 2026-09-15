@@ -143,6 +143,48 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency();
 	}
 
+	/** A getter before session creation must not prevent later price hooks. */
+	public function test_early_getter_before_session_preserves_price_hooks() {
+		remove_filter( 'woocommerce_product_get_price', [ $this->multi_currency->get_frontend_prices(), 'get_product_price_string' ], 99 );
+		$this->mock_currency_settings(
+			'CAD',
+			[
+				'price_rounding' => '0',
+				'price_charm'    => '0',
+			]
+		);
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( MultiCurrency::RENDERING_MODE_OPTION, 'cache' );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->init_multi_currency( null, true, null, null, null, false );
+		$session = WC()->session;
+		try {
+			WC()->session = null;
+			$this->multi_currency->get_default_currency();
+			$this->assertStringContainsString( 'wcpay-async-price', wc_price( 10 ) );
+			$this->assertFalse( has_filter( 'woocommerce_product_get_price', [ $this->multi_currency->get_frontend_prices(), 'get_product_price_string' ] ) );
+			$active = $this->createMock( WC_Session_Handler::class );
+			$active->method( 'has_session' )->willReturn( true );
+			$active->method( 'get' )->willReturn( 'CAD' );
+			WC()->session = $active;
+			$this->multi_currency->init();
+			$this->assertStringNotContainsString( 'wcpay-async-price', wc_price( 10 ) );
+			$this->assertSame( 99, has_filter( 'woocommerce_product_get_price', [ $this->multi_currency->get_frontend_prices(), 'get_product_price_string' ] ) );
+			$product = new WC_Product_Simple();
+			$product->set_price( 10 );
+			foreach ( [ 1, 2 ] as $repeat ) {
+				$this->multi_currency->init();
+				$this->assertSame( 'CAD', get_woocommerce_currency(), 'Initialization ' . $repeat );
+				$this->assertEquals( 12.07, (float) $product->get_price() );
+				$this->assertStringContainsString( '12.07', wc_price( $product->get_price() ) );
+				$this->assertStringNotContainsString( 'wcpay-async-price', wc_price( $product->get_price() ) );
+			}
+		} finally {
+			WC()->session = $session;
+			$this->remove_currency_settings_mock( 'CAD', [ 'price_rounding', 'price_charm' ] );
+		}
+	}
+
 	/** An early getter followed by scheduled init must not register a second converter. */
 	public function test_early_getter_then_init_registers_one_analytics_converter() {
 		update_option( '_wcpay_feature_customer_multi_currency', '1' );

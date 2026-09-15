@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use server-side prices once the WooCommerce session exists, even when Multi-Currency was initialized before it.
