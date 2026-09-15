@@ -785,8 +785,39 @@ jQuery( ( $ ) => {
 		}
 	};
 
-	const isOrderReviewRequest = ( settings ) =>
-		String( settings?.url ).includes( 'update_order_review' );
+	// Use WooCommerce's localized URL so endpoint filters are respected.
+	const orderReviewUrl = () =>
+		window.wc_checkout_params?.wc_ajax_url
+			?.toString()
+			.replace( '%%endpoint%%', 'update_order_review' );
+
+	const isOrderReviewRequest = ( settings ) => {
+		const expected = orderReviewUrl();
+
+		if ( ! expected ) {
+			return false;
+		}
+
+		try {
+			const base = window.location.href;
+			const target = new URL( String( settings?.url ?? '' ), base );
+			const reference = new URL( expected, base );
+
+			if (
+				target.origin !== reference.origin ||
+				target.pathname !== reference.pathname
+			) {
+				return false;
+			}
+
+			// Allow extra query parameters added by Ajax prefilters.
+			return Array.from( reference.searchParams ).every(
+				( [ key, value ] ) => target.searchParams.get( key ) === value
+			);
+		} catch {
+			return false;
+		}
+	};
 
 	// Core greys out the order review during its request, but not our container,
 	// so cover it from `update_checkout`. Checkout only: `updated_checkout` below
@@ -795,7 +826,8 @@ jQuery( ( $ ) => {
 		$( document.body ).on( 'update_checkout', () => {
 			// Supersede any refresh in flight; `updated_checkout` starts a fresh one.
 			latestForcedRefreshId++;
-			orderReviewUpdate = 'queued';
+			// Do not wait for a request we cannot identify.
+			orderReviewUpdate = orderReviewUrl() ? 'queued' : 'idle';
 			expressCheckoutButtonUi.blockButton();
 		} );
 

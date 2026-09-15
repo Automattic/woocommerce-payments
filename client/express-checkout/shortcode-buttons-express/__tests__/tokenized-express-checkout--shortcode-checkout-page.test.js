@@ -29,12 +29,17 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
 
-	// Core brackets its `update_order_review` request with jQuery's global ajax
-	// events, and the guard follows that cycle to know when core is done. Tests that
-	// drive `update_checkout` have to play the same events, or core looks stuck
-	// mid-update and the button stays covered.
-	const orderReviewRequest = () => {
-		const settings = { url: '/?wc-ajax=update_order_review' };
+	// Core brackets its order-review request with jQuery's global ajax events, and
+	// the guard follows that cycle, so tests driving `update_checkout` play them too.
+	const orderReviewRequest = ( url ) => {
+		const settings = {
+			url:
+				url ??
+				global.wc_checkout_params.wc_ajax_url.replace(
+					'%%endpoint%%',
+					'update_order_review'
+				),
+		};
 
 		return {
 			send: () => $( document ).trigger( 'ajaxSend', [ {}, settings ] ),
@@ -86,6 +91,8 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			this.data( 'blockUI.isBlocked', 0 );
 			return this;
 		} );
+
+		global.wc_checkout_params = { wc_ajax_url: '/?wc-ajax=%%endpoint%%' };
 
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.nonce = {
@@ -147,6 +154,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 	afterEach( async () => {
 		delete global.Stripe;
+		delete global.wc_checkout_params;
 		// removing all the registered event handlers so they don't leak between tests.
 		// jQuery's global ajax events are bound on `document`, not `document.body`.
 		global.$( document.body ).off();
@@ -836,10 +844,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		$.fn.unblock.mockClear();
 		apiFetch.mockClear();
 
-		// Another plugin's request dying says nothing about core's order review.
+		// Its URL carries the endpoint name, but it is not core's request.
 		$( document ).trigger( 'ajaxError', [
 			{ status: 500, statusText: 'Internal Server Error' },
-			{ url: '/?wc-ajax=some_other_plugin_endpoint' },
+			{ url: '/wp-json/my-plugin/update_order_review' },
 		] );
 
 		await act( async () => {
@@ -849,10 +857,8 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect( $.fn.unblock ).not.toHaveBeenCalled();
 	} );
 
-	// Core debounces `update_checkout` by 5 ms before it sends, so a request that
-	// settles inside that window leaves nothing in flight while our refresh runs. The
-	// refresh resolves on a cart from before the queued update, so the guard has to
-	// hold until the request core is about to send has landed.
+	// Core debounces `update_checkout` by 5 ms, so a request settling inside that
+	// window leaves nothing in flight while our refresh resolves on a stale cart.
 	it( 'should keep the guard when a failed request settles inside the debounce window', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
@@ -864,7 +870,6 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		const request = orderReviewRequest();
 		request.send();
 
-		// The shopper changes another field, so core queues a newer update.
 		$( document.body ).trigger( 'update_checkout' );
 		$.fn.unblock.mockClear();
 		request.fail();
@@ -875,7 +880,6 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		} );
 		expect( $.fn.unblock ).not.toHaveBeenCalled();
 
-		// Core sends the queued update and it lands, which releases the button.
 		const queued = orderReviewRequest();
 		queued.send();
 		$( document.body ).trigger( 'updated_checkout' );
@@ -898,8 +902,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		$( document.body ).trigger( 'update_checkout' );
 		$.fn.unblock.mockClear();
 
-		// Core fires `updated_checkout` from `success` without checking for the
-		// queued update, so this half needs no failure at all.
+		// Core fires `updated_checkout` from `success` regardless of the queued update.
 		$( document.body ).trigger( 'updated_checkout' );
 		request.succeed();
 
@@ -913,6 +916,90 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		queued.send();
 		$( document.body ).trigger( 'updated_checkout' );
 		queued.succeed();
+
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	it( "should not let a third-party request carrying the endpoint name end core's cycle", async () => {
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		const request = orderReviewRequest();
+		request.send();
+
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+		request.fail();
+
+		// A looser match would read this as core's and declare the cycle over.
+		const impostor = orderReviewRequest(
+			'/wp-json/my-plugin/update_order_review'
+		);
+		impostor.send();
+		impostor.succeed();
+
+		await act( async () => {
+			await Promise.resolve();
+			await Promise.resolve();
+		} );
+		expect( $.fn.unblock ).not.toHaveBeenCalled();
+
+		// Only core's own request releases it.
+		const queued = orderReviewRequest();
+		queued.send();
+		$( document.body ).trigger( 'updated_checkout' );
+		queued.succeed();
+
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	it( 'should follow the cycle when a filtered endpoint takes its first query parameter', async () => {
+		global.wc_checkout_params.wc_ajax_url = '/wc-ajax/%%endpoint%%';
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+
+		const request = orderReviewRequest(
+			'/wc-ajax/update_order_review?lang=fr'
+		);
+		request.send();
+		$( document.body ).trigger( 'updated_checkout' );
+		request.succeed();
+
+		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+	} );
+
+	it( 'should follow the cycle once jQuery has expanded a protocol-relative endpoint', async () => {
+		global.wc_checkout_params.wc_ajax_url =
+			'//localhost/?wc-ajax=%%endpoint%%';
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		$( document.body ).trigger( 'updated_checkout' );
+		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
+
+		$( document.body ).trigger( 'update_checkout' );
+		$.fn.unblock.mockClear();
+
+		const request = orderReviewRequest(
+			'http://localhost/?wc-ajax=update_order_review'
+		);
+		request.send();
+		$( document.body ).trigger( 'updated_checkout' );
+		request.succeed();
 
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
