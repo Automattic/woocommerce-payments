@@ -361,7 +361,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 					"{$wpdb->prefix}wc_order_stats.order_id",
 					", MAX({$wpdb->prefix}wc_order_stats.date_created) AS datetime_anchor",
 					", SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) as orders_count, COUNT( DISTINCT( {$wpdb->prefix}wc_order_stats.customer_id ) ) as total_customers, SUM({$wpdb->prefix}wc_order_stats.num_items_sold) as num_items_sold, COALESCE( coupons_count, 0 ) as coupons_count, SUM({$wpdb->prefix}wc_order_stats.net_total) AS net_revenue",
-					'CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_gross_revenue END',
+					'CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value > 0 THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) WHEN wcpay_multicurrency_exchange_rate_meta.meta_value > 0 THEN ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) ELSE product_net_revenue END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value > 0 THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) WHEN wcpay_multicurrency_exchange_rate_meta.meta_value > 0 THEN ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) ELSE product_gross_revenue END ELSE product_gross_revenue END',
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 					', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency',
 					', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate',
@@ -381,7 +381,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 				],
 				[
 					", MAX({$wpdb->prefix}wc_order_stats.date_created) AS datetime_anchor",
-					'CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_gross_revenue END',
+					'CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value > 0 THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) WHEN wcpay_multicurrency_exchange_rate_meta.meta_value > 0 THEN ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) ELSE product_net_revenue END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value > 0 THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) WHEN wcpay_multicurrency_exchange_rate_meta.meta_value > 0 THEN ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) ELSE product_gross_revenue END ELSE product_gross_revenue END',
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 					', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency',
 					', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate',
@@ -629,7 +629,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 				],
 				[
-					"DISTINCT {$wpdb->prefix}wc_order_stats.order_id, {$wpdb->prefix}wc_order_stats.parent_id, {$wpdb->prefix}wc_order_stats.date_created, {$wpdb->prefix}wc_order_stats.date_created_gmt, REPLACE({$wpdb->prefix}wc_order_stats.status, 'wc-', '') as status, {$wpdb->prefix}wc_order_stats.customer_id, CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND({$wpdb->prefix}wc_order_stats.net_total / wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND({$wpdb->prefix}wc_order_stats.net_total * wcpay_multicurrency_exchange_rate_meta.meta_value, 2) END as net_total, {$wpdb->prefix}wc_order_stats.total_sales, {$wpdb->prefix}wc_order_stats.num_items_sold, (CASE WHEN {$wpdb->prefix}wc_order_stats.returning_customer = 0 THEN 'new' ELSE 'returning' END) as customer_type",
+					"DISTINCT {$wpdb->prefix}wc_order_stats.order_id, {$wpdb->prefix}wc_order_stats.parent_id, {$wpdb->prefix}wc_order_stats.date_created, {$wpdb->prefix}wc_order_stats.date_created_gmt, REPLACE({$wpdb->prefix}wc_order_stats.status, 'wc-', '') as status, {$wpdb->prefix}wc_order_stats.customer_id, CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value > 0 THEN ROUND({$wpdb->prefix}wc_order_stats.net_total / wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) WHEN wcpay_multicurrency_exchange_rate_meta.meta_value > 0 THEN ROUND({$wpdb->prefix}wc_order_stats.net_total * wcpay_multicurrency_exchange_rate_meta.meta_value, 2) ELSE {$wpdb->prefix}wc_order_stats.net_total END as net_total, {$wpdb->prefix}wc_order_stats.total_sales, {$wpdb->prefix}wc_order_stats.num_items_sold, (CASE WHEN {$wpdb->prefix}wc_order_stats.returning_customer = 0 THEN 'new' ELSE 'returning' END) as customer_type",
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 				],
 			],
@@ -639,10 +639,59 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 				],
 				[
-					"SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) as orders_count, SUM(CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND({$wpdb->prefix}wc_order_stats.net_total / wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND({$wpdb->prefix}wc_order_stats.net_total * wcpay_multicurrency_exchange_rate_meta.meta_value, 2) END) AS net_revenue, SUM( CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND({$wpdb->prefix}wc_order_stats.net_total / wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND({$wpdb->prefix}wc_order_stats.net_total * wcpay_multicurrency_exchange_rate_meta.meta_value, 2) END ) / SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) AS avg_order_value, SUM( {$wpdb->prefix}wc_order_stats.num_items_sold ) / SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) AS avg_items_per_order",
+					"SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) as orders_count, SUM(CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value > 0 THEN ROUND({$wpdb->prefix}wc_order_stats.net_total / wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) WHEN wcpay_multicurrency_exchange_rate_meta.meta_value > 0 THEN ROUND({$wpdb->prefix}wc_order_stats.net_total * wcpay_multicurrency_exchange_rate_meta.meta_value, 2) ELSE {$wpdb->prefix}wc_order_stats.net_total END) AS net_revenue, SUM( CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value > 0 THEN ROUND({$wpdb->prefix}wc_order_stats.net_total / wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) WHEN wcpay_multicurrency_exchange_rate_meta.meta_value > 0 THEN ROUND({$wpdb->prefix}wc_order_stats.net_total * wcpay_multicurrency_exchange_rate_meta.meta_value, 2) ELSE {$wpdb->prefix}wc_order_stats.net_total END ) / SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) AS avg_order_value, SUM( {$wpdb->prefix}wc_order_stats.num_items_sold ) / SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) AS avg_items_per_order",
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 				],
 			],
+		];
+	}
+
+	/**
+	 * The report SQL picks the same saved rate as update_order_stats_data(), so an unusable
+	 * processor rate cannot turn a reported amount negative or empty.
+	 *
+	 * @dataProvider report_sql_rates_provider
+	 * @param string $processor_rate   Saved processor rate.
+	 * @param string $order_rate       Saved order rate.
+	 * @param float  $expected_order   A stored net total of 63.05 shown in the order currency.
+	 * @param float  $expected_product Product revenue of 54.13 shown in the store currency.
+	 */
+	public function test_report_sql_uses_first_usable_saved_rate( $processor_rate, $order_rate, $expected_order, $expected_product ) {
+		global $wpdb;
+
+		// The report replacements are only built for REST requests on stores with Multi-Currency orders.
+		// Build them directly so the product conversion is exercised regardless of that gate.
+		$set_sql_replacements = new \ReflectionMethod( Analytics::class, 'set_sql_replacements' );
+		$set_sql_replacements->setAccessible( true );
+		$set_sql_replacements->invoke( $this->analytics );
+
+		$net_total = "{$wpdb->prefix}wc_order_stats.net_total";
+		$columns   = [
+			'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value' => $wpdb->prepare( '%s', $processor_rate ),
+			'wcpay_multicurrency_exchange_rate_meta.meta_value'        => $wpdb->prepare( '%s', $order_rate ),
+			'wcpay_multicurrency_default_currency_meta.meta_value'     => "'USD'",
+		];
+
+		$order_sql = strtr( $this->analytics->filter_select_orders_clauses( [ $net_total ] )[0], $columns + [ $net_total => '63.05' ] );
+		$this->assertEquals( $expected_order, $wpdb->get_var( "SELECT {$order_sql}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$product_sql = strtr( $this->analytics->filter_select_clauses( [ 'product_net_revenue' ], 'products_subquery' )[0], $columns + [ 'product_net_revenue' => '54.13' ] );
+		$this->assertEquals( $expected_product, $wpdb->get_var( "SELECT {$product_sql}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
+
+	/**
+	 * Saved rate pairs as they are read from order meta.
+	 *
+	 * @return array
+	 */
+	public function report_sql_rates_provider() {
+		return [
+			'valid processor rate'    => [ '1.1648', '0.8585', 54.13, 63.05 ],
+			'negative processor rate' => [ '-1', '0.8585', 54.13, 63.05 ],
+			'zero processor rate'     => [ '0', '0.8585', 54.13, 63.05 ],
+			'text processor rate'     => [ 'invalid', '0.8585', 54.13, 63.05 ],
+			'empty processor rate'    => [ '', '0.8585', 54.13, 63.05 ],
+			'neither rate usable'     => [ '-1', 'invalid', 63.05, 54.13 ],
 		];
 	}
 

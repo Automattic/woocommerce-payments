@@ -459,8 +459,8 @@ class Analytics {
 
 				$clauses[ $k ] = str_replace(
 					$variable,
-					$this->generate_case_when(
-						$stripe_exchange_rate,
+					$this->generate_rate_conversion(
+						$net_total,
 						"ROUND($net_total / $stripe_exchange_rate, $dp)",
 						"ROUND($net_total * $exchange_rate, $dp)"
 					) . $alias,
@@ -590,6 +590,27 @@ class Analytics {
 	}
 
 	/**
+	 * Generate a CASE statement that converts an amount with the first usable saved exchange rate.
+	 *
+	 * Saved rates are order meta strings. Only a rate above zero is a conversion basis: NULL, empty,
+	 * non-numeric, zero and negative values all compare false. The processor rate is preferred, the
+	 * order rate is the fallback, and with neither usable the amount is left as recorded. This is the
+	 * same order of preference update_order_stats_data() uses when it writes the stats row.
+	 *
+	 * @param string $amount              The SQL amount to convert.
+	 * @param string $processor_rate_then The conversion using the processor exchange rate.
+	 * @param string $order_rate_then     The conversion using the order exchange rate.
+	 *
+	 * @return string
+	 */
+	private function generate_rate_conversion( string $amount, string $processor_rate_then, string $order_rate_then ): string {
+		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
+		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
+
+		return "CASE WHEN {$stripe_exchange_rate} > 0 THEN {$processor_rate_then} WHEN {$exchange_rate} > 0 THEN {$order_rate_then} ELSE {$amount} END";
+	}
+
+	/**
 	 * Perform an SQL query to determine whether Multi Currency has ever been used on this store,
 	 * by checking how many orders are in the database where an exchange currency rate has been stored.
 	 *
@@ -672,9 +693,9 @@ class Analytics {
 		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
 		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
 
-		$discount_amount       = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(discount_amount * {$stripe_exchange_rate}, 2)", "ROUND(discount_amount * (1 / {$exchange_rate} ), 2)" ), 'discount_amount' );
-		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
-		$product_gross_revenue = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_gross_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_gross_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_gross_revenue' );
+		$discount_amount       = $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'discount_amount', "ROUND(discount_amount * {$stripe_exchange_rate}, 2)", "ROUND(discount_amount * (1 / {$exchange_rate} ), 2)" ), 'discount_amount' );
+		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'product_net_revenue', "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
+		$product_gross_revenue = $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'product_gross_revenue', "ROUND(product_gross_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_gross_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_gross_revenue' );
 
 		$this->sql_replacements = [
 			'generic'    => [
@@ -698,9 +719,9 @@ class Analytics {
 				'product_gross_revenue' => $product_gross_revenue,
 			],
 			'taxes'      => [
-				'SUM(total_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(total_tax * {$stripe_exchange_rate}, 2)", "ROUND(total_tax * (1 / {$exchange_rate} ), 2)" ), 'total_tax' ) . ')',
-				'SUM(order_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(order_tax * {$stripe_exchange_rate}, 2)", "ROUND(order_tax * (1 / {$exchange_rate} ), 2)" ), 'order_tax' ) . ')',
-				'SUM(shipping_tax)' => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(shipping_tax * {$stripe_exchange_rate}, 2)", "ROUND(shipping_tax * (1 / {$exchange_rate} ), 2)" ), 'shipping_tax' ) . ')',
+				'SUM(total_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'total_tax', "ROUND(total_tax * {$stripe_exchange_rate}, 2)", "ROUND(total_tax * (1 / {$exchange_rate} ), 2)" ), 'total_tax' ) . ')',
+				'SUM(order_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'order_tax', "ROUND(order_tax * {$stripe_exchange_rate}, 2)", "ROUND(order_tax * (1 / {$exchange_rate} ), 2)" ), 'order_tax' ) . ')',
+				'SUM(shipping_tax)' => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'shipping_tax', "ROUND(shipping_tax * {$stripe_exchange_rate}, 2)", "ROUND(shipping_tax * (1 / {$exchange_rate} ), 2)" ), 'shipping_tax' ) . ')',
 			],
 			'coupons'    => [
 				'discount_amount' => $discount_amount,
