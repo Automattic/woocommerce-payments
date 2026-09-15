@@ -1930,17 +1930,45 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		// Assert: Only the actionable order is returned.
+		// Assert: Only the actionable order is returned, with the number merchants see.
 		$this->assertSame(
 			[
 				[
-					'order_id'  => $actionable_order->get_id(),
-					'charge_id' => 'ch_actionable',
-					'created'   => 1719800000,
+					'order_id'     => $actionable_order->get_id(),
+					'order_number' => $actionable_order->get_order_number(),
+					'charge_id'    => 'ch_actionable',
+					'created'      => 1719800000,
 				],
 			],
 			$result
 		);
+	}
+
+	/**
+	 * Tests that the payload uses the display order number, not the post ID.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_includes_display_order_number() {
+		// Arrange: An actionable warning on an order whose number is customized.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $order, 'ch_numbered' );
+		$this->order_service->mark_payment_early_fraud_warning( $order, 'ch_numbered', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$order_number_filter = function ( $order_number, $filtered_order ) use ( $order ) {
+			return $filtered_order->get_id() === $order->get_id() ? 'INV-42' : $order_number;
+		};
+		add_filter( 'woocommerce_order_number', $order_number_filter, 10, 2 );
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		remove_filter( 'woocommerce_order_number', $order_number_filter );
+
+		// Assert: The customized number is what the Overview task will show.
+		$this->assertSame( 'INV-42', $result[0]['order_number'] );
 	}
 
 	/**
@@ -1971,9 +1999,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			[
 				[
-					'order_id'  => $newer_order->get_id(),
-					'charge_id' => 'ch_newer',
-					'created'   => 1719900000,
+					'order_id'     => $newer_order->get_id(),
+					'order_number' => $newer_order->get_order_number(),
+					'charge_id'    => 'ch_newer',
+					'created'      => 1719900000,
 				],
 			],
 			$result

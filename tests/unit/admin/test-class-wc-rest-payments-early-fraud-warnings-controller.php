@@ -66,9 +66,10 @@ class WC_REST_Payments_Early_Fraud_Warnings_Controller_Test extends WCPAY_UnitTe
 		// Arrange: The cache holds one actionable warning.
 		$warnings = [
 			[
-				'order_id'  => 42,
-				'charge_id' => 'ch_actionable',
-				'created'   => 1719800000,
+				'order_id'     => 42,
+				'order_number' => 'INV-42',
+				'charge_id'    => 'ch_actionable',
+				'created'      => 1719800000,
 			],
 		];
 		$this->database_cache

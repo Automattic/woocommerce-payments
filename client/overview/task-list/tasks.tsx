@@ -9,7 +9,7 @@
  */
 import strings from './strings';
 import { getDisputeResolutionTask } from './tasks/dispute-task';
-import { getEarlyFraudWarningTask } from './tasks/early-fraud-warning-task';
+import { getEarlyFraudWarningTasks } from './tasks/early-fraud-warning-task';
 import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
 import { getReconnectWpcomTask } from './tasks/reconnect-task';
 import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
@@ -96,7 +96,10 @@ export const getTasks = ( {
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		disputeResolutionTask,
-		getEarlyFraudWarningTask( activeEarlyFraudWarnings, dismissedTasks ),
+		...getEarlyFraudWarningTasks(
+			activeEarlyFraudWarnings,
+			dismissedTasks
+		),
 		isGoLiveTaskVisible && getGoLiveTask(),
 	]
 		.filter( Boolean )

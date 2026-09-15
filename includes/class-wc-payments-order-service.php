@@ -1342,7 +1342,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param int $limit Maximum number of warning-carrying orders to inspect.
 	 *
-	 * @return array[] Arrays with `order_id`, `charge_id` and `created` keys, newest warning first.
+	 * @return array[] Arrays with `order_id`, `order_number`, `charge_id` and `created` keys, newest warning first.
 	 */
 	public function get_actionable_early_fraud_warning_orders( int $limit = 100 ): array {
 		$orders = wc_get_orders(
@@ -1378,9 +1378,10 @@ class WC_Payments_Order_Service {
 			}
 
 			$actionable_orders[] = [
-				'order_id'  => $order->get_id(),
-				'charge_id' => $this->get_charge_id_for_order( $order ),
-				'created'   => (int) ( $early_fraud_warning['created'] ?? 0 ),
+				'order_id'     => $order->get_id(),
+				'order_number' => $order->get_order_number(),
+				'charge_id'    => $this->get_charge_id_for_order( $order ),
+				'created'      => (int) ( $early_fraud_warning['created'] ?? 0 ),
 			];
 		}
 

@@ -11,6 +11,11 @@ import { ACTION_TYPES } from './action-types';
  */
 export interface ActiveEarlyFraudWarning {
 	order_id: number;
+	/**
+	 * Display order number from `WC_Order::get_order_number()`.
+	 * Absent on a stale cache entry from before this field shipped.
+	 */
+	order_number?: string;
 	charge_id: string;
 	created: number;
 }

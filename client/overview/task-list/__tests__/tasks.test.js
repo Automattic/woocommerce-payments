@@ -786,7 +786,12 @@ describe( 'taskSort()', () => {
 	it( 'should include the early fraud warning task with a single warning', () => {
 		const actual = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
 			],
 		} );
 
@@ -796,7 +801,7 @@ describe( 'taskSort()', () => {
 					key: 'early-fraud-warning-task-ch_efw_1',
 					completed: false,
 					level: 2,
-					title: 'Review a payment flagged for potential fraud',
+					title: 'Review order #12 flagged for potential fraud',
 					content: 'Refunding it now can prevent a dispute.',
 					actionLabel: 'Review payment',
 				} ),
@@ -804,27 +809,42 @@ describe( 'taskSort()', () => {
 		);
 	} );
 
-	it( 'should include the early fraud warning task with multiple warnings', () => {
+	it( 'should include one early fraud warning task per warning', () => {
 		const actual = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
-				{ order_id: 13, charge_id: 'ch_efw_2', created: 1719900000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 13,
+					order_number: 'INV-13',
+					charge_id: 'ch_efw_2',
+					created: 1719900000,
+				},
 			],
 		} );
 
-		expect( actual ).toEqual(
-			expect.arrayContaining( [
-				expect.objectContaining( {
-					key: 'early-fraud-warning-task-ch_efw_1-ch_efw_2',
-					completed: false,
-					level: 2,
-					title: 'Review 2 payments flagged for potential fraud',
-					content:
-						'Refunding flagged payments now can prevent disputes.',
-					actionLabel: 'See transactions',
-				} ),
-			] )
+		const earlyFraudWarningTasks = actual.filter( ( task ) =>
+			task.key.startsWith( 'early-fraud-warning-task-' )
 		);
+
+		expect( earlyFraudWarningTasks ).toEqual( [
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_1',
+				title: 'Review order #12 flagged for potential fraud',
+				content: 'Refunding it now can prevent a dispute.',
+				actionLabel: 'Review payment',
+			} ),
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_2',
+				title: 'Review order #INV-13 flagged for potential fraud',
+				content: 'Refunding it now can prevent a dispute.',
+				actionLabel: 'Review payment',
+			} ),
+		] );
 	} );
 
 	it( 'early fraud warning task action opens the payment for a single warning and records the event', () => {
@@ -832,7 +852,12 @@ describe( 'taskSort()', () => {
 
 		const [ task ] = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
 			],
 		} );
 		task.action();
@@ -857,38 +882,62 @@ describe( 'taskSort()', () => {
 	it( 'should make the early fraud warning task dismissable', () => {
 		const [ task ] = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
 			],
 		} );
 
 		expect( task.isDismissable ).toBe( true );
 	} );
 
-	it( 'should drop a dismissed warning from the early fraud warning task', () => {
+	it( 'should drop a dismissed warning from the early fraud warning tasks', () => {
 		const actual = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
-				{ order_id: 13, charge_id: 'ch_efw_2', created: 1719900000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 13,
+					order_number: '13',
+					charge_id: 'ch_efw_2',
+					created: 1719900000,
+				},
 			],
 			dismissedTasks: [ 'early-fraud-warning-task-ch_efw_1' ],
 		} );
 
+		expect( actual ).toEqual( [
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_2',
+				title: 'Review order #13 flagged for potential fraud',
+			} ),
+		] );
 		expect( actual ).toEqual(
-			expect.arrayContaining( [
+			expect.not.arrayContaining( [
 				expect.objectContaining( {
-					key: 'early-fraud-warning-task-ch_efw_2',
-					title: 'Review a payment flagged for potential fraud',
+					key: 'early-fraud-warning-task-ch_efw_1',
 				} ),
 			] )
 		);
 	} );
 
-	// The stored key names the warnings the task covered when it was dismissed, so it
-	// stops matching as soon as one of them resolves.
+	// Merchants who dismissed the old aggregated task stored every charge in one key.
 	it( 'should keep a warning dismissed once another warning in the same task resolves', () => {
 		const actual = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
 			],
 			dismissedTasks: [ 'early-fraud-warning-task-ch_efw_1-ch_efw_2' ],
 		} );
@@ -899,25 +948,39 @@ describe( 'taskSort()', () => {
 	it( 'should show the early fraud warning task again for a warning arriving after a dismissal', () => {
 		const actual = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
-				{ order_id: 14, charge_id: 'ch_efw_3', created: 1720000000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 14,
+					order_number: '14',
+					charge_id: 'ch_efw_3',
+					created: 1720000000,
+				},
 			],
 			dismissedTasks: [ 'early-fraud-warning-task-ch_efw_1' ],
 		} );
 
-		expect( actual ).toEqual(
-			expect.arrayContaining( [
-				expect.objectContaining( {
-					key: 'early-fraud-warning-task-ch_efw_3',
-				} ),
-			] )
-		);
+		expect( actual ).toEqual( [
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_3',
+				title: 'Review order #14 flagged for potential fraud',
+			} ),
+		] );
 	} );
 
 	it( 'should ignore dismissed keys belonging to other tasks', () => {
 		const actual = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
 			],
 			dismissedTasks: [ 'dispute-resolution-task-ch_efw_1' ],
 		} );
@@ -931,22 +994,51 @@ describe( 'taskSort()', () => {
 		);
 	} );
 
-	it( 'early fraud warning task action opens the transactions list for multiple warnings', () => {
+	it( 'each early fraud warning task action opens that payment', () => {
 		mockHistoryPush.mockClear();
 
-		const [ task ] = getTasks( {
+		const tasks = getTasks( {
 			activeEarlyFraudWarnings: [
-				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
-				{ order_id: 13, charge_id: 'ch_efw_2', created: 1719900000 },
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 13,
+					order_number: '13',
+					charge_id: 'ch_efw_2',
+					created: 1719900000,
+				},
 			],
 		} );
-		task.action();
+
+		tasks[ 1 ].action();
 
 		expect( mockHistoryPush ).toHaveBeenCalledWith(
-			expect.stringContaining( 'path=%2Fpayments%2Ftransactions' )
+			expect.stringContaining(
+				'path=%2Fpayments%2Ftransactions%2Fdetails'
+			)
 		);
-		expect( mockHistoryPush ).not.toHaveBeenCalledWith(
-			expect.stringContaining( 'details' )
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining( 'id=ch_efw_2' )
+		);
+	} );
+
+	it( 'falls back to the order id when the display number is missing', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+			],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					title: 'Review order #12 flagged for potential fraud',
+				} ),
+			] )
 		);
 	} );
 } );
