@@ -1,9 +1,18 @@
-jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
+/**
+ * Internal dependencies
+ */
+import { showErrorMessage } from '../utils';
+
+jest.mock( '../utils', () => ( {
+	showErrorMessage: jest.fn(),
+} ) );
 
 describe( 'validateGiftCardFields', () => {
+	const TEST_CONTEXT = 'product';
+
 	beforeEach( () => {
 		jest.resetModules();
-		window.alert.mockClear();
+		showErrorMessage.mockClear();
 	} );
 
 	const setupDomWithGiftCardForm = ( formFields = {} ) => {
@@ -38,7 +47,7 @@ describe( 'validateGiftCardFields', () => {
 	const getProductDataFromHook = () => {
 		const handler =
 			require( '../use-express-checkout-product-handler' ).default;
-		const { getProductData } = handler( {} );
+		const { getProductData } = handler( {}, TEST_CONTEXT );
 		return getProductData;
 	};
 
@@ -57,13 +66,14 @@ describe( 'validateGiftCardFields', () => {
 		expect( result.product_id ).toBe( '123' );
 	} );
 
-	it( 'returns false when required gift card field is empty', () => {
+	it( 'returns false and shows inline notice when required gift card field is empty', () => {
 		setupDomWithGiftCardForm( { wc_gc_giftcard_to: '' } );
 		const getProductData = getProductDataFromHook();
 		const result = getProductData();
 		expect( result ).toBe( false );
-		expect( window.alert ).toHaveBeenCalledWith(
-			'Please fill out all required fields'
+		expect( showErrorMessage ).toHaveBeenCalledWith(
+			TEST_CONTEXT,
+			'Please fill out all required fields.'
 		);
 	} );
 
@@ -77,7 +87,7 @@ describe( 'validateGiftCardFields', () => {
 		expect( result ).not.toBe( false );
 	} );
 
-	it( 'returns false when single recipient email is invalid', () => {
+	it( 'returns false and shows inline notice when single recipient email is invalid', () => {
 		setupDomWithGiftCardForm( {
 			wc_gc_giftcard_to: 'notanemail',
 			wc_gc_giftcard_from: 'Sender',
@@ -85,8 +95,9 @@ describe( 'validateGiftCardFields', () => {
 		const getProductData = getProductDataFromHook();
 		const result = getProductData();
 		expect( result ).toBe( false );
-		expect( window.alert ).toHaveBeenCalledWith(
-			'Please type only valid emails'
+		expect( showErrorMessage ).toHaveBeenCalledWith(
+			TEST_CONTEXT,
+			'Please enter a valid email address.'
 		);
 	} );
 
@@ -99,15 +110,16 @@ describe( 'validateGiftCardFields', () => {
 		expect( result ).not.toBe( false );
 	} );
 
-	it( 'returns false when one of multiple recipient emails is invalid', () => {
+	it( 'returns false and shows inline notice when one of multiple recipient emails is invalid', () => {
 		setupDomWithGiftCardForm( {
 			wc_gc_giftcard_to_multiple: 'a@example.com,notanemail',
 		} );
 		const getProductData = getProductDataFromHook();
 		const result = getProductData();
 		expect( result ).toBe( false );
-		expect( window.alert ).toHaveBeenCalledWith(
-			'Please type only valid emails'
+		expect( showErrorMessage ).toHaveBeenCalledWith(
+			TEST_CONTEXT,
+			'Please enter valid email addresses.'
 		);
 	} );
 
@@ -120,27 +132,29 @@ describe( 'validateGiftCardFields', () => {
 		expect( result ).not.toBe( false );
 	} );
 
-	it( 'returns false for trailing comma in multiple recipients', () => {
+	it( 'returns false and shows inline notice for trailing comma in multiple recipients', () => {
 		setupDomWithGiftCardForm( {
 			wc_gc_giftcard_to_multiple: 'a@example.com,',
 		} );
 		const getProductData = getProductDataFromHook();
 		const result = getProductData();
 		expect( result ).toBe( false );
-		expect( window.alert ).toHaveBeenCalledWith(
-			'Please type only valid emails'
+		expect( showErrorMessage ).toHaveBeenCalledWith(
+			TEST_CONTEXT,
+			'Please enter valid email addresses.'
 		);
 	} );
 
-	it( 'returns false for empty segment in multiple recipients', () => {
+	it( 'returns false and shows inline notice for empty segment in multiple recipients', () => {
 		setupDomWithGiftCardForm( {
 			wc_gc_giftcard_to_multiple: 'a@example.com,,b@example.com',
 		} );
 		const getProductData = getProductDataFromHook();
 		const result = getProductData();
 		expect( result ).toBe( false );
-		expect( window.alert ).toHaveBeenCalledWith(
-			'Please type only valid emails'
+		expect( showErrorMessage ).toHaveBeenCalledWith(
+			TEST_CONTEXT,
+			'Please enter valid email addresses.'
 		);
 	} );
 } );
