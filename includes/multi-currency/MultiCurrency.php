@@ -213,6 +213,13 @@ class MultiCurrency {
 	private $init_ran = false;
 
 	/**
+	 * Whether initialization completed and frontend hooks can be refreshed.
+	 *
+	 * @var bool
+	 */
+	private $init_completed = false;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param MultiCurrencySettingsInterface     $settings_service     Settings service.
@@ -331,6 +338,12 @@ class MultiCurrency {
 		// a getter before `init` fires would otherwise initialize twice, leaving two sets of price
 		// and currency objects hooked at the same priority.
 		if ( $this->init_ran ) {
+			// A getter can trigger init() before the WooCommerce session exists, which selects async
+			// rendering. Once the session is available, switch to server-side prices so the visitor's
+			// selected currency is honoured for the rest of the request.
+			if ( $this->init_completed && static::is_enabled() && ( ! $this->should_use_async_rendering() || isset( $_GET['currency'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+				$this->enable_server_price_hooks();
+			}
 			return;
 		}
 
@@ -403,8 +416,7 @@ class MultiCurrency {
 		}
 
 		if ( ! $use_async_rendering || $has_pending_currency_switch ) {
-			$this->frontend_prices->init_hooks();
-			$this->frontend_currencies->init_hooks();
+			$this->enable_server_price_hooks();
 		}
 
 		$this->tracking->init_hooks();
@@ -425,6 +437,7 @@ class MultiCurrency {
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
 
 		static::$is_initialized = true;
+		$this->init_completed   = true;
 	}
 
 	/**
@@ -1883,6 +1896,17 @@ class MultiCurrency {
 		$this->enabled_currencies   = [];
 		$this->default_currency     = new Currency( $this->localization_service, $this->get_store_currency_code() );
 		$this->build_frontend_objects();
+	}
+
+	/**
+	 * Switch to server price hooks without replacing their owning instances.
+	 *
+	 * @return void
+	 */
+	private function enable_server_price_hooks() {
+		$this->async_renderer->remove_hooks();
+		$this->frontend_prices->init_hooks();
+		$this->frontend_currencies->init_hooks();
 	}
 
 	/**
