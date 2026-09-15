@@ -2326,6 +2326,10 @@ class WC_Payments {
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-early-fraud-warnings-controller.php';
+		$early_fraud_warnings_controller = new WC_REST_Payments_Early_Fraud_Warnings_Controller( self::$api_client, self::$order_service, self::$database_cache );
+		$early_fraud_warnings_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
 		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );
 		$dispute_readiness_controller->register_routes();

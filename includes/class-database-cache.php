@@ -59,6 +59,20 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const AUTHORIZATION_SUMMARY_KEY_TEST_MODE = 'wcpay_test_authorization_summary_cache';
 
 	/**
+	 * Cache key for orders with an actionable early fraud warning.
+	 *
+	 * @var string
+	 */
+	const EARLY_FRAUD_WARNING_ORDERS_KEY = 'wcpay_early_fraud_warning_orders_cache';
+
+	/**
+	 * Cache key for orders with an actionable early fraud warning, in test mode.
+	 *
+	 * @var string
+	 */
+	const EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE = 'wcpay_test_early_fraud_warning_orders_cache';
+
+	/**
 	 * Cache key for eligible connect incentive data.
 	 */
 	const CONNECT_INCENTIVE_KEY = 'wcpay_connect_incentive';
@@ -87,6 +101,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		self::ACTIVE_DISPUTES_KEY,
 		self::AUTHORIZATION_SUMMARY_KEY,
 		self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+		self::EARLY_FRAUD_WARNING_ORDERS_KEY,
+		self::EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE,
 		self::CONNECT_INCENTIVE_KEY,
 		self::TRACKING_INFO_KEY,
 	];
@@ -273,6 +289,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY );
 		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE );
 		$this->delete( self::ACTIVE_DISPUTES_KEY );
+	}
+
+	/**
+	 * Delete the cached lists of orders with an actionable early fraud warning.
+	 * This ensures both live and test mode lists are refreshed.
+	 *
+	 * @return void
+	 */
+	public function delete_early_fraud_warning_caches() {
+		$this->delete( self::EARLY_FRAUD_WARNING_ORDERS_KEY );
+		$this->delete( self::EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE );
 	}
 
 	/**
