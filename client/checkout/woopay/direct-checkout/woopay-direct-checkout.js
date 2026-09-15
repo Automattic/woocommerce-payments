@@ -7,6 +7,7 @@ import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 import { setPostMessageTimeout } from 'wcpay/checkout/woopay/connect/connect-utils';
+import { redirectTo } from 'wcpay/utils/navigation';
 
 /**
  * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
@@ -413,13 +414,13 @@ class WooPayDirectCheckout {
 
 					this.teardown();
 					// TODO: Add telemetry as to _how long_ it took to get to this step.
-					window.location.href = woopayRedirectUrl;
+					redirectTo( woopayRedirectUrl );
 				} catch ( error ) {
 					// TODO: Add telemetry as to _why_ we've short-circuited the WooPay checkout flow.
 					console.warn( error ); // eslint-disable-line no-console
 
 					this.teardown();
-					window.location.href = currTargetHref;
+					redirectTo( currTargetHref );
 				}
 			} );
 		} );

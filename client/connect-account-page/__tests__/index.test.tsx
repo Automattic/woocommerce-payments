@@ -11,6 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import ConnectAccountPage from '..';
+import { redirectTo } from 'wcpay/utils';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -38,6 +39,13 @@ const mockedIcentive = {
 	tc_url: 'incentive-tc-url',
 };
 
+// jsdom marks `window.location` unforgeable, so the page's redirects go
+// through the `redirectTo` helper, which is mocked out here.
+jest.mock( 'wcpay/utils', () => ( {
+	...jest.requireActual( 'wcpay/utils' ),
+	redirectTo: jest.fn(),
+} ) );
+
 describe( 'ConnectAccountPage', () => {
 	beforeAll( () => {
 		jest.spyOn( console, 'error' ).mockImplementation( () => null );
@@ -45,12 +53,6 @@ describe( 'ConnectAccountPage', () => {
 	} );
 
 	beforeEach( () => {
-		Object.defineProperty( window, 'location', {
-			value: {
-				assign: jest.fn(),
-			},
-		} );
-
 		global.wcpaySettings = {
 			connectUrl: '/wcpay-connect-url',
 			connect: {
@@ -105,6 +107,12 @@ describe( 'ConnectAccountPage', () => {
 				path: '/wc-analytics/admin/notes/experimental-activate-promo/incentive-id',
 				method: 'POST',
 			} );
+		} );
+
+		await waitFor( () => {
+			expect( redirectTo ).toHaveBeenCalledWith(
+				expect.stringContaining( 'wcpay-connect-url' )
+			);
 		} );
 	} );
 
