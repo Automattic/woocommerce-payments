@@ -29,8 +29,8 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
 
-	// Core brackets its order-review request with jQuery's global ajax events, and
-	// the guard follows that cycle, so tests driving `update_checkout` play them too.
+	// These tests do not send a real order-review request.
+	// This helper emits the same Ajax events as WooCommerce.
 	const orderReviewRequest = ( url ) => {
 		const settings = {
 			url:

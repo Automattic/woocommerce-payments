@@ -61,11 +61,8 @@ let cachedCartData = null;
 // its cart data, remounts Elements, or lifts the overlay over a newer one.
 let latestForcedRefreshId = 0;
 
-// Where core is in its order-review cycle: `queued` during the 5 ms it debounces
-// before sending, `sent` while the request is in flight. Core runs at most one,
-// aborting the previous before it sends the next. A refresh that resolves while
-// this is not `idle` fetched a cart from before the update core is still working
-// on, so it must not lift the overlay on those totals.
+// Keep the button covered while WooCommerce queues or sends an order update,
+// so an older cart refresh cannot show stale totals.
 let orderReviewUpdate = 'idle';
 
 // The overlay says nothing to screen-reader users, so a rejected tap is announced.
@@ -831,20 +828,16 @@ jQuery( ( $ ) => {
 			expressCheckoutButtonUi.blockButton();
 		} );
 
-		// Core's `success` fires `updated_checkout` without checking whether a newer
-		// update is already queued, so a request that settles inside the debounce
-		// starts a refresh which outranks the guard. Following core's cycle lets that
-		// refresh hold the overlay until the update core is working on has landed.
+		// Track the active order update so an older cart refresh cannot uncover
+		// the button before the latest totals arrive.
 		$( document ).on( 'ajaxSend', ( event, jqXHR, settings ) => {
 			if ( isOrderReviewRequest( settings ) ) {
 				orderReviewUpdate = 'sent';
 			}
 		} );
 
-		// `ajaxComplete` rather than `ajaxSuccess`/`ajaxError`, because it is the only
-		// one that fires for every outcome, aborts included. Only a request we saw go
-		// out settles the cycle: while `queued`, core has another one still to send,
-		// which is also why an abort leaves the guard up.
+		// `ajaxComplete` handles every outcome. Keep a queued replacement pending
+		// so the button stays covered.
 		$( document ).on( 'ajaxComplete', ( event, jqXHR, settings ) => {
 			if (
 				isOrderReviewRequest( settings ) &&
@@ -854,15 +847,14 @@ jQuery( ( $ ) => {
 			}
 		} );
 
-		// Core's `update_order_review` has only a `success` callback, so a failed one
-		// never reaches `updated_checkout`. Refresh rather than just unblock: the
-		// Store API cart has its own nonce, so it can succeed where core's did not.
+		// A failed order update does not trigger `updated_checkout`, so fetch fresh
+		// totals from the Store API, which uses a separate nonce.
 		$( document ).on( 'ajaxError', ( event, jqXHR, settings ) => {
 			if ( ! isOrderReviewRequest( settings ) ) {
 				return;
 			}
 
-			// Core only aborts to start a newer request, which guards the button itself.
+			// An abort means WooCommerce is starting a replacement request.
 			if ( jqXHR?.statusText === 'abort' ) {
 				return;
 			}
