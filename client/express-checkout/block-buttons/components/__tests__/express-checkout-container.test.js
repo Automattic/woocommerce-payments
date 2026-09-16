@@ -66,7 +66,7 @@ describe( 'ExpressCheckoutContainer', () => {
 		};
 	} );
 
-	it( 'passes null setupFutureUsage when the live cart has no subscription', () => {
+	it( 'passes null setupFutureUsage when the server declared none', () => {
 		render( <ExpressCheckoutContainer { ...getBaseProps() } /> );
 
 		expect( mockElementsProps.options ).toEqual(
@@ -76,17 +76,11 @@ describe( 'ExpressCheckoutContainer', () => {
 		);
 	} );
 
-	it( 'passes off_session setupFutureUsage when the live cart contains a subscription', () => {
+	it( 'passes off_session setupFutureUsage when the server declared it', () => {
 		mockCartData = {
 			items: [],
 			extensions: {
-				subscriptions: [
-					{
-						billing_period: 'month',
-						billing_interval: 1,
-						totals: { total_price: '2399' },
-					},
-				],
+				wcpay: { setup_future_usage: 'off_session' },
 			},
 		};
 

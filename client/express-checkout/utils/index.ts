@@ -18,9 +18,3 @@ export { getExpressCheckoutButtonAppearance } from './button-appearance';
 export { getExpressCheckoutButtonStyleSettings } from './button-style-settings';
 export { createPaymentCredential } from './payment-credentials';
 export { shouldUseConfirmationTokens } from './confirmation-tokens';
-export {
-	cartHasAnySubscription,
-	getSetupFutureUsageForCart,
-	getSetupFutureUsageForContext,
-} from './subscriptions';
-export type { SetupFutureUsage } from './subscriptions';
