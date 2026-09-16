@@ -31,7 +31,7 @@ import { getResolvedCurrency } from '../utils/resolved-currency-cache';
 import { rememberElementCurrency } from '../utils/element-currency-cache';
 import {
 	getSetupFutureUsageForCart,
-	getSetupFutureUsageForContext,
+	getLocalizedSetupFutureUsage,
 } from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
@@ -643,7 +643,7 @@ jQuery( ( $ ) => {
 					total,
 					currency: getResolvedCurrency( initialCurrency ),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage: getSetupFutureUsageForContext(),
+					setupFutureUsage: getLocalizedSetupFutureUsage(),
 					isSuperseded,
 				} );
 			} else {

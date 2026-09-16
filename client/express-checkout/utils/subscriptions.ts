@@ -21,7 +21,7 @@ type CartData = {
  *
  * @return Stripe setupFutureUsage value.
  */
-export const getSetupFutureUsageForContext = (): SetupFutureUsage =>
+export const getLocalizedSetupFutureUsage = (): SetupFutureUsage =>
 	getExpressCheckoutData( 'setup_future_usage' ) ?? null;
 
 /**
@@ -47,7 +47,7 @@ export const getSetupFutureUsageForCart = (
 	}
 
 	if ( getExpressCheckoutData( 'button_context' ) === 'pay_for_order' ) {
-		return getSetupFutureUsageForContext();
+		return getLocalizedSetupFutureUsage();
 	}
 
 	return null;

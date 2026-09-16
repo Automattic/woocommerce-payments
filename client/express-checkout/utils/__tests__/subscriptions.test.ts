@@ -3,7 +3,7 @@
  */
 import {
 	getSetupFutureUsageForCart,
-	getSetupFutureUsageForContext,
+	getLocalizedSetupFutureUsage,
 } from '../subscriptions';
 
 const regularCart = {
@@ -70,7 +70,7 @@ describe( 'getSetupFutureUsageForCart', () => {
 	} );
 } );
 
-describe( 'getSetupFutureUsageForContext', () => {
+describe( 'getLocalizedSetupFutureUsage', () => {
 	afterEach( () => {
 		delete ( global as Record< string, unknown > )
 			.wcpayExpressCheckoutParams;
@@ -81,13 +81,13 @@ describe( 'getSetupFutureUsageForContext', () => {
 			setup_future_usage: 'off_session',
 		};
 
-		expect( getSetupFutureUsageForContext() ).toBe( 'off_session' );
+		expect( getLocalizedSetupFutureUsage() ).toBe( 'off_session' );
 	} );
 
 	it( 'returns null when the localized value is absent', () => {
 		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
 
-		expect( getSetupFutureUsageForContext() ).toBeNull();
+		expect( getLocalizedSetupFutureUsage() ).toBeNull();
 	} );
 } );
 
