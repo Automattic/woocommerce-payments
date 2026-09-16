@@ -77,8 +77,7 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 	 * settings) to get the final set.
 	 *
 	 * Also carries the `setup_future_usage` the client must mint its ConfirmationToken
-	 * with. Deciding that server-side keeps one predicate — and one filter — behind every
-	 * express checkout surface, instead of each re-deriving it from the cart response.
+	 * with, decided server-side so every express checkout surface shares one predicate.
 	 *
 	 * @return array{express_checkout_methods: string[], setup_future_usage: string|null}
 	 */

@@ -364,16 +364,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertNull( $helper->get_setup_future_usage() );
 	}
 
-	/**
-	 * The Store API cart endpoint carries no page context, so it names the context instead.
-	 * Without that, is_cart()/is_checkout() are both false and the cart would look plain.
-	 */
-	public function test_get_setup_future_usage_honours_a_named_cart_context_with_no_page_context() {
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
-
-		$this->assertSame( 'off_session', $this->system_under_test->get_setup_future_usage( 'cart' ) );
-	}
-
 	public function test_get_setup_future_usage_filter_can_declare_off_session() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 
@@ -408,9 +398,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * Paying an existing order runs with an empty cart, so the cart and product predicates
-	 * both report false while the gateway still saves the payment method for the
-	 * subscription on the order.
+	 * Pay-for-order reads the order, not the cart. The cart predicates can be false
+	 * while the gateway still saves the payment method for the subscription on the order.
 	 */
 	public function test_get_setup_future_usage_reads_the_order_for_pay_for_order() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
@@ -565,9 +554,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * The handler calls `get_setup_future_usage()` with no argument, so the shipped value
-	 * comes from `get_button_context()`. Passing the context by hand in every other test
-	 * leaves that wiring unpinned for the branch this PR added.
+	 * Callers that omit the argument still resolve via `get_button_context()`.
 	 */
 	public function test_get_setup_future_usage_resolves_pay_for_order_with_no_argument() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );

@@ -145,7 +145,12 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 				]
 			);
 		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'product' );
+		$this->mock_ece_button_helper
+			->expects( $this->once() )
 			->method( 'get_setup_future_usage' )
+			->with( 'product' )
 			->willReturn( 'off_session' );
 
 		$params = $this->system_under_test->get_express_checkout_params();
