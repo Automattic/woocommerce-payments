@@ -1398,8 +1398,9 @@ class WooPay_Session {
 		$expiration = 2 * self::ATTESTATION_MAX_AGE;
 
 		// The group and key `set_transient()` would have used, so `get_transient()` still
-		// reads the claim back. `wp_cache_add()` is the one that refuses an existing key —
-		// `set_transient()` overwrites and answers true either way.
+		// reads the claim back. On an object cache `set_transient()` is `wp_cache_set()`,
+		// which overwrites and answers true either way, so a replay would claim the
+		// envelope again; `wp_cache_add()` is the one that refuses an existing key.
 		if ( wp_using_ext_object_cache() ) {
 			return wp_cache_add( $key, 1, 'transient', $expiration );
 		}
