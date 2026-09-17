@@ -236,4 +236,20 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 
 		$this->assertFalse( $config['isAmazonPayEnabled'] );
 	}
+
+	public function test_account_creation_is_possible_when_password_generation_is_disabled() {
+		update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'yes' );
+		update_option( 'woocommerce_registration_generate_username', 'yes' );
+		update_option( 'woocommerce_registration_generate_password', 'no' );
+
+		$this->assertTrue( $this->system_under_test->is_account_creation_possible() );
+	}
+
+	public function test_account_creation_is_not_possible_when_username_generation_is_disabled() {
+		update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'yes' );
+		update_option( 'woocommerce_registration_generate_username', 'no' );
+		update_option( 'woocommerce_registration_generate_password', 'yes' );
+
+		$this->assertFalse( $this->system_under_test->is_account_creation_possible() );
+	}
 }
