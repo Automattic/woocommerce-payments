@@ -143,6 +143,68 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->init_multi_currency();
 	}
 
+	/** An early getter followed by scheduled init must not register a second converter. */
+	public function test_early_getter_then_init_registers_one_analytics_converter() {
+		update_option( '_wcpay_feature_customer_multi_currency', '1' );
+		$this->init_multi_currency( null, true, null, null, null, false );
+		$count  = static function () {
+			global $wp_filter;
+			$total = 0;
+			foreach ( $wp_filter['woocommerce_analytics_update_order_stats_data']->callbacks ?? [] as $callbacks ) {
+				foreach ( $callbacks as $callback ) {
+					$function = $callback['function'];
+					if ( is_array( $function ) && $function[0] instanceof \WCPay\MultiCurrency\Analytics && 'update_order_stats_data' === $function[1] ) {
+						++$total;
+					}
+				}
+			}
+			return $total;
+		};
+		$before = $count();
+		$this->multi_currency->get_default_currency();
+		$this->assertSame( $before + 1, $count() );
+		$this->multi_currency->init();
+		$this->assertSame( $before + 1, $count() );
+	}
+
+	/** Repeated initialization must preserve the historical amount on import and rebuild. */
+	public function test_reinitialized_analytics_import_and_rebuild_convert_once() {
+		global $wpdb;
+		$currency = get_option( 'woocommerce_currency' );
+		$order    = new WC_Order();
+		try {
+			update_option( 'woocommerce_currency', 'EUR' );
+			$this->init_multi_currency( null, true, null, null, null, false );
+			$this->multi_currency->get_default_currency();
+			$this->multi_currency->init();
+			$order->set_currency( 'GBP' );
+			$order->set_total( 36 );
+			$order->set_status( 'completed' );
+			$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', 'EUR' );
+			$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', '0.85' );
+			$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', '1.16388' );
+			$order->save();
+
+			foreach ( [ 'initial import', 'historical rebuild' ] as $phase ) {
+				$wpdb->delete( $wpdb->prefix . 'wc_order_stats', [ 'order_id' => $order->get_id() ], [ '%d' ] );
+				\Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore::sync_order( $order->get_id() );
+				$row = $wpdb->get_row( $wpdb->prepare( "SELECT total_sales, net_total FROM {$wpdb->prefix}wc_order_stats WHERE order_id = %d", $order->get_id() ), ARRAY_A );
+				$this->assertNotNull( $row, $phase );
+				$this->assertEquals( 41.90, (float) $row['total_sales'], $phase );
+				$this->assertEquals( 41.90, (float) $row['net_total'], $phase );
+				$persisted = wc_get_order( $order->get_id() );
+				$this->assertSame( 'GBP', $persisted->get_currency(), $phase );
+				$this->assertEquals( 36, (float) $persisted->get_total(), $phase );
+			}
+		} finally {
+			if ( $order->get_id() ) {
+				$order->delete( true );
+			}
+			update_option( 'woocommerce_currency', $currency );
+		}
+	}
+
+
 	public function tear_down() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Multi-Currency store settings store settings task renders correctly: snapshot-multi-currency-store_settings 1`] = `
 .emotion-0 {
