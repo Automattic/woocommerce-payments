@@ -1193,8 +1193,8 @@ class WooPay_Session {
 	 *
 	 * @param \WC_Order $order Order being updated from the checkout request.
 	 */
-	public static function set_woopay_order_customer_ip( $order ) {
-		if ( ! $order instanceof \WC_Order || ! self::is_woopay_enabled() ) {
+	public static function set_woopay_order_customer_ip( \WC_Order $order ) {
+		if ( ! self::is_woopay_enabled() ) {
 			return;
 		}
 
