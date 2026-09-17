@@ -570,11 +570,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		unset( $_REQUEST['rest_route'] );
 	}
 
-	public function test_get_request_auth_level_returns_cart_token_for_a_valid_cart_token() {
+	public function test_is_valid_request_with_cart_token_is_true_for_a_valid_cart_token() {
 		$woopay_store_api_token     = WooPay_Store_Api_Token::init();
 		$_SERVER['HTTP_CART_TOKEN'] = $woopay_store_api_token->get_cart_token();
 
-		$this->assertSame( 'cart_token', WooPay_Session::get_request_auth_level() );
+		$this->assertTrue( WooPay_Session::is_valid_request_with_cart_token() );
 	}
 
 	public function test_session_payload_carries_the_store_version() {
@@ -587,10 +587,10 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WCPAY_VERSION_NUMBER, $request['wcpay_version'] );
 	}
 
-	public function test_get_request_auth_level_returns_none_when_cart_token_is_invalid() {
+	public function test_is_valid_request_with_cart_token_is_false_when_cart_token_is_invalid() {
 		$_SERVER['HTTP_CART_TOKEN'] = 'not-a-valid-cart-token';
 
-		$this->assertSame( 'none', WooPay_Session::get_request_auth_level() );
+		$this->assertFalse( WooPay_Session::is_valid_request_with_cart_token() );
 	}
 
 	public function test_verified_email_is_rejected_under_cart_token_auth_without_store_minted_nonce() {

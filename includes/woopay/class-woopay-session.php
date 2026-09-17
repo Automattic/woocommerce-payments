@@ -35,16 +35,6 @@ class WooPay_Session {
 	const WOOPAY_SESSION_KEY = 'woopay-user-data';
 
 	/**
-	 * Request carries a valid Cart-Token.
-	 */
-	const AUTH_CART_TOKEN = 'cart_token';
-
-	/**
-	 * Request carries neither. Not authorized.
-	 */
-	const AUTH_NONE = 'none';
-
-	/**
 	 * How old a WooPay attestation envelope may be, in seconds.
 	 *
 	 * The envelope carries no nonce of its own, so freshness bounds how long a replay of
@@ -159,7 +149,7 @@ class WooPay_Session {
 		}
 
 		// Validate that the request is authenticated by a valid Cart-Token.
-		if ( self::AUTH_NONE === self::get_request_auth_level() ) {
+		if ( ! self::is_valid_request_with_cart_token() ) {
 			$error = self::get_unauthenticated_request_error();
 
 			$error_data = $error->get_error_data();
@@ -1000,21 +990,17 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Determines how the current request authenticated itself.
+	 * Whether the current request carries a valid Cart-Token.
 	 *
 	 * A Cart-Token proves the caller holds that cart, which any shopper legitimately does
 	 * for their own. It is therefore enough for proxied Store API traffic and not enough
 	 * for anything that grants authority over an account — those paths ask for a
 	 * store-minted nonce or an attestation on top of it.
 	 *
-	 * @return string One of the AUTH_* constants.
+	 * @return bool
 	 */
-	public static function get_request_auth_level(): string {
-		if ( null !== self::get_payload_from_cart_token() ) {
-			return self::AUTH_CART_TOKEN;
-		}
-
-		return self::AUTH_NONE;
+	public static function is_valid_request_with_cart_token(): bool {
+		return null !== self::get_payload_from_cart_token();
 	}
 
 	/**

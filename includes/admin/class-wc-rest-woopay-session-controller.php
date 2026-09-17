@@ -98,7 +98,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 		// rather than none, and `get_woopay_attestation()` has already said why an envelope
 		// was refused if one was presented at all.
 		Logger::log(
-			WooPay_Session::AUTH_CART_TOKEN === WooPay_Session::get_request_auth_level()
+			WooPay_Session::is_valid_request_with_cart_token()
 				? 'WooPay session route denied: a Cart-Token does not authorize this route, which needs an attestation.'
 				: 'WooPay session route denied: no usable attestation.'
 		);
