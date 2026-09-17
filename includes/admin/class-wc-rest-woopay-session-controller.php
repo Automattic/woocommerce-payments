@@ -85,7 +85,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 * @return bool True if the request is from WooPay and carries proof of it.
 	 */
 	public function check_permission( WP_REST_Request $request ) {
-		if ( ! $this->is_request_from_woopay() ) {
+		if ( ! WooPay_Session::is_request_from_woopay() ) {
 			Logger::log( 'WooPay session route denied: the request does not identify as WooPay.' );
 
 			return false;
@@ -107,15 +107,5 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 		);
 
 		return false;
-	}
-
-	/**
-	 * Returns true if the request that's currently being processed is from WooPay, false
-	 * otherwise.
-	 *
-	 * @return bool True if request is from WooPay.
-	 */
-	private function is_request_from_woopay(): bool {
-		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
 	}
 }
