@@ -37,6 +37,9 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base,
 			[
+				// POST only. The attestation is the one credential this route accepts and
+				// it is read from the body, so a GET could never pass check_permission().
+				// The route creates a Stripe customer, so it was never idempotent anyway.
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
