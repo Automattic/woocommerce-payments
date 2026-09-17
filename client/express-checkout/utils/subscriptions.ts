@@ -1,9 +1,10 @@
 /**
  * Internal dependencies
  */
-import { getExpressCheckoutData } from './express-checkout-data';
-
-export type SetupFutureUsage = 'off_session' | null;
+import {
+	getExpressCheckoutData,
+	type SetupFutureUsage,
+} from './express-checkout-data';
 
 type WcpayCartExtensions = {
 	wcpay?: {

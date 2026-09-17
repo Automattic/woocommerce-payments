@@ -9,11 +9,8 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData } from '.';
-import {
-	resolveSetupFutureUsage,
-	type SetupFutureUsage,
-} from './subscriptions';
+import { getExpressCheckoutData, type SetupFutureUsage } from '.';
+import { resolveSetupFutureUsage } from './subscriptions';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 interface CartTotals {

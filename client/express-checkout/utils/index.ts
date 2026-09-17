@@ -11,7 +11,10 @@ export {
 	getExpressCheckoutData,
 	filterCartMethodsByLocation,
 } from './express-checkout-data';
-export type { WCPayExpressCheckoutParams } from './express-checkout-data';
+export type {
+	WCPayExpressCheckoutParams,
+	SetupFutureUsage,
+} from './express-checkout-data';
 export { getErrorMessageFromNotice } from './error-messages';
 export { displayLoginConfirmation } from './login-confirmation';
 export { getExpressCheckoutButtonAppearance } from './button-appearance';
