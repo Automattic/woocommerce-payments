@@ -4287,13 +4287,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_process_payment_still_checks_fraud_when_only_the_cart_token_flag_is_set() {
+	public function test_process_payment_still_checks_fraud_when_the_request_only_looks_like_woopay() {
 		$order = WC_Helper_Order::create_order();
 
-		// Only what a Cart-Token plus `User-Agent: WooPay` establishes, which is what any
-		// visitor can send. The companion test below pins that consulting the service is
-		// what a real vouch skips.
-		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		// A Cart-Token plus `User-Agent: WooPay`, which is what any visitor can send. The
+		// companion test below pins that consulting the service is what a real vouch skips.
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
 
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 
@@ -4305,7 +4305,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		try {
 			$this->card_gateway->process_payment( $order->get_id() );
 		} finally {
-			remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+			unset( $_SERVER['HTTP_USER_AGENT'], $_SERVER['HTTP_CART_TOKEN'] );
 		}
 	}
 

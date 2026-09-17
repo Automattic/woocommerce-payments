@@ -169,8 +169,6 @@ class WooPay_Session {
 			);
 		}
 
-		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
-
 		$cart_token_user_id = self::get_user_id_from_cart_token();
 		if ( null === $cart_token_user_id ) {
 			return $user;
@@ -1220,11 +1218,10 @@ class WooPay_Session {
 	/**
 	 * The payload WooPay sealed onto this proxied request, or null if it sealed none.
 	 *
-	 * `wcpay_is_woopay_store_api_request` answers "does this request belong to that cart",
-	 * because a Cart-Token is all it takes to set it — and any visitor holds one for their
-	 * own cart. Controls that need "WooPay composed this request" were reading that flag
-	 * for want of anything better. This is the anything better: an envelope only WooPay can
-	 * seal, on the one request those controls run on.
+	 * A Cart-Token only says the request belongs to the cart it names, and any visitor
+	 * holds one for their own cart. Controls that need "WooPay composed this request" get
+	 * it from here instead: an envelope only WooPay can seal, on the one request those
+	 * controls run on.
 	 *
 	 * Deliberately not spent on arrival, unlike the session route's envelope. WooPay
 	 * re-sends an identical request when the first attempt fails, and a checkout has

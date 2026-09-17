@@ -110,8 +110,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		wp_set_current_user( 0 );
 
-		remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
-
 		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
 
 		parent::tear_down();
@@ -234,14 +232,11 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] = '203.0.113.10';
 		$_SERVER['HTTP_CART_TOKEN']           = WooPay_Store_Api_Token::init()->get_cart_token();
 
-		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
-
 		try {
 			WooPay_Session::set_woopay_order_customer_ip( $order );
 
 			$this->assertSame( '192.0.91.172', $order->get_customer_ip_address() );
 		} finally {
-			remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
 			unset( $_SERVER['HTTP_X_WOOPAY_CUSTOMER_IP'] );
 		}
 	}
@@ -281,26 +276,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		return base64_encode( wp_json_encode( $envelope ) );
-	}
-
-	public function test_an_accepted_woopay_request_marks_itself_as_one() {
-		// Pins what accepting a Cart-Token buys: the request is flagged as WooPay before any
-		// customer resolves. Anything gated on this filter is therefore only as strong as the
-		// credential the auth path accepted.
-		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
-
-		$this->setup_session( 0 );
-
-		WooPay_Session::determine_current_user_for_woopay( 0 );
-
-		/**
-		 * Filters whether the current request is a WooPay Store API request.
-		 *
-		 * @since 7.2.0
-		 *
-		 * @param bool $is_woopay_store_api_request Whether this is a WooPay Store API request.
-		 */
-		$this->assertTrue( apply_filters( 'wcpay_is_woopay_store_api_request', false ) );
 	}
 
 	public function test_get_user_id_from_cart_token_with_guest_user() {
