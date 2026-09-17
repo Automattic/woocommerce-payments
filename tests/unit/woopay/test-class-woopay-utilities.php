@@ -348,6 +348,24 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_encrypt_and_sign_data_seals_under_the_purpose_it_is_given() {
+		$token = 'test.blog.token';
+
+		Jetpack_Options::update_option( 'blog_token', $token );
+
+		$encrypted = WooPay_Utilities::encrypt_and_sign_data( [ 'blog_id' => 123 ], WooPay_Utilities::CONNECT_KEY_PURPOSE );
+		$parts     = array_map( 'base64_decode', $encrypted['data'] );
+
+		$this->assertSame(
+			hash_hmac( 'sha256', $parts['iv'] . $parts['session'], hash_hkdf( 'sha256', $token, 32, 'woopay-connect-v1' ) ),
+			$parts['hash']
+		);
+		$this->assertNotSame(
+			hash_hmac( 'sha256', $parts['iv'] . $parts['session'], hash_hkdf( 'sha256', $token, 32, 'woopay-session-v1' ) ),
+			$parts['hash']
+		);
+	}
+
 	/**
 	 * Each direction stands on its own key, so a payload this store sealed for WooPay is
 	 * not a payload WooPay sealed for this store, whatever its fields are called.

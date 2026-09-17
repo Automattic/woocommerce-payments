@@ -369,13 +369,18 @@ class WooPay_Utilities {
 	/**
 	 * Return an array with encrypted and signed data.
 	 *
-	 * @param array $data The data to be encrypted and signed.
+	 * The caller names the key it seals under, as `decrypt_signed_data()` callers name the
+	 * keys they open with, so the label is visible where the envelope is made. The default
+	 * keeps the signature callers outside this plugin already use.
+	 *
+	 * @param array  $data    The data to be encrypted and signed.
+	 * @param string $purpose HKDF label for the key this payload is sealed under.
 	 * @return array The encrypted and signed data.
 	 */
-	public static function encrypt_and_sign_data( $data ) {
-		$store_blog_token = self::derive_key_for( self::SESSION_KEY_PURPOSE );
+	public static function encrypt_and_sign_data( $data, string $purpose = self::SESSION_KEY_PURPOSE ) {
+		$key = self::derive_key_for( $purpose );
 
-		if ( empty( $store_blog_token ) ) {
+		if ( empty( $key ) ) {
 			return [];
 		}
 
@@ -385,7 +390,7 @@ class WooPay_Utilities {
 		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( self::CIPHER ) );
 
 		// Encrypt the JSON session.
-		$session_encrypted = openssl_encrypt( $message, self::CIPHER, $store_blog_token, OPENSSL_RAW_DATA, $iv );
+		$session_encrypted = openssl_encrypt( $message, self::CIPHER, $key, OPENSSL_RAW_DATA, $iv );
 
 		// Fail closed. Without this, a failed encryption is signed and shipped like any
 		// other payload: hash_hmac() casts false to '', so the receiver is handed an empty
@@ -399,7 +404,7 @@ class WooPay_Utilities {
 		}
 
 		// Create an HMAC hash for data integrity.
-		$hash = hash_hmac( 'sha256', $iv . $session_encrypted, $store_blog_token );
+		$hash = hash_hmac( 'sha256', $iv . $session_encrypted, $key );
 
 		$data = [
 			'session' => $session_encrypted,

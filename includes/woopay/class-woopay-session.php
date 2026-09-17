@@ -456,7 +456,7 @@ class WooPay_Session {
 
 		$session = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
 
-		return WooPay_Utilities::encrypt_and_sign_data( $session );
+		return WooPay_Utilities::encrypt_and_sign_data( $session, WooPay_Utilities::SESSION_KEY_PURPOSE );
 	}
 
 	/**
@@ -976,7 +976,7 @@ class WooPay_Session {
 			'store_api_token'   => self::init_store_api_token(),
 		];
 
-		return WooPay_Utilities::encrypt_and_sign_data( $data );
+		return WooPay_Utilities::encrypt_and_sign_data( $data, WooPay_Utilities::SESSION_KEY_PURPOSE );
 	}
 
 	/**
