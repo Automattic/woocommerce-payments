@@ -482,6 +482,36 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( WooPay_Utilities::decrypt_signed_data( $attestation, [ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ] ) );
 	}
 
+	/**
+	 * The connect page hands the envelope over straight from $_POST, so a field can be
+	 * missing or arrive as an array. Either has to come back as no envelope, not a warning
+	 * on an undefined index or a TypeError out of base64_decode().
+	 *
+	 * @dataProvider provider_malformed_envelopes
+	 *
+	 * @param array $envelope A request body shaped almost, but not quite, like an envelope.
+	 */
+	public function test_a_malformed_envelope_does_not_open( array $envelope ) {
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$this->assertNull( WooPay_Utilities::decrypt_signed_data( $envelope, [ WooPay_Utilities::CONNECT_KEY_PURPOSE, null ] ) );
+	}
+
+	public function provider_malformed_envelopes(): array {
+		$sealed = $this->seal_for_store( [ 'user_email' => 'shopper@example.com' ], 'test.blog.token' );
+
+		return [
+			'empty'            => [ [] ],
+			'unrelated keys'   => [ [ 'foo' => 'bar' ] ],
+			'no data'          => [ array_diff_key( $sealed, [ 'data' => true ] ) ],
+			'no iv'            => [ array_diff_key( $sealed, [ 'iv' => true ] ) ],
+			'no hash'          => [ array_diff_key( $sealed, [ 'hash' => true ] ) ],
+			'data is an array' => [ array_merge( $sealed, [ 'data' => [ 'x' ] ] ) ],
+			'iv is an array'   => [ array_merge( $sealed, [ 'iv' => [ 'x' ] ] ) ],
+			'hash is an array' => [ array_merge( $sealed, [ 'hash' => [ 'x' ] ] ) ],
+		];
+	}
+
 	public function test_an_envelope_sealed_with_the_wrong_key_does_not_open() {
 		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
 

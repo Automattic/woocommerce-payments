@@ -438,6 +438,19 @@ class WooPay_Utilities {
 			return null;
 		}
 
+		// Every field is indexed below, and the connect page's envelope arrives straight
+		// from $_POST, so this is the one place that has to hold whatever the caller passed.
+		// base64_decode() on anything but a string is a TypeError, not a bad decode.
+		if ( ! is_array( $data ) ) {
+			return null;
+		}
+
+		foreach ( [ 'data', 'iv', 'hash' ] as $field ) {
+			if ( ! isset( $data[ $field ] ) || ! is_string( $data[ $field ] ) ) {
+				return null;
+			}
+		}
+
 		// Decode the data.
 		$decoded_data_request = array_map( 'base64_decode', $data );
 

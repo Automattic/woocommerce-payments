@@ -1057,8 +1057,8 @@ class WooPay_Session {
 
 		$parts = [];
 
-		// decrypt_signed_data() indexes these directly, so reject anything malformed here
-		// rather than warning on an undefined index inside it.
+		// decrypt_signed_data() refuses a malformed envelope too, but silently; checking here
+		// says which field was unusable.
 		foreach ( [ 'data', 'iv', 'hash' ] as $key ) {
 			if ( ! isset( $envelope[ $key ] ) || ! is_string( $envelope[ $key ] ) ) {
 				Logger::log( 'WooPay attestation rejected: envelope has no usable "' . $key . '" field.' );
