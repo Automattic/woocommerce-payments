@@ -366,14 +366,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Whether the order being paid is recurring. Pay-for-order uses the order Store API,
-	 * which does not carry the cart `wcpay` extension, so this reads the order rather
-	 * than the cart. Defers to the gateway's `is_payment_recurring()` so the token
-	 * matches the intent the gateway will create after the wallet sheet closes.
+	 * Whether paying the current order-pay order will be a recurring payment.
+	 * Pay-for-order uses the order Store API, which does not carry the cart `wcpay`
+	 * extension, so this reads the order rather than the cart. Defers to the
+	 * gateway's `is_payment_recurring()` so the token matches the intent the
+	 * gateway will create after the wallet sheet closes.
 	 *
 	 * @return boolean
 	 */
-	private function order_contains_subscription() {
+	private function is_order_payment_recurring() {
 		$order = $this->get_order_being_paid();
 		if ( ! $order ) {
 			return false;
@@ -438,7 +439,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		switch ( $context ) {
 			case 'pay_for_order':
-				$will_be_saved = $this->order_contains_subscription();
+				$will_be_saved = $this->is_order_payment_recurring();
 				break;
 			case 'cart':
 			case 'checkout':

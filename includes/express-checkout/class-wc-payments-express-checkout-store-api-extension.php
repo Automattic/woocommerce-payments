@@ -116,7 +116,7 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 				],
 			],
 			'setup_future_usage'       => [
-				'description' => __( 'Whether Express Checkout should authorize the payment method for future off-session payments.', 'woocommerce-payments' ),
+				'description' => __( 'Whether the payment method should be saved for future off-session payments.', 'woocommerce-payments' ),
 				'type'        => [ 'string', 'null' ],
 				'enum'        => [ 'off_session', null ],
 				'context'     => [ 'view', 'edit' ],

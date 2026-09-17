@@ -17,7 +17,7 @@ import {
 } from '../../utils';
 import { rememberElementCurrency } from '../../utils/element-currency-cache';
 import { transformPrice } from '../../transformers/wc-to-stripe';
-import { getSetupFutureUsageForCart } from '../../utils/subscriptions';
+import { resolveSetupFutureUsage } from '../../utils/subscriptions';
 import '../express-checkout-element.scss';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
@@ -68,7 +68,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			? { captureMethod: 'manual' }
 			: {} ),
 		...( useConfirmationToken
-			? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+			? { setupFutureUsage: resolveSetupFutureUsage( cartData ) }
 			: {} ),
 		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 		amount: applyFilters(

@@ -11,7 +11,7 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
 import type WCPayAPI from 'wcpay/checkout/api';
 import { getExpressCheckoutData } from '.';
 import {
-	getSetupFutureUsageForCart,
+	resolveSetupFutureUsage,
 	type SetupFutureUsage,
 } from './subscriptions';
 import { transformPrice } from '../transformers/wc-to-stripe';
@@ -155,7 +155,7 @@ let memoizedCheck:
 
 /**
  * Checks which express payment methods are available on the current device/browser.
- * Results are memoized by amount+currency+mode combination.
+ * Results are memoized by amount+currency+mode+setupFutureUsage.
  */
 async function checkAllExpressMethodsAvailability(
 	api: WCPayAPI,
@@ -241,10 +241,9 @@ export async function checkPaymentMethodIsAvailable(
 	// Read the live cart, the same source the button itself uses. Resolving this from the
 	// page-load globals instead would advertise a wallet the button then mints a different
 	// token for, once the shopper changes the cart without a reload.
-	const setupFutureUsage = getSetupFutureUsageForCart( {
+	const setupFutureUsage = resolveSetupFutureUsage( {
 		extensions: cart.extensions,
-		items: cart.cartItems,
-	} as Parameters< typeof getSetupFutureUsageForCart >[ 0 ] );
+	} );
 
 	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
 		api,

@@ -5,12 +5,9 @@ import { getExpressCheckoutData } from './express-checkout-data';
 
 export type SetupFutureUsage = 'off_session' | null;
 
-type CartData = {
-	extensions?: {
-		wcpay?: {
-			setup_future_usage?: SetupFutureUsage;
-		};
-		[ key: string ]: unknown;
+type WcpayCartExtensions = {
+	wcpay?: {
+		setup_future_usage?: SetupFutureUsage;
 	};
 	[ key: string ]: unknown;
 };
@@ -25,20 +22,21 @@ export const getLocalizedSetupFutureUsage = (): SetupFutureUsage =>
 	getExpressCheckoutData( 'setup_future_usage' ) ?? null;
 
 /**
- * Gets the setupFutureUsage value that should be passed to Stripe Elements for
- * the current cart.
+ * Resolves the setupFutureUsage value to pass to Stripe Elements.
  *
- * The server decides this — it is the only side that knows every reason the payment
- * method might be saved. WooPayments registers `extensions.wcpay.setup_future_usage`
- * on the cart Store API; pay-for-order uses the order endpoint, which does not.
+ * Prefers `extensions.wcpay.setup_future_usage` from the cart Store API — the
+ * server is the only side that knows every reason the payment method might be
+ * saved. Pay-for-order uses the order endpoint, which does not carry that
+ * extension, so it falls back to the localized value.
  *
- * @param cartData Cart data from Store API.
+ * @param cartData Cart data from Store API (only `extensions` is read).
  * @return Stripe setupFutureUsage value.
  */
-export const getSetupFutureUsageForCart = (
-	cartData?: CartData
-): SetupFutureUsage => {
-	const wcpayExtension = cartData?.extensions?.wcpay;
+export const resolveSetupFutureUsage = ( cartData?: {
+	extensions?: unknown;
+} ): SetupFutureUsage => {
+	const extensions = cartData?.extensions as WcpayCartExtensions | undefined;
+	const wcpayExtension = extensions?.wcpay;
 
 	if ( wcpayExtension && 'setup_future_usage' in wcpayExtension ) {
 		// Presence, not truthiness: an explicit `null` is the server deciding

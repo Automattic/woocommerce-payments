@@ -30,7 +30,7 @@ import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
 import { getResolvedCurrency } from '../utils/resolved-currency-cache';
 import { rememberElementCurrency } from '../utils/element-currency-cache';
 import {
-	getSetupFutureUsageForCart,
+	resolveSetupFutureUsage,
 	getLocalizedSetupFutureUsage,
 } from '../utils/subscriptions';
 import {
@@ -631,8 +631,7 @@ jQuery( ( $ ) => {
 					total,
 					currency: cachedCartData.totals.currency_code.toLowerCase(),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage:
-						getSetupFutureUsageForCart( cachedCartData ),
+					setupFutureUsage: resolveSetupFutureUsage( cachedCartData ),
 					isSuperseded,
 				} );
 			} else if (
@@ -706,7 +705,7 @@ jQuery( ( $ ) => {
 							...( useConfirmationToken
 								? {
 										setupFutureUsage:
-											getSetupFutureUsageForCart(
+											resolveSetupFutureUsage(
 												cachedCartData
 											),
 								  }
