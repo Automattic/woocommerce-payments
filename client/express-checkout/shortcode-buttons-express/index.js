@@ -775,17 +775,6 @@ jQuery( ( $ ) => {
 		}
 	};
 
-	// Core greys out the order review during its request, but not our container,
-	// so cover it from `update_checkout`. Checkout only: `updated_checkout` below
-	// runs the refresh that lifts it again.
-	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
-		$( document.body ).on( 'update_checkout', () => {
-			// Supersede any refresh in flight; `updated_checkout` starts a fresh one.
-			latestForcedRefreshId++;
-			expressCheckoutButtonUi.blockButton();
-		} );
-	}
-
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
 		getExpressCheckoutData( 'button_context' ) !== 'checkout' ||
