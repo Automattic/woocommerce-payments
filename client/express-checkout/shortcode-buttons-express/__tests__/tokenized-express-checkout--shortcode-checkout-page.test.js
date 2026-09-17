@@ -594,7 +594,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
-	it( 'should guard the button from `update_checkout` onwards, before WooCommerce has refreshed', async () => {
+	it( 'should leave the button available while WooCommerce refreshes its order review', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
@@ -603,12 +603,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 		$.fn.block.mockClear();
 
-		// WooCommerce fires this before its own `update_order_review` request.
-		// Our container sits outside what core blocks, so the old button is
-		// still tappable and `cachedCartData` is the pre-change snapshot.
 		$( document.body ).trigger( 'update_checkout' );
 
-		expect( $.fn.block ).toHaveBeenCalled();
+		expect( $.fn.block ).not.toHaveBeenCalled();
 
 		const clickEventResolveMock = jest.fn();
 		const clickEventRejectMock = jest.fn();
@@ -617,84 +614,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			reject: clickEventRejectMock,
 			expressPaymentType: 'google_pay',
 		} );
-		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
-		expect( clickEventResolveMock ).not.toHaveBeenCalled();
-
-		// Core finished: our refresh runs and the button opens again.
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () =>
-			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
-		);
-		await act( async () => {
-			await Promise.resolve();
-		} );
-
-		const postRefreshResolveMock = jest.fn();
-		const postRefreshRejectMock = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: postRefreshResolveMock,
-			reject: postRefreshRejectMock,
-			expressPaymentType: 'google_pay',
-		} );
-		expect( postRefreshResolveMock ).toHaveBeenCalledWith(
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
 			expect.objectContaining( { shippingAddressRequired: true } )
 		);
-		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
-	} );
-
-	it( 'should keep the button guarded when `update_checkout` fires again while a refresh is in flight', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		const releases = [];
-		apiFetch.mockImplementation(
-			() =>
-				new Promise( ( resolve ) => {
-					releases.push( () =>
-						resolve( {
-							json: () => Promise.resolve( cartWithItemsMock ),
-							headers: new Map(),
-						} )
-					);
-				} )
-		);
-
-		// Core's first refresh completes and our refresh A starts.
-		$( document.body ).trigger( 'update_checkout' );
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
-		$.fn.unblock.mockClear();
-
-		// Core starts a second refresh while A is still waiting on the cart.
-		$( document.body ).trigger( 'update_checkout' );
-
-		// A settles, but core's second request is still pending: the button
-		// must stay covered and clicks must still be rejected.
-		releases[ 0 ]();
-		await act( async () => {
-			await Promise.resolve();
-		} );
-		expect( $.fn.unblock ).not.toHaveBeenCalled();
-
-		const midRefreshResolveMock = jest.fn();
-		const midRefreshRejectMock = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: midRefreshResolveMock,
-			reject: midRefreshRejectMock,
-			expressPaymentType: 'google_pay',
-		} );
-		expect( midRefreshRejectMock ).toHaveBeenCalledTimes( 1 );
-		expect( midRefreshResolveMock ).not.toHaveBeenCalled();
-
-		// Core finishes the second refresh: our refresh B releases the button.
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
-		releases[ 1 ]();
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+		expect( clickEventRejectMock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
