@@ -238,9 +238,8 @@ export async function checkPaymentMethodIsAvailable(
 
 	const totalPrice = getEffectiveTotalPrice( cart );
 
-	// Read the live cart, the same source the button itself uses. Resolving this from the
-	// page-load globals instead would advertise a wallet the button then mints a different
-	// token for, once the shopper changes the cart without a reload.
+	// Use the live cart extension, same as the button. Page-load params can go
+	// stale after the cart changes.
 	const setupFutureUsage = resolveSetupFutureUsage( {
 		extensions: cart.extensions,
 	} );
