@@ -28,45 +28,6 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 
 describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', () => {
 	let stripeElementMock, stripeInstance;
-
-	// These tests do not send a real order-review request.
-	// This helper emits the same Ajax events as WooCommerce.
-	const orderReviewRequest = ( url ) => {
-		const settings = {
-			url:
-				url ??
-				global.wc_checkout_params.wc_ajax_url.replace(
-					'%%endpoint%%',
-					'update_order_review'
-				),
-		};
-
-		return {
-			send: () => $( document ).trigger( 'ajaxSend', [ {}, settings ] ),
-			fail: ( status = 500 ) => {
-				$( document ).trigger( 'ajaxError', [ { status }, settings ] );
-				$( document ).trigger( 'ajaxComplete', [
-					{ status },
-					settings,
-				] );
-			},
-			succeed: () =>
-				$( document ).trigger( 'ajaxComplete', [
-					{ status: 200 },
-					settings,
-				] ),
-			abort: () => {
-				$( document ).trigger( 'ajaxError', [
-					{ status: 0, statusText: 'abort' },
-					settings,
-				] );
-				$( document ).trigger( 'ajaxComplete', [
-					{ status: 0 },
-					settings,
-				] );
-			},
-		};
-	};
 	beforeEach( () => {
 		apiFetch.mockClear();
 		apiFetch.mockImplementation( async () =>
@@ -91,8 +52,6 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			this.data( 'blockUI.isBlocked', 0 );
 			return this;
 		} );
-
-		global.wc_checkout_params = { wc_ajax_url: '/?wc-ajax=%%endpoint%%' };
 
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.nonce = {
@@ -154,11 +113,8 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 	afterEach( async () => {
 		delete global.Stripe;
-		delete global.wc_checkout_params;
 		// removing all the registered event handlers so they don't leak between tests.
-		// jQuery's global ajax events are bound on `document`, not `document.body`.
 		global.$( document.body ).off();
-		global.$( document ).off();
 	} );
 
 	it( 'should not initialize Stripe if there is no publishable key', async () => {
@@ -638,7 +594,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
 	} );
 
-	it( 'should guard the button from `update_checkout` onwards, before WooCommerce has refreshed', async () => {
+	it( 'should leave the button available while WooCommerce refreshes its order review', async () => {
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
@@ -647,14 +603,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 		$.fn.block.mockClear();
 
-		// WooCommerce fires this before its own `update_order_review` request.
-		// Our container sits outside what core blocks, so the old button is
-		// still tappable and `cachedCartData` is the pre-change snapshot.
 		$( document.body ).trigger( 'update_checkout' );
-		const request = orderReviewRequest();
-		request.send();
 
-		expect( $.fn.block ).toHaveBeenCalled();
+		expect( $.fn.block ).not.toHaveBeenCalled();
 
 		const clickEventResolveMock = jest.fn();
 		const clickEventRejectMock = jest.fn();
@@ -663,321 +614,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			reject: clickEventRejectMock,
 			expressPaymentType: 'google_pay',
 		} );
-		expect( clickEventRejectMock ).toHaveBeenCalledTimes( 1 );
-		expect( clickEventResolveMock ).not.toHaveBeenCalled();
-
-		// Core finished: our refresh runs and the button opens again.
-		$( document.body ).trigger( 'updated_checkout' );
-		request.succeed();
-		await waitFor( () =>
-			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
-		);
-		await act( async () => {
-			await Promise.resolve();
-		} );
-
-		const postRefreshResolveMock = jest.fn();
-		const postRefreshRejectMock = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: postRefreshResolveMock,
-			reject: postRefreshRejectMock,
-			expressPaymentType: 'google_pay',
-		} );
-		expect( postRefreshResolveMock ).toHaveBeenCalledWith(
+		expect( clickEventResolveMock ).toHaveBeenCalledWith(
 			expect.objectContaining( { shippingAddressRequired: true } )
 		);
-		expect( postRefreshRejectMock ).not.toHaveBeenCalled();
-	} );
-
-	it( 'should keep the button guarded when `update_checkout` fires again while a refresh is in flight', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		const releases = [];
-		apiFetch.mockImplementation(
-			() =>
-				new Promise( ( resolve ) => {
-					releases.push( () =>
-						resolve( {
-							json: () => Promise.resolve( cartWithItemsMock ),
-							headers: new Map(),
-						} )
-					);
-				} )
-		);
-
-		// Core's first refresh completes and our refresh A starts.
-		$( document.body ).trigger( 'update_checkout' );
-		const firstRequest = orderReviewRequest();
-		firstRequest.send();
-		$( document.body ).trigger( 'updated_checkout' );
-		firstRequest.succeed();
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 2 ) );
-		$.fn.unblock.mockClear();
-
-		// Core starts a second refresh while A is still waiting on the cart.
-		$( document.body ).trigger( 'update_checkout' );
-		const secondRequest = orderReviewRequest();
-		secondRequest.send();
-
-		// A settles, but core's second request is still pending: the button
-		// must stay covered and clicks must still be rejected.
-		releases[ 0 ]();
-		await act( async () => {
-			await Promise.resolve();
-		} );
-		expect( $.fn.unblock ).not.toHaveBeenCalled();
-
-		const midRefreshResolveMock = jest.fn();
-		const midRefreshRejectMock = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: midRefreshResolveMock,
-			reject: midRefreshRejectMock,
-			expressPaymentType: 'google_pay',
-		} );
-		expect( midRefreshRejectMock ).toHaveBeenCalledTimes( 1 );
-		expect( midRefreshResolveMock ).not.toHaveBeenCalled();
-
-		// Core finishes the second refresh: our refresh B releases the button.
-		$( document.body ).trigger( 'updated_checkout' );
-		secondRequest.succeed();
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalledTimes( 3 ) );
-		releases[ 1 ]();
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
-	} );
-
-	it( "should lift the guard when WooCommerce's order-review request fails", async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		$( document.body ).trigger( 'update_checkout' );
-		const request = orderReviewRequest();
-		request.send();
-		$.fn.unblock.mockClear();
-
-		// Core's `update_order_review` has only a `success` callback, so a 500
-		// means `updated_checkout` never fires and nothing else lifts the overlay.
-		request.fail();
-
-		await waitFor( () =>
-			expect( stripeInstance.elements ).toHaveBeenCalledTimes( 2 )
-		);
-		await act( async () => {
-			await Promise.resolve();
-		} );
-		expect( $.fn.unblock ).toHaveBeenCalled();
-
-		const resolveMock = jest.fn();
-		const rejectMock = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: resolveMock,
-			reject: rejectMock,
-			expressPaymentType: 'google_pay',
-		} );
-		expect( resolveMock ).toHaveBeenCalledWith(
-			expect.objectContaining( { shippingAddressRequired: true } )
-		);
-		expect( rejectMock ).not.toHaveBeenCalled();
-	} );
-
-	it( 'should keep the guard when WooCommerce aborts the order-review request', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		const aborted = orderReviewRequest();
-		aborted.send();
-		$( document.body ).trigger( 'update_checkout' );
-		$.fn.unblock.mockClear();
-		apiFetch.mockClear();
-
-		// Core aborts the in-flight request when a newer `update_checkout` starts.
-		// That newer one guards the button itself, so recovering here would open
-		// the button over a request that is still running.
-		aborted.abort();
-
-		await act( async () => {
-			await Promise.resolve();
-		} );
-		expect( apiFetch ).not.toHaveBeenCalled();
-		expect( $.fn.unblock ).not.toHaveBeenCalled();
-
-		const resolveMock = jest.fn();
-		const rejectMock = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: resolveMock,
-			reject: rejectMock,
-			expressPaymentType: 'google_pay',
-		} );
-		expect( rejectMock ).toHaveBeenCalledTimes( 1 );
-		expect( resolveMock ).not.toHaveBeenCalled();
-
-		// Core sends the replacement in the same breath, and that one releases it.
-		const replacement = orderReviewRequest();
-		replacement.send();
-		$( document.body ).trigger( 'updated_checkout' );
-		replacement.succeed();
-
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
-	} );
-
-	// Core debounces `update_checkout` by 5 ms, so a request settling inside that
-	// window leaves nothing in flight while our refresh resolves on a stale cart.
-	it( 'should keep the guard when a failed request settles inside the debounce window', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		const request = orderReviewRequest();
-		request.send();
-
-		$( document.body ).trigger( 'update_checkout' );
-		$.fn.unblock.mockClear();
-		request.fail();
-
-		await act( async () => {
-			await Promise.resolve();
-			await Promise.resolve();
-		} );
-		expect( $.fn.unblock ).not.toHaveBeenCalled();
-
-		const queued = orderReviewRequest();
-		queued.send();
-		$( document.body ).trigger( 'updated_checkout' );
-		queued.succeed();
-
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
-	} );
-
-	it( 'should keep the guard when a successful request settles inside the debounce window', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		const request = orderReviewRequest();
-		request.send();
-
-		$( document.body ).trigger( 'update_checkout' );
-		$.fn.unblock.mockClear();
-
-		// Core fires `updated_checkout` from `success` regardless of the queued update.
-		$( document.body ).trigger( 'updated_checkout' );
-		request.succeed();
-
-		await act( async () => {
-			await Promise.resolve();
-			await Promise.resolve();
-		} );
-		expect( $.fn.unblock ).not.toHaveBeenCalled();
-
-		const queued = orderReviewRequest();
-		queued.send();
-		$( document.body ).trigger( 'updated_checkout' );
-		queued.succeed();
-
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
-	} );
-
-	it( 'should ignore a third-party request carrying the endpoint name', async () => {
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		const request = orderReviewRequest();
-		request.send();
-
-		$( document.body ).trigger( 'update_checkout' );
-		$.fn.unblock.mockClear();
-		request.fail();
-
-		// A looser match would read this as core's and declare the cycle over.
-		const impostor = orderReviewRequest(
-			'/wp-json/my-plugin/update_order_review'
-		);
-		impostor.send();
-		impostor.fail();
-
-		await act( async () => {
-			await Promise.resolve();
-			await Promise.resolve();
-		} );
-		expect( apiFetch ).toHaveBeenCalledTimes( 2 );
-		expect( $.fn.unblock ).not.toHaveBeenCalled();
-
-		// Only core's own request releases it.
-		const queued = orderReviewRequest();
-		queued.send();
-		$( document.body ).trigger( 'updated_checkout' );
-		queued.succeed();
-
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
-	} );
-
-	it( 'should follow the cycle when a filtered endpoint takes its first query parameter', async () => {
-		global.wc_checkout_params.wc_ajax_url = '/wc-ajax/%%endpoint%%';
-
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		$( document.body ).trigger( 'update_checkout' );
-		$.fn.unblock.mockClear();
-
-		const request = orderReviewRequest(
-			'/wc-ajax/update_order_review?lang=fr'
-		);
-		request.send();
-		$( document.body ).trigger( 'updated_checkout' );
-		request.succeed();
-
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
-	} );
-
-	it( 'should follow the cycle once jQuery has expanded a protocol-relative endpoint', async () => {
-		global.wc_checkout_params.wc_ajax_url =
-			'//localhost/?wc-ajax=%%endpoint%%';
-
-		await jest.isolateModulesAsync( async () => {
-			await import( '..' );
-		} );
-
-		$( document.body ).trigger( 'updated_checkout' );
-		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
-
-		$( document.body ).trigger( 'update_checkout' );
-		$.fn.unblock.mockClear();
-
-		const request = orderReviewRequest(
-			'http://localhost/?wc-ajax=update_order_review'
-		);
-		request.send();
-		$( document.body ).trigger( 'updated_checkout' );
-		request.succeed();
-
-		await waitFor( () => expect( $.fn.unblock ).toHaveBeenCalled() );
+		expect( clickEventRejectMock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
