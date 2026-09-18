@@ -11,6 +11,7 @@ import { useOnboardingContext } from '../context';
 import { fromDotNotation } from '../utils';
 import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';
+import { redirectTo } from 'wcpay/utils';
 import strings from '../strings';
 
 const LoadingStep: React.FC = () => {
@@ -26,13 +27,15 @@ const LoadingStep: React.FC = () => {
 
 		const urlParams = new URLSearchParams( window.location.search );
 
-		window.location.href = addQueryArgs( connectUrl, {
-			self_assessment: fromDotNotation( data ),
-			source:
-				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-				'unknown',
-			from: 'WCPAY_ONBOARDING_WIZARD',
-		} );
+		redirectTo(
+			addQueryArgs( connectUrl, {
+				self_assessment: fromDotNotation( data ),
+				source:
+					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+					'unknown',
+				from: 'WCPAY_ONBOARDING_WIZARD',
+			} )
+		);
 	};
 
 	useEffect( () => {

@@ -379,7 +379,7 @@ class MultiCurrency {
 
 		$admin_notices = new AdminNotices();
 		$user_settings = new UserSettings( $this );
-		new Analytics( $this, $this->settings_service );
+		$analytics     = new Analytics( $this, $this->settings_service );
 
 		$this->build_frontend_objects();
 		$this->tracking = new Tracking( $this );
@@ -387,6 +387,7 @@ class MultiCurrency {
 		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
+		$analytics->init_hooks();
 
 		// Use async (client-side) rendering only when should_use_async_rendering()
 		// is true: cache-optimized mode, no active session, and not a Store API
