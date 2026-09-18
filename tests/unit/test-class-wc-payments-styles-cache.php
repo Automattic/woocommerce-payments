@@ -254,6 +254,213 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertMatchesRegularExpression( '/^[a-f0-9]{32}$/', $second_version );
 	}
 
+	/**
+	 * The cache version must be a pure content hash: recomputing it without any
+	 * theme/style change must yield the same value. A non-deterministic version
+	 * (e.g. one that mixes in time()) orphans the stored WooPay appearance — for
+	 * classic themes that have no server-side recompute fallback, this leaves
+	 * WooPay permanently unthemed. Regression test for the time() leftover.
+	 */
+	public function test_compute_styles_cache_version_is_deterministic() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_styles_cache_version' );
+		$method->setAccessible( true );
+
+		$first = $method->invoke( null );
+
+		// Cross a wall-clock second boundary so a time()-dependent hash would
+		// change. The sleep makes the test deterministic (it always crosses the
+		// boundary) rather than flaky. A pure content hash is unaffected.
+		sleep( 1 );
+
+		$second = $method->invoke( null );
+
+		$this->assertSame(
+			$first,
+			$second,
+			'compute_styles_cache_version() must be deterministic when nothing changed (no time() component).'
+		);
+	}
+
+	/**
+	 * The flip side of determinism: the version MUST change when a theme/style
+	 * input changes, otherwise a stale appearance would be served after a
+	 * Customizer edit. Guards against a future refactor dropping an input (e.g.
+	 * get_theme_mods()) from the hash, which the determinism test alone would
+	 * not catch.
+	 */
+	public function test_compute_styles_cache_version_changes_when_theme_mod_changes() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_styles_cache_version' );
+		$method->setAccessible( true );
+
+		$before = $method->invoke( null );
+
+		// Simulate a Customizer change (classic themes store these as theme mods).
+		set_theme_mod( 'wcpay_test_mod', 'changed' );
+
+		try {
+			$after = $method->invoke( null );
+
+			$this->assertNotSame(
+				$before,
+				$after,
+				'compute_styles_cache_version() must change when a theme mod changes.'
+			);
+		} finally {
+			remove_theme_mod( 'wcpay_test_mod' );
+		}
+	}
+
+	/**
+	 * Mirrors the production failure: a stored (classic-theme) WooPay appearance
+	 * must survive the version recompute that happens on a later request when the
+	 * version option has been invalidated but nothing about the theme changed.
+	 */
+	public function test_stored_woopay_appearance_survives_version_recompute() {
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute
+		// from theme.json — exercises the classic-theme persisted-slot path.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
+
+		try {
+			delete_option( 'wcpay_woopay_checkout_appearance' );
+			delete_option( 'wcpay_styles_cache_version' );
+
+			$appearance = [
+				'theme' => 'stripe',
+				'rules' => [ '.Input' => [ 'color' => '#333' ] ],
+			];
+
+			// Shopper write stamps the appearance with the current version.
+			WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
+
+			// Simulate the next request: the version option is gone, so reading it
+			// forces a fresh recompute. Cross a second boundary so a time()-based
+			// version would change. With a deterministic version this still matches
+			// the stored stamp; with time() it would orphan the appearance.
+			delete_option( 'wcpay_styles_cache_version' );
+			sleep( 1 );
+
+			$this->assertEquals(
+				$appearance,
+				WC_Payments_Styles_Cache::get_woopay_appearance(),
+				'Stored WooPay appearance was orphaned by a non-deterministic cache version.'
+			);
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
+	}
+
+	/**
+	 * Manual clear (bust) must force a NEW version even when the hash inputs are
+	 * byte-identical. This is the hash-invisible escape hatch: custom CSS /
+	 * child-theme / page-builder edits don't change theme.json, theme mods, or
+	 * the stylesheet, so nothing auto-invalidates. The clear tool regenerates a
+	 * salt so the version changes, busting the shopper localStorage caches and
+	 * forcing re-extraction.
+	 */
+	public function test_bust_styles_cache_changes_version_with_identical_inputs() {
+		delete_option( 'wcpay_styles_cache_salt' );
+		delete_option( 'wcpay_styles_cache_version' );
+
+		$before = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		WC_Payments_Styles_Cache::bust_styles_cache();
+
+		$after = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		$this->assertNotSame(
+			$before,
+			$after,
+			'bust_styles_cache() must change the version even when theme inputs are unchanged.'
+		);
+	}
+
+	/**
+	 * The manual clear must also invalidate WooPay's persisted appearance slot.
+	 * For classic themes a custom-CSS edit leaves the stored WooPay appearance
+	 * stale (the version still matches), and the slot is not deleted directly —
+	 * but bumping the version via the salt makes the stored stamp no longer
+	 * match, so get_woopay_appearance() stops serving the stale value.
+	 */
+	public function test_bust_styles_cache_invalidates_stored_woopay_appearance() {
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
+
+		try {
+			delete_option( 'wcpay_styles_cache_salt' );
+			delete_option( 'wcpay_styles_cache_version' );
+			delete_option( 'wcpay_woopay_checkout_appearance' );
+
+			$appearance = [
+				'theme' => 'stripe',
+				'rules' => [ '.Input' => [ 'color' => '#333' ] ],
+			];
+			WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
+			$this->assertEquals( $appearance, WC_Payments_Styles_Cache::get_woopay_appearance() );
+
+			// Merchant edited custom CSS (hash-invisible) and clicked Clear.
+			WC_Payments_Styles_Cache::bust_styles_cache();
+
+			$this->assertNull(
+				WC_Payments_Styles_Cache::get_woopay_appearance(),
+				'A manual clear must invalidate the stored WooPay appearance via the version bump.'
+			);
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
+	}
+
+	/**
+	 * Two clears in quick succession (even within the same wall-clock second)
+	 * must each produce a new version. A time()-based salt would collide on a
+	 * sub-second double "Clear" and silently no-op the second one; the uuid-based
+	 * salt guarantees every clear changes the version.
+	 */
+	public function test_consecutive_busts_each_change_the_version() {
+		delete_option( 'wcpay_styles_cache_salt' );
+		delete_option( 'wcpay_styles_cache_version' );
+
+		WC_Payments_Styles_Cache::bust_styles_cache();
+		$after_first = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		WC_Payments_Styles_Cache::bust_styles_cache();
+		$after_second = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		$this->assertNotSame(
+			$after_first,
+			$after_second,
+			'Each clear must change the version, even two clears within the same second.'
+		);
+	}
+
+	/**
+	 * Routine auto-invalidation (theme/style hooks) must NOT bump the salt — only
+	 * the deliberate manual clear does. invalidate_styles_cache_version() is
+	 * called by handle_theme_change() on every theme/style save, so if it changed
+	 * the salt the version would be non-deterministic again and WooPay's slot
+	 * would be orphaned on routine recomputes.
+	 */
+	public function test_invalidate_styles_cache_version_does_not_change_salt() {
+		delete_option( 'wcpay_styles_cache_salt' );
+		delete_option( 'wcpay_styles_cache_version' );
+
+		$before = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
+		$recomputed = WC_Payments_Styles_Cache::get_styles_cache_version();
+
+		$this->assertSame(
+			$before,
+			$recomputed,
+			'Routine invalidation must recompute the same version (salt unchanged).'
+		);
+	}
+
 	public function test_set_woopay_appearance_stores_font_rules() {
 		delete_option( 'wcpay_woopay_checkout_appearance' );
 		delete_option( 'wcpay_styles_cache_version' );

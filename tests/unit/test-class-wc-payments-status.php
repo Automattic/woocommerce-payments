@@ -130,15 +130,23 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that clear_styles_cache deletes the option and returns expected message.
+	 * Test that clear_styles_cache busts the cache (deletes the version AND bumps
+	 * the salt) and returns the expected message. The salt bump is what forces a
+	 * new version for hash-invisible changes; asserting it guards against a revert
+	 * to plain invalidate_styles_cache_version() (which would not bust caches).
 	 */
-	public function test_clear_styles_cache_clears_option_and_returns_message() {
+	public function test_clear_styles_cache_busts_cache_and_returns_message() {
 		update_option( 'wcpay_styles_cache_version', 'test_version' );
+		delete_option( 'wcpay_styles_cache_salt' );
 
 		$result = $this->status->clear_styles_cache();
 
 		$this->assertEquals( 'WooPayments styles cleared', $result );
 		$this->assertFalse( get_option( 'wcpay_styles_cache_version' ) );
+		$this->assertNotEmpty(
+			get_option( 'wcpay_styles_cache_salt' ),
+			'clear_styles_cache() must bump the salt (call bust_styles_cache), not just delete the version.'
+		);
 	}
 
 	/**
