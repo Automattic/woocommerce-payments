@@ -36,8 +36,8 @@ const pluralNounToUse = {
 	deposits: __( 'payouts', 'woocommerce-payments' ),
 	disputes: __( 'disputes', 'woocommerce-payments' ),
 	loans: __( 'loans', 'woocommerce-payments' ),
-	payments: __( 'orders', 'woocommerce-payments' ),
-	transactions: __( 'orders', 'woocommerce-payments' ),
+	payments: __( 'transactions', 'woocommerce-payments' ),
+	transactions: __( 'transactions', 'woocommerce-payments' ),
 };
 
 const getNoticeContent = (
@@ -180,7 +180,7 @@ const getNoticeContent = (
 					<>
 						{ interpolateComponents( {
 							mixedString: sprintf(
-								/* translators: %1$s: WooPayments, %2$s: plural record type, e.g. "orders" */
+								/* translators: %1$s: WooPayments, %2$s: plural record type, e.g. "transactions" */
 								__(
 									'%1$s is in test mode, so only test %2$s are shown. To view live %2$s, disable test mode in {{settingsLink}}%1$s settings{{/settingsLink}}.',
 									'woocommerce-payments'

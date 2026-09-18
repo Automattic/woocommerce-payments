@@ -126,12 +126,12 @@ describe( 'Test mode notification', () => {
 		// to. documents/loans/transactions have no isDetailsView call site today,
 		// but the type permits them and the switch handles them, so pin them too.
 		const detailsPages: [ CurrentPage, string ][] = [
-			[ 'payments', 'orders' ],
+			[ 'payments', 'transactions' ],
 			[ 'deposits', 'payouts' ],
 			[ 'disputes', 'disputes' ],
 			[ 'documents', 'documents' ],
 			[ 'loans', 'loans' ],
-			[ 'transactions', 'orders' ],
+			[ 'transactions', 'transactions' ],
 		];
 
 		const renderDetails = ( page: CurrentPage ) => {
