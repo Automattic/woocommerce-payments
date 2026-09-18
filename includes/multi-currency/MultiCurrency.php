@@ -1906,6 +1906,7 @@ class MultiCurrency {
 	 */
 	private function enable_server_price_hooks() {
 		$this->async_renderer->remove_hooks();
+		$this->frontend_currencies->selected_currency_changed();
 		$this->frontend_prices->init_hooks();
 		$this->frontend_currencies->init_hooks();
 	}
