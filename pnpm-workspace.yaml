@@ -12,6 +12,7 @@ saveExact: true
 allowBuilds:
   esbuild: true
   '@parcel/watcher': true
+  unrs-resolver: true          # Native module resolver behind jest-resolve; its postinstall selects the platform binding.
   core-js: false
   core-js-pure: false
   msw: false

@@ -7,6 +7,7 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import Loading from '../loading';
+import { redirectTo } from 'wcpay/utils';
 
 // Mock Api Fetch module and function
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -29,6 +30,13 @@ jest.mock( '../../context', () => ( {
 	} ) ),
 } ) );
 
+// jsdom marks `window.location` unforgeable, so the redirect is asserted
+// through the `redirectTo` helper the step calls.
+jest.mock( 'wcpay/utils', () => ( {
+	...jest.requireActual( 'wcpay/utils' ),
+	redirectTo: jest.fn(),
+} ) );
+
 jest.mock( 'components/stepper', () => ( {
 	useStepperContext: jest.fn( () => ( {
 		currentStep: 'loading',
@@ -43,27 +51,11 @@ const checkLinkToContainNecessaryParams = ( link: string ) => {
 };
 
 describe( 'Loading', () => {
-	const originalWindowLocation = window.location;
-
 	beforeEach( () => {
-		// Prevent window.location.href redirect
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			enumerable: true,
-			value: new URL( window.location.href ),
-		} );
+		( redirectTo as jest.Mock ).mockClear();
 		global.wcpaySettings = {
 			connectUrl: 'http://wcpay-connect-url',
 		};
-	} );
-
-	afterEach( () => {
-		// Roll back window.location.href behavior after test
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			enumerable: true,
-			value: originalWindowLocation,
-		} );
 	} );
 
 	it( 'renders loading screen', async () => {
@@ -75,6 +67,9 @@ describe( 'Loading', () => {
 
 		render( <Loading /> );
 
-		checkLinkToContainNecessaryParams( window.location.href );
+		expect( redirectTo ).toHaveBeenCalledTimes( 1 );
+		checkLinkToContainNecessaryParams(
+			( redirectTo as jest.Mock ).mock.calls[ 0 ][ 0 ]
+		);
 	} );
 } );
