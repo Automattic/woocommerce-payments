@@ -122,9 +122,6 @@ describe( 'Test mode notification', () => {
 	} );
 
 	describe( 'Details view', () => {
-		// Every CurrentPage the switch handles, with the plural noun it resolves
-		// to. documents/loans/transactions have no isDetailsView call site today,
-		// but the type permits them and the switch handles them, so pin them too.
 		const detailsPages: [ CurrentPage, string ][] = [
 			[ 'payments', 'transactions' ],
 			[ 'deposits', 'payouts' ],
@@ -146,10 +143,6 @@ describe( 'Test mode notification', () => {
 		test.each( detailsPages )(
 			'makes no claim about when the %s record was created',
 			( page ) => {
-				// The notice receives no order-, charge- or intent-scoped input,
-				// so it cannot know the mode a record was created in. This pins
-				// the shape of that claim rather than one past wording, so a
-				// reworded regression is still caught.
 				expect( renderDetails( page ).textContent ).not.toMatch(
 					/\b(was|were)\b[^.]*\b(placed|created)\b/
 				);
