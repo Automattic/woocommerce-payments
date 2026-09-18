@@ -122,37 +122,27 @@ describe( 'Test mode notification', () => {
 	} );
 
 	describe( 'Details view', () => {
-		const detailsPages: [ CurrentPage, string ][] = [
+		test.each( [
 			[ 'payments', 'transactions' ],
 			[ 'deposits', 'payouts' ],
 			[ 'disputes', 'disputes' ],
 			[ 'documents', 'documents' ],
 			[ 'loans', 'loans' ],
 			[ 'transactions', 'transactions' ],
-		];
-
-		const renderDetails = ( page: CurrentPage ) => {
-			mockIsInTestMode.mockReturnValue( true );
-			mockIsInDevMode.mockReturnValue( false );
-
-			return render(
-				<TestModeNotice currentPage={ page } isDetailsView={ true } />
-			).container;
-		};
-
-		test.each( detailsPages )(
-			'makes no claim about when the %s record was created',
-			( page ) => {
-				expect( renderDetails( page ).textContent ).not.toMatch(
-					/\b(was|were)\b[^.]*\b(placed|created)\b/
-				);
-			}
-		);
-
-		test.each( detailsPages )(
+		] as [ CurrentPage, string ][] )(
 			'states the store mode and what the %s view is scoped to',
 			( page, plural ) => {
-				expect( renderDetails( page ).textContent ).toBe(
+				mockIsInTestMode.mockReturnValue( true );
+				mockIsInDevMode.mockReturnValue( false );
+
+				const { container } = render(
+					<TestModeNotice
+						currentPage={ page }
+						isDetailsView={ true }
+					/>
+				);
+
+				expect( container.textContent ).toBe(
 					`WooPayments is in test mode, so only test ${ plural } are shown. ` +
 						`To view live ${ plural }, disable test mode in WooPayments settings.`
 				);
