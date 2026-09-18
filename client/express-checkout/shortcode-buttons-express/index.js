@@ -29,7 +29,10 @@ import {
 import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
 import { getResolvedCurrency } from '../utils/resolved-currency-cache';
 import { rememberElementCurrency } from '../utils/element-currency-cache';
-import { getSetupFutureUsageForCart } from '../utils/subscriptions';
+import {
+	resolveSetupFutureUsage,
+	getLocalizedSetupFutureUsage,
+} from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -257,11 +260,7 @@ jQuery( ( $ ) => {
 					?.isEceUsingConfirmationTokens ?? true;
 			const isManualCaptureEnabled =
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-			const hasSubscription =
-				getExpressCheckoutData( 'has_subscription' ) ?? false;
-			const {
-				setupFutureUsage = hasSubscription ? 'off_session' : null,
-			} = creationOptions;
+			const { setupFutureUsage } = creationOptions;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -632,8 +631,7 @@ jQuery( ( $ ) => {
 					total,
 					currency: cachedCartData.totals.currency_code.toLowerCase(),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage:
-						getSetupFutureUsageForCart( cachedCartData ),
+					setupFutureUsage: resolveSetupFutureUsage( cachedCartData ),
 					isSuperseded,
 				} );
 			} else if (
@@ -644,11 +642,7 @@ jQuery( ( $ ) => {
 					total,
 					currency: getResolvedCurrency( initialCurrency ),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage: getExpressCheckoutData(
-						'has_subscription'
-					)
-						? 'off_session'
-						: null,
+					setupFutureUsage: getLocalizedSetupFutureUsage(),
 					isSuperseded,
 				} );
 			} else {
@@ -711,7 +705,7 @@ jQuery( ( $ ) => {
 							...( useConfirmationToken
 								? {
 										setupFutureUsage:
-											getSetupFutureUsageForCart(
+											resolveSetupFutureUsage(
 												cachedCartData
 											),
 								  }

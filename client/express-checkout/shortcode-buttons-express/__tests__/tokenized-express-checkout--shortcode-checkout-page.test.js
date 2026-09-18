@@ -620,19 +620,11 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		expect( clickEventRejectMock ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
-		global.wcpayExpressCheckoutParams.has_subscription = false;
-
+	it( 'should initialize Elements with setupFutureUsage when the server declared it on the cart', async () => {
 		const cartWithSubscription = {
 			...cartWithItemsMock,
 			extensions: {
-				subscriptions: [
-					{
-						billing_period: 'month',
-						billing_interval: 1,
-						totals: { total_price: '2399' },
-					},
-				],
+				wcpay: { setup_future_usage: 'off_session' },
 			},
 		};
 		apiFetch.mockImplementation( async () =>
