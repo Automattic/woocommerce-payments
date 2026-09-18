@@ -33,6 +33,7 @@ export interface WCPayExpressCheckoutParams {
 		needs_shipping: boolean;
 		currency_decimals: number;
 		stripe_minor_unit: number;
+		zero_decimal_currencies?: string[];
 	};
 
 	has_subscription?: boolean;

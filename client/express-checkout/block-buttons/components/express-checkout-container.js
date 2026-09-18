@@ -75,6 +75,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			'wcpay.express-checkout.total-amount',
 			transformPrice( billing.cartTotal.value, {
 				currency_minor_unit: billing.currency.minorUnit ?? 0,
+				currency_code: billing.currency.code,
 			} ),
 			cartData
 		),
