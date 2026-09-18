@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Authorize WooPay requests on the Cart-Token and a sealed attestation instead of a Jetpack blog token signature, and remove the `wcpay_woopay_is_signed_with_blog_token` and `wcpay_is_woopay_store_api_request` filters.
