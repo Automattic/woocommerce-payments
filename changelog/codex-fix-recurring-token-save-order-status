@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure recurring orders reflect successful payments when saving the payment method fails.

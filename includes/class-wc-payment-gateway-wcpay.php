@@ -4322,7 +4322,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// subscription would keep the old failing card. Attaching it first also prevents
 			// maybe_schedule_subscription_order_tracking() from overwriting _payment_method_id back to
 			// the previously-stored card when the order status save fires. See WOOPMNT-2882.
-			$token = null;
+			$token                = null;
+			$token_save_exception = null;
 			if ( $intent->is_authorized() && $should_save_payment_method && ! empty( $payment_method_id ) ) {
 				try {
 					$token = $this->ensure_payment_method_token_for_order( $order, $payment_method_id, wp_get_current_user() );
@@ -4330,10 +4331,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 
 					// For recurring payments (subscriptions and renewals), token creation failure is
-					// critical - renewals will fail. Re-throw the exception so the customer sees an error
-					// instead of a successful checkout that will fail on the first renewal.
+					// critical - renewals will fail. Defer the error until after the order status reflects
+					// the authorized payment so the order does not remain pending after a successful charge.
 					if ( $is_recurring_payment ) {
-						throw new Exception(
+						$token_save_exception = new Exception(
 							__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
 						);
 					}
@@ -4366,6 +4367,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Stock reduction is left to WooCommerce core (see note in process_payment_for_order()).
 				if ( ! $is_subscription_payment_method_change ) {
 					WC()->cart->empty_cart();
+				}
+
+				if ( $token_save_exception ) {
+					throw $token_save_exception;
 				}
 
 				$return_url = $this->get_return_url( $order );
