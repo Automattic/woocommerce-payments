@@ -5538,15 +5538,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Stripe's own vocabulary for the field: either value means the token asks for the payment
 		// method to be kept, and an empty string means it carries none.
-		$token_declares_off_session = in_array( $posted_setup_future_usage, [ 'off_session', 'on_session' ], true );
+		$token_requests_future_usage = in_array( $posted_setup_future_usage, [ 'off_session', 'on_session' ], true );
 
-		$intent_requests_off_session = $save_payment_method_to_store && $this->payment_method->is_reusable();
+		$payment_saves_reusable_method = $save_payment_method_to_store && $this->payment_method->is_reusable();
 
-		if ( $token_declares_off_session === $intent_requests_off_session ) {
+		if ( $token_requests_future_usage === $payment_saves_reusable_method ) {
 			return;
 		}
 
-		if ( $intent_requests_off_session ) {
+		if ( $payment_saves_reusable_method ) {
 			Logger::error(
 				sprintf(
 					'Order %s saves the payment method, but its express checkout confirmation token carries no setup_future_usage, '
