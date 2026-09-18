@@ -338,10 +338,12 @@ class MultiCurrency {
 		// a getter before `init` fires would otherwise initialize twice, leaving two sets of price
 		// and currency objects hooked at the same priority.
 		if ( $this->init_ran ) {
-			// A getter can trigger init() before the WooCommerce session exists, which selects async
-			// rendering. Once the session is available, switch to server-side prices so the visitor's
-			// selected currency is honoured for the rest of the request.
-			if ( $this->init_completed && static::is_enabled() && ( ! $this->should_use_async_rendering() || isset( $_GET['currency'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			// In cache-optimized mode, a getter can trigger init() before the WooCommerce session
+			// exists, which selects async rendering. Once the session is available, switch to
+			// server-side prices so the visitor's selected currency is honoured for the rest of the
+			// request. Outside cache-optimized mode the first call already registered server-side
+			// hooks, so a repeated call leaves them alone.
+			if ( $this->init_completed && $this->is_cache_optimized_mode() && ! $this->should_use_async_rendering() ) {
 				$this->enable_server_price_hooks();
 			}
 			return;

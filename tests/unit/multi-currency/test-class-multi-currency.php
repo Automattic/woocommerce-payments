@@ -161,6 +161,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		try {
 			WC()->session = null;
 			$this->multi_currency->get_default_currency();
+			// A direct read before the session exists caches the store currency as unselected.
+			$this->assertSame( 'USD', $this->multi_currency->get_frontend_currencies()->get_woocommerce_currency() );
 			$this->assertStringContainsString( 'wcpay-async-price', wc_price( 10 ) );
 			$this->assertFalse( has_filter( 'woocommerce_product_get_price', [ $this->multi_currency->get_frontend_prices(), 'get_product_price_string' ] ) );
 			$active = $this->createMock( WC_Session_Handler::class );
@@ -183,6 +185,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			WC()->session = $session;
 			$this->remove_currency_settings_mock( 'CAD', [ 'price_rounding', 'price_charm' ] );
 		}
+	}
+
+	/** Outside cache-optimized mode, a repeated init() must leave the registered hooks alone. */
+	public function test_repeated_init_outside_cache_mode_leaves_hooks_alone() {
+		$prices = $this->multi_currency->get_frontend_prices();
+		remove_filter( 'woocommerce_product_get_price', [ $prices, 'get_product_price_string' ], 99 );
+		$this->multi_currency->init();
+		$this->assertFalse( has_filter( 'woocommerce_product_get_price', [ $prices, 'get_product_price_string' ] ) );
 	}
 
 	/** An early getter followed by scheduled init must not register a second converter. */

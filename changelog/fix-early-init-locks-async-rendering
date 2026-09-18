@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Use server-side prices once the WooCommerce session exists, even when Multi-Currency was initialized before it.
+Use server-side prices once the WooCommerce session exists, even when Multi-Currency was initialized before it in cache-optimized mode. In that mode, a repeated Multi-Currency initialization now re-registers the server-side price and currency hooks.
