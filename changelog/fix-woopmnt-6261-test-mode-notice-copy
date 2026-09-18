@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Stopped the test mode notice on details pages from stating that live transactions, payouts and disputes were created in test mode.
+Fixed the test mode notice on payment, payout and dispute details pages, which wrongly said a live record was created in test mode.
