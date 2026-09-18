@@ -465,7 +465,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 * it, so over-declaring silently attaches the shopper's card to the Stripe customer on
 		 * an ordinary one-off purchase, with no WooPayments token recorded against it.
 		 *
-		 * @since 11.3.0
+		 * @since 11.2.0
 		 *
 		 * @param string|null $setup_future_usage 'off_session' or null.
 		 * @param string      $context            Button context: 'product', 'cart', 'checkout',
