@@ -331,21 +331,155 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		if ( $this->is_checkout() || $this->is_cart() ) {
-			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
-				return true;
-			}
-			if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
-				return true;
-			}
-			if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
-				return true;
-			}
-			if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
-				return true;
-			}
+			return $this->cart_contains_subscription();
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether the cart holds a subscription of any shape: initial purchase, renewal,
+	 * resubscribe, or switch. Reads cart state only, so the Store API cart endpoint
+	 * can use it when `is_cart()` / `is_checkout()` are both false.
+	 *
+	 * @return boolean
+	 */
+	private function cart_contains_subscription() {
+		if ( ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return true;
+		}
+		if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
+			return true;
+		}
+		if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
+			return true;
+		}
+		if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether paying the current order-pay order will be a recurring payment.
+	 * Pay-for-order uses the order Store API, which does not carry the cart `wcpay`
+	 * extension, so this reads the order rather than the cart. Defers to the
+	 * gateway's `is_payment_recurring()` so the token matches the intent the
+	 * gateway will create after the wallet sheet closes.
+	 *
+	 * @return boolean
+	 */
+	private function is_order_payment_recurring() {
+		$order = $this->get_order_being_paid();
+		if ( ! $order ) {
+			return false;
+		}
+
+		return $this->gateway->is_payment_recurring( $order->get_id() );
+	}
+
+	/**
+	 * Resolves the order the shopper is paying on the order-pay endpoint.
+	 *
+	 * The ID comes from the `order-pay` query var — not `get_current_order()`, which reads
+	 * admin `$theorder`/`$post` and on the front end can resolve the page instead.
+	 *
+	 * The order key authorises the read. Scripts enqueue on `wp_enqueue_scripts` while
+	 * core validates the key on `the_content`, so an unverifiable order must not be
+	 * localized. Fails closed: no order → `get_setup_future_usage()` returns null.
+	 *
+	 * @return WC_Order|false
+	 */
+	private function get_order_being_paid() {
+		global $wp;
+
+		if ( ! isset( $wp->query_vars['order-pay'] ) ) {
+			return false;
+		}
+
+		$order = wc_get_order( absint( $wp->query_vars['order-pay'] ) );
+
+		// Note: there is no nonce verification for the "pay for order" action — the URL is long living.
+		// `is_string()` before `wc_clean()`, which recurses into arrays: `?key[]=x` would otherwise reach `hash_equals()` as an array and fatal.
+		$order_key = isset( $_GET['key'] ) && is_string( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( $order instanceof WC_Order && hash_equals( $order->get_order_key(), $order_key ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
+			return $order;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the `setup_future_usage` that express checkout should mint its Stripe
+	 * ConfirmationToken with, for the current cart or product.
+	 *
+	 * Stripe fixes this value when the token is created — before the wallet sheet opens —
+	 * and rejects the confirmation if the PaymentIntent later asks for a different one.
+	 * The gateway asks for `off_session` whenever it saves the payment method. Only
+	 * WooCommerce Subscriptions is knowable this early, so the filter below is how
+	 * everything else declares itself.
+	 *
+	 * @param string|null $context Button context to evaluate for ('product', 'cart',
+	 *                             'checkout', 'pay_for_order'). Defaults to the current
+	 *                             page's context. 'cart', 'checkout' and 'pay_for_order'
+	 *                             resolve from cart or order state, so request handlers
+	 *                             with no page context can name one; 'product' needs the
+	 *                             queried product and falls back to page state.
+	 *
+	 * @return string|null 'off_session' when the payment method will be saved, null otherwise.
+	 */
+	public function get_setup_future_usage( ?string $context = null ) {
+		$context = $context ?? $this->get_button_context();
+
+		switch ( $context ) {
+			case 'pay_for_order':
+				$will_be_saved = $this->is_order_payment_recurring();
+				break;
+			case 'cart':
+			case 'checkout':
+				// Both read the same cart. Naming either works with no page state.
+				$will_be_saved = $this->cart_contains_subscription();
+				break;
+			default:
+				// 'product' included: it needs the queried product.
+				$will_be_saved = $this->has_subscription_product();
+				break;
+		}
+
+		/**
+		 * Filters the `setup_future_usage` express checkout mints its ConfirmationToken with.
+		 *
+		 * Return 'off_session' when the payment method will genuinely be saved for later —
+		 * a subscription plugin other than WooCommerce Subscriptions, or any integration that
+		 * sets `wc-woocommerce_payments-new-payment-method` while the order is processed.
+		 * Return null otherwise.
+		 *
+		 * Declare 'off_session' only when the payment method really will be saved. Stripe
+		 * inherits the token's value onto the PaymentIntent even when the intent itself omits
+		 * it, so over-declaring silently attaches the shopper's card to the Stripe customer on
+		 * an ordinary one-off purchase, with no WooPayments token recorded against it.
+		 *
+		 * @since 11.2.0
+		 *
+		 * @param string|null $setup_future_usage 'off_session' or null.
+		 * @param string      $context            Button context: 'product', 'cart', 'checkout',
+		 *                                        'pay_for_order', or '' when undetermined.
+		 */
+		$setup_future_usage = apply_filters(
+			'wcpay_express_checkout_setup_future_usage',
+			$will_be_saved ? 'off_session' : null,
+			$context
+		);
+
+		// Normalise to the two values Stripe and the Store API schema accept.
+		// Anything that is not an explicit 'off_session' resolves to null.
+		return 'off_session' === $setup_future_usage ? 'off_session' : null;
 	}
 
 	/**

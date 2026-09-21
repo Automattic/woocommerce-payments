@@ -225,7 +225,7 @@
 		"stylelint-config-prettier": "8.0.2",
 		"tinycolor2": "1.6.0",
 		"ts-jest": "29.4.9",
-		"ts-loader": "9.5.7",
+		"ts-loader": "9.6.2",
 		"typescript": "5.9.3",
 		"util": "0.12.5",
 		"uuid": "8.3.2",
