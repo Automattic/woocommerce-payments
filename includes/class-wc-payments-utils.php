@@ -1401,12 +1401,12 @@ class WC_Payments_Utils {
 		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
-		// is_string() first: wc_clean() hands back an array for ?key[]=x, and hash_equals() fatals on one.
+		// is_string() first: wc_clean() hands back an array for ?key[]=x, and key_is_valid() fatals on one.
 		if ( ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
 			return null;
 		}
 
-		if ( ! hash_equals( (string) $order->get_order_key(), wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
+		if ( ! $order->key_is_valid( wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
 			return null;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
