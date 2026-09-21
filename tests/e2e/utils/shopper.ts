@@ -449,11 +449,9 @@ export const selectPaymentMethod = async (
 		} )
 		.first();
 
-	// An `update_order_review` refresh replaces the payment box and then restores
-	// `wc_checkout_form.selectedPaymentMethod`, which a click landing on a node
-	// the response is about to detach never got to set — so the choice reverts to
-	// the first gateway and the order is placed on Card. Re-click until it sticks.
-	// Every step is bounded so a genuinely stuck checkout fails inside the budget.
+	// A checkout refresh replaces the payment box. A click on a row the refresh
+	// is about to remove never registers, so the choice falls back to the first
+	// gateway and the order goes through on Card. Re-click until it sticks.
 	await expect( async () => {
 		await isUIUnblocked( page, 3000 );
 
