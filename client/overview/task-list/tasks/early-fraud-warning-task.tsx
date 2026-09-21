@@ -14,42 +14,21 @@ import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/ty
 
 const taskKeyPrefix = 'early-fraud-warning-task-';
 
-// Charge IDs carry no hyphen, so splitting on one recovers each charge from an
-// older aggregated key that named every warning the task covered at the time.
-const taskKeySeparator = '-';
-
 const buildTaskKey = ( chargeId: string ): string => taskKeyPrefix + chargeId;
-
-/**
- * The charges a merchant has already dismissed, read back out of the keys the task
- * list stored for them.
- *
- * Includes keys from the previous aggregated task, so dismissing "review 3 payments"
- * before this change does not bring those warnings back as individual rows.
- *
- * @param dismissedTasks Keys the merchant has dismissed, ours and everything else's.
- */
-const getDismissedChargeIds = ( dismissedTasks: string[] ): Set< string > =>
-	new Set(
-		dismissedTasks
-			.filter( ( key ) => key.startsWith( taskKeyPrefix ) )
-			.flatMap( ( key ) =>
-				key.slice( taskKeyPrefix.length ).split( taskKeySeparator )
-			)
-	);
 
 const getOrderNumber = ( warning: ActiveEarlyFraudWarning ): string =>
 	warning.order_number || String( warning.order_id );
 
 const buildEarlyFraudWarningTask = (
-	warning: ActiveEarlyFraudWarning
+	warning: ActiveEarlyFraudWarning,
+	activeEarlyFraudWarningCount: number
 ): TaskItemProps => {
 	const orderNumber = getOrderNumber( warning );
 
 	const handleClick = () => {
 		recordEvent( 'wcpay_overview_task_click', {
 			task: 'early-fraud-warning-task',
-			active_early_fraud_warning_count: 1,
+			active_early_fraud_warning_count: activeEarlyFraudWarningCount,
 		} );
 		getHistory().push(
 			getAdminUrl( {
@@ -95,16 +74,11 @@ export const getEarlyFraudWarningTasks = (
 	/**
 	 * Orders whose latest early fraud warning is still actionable.
 	 */
-	activeEarlyFraudWarnings: ActiveEarlyFraudWarning[],
-	/**
-	 * Task keys the merchant has dismissed, from
-	 * wcpaySettings.overviewTasksVisibility.dismissedTodoTasks.
-	 */
-	dismissedTasks: string[] = []
+	activeEarlyFraudWarnings: ActiveEarlyFraudWarning[]
 ): TaskItemProps[] => {
-	const dismissedChargeIds = getDismissedChargeIds( dismissedTasks );
+	const activeEarlyFraudWarningCount = activeEarlyFraudWarnings.length;
 
-	return activeEarlyFraudWarnings
-		.filter( ( warning ) => ! dismissedChargeIds.has( warning.charge_id ) )
-		.map( buildEarlyFraudWarningTask );
+	return activeEarlyFraudWarnings.map( ( warning ) =>
+		buildEarlyFraudWarningTask( warning, activeEarlyFraudWarningCount )
+	);
 };

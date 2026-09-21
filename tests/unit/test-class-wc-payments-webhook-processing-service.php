@@ -2366,7 +2366,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 						'created'        => 1719800000,
 					],
 				],
-				[ '_wcpay_early_fraud_warning_actionable', '1' ]
+				[ '_wcpay_early_fraud_warning_actionable', 1719800000 ]
 			);
 
 		$this->mock_order
@@ -2418,7 +2418,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 						'created'        => 1719800000,
 					],
 				],
-				[ '_wcpay_early_fraud_warning_actionable', '1' ]
+				[ '_wcpay_early_fraud_warning_actionable', 1719800000 ]
 			);
 
 		$this->mock_order

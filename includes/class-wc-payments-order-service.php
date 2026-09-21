@@ -249,12 +249,15 @@ class WC_Payments_Order_Service {
 	const WCPAY_EARLY_FRAUD_WARNING_META_KEY = '_wcpay_early_fraud_warning';
 
 	/**
-	 * Meta key mirroring whether the stored early fraud warning is still actionable.
+	 * Meta key indexing orders whose stored early fraud warning is still actionable.
 	 *
 	 * Present only while actionable, so the bounded warning query can filter on it: the
 	 * warning itself is a serialized array MySQL cannot read, and its row is never removed
 	 * (the order screen keeps showing resolved warnings), so without this key resolved rows
 	 * would hold window slots forever and hide older still-actionable ones.
+	 *
+	 * The value is the warning's Unix `created` timestamp, so `wc_get_orders` can sort by
+	 * when the warning arrived rather than when the order was placed.
 	 *
 	 * @const string
 	 */
@@ -1305,7 +1308,10 @@ class WC_Payments_Order_Service {
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, $early_fraud_warning );
 
 		if ( ! empty( $early_fraud_warning['efw_actionable'] ) ) {
-			$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY, '1' );
+			$order->update_meta_data(
+				self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
+				(int) ( $early_fraud_warning['created'] ?? 0 )
+			);
 		} else {
 			$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY );
 		}
@@ -1332,13 +1338,13 @@ class WC_Payments_Order_Service {
 	/**
 	 * Returns orders whose latest early fraud warning is still actionable.
 	 *
-	 * Inspects the $limit most recent orders that ever received a warning, so
+	 * Inspects the $limit most recent actionable warnings by warning date, so
 	 * the result is a lower bound on very large stores. Callers should cache
 	 * the result — the meta query is too slow to run on every admin request.
 	 *
-	 * Results are ordered by when the warning arrived, which the query window
-	 * cannot be: the warning date sits inside a serialized meta value, while a
-	 * warning can land weeks after the order was placed.
+	 * The actionable index stores the warning timestamp, so the query itself
+	 * returns the newest warnings first even when a warning lands long after
+	 * the order was placed.
 	 *
 	 * @param int $limit Maximum number of warning-carrying orders to inspect.
 	 *
@@ -1348,7 +1354,7 @@ class WC_Payments_Order_Service {
 		$orders = wc_get_orders(
 			[
 				'limit'    => $limit,
-				'orderby'  => 'date',
+				'orderby'  => 'meta_value_num',
 				'order'    => 'DESC',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_key' => self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
@@ -1381,16 +1387,9 @@ class WC_Payments_Order_Service {
 				'order_id'     => $order->get_id(),
 				'order_number' => $order->get_order_number(),
 				'charge_id'    => $this->get_charge_id_for_order( $order ),
-				'created'      => (int) ( $early_fraud_warning['created'] ?? 0 ),
+				'created'      => (int) $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY, true ),
 			];
 		}
-
-		usort(
-			$actionable_orders,
-			function ( array $a, array $b ): int {
-				return $b['created'] <=> $a['created'];
-			}
-		);
 
 		return $actionable_orders;
 	}

@@ -28,7 +28,6 @@ interface TaskListProps {
 	activeDisputesSummary?: DisputesSummaryData;
 	activeDisputeTaskIsLoading?: boolean;
 	activeEarlyFraudWarnings?: ActiveEarlyFraudWarning[];
-	dismissedTasks?: string[];
 	showGoLiveTask: boolean;
 }
 
@@ -39,7 +38,6 @@ export const getTasks = ( {
 	activeDisputesSummary,
 	activeDisputeTaskIsLoading = false,
 	activeEarlyFraudWarnings = [],
-	dismissedTasks = [],
 	showGoLiveTask = false,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
@@ -96,10 +94,7 @@ export const getTasks = ( {
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		disputeResolutionTask,
-		...getEarlyFraudWarningTasks(
-			activeEarlyFraudWarnings,
-			dismissedTasks
-		),
+		...getEarlyFraudWarningTasks( activeEarlyFraudWarnings ),
 		isGoLiveTaskVisible && getGoLiveTask(),
 	]
 		.filter( Boolean )

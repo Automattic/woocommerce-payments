@@ -894,107 +894,7 @@ describe( 'taskSort()', () => {
 		expect( task.isDismissable ).toBe( true );
 	} );
 
-	it( 'should drop a dismissed warning from the early fraud warning tasks', () => {
-		const actual = getTasks( {
-			activeEarlyFraudWarnings: [
-				{
-					order_id: 12,
-					order_number: '12',
-					charge_id: 'ch_efw_1',
-					created: 1719800000,
-				},
-				{
-					order_id: 13,
-					order_number: '13',
-					charge_id: 'ch_efw_2',
-					created: 1719900000,
-				},
-			],
-			dismissedTasks: [ 'early-fraud-warning-task-ch_efw_1' ],
-		} );
-
-		expect( actual ).toEqual( [
-			expect.objectContaining( {
-				key: 'early-fraud-warning-task-ch_efw_2',
-				title: 'Review order #13 flagged for potential fraud',
-			} ),
-		] );
-		expect( actual ).toEqual(
-			expect.not.arrayContaining( [
-				expect.objectContaining( {
-					key: 'early-fraud-warning-task-ch_efw_1',
-				} ),
-			] )
-		);
-	} );
-
-	// Merchants who dismissed the old aggregated task stored every charge in one key.
-	it( 'should keep a warning dismissed once another warning in the same task resolves', () => {
-		const actual = getTasks( {
-			activeEarlyFraudWarnings: [
-				{
-					order_id: 12,
-					order_number: '12',
-					charge_id: 'ch_efw_1',
-					created: 1719800000,
-				},
-			],
-			dismissedTasks: [ 'early-fraud-warning-task-ch_efw_1-ch_efw_2' ],
-		} );
-
-		expect( actual ).toEqual( [] );
-	} );
-
-	it( 'should show the early fraud warning task again for a warning arriving after a dismissal', () => {
-		const actual = getTasks( {
-			activeEarlyFraudWarnings: [
-				{
-					order_id: 12,
-					order_number: '12',
-					charge_id: 'ch_efw_1',
-					created: 1719800000,
-				},
-				{
-					order_id: 14,
-					order_number: '14',
-					charge_id: 'ch_efw_3',
-					created: 1720000000,
-				},
-			],
-			dismissedTasks: [ 'early-fraud-warning-task-ch_efw_1' ],
-		} );
-
-		expect( actual ).toEqual( [
-			expect.objectContaining( {
-				key: 'early-fraud-warning-task-ch_efw_3',
-				title: 'Review order #14 flagged for potential fraud',
-			} ),
-		] );
-	} );
-
-	it( 'should ignore dismissed keys belonging to other tasks', () => {
-		const actual = getTasks( {
-			activeEarlyFraudWarnings: [
-				{
-					order_id: 12,
-					order_number: '12',
-					charge_id: 'ch_efw_1',
-					created: 1719800000,
-				},
-			],
-			dismissedTasks: [ 'dispute-resolution-task-ch_efw_1' ],
-		} );
-
-		expect( actual ).toEqual(
-			expect.arrayContaining( [
-				expect.objectContaining( {
-					key: 'early-fraud-warning-task-ch_efw_1',
-				} ),
-			] )
-		);
-	} );
-
-	it( 'each early fraud warning task action opens that payment', () => {
+	it( 'each early fraud warning task action opens that payment and records the active count', () => {
 		mockHistoryPush.mockClear();
 
 		const tasks = getTasks( {
@@ -1016,6 +916,13 @@ describe( 'taskSort()', () => {
 
 		tasks[ 1 ].action();
 
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_overview_task_click',
+			{
+				task: 'early-fraud-warning-task',
+				active_early_fraud_warning_count: 2,
+			}
+		);
 		expect( mockHistoryPush ).toHaveBeenCalledWith(
 			expect.stringContaining(
 				'path=%2Fpayments%2Ftransactions%2Fdetails'

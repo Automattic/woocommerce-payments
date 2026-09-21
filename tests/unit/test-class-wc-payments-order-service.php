@@ -1837,6 +1837,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			],
 			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
 		);
+		$this->assertSame(
+			'1719800000',
+			(string) wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning_actionable', true )
+		);
 
 		// Assert: Check that the note was added with the reason and a link to the payment details.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -1871,6 +1875,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'created'        => 1719800000,
 			],
 			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
+		);
+		$this->assertSame(
+			'',
+			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning_actionable', true )
 		);
 
 		// Assert: Check that a resolved note was added on top of the actionable one.
@@ -1972,20 +1980,21 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the warning query inspects at most $limit orders, newest first.
+	 * Tests that the warning query inspects at most $limit warnings, newest first.
 	 */
 	public function test_get_actionable_early_fraud_warning_orders_respects_limit() {
-		// Arrange: Two actionable orders created two weeks apart.
+		// Arrange: Two actionable orders; the older order carries the newer warning.
 		$older_order = WC_Helper_Order::create_order();
 		$older_order->set_date_created( '2026-07-01 00:00:00' );
 		$older_order->save();
-		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->order_service->set_charge_id_for_order( $older_order, 'ch_older' );
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older', 'issfr_1', true, 'made_with_stolen_card', 1719900000 );
 
 		$newer_order = WC_Helper_Order::create_order();
 		$newer_order->set_date_created( '2026-07-15 00:00:00' );
 		$newer_order->save();
 		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer' );
-		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
 
 		// Act: Fetch with a limit of one.
 		$result = $this->with_payments_mode(
@@ -1995,13 +2004,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		// Assert: Only the newest order is inspected.
+		// Assert: Only the newest warning is inspected, even though its order is older.
 		$this->assertSame(
 			[
 				[
-					'order_id'     => $newer_order->get_id(),
-					'order_number' => $newer_order->get_order_number(),
-					'charge_id'    => 'ch_newer',
+					'order_id'     => $older_order->get_id(),
+					'order_number' => $older_order->get_order_number(),
+					'charge_id'    => 'ch_older',
 					'created'      => 1719900000,
 				],
 			],
