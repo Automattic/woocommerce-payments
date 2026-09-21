@@ -25,10 +25,6 @@ const checkoutWithAlipay = async ( page: Page ): Promise< string > => {
 
 	await shopper.placeOrder( page );
 
-	await page.waitForURL( /.*stripe\.com.*alipay/, {
-		waitUntil: 'commit',
-		timeout: 60000,
-	} );
 	await expect( page.getByText( /Alipay test payment page/ ) ).toBeVisible();
 
 	await page.getByText( 'Authorize Test Payment' ).click();
@@ -105,10 +101,6 @@ test.describe( 'Alipay Checkout', () => {
 
 				await shopper.placeOrderWCB( shopperPage, false );
 
-				await shopperPage.waitForURL( /.*stripe\.com.*alipay/, {
-					waitUntil: 'commit',
-					timeout: 60000,
-				} );
 				await expect(
 					shopperPage.getByText( /Alipay test payment page/ )
 				).toBeVisible();

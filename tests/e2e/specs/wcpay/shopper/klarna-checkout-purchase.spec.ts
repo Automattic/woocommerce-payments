@@ -78,12 +78,8 @@ test.describe( 'Klarna Checkout', () => {
 
 			// Since we don't have control over the html in the Klarna playground page,
 			// verifying the redirect is all we can do consistently without introducing a
-			// flaky test. `commit` stops at the first response of the redirect chain, so
-			// how long Klarna takes to render its page never enters the assertion.
-			await shopperPage.waitForURL( /.*klarna\.com/, {
-				waitUntil: 'commit',
-				timeout: 60000,
-			} );
+			// flaky test.
+			await expect( shopperPage ).toHaveURL( /.*klarna\.com/ );
 		}
 	);
 } );

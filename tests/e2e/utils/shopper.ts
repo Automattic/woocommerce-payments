@@ -449,18 +449,20 @@ export const selectPaymentMethod = async (
 		} )
 		.first();
 
-	// An `update_checkout` refresh redraws the payment box and re-checks the
-	// default gateway, so a click that lands mid-refresh is silently undone and
-	// the order is placed on Card instead. Re-click until the choice sticks.
+	// An `update_order_review` refresh replaces the payment box and then restores
+	// `wc_checkout_form.selectedPaymentMethod`, which a click landing on a node
+	// the response is about to detach never got to set — so the choice reverts to
+	// the first gateway and the order is placed on Card. Re-click until it sticks.
+	// Every step is bounded so a genuinely stuck checkout fails inside the budget.
 	await expect( async () => {
-		await isUIUnblocked( page );
+		await isUIUnblocked( page, 3000 );
 
 		const label = option.locator( 'label' ).first();
 		await label.scrollIntoViewIfNeeded();
-		await label.click();
+		await label.click( { timeout: 5000 } );
 
 		await expect(
-			option.locator( 'input[type="radio"]' ).first()
+			option.locator( 'input[name="payment_method"]' )
 		).toBeChecked( { timeout: 2000 } );
 	} ).toPass( { timeout: 20000, intervals: [ 1000 ] } );
 };
