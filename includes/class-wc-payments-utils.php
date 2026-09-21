@@ -1389,7 +1389,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return WC_Order|null Null when the request is not allowed to read an order.
 	 */
-	public static function get_authorized_pay_for_order_order(): ?WC_Order {
+	public static function get_authorized_order_from_payment_link(): ?WC_Order {
 		// Not get_query_var(): a secondary WP_Query left unreset would hide the routed request's
 		// own order. `??` because $wp is unset off a routed request, e.g. cron and WP-CLI.
 		global $wp;

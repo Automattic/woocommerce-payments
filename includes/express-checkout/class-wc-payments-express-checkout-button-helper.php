@@ -377,7 +377,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private function is_order_payment_recurring() {
 		// Scripts enqueue on `wp_enqueue_scripts`, before core validates the key on `the_content`,
 		// so this cannot lean on core having already turned the request away.
-		$order = WC_Payments_Utils::get_authorized_pay_for_order_order();
+		$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
 		if ( ! $order ) {
 			return false;

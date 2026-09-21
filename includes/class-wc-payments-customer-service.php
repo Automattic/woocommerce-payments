@@ -504,7 +504,7 @@ class WC_Payments_Customer_Service {
 		$address         = null;
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$order = WC_Payments_Utils::get_authorized_pay_for_order_order();
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
 			if ( $order instanceof WC_Order ) {
 				$firstname       = $order->get_billing_first_name();

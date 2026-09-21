@@ -219,7 +219,7 @@ class WC_Payments_Checkout {
 			return false;
 		}
 
-		$order = WC_Payments_Utils::get_authorized_pay_for_order_order();
+		$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
 		return $order instanceof \WC_Order && $order->needs_payment();
 	}
@@ -313,7 +313,7 @@ class WC_Payments_Checkout {
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
-			$order = WC_Payments_Utils::get_authorized_pay_for_order_order();
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
 			if ( $order instanceof \WC_Order ) {
 				$payment_fields['isOrderPay'] = true;
