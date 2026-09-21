@@ -735,7 +735,7 @@ class WC_Payments_Subscription_Service {
 			return $actions;
 		}
 
-		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
+		if ( $theorder instanceof WC_Subscription && wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
 			unset(
 				$actions['wcs_create_pending_parent'],
 				$actions['wcs_create_pending_renewal'],
