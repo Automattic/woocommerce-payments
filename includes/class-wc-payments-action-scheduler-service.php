@@ -50,6 +50,18 @@ class WC_Payments_Action_Scheduler_Service {
 	private $deferred_jobs = [];
 
 	/**
+	 * Keys (hook+args+group hashes) already scheduled in the current request.
+	 *
+	 * Prevents repeat schedule_job() calls for the same key from re-running
+	 * schedule_action_and_prevent_duplicates(), which is the source of the
+	 * schedule-then-cancel churn during checkout (woocommerce_update_order
+	 * fires many times per request).
+	 *
+	 * @var array<string, true>
+	 */
+	private $scheduled_in_request = [];
+
+	/**
 	 * Constructor for WC_Payments_Action_Scheduler_Service.
 	 *
 	 * @param WC_Payments_API_Client    $payments_api_client - WooCommerce Payments API client.
@@ -218,10 +230,16 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	public function schedule_job( int $timestamp, string $hook, array $args = [], string $group = self::GROUP_ID ) {
+		$key = md5( (string) wp_json_encode( [ $hook, $args, $group ] ) );
+
 		// The `action_scheduler_init` hook was introduced in ActionScheduler 3.5.5 (WooCommerce 7.9.0).
 		if ( version_compare( WC()->version, '7.9.0', '>=' ) ) {
 			// If the ActionScheduler is already initialized, schedule the job.
 			if ( did_action( 'action_scheduler_init' ) ) {
+				if ( isset( $this->scheduled_in_request[ $key ] ) ) {
+					return;
+				}
+				$this->scheduled_in_request[ $key ] = true;
 				$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 			} else {
 				// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
@@ -229,13 +247,12 @@ class WC_Payments_Action_Scheduler_Service {
 				// (e.g. `woocommerce_update_order` firing multiple times on order creation) don't pile up closures
 				// that each schedule their own action. Subsequent calls just update the stored timestamp; the single
 				// callback reads the latest value when ActionScheduler initializes.
-				$key = md5( (string) wp_json_encode( [ $hook, $args, $group ] ) );
-
 				if ( ! isset( $this->deferred_jobs[ $key ] ) ) {
 					add_action(
 						'action_scheduler_init',
 						function () use ( $hook, $args, $group, $key ) {
-							$timestamp = $this->deferred_jobs[ $key ];
+							$timestamp                          = $this->deferred_jobs[ $key ];
+							$this->scheduled_in_request[ $key ] = true;
 							$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 						}
 					);
@@ -244,6 +261,10 @@ class WC_Payments_Action_Scheduler_Service {
 				$this->deferred_jobs[ $key ] = $timestamp;
 			}
 		} else {
+			if ( isset( $this->scheduled_in_request[ $key ] ) ) {
+				return;
+			}
+			$this->scheduled_in_request[ $key ] = true;
 			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 		}
 	}
