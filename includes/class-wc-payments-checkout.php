@@ -217,27 +217,45 @@ class WC_Payments_Checkout {
 	 * @return bool
 	 */
 	private function is_valid_pay_for_order_endpoint(): bool {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
-		// is_string() guards against an array being passed (e.g. ?key[]=x): wc_clean() would return
-		// an array and hash_equals() would throw a TypeError. The checkout pay page is public, so
-		// malformed query string input is reachable unauthenticated.
-		if ( ! is_checkout_pay_page() || ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+		if ( ! is_checkout_pay_page() ) {
 			return false;
 		}
 
 		$order_id = absint( get_query_var( 'order-pay' ) );
 		$order    = wc_get_order( $order_id );
 
-		if ( ! $order || ! hash_equals( (string) $order->get_order_key(), wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
+		// The ID comes from the URL, so it can resolve to a refund, which has no order key.
+		if ( ! $order instanceof \WC_Order || ! $this->request_has_valid_order_key( $order ) ) {
 			return false;
 		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if ( ! $order->needs_payment() ) {
 			return false;
 		}
 
 		return current_user_can( 'pay_for_order', $order->get_id() );
+	}
+
+	/**
+	 * Checks the request's `key` against the order's own.
+	 *
+	 * Pair this with the `pay_for_order` capability, which WooCommerce grants to everyone —
+	 * logged-out visitors included — for any order without a customer, so it cannot gate an order
+	 * on its own. See wc_customer_has_capability().
+	 *
+	 * @param \WC_Order $order The order being paid.
+	 *
+	 * @return bool
+	 */
+	private function request_has_valid_order_key( \WC_Order $order ): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
+		// is_string() first: wc_clean() hands back an array for ?key[]=x, and hash_equals() fatals on one.
+		if ( ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+			return false;
+		}
+
+		return hash_equals( (string) $order->get_order_key(), wc_clean( wp_unslash( $_GET['key'] ) ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -332,7 +350,7 @@ class WC_Payments_Checkout {
 			$order_id = absint( get_query_var( 'order-pay' ) );
 			$order    = wc_get_order( $order_id );
 
-			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
+			if ( is_a( $order, 'WC_Order' ) && $this->request_has_valid_order_key( $order ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
 				$payment_fields['isOrderPay'] = true;
 				$payment_fields['orderId']    = $order_id;
 				$order_currency               = $order->get_currency();

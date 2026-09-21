@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: check the order key before adding order details to the pay-for-order checkout config
