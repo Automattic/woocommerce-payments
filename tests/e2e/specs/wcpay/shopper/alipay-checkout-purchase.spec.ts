@@ -21,10 +21,14 @@ const checkoutWithAlipay = async ( page: Page ): Promise< string > => {
 		config.addresses.customer.billing
 	);
 
-	await page.locator( '.wc_payment_methods' ).getByText( 'alipay' ).click();
+	await shopper.selectPaymentMethod( page, 'Alipay' );
 
 	await shopper.placeOrder( page );
 
+	await page.waitForURL( /.*stripe\.com.*alipay/, {
+		waitUntil: 'commit',
+		timeout: 60000,
+	} );
 	await expect( page.getByText( /Alipay test payment page/ ) ).toBeVisible();
 
 	await page.getByText( 'Authorize Test Payment' ).click();
@@ -93,14 +97,18 @@ test.describe( 'Alipay Checkout', () => {
 					config.addresses.customer.billing
 				);
 
-				await shopperPage
-					.getByRole( 'radio', {
-						name: 'Alipay',
-					} )
-					.click();
+				const alipayRadio = shopperPage.getByRole( 'radio', {
+					name: 'Alipay',
+				} );
+				await alipayRadio.click();
+				await expect( alipayRadio ).toBeChecked();
 
 				await shopper.placeOrderWCB( shopperPage, false );
 
+				await shopperPage.waitForURL( /.*stripe\.com.*alipay/, {
+					waitUntil: 'commit',
+					timeout: 60000,
+				} );
 				await expect(
 					shopperPage.getByText( /Alipay test payment page/ )
 				).toBeVisible();

@@ -442,12 +442,27 @@ export const selectPaymentMethod = async (
 	// Wait for payment methods list to render.
 	await page.locator( '.wc_payment_methods' ).waitFor( { timeout: 10000 } );
 
-	// Click the label and let Playwright's auto-retry handle actionability.
-	const label = page
-		.locator( `label:has-text("${ paymentMethod }")` )
+	const option = page
+		.locator( '.wc_payment_methods > li' )
+		.filter( {
+			has: page.locator( `label:has-text("${ paymentMethod }")` ),
+		} )
 		.first();
-	await label.scrollIntoViewIfNeeded();
-	await label.click();
+
+	// An `update_checkout` refresh redraws the payment box and re-checks the
+	// default gateway, so a click that lands mid-refresh is silently undone and
+	// the order is placed on Card instead. Re-click until the choice sticks.
+	await expect( async () => {
+		await isUIUnblocked( page );
+
+		const label = option.locator( 'label' ).first();
+		await label.scrollIntoViewIfNeeded();
+		await label.click();
+
+		await expect(
+			option.locator( 'input[type="radio"]' ).first()
+		).toBeChecked( { timeout: 2000 } );
+	} ).toPass( { timeout: 20000, intervals: [ 1000 ] } );
 };
 
 /**
