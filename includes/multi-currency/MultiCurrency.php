@@ -213,6 +213,13 @@ class MultiCurrency {
 	private $init_ran = false;
 
 	/**
+	 * Whether initialization completed and frontend hooks can be refreshed.
+	 *
+	 * @var bool
+	 */
+	private $init_completed = false;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param MultiCurrencySettingsInterface     $settings_service     Settings service.
@@ -331,6 +338,14 @@ class MultiCurrency {
 		// a getter before `init` fires would otherwise initialize twice, leaving two sets of price
 		// and currency objects hooked at the same priority.
 		if ( $this->init_ran ) {
+			// In cache-optimized mode, a getter can trigger init() before the WooCommerce session
+			// exists, which selects async rendering. Once the session is available, switch to
+			// server-side prices so the visitor's selected currency is honoured for the rest of the
+			// request. Outside cache-optimized mode the first call already registered server-side
+			// hooks, so a repeated call leaves them alone.
+			if ( $this->init_completed && $this->is_cache_optimized_mode() && ! $this->should_use_async_rendering() ) {
+				$this->enable_server_price_hooks();
+			}
 			return;
 		}
 
@@ -379,7 +394,7 @@ class MultiCurrency {
 
 		$admin_notices = new AdminNotices();
 		$user_settings = new UserSettings( $this );
-		new Analytics( $this, $this->settings_service );
+		$analytics     = new Analytics( $this, $this->settings_service );
 
 		$this->build_frontend_objects();
 		$this->tracking = new Tracking( $this );
@@ -387,6 +402,7 @@ class MultiCurrency {
 		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
+		$analytics->init_hooks();
 
 		// Use async (client-side) rendering only when should_use_async_rendering()
 		// is true: cache-optimized mode, no active session, and not a Store API
@@ -403,8 +419,7 @@ class MultiCurrency {
 		}
 
 		if ( ! $use_async_rendering || $has_pending_currency_switch ) {
-			$this->frontend_prices->init_hooks();
-			$this->frontend_currencies->init_hooks();
+			$this->enable_server_price_hooks();
 		}
 
 		$this->tracking->init_hooks();
@@ -425,6 +440,7 @@ class MultiCurrency {
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
 
 		static::$is_initialized = true;
+		$this->init_completed   = true;
 	}
 
 	/**
@@ -1883,6 +1899,18 @@ class MultiCurrency {
 		$this->enabled_currencies   = [];
 		$this->default_currency     = new Currency( $this->localization_service, $this->get_store_currency_code() );
 		$this->build_frontend_objects();
+	}
+
+	/**
+	 * Switch to server price hooks without replacing their owning instances.
+	 *
+	 * @return void
+	 */
+	private function enable_server_price_hooks() {
+		$this->async_renderer->remove_hooks();
+		$this->frontend_currencies->selected_currency_changed();
+		$this->frontend_prices->init_hooks();
+		$this->frontend_currencies->init_hooks();
 	}
 
 	/**

@@ -120,4 +120,46 @@ describe( 'Test mode notification', () => {
 			'development or staging environment'
 		);
 	} );
+
+	describe( 'Details view', () => {
+		test.each( [
+			[ 'payments', 'transactions' ],
+			[ 'deposits', 'payouts' ],
+			[ 'disputes', 'disputes' ],
+			[ 'documents', 'documents' ],
+			[ 'loans', 'loans' ],
+			[ 'transactions', 'transactions' ],
+		] as [ CurrentPage, string ][] )(
+			'states the store mode and what the %s view is scoped to',
+			( page, plural ) => {
+				mockIsInTestMode.mockReturnValue( true );
+				mockIsInDevMode.mockReturnValue( false );
+
+				const { container } = render(
+					<TestModeNotice
+						currentPage={ page }
+						isDetailsView={ true }
+					/>
+				);
+
+				expect( container.textContent ).toBe(
+					`WooPayments is in test mode, so only test ${ plural } are shown. ` +
+						`To view live ${ plural }, disable test mode in WooPayments settings.`
+				);
+			}
+		);
+
+		test( 'dev mode still takes precedence over the details-view copy', () => {
+			mockIsInTestMode.mockReturnValue( true );
+			mockIsInDevMode.mockReturnValue( true );
+
+			const { container } = render(
+				<TestModeNotice currentPage="payments" isDetailsView={ true } />
+			);
+
+			expect( container.textContent ).toContain(
+				'development or staging environment'
+			);
+		} );
+	} );
 } );

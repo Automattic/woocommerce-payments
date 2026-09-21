@@ -1,84 +1,53 @@
-type SubscriptionExtensions = {
-	subscriptions?: unknown[] | Record< string, unknown >;
-};
-
-type CartItem = {
-	extensions?: SubscriptionExtensions;
-	[ key: string ]: unknown;
-};
-
-type CartData = {
-	extensions?: SubscriptionExtensions;
-	items?: CartItem[];
-	[ key: string ]: unknown;
-};
-
-const isSubscriptionData = (
-	subscriptionData: SubscriptionExtensions[ 'subscriptions' ]
-): boolean => {
-	if ( Array.isArray( subscriptionData ) ) {
-		return subscriptionData.length > 0;
-	}
-
-	if ( typeof subscriptionData !== 'object' || subscriptionData === null ) {
-		return false;
-	}
-
-	const billingPeriod = subscriptionData.billing_period;
-	const billingInterval = subscriptionData.billing_interval;
-
-	return (
-		typeof billingPeriod === 'string' &&
-		billingPeriod.length > 0 &&
-		typeof billingInterval === 'number' &&
-		billingInterval > 0
-	);
-};
-
 /**
- * Checks if the cart contains any subscription schedule (trial or recurring).
- * Detects every cart shape that should trigger `setup_future_usage=off_session`
- * on the PaymentIntent backend-side: initial subscription purchase, trial with
- * sign-up fee, renewal, resubscribe, and switch carts.
- *
- * WC Subscriptions exposes subscription data on the Store API response in two
- * places, and which one is populated depends on the cart shape:
- *   - `cartData.extensions.subscriptions` — populated for initial subscription
- *     purchases (one entry per recurring schedule). Empty for renewal carts.
- *   - `cartData.items[].extensions.subscriptions` — populated on each cart item
- *     that is a subscription product, including renewals/resubscribes/switches
- *     where the item is the existing subscription line item.
- *
- * Checking both keeps the detection robust across WC Subscriptions versions and
- * cart shapes.
- *
- * @param cartData Cart data from Store API.
- * @return True if cart contains any subscription schedule.
+ * Internal dependencies
  */
-export const cartHasAnySubscription = ( cartData?: CartData ): boolean => {
-	const schedules = cartData?.extensions?.subscriptions;
-	if ( Array.isArray( schedules ) && schedules.length > 0 ) {
-		return true;
-	}
+import {
+	getExpressCheckoutData,
+	type SetupFutureUsage,
+} from './express-checkout-data';
 
-	const items = cartData?.items;
-	if ( ! Array.isArray( items ) ) {
-		return false;
-	}
-
-	return items.some( ( item ) =>
-		isSubscriptionData( item?.extensions?.subscriptions )
-	);
+type WcpayCartExtensions = {
+	wcpay?: {
+		setup_future_usage?: SetupFutureUsage;
+	};
+	[ key: string ]: unknown;
 };
 
 /**
- * Gets the setupFutureUsage value that should be passed to Stripe Elements for
- * the current cart.
+ * Reads the server's decision from the localized express checkout params.
+ * Used on the product page (no cart yet) and pay-for-order (order API, not cart).
  *
- * @param cartData Cart data from Store API.
  * @return Stripe setupFutureUsage value.
  */
-export const getSetupFutureUsageForCart = (
-	cartData?: CartData
-): 'off_session' | null =>
-	cartHasAnySubscription( cartData ) ? 'off_session' : null;
+export const getLocalizedSetupFutureUsage = (): SetupFutureUsage =>
+	getExpressCheckoutData( 'setup_future_usage' ) ?? null;
+
+/**
+ * Resolves the setupFutureUsage value to pass to Stripe Elements.
+ *
+ * Prefers `extensions.wcpay.setup_future_usage` from the cart Store API — the
+ * server is the only side that knows every reason the payment method might be
+ * saved. Pay-for-order uses the order endpoint, which does not carry that
+ * extension, so it falls back to the localized value.
+ *
+ * @param cartData Cart data from Store API (only `extensions` is read).
+ * @return Stripe setupFutureUsage value.
+ */
+export const resolveSetupFutureUsage = ( cartData?: {
+	extensions?: unknown;
+} ): SetupFutureUsage => {
+	const extensions = cartData?.extensions as WcpayCartExtensions | undefined;
+	const wcpayExtension = extensions?.wcpay;
+
+	if ( wcpayExtension && 'setup_future_usage' in wcpayExtension ) {
+		// Presence, not truthiness: an explicit `null` is the server deciding
+		// this cart does not save the payment method.
+		return wcpayExtension.setup_future_usage ?? null;
+	}
+
+	if ( getExpressCheckoutData( 'button_context' ) === 'pay_for_order' ) {
+		return getLocalizedSetupFutureUsage();
+	}
+
+	return null;
+};

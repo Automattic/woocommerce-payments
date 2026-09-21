@@ -29,7 +29,10 @@ import {
 import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
 import { getResolvedCurrency } from '../utils/resolved-currency-cache';
 import { rememberElementCurrency } from '../utils/element-currency-cache';
-import { getSetupFutureUsageForCart } from '../utils/subscriptions';
+import {
+	resolveSetupFutureUsage,
+	getLocalizedSetupFutureUsage,
+} from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -257,11 +260,7 @@ jQuery( ( $ ) => {
 					?.isEceUsingConfirmationTokens ?? true;
 			const isManualCaptureEnabled =
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-			const hasSubscription =
-				getExpressCheckoutData( 'has_subscription' ) ?? false;
-			const {
-				setupFutureUsage = hasSubscription ? 'off_session' : null,
-			} = creationOptions;
+			const { setupFutureUsage } = creationOptions;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -632,8 +631,7 @@ jQuery( ( $ ) => {
 					total,
 					currency: cachedCartData.totals.currency_code.toLowerCase(),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage:
-						getSetupFutureUsageForCart( cachedCartData ),
+					setupFutureUsage: resolveSetupFutureUsage( cachedCartData ),
 					isSuperseded,
 				} );
 			} else if (
@@ -644,11 +642,7 @@ jQuery( ( $ ) => {
 					total,
 					currency: getResolvedCurrency( initialCurrency ),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage: getExpressCheckoutData(
-						'has_subscription'
-					)
-						? 'off_session'
-						: null,
+					setupFutureUsage: getLocalizedSetupFutureUsage(),
 					isSuperseded,
 				} );
 			} else {
@@ -711,7 +705,7 @@ jQuery( ( $ ) => {
 							...( useConfirmationToken
 								? {
 										setupFutureUsage:
-											getSetupFutureUsageForCart(
+											resolveSetupFutureUsage(
 												cachedCartData
 											),
 								  }
@@ -774,17 +768,6 @@ jQuery( ( $ ) => {
 			}
 		}
 	};
-
-	// Core greys out the order review during its request, but not our container,
-	// so cover it from `update_checkout`. Checkout only: `updated_checkout` below
-	// runs the refresh that lifts it again.
-	if ( getExpressCheckoutData( 'button_context' ) === 'checkout' ) {
-		$( document.body ).on( 'update_checkout', () => {
-			// Supersede any refresh in flight; `updated_checkout` starts a fresh one.
-			latestForcedRefreshId++;
-			expressCheckoutButtonUi.blockButton();
-		} );
-	}
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
