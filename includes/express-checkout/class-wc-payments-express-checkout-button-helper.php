@@ -375,44 +375,15 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	private function is_order_payment_recurring() {
-		$order = $this->get_order_being_paid();
+		// Scripts enqueue on `wp_enqueue_scripts`, before core validates the key on `the_content`,
+		// so this cannot lean on core having already turned the request away.
+		$order = WC_Payments_Utils::get_authorized_pay_for_order_order();
+
 		if ( ! $order ) {
 			return false;
 		}
 
 		return $this->gateway->is_payment_recurring( $order->get_id() );
-	}
-
-	/**
-	 * Resolves the order the shopper is paying on the order-pay endpoint.
-	 *
-	 * The ID comes from the `order-pay` query var — not `get_current_order()`, which reads
-	 * admin `$theorder`/`$post` and on the front end can resolve the page instead.
-	 *
-	 * The order key authorises the read. Scripts enqueue on `wp_enqueue_scripts` while
-	 * core validates the key on `the_content`, so an unverifiable order must not be
-	 * localized. Fails closed: no order → `get_setup_future_usage()` returns null.
-	 *
-	 * @return WC_Order|false
-	 */
-	private function get_order_being_paid() {
-		global $wp;
-
-		if ( ! isset( $wp->query_vars['order-pay'] ) ) {
-			return false;
-		}
-
-		$order = wc_get_order( absint( $wp->query_vars['order-pay'] ) );
-
-		// Note: there is no nonce verification for the "pay for order" action — the URL is long living.
-		// `is_string()` before `wc_clean()`, which recurses into arrays: `?key[]=x` would otherwise reach `hash_equals()` as an array and fatal.
-		$order_key = isset( $_GET['key'] ) && is_string( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-		if ( $order instanceof WC_Order && hash_equals( $order->get_order_key(), $order_key ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
-			return $order;
-		}
-
-		return false;
 	}
 
 	/**
