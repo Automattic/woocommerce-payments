@@ -11,14 +11,13 @@ export {
 	getExpressCheckoutData,
 	filterCartMethodsByLocation,
 } from './express-checkout-data';
-export type { WCPayExpressCheckoutParams } from './express-checkout-data';
+export type {
+	WCPayExpressCheckoutParams,
+	SetupFutureUsage,
+} from './express-checkout-data';
 export { getErrorMessageFromNotice } from './error-messages';
 export { displayLoginConfirmation } from './login-confirmation';
 export { getExpressCheckoutButtonAppearance } from './button-appearance';
 export { getExpressCheckoutButtonStyleSettings } from './button-style-settings';
 export { createPaymentCredential } from './payment-credentials';
 export { shouldUseConfirmationTokens } from './confirmation-tokens';
-export {
-	cartHasAnySubscription,
-	getSetupFutureUsageForCart,
-} from './subscriptions';
