@@ -367,6 +367,55 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_schedule_job_leaves_pending_action_from_prior_request_untouched() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_keep_pending_' . uniqid();
+		$args  = [ 99 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $hook, $args, $group ) {
+					// Simulate a schedule from a prior request.
+					$original_ts = time() + HOUR_IN_SECONDS;
+					as_schedule_single_action( $original_ts, $hook, $args, $group );
+
+					// A fresh service instance has an empty $scheduled_in_request set, so this
+					// call reaches schedule_action_and_prevent_duplicates() and would previously
+					// have unscheduled the prior action and rescheduled it at the new timestamp.
+					$fresh_service = new WC_Payments_Action_Scheduler_Service(
+						$this->mock_api_client,
+						$this->mock_order_service,
+						$this->mock_compatibility_service
+					);
+					$fresh_service->schedule_job( $original_ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->assertSame(
+						$original_ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'When a pending action already exists, schedule_job() should leave it in place.'
+					);
+
+					$canceled = as_get_scheduled_actions(
+						[
+							'hook'   => $hook,
+							'group'  => $group,
+							'status' => ActionScheduler_Store::STATUS_CANCELED,
+						]
+					);
+					$this->assertCount(
+						0,
+						$canceled,
+						'schedule_job() should not cancel an already-pending action from a prior request.'
+					);
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
 	/**
 	 * Get a mock of the order data expected to be passed into the `track_order` function.
 	 *
