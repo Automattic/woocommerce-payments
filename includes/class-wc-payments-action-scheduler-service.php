@@ -281,10 +281,9 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
-	 * Schedule an action, skipping if an equivalent one (same name, args, and group) is already pending.
+	 * Schedule an action while unscheduling any scheduled actions that are exactly the same.
 	 *
-	 * The pending action fires at its original timestamp; callers are expected to read live state
-	 * inside the hook callback rather than encode it into the schedule time.
+	 * We will look for scheduled actions with the same name, args and group when unscheduling.
 	 *
 	 * @param int    $timestamp When the action will run.
 	 * @param string $action    The action name to schedule.
@@ -296,12 +295,11 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	private function schedule_action_and_prevent_duplicates( int $timestamp, string $action, array $args = [], string $group = self::GROUP_ID ) {
-		// If an equivalent action is already pending (from a prior request), let it fire — it will
-		// read live order data when it runs. Skipping the reschedule avoids the schedule-then-cancel
-		// churn merchants observe in the AS table.
+		// Unschedule any previously scheduled actions with the same name, args, and group combination.
+		// It is more efficient/performant to check if the action is already scheduled before unscheduling it.
 		// @see https://github.com/Automattic/woocommerce-payments/issues/6662.
 		if ( as_has_scheduled_action( $action, $args, $group ) ) {
-			return;
+			as_unschedule_action( $action, $args, $group );
 		}
 
 		as_schedule_single_action( $timestamp, $action, $args, $group );
