@@ -8,12 +8,12 @@ import { RegistryProvider, useRegistry } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import PaymentMethodsSection from '../settings/payment-methods-section';
-import BuyNowPayLaterSection from '../settings/buy-now-pay-later-section';
-import ExpressCheckout from '../settings/express-checkout';
-import ExpressCheckoutDescription from '../settings/express-checkout/description';
-import SettingsSection from '../settings/settings-section';
-import './style.scss';
+import { PaymentMethodsControl } from '../settings/payment-methods-section';
+import {
+	BuyNowPayLaterControl,
+	BuyNowPayLaterMethodsDescription,
+} from '../settings/buy-now-pay-later-section';
+import { ExpressCheckoutControl } from '../settings/express-checkout';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import DuplicatedPaymentMethodsContext from '../settings/settings-manager/duplicated-payment-methods-context';
 import {
@@ -62,17 +62,14 @@ const ExistingSettings = ( { children }: React.PropsWithChildren ) => {
 
 export const PaymentMethods = () => (
 	<ExistingSettings>
-		<PaymentMethodsSection />
-		<BuyNowPayLaterSection />
+		<PaymentMethodsControl />
+		<BuyNowPayLaterControl>
+			<BuyNowPayLaterMethodsDescription />
+		</BuyNowPayLaterControl>
 	</ExistingSettings>
 );
 export const ExpressCheckouts = () => (
 	<ExistingSettings>
-		<SettingsSection
-			id="express-checkouts"
-			description={ ExpressCheckoutDescription }
-		>
-			<ExpressCheckout />
-		</SettingsSection>
+		<ExpressCheckoutControl />
 	</ExistingSettings>
 );

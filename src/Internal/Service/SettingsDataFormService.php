@@ -139,10 +139,6 @@ class SettingsDataFormService {
 		];
 		$fields = [];
 		foreach ( $groups as $id => [ $label, $children ] ) {
-			if ( in_array( $id, [ 'payment-methods', 'express-checkouts' ], true ) ) {
-				$fields = array_merge( $fields, $children );
-				continue;
-			}
 			$fields[] = [
 				'id'       => $id,
 				'label'    => $label,
