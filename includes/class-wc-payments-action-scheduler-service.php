@@ -137,6 +137,22 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
+	 * Clear the in-request dedupe set. **Test-only.**
+	 *
+	 * Production code has no reason to call this — the set is scoped to a single PHP request and
+	 * clears naturally when the request ends. Provided for tests that share the singleton instance
+	 * across test methods (via `WC_Payments::get_action_scheduler_service()`) and need a clean
+	 * dedupe state per test.
+	 *
+	 * @internal Do not call from production code.
+	 *
+	 * @return void
+	 */
+	public function reset_in_request_dedupe_for_tests_only() {
+		$this->scheduled_in_request = [];
+	}
+
+	/**
 	 * This function is a hook that will be called by ActionScheduler when an order is created.
 	 * It will make a request to the Payments API to track this event.
 	 *
