@@ -57,7 +57,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 * schedule-then-cancel churn during checkout (woocommerce_update_order
 	 * fires many times per request).
 	 *
-	 * @var array<string, true>
+	 * @var array<string, int>
 	 */
 	private $scheduled_in_request = [];
 
@@ -240,7 +240,7 @@ class WC_Payments_Action_Scheduler_Service {
 				if ( isset( $this->scheduled_in_request[ $key ] ) ) {
 					return;
 				}
-				$this->scheduled_in_request[ $key ] = true;
+				$this->scheduled_in_request[ $key ] = $timestamp;
 				$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 			} else {
 				// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
@@ -253,7 +253,7 @@ class WC_Payments_Action_Scheduler_Service {
 						'action_scheduler_init',
 						function () use ( $hook, $args, $group, $key ) {
 							$timestamp                          = $this->deferred_jobs[ $key ];
-							$this->scheduled_in_request[ $key ] = true;
+							$this->scheduled_in_request[ $key ] = $timestamp;
 							$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 						}
 					);
@@ -265,7 +265,7 @@ class WC_Payments_Action_Scheduler_Service {
 			if ( isset( $this->scheduled_in_request[ $key ] ) ) {
 				return;
 			}
-			$this->scheduled_in_request[ $key ] = true;
+			$this->scheduled_in_request[ $key ] = $timestamp;
 			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 		}
 	}
