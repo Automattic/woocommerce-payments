@@ -214,11 +214,11 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
-	 * Schedule an action scheduler job, deduplicating repeat calls for the same $hook, $args, and $group.
+	 * Schedule an action scheduler job.
 	 *
-	 * Within the current request, calls after the first for the same key are no-ops. Across requests,
-	 * if a matching action is already pending it is left in place to fire at its original timestamp;
-	 * hook callbacks are expected to read live state when they run.
+	 * Also, unschedules (replaces) any previous instances of the same job.
+	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
+	 * We will only replace a job which has the same $hook, $args AND $group.
 	 *
 	 * @param int    $timestamp When the job will run.
 	 * @param string $hook      The hook to trigger.
