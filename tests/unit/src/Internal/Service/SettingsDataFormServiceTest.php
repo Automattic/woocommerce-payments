@@ -100,4 +100,36 @@ class SettingsDataFormServiceTest extends WCPAY_UnitTestCase {
 		$response = rest_do_request( new WP_REST_Request( 'GET', '/wc/v3/payments/settings-dataform' ) );
 		$this->assertSame( 403, $response->get_status() );
 	}
+
+	/** Core-data omits unchanged rules, but the settings controller requires them. */
+	public function test_preserves_rules_when_only_protection_level_changes(): void {
+		$rules   = [ [ 'key' => 'existing-rule' ] ];
+		$payload = null;
+		register_rest_route(
+			'wc/v3',
+			'/payments/settings',
+			[
+				'methods'             => [ 'GET', 'POST' ],
+				'permission_callback' => '__return_true',
+				'callback'            => function ( $request ) use ( $rules, &$payload ) {
+					if ( 'POST' === $request->get_method() ) {
+						$payload = $request->get_params();
+					}
+					return new WP_REST_Response( [ 'advanced_fraud_protection_settings' => $rules ] );
+				},
+			],
+			true
+		);
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings-dataform' );
+		$request->set_body_params( [ 'current_protection_level' => 'advanced' ] );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame(
+			[
+				'current_protection_level'           => 'advanced',
+				'advanced_fraud_protection_settings' => [ [ 'key' => 'existing-rule' ] ],
+			],
+			$payload
+		);
+	}
 }

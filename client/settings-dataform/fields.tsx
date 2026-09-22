@@ -1,9 +1,11 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { Button, CheckboxControl, Modal } from '@wordpress/components';
+import React from 'react';
+import { CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+
+import { ProtectionLevel } from '../settings/fraud-protection/advanced-settings/constants';
 
 export type Settings = Record< string, unknown >;
 type EditProps = {
@@ -16,6 +18,8 @@ type EditProps = {
 export type EntityField = {
 	id: string;
 	label: string;
+	description?: string | JSX.Element;
+	elements?: { value: string; label: string }[];
 	type: 'text' | 'boolean';
 	// eslint-disable-next-line @typescript-eslint/naming-convention -- WordPress Fields API property.
 	Edit: string | ( ( props: EditProps ) => JSX.Element );
@@ -26,6 +30,7 @@ export type EntityField = {
 declare global {
 	const wcpaySettingsDataform: {
 		classicUrl: string;
+		fraudRulesUrl: string;
 		woopayEligible: boolean;
 		methodLabels: Record< string, string >;
 	};
@@ -33,58 +38,6 @@ declare global {
 
 const settingsLink = ( anchor: string ) =>
 	`${ wcpaySettingsDataform.classicUrl }#${ anchor }`;
-
-const ConfirmedCheckbox = ( { data, field, onChange }: EditProps ) => {
-	const [ confirming, setConfirming ] = useState( false );
-	return (
-		<>
-			<CheckboxControl
-				__nextHasNoMarginBottom
-				label={ field.label }
-				checked={ data[ field.id ] === true }
-				disabled={ field.isDisabled?.( { item: data, field } ) }
-				onChange={ ( checked ) =>
-					checked
-						? setConfirming( true )
-						: onChange( { [ field.id ]: false } )
-				}
-			/>
-			{ confirming && (
-				<Modal
-					title={ field.label }
-					onRequestClose={ () => setConfirming( false ) }
-				>
-					<p>
-						{ field.id === 'is_test_mode_enabled'
-							? __(
-									'Test mode uses test transactions instead of real payments.',
-									'woocommerce-payments'
-							  )
-							: __(
-									'Payments will need to be captured manually before their authorization expires.',
-									'woocommerce-payments'
-							  ) }
-					</p>
-					<Button
-						variant="secondary"
-						onClick={ () => setConfirming( false ) }
-					>
-						{ __( 'Cancel', 'woocommerce-payments' ) }
-					</Button>
-					<Button
-						variant="primary"
-						onClick={ () => {
-							onChange( { [ field.id ]: true } );
-							setConfirming( false );
-						} }
-					>
-						{ __( 'Enable', 'woocommerce-payments' ) }
-					</Button>
-				</Modal>
-			) }
-		</>
-	);
-};
 
 /** Preserve selections outside the control being edited. */
 export const togglePaymentMethod = (
@@ -134,33 +87,6 @@ const PaymentMethods = ( { data, onChange }: EditProps ) => {
 	);
 };
 
-const Payouts = ( { data }: EditProps ) => (
-	<>
-		<p>
-			{ __( 'Current payout schedule:', 'woocommerce-payments' ) }{ ' ' }
-			{ String( data.deposit_schedule_interval ?? '' ) }
-		</p>
-		<a href={ settingsLink( 'payout-schedule' ) }>
-			{ __(
-				'Manage payout schedule and bank account',
-				'woocommerce-payments'
-			) }
-		</a>
-	</>
-);
-
-const FraudProtection = ( { data }: EditProps ) => (
-	<>
-		<p>
-			{ __( 'Current protection level:', 'woocommerce-payments' ) }{ ' ' }
-			{ String( data.current_protection_level ?? '' ) }
-		</p>
-		<a href={ settingsLink( 'fp-settings' ) }>
-			{ __( 'Manage fraud protection', 'woocommerce-payments' ) }
-		</a>
-	</>
-);
-
 const ExpressCheckout = ( props: EditProps ) => (
 	<>
 		<CheckboxControl
@@ -183,6 +109,21 @@ const ExpressCheckout = ( props: EditProps ) => (
 	</>
 );
 
+const Payouts = ( { data }: EditProps ) => (
+	<>
+		<p>
+			{ __( 'Current payout schedule:', 'woocommerce-payments' ) }{ ' ' }
+			{ String( data.deposit_schedule_interval ?? '' ) }
+		</p>
+		<a href={ settingsLink( 'payout-schedule' ) }>
+			{ __(
+				'Manage payout schedule and bank account',
+				'woocommerce-payments'
+			) }
+		</a>
+	</>
+);
+
 const checkbox = ( id: string, label: string ): EntityField => ( {
 	id,
 	label,
@@ -196,7 +137,7 @@ const text = ( id: string, label: string ): EntityField => ( {
 	Edit: 'text',
 } );
 
-export const fields: EntityField[] = [
+export const getFields = (): EntityField[] => [
 	checkbox(
 		'is_wcpay_enabled',
 		__( 'Enable WooPayments', 'woocommerce-payments' )
@@ -206,7 +147,10 @@ export const fields: EntityField[] = [
 			'is_test_mode_enabled',
 			__( 'Enable test mode', 'woocommerce-payments' )
 		),
-		Edit: ConfirmedCheckbox,
+		description: __(
+			'Test mode uses test transactions instead of real payments. Click Save changes to apply.',
+			'woocommerce-payments'
+		),
 		isDisabled: ( { item } ) => item.is_dev_mode_enabled === true,
 		isVisible: ( data ) => data.is_test_mode_onboarding !== true,
 	},
@@ -240,7 +184,10 @@ export const fields: EntityField[] = [
 			'is_manual_capture_enabled',
 			__( 'Enable manual capture', 'woocommerce-payments' )
 		),
-		Edit: ConfirmedCheckbox,
+		description: __(
+			'Payments must be captured manually before their authorization expires. Click Save changes to apply.',
+			'woocommerce-payments'
+		),
 		isDisabled: ( { item } ) => item.is_stripe_billing_enabled === true,
 	},
 	text(
@@ -281,9 +228,33 @@ export const fields: EntityField[] = [
 	),
 	{
 		id: 'current_protection_level',
-		label: __( 'Fraud protection', 'woocommerce-payments' ),
+		label: __( 'Protection level', 'woocommerce-payments' ),
 		type: 'text',
-		Edit: FraudProtection,
+		Edit: 'radio',
+		elements: [
+			{
+				value: ProtectionLevel.BASIC,
+				label: __( 'Basic', 'woocommerce-payments' ),
+			},
+
+			{
+				value: ProtectionLevel.ADVANCED,
+				label: __( 'Advanced', 'woocommerce-payments' ),
+			},
+		],
+		isDisabled: ( { item } ) =>
+			item.advanced_fraud_protection_settings === 'error',
+		description: (
+			<>
+				{ __(
+					'Advanced uses your configured rules. Save your selection before opening the rule editor.',
+					'woocommerce-payments'
+				) }{ ' ' }
+				<a href={ wcpaySettingsDataform.fraudRulesUrl }>
+					{ __( 'Configure advanced rules', 'woocommerce-payments' ) }
+				</a>{ ' ' }
+			</>
+		),
 	},
 	checkbox(
 		'is_multi_currency_enabled',

@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { fields, EntityField } from './fields';
+import { getFields, EntityField } from './fields';
 
 type Entity = { kind: string; name: string; baseURL: string };
 type Page = { id: string; label: string; url: string; entity?: Entity };
@@ -40,7 +40,7 @@ addAction(
 		register: ( kind: string, name: string, field: EntityField ) => void
 	) => {
 		if ( current.kind === entity.kind && current.name === entity.name ) {
-			fields.forEach( ( field ) =>
+			getFields().forEach( ( field ) =>
 				register( entity.kind, entity.name, field )
 			);
 		}

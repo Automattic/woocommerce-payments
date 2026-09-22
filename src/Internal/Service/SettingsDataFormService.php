@@ -58,6 +58,7 @@ class SettingsDataFormService {
 			'wcpaySettingsDataform',
 			[
 				'methodLabels'   => $method_labels,
+				'fraudRulesUrl'  => admin_url( 'admin.php?page=wc-admin&path=/payments/fraud-protection' ),
 				'classicUrl'     => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
 				'woopayEligible' => \WC_Payments_Features::is_woopay_eligible(),
 			]
@@ -96,7 +97,16 @@ class SettingsDataFormService {
 	 */
 	public function settings( $request ) {
 		$forward = new \WP_REST_Request( $request->get_method(), '/wc/v3/payments/settings' );
-		$forward->set_body_params( $request->get_params() );
+		$params  = $request->get_params();
+		if ( 'POST' === $request->get_method() && isset( $params['current_protection_level'] ) && ! array_key_exists( 'advanced_fraud_protection_settings', $params ) ) {
+			$current = rest_do_request( new \WP_REST_Request( 'GET', '/wc/v3/payments/settings' ) );
+			if ( $current->is_error() ) {
+				return $current;
+			}
+			// The existing controller requires both values; core-data sends only changed properties.
+			$params['advanced_fraud_protection_settings'] = $current->get_data()['advanced_fraud_protection_settings'];
+		}
+		$forward->set_body_params( $params );
 		$response = rest_do_request( $forward );
 		if ( $response->is_error() || 'GET' === $request->get_method() ) {
 			return $response;

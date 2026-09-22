@@ -18,10 +18,12 @@ Do not enable this experiment on a production store. Core's private field regist
 | Responsibility | Implementation |
 | --- | --- |
 | Page discovery and singleton entity | `client/settings-dataform/index.ts` registers the page and its REST URL with the companion POC hooks. |
-| Controls | `client/settings-dataform/fields.tsx` supplies native fields and custom React controls. |
+| Controls | `client/settings-dataform/fields.tsx` supplies standard fields, custom payment-method and express-checkout controls, and a payout summary. |
 | Layout | `SettingsDataFormService` supplies PHP View Config with the main page's group order. |
 | Editing, dirty state, Save and Discard | The shared WooCommerce application and WordPress core-data. |
 | Saving | A flat-record facade delegates through the existing WooPayments REST route, including its permission checks, validation and side effects. |
+
+When only the fraud protection level changes, the facade reads the current advanced rules and includes them in the delegated save: the existing endpoint requires both, while core-data sends only changed properties.
 
 The facade is needed because the existing settings POST wraps its record in another REST response. After a successful save, it reads the authoritative settings record for core-data. A failed read after a successful write can still leave a partially completed operation; this is not a transactional save mechanism. The existing endpoint can also save local options before a later account update fails.
 
@@ -30,10 +32,10 @@ WooPayments does not call `unlock` itself. The companion Core POC passes its pri
 ## Coverage and remaining migration work
 
 - Edit enablement, test mode (outside onboarding and development mode), saved cards, manual capture, statement descriptors, support contact details, account notification email, multi-currency and debug logging (outside development mode).
-- Demonstrate a custom payment-method selector and express checkout controls. Payment method names come from the gateway and choices come from the settings REST response. Full activation, eligibility, duplicate notices, promotional offers and express-checkout legal copy are not reproduced.
-- Keep the payout schedule and fraud protection level visible, with links to the existing controls. Editing those sections is not migrated in this POC.
+- Use custom payment-method and express-checkout components to retain their grouped presentation and customisation links. Payment method names come from the gateway and choices come from the settings REST response. Full activation, eligibility, duplicate notices, promotional offers and express-checkout legal copy are not reproduced.
+- Keep a custom payout summary with a link to the existing editor. Fraud protection keeps its Basic/Advanced choices on the main page using standard radio controls, with a link to the existing separate advanced-rules screen.
 - Keep express checkout customisation screens linked to the existing settings page. Subscription and Stripe Billing controls, bank-account editing, VAT collection, onboarding modals, tours, promotions and detailed account-status restrictions are not migrated.
-- Test-mode and manual-capture controls include confirmation, but their full existing explanatory UI and tracking are not reproduced.
+- Test mode and manual capture use standard checkboxes with explanatory text instead of confirmation dialogs. Changes take effect only after Save changes. Full existing explanatory UI and tracking are not reproduced.
 - Server errors appear in the shared notice. Per-field server error placement and the existing phone-input formatting are not reproduced.
 - The main group order is retained, but this is a separate POC route. Existing Woo settings tabs, breadcrumbs, section anchors and URLs are not replaced or fully reproduced.
 - The companion POC warns on document unload with unsaved changes. In-app route blocking is not implemented.
@@ -46,9 +48,11 @@ This is a bounded main-page integration, not feature parity with the current set
 2. Enable the constant and open the POC. Check the main groups, payment-method labels, contact fields and links to the existing configuration screens.
 3. Toggle saved cards. Check Save enables, save, reload and confirm persistence. Restore its original value.
 4. Make another edit and discard it. Check the saved value returns and Save disables.
-5. Enable manual capture and cancel its confirmation. Check that no edit is recorded.
-6. Reject a save request in browser developer tools. Check that the notice appears and edits remain available for retry or discard.
-7. Check that a customer cannot read or write `/wc/v3/payments/settings-dataform`.
-8. Check a narrow viewport and keyboard navigation. Test account-specific states separately before considering any broader adoption.
+5. Toggle manual capture. Check that explanatory text is visible, no dialog appears and nothing persists before Save changes. Discard the edit.
+6. Toggle a payment method. Check that other selections remain and Discard restores the list.
+7. Change the fraud protection level on the main page and discard. Verify the advanced-rules link. Test saving against a disposable account: it changes the server ruleset.
+8. Reject a save request in browser developer tools. Check that the notice appears and edits remain available for retry or discard.
+9. Check that a customer cannot read or write `/wc/v3/payments/settings-dataform`.
+10. Check a narrow viewport and keyboard navigation. Test account-specific states separately before considering any broader adoption.
 
-Automated tests cover REST delegation, validation, permission denial, preservation of false values, payment-method selections and manual-capture confirmation. The browser evidence and current limitations are recorded in the PR.
+Automated tests cover REST delegation, validation, permission denial, preservation of false values, payment-method selections, available-method/card restrictions and retention of current fraud rules when changing the protection level. The browser evidence and current limitations are recorded in the PR.
