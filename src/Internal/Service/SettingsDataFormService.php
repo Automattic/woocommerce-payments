@@ -48,22 +48,24 @@ class SettingsDataFormService {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
-		$method_labels = [];
-		foreach ( \WC_Payments::get_gateway()->get_payment_methods() as $id => $method ) {
-			$method_labels[ $id ] = wp_strip_all_tags( $method->get_title() );
-		}
 		\WC_Payments::register_script_with_dependencies( 'wcpay-settings-dataform', 'dist/settings-dataform' );
+		/**
+		 * Load the account context and styles used by existing WooPayments controls.
+		 *
+		 * @since 11.1.0
+		 */
+		do_action( 'wcpay_settings_dataform_enqueue' );
 		wp_localize_script(
 			'wcpay-settings-dataform',
 			'wcpaySettingsDataform',
 			[
-				'methodLabels'   => $method_labels,
-				'fraudRulesUrl'  => admin_url( 'admin.php?page=wc-admin&path=/payments/fraud-protection' ),
-				'classicUrl'     => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
-				'woopayEligible' => \WC_Payments_Features::is_woopay_eligible(),
+				'fraudRulesUrl' => admin_url( 'admin.php?page=wc-admin&path=/payments/fraud-protection' ),
+				'classicUrl'    => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
 			]
 		);
 		wp_enqueue_script( 'wcpay-settings-dataform' );
+		\WC_Payments_Utils::register_style( 'wcpay-settings-dataform', plugins_url( 'dist/settings-dataform.css', WCPAY_PLUGIN_FILE ), [ 'WCPAY_ADMIN_SETTINGS' ], \WC_Payments::get_file_version( 'dist/settings-dataform.css' ), 'all' );
+		wp_enqueue_style( 'wcpay-settings-dataform' );
 		wp_set_script_translations( 'wcpay-settings-dataform', 'woocommerce-payments' );
 	}
 
@@ -128,7 +130,7 @@ class SettingsDataFormService {
 		$groups = [
 			'general'               => [ __( 'General', 'woocommerce-payments' ), [ 'is_wcpay_enabled', 'is_test_mode_enabled' ] ],
 			'payment-methods'       => [ __( 'Payment methods', 'woocommerce-payments' ), [ 'enabled_payment_method_ids' ] ],
-			'express-checkouts'     => [ __( 'Express checkouts', 'woocommerce-payments' ), [ 'is_payment_request_enabled', 'is_woopay_enabled' ] ],
+			'express-checkouts'     => [ __( 'Express checkouts', 'woocommerce-payments' ), [ 'is_payment_request_enabled' ] ],
 			'transactions'          => [ __( 'Transactions', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled', 'account_statement_descriptor', 'account_statement_descriptor_kanji', 'account_statement_descriptor_kana', 'account_business_support_email', 'account_business_support_phone' ] ],
 			'deposits'              => [ __( 'Payouts', 'woocommerce-payments' ), [ 'deposit_schedule_interval' ] ],
 			'notification-settings' => [ __( 'Account notifications', 'woocommerce-payments' ), [ 'account_communications_email' ] ],
@@ -137,6 +139,10 @@ class SettingsDataFormService {
 		];
 		$fields = [];
 		foreach ( $groups as $id => [ $label, $children ] ) {
+			if ( in_array( $id, [ 'payment-methods', 'express-checkouts' ], true ) ) {
+				$fields = array_merge( $fields, $children );
+				continue;
+			}
 			$fields[] = [
 				'id'       => $id,
 				'label'    => $label,

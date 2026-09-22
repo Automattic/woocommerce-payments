@@ -18,7 +18,7 @@ Do not enable this experiment on a production store. Core's private field regist
 | Responsibility | Implementation |
 | --- | --- |
 | Page discovery and singleton entity | `client/settings-dataform/index.ts` registers the page and its REST URL with the companion POC hooks. |
-| Controls | `client/settings-dataform/fields.tsx` supplies standard fields, custom payment-method and express-checkout controls, and a payout summary. |
+| Controls | `client/settings-dataform/fields.tsx` supplies standard fields, the existing WooPayments payment-method/BNPL/express-checkout components and a payout summary. |
 | Layout | `SettingsDataFormService` supplies PHP View Config with the main page's group order. |
 | Editing, dirty state, Save and Discard | The shared WooCommerce application and WordPress core-data. |
 | Saving | A flat-record facade delegates through the existing WooPayments REST route, including its permission checks, validation and side effects. |
@@ -29,12 +29,20 @@ The facade is needed because the existing settings POST wraps its record in anot
 
 WooPayments does not call `unlock` itself. The companion Core POC passes its private field registration action to the integration. This still depends on the same unsupported API and is not a production-safe replacement for a public registration API.
 
+## Reusing existing components
+
+The custom field mounts the existing components under `RegistryProvider`. `settings-registry.js` exposes the settings store interface those components already use, but reads and edits the shared WordPress entity. The five setters used by these controls are explicitly adapted. Extending reuse to another component requires checking its selectors/actions, context and assets; this is not an automatic adapter for every WooPayments action or save flow.
+
+`existing-controls.tsx` supplies the existing account and duplicate-notice contexts and keeps the normal section layout. The express-checkout description is extracted into a shared component. A scoped width rule gives these existing sections the room they have on the current page. Some existing TypeScript declarations were corrected when the typed wrapper exposed them.
+
+This is a concrete component-reuse experiment. Importing real components preserves their implementation; it does not establish tested parity across every account state. No component should be replaced with a simplified control to make that comparison look smaller.
+
 ## Coverage and remaining migration work
 
 - Edit enablement, test mode (outside onboarding and development mode), saved cards, manual capture, statement descriptors, support contact details, account notification email, multi-currency and debug logging (outside development mode).
-- Use custom payment-method and express-checkout components to retain their grouped presentation and customisation links. Payment method names come from the gateway and choices come from the settings REST response. Full activation, eligibility, duplicate notices, promotional offers and express-checkout legal copy are not reproduced.
+- Reuse `PaymentMethodsSection`, `BuyNowPayLaterSection` and `ExpressCheckout`, including their existing rows, logos, descriptions, fees, eligibility logic, activation dialogs, duplicate notices and customisation links. Their hooks run through a scoped registry adapter backed directly by the core-data entity. The adapter reuses the existing selectors, action creators and reducer; it does not maintain a second settings copy. Non-settings stores (such as payment-method promotions) remain inherited from the parent registry. Account metadata, payment-method definitions and styles come from the existing WooPayments providers.
 - Keep a custom payout summary with a link to the existing editor. Fraud protection keeps its Basic/Advanced choices on the main page using standard radio controls, with a link to the existing separate advanced-rules screen.
-- Keep express checkout customisation screens linked to the existing settings page. Subscription and Stripe Billing controls, bank-account editing, VAT collection, onboarding modals, tours, promotions and detailed account-status restrictions are not migrated.
+- Keep express checkout customisation screens linked to the existing settings page. Subscription and Stripe Billing controls, bank-account editing, VAT collection, onboarding modals, tours, page-level promotions and detailed account-status restrictions are not migrated.
 - Test mode and manual capture use standard checkboxes with explanatory text instead of confirmation dialogs. Changes take effect only after Save changes. Full existing explanatory UI and tracking are not reproduced.
 - Server errors appear in the shared notice. Per-field server error placement and the existing phone-input formatting are not reproduced.
 - The main group order is retained, but this is a separate POC route. Existing Woo settings tabs, breadcrumbs, section anchors and URLs are not replaced or fully reproduced.
@@ -55,4 +63,4 @@ This is a bounded main-page integration, not feature parity with the current set
 9. Check that a customer cannot read or write `/wc/v3/payments/settings-dataform`.
 10. Check a narrow viewport and keyboard navigation. Test account-specific states separately before considering any broader adoption.
 
-Automated tests cover REST delegation, validation, permission denial, preservation of false values, payment-method selections, available-method/card restrictions and retention of current fraud rules when changing the protection level. The browser evidence and current limitations are recorded in the PR.
+Automated tests cover REST delegation, validation, permission denial, preservation of false values, payment-method selection edits and retention of current fraud rules when changing the protection level. Additional tests exercise the adapter with the real core-data store and real Apple/Google Pay component, including entity edits and shared Discard. The browser evidence and current limitations are recorded in the PR.

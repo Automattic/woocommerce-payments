@@ -2,9 +2,9 @@
  * External dependencies
  */
 import React from 'react';
-import { CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
+import { PaymentMethods, ExpressCheckouts } from './existing-controls';
 import { ProtectionLevel } from '../settings/fraud-protection/advanced-settings/constants';
 
 export type Settings = Record< string, unknown >;
@@ -31,83 +31,11 @@ declare global {
 	const wcpaySettingsDataform: {
 		classicUrl: string;
 		fraudRulesUrl: string;
-		woopayEligible: boolean;
-		methodLabels: Record< string, string >;
 	};
 }
 
 const settingsLink = ( anchor: string ) =>
 	`${ wcpaySettingsDataform.classicUrl }#${ anchor }`;
-
-/** Preserve selections outside the control being edited. */
-export const togglePaymentMethod = (
-	selected: string[],
-	id: string,
-	checked: boolean
-) =>
-	checked
-		? Array.from( new Set( [ ...selected, id ] ) )
-		: selected.filter( ( value ) => value !== id );
-
-const PaymentMethods = ( { data, onChange }: EditProps ) => {
-	const selected = data.enabled_payment_method_ids as string[];
-	const available = data.available_payment_method_ids as string[];
-	return (
-		<fieldset>
-			<legend>
-				{ __( 'Enabled payment methods', 'woocommerce-payments' ) }
-			</legend>
-			{ available.map( ( id ) => (
-				<CheckboxControl
-					__nextHasNoMarginBottom
-					key={ id }
-					label={ wcpaySettingsDataform.methodLabels[ id ] ?? id }
-					checked={ selected.includes( id ) }
-					disabled={ id === 'card' && selected.includes( id ) }
-					onChange={ ( checked ) =>
-						onChange( {
-							enabled_payment_method_ids: togglePaymentMethod(
-								selected,
-								id,
-								checked
-							),
-						} )
-					}
-				/>
-			) ) }
-			<p>
-				<a href={ settingsLink( 'payment-methods' ) }>
-					{ __(
-						'Manage payment method activation and eligibility',
-						'woocommerce-payments'
-					) }
-				</a>
-			</p>
-		</fieldset>
-	);
-};
-
-const ExpressCheckout = ( props: EditProps ) => (
-	<>
-		<CheckboxControl
-			__nextHasNoMarginBottom
-			label={ props.field.label }
-			checked={ props.data[ props.field.id ] === true }
-			onChange={ ( value ) =>
-				props.onChange( { [ props.field.id ]: value } )
-			}
-		/>
-		<a
-			href={ `${ wcpaySettingsDataform.classicUrl }&method=${
-				props.field.id === 'is_woopay_enabled'
-					? 'woopay'
-					: 'payment_request'
-			}` }
-		>
-			{ __( 'Customize', 'woocommerce-payments' ) }
-		</a>
-	</>
-);
 
 const Payouts = ( { data }: EditProps ) => (
 	<>
@@ -165,16 +93,9 @@ export const getFields = (): EntityField[] => [
 			'is_payment_request_enabled',
 			__( 'Apple Pay / Google Pay', 'woocommerce-payments' )
 		),
-		Edit: ExpressCheckout,
+		Edit: ExpressCheckouts,
 	},
-	{
-		...checkbox(
-			'is_woopay_enabled',
-			__( 'WooPay', 'woocommerce-payments' )
-		),
-		Edit: ExpressCheckout,
-		isVisible: () => wcpaySettingsDataform.woopayEligible,
-	},
+
 	checkbox(
 		'is_saved_cards_enabled',
 		__( 'Enable payments via saved cards', 'woocommerce-payments' )

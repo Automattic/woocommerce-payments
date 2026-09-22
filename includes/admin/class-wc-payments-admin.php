@@ -178,6 +178,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_payments_admin_child_pages' ], 16 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
+		add_action( 'wcpay_settings_dataform_enqueue', [ $this, 'enqueue_settings_dataform_assets' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
@@ -896,6 +897,13 @@ class WC_Payments_Admin {
 		);
 	}
 
+
+	/** Load the existing settings context and styles for the opt-in DataForm POC. */
+	public function enqueue_settings_dataform_assets(): void {
+		wp_add_inline_script( 'wcpay-settings-dataform', new Woo_Payments_Payment_Method_Definitions(), 'before' );
+		wp_localize_script( 'wcpay-settings-dataform', 'wcpaySettings', $this->get_js_settings() );
+		wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
+	}
 
 	/**
 	 * Get the WCPay settings to be sent to JS.
