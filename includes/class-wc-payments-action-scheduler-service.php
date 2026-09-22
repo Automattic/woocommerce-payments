@@ -216,9 +216,10 @@ class WC_Payments_Action_Scheduler_Service {
 	/**
 	 * Schedule an action scheduler job.
 	 *
-	 * Also, unschedules (replaces) any previous instances of the same job.
-	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
-	 * We will only replace a job which has the same $hook, $args AND $group.
+	 * Within the current request, calls after the first for the same $hook+$args+$group are no-ops:
+	 * this collapses the schedule-then-cancel churn from repeated woocommerce_update_order fires
+	 * during checkout down to a single AS write. Across requests, an existing pending action with
+	 * the same key is unscheduled and replaced with the new timestamp.
 	 *
 	 * @param int    $timestamp When the job will run.
 	 * @param string $hook      The hook to trigger.
