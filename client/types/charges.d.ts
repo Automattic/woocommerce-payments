@@ -33,6 +33,7 @@ interface Level3Data {
 
 interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
+	status?: string | null;
 }
 
 interface ChargeRefunds {

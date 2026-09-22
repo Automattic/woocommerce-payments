@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Adds an object type check before trying to treat it as `WC_Subscription`
+
+

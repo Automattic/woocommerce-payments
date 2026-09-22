@@ -13,7 +13,6 @@ const refundCancelSelector =
 	'.refund-confirmation-modal .wcpay-confirmation-modal__footer .is-secondary';
 const refundConfirmSelector =
 	'.refund-confirmation-modal .wcpay-confirmation-modal__footer .is-primary';
-const selectedOrderStatusSelector = '.wc-order-status > span';
 const orderPriceSelector =
 	'#woocommerce-order-items .total .woocommerce-Price-amount';
 
@@ -23,10 +22,9 @@ const saveOrder = async ( page ) => {
 };
 
 const verifyOrderStatus = async ( page, status: string ) => {
-	const selectedOrderStatus = await page.$( selectedOrderStatusSelector );
 	await expect(
-		selectedOrderStatus.evaluate( ( el ) => el.textContent )
-	).resolves.toBe( status );
+		page.locator( `${ orderStatusDropdownSelector } option:checked` )
+	).toHaveText( status );
 };
 
 test.describe(

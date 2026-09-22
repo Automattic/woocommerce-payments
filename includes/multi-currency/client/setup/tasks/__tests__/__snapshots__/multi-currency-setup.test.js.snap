@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Multi-Currency enabled currencies list wizard renders correctly: snapshot-multi-currency-setup-wizard 1`] = `
 .emotion-0 {
