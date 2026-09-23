@@ -1849,7 +1849,7 @@ class WC_Payments_Order_Service {
 
 		if ( null !== $order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id ) {
+			if ( null !== $intent_id && '' !== $intent_id && $this->has_open_authorization( $order ) ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );

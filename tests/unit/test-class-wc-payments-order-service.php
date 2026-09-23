@@ -13,6 +13,7 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
+use WCPay\Core\Server\Request\Get_Intention;
 
 /**
  * WC_Payments_Order_Service unit tests.
@@ -3083,6 +3084,41 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->order_service->has_live_sale() );
 
 		$order->delete( true );
+	}
+
+	/**
+	 * A cached intention status of `succeeded` or `canceled` is a terminal Stripe state that can never
+	 * transition back to `requires_capture`, so the order is provably not capturable without asking
+	 * the server. `capture_authorization_on_order_status_change` should short-circuit on that cached
+	 * meta rather than paying for a `Get_Intention` round trip on every order marked completed.
+	 *
+	 * @dataProvider provider_capture_authorization_skips_terminal_intention_status
+	 *
+	 * @param string $intention_status The cached, terminal `_intention_status` meta value.
+	 */
+	public function test_capture_authorization_on_order_status_change_skips_get_intention_for_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is already terminal and non-capturable.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$notes_before = $this->order_note_contents();
+
+		// Assert: the intent must never be fetched from the server.
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		// Act.
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		// Assert: nothing about the order changed as a result of the (skipped) attempt.
+		$this->assertSame( $intention_status, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	public function provider_capture_authorization_skips_terminal_intention_status(): array {
+		return [
+			'Succeeded intent' => [ Intent_Status::SUCCEEDED ],
+			'Canceled intent'  => [ Intent_Status::CANCELED ],
+		];
 	}
 
 	/**
