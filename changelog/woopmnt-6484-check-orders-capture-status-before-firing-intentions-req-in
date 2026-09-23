@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Skip the intention retrieval for completed orders if known intent status is final.
