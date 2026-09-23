@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: woocommerce/woo-product-deploy
-          ref: 5f5b49d49b8a3681a7a99efec089187666885759 # pnpm build support
+          ref: c36d132b80747d6a96569712d69937177d7a0274 # reuse tested checkout and pin nested actions
           path: ./.github/actions/woo-product-deploy
           token: ${{ secrets.WOO_DEPLOY_SECRET }}
           persist-credentials: false
