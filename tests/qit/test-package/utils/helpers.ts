@@ -24,8 +24,8 @@ export const getAnonymousShopper = async (
 export const describeif = ( condition: boolean ) =>
 	condition ? test.describe : test.describe.skip;
 
-export const isUIUnblocked = async ( page: Page ) => {
-	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
+export const isUIUnblocked = async ( page: Page, timeout?: number ) => {
+	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0, { timeout } );
 };
 
 export const checkPageExists = async (
