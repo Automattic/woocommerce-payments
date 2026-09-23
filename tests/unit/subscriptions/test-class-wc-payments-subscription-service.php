@@ -80,8 +80,12 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
-		// Reset the global function stub so it cannot leak into other tests.
+		global $theorder;
+
+		// Reset the global function stubs and global state so they cannot leak into other tests.
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+		WC_Subscriptions::set_wcs_is_subscription( null );
+		$theorder = null;
 
 		parent::tear_down();
 	}
@@ -698,6 +702,63 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->trial_end = time() + 1000;
 
 		$this->assertTrue( WC_Payments_Subscription_Service::has_delayed_payment( $mock_subscription ) );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->prevent_wcpay_manual_renewal()
+	 */
+	public function test_prevent_wcpay_manual_renewal() {
+		global $theorder;
+
+		$theorder                 = new WC_Subscription();
+		$theorder->payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$theorder->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'wcpay_subscription_id_12345' );
+		$theorder->save();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$actions = [
+			'wcs_create_pending_parent'  => 'Create pending parent order',
+			'wcs_create_pending_renewal' => 'Create pending renewal order',
+			'wcs_process_renewal'        => 'Process renewal',
+			'unrelated_action'           => 'Unrelated action',
+		];
+
+		$result = $this->subscription_service->prevent_wcpay_manual_renewal( $actions );
+
+		$this->assertSame( [ 'unrelated_action' => 'Unrelated action' ], $result );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->prevent_wcpay_manual_renewal() when a third party has made
+	 * wcs_is_subscription() return true for an object that isn't actually a WC_Subscription instance.
+	 */
+	public function test_prevent_wcpay_manual_renewal_with_non_subscription_theorder() {
+		global $theorder;
+
+		// $theorder is a plain WC_Order here, not a WC_Subscription, even though wcs_is_subscription()
+		// below is stubbed to claim otherwise - this can happen with third-party filters/plugins.
+		$theorder = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$actions = [
+			'wcs_create_pending_parent'  => 'Create pending parent order',
+			'wcs_create_pending_renewal' => 'Create pending renewal order',
+			'wcs_process_renewal'        => 'Process renewal',
+		];
+
+		$result = $this->subscription_service->prevent_wcpay_manual_renewal( $actions );
+
+		$this->assertSame( $actions, $result );
 	}
 
 	/**

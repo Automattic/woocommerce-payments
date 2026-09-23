@@ -527,53 +527,32 @@ export const selectPaymentMethod = async (
 	page: Page,
 	paymentMethod = 'Card'
 ) => {
-	// Wait for the page to be stable before attempting to select payment method
-	// Use a more reliable approach than networkidle which can timeout
 	await page.waitForLoadState( 'domcontentloaded' );
-
-	// Ensure UI is not blocked
 	await isUIUnblocked( page );
 
-	// Wait for payment methods to be fully loaded and stable
 	await page.waitForSelector( '.wc_payment_methods', { timeout: 10000 } );
 
-	// Try to find and click the payment method with retry logic
-	const maxRetries = 3;
-	for ( let attempt = 1; attempt <= maxRetries; attempt++ ) {
-		try {
-			// Use a more robust locator that handles mixed content in labels
-			// Look for the label containing the payment method text
-			const paymentMethodElement = page
-				.locator( `label:has-text("${ paymentMethod }")` )
-				.first();
+	const option = page
+		.locator( '.wc_payment_methods > li' )
+		.filter( {
+			has: page.locator( `label:has-text("${ paymentMethod }")` ),
+		} )
+		.first();
 
-			// Wait for the element to be visible and stable
-			await expect( paymentMethodElement ).toBeVisible( {
-				timeout: 5000,
-			} );
+	// A checkout refresh replaces the payment box. A click on a row the refresh
+	// is about to remove never registers, so the choice falls back to the first
+	// gateway and the order goes through on Card. Re-click until it sticks.
+	await expect( async () => {
+		await isUIUnblocked( page, 3000 );
 
-			// Ensure the element is in viewport
-			await paymentMethodElement.scrollIntoViewIfNeeded();
+		const label = option.locator( 'label' ).first();
+		await label.scrollIntoViewIfNeeded();
+		await label.click( { timeout: 5000 } );
 
-			// Wait a bit more for any animations to complete
-			await page.waitForTimeout( 200 );
-
-			// Click the payment method
-			await paymentMethodElement.click();
-
-			// Wait a moment to ensure the click was processed
-			await page.waitForTimeout( 100 );
-
-			// If we get here, the click was successful
-			break;
-		} catch ( error ) {
-			if ( attempt === maxRetries ) {
-				throw error;
-			}
-			// Wait a bit before retrying
-			await page.waitForTimeout( 1000 );
-		}
-	}
+		await expect(
+			option.locator( 'input[name="payment_method"]' )
+		).toBeChecked( { timeout: 2000 } );
+	} ).toPass( { timeout: 20000, intervals: [ 1000 ] } );
 };
 
 /**
