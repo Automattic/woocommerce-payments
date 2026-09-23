@@ -3122,6 +3122,46 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Any cached intention status that isn't one of the proven-terminal statuses must fall back to
+	 * the regular flow and fetch the live intent - including `requires_capture` itself (the actual
+	 * capturable case) and a never-cached/empty status, since neither can be assumed non-capturable.
+	 *
+	 * @dataProvider provider_capture_authorization_falls_back_to_regular_flow_for_non_terminal_status
+	 *
+	 * @param string $intention_status The cached, non-terminal `_intention_status` meta value.
+	 */
+	public function test_capture_authorization_on_order_status_change_falls_back_to_regular_flow_for_non_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is not one of the proven-terminal statuses.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+
+		// Assert: the regular flow fetches the live intent exactly once.
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		// Act.
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		// Assert: the cached status was refreshed from the live response, proving the fallback ran.
+		$this->assertSame( Intent_Status::SUCCEEDED, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	public function provider_capture_authorization_falls_back_to_regular_flow_for_non_terminal_status(): array {
+		return [
+			'Requires capture (the normal, capturable case)' => [ Intent_Status::REQUIRES_CAPTURE ],
+			'Requires payment method' => [ Intent_Status::REQUIRES_PAYMENT_METHOD ],
+			'Requires confirmation'   => [ Intent_Status::REQUIRES_CONFIRMATION ],
+			'Requires action'         => [ Intent_Status::REQUIRES_ACTION ],
+			'Processing'              => [ Intent_Status::PROCESSING ],
+			'No cached status yet'    => [ '' ],
+		];
+	}
+
+	/**
 	 * Raises a dispute on the test order the way the charge.dispute.created webhook would.
 	 *
 	 * @param string $charge_id  The ID of the disputed charge.
