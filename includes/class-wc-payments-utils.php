@@ -1381,6 +1381,40 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the order the current pay-for-order request is allowed to read, if any.
+	 *
+	 * The `pay_for_order` capability cannot gate an order on its own: WooCommerce grants it to
+	 * everyone, logged out included, for any order without a customer. Only the key from the
+	 * payment link proves the visitor was sent this one. See wc_customer_has_capability().
+	 *
+	 * @return WC_Order|null Null when the request is not allowed to read an order.
+	 */
+	public static function get_authorized_order_from_payment_link(): ?WC_Order {
+		// Not get_query_var(): a secondary WP_Query left unreset would hide the routed request's
+		// own order. `??` because $wp is unset off a routed request, e.g. cron and WP-CLI.
+		global $wp;
+		$order = wc_get_order( absint( $wp->query_vars['order-pay'] ?? 0 ) );
+
+		// The ID comes from the URL, so it can resolve to a refund, which has no order key.
+		if ( ! $order instanceof WC_Order ) {
+			return null;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
+		// is_string() first: wc_clean() hands back an array for ?key[]=x, and key_is_valid() fatals on one.
+		if ( ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+			return null;
+		}
+
+		if ( ! $order->key_is_valid( wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
+			return null;
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		return current_user_can( 'pay_for_order', $order->get_id() ) ? $order : null;
+	}
+
+	/**
 	 * Check if the current page is the cart page.
 	 *
 	 * @return bool True if the current page is the cart page, false otherwise.
