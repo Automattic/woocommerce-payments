@@ -340,7 +340,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		$sql     .= ' ORDER BY orders.id ASC LIMIT %d';
 		$params[] = $limit;
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sql interpolates only $wpdb-provided table names; all dynamic values are bound via placeholders in $wpdb->prepare().
 		$order_ids = $wpdb->get_col( $wpdb->prepare( $sql, $params ) );
 
 		return $this->convert_ids_to_orders( $order_ids );
@@ -390,7 +390,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		$sql     .= ' ORDER BY orders.ID ASC LIMIT %d';
 		$params[] = $limit;
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sql interpolates only $wpdb-provided table names; all dynamic values are bound via placeholders in $wpdb->prepare().
 		$order_ids = $wpdb->get_col( $wpdb->prepare( $sql, $params ) );
 
 		return $this->convert_ids_to_orders( $order_ids );
