@@ -78,7 +78,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @const string[]
 	 */
-	const NON_CAPTURABLE_TERMINAL_INTENT_STATUSES = [
+	const TERMINAL_INTENT_STATUSES = [
 		Intent_Status::SUCCEEDED,
 		Intent_Status::CANCELED,
 	];
@@ -1807,7 +1807,7 @@ class WC_Payments_Order_Service {
 		$order = new WC_Order( $order_id );
 		if ( null !== $order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id ) {
+			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
@@ -1862,7 +1862,7 @@ class WC_Payments_Order_Service {
 
 		if ( null !== $order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::NON_CAPTURABLE_TERMINAL_INTENT_STATUSES, true ) ) {
+			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
