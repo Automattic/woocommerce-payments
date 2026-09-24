@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Clarify the currency removal confirmation by distinguishing payment methods that would become unavailable from those that keep working in other enabled currencies
