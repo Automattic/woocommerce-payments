@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid deadlock when both Stripe Link and WooPay are enabled by keeping both checkboxes editable until one is turned off.

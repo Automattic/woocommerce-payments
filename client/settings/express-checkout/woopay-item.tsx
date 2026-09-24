@@ -28,7 +28,11 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 	const [ isWooPayEnabled, updateIsWooPayEnabled ] =
 		useWooPayEnabledSettings();
 
-	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
+	// Link is only offered alongside card, and its settings row is hidden otherwise.
+	const isStripeLinkEnabled =
+		enabledMethodIds.includes( 'link' ) &&
+		enabledMethodIds.includes( 'card' );
+	const isConflicting = isWooPayEnabled && isStripeLinkEnabled;
 
 	const showIncompatibilityNotice =
 		useWooPayShowIncompatibilityNotice() && ! isStripeLinkEnabled;
@@ -49,7 +53,8 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 			<PaymentMethodItem.Checkbox
 				label={ __( 'WooPay', 'woocommerce-payments' ) }
 				checked={ isWooPayEnabled }
-				disabled={ isStripeLinkEnabled }
+				// Only block turning WooPay on, so a store with both enabled can still turn one off.
+				disabled={ isStripeLinkEnabled && ! isWooPayEnabled }
 				onChange={ updateIsWooPayEnabled }
 				data-testid="woopay-toggle"
 			/>
@@ -124,7 +129,15 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 					</Button>
 				</PaymentMethodItem.Action>
 			</PaymentMethodItem.Body>
-			{ isStripeLinkEnabled && (
+			{ isConflicting && (
+				<InlineNotice status="warning" isDismissible={ false }>
+					{ __(
+						"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
+						'woocommerce-payments'
+					) }
+				</InlineNotice>
+			) }
+			{ isStripeLinkEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
 					{ __(
 						'To enable WooPay, you must first disable Link by Stripe.',
