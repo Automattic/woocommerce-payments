@@ -103,21 +103,36 @@ class WC_REST_Payments_Transactions_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * A valid status must get past validation and reach the route's callback.
+	 * A valid status must get past validation and reach the API, carrying that status.
 	 *
-	 * @dataProvider fraud_outcome_routes
-	 *
-	 * @param string $route The route to request.
+	 * Uses the summary route because its API client method doesn't paginate, so the assertion
+	 * stays on what this PR changes: the status survives validation and is set on the request.
 	 */
-	public function test_fraud_outcomes_with_valid_status_reaches_the_callback( string $route ) {
-		$request = new WP_REST_Request( 'GET', $this->rest_base . $route );
-		$request->set_param( 'status', 'block' );
+	public function test_fraud_outcomes_with_valid_status_is_sent_to_the_api() {
+		$wcpay_request = $this->mock_wcpay_request( List_Fraud_Outcome_Transactions::class );
+
+		$wcpay_request->expects( $this->once() )
+			->method( 'set_status' )
+			->with( 'review' );
+
+		$wcpay_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [] );
+
+		$request = new WP_REST_Request( 'GET', $this->rest_base . '/fraud-outcomes/summary' );
+		$request->set_param( 'status', 'review' );
 
 		$response = rest_do_request( $request );
-		$code     = is_array( $response->get_data() ) ? ( $response->get_data()['code'] ?? '' ) : '';
 
-		$this->assertNotSame( 'rest_missing_callback_param', $code );
-		$this->assertNotSame( 'rest_invalid_param', $code );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame(
+			[
+				'count'      => 0,
+				'total'      => 0,
+				'currencies' => [],
+			],
+			$response->get_data()
+		);
 	}
 
 	/**
