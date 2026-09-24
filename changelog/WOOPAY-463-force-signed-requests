@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Keep accepting a blog token signature on WooPay requests, so signing can be switched back on for a store from Mission Control if the newer credentials misbehave.

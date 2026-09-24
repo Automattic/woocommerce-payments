@@ -38,12 +38,25 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
 		unset(
 			$_SERVER['HTTP_USER_AGENT'],
 			$_SERVER['HTTP_CART_TOKEN']
 		);
 
 		parent::tear_down();
+	}
+
+	public function test_permission_is_granted_for_a_signed_request() {
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		// Nothing is attested here. A signature is what WooPay sends while it is told to
+		// keep signing for this store, and the route has to keep answering it or that
+		// rollback does not work.
+		$request = new WP_REST_Request( 'GET', '/payments/woopay/session' );
+
+		$this->assertTrue( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_granted_for_an_attested_email() {
