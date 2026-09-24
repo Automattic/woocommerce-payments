@@ -17,6 +17,11 @@ class List_Deposits extends Paginated {
 
 	use Date_Parameters;
 
+	const DEFAULT_PARAMS = [
+		'sort'      => 'date',
+		'direction' => 'desc',
+	];
+
 	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
