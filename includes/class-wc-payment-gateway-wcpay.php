@@ -1451,8 +1451,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $this->get_payment_method_to_use_for_intent() );
 		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
 
-		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) && ! $this->is_manual_renewal_only_payment( $order->get_id() ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			// During normal orders the payment method is saved when the customer enters a new one and chooses to save it.
+			// A subscription checkout submits this field already checked, from a hidden checkbox the customer never
+			// sees, so it must not override the decision made for a subscription that renews manually.
 			$payment_information->must_save_payment_method_to_store();
 		}
 
