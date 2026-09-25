@@ -9,6 +9,12 @@
 		height: 24px;
 		border: 1px solid $gray-100;
 		border-radius: 3px;
+
+		// Art carries its own brand frame — hide the border but keep its 1px
+		// footprint so framed badges stay the same size as the others.
+		&.has-brand-frame {
+			border-color: transparent;
+		}
 	}
 
 	&-count {

@@ -119,6 +119,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
             />
             <img
               alt="discover"
+              class="has-brand-frame"
               height="24"
               src="assets/images/payment-method-icons/discover.svg"
               width="38"
@@ -479,6 +480,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
             />
             <img
               alt="discover"
+              class="has-brand-frame"
               height="24"
               src="assets/images/payment-method-icons/discover.svg"
               width="38"
@@ -746,6 +748,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
             />
             <img
               alt="discover"
+              class="has-brand-frame"
               height="24"
               src="assets/images/payment-method-icons/discover.svg"
               width="38"
