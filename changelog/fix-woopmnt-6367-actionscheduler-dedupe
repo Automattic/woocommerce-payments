@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Reduce ActionScheduler churn from wcpay_track_new_order / wcpay_track_update_order during checkout
