@@ -109,6 +109,87 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
 
 	/**
+	 * The main gateway's form fields without any translated text.
+	 *
+	 * Used by get_main_gateway_form_fields() before `init`, when translations are not available
+	 * yet. Keep the types and defaults here in step with get_main_gateway_translated_form_fields();
+	 * the parity is asserted by WC_Payment_Gateway_WCPay_Test::test_untranslated_form_fields_match_translated_definitions.
+	 *
+	 * @var array
+	 */
+	private const MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS = [
+		'account_statement_descriptor'      => [
+			'type' => 'account_statement_descriptor',
+		],
+		'manual_capture'                    => [
+			'type'    => 'checkbox',
+			'default' => 'no',
+		],
+		'saved_cards'                       => [
+			'type'     => 'checkbox',
+			'default'  => 'yes',
+			'desc_tip' => true,
+		],
+		'test_mode'                         => [
+			'type'     => 'checkbox',
+			'default'  => 'no',
+			'desc_tip' => true,
+		],
+		'enable_logging'                    => [
+			'type'    => 'checkbox',
+			'default' => 'no',
+		],
+		'payment_request_details'           => [
+			'type' => 'title',
+		],
+		'payment_request_button_type'       => [
+			'type'    => 'select',
+			'default' => 'default',
+		],
+		'payment_request_button_theme'      => [
+			'type'    => 'select',
+			'default' => 'dark',
+		],
+		'payment_request_button_height'     => [
+			'type'    => 'text',
+			'default' => '44',
+		],
+		'payment_request_button_label'      => [
+			'type'    => 'text',
+			'default' => 'Buy now',
+		],
+		'payment_request_button_locations'  => [
+			'type'     => 'multiselect',
+			'default'  => [ 'product', 'cart', 'checkout' ],
+			'class'    => 'wc-enhanced-select',
+			'desc_tip' => true,
+		],
+		'upe_enabled_payment_method_ids'    => [
+			'type'    => 'multiselect',
+			'default' => [ 'card' ],
+		],
+		'payment_request_button_size'       => [
+			'type'    => 'select',
+			'default' => 'medium',
+		],
+		'platform_checkout_custom_message'  => [
+			'default' => 'By placing this order, you agree to our [terms] and understand our [privacy_policy].',
+		],
+		'express_checkout_product_methods'  => [
+			'type'    => 'multiselect',
+			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+		],
+		'express_checkout_cart_methods'     => [
+			'type'    => 'multiselect',
+			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+		],
+		'express_checkout_checkout_methods' => [
+			'type'    => 'multiselect',
+			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+		],
+	];
+
+	/**
 	 * Set a large limit argument for retrieving user tokens.
 	 *
 	 * @type int
@@ -385,167 +466,204 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( self::GATEWAY_ID === $this->id ) {
-			$main_gateway_only_fields = [
-				'account_statement_descriptor'      => [
-					'type'        => 'account_statement_descriptor',
-					'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
-					'description' => WC_Payments_Utils::esc_interpolated_html(
-						__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
-						[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
-					),
-				],
-				'manual_capture'                    => [
-					'title'       => __( 'Manual capture', 'woocommerce-payments' ),
-					'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
-					'default'     => 'no',
-				],
-				'saved_cards'                       => [
-					'title'       => __( 'Saved cards', 'woocommerce-payments' ),
-					'label'       => __( 'Enable payment via saved cards', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.', 'woocommerce-payments' ),
-					'default'     => 'yes',
-					'desc_tip'    => true,
-				],
-				'test_mode'                         => [
-					'title'       => __( 'Test mode', 'woocommerce-payments' ),
-					'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
-					'default'     => 'no',
-					'desc_tip'    => true,
-				],
-				'enable_logging'                    => [
-					'title'       => __( 'Debug log', 'woocommerce-payments' ),
-					'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
-					'type'        => 'checkbox',
-					'description' => '',
-					'default'     => 'no',
-				],
-				'payment_request_details'           => [
-					'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
-					'type'        => 'title',
-					'description' => '',
-				],
-				'payment_request_button_type'       => [
-					'title'       => __( 'Button type', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
-					'default'     => 'default',
-					'desc_tip'    => true,
-					'options'     => [
-						'default' => __( 'Only icon', 'woocommerce-payments' ),
-						'buy'     => __( 'Buy', 'woocommerce-payments' ),
-						'donate'  => __( 'Donate', 'woocommerce-payments' ),
-						'book'    => __( 'Book', 'woocommerce-payments' ),
-					],
-				],
-				'payment_request_button_theme'      => [
-					'title'       => __( 'Button theme', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
-					'default'     => 'dark',
-					'desc_tip'    => true,
-					'options'     => [
-						'dark'          => __( 'Dark', 'woocommerce-payments' ),
-						'light'         => __( 'Light', 'woocommerce-payments' ),
-						'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
-					],
-				],
-				'payment_request_button_height'     => [
-					'title'       => __( 'Button height', 'woocommerce-payments' ),
-					'type'        => 'text',
-					'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
-					'default'     => '44',
-					'desc_tip'    => true,
-				],
-				'payment_request_button_label'      => [
-					'title'       => __( 'Custom button label', 'woocommerce-payments' ),
-					'type'        => 'text',
-					'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
-					'default'     => __( 'Buy now', 'woocommerce-payments' ),
-					'desc_tip'    => true,
-				],
-				'payment_request_button_locations'  => [
-					'title'             => __( 'Button locations', 'woocommerce-payments' ),
-					'type'              => 'multiselect',
-					'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
-					'default'           => [
-						'product',
-						'cart',
-						'checkout',
-					],
-					'class'             => 'wc-enhanced-select',
-					'desc_tip'          => true,
-					'options'           => [
-						'product'  => __( 'Product', 'woocommerce-payments' ),
-						'cart'     => __( 'Cart', 'woocommerce-payments' ),
-						'checkout' => __( 'Checkout', 'woocommerce-payments' ),
-					],
-					'custom_attributes' => [
-						'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
-					],
-				],
-				'upe_enabled_payment_method_ids'    => [
-					'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'card' ],
-					'options' => [],
-				],
-				'payment_request_button_size'       => [
-					'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
-					'default'     => 'medium',
-					'desc_tip'    => true,
-					'options'     => [
-						'small'  => __( 'Small', 'woocommerce-payments' ),
-						'medium' => __( 'Medium', 'woocommerce-payments' ),
-						'large'  => __( 'Large', 'woocommerce-payments' ),
-					],
-				],
-				'platform_checkout_custom_message'  => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
-				'express_checkout_product_methods'  => [
-					'title'   => __( 'Express checkout methods on product page', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
-					'options' => [
-						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
-						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
-						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
-						'link'            => __( 'Link', 'woocommerce-payments' ),
-					],
-				],
-				'express_checkout_cart_methods'     => [
-					'title'   => __( 'Express checkout methods on cart page', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
-					'options' => [
-						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
-						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
-						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
-						'link'            => __( 'Link', 'woocommerce-payments' ),
-					],
-				],
-				'express_checkout_checkout_methods' => [
-					'title'   => __( 'Express checkout methods on checkout page', 'woocommerce-payments' ),
-					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
-					'options' => [
-						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
-						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
-						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
-						'link'            => __( 'Link', 'woocommerce-payments' ),
-					],
-				],
-			];
-
-			$this->form_fields = array_merge( $this->form_fields, $main_gateway_only_fields );
+			$this->form_fields = array_merge( $this->form_fields, $this->get_main_gateway_form_fields() );
 		}
 
 		return parent::get_form_fields();
+	}
+
+	/**
+	 * Returns the form fields which only the main gateway registers.
+	 *
+	 * Called during the gateway's constructor on `plugins_loaded`, which is before translations
+	 * are available: WC_Settings_API::init_settings() reads the field defaults when the settings
+	 * row does not exist yet (a fresh install), and get_option() does the same for any single
+	 * setting missing from an existing row. Building the labels that early triggers the
+	 * `_load_textdomain_just_in_time` notice, so until `init` has run the fields are returned
+	 * without their translated text. Nothing reads that text before then: the settings screen is
+	 * rendered by the React app, and the REST controllers which expose these fields run on
+	 * `rest_api_init`. The defaults are always present either way.
+	 *
+	 * @return array
+	 */
+	private function get_main_gateway_form_fields() {
+		if ( ! did_action( 'init' ) ) {
+			return self::MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS;
+		}
+
+		return array_replace_recursive(
+			self::MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS,
+			$this->get_main_gateway_translated_form_fields()
+		);
+	}
+
+	/**
+	 * Returns the main gateway's form fields with their translated text.
+	 *
+	 * Only called once `init` has run, so the translations are available. The types and defaults
+	 * here must stay in step with MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS.
+	 *
+	 * @return array
+	 */
+	private function get_main_gateway_translated_form_fields() {
+		$fields = [
+			'account_statement_descriptor'      => [
+				'type'        => 'account_statement_descriptor',
+				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
+				'description' => WC_Payments_Utils::esc_interpolated_html(
+					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
+					[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+				),
+			],
+			'manual_capture'                    => [
+				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
+				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
+				'default'     => 'no',
+			],
+			'saved_cards'                       => [
+				'title'       => __( 'Saved cards', 'woocommerce-payments' ),
+				'label'       => __( 'Enable payment via saved cards', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.', 'woocommerce-payments' ),
+				'default'     => 'yes',
+				'desc_tip'    => true,
+			],
+			'test_mode'                         => [
+				'title'       => __( 'Test mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			],
+			'enable_logging'                    => [
+				'title'       => __( 'Debug log', 'woocommerce-payments' ),
+				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			],
+			'payment_request_details'           => [
+				'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
+				'type'        => 'title',
+				'description' => '',
+			],
+			'payment_request_button_type'       => [
+				'title'       => __( 'Button type', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'default',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Only icon', 'woocommerce-payments' ),
+					'buy'     => __( 'Buy', 'woocommerce-payments' ),
+					'donate'  => __( 'Donate', 'woocommerce-payments' ),
+					'book'    => __( 'Book', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_theme'      => [
+				'title'       => __( 'Button theme', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'dark',
+				'desc_tip'    => true,
+				'options'     => [
+					'dark'          => __( 'Dark', 'woocommerce-payments' ),
+					'light'         => __( 'Light', 'woocommerce-payments' ),
+					'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_height'     => [
+				'title'       => __( 'Button height', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
+				'default'     => '44',
+				'desc_tip'    => true,
+			],
+			'payment_request_button_label'      => [
+				'title'       => __( 'Custom button label', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
+				'default'     => __( 'Buy now', 'woocommerce-payments' ),
+				'desc_tip'    => true,
+			],
+			'payment_request_button_locations'  => [
+				'title'             => __( 'Button locations', 'woocommerce-payments' ),
+				'type'              => 'multiselect',
+				'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
+				'default'           => [
+					'product',
+					'cart',
+					'checkout',
+				],
+				'class'             => 'wc-enhanced-select',
+				'desc_tip'          => true,
+				'options'           => [
+					'product'  => __( 'Product', 'woocommerce-payments' ),
+					'cart'     => __( 'Cart', 'woocommerce-payments' ),
+					'checkout' => __( 'Checkout', 'woocommerce-payments' ),
+				],
+				'custom_attributes' => [
+					'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
+				],
+			],
+			'upe_enabled_payment_method_ids'    => [
+				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'card' ],
+				'options' => [],
+			],
+			'payment_request_button_size'       => [
+				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
+				'default'     => 'medium',
+				'desc_tip'    => true,
+				'options'     => [
+					'small'  => __( 'Small', 'woocommerce-payments' ),
+					'medium' => __( 'Medium', 'woocommerce-payments' ),
+					'large'  => __( 'Large', 'woocommerce-payments' ),
+				],
+			],
+			'platform_checkout_custom_message'  => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
+			'express_checkout_product_methods'  => [
+				'title'   => __( 'Express checkout methods on product page', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+				'options' => [
+					'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+					'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+					'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+					'link'            => __( 'Link', 'woocommerce-payments' ),
+				],
+			],
+			'express_checkout_cart_methods'     => [
+				'title'   => __( 'Express checkout methods on cart page', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+				'options' => [
+					'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+					'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+					'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+					'link'            => __( 'Link', 'woocommerce-payments' ),
+				],
+			],
+			'express_checkout_checkout_methods' => [
+				'title'   => __( 'Express checkout methods on checkout page', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+				'options' => [
+					'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+					'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+					'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+					'link'            => __( 'Link', 'woocommerce-payments' ),
+				],
+			],
+		];
+
+		return $fields;
 	}
 
 	/**

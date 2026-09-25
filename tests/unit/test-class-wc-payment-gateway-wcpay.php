@@ -3057,6 +3057,139 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * Runs a callback with the `init` hook made to look as though it has not fired yet.
+	 *
+	 * Mirrors with_uninitialized_action_scheduler() in the action scheduler service tests.
+	 *
+	 * @param callable $callback The callback to run.
+	 */
+	private function with_uninitialized_init( callable $callback ) {
+		global $wp_actions;
+
+		$original_action = $wp_actions['init'] ?? null;
+
+		unset( $wp_actions['init'] );
+
+		try {
+			$callback();
+		} finally {
+			if ( null !== $original_action ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
+				$wp_actions['init'] = $original_action;
+			}
+		}
+	}
+
+	/**
+	 * Reads a private method's return value off the card gateway.
+	 *
+	 * @param string $name The method name.
+	 * @return mixed
+	 */
+	private function call_private_gateway_method( string $name ) {
+		$method = new ReflectionMethod( WC_Payment_Gateway_WCPay::class, $name );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->card_gateway );
+	}
+
+	/**
+	 * Before `init`, the fields must carry nothing that needs translating, at any depth, or
+	 * building them triggers the _load_textdomain_just_in_time notice. See WOOPMNT-5380.
+	 */
+	public function test_form_fields_carry_no_translatable_text_before_init() {
+		$this->with_uninitialized_init(
+			function () {
+				$fields = $this->card_gateway->get_form_fields();
+
+				array_walk_recursive(
+					$fields,
+					function ( $value, $key ) {
+						$this->assertNotContains(
+							$key,
+							[ 'title', 'label', 'description', 'options', 'custom_attributes' ],
+							"Field key {$key} should not be present before init."
+						);
+					}
+				);
+
+				foreach ( $fields as $key => $field ) {
+					foreach ( [ 'title', 'label', 'description', 'options', 'custom_attributes' ] as $translated_key ) {
+						$this->assertArrayNotHasKey( $translated_key, $field, "Field {$key} should carry no translated text before init." );
+					}
+				}
+			}
+		);
+	}
+
+	/**
+	 * The two sets of definitions must agree on the fields, their types and their defaults.
+	 *
+	 * Compares against the translated definitions themselves rather than the merged result:
+	 * array_replace_recursive() fills gaps in a list-valued default from the untranslated copy,
+	 * so comparing against the merge would hide a default that had been shortened in one place
+	 * only. See WOOPMNT-5380.
+	 */
+	public function test_untranslated_form_fields_match_translated_definitions() {
+		$untranslated = ( new ReflectionClassConstant( WC_Payment_Gateway_WCPay::class, 'MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS' ) )->getValue();
+		$translated   = $this->call_private_gateway_method( 'get_main_gateway_translated_form_fields' );
+
+		$this->assertSame(
+			array_keys( $translated ),
+			array_keys( $untranslated ),
+			'Both sets should declare the same fields, in the same order.'
+		);
+
+		foreach ( $translated as $key => $field ) {
+			foreach ( [ 'type', 'default' ] as $shared_key ) {
+				$this->assertSame(
+					array_key_exists( $shared_key, $field ),
+					array_key_exists( $shared_key, $untranslated[ $key ] ),
+					"Field {$key} should declare {$shared_key} in both sets, or in neither."
+				);
+
+				if ( ! array_key_exists( $shared_key, $field ) ) {
+					continue;
+				}
+
+				$this->assertSame(
+					$field[ $shared_key ],
+					$untranslated[ $key ][ $shared_key ],
+					"Field {$key} should have the same {$shared_key} in both sets."
+				);
+			}
+		}
+	}
+
+	/**
+	 * With no settings row, the stored settings must come out the same whether they were
+	 * populated before or after `init`. This is what keeps saved cards working on a fresh
+	 * install, where the defaults are read during `plugins_loaded`. See WOOPMNT-5380.
+	 */
+	public function test_defaults_resolve_the_same_before_and_after_init() {
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+
+		$this->card_gateway->init_settings();
+		$after_init = $this->card_gateway->settings;
+
+		$before_init = null;
+		$this->with_uninitialized_init(
+			function () use ( &$before_init ) {
+				$this->card_gateway->init_settings();
+				$before_init = $this->card_gateway->settings;
+			}
+		);
+
+		$this->assertSame( $after_init, $before_init, 'The settings populated from defaults should not depend on when they were read.' );
+		$this->assertSame( 'yes', $before_init['saved_cards'] );
+		$this->assertSame( 'no', $before_init['manual_capture'] );
+		$this->assertSame( [ 'card' ], $before_init['upe_enabled_payment_method_ids'] );
+
+		$this->card_gateway->init_settings();
+		$this->assertTrue( $this->card_gateway->is_saved_cards_enabled() );
+	}
+
 	public function test_payment_request_form_field_defaults() {
 		// need to delete the existing options to ensure nothing is in the DB from the `setUp` phase, where the method is instantiated.
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
