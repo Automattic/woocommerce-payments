@@ -118,12 +118,6 @@ class WC_Payments_Onboarding_Service {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_woocommerce_store_id_to_request' ] );
-		add_action(
-			'update_option_woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings',
-			[ $this, 'maybe_handle_gateway_test_mode_toggle' ],
-			10,
-			2
-		);
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cached_onboarding_fields_data' ] );
 	}
 
@@ -951,9 +945,6 @@ class WC_Payments_Onboarding_Service {
 		// Clear the entire database cache since everything hinges on the account.
 		// If the account is gone, everything else is too.
 		$this->database_cache->delete_all();
-
-		// Clean up the test-to-live notice state.
-		self::sync_notice_state( false );
 	}
 
 	/**
@@ -1090,29 +1081,17 @@ class WC_Payments_Onboarding_Service {
 		} else {
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
-
-		self::sync_notice_state( $test_mode );
 	}
 
 	/**
-	 * Hook handler for `update_option_woocommerce_<gateway_id>_settings`. Keeps
-	 * the test-to-live nudge's bookkeeping in sync when the gateway's
-	 * `test_mode` value flips.
+	 * Compatibility callback for the retired test-to-live notice timer.
 	 *
-	 * @param mixed $old_value Previous gateway settings array, or '' on first save.
-	 * @param mixed $new_value New gateway settings array.
+	 * @deprecated 11.2.0 Notice bookkeeping is no longer maintained.
+	 * @param mixed $old_value Previous gateway settings.
+	 * @param mixed $new_value New gateway settings.
 	 * @return void
 	 */
-	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void {
-		$old_test_mode = is_array( $old_value ) ? ( $old_value['test_mode'] ?? 'no' ) : 'no';
-		$new_test_mode = is_array( $new_value ) ? ( $new_value['test_mode'] ?? 'no' ) : 'no';
-
-		if ( $old_test_mode === $new_test_mode ) {
-			return;
-		}
-
-		self::sync_notice_state( 'yes' === $new_test_mode );
-	}
+	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve legacy parameters.
 
 	/**
 	 * Determine if test mode onboarding is enabled.
@@ -1660,28 +1639,5 @@ class WC_Payments_Onboarding_Service {
 		wc_admin_record_tracks_event( $name, $properties );
 
 		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
-	}
-
-	/**
-	 * Maintains notice state that depends on test mode: sets/clears
-	 * TEST_MODE_ENABLED_DATE_OPTION (test-to-live nudge clock) and drops the
-	 * test-to-live and post-KYC eligibility transients.
-	 *
-	 * @param bool $test_mode True if test mode is being enabled, false if disabled.
-	 * @return void
-	 */
-	private static function sync_notice_state( bool $test_mode ): void {
-		if ( $test_mode ) {
-			// Preserve the original enable date on subsequent calls.
-			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
-				update_option( self::TEST_MODE_ENABLED_DATE_OPTION, time(), false );
-			}
-		} else {
-			// Cleared on disable so re-entering test mode restarts the nudge clock.
-			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
-		}
-
-		delete_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE );
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 }

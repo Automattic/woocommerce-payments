@@ -33,8 +33,6 @@ class WC_Payments_Admin_Notices {
 	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Account $account ) {
 		$this->notices = [
 			new WC_Payments_One_And_Done_Notice( $wcpay_gateway, $account ),
-			new WC_Payments_Test_To_Live_Notice( $wcpay_gateway, $account ),
-			new WC_Payments_Post_Kyc_Activation_Notice( $wcpay_gateway, $account ),
 		];
 	}
 
@@ -58,8 +56,21 @@ class WC_Payments_Admin_Notices {
 	 * @return void
 	 */
 	public function init_hooks(): void {
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'register_retired_notice_assets' ], 9 );
 		foreach ( $this->notices as $notice ) {
 			$notice->init_hooks();
+		}
+	}
+
+	/**
+	 * Keep old dependency handles resolvable without loading retired bundles.
+	 *
+	 * @since 11.2.0
+	 */
+	public static function register_retired_notice_assets(): void {
+		foreach ( [ 'WCPAY_TEST_TO_LIVE_NOTICE', 'WCPAY_POST_KYC_ACTIVATION_NOTICE' ] as $handle ) {
+			wp_register_script( $handle, false, [], null, true ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- No asset is loaded.
+			wp_register_style( $handle, false, [], null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- No asset is loaded.
 		}
 	}
 }

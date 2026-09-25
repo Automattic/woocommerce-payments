@@ -33,6 +33,9 @@ class Retire_Post_Kyc_Activation_Emails {
 	 * wcpay_post_kyc_activation_email_send handler without sending.
 	 */
 	public function migrate(): void {
+		delete_transient( 'wcpay_test_to_live_eligible' );
+		delete_transient( 'wcpay_post_kyc_activation_eligible' );
+
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			as_unschedule_all_actions( 'wcpay_post_kyc_activation_email_send', [ $stage ], 'woocommerce-payments' );
 		}
