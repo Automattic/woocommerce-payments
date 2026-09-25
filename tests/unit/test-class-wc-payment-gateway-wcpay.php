@@ -2508,7 +2508,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intention_status', $intent->get_status() );
 		$order->update_status( Order_Status::PROCESSING );
 
-		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 0, $intent_id );
 		$get_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
