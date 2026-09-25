@@ -724,6 +724,115 @@ describe( 'Payment processing', () => {
 		expect( checkoutForm.submit ).toHaveBeenCalled();
 	} );
 
+	test( 'Payment processing skips the additional actions handler when payment method fails to be created', async () => {
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const addPaymentMethodForm = {
+			append: jest.fn(),
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: addPaymentMethodForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'add_payment_method' ),
+		};
+
+		const errorData = {
+			code: 'card_error',
+			decline_code: '',
+			message: 'Your card was declined.',
+			type: 'validation_error',
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			error: errorData,
+		} );
+
+		await processPayment(
+			apiMock,
+			addPaymentMethodForm,
+			'card',
+			createAndConfirmSetupIntent
+		);
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( appendPaymentMethodIdToForm ).toHaveBeenCalledWith(
+			addPaymentMethodForm,
+			PAYMENT_METHOD_ERROR
+		);
+
+		expect( appendPaymentMethodErrorDataToForm ).toHaveBeenCalledWith(
+			addPaymentMethodForm,
+			errorData
+		);
+
+		// The handler must not be invoked with an undefined payment method.
+		expect( apiMock.setupIntent ).not.toHaveBeenCalled();
+
+		// The Stripe error is surfaced server-side after the form submits.
+		expect( showErrorCheckout ).not.toHaveBeenCalled();
+		expect( addPaymentMethodForm.submit ).toHaveBeenCalled();
+	} );
+
+	test( 'Payment processing invokes the additional actions handler when the payment method is created', async () => {
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const addPaymentMethodForm = {
+			append: jest.fn(),
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: addPaymentMethodForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'add_payment_method' ),
+		};
+
+		const paymentMethod = { id: 'paymentMethodId' };
+		mockCreatePaymentMethod.mockReturnValue( {
+			paymentMethod,
+		} );
+
+		const additionalActionsHandler = jest.fn( () => Promise.resolve() );
+
+		await processPayment(
+			apiMock,
+			addPaymentMethodForm,
+			'card',
+			additionalActionsHandler
+		);
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( additionalActionsHandler ).toHaveBeenCalledWith(
+			paymentMethod,
+			addPaymentMethodForm,
+			apiMock
+		);
+
+		expect( addPaymentMethodForm.submit ).toHaveBeenCalled();
+	} );
+
 	function setupBillingDetailsFields() {
 		// Create DOM elements for the test
 		const firstNameInput = document.createElement( 'input' );
