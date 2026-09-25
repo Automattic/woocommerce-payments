@@ -725,7 +725,6 @@ class WooPay_Session {
 			// back to the caller in plaintext. The other two callers either encrypt the
 			// payload or POST it to WooPay server-side, so the nonce is never disclosed to
 			// whoever triggered them and no attestation is needed.
-			//
 			// Belt and braces since `$extensions_email` is already attestation-only on that
 			// route: this cannot currently be reached with an address WooPay did not name. It
 			// stays because it states the property directly — no nonce is minted for an account
@@ -997,7 +996,7 @@ class WooPay_Session {
 	 * Signing is not how WooPay authenticates itself any more, and for most stores nothing
 	 * arrives signed. It stays accepted because WooPay can be told to keep signing for one
 	 * account, or for every account, when the newer credentials misbehave — a rollback that
-	 * only works if this end still understands what it is sent. See WOOPAY-463.
+	 * only works if this end still understands what it is sent.
 	 *
 	 * @return bool True if the request signature is valid.
 	 */
@@ -1097,7 +1096,6 @@ class WooPay_Session {
 
 		// The HMAC covers the IV and the ciphertext, and WooPay seals each envelope under a
 		// fresh IV, so it identifies this one envelope and nothing else.
-		//
 		// Fingerprint the bytes, not the base64 text: one envelope has several spellings that
 		// all verify -- padding dropped, whitespace inserted -- so keying single use on the
 		// text would let a spent envelope be respelled into a fresh claim.
@@ -1328,7 +1326,6 @@ class WooPay_Session {
 		// grants: card-testing protection skipped, and the address it names written onto the
 		// order. WooPay binds each envelope to the Cart-Token it travels with, so a captured
 		// one is worth nothing to a caller carrying a different cart.
-		//
 		// Compared as a hash because that is what is sealed -- the merchant already holds the
 		// token itself, so there is no reason for a second copy of it to exist in the payload.
 		$cart_token = isset( $_SERVER['HTTP_CART_TOKEN'] )

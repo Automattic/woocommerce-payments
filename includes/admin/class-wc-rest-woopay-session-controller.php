@@ -42,7 +42,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 				// caller that signs instead — WooPay sends one whenever it is told to keep
 				// signing for this store, and that rollback only works if the route still
 				// answers. See WooPay_Session::has_valid_request_signature().
-				'methods'             => WP_REST_Server::READABLE . ', ' . WP_REST_Server::CREATABLE,
+				'methods'             => [ WP_REST_Server::READABLE, WP_REST_Server::CREATABLE ],
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
