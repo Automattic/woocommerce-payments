@@ -13,6 +13,8 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
+use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Core\Server\Request\Get_Intention;
 
 /**
  * WC_Payments_Order_Service unit tests.
@@ -3083,6 +3085,159 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->order_service->has_live_sale() );
 
 		$order->delete( true );
+	}
+
+	/**
+	 * A cached intention status of `succeeded` or `canceled` is a terminal Stripe state that can never
+	 * transition back to `requires_capture`, so the order is provably not capturable without asking
+	 * the server. `capture_authorization_on_order_status_change` should short-circuit on that cached
+	 * meta rather than paying for a `Get_Intention` round trip on every order marked completed.
+	 *
+	 * @dataProvider provider_capture_authorization_skips_terminal_intention_status
+	 *
+	 * @param string $intention_status The cached, terminal `_intention_status` meta value.
+	 */
+	public function test_capture_authorization_on_order_status_change_skips_get_intention_for_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is already terminal and non-capturable.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$notes_before = $this->order_note_contents();
+
+		// Assert: the intent must never be fetched from the server.
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		// Act.
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		// Assert: nothing about the order changed as a result of the (skipped) attempt.
+		$this->assertSame( $intention_status, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	public function provider_capture_authorization_skips_terminal_intention_status(): array {
+		return [
+			'Succeeded intent' => [ Intent_Status::SUCCEEDED ],
+			'Canceled intent'  => [ Intent_Status::CANCELED ],
+		];
+	}
+
+	/**
+	 * Any cached intention status that isn't one of the proven-terminal statuses must fall back to
+	 * the regular flow and fetch the live intent - including `requires_capture` itself (the actual
+	 * capturable case) and a never-cached/empty status, since neither can be assumed non-capturable.
+	 *
+	 * @dataProvider provider_capture_authorization_falls_back_to_regular_flow_for_non_terminal_status
+	 *
+	 * @param string $intention_status The cached, non-terminal `_intention_status` meta value.
+	 */
+	public function test_capture_authorization_on_order_status_change_falls_back_to_regular_flow_for_non_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is not one of the proven-terminal statuses.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+
+		// Assert: the regular flow fetches the live intent exactly once.
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		// Act.
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		// Assert: the cached status was refreshed from the live response, proving the fallback ran.
+		$this->assertSame( Intent_Status::SUCCEEDED, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	public function provider_capture_authorization_falls_back_to_regular_flow_for_non_terminal_status(): array {
+		return [
+			'Requires capture (the normal, capturable case)' => [ Intent_Status::REQUIRES_CAPTURE ],
+			'Requires payment method' => [ Intent_Status::REQUIRES_PAYMENT_METHOD ],
+			'Requires confirmation'   => [ Intent_Status::REQUIRES_CONFIRMATION ],
+			'Requires action'         => [ Intent_Status::REQUIRES_ACTION ],
+			'Processing'              => [ Intent_Status::PROCESSING ],
+			'No cached status yet'    => [ '' ],
+		];
+	}
+
+	/**
+	 * A cached intention status of `succeeded` or `canceled` is a terminal Stripe state that can never
+	 * transition back to `requires_capture`, so there is provably no open authorization to cancel.
+	 * `cancel_authorizations_on_order_status_change` should short-circuit on that cached meta rather
+	 * than paying for a `Get_Intention` round trip on every order marked cancelled.
+	 *
+	 * @dataProvider provider_cancel_authorizations_skips_terminal_intention_status
+	 *
+	 * @param string $intention_status The cached, terminal `_intention_status` meta value.
+	 */
+	public function test_cancel_authorizations_on_order_status_change_skips_get_intention_for_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is already terminal.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$notes_before = $this->order_note_contents();
+
+		// Assert: the intent must never be fetched from, nor cancelled on, the server.
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		// Act.
+		$this->order_service->cancel_authorizations_on_order_status_change( $this->order->get_id() );
+
+		// Assert: nothing about the order changed as a result of the (skipped) attempt.
+		$this->assertSame( $intention_status, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	public function provider_cancel_authorizations_skips_terminal_intention_status(): array {
+		return [
+			'Succeeded intent' => [ Intent_Status::SUCCEEDED ],
+			'Canceled intent'  => [ Intent_Status::CANCELED ],
+		];
+	}
+
+	/**
+	 * Any cached intention status that isn't one of the proven-terminal statuses must fall back to
+	 * the regular flow and fetch the live intent - including `requires_capture` itself (the actual
+	 * cancellable case) and a never-cached/empty status, since neither can be assumed terminal.
+	 *
+	 * @dataProvider provider_cancel_authorizations_falls_back_to_regular_flow_for_non_terminal_status
+	 *
+	 * @param string $intention_status The cached, non-terminal `_intention_status` meta value.
+	 */
+	public function test_cancel_authorizations_on_order_status_change_falls_back_to_regular_flow_for_non_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is not one of the proven-terminal statuses.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] );
+
+		// Assert: the regular flow fetches the live intent exactly once, and - since the live intent
+		// has no open authorization - does not attempt to cancel it.
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		// Act.
+		$this->order_service->cancel_authorizations_on_order_status_change( $this->order->get_id() );
+
+		// Assert: the cached status was refreshed from the live response, proving the fallback ran.
+		$this->assertSame( 'canceled', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	public function provider_cancel_authorizations_falls_back_to_regular_flow_for_non_terminal_status(): array {
+		return [
+			'Requires capture (the normal, cancellable case)' => [ Intent_Status::REQUIRES_CAPTURE ],
+			'Requires payment method' => [ Intent_Status::REQUIRES_PAYMENT_METHOD ],
+			'Requires confirmation'   => [ Intent_Status::REQUIRES_CONFIRMATION ],
+			'Requires action'         => [ Intent_Status::REQUIRES_ACTION ],
+			'Processing'              => [ Intent_Status::PROCESSING ],
+			'No cached status yet'    => [ '' ],
+		];
 	}
 
 	/**
