@@ -2769,6 +2769,63 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
+	/**
+	 * A subscription checkout submits 'wc-woocommerce_payments-new-payment-method' already checked,
+	 * from a hidden checkbox the customer never sees (see WC_Payments_Checkout::display_gateway_html,
+	 * which force-checks it whenever the save-card checkbox is filtered out). That must not override
+	 * the decision made for a subscription that renews manually.
+	 */
+	public function test_prepare_payment_information_ignores_the_forced_save_field_for_a_manual_renewal_subscription() {
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+
+		$subscription = new WC_Subscription();
+		$subscription->set_requires_manual_renewal( true );
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function () use ( $subscription ) {
+				return [ $subscription ];
+			}
+		);
+
+		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
+		$_POST['payment_method']                             = 'woocommerce_payments';
+		$_POST['wcpay-payment-method']                       = 'pm_mock';
+
+		$prepare = new ReflectionMethod( $this->card_gateway, 'prepare_payment_information' );
+		$prepare->setAccessible( true );
+		$payment_information = $prepare->invoke( $this->card_gateway, $order );
+
+		$this->assertFalse( $payment_information->should_save_payment_method_to_store() );
+
+		unset( $_POST['wc-woocommerce_payments-new-payment-method'], $_POST['payment_method'], $_POST['wcpay-payment-method'] );
+		WC_Subscriptions::set_wcs_order_contains_subscription( null );
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+	}
+
+	/**
+	 * The same field must still save the card for an ordinary purchase, where the customer ticked it.
+	 */
+	public function test_prepare_payment_information_honours_the_save_field_without_a_subscription() {
+		$order = WC_Helper_Order::create_order();
+
+		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
+		$_POST['payment_method']                             = 'woocommerce_payments';
+		$_POST['wcpay-payment-method']                       = 'pm_mock';
+
+		$prepare = new ReflectionMethod( $this->card_gateway, 'prepare_payment_information' );
+		$prepare->setAccessible( true );
+		$payment_information = $prepare->invoke( $this->card_gateway, $order );
+
+		$this->assertTrue( $payment_information->should_save_payment_method_to_store() );
+
+		unset( $_POST['wc-woocommerce_payments-new-payment-method'], $_POST['payment_method'], $_POST['wcpay-payment-method'] );
+	}
+
 	public function test_add_payment_method_no_intent() {
 		$result = $this->card_gateway->add_payment_method();
 		$this->assertEquals( 'error', $result['result'] );
