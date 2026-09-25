@@ -32,7 +32,10 @@ import {
 } from 'wcpay/data/settings';
 import InlineNotice from 'wcpay/components/inline-notice';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
-import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
+import {
+	LinkWooPayConflictNotice,
+	WooPayIncompatibilityNotice,
+} from '../settings-warnings/incompatibility-notice';
 
 const WooPaySettings = ( { section } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -77,14 +80,7 @@ const WooPaySettings = ( { section } ) => {
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
 					) }
-					{ isConflicting && (
-						<InlineNotice status="warning" isDismissible={ false }>
-							{ __(
-								"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
-								'woocommerce-payments'
-							) }
-						</InlineNotice>
-					) }
+					{ isConflicting && <LinkWooPayConflictNotice /> }
 					{ isStripeLinkEnabled && ! isConflicting && (
 						<InlineNotice status="warning" isDismissible={ false }>
 							{ __(

@@ -40,3 +40,12 @@ export const WooPayIncompatibilityNotice = () => (
 		learnMoreLinkHref="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
 	/>
 );
+
+export const LinkWooPayConflictNotice = () => (
+	<InlineNotice status="warning" isDismissible={ false }>
+		{ __(
+			"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
+			'woocommerce-payments'
+		) }
+	</InlineNotice>
+);

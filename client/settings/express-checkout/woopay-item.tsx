@@ -17,7 +17,10 @@ import {
 	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data/settings';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
+import {
+	LinkWooPayConflictNotice,
+	WooPayIncompatibilityNotice,
+} from '../settings-warnings/incompatibility-notice';
 import { WooIcon } from 'wcpay/payment-methods-icons';
 import InlineNotice from 'wcpay/components/inline-notice';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
@@ -129,14 +132,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 					</Button>
 				</PaymentMethodItem.Action>
 			</PaymentMethodItem.Body>
-			{ isConflicting && (
-				<InlineNotice status="warning" isDismissible={ false }>
-					{ __(
-						"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
-						'woocommerce-payments'
-					) }
-				</InlineNotice>
-			) }
+			{ isConflicting && <LinkWooPayConflictNotice /> }
 			{ isStripeLinkEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
 					{ __(
