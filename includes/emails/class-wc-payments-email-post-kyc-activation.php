@@ -14,7 +14,7 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 	/**
 	 * Post-KYC Activation Email.
 	 *
-	 * Sent to merchants on day 7, 14, and 30 after KYC completion when they have not yet made their first sale.
+	 * @deprecated 11.2.0 First-sale reminders have been retired. This class cannot send reminders.
 	 */
 	class WC_Payments_Email_Post_Kyc_Activation extends WC_Email {
 
@@ -34,8 +34,6 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 			$this->title          = __( 'First sale reminder', 'woocommerce-payments' );
 			$this->description    = __( "We'll send a couple of reminders during your first month of accepting payments, to help you bring in your first sale. Stops automatically once you've taken one.", 'woocommerce-payments' );
 			$this->template_base  = WCPAY_ABSPATH . 'templates/';
-			$this->template_html  = 'emails/post-kyc-activation.php';
-			$this->template_plain = 'emails/plain/post-kyc-activation.php';
 			$this->plugin_id      = 'woocommerce_woocommerce_payments_';
 			$this->placeholders   = [
 				'{stage}'      => '',
@@ -76,43 +74,13 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		}
 
 		/**
-		 * Trigger sending the email.
+		 * Compatibility entry point. No email is sent.
 		 *
-		 * Returns whether `$this->send()` actually delivered the message. Returns
-		 * false in three cases: invalid stage, opted out (email disabled or no
-		 * recipient), or the underlying mailer rejected the send. The caller uses
-		 * this signal to decide whether the stage should be considered consumed.
-		 *
-		 * @param int $stage The stage day (7, 14, or 30).
-		 * @return bool True if the mailer reported a successful send, false otherwise.
+		 * @param int $stage Legacy reminder stage.
+		 * @return bool Always false.
 		 */
-		public function trigger( int $stage ): bool {
-			if ( ! in_array( $stage, [ 7, 14, 30 ], true ) ) {
-				return false;
-			}
-
-			$this->stage                   = $stage;
-			$this->placeholders['{stage}'] = (string) $stage;
-
-			$this->setup_locale();
-
-			$sent = false;
-			if ( $this->is_enabled() && $this->get_recipient() ) {
-				$sent = $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
-			}
-
-			$this->restore_locale();
-
-			if ( class_exists( 'WC_Tracks' ) ) {
-				if ( $sent ) {
-					WC_Tracks::record_event( 'wcpay_post_kyc_activation_email_sent', [ 'stage' => $stage ] );
-				} elseif ( $this->is_enabled() && $this->get_recipient() ) {
-					// Mailer rejected the send — distinct from an intentional opt-out.
-					WC_Tracks::record_event( 'wcpay_post_kyc_activation_email_send_failed', [ 'stage' => $stage ] );
-				}
-			}
-
-			return $sent;
+		public function trigger( int $stage ): bool { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve the legacy parameter name.
+			return false;
 		}
 
 		/**
@@ -149,21 +117,7 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		 * @return string
 		 */
 		public function get_content_html(): string {
-			return wc_get_template_html(
-				$this->template_html,
-				[
-					'stage'              => $this->stage,
-					'email_heading'      => $this->get_heading(),
-					'additional_content' => $this->get_additional_content(),
-					'cta_url'            => $this->get_cta_url(),
-					'cta_label'          => $this->get_cta_label(),
-					'sent_to_admin'      => true,
-					'plain_text'         => false,
-					'email'              => $this,
-				],
-				'',
-				WCPAY_ABSPATH . 'templates/'
-			);
+			return '';
 		}
 
 		/**
@@ -172,21 +126,7 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		 * @return string
 		 */
 		public function get_content_plain(): string {
-			return wc_get_template_html(
-				$this->template_plain,
-				[
-					'stage'              => $this->stage,
-					'email_heading'      => $this->get_heading(),
-					'additional_content' => $this->get_additional_content(),
-					'cta_url'            => $this->get_cta_url(),
-					'cta_label'          => $this->get_cta_label(),
-					'sent_to_admin'      => true,
-					'plain_text'         => true,
-					'email'              => $this,
-				],
-				'',
-				WCPAY_ABSPATH . 'templates/'
-			);
+			return '';
 		}
 
 		/**
