@@ -613,6 +613,32 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
 	}
 
+	public function test_a_signed_request_vouches_for_the_email_it_names() {
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		// A signed request is WooPay by definition, so the email needs no envelope. This is
+		// the pre-11.2.0 behaviour, kept for stores WooPay is told to keep signing for.
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+	}
+
+	public function test_a_signed_request_resolves_the_session_customer_without_a_nonce() {
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$shopper = self::factory()->user->create_and_get();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+
+		$this->setup_session( $shopper->ID );
+
+		// No HTTP_NONCE: the signature is what pairs the request with the account, the way
+		// it did before the store started asking for a store-minted nonce.
+		$this->assertEquals( $shopper->ID, WooPay_Session::get_user_id_from_cart_token() );
+
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+	}
+
 	public function test_email_is_not_attested_without_an_envelope() {
 		$woopay_request = $this->attested_request();
 
