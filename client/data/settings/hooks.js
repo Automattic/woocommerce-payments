@@ -315,7 +315,7 @@ export const useGetPaymentMethodStatuses = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
 
 /**
- * @return {string[]}
+ * @return {import('wcpay/components/duplicate-notice').PaymentMethodToPluginsMap}
  */
 export const useGetDuplicatedPaymentMethodIds = () =>
 	useSelect( ( select ) =>
