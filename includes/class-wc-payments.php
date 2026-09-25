@@ -138,6 +138,13 @@ class WC_Payments {
 	private static $dependency_service;
 
 	/**
+	 * Whether service initialization has completed.
+	 *
+	 * @var bool
+	 */
+	private static $initialized = false;
+
+	/**
 	 * Instance of WC_Payments_Fraud_Service, created in init function
 	 *
 	 * @var WC_Payments_Fraud_Service
@@ -870,6 +877,17 @@ class WC_Payments {
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 
 		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
+
+		self::$initialized = true;
+	}
+
+	/**
+	 * Returns whether service initialization has completed.
+	 *
+	 * @return bool
+	 */
+	public static function is_initialized(): bool {
+		return self::$initialized;
 	}
 
 	/**
@@ -1655,6 +1673,10 @@ class WC_Payments {
 	 * Removes WCPay notes from the WC-Admin inbox.
 	 */
 	public static function remove_woo_admin_notes() {
+		if ( null === self::$remote_note_service ) {
+			return;
+		}
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			self::$remote_note_service->delete_notes();
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
