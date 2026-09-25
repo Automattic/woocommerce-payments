@@ -42,6 +42,9 @@ class Retire_Post_Kyc_Activation_Emails {
 	 * An already executing worker from the old plugin cannot be recalled.
 	 */
 	public function migrate(): void {
+		delete_transient( 'wcpay_test_to_live_eligible' );
+		delete_transient( 'wcpay_post_kyc_activation_eligible' );
+
 		update_option( 'wcpay_post_kyc_activation_email_cleanup_pending', '1', false );
 
 		if ( ! function_exists( 'as_unschedule_all_actions' ) || ! class_exists( '\ActionScheduler' ) || ! \ActionScheduler::is_initialized() ) {
