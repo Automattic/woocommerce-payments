@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Hide future payments terms on checkout when WooCommerce Subscriptions has automatic payments disabled
+Stop showing the future payments terms, and stop storing the card, on checkout for subscriptions that renew manually

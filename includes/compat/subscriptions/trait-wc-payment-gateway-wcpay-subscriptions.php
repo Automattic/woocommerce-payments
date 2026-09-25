@@ -386,13 +386,52 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// Subs-specific behavior starts here.
 		$payment_information->set_payment_type( Payment_Type::RECURRING() );
-		// Save the payment method for subscriptions, unless manual renewal is required.
-		if ( ! ( function_exists( 'wcs_is_manual_renewal_required' ) && wcs_is_manual_renewal_required() ) ) {
+
+		/*
+		 * The payment method is saved so later renewals can be charged off-session. A subscription
+		 * that renews manually is never charged off-session, so there is nothing to vault for it.
+		 *
+		 * This has to be decided per subscription, not from the store-wide "Turn off Automatic
+		 * Payments" setting: that setting only applies to subscriptions created while it is on, so a
+		 * store can hold manual and automatic subscriptions at the same time. Changing a
+		 * subscription's payment method always saves, since storing a card is the point of that flow.
+		 */
+		if ( $this->is_changing_payment_method_for_subscription() || ! $this->is_manual_renewal_only_payment( $order_id ) ) {
 			$payment_information->must_save_payment_method_to_store();
 		}
+
 		$payment_information->set_is_changing_payment_method_for_subscription( $this->is_changing_payment_method_for_subscription() );
 
 		return $payment_information;
+	}
+
+	/**
+	 * Determines whether every subscription this payment covers renews manually.
+	 *
+	 * Returns false when no subscription can be read, so an undetermined payment keeps saving the
+	 * payment method as it always has.
+	 *
+	 * @param int $order_id The ID of the order being paid, or of the subscription itself.
+	 * @return bool Whether all of the payment's subscriptions require manual renewal.
+	 */
+	private function is_manual_renewal_only_payment( $order_id ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return false;
+		}
+
+		$subscriptions = wcs_get_subscriptions_for_order( $order_id, [ 'order_type' => 'any' ] );
+
+		if ( empty( $subscriptions ) ) {
+			return false;
+		}
+
+		foreach ( $subscriptions as $subscription ) {
+			if ( ! $subscription instanceof WC_Subscription || ! $subscription->get_requires_manual_renewal() ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
