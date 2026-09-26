@@ -35,9 +35,8 @@ class Retired_Kyc_Emails_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_legacy_email_trigger_cannot_send(): void {
-		if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/emails/class-wc-payments-email-post-kyc-activation.php';
-		}
+		/** This filter is documented in WooCommerce's WC_Emails::init(). */
+		apply_filters( 'woocommerce_email_classes', [] );
 		$email = $this->getMockBuilder( WC_Payments_Email_Post_Kyc_Activation::class )->onlyMethods( [ 'send' ] )->getMock();
 		$email->expects( $this->never() )->method( 'send' );
 
