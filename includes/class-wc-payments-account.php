@@ -47,8 +47,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	const STORE_SETUP_SYNC_ACTION = 'wcpay_store_setup_sync';
 
+	/**
+	 * Historic reminder timestamp.
+	 *
+	 * @deprecated 11.2.0 No longer written.
+	 */
 	const KYC_COMPLETION_DATE_OPTION = 'wcpay_kyc_completion_date';
 
+	/**
+	 * Historic reminder timestamp.
+	 *
+	 * @deprecated 11.2.0 No longer written.
+	 */
 	const KYC_SUBMITTED_DATE_OPTION = 'wcpay_kyc_submitted_date';
 
 	/**
@@ -145,8 +155,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
 		// Also do a store setup sync when the client is updated to a new version.
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'store_setup_sync' ] );
-
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_record_kyc_completion_date' ] );
 	}
 
 	/**
@@ -2313,12 +2321,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
-		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
-		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
-		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
-			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
-		}
-
 		// Track account connection finish.
 		$event_properties = [
 			'mode'      => 'test' === $mode ? 'test' : 'live',
@@ -2395,12 +2397,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
-
-		// Mark this as a fresh KYC submission so the post-KYC nudge clock can use a real approval timestamp.
-		// Only set on live finalisations and never overwrite — this option distinguishes post-launch merchants from pre-existing ones.
-		if ( 'live' === $mode && ! get_option( self::KYC_SUBMITTED_DATE_OPTION ) ) {
-			update_option( self::KYC_SUBMITTED_DATE_OPTION, time(), false );
-		}
 
 		// Track account connection finish.
 		$incentive_id = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
@@ -2668,47 +2664,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Records the date a merchant's account first becomes KYC-approved and payments-enabled on live mode.
-	 * Stored once and never overwritten so the Post-KYC activation nudge clock starts from the real approval date.
+	 * Compatibility callback for the retired activation reminder clock.
 	 *
-	 * For post-launch merchants we have a `wcpay_kyc_submitted_date` set at finalize_*_connection,
-	 * which means the current observation is a fresh KYC and `time()` is accurate.
-	 * For pre-existing merchants we fall back to `account['created']` (Stripe's account creation timestamp)
-	 * so the nudge clock reflects roughly when KYC happened — imprecise but the best signal we have.
-	 *
-	 * @param array|bool $account The account data passed by woocommerce_payments_account_refreshed.
-	 *
+	 * @deprecated 11.2.0 KYC reminder timestamps are no longer recorded.
+	 * @param array|bool $account Legacy account data.
 	 * @return void
 	 */
-	public function maybe_record_kyc_completion_date( $account ): void {
-		if ( empty( $account ) || ! is_array( $account ) ) {
-			return;
-		}
-
-		if ( empty( $account['payments_enabled'] ) || empty( $account['is_live'] ) || ! empty( $account['is_test_drive'] ) ) {
-			return;
-		}
-
-		// Preserve the original date — do not overwrite on subsequent refreshes.
-		if ( get_option( self::KYC_COMPLETION_DATE_OPTION ) ) {
-			return;
-		}
-
-		$kyc_submitted_date = (int) get_option( self::KYC_SUBMITTED_DATE_OPTION, 0 );
-		$account_created    = (int) ( $account['created'] ?? 0 );
-
-		if ( $kyc_submitted_date ) {
-			// Post-launch merchant — use the moment we observe payments_enabled flipping true.
-			$completion_date = time();
-		} elseif ( $account_created ) {
-			// Pre-existing merchant — fall back to the Stripe account creation timestamp.
-			$completion_date = $account_created;
-		} else {
-			return;
-		}
-
-		update_option( self::KYC_COMPLETION_DATE_OPTION, $completion_date, false );
-	}
+	public function maybe_record_kyc_completion_date( $account ): void {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve the legacy parameter name.
 
 
 	/**
