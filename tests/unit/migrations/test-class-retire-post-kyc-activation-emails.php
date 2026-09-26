@@ -87,4 +87,36 @@ class Retire_Post_Kyc_Activation_Emails_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_option( 'wcpay_post_kyc_activation_email_cleanup_pending' ) );
 		$this->assertFalse( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 7 ], 'woocommerce-payments' ) );
 	}
+
+	/** @group ms-required */
+	public function test_cleanup_does_not_touch_another_sites_queue(): void {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Requires the WordPress multisite test configuration.' );
+		}
+		as_schedule_single_action( time() + 3600, 'wcpay_post_kyc_activation_email_send', [ 7 ], 'woocommerce-payments' );
+		$other_site = self::factory()->blog->create();
+		switch_to_blog( $other_site );
+		try {
+			( new \ActionScheduler_StoreSchema() )->register_tables();
+			( new \ActionScheduler_LoggerSchema() )->register_tables();
+			as_schedule_single_action( time() + 3600, 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' );
+			update_option( 'wcpay_post_kyc_activation_email_cleanup_pending', '1' );
+		} finally {
+			restore_current_blog();
+		}
+
+		( new Retire_Post_Kyc_Activation_Emails() )->migrate();
+		$this->assertFalse( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 7 ], 'woocommerce-payments' ) );
+
+		switch_to_blog( $other_site );
+		try {
+			$this->assertTrue( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' ) );
+			$this->assertSame( '1', get_option( 'wcpay_post_kyc_activation_email_cleanup_pending' ) );
+			( new Retire_Post_Kyc_Activation_Emails() )->retry_pending_cleanup();
+			$this->assertFalse( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' ) );
+			$this->assertFalse( get_option( 'wcpay_post_kyc_activation_email_cleanup_pending' ) );
+		} finally {
+			restore_current_blog();
+		}
+	}
 }

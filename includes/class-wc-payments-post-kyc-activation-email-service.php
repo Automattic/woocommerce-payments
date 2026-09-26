@@ -28,6 +28,7 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 	 * @param WC_Payments_Account       $account Account service.
 	 * @param WC_Payment_Gateway_WCPay  $wcpay_gateway Gateway.
 	 * @param WC_Payments_Order_Service $order_service Order service.
+	 * @phpstan-ignore constructor.unusedParameter, constructor.unusedParameter, constructor.unusedParameter (Keep the deprecated public constructor signature.)
 	 */
 	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Order_Service $order_service ) {}
 
