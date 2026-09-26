@@ -48,6 +48,14 @@ class Retired_Kyc_Emails_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', $email->get_content_plain() );
 	}
 
+	public function test_legacy_email_class_is_available_after_mailer_initialization(): void {
+		/** This filter is documented in WooCommerce's WC_Emails::init(). */
+		apply_filters( 'woocommerce_email_classes', [] );
+
+		$this->assertTrue( class_exists( 'WC_Payments_Email_Post_Kyc_Activation', false ) );
+		$this->assertInstanceOf( WC_Email::class, new WC_Payments_Email_Post_Kyc_Activation() );
+	}
+
 	public function test_residual_action_completes_without_sending(): void {
 		$action_id = as_schedule_single_action( time() - 60, 'wcpay_post_kyc_activation_email_send', [ 7 ], 'woocommerce-payments' );
 
