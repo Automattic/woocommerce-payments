@@ -38,7 +38,7 @@ class Retire_Post_Kyc_Activation_Emails {
 	/**
 	 * Cancel only the three retired stage jobs on the current site.
 	 *
-	 * Leave the marker set if the scheduler is unavailable or cancellation throws.
+	 * Leave the marker set if the scheduler is unavailable or jobs remain.
 	 * An already executing worker from the old plugin cannot be recalled.
 	 */
 	public function migrate(): void {
@@ -50,6 +50,13 @@ class Retire_Post_Kyc_Activation_Emails {
 
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			as_unschedule_all_actions( 'wcpay_post_kyc_activation_email_send', [ $stage ], 'woocommerce-payments' );
+		}
+
+		// Action Scheduler catches cancellation errors internally, so verify cleanup.
+		foreach ( [ 7, 14, 30 ] as $stage ) {
+			if ( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ $stage ], 'woocommerce-payments' ) ) {
+				return;
+			}
 		}
 
 		delete_option( 'wcpay_post_kyc_activation_email_cleanup_pending' );

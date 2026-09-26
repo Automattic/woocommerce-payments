@@ -58,6 +58,16 @@ class Retire_Post_Kyc_Activation_Emails_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' ) );
 	}
 
+	public function test_plugin_upgrade_hook_cancels_pending_reminders_before_updating_version(): void {
+		update_option( 'woocommerce_woocommerce_payments_version', '11.0.0' );
+		as_schedule_single_action( time() + 3600, 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' );
+
+		\WC_Payments::install_actions();
+
+		$this->assertFalse( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' ) );
+		$this->assertSame( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ) );
+	}
+
 	public function test_cleanup_waits_for_scheduler_then_retries_after_version_advanced(): void {
 		as_schedule_single_action( time() + 3600, 'wcpay_post_kyc_activation_email_send', [ 30 ], 'woocommerce-payments' );
 		$initialized = new \ReflectionProperty( \ActionScheduler::class, 'data_store_initialized' );
@@ -86,6 +96,29 @@ class Retire_Post_Kyc_Activation_Emails_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( get_option( 'wcpay_post_kyc_activation_email_cleanup_pending' ) );
 		$this->assertFalse( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 7 ], 'woocommerce-payments' ) );
+	}
+
+	public function test_cleanup_retries_when_action_scheduler_catches_a_cancellation_failure(): void {
+		$action_id = as_schedule_single_action( time() + 3600, 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' );
+		$store     = \ActionScheduler::store();
+		$failing   = $this->getMockBuilder( get_class( $store ) )->onlyMethods( [ 'cancel_action' ] )->getMock();
+		$failing->expects( $this->once() )->method( 'cancel_action' )->willThrowException( new \RuntimeException( 'Temporary cancellation failure.' ) );
+		$property = new \ReflectionProperty( \ActionScheduler_Store::class, 'store' );
+		$property->setAccessible( true );
+		try {
+			$property->setValue( null, $failing );
+			( new Retire_Post_Kyc_Activation_Emails() )->migrate();
+		} finally {
+			$property->setValue( null, $store );
+		}
+
+		$this->assertSame( \ActionScheduler_Store::STATUS_PENDING, $store->get_status( $action_id ) );
+		$this->assertSame( '1', get_option( 'wcpay_post_kyc_activation_email_cleanup_pending' ) );
+
+		( new Retire_Post_Kyc_Activation_Emails() )->retry_pending_cleanup();
+
+		$this->assertSame( \ActionScheduler_Store::STATUS_CANCELED, $store->get_status( $action_id ) );
+		$this->assertFalse( get_option( 'wcpay_post_kyc_activation_email_cleanup_pending' ) );
 	}
 
 	/** @group ms-required */
