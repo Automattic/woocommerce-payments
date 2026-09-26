@@ -333,12 +333,6 @@ class WC_Payments {
 	 */
 	private static $fee_remediation;
 
-	/**
-	 * Instance of WC_Payments_Post_Kyc_Activation_Email_Service, created in init function
-	 *
-	 * @var WC_Payments_Post_Kyc_Activation_Email_Service
-	 */
-	private static $post_kyc_activation_email_service;
 
 	/**
 	 * Entry point to the initialization logic.
@@ -558,8 +552,6 @@ class WC_Payments {
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
-
-		// Register the post-KYC activation reminder email.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_post_kyc_activation_email' ], 10 );
 
 		// Always load tracker to avoid class not found errors.
@@ -648,8 +640,8 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
-		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway, self::$order_service );
-		self::$post_kyc_activation_email_service->init_hooks();
+		// Inert handler for residual jobs claimed before the retirement cleanup.
+		add_action( 'wcpay_post_kyc_activation_email_send', '__return_null' );
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
@@ -756,6 +748,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
+		require_once __DIR__ . '/migrations/class-retire-post-kyc-activation-emails.php';
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
@@ -781,6 +774,10 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
+		$retired_activation_emails = new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails();
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $retired_activation_emails, 'maybe_migrate' ] );
+		add_action( 'action_scheduler_init', [ $retired_activation_emails, 'retry_pending_cleanup' ] );
+		add_action( 'init', [ $retired_activation_emails, 'retry_pending_cleanup' ], 12 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -893,13 +890,15 @@ class WC_Payments {
 	}
 
 	/**
-	 * Adds the post-KYC activation reminder email to WooCommerce emails.
+	 * Load the retired email class for extensions without registering a reminder.
+	 *
+	 * @deprecated 11.2.0 The reminder is no longer registered.
 	 *
 	 * @param array $email_classes the email classes.
 	 * @return array
 	 */
 	public static function add_post_kyc_activation_email( array $email_classes ): array {
-		$email_classes['WC_Payments_Email_Post_Kyc_Activation'] = include __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
+		include_once __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
 	}
 
