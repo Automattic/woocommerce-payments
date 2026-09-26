@@ -2851,6 +2851,34 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		wc_clear_notices();
 	}
 
+	public function test_add_payment_method_payment_method_error() {
+		$_POST = [
+			'wcpay-payment-method'               => Payment_Information::PAYMENT_METHOD_ERROR,
+			'wcpay-payment-method-error-code'    => 'card_error',
+			'wcpay-payment-method-error-message' => 'Your card was declined.',
+		];
+
+		// The client could not create the payment method, so no setup intent should be fetched.
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 0 );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result = $this->card_gateway->add_payment_method();
+
+		$this->assertEquals( 'error', $result['result'] );
+		$this->assertStringContainsString(
+			'Your card was declined.',
+			wc_get_notices( 'error' )[0]['notice']
+		);
+		wc_clear_notices();
+	}
+
 	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'square' );

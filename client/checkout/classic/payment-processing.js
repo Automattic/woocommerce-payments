@@ -484,11 +484,17 @@ export const processPayment = (
 			}
 			appendFingerprintInputToForm( $form, fingerprint );
 			appendFraudPreventionTokenInputToForm( $form );
-			await additionalActionsHandler(
-				paymentMethodObject.paymentMethod,
-				$form,
-				api
-			);
+			if ( ! paymentMethodObject.error ) {
+				// Additional actions (e.g. confirming a setup intent on the
+				// add payment method page) require a created payment method.
+				// When Stripe rejected the card data, the form is submitted
+				// with the error information so the server can display it.
+				await additionalActionsHandler(
+					paymentMethodObject.paymentMethod,
+					$form,
+					api
+				);
+			}
 			hasCheckoutCompleted = true;
 			submitForm( $form );
 		} catch ( err ) {

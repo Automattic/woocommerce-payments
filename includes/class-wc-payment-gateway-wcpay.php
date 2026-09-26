@@ -4434,6 +4434,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST['wcpay-payment-method'] ) && Payment_Information::PAYMENT_METHOD_ERROR === wc_clean( wp_unslash( $_POST['wcpay-payment-method'] ) ) ) {
+				// The payment method could not be created client-side. The error details were appended to the form, so surface them instead of the generic missing-intent message.
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+				$error_message = ! empty( $_POST['wcpay-payment-method-error-message'] )
+					? sanitize_text_field( wp_unslash( $_POST['wcpay-payment-method-error-message'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					: __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
+
+				throw new Add_Payment_Method_Exception(
+					$error_message,
+					'payment_method_error'
+				);
+			}
+
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
 				throw new Add_Payment_Method_Exception(
 					sprintf(
