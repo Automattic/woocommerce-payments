@@ -1010,8 +1010,12 @@ class WooPay_Session {
 		/**
 		 * Filters whether the current request is signed with the store's blog token.
 		 *
-		 * Answers whether the request was signed, not whether it may proceed: a false here
-		 * falls through to the narrower credentials rather than rejecting outright.
+		 * Exists so PHPUnit can stand in for a signed request, which is not otherwise
+		 * reproducible in a test: `Rest_Authentication` reads a real Jetpack connection.
+		 * Not an extension point — a plugin answering true here would hand whatever called
+		 * it the credential WooPay uses.
+		 *
+		 * @internal
 		 *
 		 * @since 5.9.0
 		 *
