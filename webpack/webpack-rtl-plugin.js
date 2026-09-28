@@ -37,7 +37,7 @@ class WebpackRTLPlugin {
 					stage: compilation.PROCESS_ASSETS_STAGE_DERIVED,
 				},
 				async ( assets ) => {
-					const cssRe = /\.css(?:$|\?)/;
+					const cssRe = /\.css(?=$|\?)/;
 					return Promise.all(
 						Array.from( compilation.chunks )
 							.flatMap( ( chunk ) =>
