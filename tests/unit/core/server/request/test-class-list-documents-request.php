@@ -76,7 +76,7 @@ class List_Documents_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'desc', $params['direction'] );
 	}
 
-	public function test_list_deposits_request_will_be_date() {
+	public function test_list_documents_request_will_be_date() {
 		$page         = 2;
 		$page_size    = 50;
 		$direction    = 'asc';
