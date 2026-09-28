@@ -751,7 +751,7 @@ class WC_Payments_Subscription_Service {
 	 * @param WC_Order|WC_Subscription $order The order object.
 	 */
 	public function show_wcpay_subscription_id( WC_Order $order ) {
-		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
+		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $order ) || ! $order instanceof WC_Subscription || ! self::is_wcpay_subscription( $order ) ) {
 			return;
 		}
 

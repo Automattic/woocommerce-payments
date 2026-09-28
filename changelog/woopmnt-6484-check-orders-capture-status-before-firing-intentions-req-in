@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Skip the intention retrieval for completed orders if known intent status is final.
