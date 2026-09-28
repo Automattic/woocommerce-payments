@@ -39,9 +39,9 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 			[
 				// POST is what an attested caller sends: the envelope travels in the body,
 				// out of access logs, browser history and Referer headers. GET stays for a
-				// caller that signs instead — WooPay sends one whenever it is told to keep
-				// signing for this store, and that rollback only works if the route still
-				// answers. See WooPay_Session::has_valid_request_signature().
+				// caller that signs instead — WooPay sends one whenever the platform has
+				// this store on the signed path, and that only works if the route still
+				// answers. See WooPay_Session::is_authenticated_by_blog_token_signature().
 				'methods'             => [ WP_REST_Server::READABLE, WP_REST_Server::CREATABLE ],
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
@@ -105,8 +105,8 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 		}
 
 		// A signed request proves WooPay composed it just as an envelope does, and is what a
-		// store receives while WooPay is told to keep signing for it.
-		if ( WooPay_Session::has_valid_request_signature() ) {
+		// store on the signed path receives. Only such a store accepts one.
+		if ( WooPay_Session::is_authenticated_by_blog_token_signature() ) {
 			return true;
 		}
 

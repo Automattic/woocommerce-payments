@@ -151,7 +151,7 @@ class WooPay_Session {
 
 		// Validate that the request is authenticated, by a valid Cart-Token or by the blog
 		// token signature a store still gets while WooPay is told to sign for it.
-		if ( ! self::is_valid_request_with_cart_token() && ! self::has_valid_request_signature() ) {
+		if ( ! self::is_valid_request_with_cart_token() && ! self::is_authenticated_by_blog_token_signature() ) {
 			$error = self::get_unauthenticated_request_error();
 
 			$error_data = $error->get_error_data();
@@ -212,7 +212,7 @@ class WooPay_Session {
 		if ( is_numeric( $customer['id'] ) && intval( $customer['id'] ) > 0 ) {
 			$customer_id = intval( $customer['id'] );
 
-			if ( ! self::has_valid_request_signature() && ! self::has_store_minted_nonce_for_user( $customer_id ) ) {
+			if ( ! self::is_authenticated_by_blog_token_signature() && ! self::has_store_minted_nonce_for_user( $customer_id ) ) {
 				Logger::log( 'WooPay Cart-Token rejected: no store-minted nonce bound to the session customer. Resolving as guest.' );
 
 				return null;
@@ -237,7 +237,7 @@ class WooPay_Session {
 				 * from WooPay on WordPress.com. Without one, require instead the nonce this
 				 * store minted for that specific user (email_verified_session_nonce).
 				 */
-				if ( ! self::has_valid_request_signature() && ! self::has_store_minted_nonce_for_user( (int) $user->ID ) ) {
+				if ( ! self::is_authenticated_by_blog_token_signature() && ! self::has_store_minted_nonce_for_user( (int) $user->ID ) ) {
 					Logger::log( 'WooPay verified email header rejected: no store-minted nonce bound to the requested user.' );
 
 					return null;
@@ -991,16 +991,22 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Whether the current request is signed with this store's blog token.
+	 * Whether the current request is authenticated by this store's blog token signature.
 	 *
-	 * Signing is not how WooPay authenticates itself any more, and for most stores nothing
-	 * arrives signed. It stays accepted because WooPay can be told to keep signing for one
-	 * account, or for every account, when the newer credentials misbehave — a rollback that
-	 * only works if this end still understands what it is sent.
+	 * Two things have to hold, and the platform's answer is asked first. It names which
+	 * credential WooPay presents to this store — the signature every release used to
+	 * require, or the attestation envelope that replaced it — and a store it has moved off
+	 * the signed path does not accept a signature at all, however well formed. Deciding
+	 * instead on whether a signature happens to be present would leave the old credential
+	 * live on every store for as long as anything can produce one.
 	 *
-	 * @return bool True if the request signature is valid.
+	 * @return bool True if this store is on the signed path and the signature is valid.
 	 */
-	public static function has_valid_request_signature(): bool {
+	public static function is_authenticated_by_blog_token_signature(): bool {
+		if ( ! WC_Payments_Features::is_woopay_force_signed_requests_enabled() ) {
+			return false;
+		}
+
 		/**
 		 * Filters whether the current request is signed with the store's blog token.
 		 *
@@ -1191,7 +1197,7 @@ class WooPay_Session {
 	 * @return bool True if WooPay attested to this email.
 	 */
 	public static function is_email_attested_by_woopay( string $email, ?WP_REST_Request $request = null ): bool {
-		if ( self::has_valid_request_signature() ) {
+		if ( self::is_authenticated_by_blog_token_signature() ) {
 			return true;
 		}
 

@@ -112,7 +112,24 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
 
+		WC_Payments::set_database_cache( new WCPay\Database_Cache() );
+
 		parent::tear_down();
+	}
+
+	/**
+	 * Puts this store on the signed path, as the platform's account payload does.
+	 *
+	 * A signature only authenticates a request for a store the platform says WooPay still
+	 * signs for, so every test of the signed path has to say which kind of store this is.
+	 *
+	 * @param bool $forced Whether the platform has this store on the signed path.
+	 */
+	private function set_forced_signed_requests( bool $forced = true ): void {
+		$cache = $this->createMock( WCPay\Database_Cache::class );
+		$cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => $forced ] );
+
+		WC_Payments::set_database_cache( $cache );
 	}
 
 	public function test_a_sealed_shopper_ip_is_recorded_on_the_order() {
@@ -614,6 +631,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_a_signed_request_vouches_for_the_email_it_names() {
+		$this->set_forced_signed_requests();
 		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 
 		// A signed request is WooPay by definition, so the email needs no envelope. This is
@@ -624,6 +642,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_a_signed_request_resolves_the_session_customer_without_a_nonce() {
+		$this->set_forced_signed_requests();
 		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 
 		$shopper = self::factory()->user->create_and_get();
@@ -640,6 +659,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_a_signed_request_resolves_the_verified_email_without_a_nonce() {
+		$this->set_forced_signed_requests();
 		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 
 		$verified_user = self::factory()->user->create_and_get();
@@ -892,6 +912,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_signed_request_without_a_cart_token_is_let_through() {
+		$this->set_forced_signed_requests();
 		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 
 		// No Cart-Token, which is refused above when unsigned. Signed, the request is not
