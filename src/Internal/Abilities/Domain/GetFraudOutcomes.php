@@ -8,6 +8,7 @@
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
+use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Internal\Abilities\AbilitiesRegistrar;
 
 defined( 'ABSPATH' ) || exit;
@@ -45,6 +46,7 @@ class GetFraudOutcomes extends AbstractWCPayAbility implements AbilityDefinition
 		$filter_properties = [
 			'status'      => [
 				'type'        => 'string',
+				'enum'        => Rule::FRAUD_OUTCOME_STATUSES,
 				'description' => __( 'Fraud outcome status to filter by (e.g. block, review).', 'woocommerce-payments' ),
 			],
 			'search'      => [
