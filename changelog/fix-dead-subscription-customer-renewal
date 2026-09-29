@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix subscription renewals with an outdated Stripe customer ID without removing the shopper's saved cards.

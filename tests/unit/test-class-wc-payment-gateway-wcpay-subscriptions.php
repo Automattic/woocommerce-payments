@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\API_Exception;
@@ -285,9 +286,100 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'new_payment_method_2', $token->get_token() );
 	}
 
+	public function test_update_failing_payment_method_repairs_subscription_customer_after_verified_manual_payment() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'pm_replacement', self::USER_ID );
+
+		$this->order_service->set_customer_id_for_order( $subscription, 'cus_deleted' );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_owner' );
+		$this->order_service->set_payment_method_id_for_order( $renewal_order, 'pm_replacement' );
+		$renewal_order->add_payment_token( $token );
+		$renewal_order->update_status( 'processing' );
+		$this->mock_wcpay_request(
+			Get_Request::class,
+			1,
+			'pm_replacement',
+			[
+				'id'       => 'pm_replacement',
+				'type'     => 'card',
+				'customer' => 'cus_owner',
+			]
+		);
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$subscription_tokens = $subscription->get_payment_tokens();
+		$last_token          = WC_Payment_Tokens::get( end( $subscription_tokens ) );
+		$this->assertSame( 'cus_owner', $this->order_service->get_customer_id_for_order( $subscription ) );
+		$this->assertSame( 'pm_replacement', $last_token->get_token() );
+	}
+
+	public function test_update_failing_payment_method_keeps_subscription_customer_when_owner_differs() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'pm_replacement', self::USER_ID );
+		$this->order_service->set_customer_id_for_order( $subscription, 'cus_deleted' );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_owner' );
+		$this->order_service->set_payment_method_id_for_order( $renewal_order, 'pm_replacement' );
+		$renewal_order->add_payment_token( $token );
+		$renewal_order->update_status( 'processing' );
+		$this->mock_wcpay_request(
+			Get_Request::class,
+			1,
+			'pm_replacement',
+			[
+				'id'       => 'pm_replacement',
+				'type'     => 'card',
+				'customer' => 'cus_other',
+			]
+		);
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( 'cus_deleted', $this->order_service->get_customer_id_for_order( $subscription ) );
+	}
+
+	public function test_update_failing_payment_method_removes_stale_duplicate_customer_metadata() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'pm_replacement', self::USER_ID );
+		$this->order_service->set_customer_id_for_order( $subscription, 'cus_deleted' );
+		$subscription->get_meta_data();
+		$other_instance = wc_get_order( $subscription->get_id() );
+		$other_instance->add_meta_data( '_stripe_customer_id', 'cus_hidden_dead' );
+		$other_instance->save_meta_data();
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_owner' );
+		$this->order_service->set_payment_method_id_for_order( $renewal_order, 'pm_replacement' );
+		$renewal_order->add_payment_token( $token );
+		$renewal_order->update_status( 'processing' );
+		$this->mock_wcpay_request(
+			Get_Request::class,
+			1,
+			'pm_replacement',
+			[
+				'id'       => 'pm_replacement',
+				'type'     => 'card',
+				'customer' => 'cus_owner',
+			]
+		);
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$reloaded             = wc_get_order( $subscription->get_id() );
+		$customer_meta_values = [];
+		foreach ( $reloaded->get_meta_data() as $meta ) {
+			if ( '_stripe_customer_id' === $meta->key ) {
+				$customer_meta_values[] = $meta->value;
+			}
+		}
+		$this->assertSame( [ 'cus_owner' ], $customer_meta_values );
+	}
+
 	public function test_update_failing_payment_method_does_not_copy_method_if_renewal_has_no_method() {
 		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
 		$renewal_order = $this->createMock( WC_Order::class );
+		$this->order_service->set_customer_id_for_order( $subscription, 'cus_deleted' );
 
 		$renewal_order->expects( $this->once() )
 			->method( 'get_payment_tokens' )
@@ -300,6 +392,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
 
 		$this->assertCount( 0, $subscription->get_payment_tokens() );
+		$this->assertSame( 'cus_deleted', $this->order_service->get_customer_id_for_order( $subscription ) );
 	}
 
 	public function test_update_failing_payment_method_does_not_copy_method_if_token_does_not_exist() {
@@ -608,6 +701,146 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
 		$this->assertEquals( 'processing', $renewal_order->get_status() );
+	}
+
+	public function test_scheduled_subscription_payment_recovers_saved_method_owner_without_replacing_customer() {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'pm_saved', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_deleted' );
+
+		$subscription = new WC_Subscription();
+		$subscription->set_customer_id( self::USER_ID );
+		$subscription->add_payment_token( $token );
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_deleted' );
+		$sibling_token = WC_Helper_Token::create_token( 'pm_sibling', self::USER_ID );
+		$sibling       = new WC_Subscription();
+		$sibling->set_customer_id( self::USER_ID );
+		$sibling->add_payment_token( $sibling_token );
+		$sibling->update_meta_data( '_stripe_customer_id', 'cus_sibling' );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ $subscription, $sibling ] );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_owner' );
+		$this->mock_customer_service->expects( $this->never() )->method( 'recreate_customer_for_user' );
+		$this->mock_customer_service->expects( $this->never() )->method( 'update_user_customer_id' );
+		$owner_request = $this->mock_wcpay_request(
+			Get_Request::class,
+			1,
+			'pm_saved',
+			[
+				'id'       => 'pm_saved',
+				'type'     => 'card',
+				'customer' => 'cus_owner',
+			]
+		);
+		$owner_request->expects( $this->once() )->method( 'set_api' )->with( WC_Payments_API_Client::PAYMENT_METHODS_API );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_deleted', 'resource_missing', 400 ) ),
+				WC_Helper_Intention::create_intention(
+					[
+						'customer_id'       => 'cus_owner',
+						'payment_method_id' => 'pm_saved',
+					]
+				)
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertSame( 'wcpay_get_payment_method_request', $owner_request->get_hook() );
+		$this->assertSame( 'processing', $renewal_order->get_status() );
+		$this->assertSame( 'cus_owner', $this->order_service->get_customer_id_for_order( $renewal_order ) );
+		$this->assertSame( 'cus_owner', $subscription->get_meta( '_stripe_customer_id', true ) );
+		$this->assertSame( 'cus_sibling', $sibling->get_meta( '_stripe_customer_id', true ) );
+		$this->assertNotFalse( WC_Payment_Tokens::get( $token->get_id() ) );
+		$this->mock_customer_service->method( 'get_payment_methods_for_customer' )->willReturn(
+			[
+				[
+					'id'   => 'pm_saved',
+					'type' => 'card',
+				],
+			]
+		);
+		$token_service = new WC_Payments_Token_Service( $this->mock_api_client, $this->mock_customer_service );
+		$saved_tokens  = $token_service->woocommerce_get_customer_payment_tokens( [ $token->get_id() => $token ], self::USER_ID, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->assertArrayHasKey( $token->get_id(), $saved_tokens );
+		$this->assertNotFalse( WC_Payment_Tokens::get( $token->get_id() ) );
+
+		$next_renewal = WC_Helper_Order::create_order( self::USER_ID );
+		$next_renewal->add_payment_token( $token );
+		$this->order_service->set_customer_id_for_order( $next_renewal, $subscription->get_meta( '_stripe_customer_id', true ) );
+		$next_request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$next_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'customer_id'       => 'cus_owner',
+						'payment_method_id' => 'pm_saved',
+					]
+				)
+			);
+		$this->wcpay_gateway->scheduled_subscription_payment( $next_renewal->get_total(), $next_renewal );
+		$this->assertSame( 'processing', $next_renewal->get_status() );
+		$this->assertSame( 'cus_owner', $this->order_service->get_customer_id_for_order( $next_renewal ) );
+	}
+
+	/**
+	 * @dataProvider provider_unverified_saved_method_owners
+	 */
+	public function test_scheduled_subscription_payment_does_not_replace_customer_without_verified_owner( $owner, $mapped_customer, $lookup_fails, $returned_method_id = 'pm_saved', $payment_method_id = 'pm_saved', $lookup_expected = true ) {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( $payment_method_id, self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_deleted' );
+		$subscription = new WC_Subscription();
+		$subscription->set_customer_id( self::USER_ID );
+		$subscription->add_payment_token( $token );
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_deleted' );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ $subscription ] );
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( $mapped_customer );
+		$this->mock_customer_service->expects( $this->never() )->method( 'recreate_customer_for_user' );
+		$this->mock_customer_service->expects( $this->never() )->method( 'update_user_customer_id' );
+
+		$owner_request = $this->mock_wcpay_request( Get_Request::class, $lookup_expected ? 1 : 0, $payment_method_id );
+		if ( $owner_request ) {
+			if ( $lookup_fails ) {
+				$owner_request->method( 'format_response' )->willThrowException( new API_Exception( 'Lookup failed', 'resource_missing', 400 ) );
+			} else {
+				$owner_request->method( 'format_response' )->willReturn(
+					new WCPay\Core\Server\Response(
+						[
+							'id'       => $returned_method_id,
+							'type'     => 'card',
+							'customer' => $owner,
+						]
+					)
+				);
+			}
+		}
+		$intent_request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$intent_request->method( 'format_response' )->willThrowException( new API_Exception( 'No such customer: cus_deleted', 'resource_missing', 400 ) );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertSame( 'failed', $renewal_order->get_status() );
+		$this->assertSame( 'cus_deleted', $this->order_service->get_customer_id_for_order( $renewal_order ) );
+		$this->assertSame( 'cus_deleted', $subscription->get_meta( '_stripe_customer_id', true ) );
+		$this->assertNotFalse( WC_Payment_Tokens::get( $token->get_id() ) );
+	}
+
+	public function provider_unverified_saved_method_owners() {
+		return [
+			'detached'        => [ null, 'cus_owner', false ],
+			'owner mismatch'  => [ 'cus_other', 'cus_owner', false ],
+			'missing mapping' => [ 'cus_owner', null, false ],
+			'lookup failure'  => [ null, 'cus_owner', true ],
+			'wrong method'    => [ 'cus_owner', 'cus_owner', false, 'pm_other' ],
+			'invalid method'  => [ null, 'cus_owner', false, 'pm_invalid', 'pm_invalid/slash', false ],
+		];
 	}
 
 	public function test_scheduled_subscription_payment_fails_when_token_is_missing() {

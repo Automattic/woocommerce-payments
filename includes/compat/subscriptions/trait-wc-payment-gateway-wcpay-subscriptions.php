@@ -593,6 +593,74 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 		$this->add_token_to_order( $subscription, $renewal_token );
+
+		// A paid renewal can replace the subscription's stale customer only when its
+		// charged method is attached to that same customer on Stripe.
+		$renewal_customer_id = $this->order_service->get_customer_id_for_order( $renewal_order );
+		if ( ! $renewal_order->is_paid()
+			|| ! $renewal_customer_id
+			|| $renewal_token->get_token() !== $this->order_service->get_payment_method_id_for_order( $renewal_order )
+			|| $renewal_order->get_customer_id() !== $subscription->get_customer_id() ) {
+			return;
+		}
+
+		$owner_id = $this->get_attached_payment_method_customer( $renewal_token->get_token() );
+		if ( $renewal_customer_id === $owner_id ) {
+			$this->update_subscription_customer_if_token_matches( $subscription, $renewal_token->get_token(), $owner_id );
+		}
+	}
+
+	/**
+	 * Updates only linked subscriptions still using the method charged by a recovered renewal.
+	 *
+	 * @param WC_Order $renewal_order The paid renewal.
+	 * @param string   $payment_method_id The charged saved PaymentMethod.
+	 * @param string   $customer_id Its verified Stripe owner.
+	 * @return void
+	 */
+	private function update_recovered_subscription_customer( $renewal_order, string $payment_method_id, string $customer_id ): void {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
+			return;
+		}
+
+		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+			if ( $subscription instanceof WC_Subscription && $subscription->get_customer_id() === $renewal_order->get_customer_id() ) {
+				$this->update_subscription_customer_if_token_matches( $subscription, $payment_method_id, $customer_id );
+			}
+		}
+	}
+
+	/**
+	 * Persists a verified customer only while the subscription uses the charged method.
+	 *
+	 * @param WC_Subscription $subscription The affected subscription.
+	 * @param string          $payment_method_id The charged PaymentMethod.
+	 * @param string          $customer_id Its verified Stripe owner.
+	 * @return void
+	 */
+	private function update_subscription_customer_if_token_matches( $subscription, string $payment_method_id, string $customer_id ): void {
+		$active_token = $this->get_payment_token( $subscription );
+		if ( ! $active_token || $active_token->get_token() !== $payment_method_id ) {
+			return;
+		}
+
+		// Subscription metadata can gain another row after this object was loaded.
+		// Refresh it so update_meta_data() removes all stale duplicate customer IDs.
+		if ( $subscription->get_id() ) {
+			$subscription->read_meta_data( true );
+		}
+		$customer_ids = [];
+		foreach ( $subscription->get_meta_data() as $meta ) {
+			if ( '_stripe_customer_id' === $meta->key ) {
+				$customer_ids[] = $meta->value;
+			}
+		}
+		if ( [ $customer_id ] === $customer_ids ) {
+			return;
+		}
+
+		$subscription->update_meta_data( '_stripe_customer_id', $customer_id );
+		$subscription->save_meta_data();
 	}
 
 	/**

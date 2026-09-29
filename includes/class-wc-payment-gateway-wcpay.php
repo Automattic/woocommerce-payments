@@ -42,6 +42,7 @@ use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -1654,6 +1655,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} else {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 		}
+		$original_customer_id = $customer_id;
 
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
@@ -1887,7 +1889,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id, $payment_information );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -2005,7 +2007,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id, $payment_information );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -2204,6 +2206,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 		}
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
+		// Leave the subscription unchanged if the recovered renewal did not succeed.
+		if ( $scheduled_subscription_payment && $payment_information->is_using_saved_payment_method() && $original_customer_id !== $customer_id && Intent_Status::SUCCEEDED === $status ) {
+			$this->update_recovered_subscription_customer( $order, $payment_information->get_payment_method(), $customer_id );
+		}
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
@@ -5421,23 +5427,42 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Sends an intent request with automatic recovery for missing Stripe customers.
 	 *
-	 * If the request fails with a `resource_missing` error referencing a customer,
-	 * the customer is recreated and the request is retried.
+	 * If the request fails for a missing customer, a saved method is retried only
+	 * with its verified owner. Fresh credentials retain customer recreation.
 	 *
-	 * @param mixed    $request     The intent request object (payment or setup).
-	 * @param WC_Order $order       The order being processed.
-	 * @param WP_User  $user        The user associated with the order.
-	 * @param string   $customer_id The current Stripe customer ID (updated by reference on recovery).
+	 * @param mixed               $request             The intent request object (payment or setup).
+	 * @param WC_Order            $order               The order being processed.
+	 * @param WP_User             $user                The user associated with the order.
+	 * @param string              $customer_id         The current Stripe customer ID (updated by reference on recovery).
+	 * @param Payment_Information $payment_information Payment credentials used by the request.
 	 *
 	 * @return mixed The intent response.
 	 * @throws API_Exception If the error is not a missing customer error.
 	 */
-	private function send_intent_request_with_customer_recovery( $request, WC_Order $order, WP_User $user, string &$customer_id ) {
+	private function send_intent_request_with_customer_recovery( $request, WC_Order $order, WP_User $user, string &$customer_id, Payment_Information $payment_information ) {
 		try {
 			return $request->send();
 		} catch ( API_Exception $e ) {
 			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
 				throw $e;
+			}
+
+			if ( $payment_information->is_using_saved_payment_method() ) {
+				$owner_id           = $this->get_attached_payment_method_customer( $payment_information->get_payment_method() );
+				$mapped_customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+				if ( null === $owner_id || $owner_id !== $mapped_customer_id ) {
+					throw new API_Exception(
+						__( 'The saved payment method could not be matched to this customer. Please update the subscription payment method.', 'woocommerce-payments' ),
+						'wcpay_saved_payment_method_customer_mismatch',
+						400
+					);
+				}
+
+				$request->set_customer( $owner_id );
+				$intent      = $request->send();
+				$customer_id = $owner_id;
+				$this->order_service->set_customer_id_for_order( $order, $owner_id );
+				return $intent;
 			}
 
 			Logger::info( 'Customer not found during intent creation. Recreating customer and retrying.' );
@@ -5450,6 +5475,37 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$request->set_customer( $customer_id );
 			return $request->send();
 		}
+	}
+
+	/**
+	 * Returns the attached owner of a saved PaymentMethod, if it can be verified.
+	 *
+	 * @param string $payment_method_id Stripe PaymentMethod ID.
+	 * @return string|null Customer ID or null when ownership cannot be established.
+	 */
+	private function get_attached_payment_method_customer( string $payment_method_id ): ?string {
+		if ( ! preg_match( '/^pm_\w{1,250}$/', $payment_method_id ) ) {
+			return null;
+		}
+
+		try {
+			$request = Request::get( WC_Payments_API_Client::PAYMENT_METHODS_API, $payment_method_id );
+			$request->assign_hook( 'wcpay_get_payment_method_request' );
+			$payment_method = $request->send();
+		} catch ( \Exception $e ) {
+			Logger::error( 'Unable to verify saved payment method ownership: ' . $e->getMessage() );
+			return null;
+		}
+
+		if ( ! is_array( $payment_method ) && ! $payment_method instanceof \ArrayAccess ) {
+			return null;
+		}
+
+		$owner_id = $payment_method['customer'] ?? null;
+		if ( ( $payment_method['id'] ?? null ) !== $payment_method_id || ! is_string( $owner_id ) || ! preg_match( '/^cus_[A-Za-z0-9_]+$/', $owner_id ) ) {
+			return null;
+		}
+		return $owner_id;
 	}
 
 	/**
