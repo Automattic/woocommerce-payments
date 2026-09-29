@@ -167,6 +167,9 @@ module.exports = {
 		} ),
 		new MiniCssExtractPlugin( {
 			filename: '[name].css',
+			// Lazy-loaded CSS isn't enqueued through WordPress, so it needs its
+			// own cache buster to be refreshed after a plugin update.
+			chunkFilename: '[name].css?ver=[contenthash]',
 			// Shared component stylesheets (chip, clickable-cell, etc.) are
 			// imported by multiple async route chunks in different orders.
 			// The styles themselves have no cross-component ordering dependency,

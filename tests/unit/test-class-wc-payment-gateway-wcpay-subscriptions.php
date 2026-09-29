@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Currency_Code;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
@@ -608,6 +609,144 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
 		$this->assertEquals( 'processing', $renewal_order->get_status() );
+	}
+
+	public function test_scheduled_subscription_payment_retries_stale_customer_with_user_customer() {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( self::USER_ID )
+			->willReturn( self::CUSTOMER_ID );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'recreate_customer_for_user' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'set_customer' )
+			->withConsecutive( [ 'cus_stale' ], [ 'cus_mock' ] );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) ),
+				WC_Helper_Intention::create_intention()
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'processing', $renewal_order->get_status() );
+		$this->assertEquals( 'cus_mock', $renewal_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( 'cus_mock', $subscription->get_meta( '_stripe_customer_id', true ) );
+	}
+
+	public function test_scheduled_subscription_payment_repairs_stale_customer_when_retry_is_processing() {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) ),
+				WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::PROCESSING ] )
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'cus_mock', $subscription->get_meta( '_stripe_customer_id', true ) );
+	}
+
+	public function test_scheduled_subscription_payment_keeps_stale_customer_on_sibling_with_another_card() {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$sibling = new WC_Subscription();
+		$sibling->add_payment_token( WC_Helper_Token::create_token( 'pm_sibling', self::USER_ID ) );
+		$sibling->update_meta_data( '_stripe_customer_id', 'cus_stale' );
+		$this->mock_wcs_get_subscriptions_for_renewal_order(
+			[
+				'1' => $subscription,
+				'2' => $sibling,
+			]
+		);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) ),
+				WC_Helper_Intention::create_intention()
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'cus_mock', $subscription->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( 'cus_stale', $sibling->get_meta( '_stripe_customer_id', true ) );
+	}
+
+	/**
+	 * @dataProvider provider_absent_or_stale_user_customer
+	 */
+	public function test_scheduled_subscription_payment_rethrows_when_user_customer_is_absent_or_stale( $user_customer_id ) {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( $user_customer_id );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'recreate_customer_for_user' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+		$this->assertEquals( 'cus_stale', $subscription->get_meta( '_stripe_customer_id', true ) );
+	}
+
+	public function provider_absent_or_stale_user_customer() {
+		return [
+			'absent' => [ null ],
+			'stale'  => [ 'cus_stale' ],
+		];
+	}
+
+	public function test_scheduled_subscription_payment_keeps_stale_customer_when_retry_fails() {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) ),
+				$this->throwException( new API_Exception( 'The PaymentMethod does not belong to the Customer you supplied.', 'invalid_request_error', 400 ) )
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+		$this->assertEquals( 'cus_stale', $renewal_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( 'cus_stale', $subscription->get_meta( '_stripe_customer_id', true ) );
 	}
 
 	public function test_scheduled_subscription_payment_fails_when_token_is_missing() {
@@ -1516,6 +1655,25 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 				return $return_value;
 			}
 		);
+	}
+
+	/**
+	 * Creates a saved-card renewal whose subscription has a missing Stripe customer.
+	 *
+	 * @return array The renewal order and its subscription.
+	 */
+	private function create_renewal_with_stale_customer() {
+		$token         = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_stale' );
+
+		$subscription = new WC_Subscription();
+		$subscription->add_payment_token( $token );
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_stale' );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => $subscription ] );
+
+		return [ $renewal_order, $subscription ];
 	}
 
 	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
