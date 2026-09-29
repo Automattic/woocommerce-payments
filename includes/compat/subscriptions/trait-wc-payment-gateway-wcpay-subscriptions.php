@@ -1426,16 +1426,20 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * Replaces a missing Stripe customer on a renewal's subscriptions, so the next renewal uses the right one.
 	 *
 	 * @param WC_Order $renewal_order     The renewal order.
+	 * @param string   $payment_method_id The saved payment method Stripe accepted with the customer.
 	 * @param string   $stale_customer_id The customer Stripe couldn't find.
 	 * @param string   $customer_id       The customer Stripe accepted.
 	 */
-	private function replace_stale_subscription_customer_id( $renewal_order, string $stale_customer_id, string $customer_id ) {
+	private function replace_stale_subscription_customer_id( $renewal_order, string $payment_method_id, string $stale_customer_id, string $customer_id ) {
 		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
 			return;
 		}
 
 		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
-			if ( $subscription->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true ) !== $stale_customer_id ) {
+			// The payment only proves the customer for the card it charged.
+			$token = $this->get_payment_token( $subscription );
+			if ( ! $token || $token->get_token() !== $payment_method_id
+				|| $subscription->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true ) !== $stale_customer_id ) {
 				continue;
 			}
 			$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $customer_id );

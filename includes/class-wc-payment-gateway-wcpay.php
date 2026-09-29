@@ -5455,7 +5455,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent      = $request->send();
 				$customer_id = $user_customer_id;
 				$this->order_service->set_customer_id_for_order( $order, $customer_id );
-				$this->replace_stale_subscription_customer_id( $order, $stale_customer_id, $customer_id );
+				$this->replace_stale_subscription_customer_id( $order, $payment_information->get_payment_method(), $stale_customer_id, $customer_id );
 				return $intent;
 			}
 
