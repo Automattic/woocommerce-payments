@@ -27,7 +27,7 @@ class Retire_Post_Kyc_Activation_Emails {
 	}
 
 	/**
-	 * Cancel the three retired stage jobs on the current site.
+	 * Cancel the three retired stage jobs and clear the retired notice caches on the current site.
 	 *
 	 * A job that survives cancellation completes through the inert
 	 * wcpay_post_kyc_activation_email_send handler without sending.
