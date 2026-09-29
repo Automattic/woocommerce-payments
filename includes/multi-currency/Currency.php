@@ -265,11 +265,11 @@ class Currency implements \JsonSerializable {
 		return [
 			'code'            => $this->code,
 			'rate'            => $this->get_rate(),
-			'name'            => html_entity_decode( $this->get_name() ),
+			'name'            => \WC_Payments_Utils::decode_html_entities( $this->get_name() ),
 			'id'              => $this->get_id(),
 			'is_default'      => $this->get_is_default(),
 			'flag'            => $this->get_flag(),
-			'symbol'          => html_entity_decode( $this->get_symbol() ),
+			'symbol'          => \WC_Payments_Utils::decode_html_entities( $this->get_symbol() ),
 			'symbol_position' => $this->get_symbol_position(),
 			'is_zero_decimal' => $this->get_is_zero_decimal(),
 			'last_updated'    => $this->get_last_updated(),
