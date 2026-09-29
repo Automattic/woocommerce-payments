@@ -771,10 +771,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
-		$retired_activation_emails = new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails();
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $retired_activation_emails, 'maybe_migrate' ] );
-		add_action( 'action_scheduler_init', [ $retired_activation_emails, 'retry_pending_cleanup' ] );
-		add_action( 'init', [ $retired_activation_emails, 'retry_pending_cleanup' ], 12 );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';

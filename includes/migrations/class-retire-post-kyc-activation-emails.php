@@ -27,38 +27,14 @@ class Retire_Post_Kyc_Activation_Emails {
 	}
 
 	/**
-	 * Retry independently of the installed version, which may have advanced.
-	 */
-	public function retry_pending_cleanup(): void {
-		if ( get_option( 'wcpay_post_kyc_activation_email_cleanup_pending' ) ) {
-			$this->migrate();
-		}
-	}
-
-	/**
-	 * Cancel only the three retired stage jobs on the current site.
+	 * Cancel the three retired stage jobs on the current site.
 	 *
-	 * Leave the marker set if the scheduler is unavailable or jobs remain.
-	 * An already executing worker from the old plugin cannot be recalled.
+	 * A job that survives cancellation completes through the inert
+	 * wcpay_post_kyc_activation_email_send handler without sending.
 	 */
 	public function migrate(): void {
-		update_option( 'wcpay_post_kyc_activation_email_cleanup_pending', '1', false );
-
-		if ( ! function_exists( 'as_unschedule_all_actions' ) || ! class_exists( '\ActionScheduler' ) || ! \ActionScheduler::is_initialized() ) {
-			return;
-		}
-
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			as_unschedule_all_actions( 'wcpay_post_kyc_activation_email_send', [ $stage ], 'woocommerce-payments' );
 		}
-
-		// Action Scheduler catches cancellation errors internally, so verify cleanup.
-		foreach ( [ 7, 14, 30 ] as $stage ) {
-			if ( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ $stage ], 'woocommerce-payments' ) ) {
-				return;
-			}
-		}
-
-		delete_option( 'wcpay_post_kyc_activation_email_cleanup_pending' );
 	}
 }
