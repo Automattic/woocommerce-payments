@@ -6,7 +6,7 @@
  */
 
 /**
- * Retired entry points remain callable without sending or scheduling mail.
+ * The retired reminders are neither registered nor scheduled, and residual jobs send nothing.
  */
 class Retired_Kyc_Emails_Test extends WCPAY_UnitTestCase {
 
@@ -32,27 +32,6 @@ class Retired_Kyc_Emails_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayNotHasKey( 'WC_Payments_Email_Post_Kyc_Activation', $emails );
 		$this->assertArrayHasKey( 'WC_Payments_Email_IPP_Receipt', $emails );
-	}
-
-	public function test_legacy_email_trigger_cannot_send(): void {
-		/** This filter is documented in WooCommerce's WC_Emails::init(). */
-		apply_filters( 'woocommerce_email_classes', [] );
-		$email = $this->getMockBuilder( WC_Payments_Email_Post_Kyc_Activation::class )->onlyMethods( [ 'send' ] )->getMock();
-		$email->expects( $this->never() )->method( 'send' );
-
-		foreach ( [ 7, 14, 30 ] as $stage ) {
-			$this->assertFalse( $email->trigger( $stage ) );
-		}
-		$this->assertSame( '', $email->get_content_html() );
-		$this->assertSame( '', $email->get_content_plain() );
-	}
-
-	public function test_legacy_email_class_is_available_after_mailer_initialization(): void {
-		/** This filter is documented in WooCommerce's WC_Emails::init(). */
-		apply_filters( 'woocommerce_email_classes', [] );
-
-		$this->assertTrue( class_exists( 'WC_Payments_Email_Post_Kyc_Activation', false ) );
-		$this->assertInstanceOf( WC_Email::class, new WC_Payments_Email_Post_Kyc_Activation() );
 	}
 
 	public function test_residual_action_completes_without_sending(): void {

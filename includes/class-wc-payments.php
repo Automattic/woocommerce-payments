@@ -333,7 +333,6 @@ class WC_Payments {
 	 */
 	private static $fee_remediation;
 
-
 	/**
 	 * Entry point to the initialization logic.
 	 */
@@ -448,7 +447,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-session-service.php';
 		include_once __DIR__ . '/class-wc-payments-redirect-service.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
-		include_once __DIR__ . '/class-wc-payments-post-kyc-activation-email-service.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-logger-context.php';
@@ -552,7 +550,6 @@ class WC_Payments {
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
-		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_post_kyc_activation_email' ], 10 );
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
@@ -886,19 +883,6 @@ class WC_Payments {
 	 */
 	public static function add_ipp_emails( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
-		return $email_classes;
-	}
-
-	/**
-	 * Load the retired email class for extensions without registering a reminder.
-	 *
-	 * @deprecated 11.2.0 The reminder is no longer registered.
-	 *
-	 * @param array $email_classes the email classes.
-	 * @return array
-	 */
-	public static function add_post_kyc_activation_email( array $email_classes ): array {
-		include_once __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
 	}
 
