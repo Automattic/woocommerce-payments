@@ -974,7 +974,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 	/**
 	 * Tests that get_enabled_payment_method_config uses get_payment_method_ids_enabled_at_checkout
-	 * which filters payment methods by currency. This ensures Link is only available for USD.
+	 * which filters payment methods by currency. This ensures Link is only available for USD and GBP.
 	 */
 	public function test_get_enabled_payment_method_config_uses_currency_filtered_payment_methods() {
 		$this->mock_wcpay_account
@@ -982,7 +982,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( 'US' );
 
 		// Simulate that get_payment_method_ids_enabled_at_checkout returns only 'card'
-		// (because Link would be filtered out for non-USD currency).
+		// (because Link would be filtered out for currencies other than USD and GBP).
 		$this->mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
