@@ -104,7 +104,10 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		return [ Currency_Code::UNITED_STATES_DOLLAR ];
+		return [
+			Currency_Code::UNITED_STATES_DOLLAR,
+			Currency_Code::POUND_STERLING,
+		];
 	}
 
 	/**
