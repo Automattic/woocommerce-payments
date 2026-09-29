@@ -145,11 +145,15 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the URL for the payment method's icon
 	 *
-	 * @param string|null $_unused_account_country Optional. The merchant's account country.
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_icon_url( ?string $_unused_account_country = null ): string {
+	public static function get_icon_url( ?string $account_country = null ): string {
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/onelink.svg', WCPAY_PLUGIN_FILE );
+		}
+
 		return plugins_url( 'assets/images/payment-methods/link.svg', WCPAY_PLUGIN_FILE );
 	}
 
