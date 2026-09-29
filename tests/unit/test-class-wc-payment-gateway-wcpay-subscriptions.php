@@ -693,13 +693,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'cus_stale', $sibling->get_meta( '_stripe_customer_id', true ) );
 	}
 
-	public function test_scheduled_subscription_payment_does_not_recreate_customer_when_user_customer_is_missing() {
+	/**
+	 * @dataProvider provider_absent_or_stale_user_customer
+	 */
+	public function test_scheduled_subscription_payment_rethrows_when_user_customer_is_absent_or_stale( $user_customer_id ) {
 		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
 
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
-			->willReturn( 'cus_stale' );
+			->willReturn( $user_customer_id );
 
 		$this->mock_customer_service
 			->expects( $this->never() )
@@ -714,6 +717,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
 		$this->assertEquals( 'cus_stale', $subscription->get_meta( '_stripe_customer_id', true ) );
+	}
+
+	public function provider_absent_or_stale_user_customer() {
+		return [
+			'absent' => [ null ],
+			'stale'  => [ 'cus_stale' ],
+		];
 	}
 
 	public function test_scheduled_subscription_payment_keeps_stale_customer_when_retry_fails() {
