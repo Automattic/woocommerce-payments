@@ -8,7 +8,6 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\WooPay\WooPay_Session;
-use Automattic\Jetpack\Connection\Rest_Authentication;
 use WCPay\Logger;
 
 /**
@@ -38,16 +37,12 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base,
 			[
-				'methods'             => WP_REST_Server::READABLE,
+				// POST only. The attestation is the one credential this route accepts and
+				// it is read from the body, so a GET could never pass check_permission().
+				// The route creates a Stripe customer, so it was never idempotent anyway.
+				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				'args'                => [
-					'email' => [
-						'type'     => 'string',
-						'format'   => 'email',
-						'required' => true,
-					],
-				],
 			]
 		);
 	}
@@ -75,35 +70,42 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	/**
 	 * Check permission confirms that the request is from WooPay.
 	 *
-	 * @return bool True if request is from WooPay and has a valid signature.
-	 */
-	public function check_permission() {
-		return $this->is_request_from_woopay() && $this->has_valid_request_signature();
-	}
-
-	/**
-	 * Returns true if the request that's currently being processed is signed with the blog token.
+	 * Deliberately stricter than the proxied Store API traffic, which accepts a Cart-Token.
+	 * This is not proxied shopper traffic: the response carries the store's own session
+	 * material, and reaching it creates a Stripe customer as a side effect. A Cart-Token
+	 * only establishes that the caller holds a cart, which every shopper holds for their
+	 * own, so it does not establish enough here.
 	 *
-	 * @return bool True if the request signature is valid.
-	 */
-	private function has_valid_request_signature(): bool {
-		/**
-		 * Filters whether the current request is signed with the store's blog token.
-		 *
-		 * @since 5.9.0
-		 *
-		 * @param bool $is_signed Whether the request signature was verified against the blog token.
-		 */
-		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
-	}
-
-	/**
-	 * Returns true if the request that's currently being processed is from WooPay, false
-	 * otherwise.
+	 * What it accepts instead is an attestation envelope, which proves WooPay composed the
+	 * request without attaching a reusable credential to it. See
+	 * `WooPay_Session::get_woopay_attestation()`.
 	 *
-	 * @return bool True if request is from WooPay.
+	 * @param WP_REST_Request $request Full details about the request.
+	 *
+	 * @return bool True if the request is from WooPay and carries proof of it.
 	 */
-	private function is_request_from_woopay(): bool {
-		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
+	public function check_permission( WP_REST_Request $request ) {
+		if ( ! WooPay_Session::is_request_from_woopay() ) {
+			Logger::log( 'WooPay session route denied: the request does not identify as WooPay.' );
+
+			return false;
+		}
+
+		// Not the attested *email*: a guest shopper has no email to name, and the envelope
+		// still proves the request came from WooPay.
+		if ( null !== WooPay_Session::get_woopay_attestation( $request ) ) {
+			return true;
+		}
+
+		// Which it was matters: a Cart-Token here is a caller using the wrong credential
+		// rather than none, and `get_woopay_attestation()` has already said why an envelope
+		// was refused if one was presented at all.
+		Logger::log(
+			WooPay_Session::is_valid_request_with_cart_token()
+				? 'WooPay session route denied: a Cart-Token does not authorize this route, which needs an attestation.'
+				: 'WooPay session route denied: no usable attestation.'
+		);
+
+		return false;
 	}
 }
