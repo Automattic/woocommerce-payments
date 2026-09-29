@@ -54,7 +54,9 @@ Fetch an overview of account payouts for all payout currencies. This includes de
 
 -   `deposit` _object_
     -   `last_paid` _array_ of [**Payout**](#payout-object) - The last payout that has been paid for each payout currency.
-    -   `last_manual_deposits` _array_ of [**Payout**](#payout-object) - Manual payouts that have been paid in the last 24 hours.
+    -   `last_manual_deposits` _array_ - The most recent manual payout for each payout currency, if its arrival date is within the last 24 hours. Entries are not full [**Payout**](#payout-object) objects.
+        -   `currency` _string_ - The currency of the payout. E.g. `usd`.
+        -   `date` _string_ - The arrival date of the payout in UTC, formatted as `YYYY-MM-DD HH:MM:SS`. Unlike the Payout object, this is not a timestamp.
 -   `balance` _object_
     -   `pending` _array_ - The pending balance for each payout currency.
         -   `amount` _int_ - The amount of the balance.
@@ -121,7 +123,12 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 				"created": 1701302400
 			}
 		],
-		"last_manual_deposits": []
+		"last_manual_deposits": [
+			{
+				"currency": "usd",
+				"date": "2023-12-04 10:15:32"
+			}
+		]
 	},
 	"balance": {
 		"pending": [
