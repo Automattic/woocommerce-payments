@@ -1,0 +1,100 @@
+name: Plugin Check
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      # Check the release zip rather than the repository, so the scan sees
+      # exactly what ships to merchants.
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      # The action uses the folder name as the plugin slug.
+      - name: "Unzip the plugin"
+        run: unzip -q "${{ steps.build_plugin.outputs.release-filename }}" -d "$RUNNER_TEMP/plugin-check"
+
+      - name: "Run Plugin Check"
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: ${{ runner.temp }}/plugin-check/woocommerce-payments
+          # Report through annotations and the results artifact, not PR comments.
+          repo-token: ''
+          # Fail on warnings too, so new ones can't slip in; only the codes below are ignored.
+          ignore-warnings: false
+          strict: true
+
+          # Plugin Check matches these as path suffixes. Its text search for update
+          # transients flags them as plugin updaters, but they are not:
+          # - TranslationsLoader.php adds WooPayments language packs from
+          #   translate.wordpress.com to the update_plugins transient.
+          # vendor/ is skipped by default, so Jetpack Sync's update transient reads
+          # and the subscriptions-core ajax-loader@2x.gif never reach the scan.
+          exclude-files: |
+            src/Internal/PluginManagement/TranslationsLoader.php
+
+          # Codes that fire on today's build, one line each on why we keep them.
+          # Each also hides new hits of the same code, so review before adding one.
+          # - ExceptionNotEscaped: messages go to logs and REST responses and get
+          #   escaped where they are printed; escaping at throw would double-escape.
+          # - missing_direct_file_access_protection: src/wcpay-get-container.php loads
+          #   through Composer's autoload "files" and only defines a function.
+          # - UnescapedDBParameter: table names come from code, not input, and the
+          #   SQL goes through $wpdb->prepare().
+          # - DirectQuery / NoCaching: custom tables and HPOS lookups that must not
+          #   be cached.
+          # - NonPrefixedHooknameFound: public wc_payments_* / woocommerce_* hooks;
+          #   renaming them would break third-party callbacks.
+          # - DynamicHooknameFound: hooks built from WooCommerce and extension hook
+          #   names that multi-currency and the request layer filter.
+          # - NonPrefixedClassFound / InterfaceFound / TraitFound / FunctionFound /
+          #   ConstantFound: public WC_Payments_* symbols and a Jetpack constant
+          #   other code uses; renaming them is a breaking change.
+          # - NonPrefixedVariableFound: template and data-file locals flagged as globals.
+          # - InputNotSanitized / InputNotValidated: request data read by
+          #   WooCommerce-style handlers that validate or sanitize it further down.
+          # - trademarked_term: WooPayments is Woo's own plugin, so the name is allowed.
+          # - mismatched_plugin_name: the readme title is the directory listing name.
+          # - missing_composer_json_file: the zip ships vendor/ without composer.json.
+          # - readme_parser_warnings_too_many_tags: the directory keeps the first five.
+          # - readme_parser_warnings_trimmed_section_changelog: full history lives in
+          #   changelog.txt.
+          ignore-codes: |
+            WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            missing_direct_file_access_protection
+            PluginCheck.Security.DirectDB.UnescapedDBParameter
+            WordPress.DB.DirectDatabaseQuery.DirectQuery
+            WordPress.DB.DirectDatabaseQuery.NoCaching
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+            WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedInterfaceFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedTraitFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+            WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+            trademarked_term
+            mismatched_plugin_name
+            missing_composer_json_file
+            readme_parser_warnings_too_many_tags
+            readme_parser_warnings_trimmed_section_changelog
