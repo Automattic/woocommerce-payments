@@ -134,21 +134,24 @@ class WC_Payments_Action_Scheduler_Service {
 		add_action( 'wcpay_track_update_order', [ $this, 'track_update_order_action' ] );
 		add_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this->order_service, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
 		add_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->compatibility_service, 'update_compatibility_data_hook' ], 10, 0 );
+
+		// The ActionScheduler queue runner processes many actions in a single PHP process. Reset the
+		// in-request dedupe set between actions so a self-rescheduling hook (e.g. wcpay_webhook_fetch_events
+		// when the server signals more events are waiting) isn't silently suppressed after its first
+		// self-schedule in the process.
+		add_action( 'action_scheduler_begin_execute', [ $this, 'reset_scheduled_in_request' ] );
 	}
 
 	/**
-	 * Clear the in-request dedupe set. **Test-only.**
+	 * Clear the in-request dedupe set.
 	 *
-	 * Production code has no reason to call this — the set is scoped to a single PHP request and
-	 * clears naturally when the request ends. Provided for tests that share the singleton instance
-	 * across test methods (via `WC_Payments::get_action_scheduler_service()`) and need a clean
-	 * dedupe state per test.
-	 *
-	 * @internal Do not call from production code.
+	 * Used by the ActionScheduler queue runner (via `action_scheduler_begin_execute`) to give each
+	 * processed action its own dedupe scope, since one PHP process may execute many AS actions in
+	 * sequence. Also called from tests that share the singleton instance across test methods.
 	 *
 	 * @return void
 	 */
-	public function reset_in_request_dedupe_for_tests_only() {
+	public function reset_scheduled_in_request() {
 		$this->scheduled_in_request = [];
 	}
 

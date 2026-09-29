@@ -75,7 +75,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		// The Compatibility_Service goes through the singleton WC_Payments_Action_Scheduler_Service
 		// (via WC_Payments::get_action_scheduler_service()), whose in-request dedupe set persists
 		// across PHPUnit test methods. Reset it so schedule_job() actually schedules each test.
-		WC_Payments::get_action_scheduler_service()->reset_in_request_dedupe_for_tests_only();
+		WC_Payments::get_action_scheduler_service()->reset_scheduled_in_request();
 
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();

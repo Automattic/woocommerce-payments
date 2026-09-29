@@ -60,6 +60,51 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10, has_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->mock_compatibility_service, 'update_compatibility_data_hook' ] ) );
 	}
 
+	public function test_init_hooks_registers_dedupe_reset_on_action_scheduler_begin_execute() {
+		$this->action_scheduler_service->init_hooks();
+
+		try {
+			$this->assertEquals(
+				10,
+				has_action( 'action_scheduler_begin_execute', [ $this->action_scheduler_service, 'reset_scheduled_in_request' ] ),
+				'init_hooks() must register reset_scheduled_in_request() on action_scheduler_begin_execute so the AS queue runner gets a fresh dedupe scope per action.'
+			);
+		} finally {
+			remove_action( 'action_scheduler_begin_execute', [ $this->action_scheduler_service, 'reset_scheduled_in_request' ] );
+		}
+	}
+
+	public function test_reset_scheduled_in_request_lets_a_subsequent_same_key_call_schedule_again() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_reset_dedupe_' . uniqid();
+		$args  = [ 55 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( 100, $hook, $args, $group );
+
+					// Simulate the ActionScheduler queue runner beginning the next action within
+					// the same PHP process (as happens when do_batch() re-claims after our callback
+					// scheduled a follow-up).
+					$this->action_scheduler_service->reset_scheduled_in_request();
+
+					$this->action_scheduler_service->schedule_job( 200, $hook, $args, $group );
+
+					$this->assertSame(
+						200,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'After reset, a subsequent same-key schedule_job() must reach the AS store and (per current post-revert semantics) replace the pending action with the new timestamp.'
+					);
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
 	public function test_track_new_order_action() {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
