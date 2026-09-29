@@ -15,7 +15,7 @@ jobs:
   plugin-check:
     name: Plugin Check
     runs-on: ubuntu-latest
-    # A required check; don't let a stuck wp-env start hold PRs for hours.
+    # Required check: don't let a stuck run block PRs.
     timeout-minutes: 30
     steps:
       - name: "Checkout repository"
@@ -24,12 +24,12 @@ jobs:
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
 
-      # Scan the release zip, so the check sees what ships to merchants.
+      # Scan what we ship, not the repo.
       - name: "Build the plugin"
         id: build_plugin
         uses: ./.github/actions/build
 
-      # The action takes the folder name as the plugin slug.
+      # The folder name becomes the plugin slug.
       - name: "Unzip the plugin"
         run: unzip -q "${{ steps.build_plugin.outputs.release-filename }}" -d "$RUNNER_TEMP/plugin-check"
 
@@ -37,43 +37,29 @@ jobs:
         uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
           build-dir: ${{ runner.temp }}/plugin-check/woocommerce-payments
-          # Report through annotations and the results artifact, not PR comments.
+          # Annotations only, no PR comments.
           repo-token: ''
-          # Fail on warnings too, so new ones can't slip in.
+          # Fail on warnings too.
           strict: true
 
-          # Excluded by path, so each rule stays on for every other file:
-          # - TranslationsLoader.php: the updater text search flags it, but it only
-          #   adds WooPayments language packs from translate.wordpress.com.
-          # - wcpay-get-container.php: Composer's autoload "files" loads it, so an
-          #   ABSPATH guard would break loading outside WordPress; it only defines a function.
+          # Excluded by path so the rules stay on elsewhere:
+          # - TranslationsLoader.php: flagged as an updater; it only adds language packs.
+          # - wcpay-get-container.php: loaded by Composer, so it can't exit without ABSPATH.
           exclude-files: |
             src/Internal/PluginManagement/TranslationsLoader.php
             src/wcpay-get-container.php
 
-          # Codes that fire on the current build. Each also hides future hits of the
-          # same code, so review before adding one.
-          # - ExceptionNotEscaped: messages go to logs and REST responses; they are
-          #   escaped where printed, so escaping at throw would double-escape.
-          # - UnescapedDBParameter: table names come from code, not input, and the
-          #   SQL goes through $wpdb->prepare().
-          # - DirectQuery / NoCaching: custom tables and HPOS lookups that must not
-          #   be cached.
-          # - NonPrefixedHooknameFound: public wc_payments_* / woocommerce_* hooks;
-          #   renaming them would break third-party callbacks.
-          # - DynamicHooknameFound: hooks built from WooCommerce and extension hook
-          #   names that multi-currency and the request layer filter.
-          # - NonPrefixedClassFound / InterfaceFound / TraitFound / FunctionFound /
-          #   ConstantFound: public WC_Payments_* symbols and a Jetpack constant
-          #   other code uses; renaming them is a breaking change.
-          # - NonPrefixedVariableFound: template and data-file locals flagged as globals.
-          # - InputNotSanitized / InputNotValidated: request data read by
-          #   WooCommerce-style handlers that validate or sanitize it further down.
-          # - trademarked_term: WooPayments is Woo's own plugin, so the name is allowed.
-          # - mismatched_plugin_name: the readme title is the directory listing name.
+          # Codes that already fire. Each one also hides new hits, so add with care.
+          # - ExceptionNotEscaped: escaped where printed; escaping here would double it.
+          # - UnescapedDBParameter: table names come from code, values use prepare().
+          # - DirectQuery / NoCaching: custom tables and HPOS lookups.
+          # - NonPrefixed* / DynamicHooknameFound: public names (renaming breaks callers)
+          #   and template locals.
+          # - InputNotSanitized / InputNotValidated: handlers clean the data further down.
+          # - trademarked_term: WooPayments is Woo's own plugin.
+          # - mismatched_plugin_name: the readme title is the listing name.
           # - missing_composer_json_file: the zip ships vendor/ without composer.json.
-          # - readme_parser_warnings_trimmed_section_changelog: full history lives in
-          #   changelog.txt.
+          # - readme_parser_warnings_trimmed_section_changelog: full history is in changelog.txt.
           ignore-codes: |
             WordPress.Security.EscapeOutput.ExceptionNotEscaped
             PluginCheck.Security.DirectDB.UnescapedDBParameter
