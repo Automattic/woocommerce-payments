@@ -342,7 +342,13 @@ class Payment_Information {
 		$token = \WC_Payment_Tokens::get( wc_clean( $request[ $token_request_key ] ) );
 
 		// If the token doesn't belong to this gateway or the current user it's invalid.
-		if ( ! $token || $payment_method !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+		// Tokens without an owner (user ID 0) are never selectable from a request.
+		if (
+			! $token ||
+			$payment_method !== $token->get_gateway_id() ||
+			$token->get_user_id() <= 0 ||
+			$token->get_user_id() !== get_current_user_id()
+		) {
 			return null;
 		}
 
