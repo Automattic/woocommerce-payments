@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Run WordPress.org Plugin Check on pull requests, and fix the license, PHP requirement and file name issues it found.
