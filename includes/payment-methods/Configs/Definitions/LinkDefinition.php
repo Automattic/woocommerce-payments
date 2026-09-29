@@ -7,6 +7,7 @@
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
+use WCPay\Constants\Country_Code;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\Constants\Currency_Code;
@@ -56,11 +57,15 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the customer-facing title of the payment method
 	 *
-	 * @param string|null $_unused_account_country Optional. The merchant's account country.
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_title( ?string $_unused_account_country = null ): string {
+	public static function get_title( ?string $account_country = null ): string {
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return __( 'Onelink', 'woocommerce-payments' );
+		}
+
 		return __( 'Link', 'woocommerce-payments' );
 	}
 
@@ -90,11 +95,15 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the customer-facing description of the payment method
 	 *
-	 * @param string|null $_unused_account_country Optional. The merchant's account country.
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_description( ?string $_unused_account_country = null ): string {
+	public static function get_description( ?string $account_country = null ): string {
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return __( 'Onelink autofills your customers\' payment and shipping details to deliver an easy and seamless checkout experience.', 'woocommerce-payments' );
+		}
+
 		return __( 'Link autofills your customers\' payment and shipping details to deliver an easy and seamless checkout experience.', 'woocommerce-payments' );
 	}
 
