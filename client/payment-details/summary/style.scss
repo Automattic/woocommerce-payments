@@ -116,6 +116,16 @@
 	}
 }
 
+.payment-details-summary__dispute-label {
+	@include font-size( 11 );
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	color: $studio-gray-60;
+	// Match the padding of the "Dispute details" heading below.
+	margin: $grid-unit-15 $grid-unit-30 0;
+}
+
 .woocommerce-list--horizontal {
 	margin-top: 0 !important;
 }

@@ -388,13 +388,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service->set_payment_method_id_for_order( $parent_order, self::PAYMENT_METHOD_ID );
 
-		$mock_subscription = $this->createMock( WC_Subscription::class );
-		$mock_subscription
-			->method( 'get_parent_id' )
-			->willReturn( $parent_order->get_id() );
-		$mock_subscription
-			->method( 'get_customer_id' )
-			->willReturn( $user->ID );
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $parent_order );
+		$mock_subscription->set_customer_id( $user->ID );
 
 		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => $mock_subscription ] );
 		$this->mock_wcs_get_subscriptions_for_order( [] );
@@ -451,9 +447,97 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
-		$this->assertContains( $token->get_id(), $parent_order->get_payment_tokens() );
 		$this->assertContains( $token->get_id(), $renewal_order->get_payment_tokens() );
 		$this->assertEquals( 'processing', $renewal_order->get_status() );
+	}
+
+	/**
+	 * Repairing a renewal token must not disturb the other subscriptions created by the same
+	 * checkout. Two subscriptions on different schedules share one parent order, and each may
+	 * have been pointed at a different saved card by the customer since. Recovering the parent
+	 * order's payment method for one of them must not silently re-point the others.
+	 */
+	public function test_scheduled_subscription_payment_repair_does_not_retoken_sibling_subscriptions() {
+		$parent_order  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+		$sibling_token = WC_Helper_Token::create_token( 'pm_sibling_choice', self::USER_ID );
+		$user          = get_user_by( 'id', self::USER_ID );
+
+		$this->order_service->set_payment_method_id_for_order( $parent_order, self::PAYMENT_METHOD_ID );
+
+		$renewing_subscription = $this->getMockBuilder( WC_Subscription::class )
+			->onlyMethods( [ 'add_order_note' ] )
+			->getMock();
+		$renewing_subscription->set_parent( $parent_order );
+		$renewing_subscription->set_customer_id( $user->ID );
+		$renewing_subscription
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				sprintf(
+					'The saved payment method for this subscription was missing, so WooPayments restored %s from the original order to complete the renewal.',
+					$token->get_display_name()
+				)
+			);
+
+		// A sibling subscription from the same checkout, deliberately pointed at another card.
+		$sibling_subscription = new WC_Subscription();
+		$sibling_subscription->set_parent( $parent_order );
+		$sibling_subscription->set_customer_id( $user->ID );
+		$sibling_subscription->set_payment_tokens( [ $sibling_token->get_id() ] );
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => $renewing_subscription ] );
+
+		// Mirror production: only the parent order resolves to the two sibling subscriptions.
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order_id ) use ( $parent_order, $renewing_subscription, $sibling_subscription ) {
+				return $parent_order->get_id() === $order_id
+					? [
+						'1' => $renewing_subscription,
+						'2' => $sibling_subscription,
+					]
+					: [];
+			}
+		);
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$this->mock_customer_service
+			->method( 'update_customer_for_user' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->method( 'set_amount' )->willReturn( $request );
+		$request->method( 'set_currency_code' )->willReturn( $request );
+		$request->method( 'format_response' )->willReturn( WC_Helper_Intention::create_intention() );
+
+		$parent_tokens_before = $parent_order->get_payment_tokens();
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		// The repair itself must still happen, otherwise the sibling assertion below is vacuous.
+		$this->assertContains( $token->get_id(), $renewal_order->get_payment_tokens() );
+		$this->assertContains( $token->get_id(), $renewing_subscription->get_payment_tokens() );
+		$this->assertSame(
+			$parent_tokens_before,
+			$parent_order->get_payment_tokens(),
+			'The historical parent order must remain a read-only recovery source.'
+		);
+
+		$this->assertSame(
+			[ $sibling_token->get_id() ],
+			$sibling_subscription->get_payment_tokens(),
+			'The sibling subscription must keep the card the customer chose for it.'
+		);
+
+		$renewal_notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $renewal_order->get_id() ] ), 'content' );
+		$this->assertContains(
+			'Recovered missing subscription payment method token from the parent order.',
+			$renewal_notes
+		);
 	}
 
 	public function test_scheduled_subscription_payment_with_saved_customer_id() {

@@ -23,6 +23,14 @@ import './style.scss';
 
 interface RefundModalProps {
 	charge: Charge;
+	/**
+	 * The dispute the refund was initiated from, when the merchant clicked
+	 * "Issue refund" on a specific dispute pane. A charge can carry several
+	 * disputes, so the singular `charge.dispute` can't tell us which one the
+	 * merchant acted on; when omitted we fall back to it for the legacy
+	 * single-dispute openers (the refund menu, the missing-order notice).
+	 */
+	dispute?: Charge[ 'dispute' ];
 	formattedAmount: string;
 	/**
 	 * URL of the associated order, when one exists. When provided, the modal
@@ -34,6 +42,7 @@ interface RefundModalProps {
 
 const RefundModal: React.FC< RefundModalProps > = ( {
 	charge,
+	dispute: initiatingDispute,
 	formattedAmount,
 	orderUrl,
 	onModalClose,
@@ -49,7 +58,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 
 	// Refunding a charge with an open inquiry resolves the inquiry, so the
 	// modal surfaces that context and records the inquiry-specific event.
-	const dispute = charge.dispute;
+	const dispute = initiatingDispute ?? charge.dispute;
 	const isOpenInquiry =
 		!! dispute &&
 		isInquiry( dispute.status ) &&

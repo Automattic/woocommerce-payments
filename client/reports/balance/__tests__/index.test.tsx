@@ -129,17 +129,18 @@ jest.mock( '../balance-dataview', () => {
 	};
 } );
 
-// Mirror the production helper's contract: `skipSymbol = true` returns the
-// formatted amount followed by the ISO code (no `$`). `formatBalanceAmount`
-// then strips the trailing code and prepends `±USD ` for the code-first layout
-// the Figma uses.
+// Stand-ins for the production helpers, which both take minor units and are
+// covered by their own tests. They mirror the real contracts closely enough to
+// pin `formatBalanceAmount`'s sign handling and the CSV's major-unit scale:
+// `formatExplicitCurrency` renders `-$80.00 USD` (symbol first, ISO code last,
+// sign outside the symbol) and `formatExportAmount` converts to major units.
+// Thousands separators are omitted — they belong to the currency utility.
 jest.mock( 'multi-currency/interface/functions', () => ( {
-	formatExplicitCurrency: (
-		amount: number,
-		currency: string,
-		skipSymbol?: boolean
-	) =>
-		skipSymbol ? `${ amount } ${ currency }` : `${ currency } ${ amount }`,
+	formatExplicitCurrency: ( amount: number, currency: string ) =>
+		`${ amount < 0 ? '-' : '' }$${ Math.abs( amount / 100 ).toFixed(
+			2
+		) } ${ currency.toUpperCase() }`,
+	formatExportAmount: ( amount: number ) => amount / 100,
 } ) );
 
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -839,16 +840,17 @@ describe( 'BalanceReport', () => {
 			expectBalanceText( label );
 		}
 
-		// formatBalanceAmount renders sign + code + space + amount.
+		// formatBalanceAmount renders the standard WooPayments explicit currency
+		// format, with a `+` marking inflows.
 		expect(
-			within( getVisibleBalanceTable() ).getByText( '+USD 162672' )
+			within( getVisibleBalanceTable() ).getByText( '+$1626.72 USD' )
 		).toBeInTheDocument();
 		expect(
-			within( getVisibleBalanceTable() ).getByText( '-USD 6064' )
+			within( getVisibleBalanceTable() ).getByText( '-$60.64 USD' )
 		).toBeInTheDocument();
 		// Payouts is forced negative even when the raw value is positive.
 		expect(
-			within( getVisibleBalanceTable() ).getByText( '-USD 1102608' )
+			within( getVisibleBalanceTable() ).getByText( '-$11026.08 USD' )
 		).toBeInTheDocument();
 		const chargesRow = screen.getByRole( 'row', {
 			name: /Total charges captured/,
@@ -895,33 +897,38 @@ describe( 'BalanceReport', () => {
 			/^business_name,woopayments_account_id,row_key,label,amount,count,currency,period_start,period_end\n/
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,starting_balance,"Starting balance - formatted 2026-05-01 UTC",1000,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,starting_balance,"Starting balance - formatted 2026-05-01 UTC",10,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,total_charges_captured,"Total charges captured",162672,8,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,total_charges_captured,"Total charges captured",1626.72,8,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,fees,Fees,-6064,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,fees,Fees,-60.64,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,charge_fees,"Charge fees",-5958,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,charge_fees,"Charge fees",-59.58,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,dispute_fees,"Dispute fees",-1500,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,dispute_fees,"Dispute fees",-15,,usd,2026-05-01,2026-05-14'
 		);
 		// `fee_refunds` is positive in the fixture — pins the sign convention
 		// for the one sub-row that diverges from the negative fee siblings.
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,fee_refunds,"Fee refunds",1644,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,fee_refunds,"Fee refunds",16.44,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,payout_fees,"Payout fees",-100,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,payout_fees,"Payout fees",-1,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,reader_fees,"Reader costs",-150,,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,reader_fees,"Reader costs",-1.5,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
-			'"Aperture Science LLC",acct_wcpay_123,refunds,Refunds,-21500,3,usd,2026-05-01,2026-05-14'
+			'"Aperture Science LLC",acct_wcpay_123,refunds,Refunds,-215,3,usd,2026-05-01,2026-05-14'
+		);
+		// `payouts` is the only `displayNegative` row: the fixture stores it
+		// positive (1102608) but the screen and the CSV both show it negative.
+		expect( csv ).toContain(
+			'"Aperture Science LLC",acct_wcpay_123,payouts,Payouts,-11026.08,3,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
 			'"Aperture Science LLC",acct_wcpay_123,ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
@@ -1034,7 +1041,7 @@ describe( 'BalanceReport', () => {
 
 			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
-				'"Aperture Store",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+				'"Aperture Store",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",10,,usd,2024-03-01,2024-03-31'
 			);
 			expect(
 				getPrintBusinessLines( getPrintReport( container ) )
@@ -1059,7 +1066,7 @@ describe( 'BalanceReport', () => {
 
 			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
-				'\n,,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+				'\n,,starting_balance,"Starting balance - formatted 2024-03-01 UTC",10,,usd,2024-03-01,2024-03-31'
 			);
 			expect(
 				getPrintBusinessLines( getPrintReport( container ) )
@@ -1078,7 +1085,7 @@ describe( 'BalanceReport', () => {
 
 			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
-				'"Aperture Science LLC",,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+				'"Aperture Science LLC",,starting_balance,"Starting balance - formatted 2024-03-01 UTC",10,,usd,2024-03-01,2024-03-31'
 			);
 			expect(
 				getPrintBusinessLines( getPrintReport( container ) )
@@ -1098,7 +1105,7 @@ describe( 'BalanceReport', () => {
 
 			expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
 			expect( csv ).toContain(
-				'"Smith, Jones & Associates",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",1000,,usd,2024-03-01,2024-03-31'
+				'"Smith, Jones & Associates",acct_wcpay_123,starting_balance,"Starting balance - formatted 2024-03-01 UTC",10,,usd,2024-03-01,2024-03-31'
 			);
 		} );
 	} );

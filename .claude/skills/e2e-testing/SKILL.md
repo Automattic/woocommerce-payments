@@ -19,25 +19,25 @@ Run Playwright E2E tests to verify changes work from a user's perspective — re
 
 | Task | Command |
 |------|---------|
-| First-time setup | `bin/setup-e2e-local.sh && npm run build:client && npm run test:e2e-setup` |
-| Run all tests | `npm run test:e2e` |
-| Run specific test | `npm run test:e2e tests/e2e/specs/wcpay/merchant/file.spec.ts` |
-| Run by name | `npm run test:e2e -- -g "test name"` |
-| Run merchant tests | `npm run test:e2e tests/e2e/specs/wcpay/merchant` |
-| Run shopper tests | `npm run test:e2e tests/e2e/specs/wcpay/shopper` |
-| UI mode | `npm run test:e2e-ui` (open http://localhost:8077) |
-| Start containers | `npm run test:e2e-up` |
-| Stop containers | `npm run test:e2e-down` |
-| Full reset | `npm run test:e2e-reset` |
-| View report | `npx playwright show-report` |
+| First-time setup | `bin/setup-e2e-local.sh && pnpm run build:client && pnpm run test:e2e-setup` |
+| Run all tests | `pnpm run test:e2e` |
+| Run specific test | `pnpm run test:e2e tests/e2e/specs/wcpay/merchant/file.spec.ts` |
+| Run by name | `pnpm run test:e2e -- -g "test name"` |
+| Run merchant tests | `pnpm run test:e2e tests/e2e/specs/wcpay/merchant` |
+| Run shopper tests | `pnpm run test:e2e tests/e2e/specs/wcpay/shopper` |
+| UI mode | `pnpm run test:e2e-ui` (open http://localhost:8077) |
+| Start containers | `pnpm run test:e2e-up` |
+| Stop containers | `pnpm run test:e2e-down` |
+| Full reset | `pnpm run test:e2e-reset` |
+| View report | `pnpm exec playwright show-report` |
 
 ## Workflow 1: First-Time Setup
 
 ### Prerequisites
 
 - Docker running
-- `npm install` and `composer install` completed
-- Dev Docker environment running (`npm run up`) — needed for credential detection
+- `pnpm install` and `composer install` completed
+- Dev Docker environment running (`pnpm run up`) — needed for credential detection
 
 ### Steps
 
@@ -63,13 +63,13 @@ Run Playwright E2E tests to verify changes work from a user's perspective — re
 2. **Build the client:**
 
    ```bash
-   npm run build:client
+   pnpm run build:client
    ```
 
 3. **Set up the E2E Docker environment:**
 
    ```bash
-   npm run test:e2e-setup
+   pnpm run test:e2e-setup
    ```
 
    This takes several minutes. It:
@@ -82,14 +82,14 @@ Run Playwright E2E tests to verify changes work from a user's perspective — re
 4. **Verify it works:**
 
    ```bash
-   npm run test:e2e tests/e2e/specs/wcpay/merchant/merchant-admin-deposits.spec.ts
+   pnpm run test:e2e tests/e2e/specs/wcpay/merchant/merchant-admin-deposits.spec.ts
    ```
 
 ### Important: Pre-setup steps for local server mode
 
-Before running `npm run test:e2e-setup`, these steps are required:
+Before running `pnpm run test:e2e-setup`, these steps are required:
 
-1. **Sync gitignored server code:** The transact-platform-server has `server/` and `missioncontrol/` gitignored (populated via `npm run pull`). After the E2E setup clones the repo, these dirs are empty. The setup script (`bin/setup-e2e-local.sh`) handles this automatically, or manually:
+1. **Sync gitignored server code:** The transact-platform-server has `server/` and `missioncontrol/` gitignored (populated via `pnpm run pull`). After the E2E setup clones the repo, these dirs are empty. The setup script (`bin/setup-e2e-local.sh`) handles this automatically, or manually:
    ```bash
    rsync -a --delete /path/to/transact-platform-server/server/ tests/e2e/deps/transact-platform-server-e2e/server/
    rsync -a --delete /path/to/transact-platform-server/missioncontrol/ tests/e2e/deps/transact-platform-server-e2e/missioncontrol/
@@ -120,7 +120,7 @@ Before running `npm run test:e2e-setup`, these steps are required:
 - **"Critical error" on server startup:** Missing `server/` dir in the E2E clone. Run rsync step above.
 - **"vendor/autoload.php not found" in dev tools:** Run `composer install` in `tests/e2e/deps/wcp-dev-tools-e2e/`.
 - **Onboarding wizard shown instead of admin pages:** The Stripe test account isn't fully onboarded. Re-run `bin/setup-e2e-local.sh` (auto-creates and onboards), or complete setup in Stripe Dashboard.
-- **"Already linked" error:** Run `npm run test:e2e-reset` first for a clean start.
+- **"Already linked" error:** Run `pnpm run test:e2e-reset` first for a clean start.
 
 ## Workflow 2: Running Tests (Agent Verification)
 
@@ -131,45 +131,45 @@ Before running `npm run test:e2e-setup`, these steps are required:
 docker info > /dev/null 2>&1 || echo "Start Docker first"
 
 # 2. E2E containers up?
-docker ps --format '{{.Names}}' | grep -q wcp_e2e_wordpress || npm run test:e2e-up
+docker ps --format '{{.Names}}' | grep -q wcp_e2e_wordpress || pnpm run test:e2e-up
 
 # 3. Client built with latest changes?
-npm run build:client
+pnpm run build:client
 ```
 
 ### Choosing what to run
 
 **After a change to merchant admin UI:**
 ```bash
-npm run test:e2e tests/e2e/specs/wcpay/merchant/
+pnpm run test:e2e tests/e2e/specs/wcpay/merchant/
 ```
 
 **After a change to checkout/shopper flow:**
 ```bash
-npm run test:e2e tests/e2e/specs/wcpay/shopper/
+pnpm run test:e2e tests/e2e/specs/wcpay/shopper/
 ```
 
 **After a change to a specific feature (e.g., disputes):**
 ```bash
-npm run test:e2e -- -g "dispute"
+pnpm run test:e2e -- -g "dispute"
 ```
 
 **Run a single spec file:**
 ```bash
-npm run test:e2e tests/e2e/specs/wcpay/merchant/merchant-admin-disputes.spec.ts
+pnpm run test:e2e tests/e2e/specs/wcpay/merchant/merchant-admin-disputes.spec.ts
 ```
 
 **Run block-based checkout tests only:**
 ```bash
-npm run test:e2e -- --grep @blocks
+pnpm run test:e2e -- --grep @blocks
 ```
 
 ### Reading results
 
 - **Console output:** Pass/fail summary printed after run
-- **HTML report:** Run `npx playwright show-report` to open in browser
+- **HTML report:** Run `pnpm exec playwright show-report` to open in browser
 - **On failure:** Screenshots saved to `tests/e2e/test-results/`
-- **Traces:** Available in `tests/e2e/test-results/` (open with `npx playwright show-trace <trace.zip>`)
+- **Traces:** Available in `tests/e2e/test-results/` (open with `pnpm exec playwright show-trace <trace.zip>`)
 
 ### Test mapping — which specs cover which features
 
@@ -203,10 +203,10 @@ The console shows which test failed and the error message. Look for:
 ls tests/e2e/test-results/
 
 # Open the HTML report
-npx playwright show-report
+pnpm exec playwright show-report
 
 # Open a specific trace
-npx playwright show-trace tests/e2e/test-results/<test-folder>/trace.zip
+pnpm exec playwright show-trace tests/e2e/test-results/<test-folder>/trace.zip
 ```
 
 ### Step 3: Access the E2E site directly
@@ -234,7 +234,7 @@ docker logs wcp_e2e_mysql --tail 50
 ### Step 5: Run in UI mode for interactive debugging
 
 ```bash
-npm run test:e2e-ui tests/e2e/specs/wcpay/merchant/failing-test.spec.ts
+pnpm run test:e2e-ui tests/e2e/specs/wcpay/merchant/failing-test.spec.ts
 ```
 
 Open http://localhost:8077 in your browser. UI mode lets you:
@@ -297,9 +297,9 @@ Defined in `tests/e2e/config/default.ts`:
 ## Lifecycle Commands
 
 ```bash
-npm run test:e2e-setup    # First-time: build + start + configure everything
-npm run test:e2e-up       # Start existing containers (no reconfigure)
-npm run test:e2e-down     # Stop containers
-npm run test:e2e-cleanup  # Remove deps and docker volumes
-npm run test:e2e-reset    # Stop + cleanup (full teardown)
+pnpm run test:e2e-setup    # First-time: build + start + configure everything
+pnpm run test:e2e-up       # Start existing containers (no reconfigure)
+pnpm run test:e2e-down     # Stop containers
+pnpm run test:e2e-cleanup  # Remove deps and docker volumes
+pnpm run test:e2e-reset    # Stop + cleanup (full teardown)
 ```

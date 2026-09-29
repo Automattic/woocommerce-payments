@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+defined( 'ABSPATH' ) || exit;
+
 if ( ! function_exists( 'wcpay_format_price_helper' ) ) {
 	/**
 	 * Helper to generate markup to render a price.

@@ -15,13 +15,13 @@ fi
 # If no local config, try to copy from main repo (worktree scenario)
 if [ ! -f "${JT_DIR}/config.env" ]; then
     if [ "$IS_WORKTREE" = false ]; then
-        echo "Error: No jurassic tube config found. Run 'npm run tube:setup' first."
+        echo "Error: No jurassic tube config found. Run 'pnpm run tube:setup' first."
         exit 1
     fi
 
     MAIN_JT="${MAIN_REPO}/bin/jurassictube"
     if [ ! -f "${MAIN_JT}/config.env" ]; then
-        echo "Error: No jurassic tube config in main repo. Run 'npm run tube:setup' there first."
+        echo "Error: No jurassic tube config in main repo. Run 'pnpm run tube:setup' there first."
         exit 1
     fi
 
@@ -56,4 +56,4 @@ jurassictube -u "$username" -s "$subdomain" -h "$HOST"
 
 echo ""
 echo "Tunnel ready: https://${subdomain}.jurassic.tube/"
-echo "To stop: npm run tube:stop"
+echo "To stop: pnpm run tube:stop"

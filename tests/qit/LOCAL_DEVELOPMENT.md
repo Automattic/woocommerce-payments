@@ -9,7 +9,7 @@ This guide describes a fast, iterative workflow for developing QIT E2E tests loc
 - Debugging failing tests
 - Iterating on test fixes
 
-**Use `npm run test:qit-e2e` when:**
+**Use `pnpm run test:qit-e2e` when:**
 - Running the full test suite
 - Validating before pushing
 - Running in CI
@@ -56,7 +56,7 @@ E2E_JP_USER_TOKEN=your_user_token
 
 ```bash
 # 1. Start the environment (one-time setup)
-npm run test:qit-e2e-up
+pnpm run test:qit-e2e-up
 
 # 2. Source environment variables (run in each new terminal)
 source "$(./vendor/bin/qit env:source)"
@@ -65,13 +65,13 @@ source "$(./vendor/bin/qit env:source)"
 cd tests/qit/test-package
 
 # 4. Run tests with Playwright
-npx playwright test --ui
+pnpm exec playwright test --ui
 
 # 5. Reset database between runs (optional, restores post-setup state)
-npm run test:qit-e2e-reset
+pnpm run test:qit-e2e-reset
 
 # 6. When done, stop the environment
-npm run test:qit-e2e-down
+pnpm run test:qit-e2e-down
 ```
 
 ## Workflow Details
@@ -79,7 +79,7 @@ npm run test:qit-e2e-down
 ### Starting the Environment
 
 ```bash
-npm run test:qit-e2e-up
+pnpm run test:qit-e2e-up
 ```
 
 This command:
@@ -128,30 +128,30 @@ By default, Playwright only shows/runs the `default` project (basic.spec.ts). To
 
 ```bash
 # Interactive UI mode - default project only
-npx playwright test --ui
+pnpm exec playwright test --ui
 
 # Interactive UI mode - all projects (shows all tests)
-npx playwright test --ui --project=default --project=shopper --project=merchant --project=subscriptions
+pnpm exec playwright test --ui --project=default --project=shopper --project=merchant --project=subscriptions
 
 # Interactive UI mode - specific project
-npx playwright test --ui --project=shopper
-npx playwright test --ui --project=merchant
-npx playwright test --ui --project=subscriptions
+pnpm exec playwright test --ui --project=shopper
+pnpm exec playwright test --ui --project=merchant
+pnpm exec playwright test --ui --project=subscriptions
 
 # Run all tests headless (all projects)
-npx playwright test --project=default --project=shopper --project=merchant --project=subscriptions
+pnpm exec playwright test --project=default --project=shopper --project=merchant --project=subscriptions
 
 # Run a specific test file
-npx playwright test tests/woopayments/shopper/shopper-checkout-purchase.spec.ts
+pnpm exec playwright test tests/woopayments/shopper/shopper-checkout-purchase.spec.ts
 
 # Run tests matching a pattern
-npx playwright test --grep "checkout"
+pnpm exec playwright test --grep "checkout"
 
 # Run tests with visible browser
-npx playwright test --headed
+pnpm exec playwright test --headed
 
 # Debug mode (step through tests)
-npx playwright test --debug
+pnpm exec playwright test --debug
 ```
 
 ### Iterating on Tests
@@ -159,7 +159,7 @@ npx playwright test --debug
 The environment persists between test runs. Your workflow:
 
 1. Edit test files in `tests/qit/test-package/tests/`
-2. Run `npx playwright test` (or use UI mode)
+2. Run `pnpm exec playwright test` (or use UI mode)
 3. See results
 4. Repeat
 
@@ -170,7 +170,7 @@ No need to restart the environment unless you need to reset the database state.
 If previous test runs left state that interferes with new runs (e.g., orders, changed settings), reset the database to the post-setup snapshot:
 
 ```bash
-npm run test:qit-e2e-reset
+pnpm run test:qit-e2e-reset
 ```
 
 This restores the database to the state right after setup completed — all users, products, and test data are preserved, but any changes from test runs are wiped. Much faster than stopping and restarting the full environment.
@@ -180,7 +180,7 @@ This restores the database to the state right after setup completed — all user
 When finished developing:
 
 ```bash
-npm run test:qit-e2e-down
+pnpm run test:qit-e2e-down
 ```
 
 ## Troubleshooting
@@ -189,7 +189,7 @@ npm run test:qit-e2e-down
 
 1. Check the environment is running: `docker ps | grep qit`
 2. Ensure you sourced the environment: `echo $QIT_SITE_URL`
-3. Try restarting: `npm run test:qit-e2e-down && npm run test:qit-e2e-up`
+3. Try restarting: `pnpm run test:qit-e2e-down && pnpm run test:qit-e2e-up`
 
 ### Tests pass locally but fail in CI
 
@@ -200,14 +200,14 @@ The local environment persists state between runs. CI starts fresh each time. If
 Reset the database to the post-setup state:
 
 ```bash
-npm run test:qit-e2e-reset
+pnpm run test:qit-e2e-reset
 ```
 
 If that's not enough, do a full restart:
 
 ```bash
-npm run test:qit-e2e-down
-npm run test:qit-e2e-up
+pnpm run test:qit-e2e-down
+pnpm run test:qit-e2e-up
 ```
 
 ### Environment variables not set
@@ -241,7 +241,7 @@ Playwright's UI mode (`--ui`) is excellent for development:
 During development, run only the test you're working on:
 
 ```bash
-npx playwright test tests/woopayments/shopper/my-test.spec.ts
+pnpm exec playwright test tests/woopayments/shopper/my-test.spec.ts
 ```
 
 ### Use Debug Mode
@@ -249,7 +249,7 @@ npx playwright test tests/woopayments/shopper/my-test.spec.ts
 For tricky failures, use debug mode to step through:
 
 ```bash
-npx playwright test --debug tests/woopayments/shopper/my-test.spec.ts
+pnpm exec playwright test --debug tests/woopayments/shopper/my-test.spec.ts
 ```
 
 ### Generate Tests with Codegen
@@ -257,7 +257,7 @@ npx playwright test --debug tests/woopayments/shopper/my-test.spec.ts
 Use Playwright's codegen to record interactions:
 
 ```bash
-npx playwright codegen $QIT_SITE_URL
+pnpm exec playwright codegen $QIT_SITE_URL
 ```
 
 ### Check Test Reports
@@ -265,12 +265,12 @@ npx playwright codegen $QIT_SITE_URL
 After running tests, view the HTML report:
 
 ```bash
-npx playwright show-report
+pnpm exec playwright show-report
 ```
 
 ## Comparison: Local Dev vs Full Orchestration
 
-| Aspect | `npm run test:qit-e2e-up` | `npm run test:qit-e2e` |
+| Aspect | `pnpm run test:qit-e2e-up` | `pnpm run test:qit-e2e` |
 |--------|---------------------------|------------------------|
 | Environment | Persistent, reusable | Fresh each run |
 | Speed | Fast iteration | Slower (full setup) |

@@ -3,6 +3,15 @@
 body.woocommerce-admin-page__payments_reports {
 	background: #fff;
 
+	// WooCommerce core paints the page header #f0f0f1. On Reports the header
+	// sits directly above white content and the subcopy lives outside it, so
+	// the gray/white split reads as a seam rather than a header. Keep it white
+	// until the wider breadcrumbs/header migration lands. The core
+	// `border-bottom` stays and does the separating instead.
+	.woocommerce-layout__header {
+		background: #fff;
+	}
+
 	// Scope these WC layout overrides to the Reports section only so the
 	// Balance / Fees tabs flush against the left edge of the content area
 	// while still leaving room at the bottom for the WC footer.

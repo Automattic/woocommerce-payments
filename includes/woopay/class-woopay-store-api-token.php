@@ -9,6 +9,8 @@ namespace WCPay\Platform_Checkout;
 
 use Automattic\WooCommerce\StoreApi\Routes\V1\AbstractCartRoute;
 
+defined( 'ABSPATH' ) || exit;
+
 if ( class_exists( AbstractCartRoute::class ) ) {
 	/**
 	 * This class is used to get the cart token from the cart route.

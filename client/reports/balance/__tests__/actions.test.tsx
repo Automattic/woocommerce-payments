@@ -49,12 +49,11 @@ jest.mock( '../use-balance-date-filter', () => {
 // Mirror the existing Balance report tests so Balance amount formatting remains
 // deterministic when CSV generation touches row labels/values.
 jest.mock( 'multi-currency/interface/functions', () => ( {
-	formatExplicitCurrency: (
-		amount: number,
-		currency: string,
-		skipSymbol?: boolean
-	) =>
-		skipSymbol ? `${ amount } ${ currency }` : `${ currency } ${ amount }`,
+	formatExplicitCurrency: ( amount: number, currency: string ) =>
+		`${ amount < 0 ? '-' : '' }$${ Math.abs( amount / 100 ).toFixed(
+			2
+		) } ${ currency.toUpperCase() }`,
+	formatExportAmount: ( amount: number ) => amount / 100,
 } ) );
 
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -142,6 +141,12 @@ describe( 'BalanceActions Tracks', () => {
 			expectedPayload
 		);
 		expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+
+		// The export path runs `getBalanceCSV`, which rescales minor units to
+		// major units via `formatExportAmount`. Assert the exported cell so the
+		// stub earns its place instead of only proving that a download fired.
+		const csv = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ] as string;
+		expect( csv ).toContain( ',"Total charges captured",1626.72,' );
 	} );
 
 	it( 'records export errors with the failure message and preserves notice behavior', async () => {

@@ -362,6 +362,56 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		);
 	} );
 
+	test( 'Accept dispute modal names the fee that will be forfeited', async () => {
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ getBaseDispute() }
+				customer={ getBaseBillingDetails() }
+				chargeCreated={ 1693453017 }
+				onIssueRefund={ mockOnIssueRefund }
+				paymentMethod="card"
+				bankName="Chase Bank"
+			/>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Accept dispute/i } )
+		);
+
+		// The copy is split by an <em>, so assert on the dialog's text.
+		expect( screen.getByRole( 'dialog' ).textContent ).toContain(
+			'The disputed amount and the $15.00 dispute fee will not be returned to you.'
+		);
+	} );
+
+	test( 'Accept dispute modal drops the fee clause when no fee was charged', async () => {
+		// Previously rendered as "the - dispute fee will not be returned to
+		// you" at the moment the merchant is about to forfeit funds.
+		const dispute = { ...getBaseDispute(), effective_fee: null };
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ getBaseBillingDetails() }
+				chargeCreated={ 1693453017 }
+				onIssueRefund={ mockOnIssueRefund }
+				paymentMethod="card"
+				bankName="Chase Bank"
+			/>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Accept dispute/i } )
+		);
+
+		const modalText = screen.getByRole( 'dialog' ).textContent ?? '';
+
+		expect( modalText ).toContain(
+			'The disputed amount will not be returned to you.'
+		);
+		expect( modalText ).not.toContain( 'dispute fee' );
+	} );
+
 	test( 'Accept dispute button works correctly for Visa compliance disputes', async () => {
 		const dispute = getBaseDispute();
 		const customer = getBaseBillingDetails();

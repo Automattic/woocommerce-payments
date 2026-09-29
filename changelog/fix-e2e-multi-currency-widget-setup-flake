@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix flaky shopper-multi-currency-widget E2E test by verifying the currency switcher widget is assigned to the sidebar before the test runs

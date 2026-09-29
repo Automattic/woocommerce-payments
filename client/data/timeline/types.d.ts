@@ -151,6 +151,10 @@ export interface TimelineItem {
 	currency?: string;
 	deposit?: TimelineDeposit;
 	dispute_id?: string;
+	/** Whether the early fraud warning can still be acted on (refund to avoid a dispute). */
+	efw_actionable?: boolean;
+	/** Stripe `fraud_type` enum reported with an early fraud warning. */
+	efw_type?: string;
 	evidence_due_by?: number;
 	failure_reason?: string;
 	failure_transaction_id?: string;

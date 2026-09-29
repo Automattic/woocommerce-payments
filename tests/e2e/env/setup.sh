@@ -310,7 +310,7 @@ if [[ -d "node_modules" ]]; then
 	success "node_modules exists"
 else
 	fail "node_modules is missing"
-	info "Run: npm install"
+	info "Run: pnpm install"
 	PREFLIGHT_OK=false
 fi
 
@@ -419,8 +419,8 @@ if [[ -z "$CI" && "$WCPAY_USE_BUILD_ARTIFACT" != true ]]; then
 
 	if [[ "$BUILD_NEEDED" == true ]]; then
 		section "Building client"
-		info "$BUILD_REASON — running npm run build:client"
-		npm run build:client
+		info "$BUILD_REASON — running pnpm run build:client"
+		pnpm run build:client
 		success "Client built"
 	else
 		success "Client build is up to date"
@@ -641,7 +641,12 @@ else
 fi
 
 info "Installing REST API auth plugin..."
-retry cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
+# Prefer the zip cached by CI (see env-setup action); fall back to GitHub.
+if [[ -f "${E2E_ROOT}/.cache/basic-auth.zip" ]]; then
+	retry cli wp plugin install /var/www/html/wp-content/plugins/woocommerce-payments/tests/e2e/.cache/basic-auth.zip --activate --force
+else
+	retry cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
+fi
 
 info "Installing themes..."
 retry cli wp theme install storefront --activate
@@ -823,6 +828,6 @@ if [[ -z $CI ]]; then
 	echo -e "  ${DIM}phpMyAdmin${NC}  http://localhost:8085"
 fi
 echo ""
-echo -e "  Run tests:  ${BOLD}npm run test:e2e${NC}"
-echo -e "  UI mode:    ${BOLD}npm run test:e2e-ui${NC}"
+echo -e "  Run tests:  ${BOLD}pnpm run test:e2e${NC}"
+echo -e "  UI mode:    ${BOLD}pnpm run test:e2e-ui${NC}"
 echo ""

@@ -431,8 +431,9 @@ export const disablePaymentMethods = async (
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 	await navigation.goToActionScheduler( page, 'pending', orderId );
+	// The hook cell is a td before WP 7.1 and a th from WP 7.1, so match it by class.
 	await page.$eval(
-		'td:has-text("wc-admin_import_orders") a:has-text("Run")',
+		'.column-hook:has-text("wc-admin_import_orders") a:has-text("Run")',
 		( el: HTMLLinkElement ) => el.click()
 	);
 };

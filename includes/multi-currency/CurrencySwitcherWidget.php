@@ -106,7 +106,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 			<select
 				name="currency"
 				class="js-woopayments-currency-switcher"
-				aria-label="<?php echo esc_attr( $title ); ?>"
+				aria-label="<?php echo esc_attr( ! empty( $title ) ? $title : __( 'Select your currency', 'woocommerce-payments' ) ); ?>"
 				onchange="this.form.submit()"
 			>
 				<?php
@@ -132,7 +132,7 @@ class CurrencySwitcherWidget extends WC_Widget {
 	 */
 	private function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {
 		$code        = $currency->get_code();
-		$same_symbol = html_entity_decode( $currency->get_symbol() ) === $code;
+		$same_symbol = \WC_Payments_Utils::decode_html_entities( $currency->get_symbol() ) === $code;
 		$text        = $code;
 		$selected    = $this->multi_currency->get_selected_currency()->code === $code ? ' selected' : '';
 

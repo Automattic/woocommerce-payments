@@ -79,6 +79,17 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$this->subscription_service = new WC_Payments_Subscription_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_product_service, $this->mock_invoice_service );
 	}
 
+	public function tear_down() {
+		global $theorder;
+
+		// Reset the global function stubs and global state so they cannot leak into other tests.
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+		WC_Subscriptions::set_wcs_is_subscription( null );
+		$theorder = null;
+
+		parent::tear_down();
+	}
+
 	/**
 	 * Mock get_period static method.
 	 *
@@ -694,6 +705,82 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test WC_Payments_Subscription_Service->prevent_wcpay_manual_renewal()
+	 */
+	public function test_prevent_wcpay_manual_renewal() {
+		global $theorder;
+
+		$theorder                 = new WC_Subscription();
+		$theorder->payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$theorder->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'wcpay_subscription_id_12345' );
+		$theorder->save();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$actions = [
+			'wcs_create_pending_parent'  => 'Create pending parent order',
+			'wcs_create_pending_renewal' => 'Create pending renewal order',
+			'wcs_process_renewal'        => 'Process renewal',
+			'unrelated_action'           => 'Unrelated action',
+		];
+
+		$result = $this->subscription_service->prevent_wcpay_manual_renewal( $actions );
+
+		$this->assertSame( [ 'unrelated_action' => 'Unrelated action' ], $result );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->prevent_wcpay_manual_renewal() when a third party has made
+	 * wcs_is_subscription() return true for an object that isn't actually a WC_Subscription instance.
+	 */
+	public function test_prevent_wcpay_manual_renewal_with_non_subscription_theorder() {
+		global $theorder;
+
+		// $theorder is a plain WC_Order here, not a WC_Subscription, even though wcs_is_subscription()
+		// below is stubbed to claim otherwise - this can happen with third-party filters/plugins.
+		$theorder = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$actions = [
+			'wcs_create_pending_parent'  => 'Create pending parent order',
+			'wcs_create_pending_renewal' => 'Create pending renewal order',
+			'wcs_process_renewal'        => 'Process renewal',
+		];
+
+		$result = $this->subscription_service->prevent_wcpay_manual_renewal( $actions );
+
+		$this->assertSame( $actions, $result );
+	}
+
+	/**
+	 * Test WC_Payments_Subscription_Service->show_wcpay_subscription_id() when a third party has made
+	 * wcs_is_subscription() return true for an object that isn't actually a WC_Subscription instance.
+	 */
+	public function test_show_wcpay_subscription_id_with_non_subscription_order() {
+		// A plain WC_Order, even though wcs_is_subscription() below is stubbed to claim otherwise.
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$this->expectOutputString( '' );
+
+		$this->subscription_service->show_wcpay_subscription_id( $order );
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->get_wcpay_subscription_id()
 	 */
 	public function test_get_wcpay_subscription_id() {
@@ -749,6 +836,72 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'test_is_wcpay_subscription' );
 
 		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) );
+	}
+
+	/**
+	 * An order whose subscription is billed through Stripe Billing.
+	 */
+	public function test_is_wcpay_subscription_order_with_stripe_billed_subscription() {
+		$subscription                 = new WC_Subscription();
+		$subscription->payment_method = 'woocommerce_payments';
+		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test123' );
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * A tokenised subscription renews on-site, so its order must not be treated as
+	 * Stripe-billed even though the store may have the Stripe Billing feature enabled.
+	 */
+	public function test_is_wcpay_subscription_order_with_tokenised_subscription() {
+		$subscription                 = new WC_Subscription();
+		$subscription->payment_method = 'woocommerce_payments';
+		// No _wcpay_subscription_id: never created in Stripe Billing.
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+
+		$this->assertFalse( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * Mixed relations: any Stripe-billed subscription is enough, matching
+	 * is_wcpay_subscription_renewal_order() in the subscriptions gateway trait.
+	 */
+	public function test_is_wcpay_subscription_order_with_mixed_subscriptions() {
+		$tokenised                 = new WC_Subscription();
+		$tokenised->payment_method = 'woocommerce_payments';
+
+		$stripe_billed                 = new WC_Subscription();
+		$stripe_billed->payment_method = 'woocommerce_payments';
+		$stripe_billed->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_test456' );
+
+		$this->mock_wcs_get_subscriptions_for_order( [ $tokenised, $stripe_billed ] );
+
+		$this->assertTrue( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * An order with no related subscriptions is never Stripe-billed.
+	 */
+	public function test_is_wcpay_subscription_order_without_subscriptions() {
+		$this->mock_wcs_get_subscriptions_for_order( [] );
+
+		$this->assertFalse( WC_Payments_Subscription_Service::is_wcpay_subscription_order( WC_Helper_Order::create_order() ) );
+	}
+
+	/**
+	 * Stubs wcs_get_subscriptions_for_order() for the duration of a test.
+	 *
+	 * @param array $subscriptions Subscriptions the stub should return.
+	 */
+	private function mock_wcs_get_subscriptions_for_order( array $subscriptions ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $_unused_order, $_unused_args = [] ) use ( $subscriptions ) {
+				return $subscriptions;
+			}
+		);
 	}
 
 	/**

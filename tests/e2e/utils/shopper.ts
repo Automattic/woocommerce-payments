@@ -141,18 +141,89 @@ export const fillBillingAddressWCB = async (
 		.fill( billingAddress.phone );
 };
 
-// The Stripe element can swallow the first click, so keep retrying until
-// checkout shows the blocking overlay or reaches the order-received page.
-export const placeOrder = async ( page: Page ) => {
-	let orderPlaced = false;
-	while ( ! orderPlaced ) {
-		await page.locator( placeOrderButtonSelector ).first().click();
+// WC's checkout AJAX finishes a submission with a `window.location` change
+// (order-received, an off-site BNPL page, or the #wcpay-confirm- hash for 3DS),
+// which can tear the page down mid-click. Playwright reports that as an error,
+// but it just means the click worked.
+const navigationTeardownErrorPattern =
+	/execution context was destroyed|target closed|target page, context or browser has been closed|frame was detached|navigating frame was detached/i;
 
-		if (
-			( await page.$( '.blockUI' ) ) ||
-			page.url().includes( '/checkout/order-received/' )
-		) {
-			orderPlaced = true;
+const placeOrderTerminalStateTimeout = 15000;
+
+export const placeOrder = async ( page: Page, maxAttempts = 3 ) => {
+	const button = page.locator( placeOrderButtonSelector ).first();
+	const errorNotice = page.locator( '.woocommerce-error' ).first();
+	const checkoutUrl = page.url();
+
+	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
+		// A previous attempt's click can land even if its wait timed out.
+		// If the URL already moved on, the submission is under way and
+		// clicking again would just chase a button that no longer exists.
+		if ( page.url() !== checkoutUrl ) {
+			return;
+		}
+
+		// A leftover error banner from an earlier attempt on the same page
+		// (e.g. the retry-after-decline specs) shouldn't count as a result
+		// of this click.
+		const hadStaleErrorNotice = await errorNotice.isVisible();
+
+		try {
+			// Without a timeout, a click blocked by the processing overlay
+			// can outlive the page and hang until the test-level timeout.
+			await button.click( {
+				timeout: placeOrderTerminalStateTimeout,
+			} );
+
+			const terminalStateWaits = [
+				// jQuery blockUI renders a hidden placeholder before the
+				// visible overlay, and the first .blockUI match can be the
+				// hidden one - waiting for presence avoids that.
+				page.locator( '.blockUI' ).first().waitFor( {
+					state: 'attached',
+					timeout: placeOrderTerminalStateTimeout,
+				} ),
+				page.waitForURL( ( url ) => url.toString() !== checkoutUrl, {
+					timeout: placeOrderTerminalStateTimeout,
+				} ),
+			];
+
+			if ( ! hadStaleErrorNotice ) {
+				terminalStateWaits.push(
+					errorNotice.waitFor( {
+						state: 'visible',
+						timeout: placeOrderTerminalStateTimeout,
+					} )
+				);
+			}
+
+			// The waits that lose the race eventually reject, and Playwright
+			// fails tests on unhandled rejections. The no-op handler marks
+			// them as handled; the race itself still rejects if every wait
+			// fails.
+			terminalStateWaits.forEach( ( wait ) =>
+				wait.catch( () => undefined )
+			);
+
+			await Promise.race( terminalStateWaits );
+
+			return;
+		} catch ( error ) {
+			if (
+				navigationTeardownErrorPattern.test(
+					( error as Error ).message
+				)
+			) {
+				return;
+			}
+
+			if ( attempt === maxAttempts ) {
+				throw error;
+			}
+
+			// The Stripe element can swallow the first click, so give the
+			// page a beat before trying again.
+			await page.waitForTimeout( 1000 );
 		}
 	}
 };
@@ -166,7 +237,7 @@ export const placeOrderWCB = async (
 	} );
 
 	await placeOrderButton.focus();
-	await waitForUiRefresh( page );
+	await expect( placeOrderButton ).toBeEnabled();
 
 	await placeOrderButton.click();
 
@@ -371,12 +442,27 @@ export const selectPaymentMethod = async (
 	// Wait for payment methods list to render.
 	await page.locator( '.wc_payment_methods' ).waitFor( { timeout: 10000 } );
 
-	// Click the label and let Playwright's auto-retry handle actionability.
-	const label = page
-		.locator( `label:has-text("${ paymentMethod }")` )
+	const option = page
+		.locator( '.wc_payment_methods > li' )
+		.filter( {
+			has: page.locator( `label:has-text("${ paymentMethod }")` ),
+		} )
 		.first();
-	await label.scrollIntoViewIfNeeded();
-	await label.click();
+
+	// A checkout refresh replaces the payment box. A click on a row the refresh
+	// is about to remove never registers, so the choice falls back to the first
+	// gateway and the order goes through on Card. Re-click until it sticks.
+	await expect( async () => {
+		await isUIUnblocked( page, 3000 );
+
+		const label = option.locator( 'label' ).first();
+		await label.scrollIntoViewIfNeeded();
+		await label.click( { timeout: 5000 } );
+
+		await expect(
+			option.locator( 'input[name="payment_method"]' )
+		).toBeChecked( { timeout: 2000 } );
+	} ).toPass( { timeout: 20000, intervals: [ 1000 ] } );
 };
 
 /**
@@ -609,7 +695,8 @@ export const addSavedCard = async (
 	// Wait for one of the expected outcomes:
 	//  - 3DS modal appears (Stripe iframe)
 	//  - Success notice
-	//  - Error notice (e.g., too soon after previous)
+	//  - Error notice (declined card, too soon after previous, generic failure)
+	//  - Card validation error inside the Stripe iframe (form never submits)
 	//  - Redirect back to Payment methods page
 	const threeDSFrame = page.locator(
 		'body > div > iframe[name^="__privateStripeFrame"]'
@@ -617,12 +704,11 @@ export const addSavedCard = async (
 	const successNotice = page.getByText(
 		'Payment method successfully added.'
 	);
-	const tooSoonNotice = page.getByText(
-		'You cannot add a new payment method so soon after the previous one.'
-	);
-	const genericError = page.getByText(
-		"We're not able to add this payment method. Please refresh the page and try again."
-	);
+	const errorNotice = page.getByRole( 'alert' ).first();
+	const inlineCardError = page
+		.frameLocator( 'iframe[title="Secure payment input frame"]' )
+		.getByRole( 'alert' )
+		.first();
 	const methodsHeading = page.getByRole( 'heading', {
 		name: 'Payment methods',
 	} );
@@ -630,11 +716,13 @@ export const addSavedCard = async (
 	await Promise.race( [
 		threeDSFrame.waitFor( { state: 'visible', timeout: 20000 } ),
 		successNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		tooSoonNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		genericError.waitFor( { state: 'visible', timeout: 20000 } ),
+		errorNotice.waitFor( { state: 'visible', timeout: 20000 } ),
+		inlineCardError.waitFor( { state: 'visible', timeout: 20000 } ),
 		methodsHeading.waitFor( { state: 'visible', timeout: 20000 } ),
 	] ).catch( () => {
-		/* ignore and let the caller continue; downstream assertions will catch real issues */
+		throw new Error(
+			'Adding a payment method produced none of the expected outcomes: no 3DS modal, success notice, error notice, inline card error, or redirect to the Payment methods page.'
+		);
 	} );
 };
 

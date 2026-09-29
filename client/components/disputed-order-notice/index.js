@@ -16,95 +16,178 @@ import {
 	isRefundable,
 	isUnderReview,
 } from 'wcpay/disputes/utils';
+import { getChargeDisputes } from 'wcpay/utils/charge';
 import { useCharge } from 'wcpay/data/charges';
 import { recordEvent } from 'tracks';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
+// Which dispute gets to explain the refund lock when several block refunds at
+// once. Ordered most to least severe, and exhaustive over the non-refundable
+// statuses, so `disableWooOrderRefundButton` always has wording to show. `lost`
+// outranks `under_review` here even though the notice below leads with the
+// under-review wording: the button never comes back once a dispute is lost, so a
+// permanent reason explains a permanently disabled control better than a
+// temporary one. `charge_refunded` is last — the money is already back with the
+// customer, so it is the least pressing thing to tell the merchant about.
+const lockReasonPriority = [
+	'lost',
+	'under_review',
+	'needs_response',
+	'charge_refunded',
+];
+
 const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	const { data: charge } = useCharge( chargeId );
 	const disputeDetailsUrl = getDetailsURL( chargeId, 'transactions' );
 
-	// Disable the refund button if there's an active dispute.
+	// A charge can carry more than one dispute (e.g. AmEx/Klarna partial
+	// disputes). `getChargeDisputes` returns them all, falling back to the
+	// single `charge.dispute` for payloads without the array.
+	const disputes = charge ? getChargeDisputes( charge ) : [];
+
+	// Disable the refund button if any dispute blocks refunds. The status drives
+	// the tooltip wording, so pick by severity rather than by array order —
+	// otherwise a charge with both a lost and an unanswered dispute explains the
+	// lock as temporary depending on how the server happened to order them.
 	useEffect( () => {
-		const { dispute } = charge;
-		if ( ! charge?.dispute ) {
-			return;
-		}
-		if ( ! isRefundable( dispute.status ) ) {
-			onDisableOrderRefund( dispute.status );
+		const blockers = ( charge ? getChargeDisputes( charge ) : [] ).filter(
+			( dispute ) => ! isRefundable( dispute.status )
+		);
+		const blocking =
+			lockReasonPriority
+				.map( ( status ) =>
+					blockers.find( ( dispute ) => dispute.status === status )
+				)
+				.find( Boolean ) ?? blockers[ 0 ];
+		if ( blocking ) {
+			onDisableOrderRefund( blocking.status );
 		}
 	}, [ charge, onDisableOrderRefund ] );
 
-	const { dispute } = charge;
-	if ( ! charge?.dispute ) {
+	if ( ! disputes.length ) {
 		return null;
 	}
 
-	// Special case the dispute "under review" notice which is much simpler.
-	// (And return early.)
-	if ( isUnderReview( dispute.status ) && ! isInquiry( dispute.status ) ) {
-		return (
-			<DisputeOrderLockedNotice
-				message={ __(
-					'This order has an active payment dispute. Refunds and order editing are disabled.',
-					'woocommerce-payments'
-				) }
-				disputeDetailsUrl={ disputeDetailsUrl }
-			/>
-		);
-	}
-
-	// Special case lost disputes.
-	// (And return early.)
-	// I suspect this is unnecessary, as any lost disputes will have already been
-	// refunded as part of `charge.dispute.closed` webhook handler.
-	// This may be dead code. Leaving in for now as this is consistent with
-	// the logic before this PR.
-	// https://github.com/Automattic/woocommerce-payments/pull/7557
-	if ( dispute.status === 'lost' ) {
-		return (
-			<DisputeOrderLockedNotice
-				message={ __(
-					'Refunds and order editing have been disabled as a result of a lost dispute.',
-					'woocommerce-payments'
-				) }
-				disputeDetailsUrl={ disputeDetailsUrl }
-			/>
-		);
-	}
-
-	// Only show the notice if the dispute is awaiting a response.
-	if ( ! isAwaitingResponse( dispute.status ) ) {
-		return null;
-	}
-
-	// Bail if we don't have due_by for whatever reason.
-	if ( ! dispute.evidence_details?.due_by ) {
-		return null;
-	}
-
-	// Get current time in UTC for consistent timezone-independent comparison
+	// Get current time in UTC for consistent timezone-independent comparison.
 	const now = moment().utc();
-	// Parse the Unix timestamp as UTC since it's stored that way in the API
-	const dueBy = moment.unix( dispute.evidence_details?.due_by ).utc();
 
-	// If the dispute is due in the past, don't show notice.
-	if ( ! now.isBefore( dueBy ) ) {
+	// Disputes still awaiting a response, with a deadline in the future.
+	const awaitingDisputes = disputes.filter( ( dispute ) => {
+		if (
+			! isAwaitingResponse( dispute.status ) ||
+			! dispute.evidence_details?.due_by
+		) {
+			return false;
+		}
+		// Parse the Unix timestamp as UTC since it's stored that way in the API.
+		return now.isBefore(
+			moment.unix( dispute.evidence_details.due_by ).utc()
+		);
+	} );
+
+	// There is only one notice slot, and a charge can be locked by one dispute
+	// while another still needs evidence. The deadline wins: miss it and the
+	// money is gone for good, whereas the lock doesn't expire and is already
+	// carried by the disabled refund button and its tooltip. Every locked notice
+	// therefore belongs inside this guard; one placed outside it would hide a
+	// live deadline.
+	if ( ! awaitingDisputes.length ) {
+		// Special case the dispute "under review" notice which is much simpler.
+		if (
+			disputes.some(
+				( dispute ) =>
+					isUnderReview( dispute.status ) &&
+					! isInquiry( dispute.status )
+			)
+		) {
+			return (
+				<DisputeOrderLockedNotice
+					message={ __(
+						'This order has an active payment dispute. Refunds and order editing are disabled.',
+						'woocommerce-payments'
+					) }
+					disputeDetailsUrl={ disputeDetailsUrl }
+				/>
+			);
+		}
+
+		// Special case lost disputes.
+		// I suspect this is unnecessary, as any lost disputes will have already
+		// been refunded as part of `charge.dispute.closed` webhook handler.
+		// This may be dead code. Leaving in for now as this is consistent with
+		// the logic before this PR.
+		// https://github.com/Automattic/woocommerce-payments/pull/7557
+		if ( disputes.some( ( dispute ) => dispute.status === 'lost' ) ) {
+			return (
+				<DisputeOrderLockedNotice
+					message={ __(
+						'Refunds and order editing have been disabled as a result of a lost dispute.',
+						'woocommerce-payments'
+					) }
+					disputeDetailsUrl={ disputeDetailsUrl }
+				/>
+			);
+		}
+
 		return null;
 	}
+
+	// A single dispute keeps its detailed, reason-specific notice. Several are
+	// consolidated into one so the order screen isn't stacked with
+	// near-identical notices — the transaction page (one click away) breaks
+	// them down per dispute.
+	if ( awaitingDisputes.length === 1 ) {
+		const dispute = awaitingDisputes[ 0 ];
+		const dueBy = moment.unix( dispute.evidence_details.due_by ).utc();
+		return (
+			<DisputeNeedsResponseNotice
+				chargeId={ chargeId }
+				disputeReason={ dispute.reason }
+				formattedAmount={ formatExplicitCurrency(
+					dispute.amount,
+					dispute.currency
+				) }
+				isPreDisputeInquiry={ isInquiry( dispute.status ) }
+				dueBy={ dueBy }
+				countdownDays={ Math.floor( dueBy.diff( now, 'days', true ) ) }
+				disputeDetailsUrl={ disputeDetailsUrl }
+			/>
+		);
+	}
+
+	const earliestDueBy = awaitingDisputes
+		.map( ( dispute ) =>
+			moment.unix( dispute.evidence_details.due_by ).utc()
+		)
+		.reduce( ( earliest, dueBy ) =>
+			dueBy.isBefore( earliest ) ? dueBy : earliest
+		);
+	// Disputes on one charge share its currency, so summing the minor-unit
+	// amounts and formatting with the first dispute's currency is safe.
+	const totalAmount = awaitingDisputes.reduce(
+		( sum, dispute ) => sum + dispute.amount,
+		0
+	);
+	// `awaitingDisputes` can include inquiries (warning_* statuses). Only call
+	// them inquiries when every one is; a single real dispute in the mix is the
+	// more urgent framing, so the notice speaks of "disputes".
+	const isAllInquiries = awaitingDisputes.every( ( dispute ) =>
+		isInquiry( dispute.status )
+	);
 
 	return (
-		<DisputeNeedsResponseNotice
-			chargeId={ chargeId }
-			disputeReason={ dispute.reason }
+		<MultipleDisputesNeedsResponseNotice
+			disputeCount={ awaitingDisputes.length }
+			isPreDisputeInquiry={ isAllInquiries }
 			formattedAmount={ formatExplicitCurrency(
-				dispute.amount,
-				dispute.currency
+				totalAmount,
+				awaitingDisputes[ 0 ].currency
 			) }
-			isPreDisputeInquiry={ isInquiry( dispute.status ) }
-			dueBy={ dueBy }
-			countdownDays={ Math.floor( dueBy.diff( now, 'days', true ) ) }
+			dueBy={ earliestDueBy }
+			countdownDays={ Math.floor(
+				earliestDueBy.diff( now, 'days', true )
+			) }
 			disputeDetailsUrl={ disputeDetailsUrl }
 		/>
 	);
@@ -255,6 +338,99 @@ const DisputeNeedsResponseNotice = ( {
 			] }
 		>
 			{ noticeBody }
+		</InlineNotice>
+	);
+};
+
+// Consolidated notice for a charge with several disputes awaiting a response.
+// Rather than stack a full per-dispute notice for each, it sums the disputed
+// amounts and surfaces the earliest deadline; the transaction page it links to
+// breaks the disputes down individually.
+const MultipleDisputesNeedsResponseNotice = ( {
+	disputeCount,
+	isPreDisputeInquiry,
+	formattedAmount,
+	dueBy,
+	countdownDays,
+	disputeDetailsUrl,
+} ) => {
+	useEffect( () => {
+		recordEvent( 'wcpay_order_dispute_notice_view', {
+			is_inquiry: isPreDisputeInquiry,
+			dispute_reason: 'multiple',
+			due_by_days: countdownDays,
+			dispute_count: disputeCount,
+		} );
+	}, [ countdownDays, disputeCount, isPreDisputeInquiry ] );
+
+	const buttonLabel =
+		countdownDays < 1
+			? __( 'Respond today', 'woocommerce-payments' )
+			: __( 'Respond now', 'woocommerce-payments' );
+
+	const message = isPreDisputeInquiry
+		? sprintf(
+				// Translators: %1$d is the number of inquiries on the order, %2$s is the combined amount.
+				__(
+					'This order has %1$d payment inquiries totaling %2$s.',
+					'woocommerce-payments'
+				),
+				disputeCount,
+				formattedAmount
+		  )
+		: sprintf(
+				// Translators: %1$d is the number of disputes on the order, %2$s is the combined disputed amount.
+				__(
+					'This order has %1$d payment disputes totaling %2$s.',
+					'woocommerce-payments'
+				),
+				disputeCount,
+				formattedAmount
+		  );
+
+	let suffix = sprintf(
+		// Translators: %1$s is the earliest dispute due date.
+		__( 'Please respond before %1$s.', 'woocommerce-payments' ),
+		formatDateTimeFromString( dueBy.toISOString() )
+	);
+	if ( countdownDays < 7 ) {
+		const daysLeft =
+			countdownDays < 1
+				? __( '(Last day today)', 'woocommerce-payments' )
+				: sprintf(
+						// Translators: %s is the number of days left to respond to the earliest dispute.
+						_n(
+							'(%s day left)',
+							'(%s days left)',
+							countdownDays,
+							'woocommerce-payments'
+						),
+						countdownDays
+				  );
+		suffix = `${ suffix } ${ daysLeft }`;
+	}
+
+	return (
+		<InlineNotice
+			status={ countdownDays < 3 ? 'error' : 'warning' }
+			isDismissible={ false }
+			actions={ [
+				{
+					label: buttonLabel,
+					variant: 'secondary',
+					onClick: () => {
+						recordEvent(
+							'wcpay_order_dispute_notice_action_click',
+							{
+								due_by_days: countdownDays,
+							}
+						);
+						window.location = disputeDetailsUrl;
+					},
+				},
+			] }
+		>
+			<strong>{ message }</strong> { suffix }
 		</InlineNotice>
 	);
 };

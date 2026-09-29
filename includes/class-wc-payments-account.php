@@ -51,8 +51,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	const KYC_SUBMITTED_DATE_OPTION = 'wcpay_kyc_submitted_date';
 
-	const POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT = 'wcpay_post_kyc_activation_eligible';
-
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -2860,7 +2858,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Checks if the account is eligible for the review prompt (Phase 0).
+	 * Checks if the account is eligible for the review prompt.
+	 *
+	 * @deprecated 11.2.0 The in-app review prompt was removed; nothing in the plugin reads this.
 	 *
 	 * @return bool
 	 */

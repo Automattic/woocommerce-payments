@@ -178,7 +178,7 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 	}
 
 	/**
-	 * Eligibility check — mirrors the in-app banner logic.
+	 * Eligibility check — mirrors the in-app notice logic.
 	 *
 	 * @return bool
 	 */

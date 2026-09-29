@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix the TypeError possible with the "Subscription-like" plugins.

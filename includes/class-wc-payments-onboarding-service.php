@@ -934,6 +934,14 @@ class WC_Payments_Onboarding_Service {
 		update_option( self::TEST_MODE_OPTION, 'no' );
 		self::clear_account_options();
 
+		// Clear the stored flag for whether the store had WooPayments in use,
+		// so incentive eligibility is re-determined for the fresh onboarding.
+		// Deleting is safe even though WooCommerce core shares these options: if an
+		// older core copy re-freezes a stale positive from test-mode usage, the logic
+		// version marker gets it re-determined on the next evaluation. See WOOPMNT-6320.
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_OPTION_NAME );
+		delete_option( WC_Payments_Incentives_Service::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME );
+
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		$this->clear_embedded_kyc_in_progress();
@@ -944,8 +952,8 @@ class WC_Payments_Onboarding_Service {
 		// If the account is gone, everything else is too.
 		$this->database_cache->delete_all();
 
-		// Clean up the test-to-live banner state.
-		self::sync_banner_state( false );
+		// Clean up the test-to-live notice state.
+		self::sync_notice_state( false );
 	}
 
 	/**
@@ -1083,7 +1091,7 @@ class WC_Payments_Onboarding_Service {
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
 
-		self::sync_banner_state( $test_mode );
+		self::sync_notice_state( $test_mode );
 	}
 
 	/**
@@ -1103,7 +1111,7 @@ class WC_Payments_Onboarding_Service {
 			return;
 		}
 
-		self::sync_banner_state( 'yes' === $new_test_mode );
+		self::sync_notice_state( 'yes' === $new_test_mode );
 	}
 
 	/**
@@ -1655,14 +1663,14 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Maintains banner state that depends on test mode: sets/clears
+	 * Maintains notice state that depends on test mode: sets/clears
 	 * TEST_MODE_ENABLED_DATE_OPTION (test-to-live nudge clock) and drops the
 	 * test-to-live and post-KYC eligibility transients.
 	 *
 	 * @param bool $test_mode True if test mode is being enabled, false if disabled.
 	 * @return void
 	 */
-	private static function sync_banner_state( bool $test_mode ): void {
+	private static function sync_notice_state( bool $test_mode ): void {
 		if ( $test_mode ) {
 			// Preserve the original enable date on subsequent calls.
 			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
@@ -1673,7 +1681,7 @@ class WC_Payments_Onboarding_Service {
 			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 		}
 
-		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 }

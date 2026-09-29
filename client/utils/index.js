@@ -113,6 +113,8 @@ export const isInDevMode = ( fallback = false ) => {
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
 
+export { redirectTo } from './navigation';
+
 /**
  * Returns the URL to view a WooPayments document.
  *

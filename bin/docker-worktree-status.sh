@@ -1,7 +1,7 @@
 #!/bin/bash
 # bin/docker-worktree-status.sh
 # Shows status of all worktrees and their Docker environments
-# Usage: npm run worktree:status
+# Usage: pnpm run worktree:status
 
 set -e
 

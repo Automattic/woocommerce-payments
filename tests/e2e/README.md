@@ -49,9 +49,9 @@ CI coverage differences:
 
 The preferred local setup flow is:
 
-1. Run `npm install` and `composer install` if you have not already done so.
+1. Run `pnpm install` and `composer install` if you have not already done so.
 2. Run `bin/setup-e2e-local.sh` to generate `tests/e2e/config/local.env` from your local infrastructure.
-3. Run `npm run test:e2e-setup` to provision the E2E Docker environment.
+3. Run `pnpm run test:e2e-setup` to provision the E2E Docker environment.
 
 The setup script runs preflight checks before provisioning and will build the client automatically if `dist/` is missing or stale.
 
@@ -89,7 +89,7 @@ TRANSACT_PLATFORM_SERVER_REPO='/path/to/transact-platform-server or git@github.c
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
-# This value can be obtained by running `npm run listen` in your local server, which should print your webhook signature key.
+# This value can be obtained by running `pnpm run listen` in your local server, which should print your webhook signature key.
 E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
 # This should be the Stripe Account ID of a connected merchant account. For example, after onboarding an account, you can obtain the ID from WCPay Dev Tools.
 E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
@@ -154,7 +154,7 @@ E2E_WC_VERSION='<woocommerce_version>'
 ### Initialize E2E docker environment
 
 1. Generate `tests/e2e/config/local.env` with `bin/setup-e2e-local.sh`.
-2. Run `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+2. Run `pnpm run test:e2e-setup` to spin up E2E environment in docker containers.
 
 After the E2E environment is up, you can access the containers on:
 
@@ -167,28 +167,28 @@ Note: Be aware that the server port may change in the `docker-compose.e2e.yml` c
 
 There are two modes for running tests:
 
-1. Headless mode: `npm run test:e2e`. In headless mode the test runner executes all or specified specs without launching a Chromium user interface.
-2. UI mode: `npm run test:e2e-ui`. UI mode is interactive and launches a Chromium user interface. It's useful for developing, debugging, and troubleshooting failing tests. For more information about Playwright UI mode, see the [Playwright UI Mode docs](https://playwright.dev/docs/test-ui-mode#introduction).
+1. Headless mode: `pnpm run test:e2e`. In headless mode the test runner executes all or specified specs without launching a Chromium user interface.
+2. UI mode: `pnpm run test:e2e-ui`. UI mode is interactive and launches a Chromium user interface. It's useful for developing, debugging, and troubleshooting failing tests. For more information about Playwright UI mode, see the [Playwright UI Mode docs](https://playwright.dev/docs/test-ui-mode#introduction).
 
 Additional options:
 
-- Filter by path or glob: `npm run test:e2e tests/e2e/specs/**/checkout*.spec.ts`
-- Filter by test title: `npm run test:e2e -- -g "Checkout"` (or `--grep`)
+- Filter by path or glob: `pnpm run test:e2e tests/e2e/specs/**/checkout*.spec.ts`
+- Filter by test title: `pnpm run test:e2e -- -g "Checkout"` (or `--grep`)
 - Update snapshots (optionally with a filter):
-  - `npm run test:e2e -- --update-snapshots`
-  - `npm run test:e2e -- --update-snapshots tests/e2e/specs/**/deposits*.spec.ts`
+  - `pnpm run test:e2e -- --update-snapshots`
+  - `pnpm run test:e2e -- --update-snapshots tests/e2e/specs/**/deposits*.spec.ts`
 
 #### Running only a single test suite
 
-If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-ui path/to/test.spec.ts`.
+If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `pnpm run test:e2e-ui path/to/test.spec.ts`.
 
 #### Running tests in group
 
 By adding additional env variables to your `local.env` file, it is possible to run a group of tests. e.g.
 
-- Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='merchant'` to your `local.env` file, then running `npm run test:e2e-ui` runs the WooPayments merchant tests for WCPay in UI mode.
-- Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='shopper'` to your `local.env` file, then running `npm run test:e2e-ui` runs WooPayments shopper tests for WCPay in UI mode.
-- Adding just `E2E_GROUP='wcpay'` to your `local.env` file, then running `npm run test:e2e-ui` runs WooPayments merchant & shopper tests for WCPay in UI mode.
+- Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='merchant'` to your `local.env` file, then running `pnpm run test:e2e-ui` runs the WooPayments merchant tests for WCPay in UI mode.
+- Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='shopper'` to your `local.env` file, then running `pnpm run test:e2e-ui` runs WooPayments shopper tests for WCPay in UI mode.
+- Adding just `E2E_GROUP='wcpay'` to your `local.env` file, then running `pnpm run test:e2e-ui` runs WooPayments merchant & shopper tests for WCPay in UI mode.
 - Available groups are `wcpay`, `subscriptions`, and `blocks`.
 - Available branches are `merchant` and `shopper`.
 
@@ -198,31 +198,31 @@ You can also run tests using Playwright's tag filtering:
 
 ```bash
 # Run only WooCommerce Blocks tests
-npm run test:e2e -- --grep @blocks
+pnpm run test:e2e -- --grep @blocks
 
 # Run WCPay tests excluding blocks tests
-npm run test:e2e wcpay/ -- --grep-invert @blocks
+pnpm run test:e2e wcpay/ -- --grep-invert @blocks
 
 # Run all critical tests (includes blocks tests)
-npm run test:e2e -- --grep @critical
+pnpm run test:e2e -- --grep @critical
 ```
 
 It is also possible to run the groups using the relative path to the tests. e.g.
 
-- `npm run test:e2e-ui tests/e2e/specs/wcpay/merchant` runs merchant tests for WCPay in UI mode.
-- `npm run test:e2e-ui tests/e2e/specs/wcpay/shopper` runs shopper tests for WCPay in UI mode.
-- `npm run test:e2e-ui tests/e2e/specs/wcpay` runs merchant & shopper tests for WCPay in UI mode.
+- `pnpm run test:e2e-ui tests/e2e/specs/wcpay/merchant` runs merchant tests for WCPay in UI mode.
+- `pnpm run test:e2e-ui tests/e2e/specs/wcpay/shopper` runs shopper tests for WCPay in UI mode.
+- `pnpm run test:e2e-ui tests/e2e/specs/wcpay` runs merchant & shopper tests for WCPay in UI mode.
 
 Handy utility scripts for managing your E2E environment:
 
-- `npm run test:e2e-down` Stops E2E environment containers.
-- `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes.
-- `npm run test:e2e-reset` Stops containers and performs cleanup.
-- `npm run test:e2e-up` Starts containers without setting up again.
+- `pnpm run test:e2e-down` Stops E2E environment containers.
+- `pnpm run test:e2e-cleanup` Removes fetched dependencies and docker volumes.
+- `pnpm run test:e2e-reset` Stops containers and performs cleanup.
+- `pnpm run test:e2e-up` Starts containers without setting up again.
 
 ### Running on Atomic site
 
-For running E2E tests on the Atomic site, follow the same guidelines mentioned above, and add `NODE_ENV=atomic` to your `local.env` file. Then bring up your E2E environment. Lastly, run tests using `npm run test:e2e` or `npm run test:e2e-ui`.
+For running E2E tests on the Atomic site, follow the same guidelines mentioned above, and add `NODE_ENV=atomic` to your `local.env` file. Then bring up your E2E environment. Lastly, run tests using `pnpm run test:e2e` or `pnpm run test:e2e-ui`.
 
 ## Writing tests
 
@@ -235,7 +235,7 @@ Place new spec files in the appropriate directory under `tests/e2e/specs`. The d
 
 ## Debugging tests
 
-The best way to debug tests is to use the Playwright UI mode. This mode allows you to see the browser and interact with it after the test runs. You can use the locator functionality to help correctly determine the locator syntax to correctly target the HTML element you need. Lastly, you can also use `console.log()` to assist with debugging tests in UI mode. To run tests in UI mode, use the `npm run test:e2e-ui path/to/test.spec` command.
+The best way to debug tests is to use the Playwright UI mode. This mode allows you to see the browser and interact with it after the test runs. You can use the locator functionality to help correctly determine the locator syntax to correctly target the HTML element you need. Lastly, you can also use `console.log()` to assist with debugging tests in UI mode. To run tests in UI mode, use the `pnpm run test:e2e-ui path/to/test.spec` command.
 
 ### Understanding test failures and re-runs
 
@@ -376,8 +376,8 @@ This ensures comprehensive test coverage while optimizing CI execution time and 
   - Click on the details link to the right of the failed job to see the summary
   - In the job summary, click on the "Run tests, upload screenshots & logs" section
   - Click on the artifact download link at the end of the section, then extract and copy the `playwright-report` directory to the root of the WooPayments repository
-  - Run `npx playwright show-report` to open the report in a browser
+  - Run `pnpm exec playwright show-report` to open the report in a browser
   - Alternatively, after extracting the artifact you can open the `playwright-report/index.html` file in a browser
 - Local test runs
   - Local test reports will output in the `playwright-report` directory
-  - Run `npx playwright show-report` to open the report in a browser
+  - Run `pnpm exec playwright show-report` to open the report in a browser

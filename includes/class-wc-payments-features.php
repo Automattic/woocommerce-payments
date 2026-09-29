@@ -360,9 +360,25 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether the Reports area is enabled. Disabled by default.
 	 *
+	 * Resolution order:
+	 *  1. The server's per-account flag, when it has an opinion. `false` is an explicit kill switch and
+	 *     deliberately beats the local option, so we can disable the area for a single account while we
+	 *     investigate an issue.
+	 *  2. Otherwise the local feature flag, which merchants can set themselves via the documented snippet
+	 *     or WP CLI.
+	 *
+	 * Note this is the only flag here where the server can act as an enabler rather than only as a veto.
+	 *
 	 * @return bool
 	 */
 	public static function is_reports_area_enabled(): bool {
+		$account     = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		$server_flag = is_array( $account ) ? ( $account['reports_area_enabled'] ?? null ) : null;
+
+		if ( null !== $server_flag ) {
+			return (bool) $server_flag;
+		}
+
 		return '1' === get_option( self::REPORTS_AREA_FLAG_NAME, '0' );
 	}
 

@@ -2,7 +2,7 @@
  * External dependencies
  */
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -48,12 +48,7 @@ const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 	const { protectionSettingsUI } = useContext(
 		FraudPreventionSettingsContext
 	);
-	const [ isBlocking, setIsBlocking ] = useState(
-		protectionSettingsUI[ setting ]?.block ?? false
-	);
-	useEffect( () => {
-		setIsBlocking( protectionSettingsUI[ setting ]?.block ?? false );
-	}, [ protectionSettingsUI, setting ] );
+	const isBlocking = protectionSettingsUI[ setting ]?.block ?? false;
 
 	const supportedCountriesType = getSupportedCountriesType();
 	const settingCountries = getSettingCountries();

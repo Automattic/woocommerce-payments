@@ -153,12 +153,15 @@
 
 img {
 	&.payment-method__icon {
-		border: 1px solid rgba( 0, 0, 0, 0.25 );
-		border-radius: 4px;
+		// box-shadow ring, not a `border`: takes no layout space and hugs the
+		// badge's baked rounded corner (a border shifts the box and leaves a
+		// hairline gap). Radius tracks the baked rx=3 corner (3/64, 3/40).
+		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.07 );
+		border-radius: 4.6875% / 7.5%;
 		display: block;
 
 		&.no-border {
-			border: none;
+			box-shadow: none;
 			border-radius: 0;
 		}
 	}

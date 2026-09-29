@@ -165,11 +165,13 @@ function InlineLabelSelect< ItemType extends SelectItem >( {
 	);
 
 	// We need this here, because the null active descendant is not fully ARIA compliant.
-	if (
-		menuProps[ 'aria-activedescendant' ]?.startsWith( 'downshift-null' )
-	) {
-		delete menuProps[ 'aria-activedescendant' ];
-	}
+	const {
+		'aria-activedescendant': ariaActiveDescendant,
+		...menuPropsWithoutDescendant
+	} = menuProps;
+	const safeMenuProps = ariaActiveDescendant?.startsWith( 'downshift-null' )
+		? menuPropsWithoutDescendant
+		: menuProps;
 	return (
 		<div
 			className={ clsx(
@@ -210,7 +212,7 @@ function InlineLabelSelect< ItemType extends SelectItem >( {
 				/>
 			</Button>
 			{ /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */ }
-			<ul { ...menuProps } onKeyDown={ onKeyDownHandler }>
+			<ul { ...safeMenuProps } onKeyDown={ onKeyDownHandler }>
 				{ isOpen &&
 					items.map( ( item, index ) => (
 						// eslint-disable-next-line react/jsx-key

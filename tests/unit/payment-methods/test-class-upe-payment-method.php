@@ -87,12 +87,10 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 		];
 
@@ -199,16 +197,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			'Payment method supported in a single country' => [
 				'payment_method_id' => 'bancontact',
 				'expected_result'   => [ Country_Code::BELGIUM ],
-			],
-			'Payment method supported in multiple countries' => [
-				'payment_method_id' => 'sofort',
-				'expected_result'   => [
-					Country_Code::AUSTRIA,
-					Country_Code::BELGIUM,
-					Country_Code::GERMANY,
-					Country_Code::NETHERLANDS,
-					Country_Code::SPAIN,
-				],
 			],
 			'Payment method with domestic restrictions (US)' => [
 				'payment_method_id' => 'affirm',

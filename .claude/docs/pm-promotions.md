@@ -1,6 +1,6 @@
 # Payment Method (PM) Promotions
 
-**Last updated:** 2025-12-05
+**Last updated:** 2026-08-21
 
 ## Overview
 
@@ -536,3 +536,7 @@ if ( badgePromotion ) {
 |------------------|---------|
 | `wcpay_pm_promotions` | Transient cache for promotions |
 | `_wcpay_pm_promotion_dismissals` | Option: [id => timestamp] |
+
+## Related Docs
+
+- `.claude/docs/payment-method-lifecycle.md` — the enablement machinery behind a promotion: Stripe capability vs. `upe_enabled_payment_method_ids`, and the status values that decide whether a method can be toggled at all. Activating a promotion also requests the underlying capability, both client-side and on the platform.

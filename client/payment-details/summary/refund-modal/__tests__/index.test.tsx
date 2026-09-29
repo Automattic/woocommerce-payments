@@ -30,6 +30,12 @@ const getOpenInquiryDispute = (): any => ( {
 	reason: 'fraudulent',
 } );
 
+const getWonDispute = (): any => ( {
+	id: 'dp_won_1',
+	status: 'won',
+	reason: 'fraudulent',
+} );
+
 const mockUsePaymentIntentWithChargeFallback =
 	usePaymentIntentWithChargeFallback as jest.MockedFunction<
 		typeof usePaymentIntentWithChargeFallback
@@ -194,6 +200,56 @@ describe( 'RefundModal', () => {
 				dispute_id: dispute.id,
 				dispute_status: dispute.status,
 				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
+	} );
+
+	test( 'uses the initiating dispute over the singular charge.dispute', () => {
+		// The charge's singular dispute is already won, but the merchant clicked
+		// "Issue refund" on a separate open inquiry pane.
+		const inquiry = getOpenInquiryDispute();
+		const charge = { ...getMockCharge(), dispute: getWonDispute() };
+
+		render(
+			<RefundModal
+				charge={ charge as Charge }
+				dispute={ inquiry }
+				formattedAmount={ 'USD 15' }
+				onModalClose={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.getByText( /Issuing a refund will close the inquiry/i )
+		).toBeInTheDocument();
+	} );
+
+	test( 'records the initiating dispute, not the singular charge.dispute', async () => {
+		const inquiry = getOpenInquiryDispute();
+		const charge = { ...getMockCharge(), dispute: getWonDispute() };
+
+		render(
+			<RefundModal
+				charge={ charge as Charge }
+				dispute={ inquiry }
+				formattedAmount={ 'USD 15' }
+				onModalClose={ jest.fn() }
+			/>
+		);
+
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /Refund transaction/i } )
+			);
+		} );
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_inquiry_refund_click',
+			{
+				dispute_id: 'dp_inquiry_1',
+				dispute_status: 'warning_needs_response',
+				dispute_reason: 'fraudulent',
 				on_page: 'transaction_details',
 			}
 		);

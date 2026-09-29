@@ -329,6 +329,54 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
 	}
 
+	public function test_is_reports_area_enabled_returns_true_when_server_enables_it() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'reports_area_enabled' => true ] );
+
+		$this->assertTrue( WC_Payments_Features::is_reports_area_enabled() );
+	}
+
+	public function test_is_reports_area_enabled_returns_false_when_server_disables_it_despite_local_flag() {
+		// The per-account kill switch must beat the merchant's own opt-in.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'reports_area_enabled' => false ] );
+		$this->set_feature_flag_option( WC_Payments_Features::REPORTS_AREA_FLAG_NAME, '1' );
+
+		$this->assertFalse( WC_Payments_Features::is_reports_area_enabled() );
+
+		$this->clear_feature_flag_options( [ WC_Payments_Features::REPORTS_AREA_FLAG_NAME ] );
+	}
+
+	public function test_is_reports_area_enabled_falls_back_to_local_flag_when_server_has_no_opinion() {
+		// Server sends null - the documented snippet / WP CLI opt-in must still work.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'reports_area_enabled' => null ] );
+		$this->set_feature_flag_option( WC_Payments_Features::REPORTS_AREA_FLAG_NAME, '1' );
+
+		$this->assertTrue( WC_Payments_Features::is_reports_area_enabled() );
+
+		$this->clear_feature_flag_options( [ WC_Payments_Features::REPORTS_AREA_FLAG_NAME ] );
+	}
+
+	public function test_is_reports_area_enabled_falls_back_to_local_flag_when_key_is_missing() {
+		// Older server / account payload without the key - behaves exactly as it does today.
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+		$this->set_feature_flag_option( WC_Payments_Features::REPORTS_AREA_FLAG_NAME, '1' );
+
+		$this->assertTrue( WC_Payments_Features::is_reports_area_enabled() );
+
+		$this->clear_feature_flag_options( [ WC_Payments_Features::REPORTS_AREA_FLAG_NAME ] );
+	}
+
+	public function test_is_reports_area_enabled_returns_false_by_default() {
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+
+		$this->assertFalse( WC_Payments_Features::is_reports_area_enabled() );
+	}
+
+	public function test_is_reports_area_enabled_returns_false_when_account_cache_is_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( null );
+
+		$this->assertFalse( WC_Payments_Features::is_reports_area_enabled() );
+	}
+
 	private function setup_enabled_flags( array $enabled_flags ) {
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			add_filter(

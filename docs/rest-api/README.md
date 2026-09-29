@@ -8,5 +8,5 @@
 -   Requires Docker and Node.js.
 -   `cd docs/rest-api` to change to this directory.
 -   `./build.sh` to build the docs via a Docker container.
--   `npx serve build` to serve the built HTML at `localhost:3000`.
--   `npx nodemon -w ./source -e "md" --exec ./build.sh` to watch and rebuild the docs on change.
+-   `pnpm dlx serve build` to serve the built HTML at `localhost:3000`.
+-   `pnpm dlx nodemon -w ./source -e "md" --exec ./build.sh` to watch and rebuild the docs on change.

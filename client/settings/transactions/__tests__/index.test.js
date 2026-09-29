@@ -172,7 +172,7 @@ describe( 'Settings - Transactions', () => {
 	it( 'display support email and phone inputs', async () => {
 		render( <Transactions /> );
 		expect(
-			screen.getByLabelText( 'Support phone number' )
+			screen.getByLabelText( 'Support phone number (required)' )
 		).toBeInTheDocument();
 		expect( screen.getByLabelText( 'Support email' ) ).toBeInTheDocument();
 	} );

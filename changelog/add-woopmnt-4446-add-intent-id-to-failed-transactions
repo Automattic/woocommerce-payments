@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Store the payment intent ID on orders when a payment fails, improving transaction traceability and webhook matching.

@@ -140,7 +140,7 @@ class CurrencySwitcherBlock {
 		$widget_content  = '<form>';
 		$widget_content .= $this->get_get_params();
 		$widget_content .= '<div class="currency-switcher-holder" style="' . esc_attr( $div_styles ) . '">';
-		$widget_content .= '<select name="currency" class="js-woopayments-currency-switcher" onchange="this.form.submit()" style="' . esc_attr( $select_styles ) . '">';
+		$widget_content .= '<select name="currency" class="js-woopayments-currency-switcher" aria-label="' . esc_attr__( 'Select your currency', 'woocommerce-payments' ) . '" onchange="this.form.submit()" style="' . esc_attr( $select_styles ) . '">';
 
 		foreach ( $enabled_currencies as $currency ) {
 			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );
@@ -164,7 +164,7 @@ class CurrencySwitcherBlock {
 	 */
 	private function render_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ): string {
 		$code        = $currency->get_code();
-		$same_symbol = html_entity_decode( $currency->get_symbol() ) === $code;
+		$same_symbol = \WC_Payments_Utils::decode_html_entities( $currency->get_symbol() ) === $code;
 		$text        = $code;
 		$selected    = $this->multi_currency->get_selected_currency()->code === $code ? 'selected' : '';
 

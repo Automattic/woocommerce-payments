@@ -8,8 +8,12 @@ import { generateCSVDataFromTable } from '@woocommerce/csv-export';
 /**
  * Internal dependencies
  */
-import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+import {
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'multi-currency/interface/functions';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
+import { getDisplayedAmount } from './rows';
 import type { BalanceRow } from './rows';
 import { getBalanceReportIdentity, getRowLabel } from './utils';
 
@@ -67,7 +71,17 @@ export const getBalanceCSV = ( {
 				},
 				{ value: row.key, display: row.key },
 				{ value: rowLabel, display: rowLabel },
-				{ value: row.getAmount( summary ), display: '' },
+				{
+					// Rescaled from minor to major units, with the same
+					// `displayNegative` sign flip the on-screen and print tables
+					// apply (e.g. Payouts), so a summed CSV column matches what
+					// the merchant sees. See the row contract in rows.ts.
+					value: formatExportAmount(
+						getDisplayedAmount( row, row.getAmount( summary ) ),
+						currency
+					),
+					display: '',
+				},
 				{ value: count ?? '', display: '' },
 				{ value: currency, display: currency },
 				{ value: periodStart, display: periodStart },
@@ -78,46 +92,22 @@ export const getBalanceCSV = ( {
 };
 
 /**
- * Formats a Balance summary amount in the "code-first with leading sign" style
- * used by the Balance report Figma design — e.g. `+USD 1,234.00` or `-USD 80.00`.
+ * Formats a Balance summary amount in the standard WooPayments currency style,
+ * with an explicit leading `+` on inflows — e.g. `+$1,234.00 USD` or
+ * `-$80.00 USD`.
  *
- * The default `formatExplicitCurrency` output puts the symbol before the amount
- * and the ISO code after it (`$1,234.00 USD`). Balance rows show every amount
- * with an explicit sign and the ISO code in front, with no currency symbol, so
- * that running totals are easy to scan and reconciliation against bank
- * statements doesn't require eyeballing past a `$`.
+ * `formatExplicitCurrency` already renders the leading `-` on outflows, so the
+ * `+` on inflows is the only Balance-specific part: the report states the
+ * direction of every movement rather than leaving it implied.
+ *
+ * Zero renders without a sign so reconciliation reports don't pin a misleading
+ * positive or negative direction onto an empty line.
  */
 export const formatBalanceAmount = (
 	amount: number,
 	currencyCode: string
 ): string => {
-	const upperCode = currencyCode.toUpperCase();
-	const isNegative = amount < 0;
-	const isZero = amount === 0;
-	const absoluteAmount = isNegative ? -amount : amount;
+	const formatted = formatExplicitCurrency( amount, currencyCode );
 
-	// `skipSymbol = true` removes the leading `$` (etc.) while keeping the
-	// currency utility's locale-aware number formatting. Depending on explicit
-	// pricing settings, the helper may also append a trailing ISO code.
-	const formatted = formatExplicitCurrency( absoluteAmount, upperCode, true );
-
-	// `formatExplicitCurrency` returns the value in one of two shapes depending
-	// on whether explicit pricing is enabled in settings:
-	//   • "1,234.00 USD"     — explicit pricing on (the common case)
-	//   • "1,234.00"         — explicit pricing off
-	// Move the ISO code to the front to match the Figma "code-first" pattern,
-	// and drop any stray spaces left behind by the symbol removal.
-	const withoutCode = formatted
-		.replace( new RegExp( `\\s*${ upperCode }\\s*$` ), '' )
-		.trim();
-
-	// Zero balances render without a sign so reconciliation reports don't pin a
-	// misleading positive or negative direction onto an empty line.
-	if ( isZero ) {
-		return `${ upperCode } ${ withoutCode }`;
-	}
-
-	const sign = isNegative ? '-' : '+';
-
-	return `${ sign }${ upperCode } ${ withoutCode }`;
+	return amount > 0 ? `+${ formatted }` : formatted;
 };

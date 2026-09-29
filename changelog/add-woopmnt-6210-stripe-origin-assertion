@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Add a client-side origin assertion that blocks checkout when Stripe.js is loaded from an unexpected origin, as defense-in-depth against skimmers that repoint the script handle to a look-alike domain.

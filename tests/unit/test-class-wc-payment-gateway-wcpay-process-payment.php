@@ -221,6 +221,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
 
 		parent::tear_down();
 	}
@@ -329,6 +330,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( $this->return_url, $result['redirect'] );
+
+		// Assert: The paid intent id is remembered in the session for the order confirmation page.
+		$this->assertSame( 'pi_mock', WC()->session->get( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY ) );
 	}
 
 	/**
@@ -1058,7 +1062,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
-			'#wcpay-confirm-pi:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'#wcpay-confirm-pi:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order_id ),
 			$result['redirect']
 		);
 	}
@@ -1289,7 +1293,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
-			'#wcpay-confirm-si:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'#wcpay-confirm-si:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order_id ),
 			$result['redirect']
 		);
 	}
@@ -1750,6 +1754,52 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$result = $this->mock_wcpay_gateway->process_payment( $order_id );
 
 		// Assert: the result of check_intent_attached_to_order_succeeded.
+		$this->assertSame( $response, $result );
+	}
+
+	/**
+	 * The order is not already paid, so payment processing continues.
+	 */
+	public function test_check_order_already_paid_returning_null_continues_process_payment() {
+		// Arrange order.
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_order_already_paid' )
+			->with( wc_get_order( $order_id ) )
+			->willReturn( null );
+
+		// Assert: the payment process continues.
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		// Act: process the order.
+		$this->mock_wcpay_gateway->process_payment( $order_id );
+	}
+
+	public function test_check_order_already_paid_return_redirection() {
+		$response = [ 'dummy_redirect' => 1 ];
+
+		// Arrange order.
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+
+		// Arrange: The service will return a response.
+		$this->mock_dpps->expects( $this->once() )
+			->method( 'check_order_already_paid' )
+			->with( wc_get_order( $order_id ) )
+			->willReturn( $response );
+
+		// Assert: no call to the server to create and confirm a new intention.
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0 );
+
+		// Act: process the order but redirect instead of charging again.
+		$result = $this->mock_wcpay_gateway->process_payment( $order_id );
+
+		// Assert: the result of check_order_already_paid.
 		$this->assertSame( $response, $result );
 	}
 
