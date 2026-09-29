@@ -9,6 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
@@ -2429,6 +2430,63 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$result = $this->mock_wcpay_gateway->process_payment_for_order( null, $payment_information );
 
 		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	/**
+	 * @dataProvider provider_customer_initiated_saved_method_recovery
+	 */
+	public function test_customer_initiated_saved_method_recovery( $owner_id, $should_recover ) {
+		$user_id = self::factory()->user->create();
+		wp_set_current_user( $user_id );
+		$order = WC_Helper_Order::create_order( $user_id );
+		$token = WC_Helper_Token::create_token( 'pm_saved', $user_id );
+
+		$payment_information = new WCPay\Payment_Information( '', $order, null, $token, null, null, null, '', 'card', 'cus_deleted' );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_owner' );
+		$this->mock_customer_service->expects( $this->never() )->method( 'recreate_customer_for_user' );
+		$this->mock_wcpay_request(
+			Get_Request::class,
+			1,
+			'pm_saved',
+			[
+				'id'       => 'pm_saved',
+				'customer' => $owner_id,
+			]
+		);
+
+		$request       = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, $should_recover ? 2 : 1 );
+		$missing_error = new API_Exception( 'No such customer: cus_deleted', 'resource_missing', 400 );
+		if ( $should_recover ) {
+			$intent = WC_Helper_Intention::create_intention(
+				[
+					'customer_id'       => 'cus_owner',
+					'payment_method_id' => 'pm_saved',
+				]
+			);
+			$request->expects( $this->exactly( 2 ) )->method( 'set_customer' )->withConsecutive( [ 'cus_deleted' ], [ 'cus_owner' ] );
+			$request->method( 'format_response' )->willReturnOnConsecutiveCalls( $this->throwException( $missing_error ), $intent );
+			$this->mock_order_service->expects( $this->exactly( 2 ) )->method( 'set_customer_id_for_order' )->withConsecutive( [ $order, 'cus_deleted' ], [ $order, 'cus_owner' ] );
+
+			$result = $this->mock_wcpay_gateway->process_payment_for_order( null, $payment_information );
+			$this->assertSame( 'success', $result['result'] );
+		} else {
+			$request->method( 'format_response' )->willThrowException( $missing_error );
+			$this->mock_order_service->expects( $this->once() )->method( 'set_customer_id_for_order' )->with( $order, 'cus_deleted' );
+			try {
+				$this->mock_wcpay_gateway->process_payment_for_order( null, $payment_information );
+				$this->fail( 'A mismatched saved method owner must stop checkout recovery.' );
+			} catch ( API_Exception $e ) {
+				$this->assertSame( 'wcpay_saved_payment_method_customer_mismatch', $e->get_error_code() );
+			}
+		}
+	}
+
+	public function provider_customer_initiated_saved_method_recovery() {
+		return [
+			'owner matches' => [ 'cus_owner', true ],
+			'owner differs' => [ 'cus_other', false ],
+		];
 	}
 
 	/**
