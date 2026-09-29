@@ -594,8 +594,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 		$this->add_token_to_order( $subscription, $renewal_token );
 
-		// A paid renewal can replace the subscription's stale customer only when its
-		// charged method is attached to that same customer on Stripe.
+		// A paid renewal can replace the subscription's stale customer only when it charged the saved token.
 		$renewal_customer_id = $this->order_service->get_customer_id_for_order( $renewal_order );
 		if ( ! $renewal_order->is_paid()
 			|| ! $renewal_customer_id
@@ -604,9 +603,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		$owner_id = $this->get_attached_payment_method_customer( $renewal_token->get_token() );
+		$payment_method_id = $renewal_token->get_token();
+		if ( preg_match( '/^(?:card|src)_\w{1,250}$/', $payment_method_id ) ) {
+			// The paid renewal verifies legacy tokens; only PaymentMethods have a direct owner lookup.
+			$owner_id = preg_match( '/^cus_[A-Za-z0-9_]+$/', $renewal_customer_id ) ? $renewal_customer_id : null;
+		} else {
+			$owner_id = $this->get_attached_payment_method_customer( $payment_method_id );
+		}
 		if ( $renewal_customer_id === $owner_id ) {
-			$this->update_subscription_customer_if_token_matches( $subscription, $renewal_token->get_token(), $owner_id );
+			$this->update_subscription_customer_if_token_matches( $subscription, $payment_method_id, $owner_id );
 		}
 	}
 

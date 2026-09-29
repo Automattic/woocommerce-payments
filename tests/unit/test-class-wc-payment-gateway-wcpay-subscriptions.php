@@ -315,6 +315,52 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'pm_replacement', $last_token->get_token() );
 	}
 
+	/**
+	 * @dataProvider provider_legacy_saved_method_ids
+	 */
+	public function test_update_failing_payment_method_repairs_legacy_customer_after_paid_manual_renewal( $payment_method_id ) {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( $payment_method_id, self::USER_ID );
+		$this->order_service->set_customer_id_for_order( $subscription, 'cus_deleted' );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_owner' );
+		$this->order_service->set_payment_method_id_for_order( $renewal_order, $payment_method_id );
+		$renewal_order->add_payment_token( $token );
+		$renewal_order->update_status( 'processing' );
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( 'cus_owner', $this->order_service->get_customer_id_for_order( $subscription ) );
+		$this->assertContains( $token->get_id(), $subscription->get_payment_tokens() );
+	}
+
+	/**
+	 * @dataProvider provider_unverified_legacy_manual_renewals
+	 */
+	public function test_update_failing_payment_method_keeps_customer_without_verified_legacy_renewal( $status, $charged_method_id, $renewal_customer_id ) {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'card_legacy', self::USER_ID );
+		$this->order_service->set_customer_id_for_order( $subscription, 'cus_deleted' );
+		$this->order_service->set_customer_id_for_order( $renewal_order, $renewal_customer_id );
+		$renewal_order->add_payment_token( $token );
+		$renewal_order->update_status( $status );
+		$this->order_service->set_payment_method_id_for_order( $renewal_order, $charged_method_id );
+		$this->assertSame( $charged_method_id, $this->order_service->get_payment_method_id_for_order( $renewal_order ) );
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertSame( 'cus_deleted', $this->order_service->get_customer_id_for_order( $subscription ) );
+	}
+
+	public function provider_unverified_legacy_manual_renewals() {
+		return [
+			'unpaid'           => [ 'pending', 'card_legacy', 'cus_owner' ],
+			'different method' => [ 'processing', 'card_other', 'cus_owner' ],
+			'invalid customer' => [ 'processing', 'card_legacy', 'not_customer' ],
+		];
+	}
+
 	public function test_update_failing_payment_method_keeps_subscription_customer_when_owner_differs() {
 		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
 		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
