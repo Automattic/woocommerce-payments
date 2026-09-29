@@ -610,6 +610,83 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'processing', $renewal_order->get_status() );
 	}
 
+	public function test_scheduled_subscription_payment_retries_stale_customer_with_user_customer() {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( self::USER_ID )
+			->willReturn( self::CUSTOMER_ID );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'recreate_customer_for_user' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'set_customer' )
+			->withConsecutive( [ 'cus_stale' ], [ 'cus_mock' ] );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) ),
+				WC_Helper_Intention::create_intention()
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'processing', $renewal_order->get_status() );
+		$this->assertEquals( 'cus_mock', $renewal_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( 'cus_mock', $subscription->get_meta( '_stripe_customer_id', true ) );
+	}
+
+	public function test_scheduled_subscription_payment_does_not_recreate_customer_when_user_customer_is_missing() {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_stale' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'recreate_customer_for_user' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+		$this->assertEquals( 'cus_stale', $subscription->get_meta( '_stripe_customer_id', true ) );
+	}
+
+	public function test_scheduled_subscription_payment_keeps_stale_customer_when_retry_fails() {
+		list( $renewal_order, $subscription ) = $this->create_renewal_with_stale_customer();
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( self::CUSTOMER_ID );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_stale', 'resource_missing', 400 ) ),
+				$this->throwException( new API_Exception( 'The PaymentMethod does not belong to the Customer you supplied.', 'invalid_request_error', 400 ) )
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+		$this->assertEquals( 'cus_stale', $renewal_order->get_meta( '_stripe_customer_id', true ) );
+		$this->assertEquals( 'cus_stale', $subscription->get_meta( '_stripe_customer_id', true ) );
+	}
+
 	public function test_scheduled_subscription_payment_fails_when_token_is_missing() {
 		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 
@@ -1516,6 +1593,23 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 				return $return_value;
 			}
 		);
+	}
+
+	/**
+	 * Creates a renewal order paid with a saved card, whose subscription carries a customer Stripe no longer has.
+	 *
+	 * @return array The renewal order and its subscription.
+	 */
+	private function create_renewal_with_stale_customer() {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID ) );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_stale' );
+
+		$subscription = new WC_Subscription();
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_stale' );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => $subscription ] );
+
+		return [ $renewal_order, $subscription ];
 	}
 
 	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {

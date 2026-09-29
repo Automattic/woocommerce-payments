@@ -1887,7 +1887,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id, $payment_information );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -2005,7 +2005,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id, $payment_information );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -5422,22 +5422,44 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Sends an intent request with automatic recovery for missing Stripe customers.
 	 *
 	 * If the request fails with a `resource_missing` error referencing a customer,
-	 * the customer is recreated and the request is retried.
+	 * a saved payment method is retried with the user's customer, and fresh
+	 * payment details are retried with a recreated customer.
 	 *
-	 * @param mixed    $request     The intent request object (payment or setup).
-	 * @param WC_Order $order       The order being processed.
-	 * @param WP_User  $user        The user associated with the order.
-	 * @param string   $customer_id The current Stripe customer ID (updated by reference on recovery).
+	 * @param mixed               $request             The intent request object (payment or setup).
+	 * @param WC_Order            $order               The order being processed.
+	 * @param WP_User             $user                The user associated with the order.
+	 * @param string              $customer_id         The current Stripe customer ID (updated by reference on recovery).
+	 * @param Payment_Information $payment_information The payment details used by the request.
 	 *
 	 * @return mixed The intent response.
 	 * @throws API_Exception If the error is not a missing customer error.
 	 */
-	private function send_intent_request_with_customer_recovery( $request, WC_Order $order, WP_User $user, string &$customer_id ) {
+	private function send_intent_request_with_customer_recovery( $request, WC_Order $order, WP_User $user, string &$customer_id, Payment_Information $payment_information ) {
 		try {
 			return $request->send();
 		} catch ( API_Exception $e ) {
 			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
 				throw $e;
+			}
+
+			if ( $payment_information->is_using_saved_payment_method() ) {
+				// A new customer owns no payment methods, so recreating one can't save this payment
+				// and would point the user at an empty customer, hiding their saved cards.
+				// Renewals can carry a stale customer copied from the subscription, so retry with
+				// the user's own customer; Stripe rejects the retry if the method belongs to someone else.
+				$stale_customer_id = $customer_id;
+				$user_customer_id  = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+				if ( ! $user_customer_id || $user_customer_id === $stale_customer_id ) {
+					throw $e;
+				}
+
+				Logger::info( 'Customer not found during intent creation. Retrying with the customer linked to the user.' );
+				$request->set_customer( $user_customer_id );
+				$intent      = $request->send();
+				$customer_id = $user_customer_id;
+				$this->order_service->set_customer_id_for_order( $order, $customer_id );
+				$this->replace_stale_subscription_customer_id( $order, $stale_customer_id, $customer_id );
+				return $intent;
 			}
 
 			Logger::info( 'Customer not found during intent creation. Recreating customer and retrying.' );

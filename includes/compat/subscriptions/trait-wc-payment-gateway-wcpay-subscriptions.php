@@ -1423,6 +1423,28 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Replaces a stale Stripe customer ID on the subscriptions of a renewal order,
+	 * so the next renewal doesn't start from the missing customer again.
+	 *
+	 * @param WC_Order $renewal_order     The renewal order that was just charged.
+	 * @param string   $stale_customer_id The customer ID Stripe could not find.
+	 * @param string   $customer_id       The customer ID Stripe accepted.
+	 */
+	private function replace_stale_subscription_customer_id( $renewal_order, string $stale_customer_id, string $customer_id ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
+			return;
+		}
+
+		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+			if ( $subscription->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true ) !== $stale_customer_id ) {
+				continue;
+			}
+			$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $customer_id );
+			$subscription->save_meta_data();
+		}
+	}
+
+	/**
 	 * Propagate the order's payment method and title to any subscriptions created from it.
 	 *
 	 * When an order flows through Express Checkout (Amazon Pay in particular), the subscription
