@@ -56,6 +56,21 @@ class WC_Payments_Utils {
 	];
 
 	/**
+	 * Decode HTML entities consistently across supported PHP versions.
+	 *
+	 * PHP 8.1 changed the default flags. Specify those defaults explicitly so
+	 * quotes and invalid character sequences are handled consistently on older PHP versions too.
+	 *
+	 * @todo Simplify this helper when PHP 8.1 becomes the minimum supported version.
+	 *
+	 * @param string $value Text containing HTML entities.
+	 * @return string Decoded text.
+	 */
+	public static function decode_html_entities( string $value ): string {
+		return html_entity_decode( $value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
+	}
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -788,7 +803,7 @@ class WC_Payments_Utils {
 					'The selected payment method requires a total amount of at least %s.',
 					'woocommerce-payments'
 				),
-				wp_strip_all_tags( html_entity_decode( $price ) )
+				wp_strip_all_tags( self::decode_html_entities( $price ) )
 			);
 		} elseif ( $e instanceof API_Exception && 'amount_too_large' === $e->get_error_code() ) {
 			$error_message = $e->getMessage();
@@ -1197,7 +1212,7 @@ class WC_Payments_Utils {
 	public static function format_currency( float $amount, string $currency ): string {
 		$currency = strtoupper( $currency );
 
-		$formatted = html_entity_decode(
+		$formatted = self::decode_html_entities(
 			wp_strip_all_tags(
 				wc_price(
 					$amount,
@@ -1232,7 +1247,7 @@ class WC_Payments_Utils {
 			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
 		);
 
-		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
+		$formatted_amount = self::decode_html_entities( wp_strip_all_tags( $formatted_amount ) );
 
 		if ( $skip_symbol ) {
 			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );

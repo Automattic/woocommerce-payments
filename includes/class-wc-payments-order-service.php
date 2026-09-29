@@ -71,6 +71,19 @@ class WC_Payments_Order_Service {
 	const INTENTION_STATUS_META_KEY = '_intention_status';
 
 	/**
+	 * Intent statuses that are terminal: Stripe never transitions an intent back to
+	 * `requires_capture` once it reaches one of these, so a cached `_intention_status`
+	 * meta of one of these values proves there is no open authorization left to capture,
+	 * without needing a live intent lookup.
+	 *
+	 * @const string[]
+	 */
+	const TERMINAL_INTENT_STATUSES = [
+		Intent_Status::SUCCEEDED,
+		Intent_Status::CANCELED,
+	];
+
+	/**
 	 * Meta key used to store the charge risk level.
 	 *
 	 * @const string
@@ -1794,7 +1807,7 @@ class WC_Payments_Order_Service {
 		$order = new WC_Order( $order_id );
 		if ( null !== $order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id ) {
+			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );
@@ -1849,7 +1862,7 @@ class WC_Payments_Order_Service {
 
 		if ( null !== $order ) {
 			$intent_id = $this->get_intent_id_for_order( $order );
-			if ( null !== $intent_id && '' !== $intent_id ) {
+			if ( null !== $intent_id && '' !== $intent_id && ! in_array( $this->get_intention_status_for_order( $order ), self::TERMINAL_INTENT_STATUSES, true ) ) {
 				try {
 					$request = Get_Intention::create( $intent_id );
 					$request->set_hook_args( $order );

@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Proper default sort params for the `payments/deposits` and `payments/documents` REST API paths.
