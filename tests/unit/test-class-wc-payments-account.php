@@ -1298,6 +1298,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$gateway->update_option( 'enabled', '' );
 		$gateway->update_option( 'test_mode', '' );
 
+		// No retired reminder clock has started.
+		delete_option( 'wcpay_kyc_submitted_date' );
+
 		// Assert.
 		// We should redirect to the Overview page, not the Connect page.
 		$this->mock_redirect_service
@@ -1328,6 +1331,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// The state transient is deleted.
 		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT ) );
+
+		// The retired reminder clock is not started.
+		$this->assertFalse( get_option( 'wcpay_kyc_submitted_date' ) );
 	}
 
 	public function test_maybe_handle_onboarding_finalize_connection_via_non_connect_link_success_live_account() {

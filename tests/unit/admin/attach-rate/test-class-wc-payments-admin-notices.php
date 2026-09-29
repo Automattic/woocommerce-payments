@@ -65,6 +65,9 @@ class WC_Payments_Admin_Notices_Test extends WCPAY_UnitTestCase {
 		foreach ( $notices as $notice ) {
 			$this->assert_action_registered( 'admin_init', [ $notice, 'hide_notice' ] );
 		}
+
+		// The retired notices' asset handles stay registered for extensions that depend on them.
+		$this->assertSame( 9, has_action( 'admin_enqueue_scripts', [ 'WC_Payments_Admin_Notices', 'register_retired_notice_assets' ] ) );
 	}
 
 	/**
