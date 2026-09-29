@@ -1596,7 +1596,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Creates a renewal order paid with a saved card, whose subscription carries a customer Stripe no longer has.
+	 * Creates a saved-card renewal whose subscription has a missing Stripe customer.
 	 *
 	 * @return array The renewal order and its subscription.
 	 */

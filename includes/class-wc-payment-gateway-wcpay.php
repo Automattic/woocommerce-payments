@@ -5421,9 +5421,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Sends an intent request with automatic recovery for missing Stripe customers.
 	 *
-	 * If the request fails with a `resource_missing` error referencing a customer,
-	 * a saved payment method is retried with the user's customer, and fresh
-	 * payment details are retried with a recreated customer.
+	 * If Stripe can't find the customer, retries with the user's customer for saved
+	 * payment methods, or with a new customer otherwise.
 	 *
 	 * @param mixed               $request             The intent request object (payment or setup).
 	 * @param WC_Order            $order               The order being processed.
@@ -5443,10 +5442,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
-				// A new customer owns no payment methods, so recreating one can't save this payment
-				// and would point the user at an empty customer, hiding their saved cards.
-				// Renewals can carry a stale customer copied from the subscription, so retry with
-				// the user's own customer; Stripe rejects the retry if the method belongs to someone else.
+				// A new customer has no saved cards, so it can't pay with this one.
+				// Stripe rejects the retry if the card isn't the user's.
 				$stale_customer_id = $customer_id;
 				$user_customer_id  = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 				if ( ! $user_customer_id || $user_customer_id === $stale_customer_id ) {

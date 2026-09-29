@@ -1423,12 +1423,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Replaces a stale Stripe customer ID on the subscriptions of a renewal order,
-	 * so the next renewal doesn't start from the missing customer again.
+	 * Replaces a missing Stripe customer on a renewal's subscriptions, so the next renewal uses the right one.
 	 *
-	 * @param WC_Order $renewal_order     The renewal order that was just charged.
-	 * @param string   $stale_customer_id The customer ID Stripe could not find.
-	 * @param string   $customer_id       The customer ID Stripe accepted.
+	 * @param WC_Order $renewal_order     The renewal order.
+	 * @param string   $stale_customer_id The customer Stripe couldn't find.
+	 * @param string   $customer_id       The customer Stripe accepted.
 	 */
 	private function replace_stale_subscription_customer_id( $renewal_order, string $stale_customer_id, string $customer_id ) {
 		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
