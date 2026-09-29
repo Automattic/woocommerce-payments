@@ -5448,11 +5448,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
-				$owner_id           = $this->get_attached_payment_method_customer( $payment_information->get_payment_method() );
 				$mapped_customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+				$payment_method_id  = $payment_information->get_payment_method();
+				if ( preg_match( '/^(?:card|src)_\w{1,250}$/', $payment_method_id ) ) {
+					// Stripe checks legacy token ownership when confirming the retry.
+					$owner_id = is_string( $mapped_customer_id ) && preg_match( '/^cus_[A-Za-z0-9_]+$/', $mapped_customer_id ) ? $mapped_customer_id : null;
+				} else {
+					$owner_id = $this->get_attached_payment_method_customer( $payment_method_id );
+				}
 				if ( null === $owner_id || $owner_id !== $mapped_customer_id ) {
 					throw new API_Exception(
-						__( 'The saved payment method could not be matched to this customer. Please update the subscription payment method.', 'woocommerce-payments' ),
+						__( 'The saved payment method could not be matched to this customer. Please update your saved payment method.', 'woocommerce-payments' ),
 						'wcpay_saved_payment_method_customer_mismatch',
 						400
 					);

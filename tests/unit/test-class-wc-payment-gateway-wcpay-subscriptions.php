@@ -789,6 +789,83 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * @dataProvider provider_legacy_saved_method_ids
+	 */
+	public function test_scheduled_subscription_payment_recovers_legacy_saved_method_with_mapped_customer( $payment_method_id ) {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( $payment_method_id, self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_deleted' );
+
+		$subscription = new WC_Subscription();
+		$subscription->set_customer_id( self::USER_ID );
+		$subscription->add_payment_token( $token );
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_deleted' );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ $subscription ] );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_owner' );
+		$this->mock_customer_service->expects( $this->never() )->method( 'recreate_customer_for_user' );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'set_customer' )
+			->withConsecutive( [ 'cus_deleted' ], [ 'cus_owner' ] );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_deleted', 'resource_missing', 400 ) ),
+				WC_Helper_Intention::create_intention(
+					[
+						'customer_id'       => 'cus_owner',
+						'payment_method_id' => $payment_method_id,
+					]
+				)
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertSame( 'processing', $renewal_order->get_status() );
+		$this->assertSame( 'cus_owner', $this->order_service->get_customer_id_for_order( $renewal_order ) );
+		$this->assertSame( 'cus_owner', $subscription->get_meta( '_stripe_customer_id', true ) );
+		$this->assertNotFalse( WC_Payment_Tokens::get( $token->get_id() ) );
+	}
+
+	public function provider_legacy_saved_method_ids() {
+		return [
+			'card'   => [ 'card_legacy' ],
+			'source' => [ 'src_legacy' ],
+		];
+	}
+
+	public function test_scheduled_subscription_payment_does_not_repair_legacy_method_if_retry_fails() {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$token         = WC_Helper_Token::create_token( 'card_legacy', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$this->order_service->set_customer_id_for_order( $renewal_order, 'cus_deleted' );
+
+		$subscription = new WC_Subscription();
+		$subscription->set_customer_id( self::USER_ID );
+		$subscription->add_payment_token( $token );
+		$subscription->update_meta_data( '_stripe_customer_id', 'cus_deleted' );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ $subscription ] );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_other' );
+		$this->mock_customer_service->expects( $this->never() )->method( 'recreate_customer_for_user' );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
+		$request->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new API_Exception( 'No such customer: cus_deleted', 'resource_missing', 400 ) ),
+				$this->throwException( new API_Exception( 'Card belongs to another customer', 'payment_method_unexpected_state', 400 ) )
+			);
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertSame( 'failed', $renewal_order->get_status() );
+		$this->assertSame( 'cus_deleted', $this->order_service->get_customer_id_for_order( $renewal_order ) );
+		$this->assertSame( 'cus_deleted', $subscription->get_meta( '_stripe_customer_id', true ) );
+		$this->assertNotFalse( WC_Payment_Tokens::get( $token->get_id() ) );
+	}
+
+	/**
 	 * @dataProvider provider_unverified_saved_method_owners
 	 */
 	public function test_scheduled_subscription_payment_does_not_replace_customer_without_verified_owner( $owner, $mapped_customer, $lookup_fails, $returned_method_id = 'pm_saved', $payment_method_id = 'pm_saved', $lookup_expected = true ) {
