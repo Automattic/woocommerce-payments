@@ -55,7 +55,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 */
 	public function maybe_use_store_api_draft_order_id( $order_id ) {
 		// Only apply this filter during the checkout request.
-		$is_checkout = defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT;
+		$is_checkout = $this->is_checkout_request();
 		// Only apply this filter if the order ID is not already defined.
 		$is_already_defined_order_id = ! empty( $order_id );
 		// Only apply this filter if the session doesn't already have an order_awaiting_payment.
@@ -67,8 +67,31 @@ class WC_Payments_WooPay_Direct_Checkout {
 		}
 
 		$draft_order_id = absint( WC()->session->get( 'store_api_draft_order' ) );
+		$draft_order    = $draft_order_id ? wc_get_order( $draft_order_id ) : false;
+
+		// Only resume the session's draft order when it is genuinely the customer's current,
+		// resumable order, mirroring WooCommerce core's own validity check
+		// (WooCommerce\StoreApi\Utilities\DraftOrderTrait::is_valid_draft_order()): it must be a
+		// checkout-draft, or an unpaid order that still matches the current cart. Anything else is
+		// discarded so checkout falls through to normal order creation rather than resuming the
+		// wrong order — or fataling. This covers a pointer left dangling by the daily
+		// `woocommerce_cleanup_draft_orders` cleanup (where wc_get_order() returns false), a
+		// trashed order, and a stale order that no longer matches the cart.
+		$cart      = WC()->cart;
+		$cart_hash = $cart instanceof WC_Cart ? $cart->get_cart_hash() : '';
+
+		$is_resumable_draft_order = $draft_order instanceof WC_Order
+			&& (
+				$draft_order->has_status( 'checkout-draft' )
+				|| ( $draft_order->needs_payment() && $draft_order->has_cart_hash( $cart_hash ) )
+			);
+
+		if ( ! $is_resumable_draft_order ) {
+			WC()->session->set( 'store_api_draft_order', null );
+			return $order_id;
+		}
+
 		// Set the order status to "pending" payment, so that it can be resumed.
-		$draft_order = wc_get_order( $draft_order_id );
 		$draft_order->set_status( 'pending' );
 		$draft_order->save();
 
@@ -114,6 +137,19 @@ class WC_Payments_WooPay_Direct_Checkout {
 		);
 
 		wp_enqueue_script( 'WCPAY_WOOPAY_DIRECT_CHECKOUT' );
+	}
+
+	/**
+	 * Whether the current request is a (classic) checkout request.
+	 *
+	 * Extracted so it can be overridden in tests without defining the global
+	 * `WOOCOMMERCE_CHECKOUT` constant (which cannot be undefined and would leak
+	 * into other test classes).
+	 *
+	 * @return bool
+	 */
+	protected function is_checkout_request(): bool {
+		return defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT;
 	}
 
 	/**

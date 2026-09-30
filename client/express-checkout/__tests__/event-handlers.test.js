@@ -156,17 +156,11 @@ describe( 'Express checkout event handlers', () => {
 			expect( event.reject ).not.toHaveBeenCalled();
 		} );
 
-		it( 'should update setupFutureUsage when cart contains a subscription', async () => {
+		it( 'should update setupFutureUsage when the server declared it on the cart', async () => {
 			cartApiUpdateCustomerMock.mockResolvedValue( {
 				items: [],
 				extensions: {
-					subscriptions: [
-						{
-							billing_period: 'month',
-							billing_interval: 1,
-							totals: { total_price: '1000' },
-						},
-					],
+					wcpay: { setup_future_usage: 'off_session' },
 				},
 				shipping_rates: [
 					{

@@ -5,6 +5,11 @@ interface MyWindow extends Window {
 declare let window: MyWindow;
 
 /**
+ * Stripe setupFutureUsage for express checkout ConfirmationTokens.
+ */
+export type SetupFutureUsage = 'off_session' | null;
+
+/**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
  */
 export interface WCPayExpressCheckoutParams {
@@ -36,6 +41,15 @@ export interface WCPayExpressCheckoutParams {
 	};
 
 	has_subscription?: boolean;
+
+	/**
+	 * The `setup_future_usage` the ConfirmationToken must be minted with, computed
+	 * server-side. Used on the product page (no Store API cart yet) and pay-for-order
+	 * (order API, which does not carry the cart `wcpay` extension). Cart and checkout
+	 * read it from the live cart response instead.
+	 */
+	setup_future_usage?: SetupFutureUsage;
+
 	is_manual_capture?: boolean;
 
 	/**

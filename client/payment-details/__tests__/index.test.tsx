@@ -187,8 +187,6 @@ global.wcpaySettings = {
 };
 
 describe( 'Payment details page', () => {
-	const { location } = window;
-
 	const chargeQuery = { id: 'ch_mock' };
 	const paymentIntentQuery = { id: 'pi_mock' };
 	const redirectUrl =
@@ -200,17 +198,7 @@ describe( 'Payment details page', () => {
 	} );
 
 	beforeEach( () => {
-		Object.defineProperty( window, 'location', {
-			value: { href: 'http://example.com' },
-		} );
 		mockHistoryReplace.mockReset();
-	} );
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: location,
-		} );
 	} );
 
 	it( 'should match the snapshot - Payment Intent query param', () => {

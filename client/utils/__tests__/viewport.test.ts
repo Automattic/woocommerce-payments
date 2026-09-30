@@ -18,30 +18,43 @@ import {
 	BREAKPOINTS,
 } from '../viewport';
 
-// Mock window object
-const mockWindow = {
-	innerWidth: 1024,
-	innerHeight: 768,
-};
+const originalInnerWidth = window.innerWidth;
+const originalInnerHeight = window.innerHeight;
 
-// Save original window
-const originalWindow = global.window;
+/**
+ * Resizes the test window.
+ *
+ * `window` itself cannot be swapped for a plain object: jsdom marks it
+ * unforgeable, so `defineProperty( global, 'window' )` throws. Its
+ * `innerWidth`/`innerHeight` accessors are configurable, though, so they can be
+ * redefined individually.
+ *
+ * @param {number} width  Viewport width in pixels.
+ * @param {number} height Viewport height in pixels. Left untouched when omitted.
+ */
+const setViewportSize = ( width: number, height?: number ) => {
+	Object.defineProperty( window, 'innerWidth', {
+		value: width,
+		configurable: true,
+		writable: true,
+	} );
+
+	if ( undefined !== height ) {
+		Object.defineProperty( window, 'innerHeight', {
+			value: height,
+			configurable: true,
+			writable: true,
+		} );
+	}
+};
 
 describe( 'Viewport Utilities', () => {
 	beforeEach( () => {
-		// Mock window object
-		Object.defineProperty( global, 'window', {
-			value: mockWindow,
-			writable: true,
-		} );
+		setViewportSize( 1024, 768 );
 	} );
 
 	afterEach( () => {
-		// Restore original window
-		Object.defineProperty( global, 'window', {
-			value: originalWindow,
-			writable: true,
-		} );
+		setViewportSize( originalInnerWidth, originalInnerHeight );
 	} );
 
 	describe( 'getViewportSize', () => {
@@ -56,36 +69,24 @@ describe( 'Viewport Utilities', () => {
 
 	describe( 'isViewportWidthLessThan', () => {
 		it( 'should return true when width is less than breakpoint', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 300,
-				writable: true,
-			} );
+			setViewportSize( 300 );
 			expect( isViewportWidthLessThan( 400 ) ).toBe( true );
 		} );
 
 		it( 'should return false when width is greater than or equal to breakpoint', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 500,
-				writable: true,
-			} );
+			setViewportSize( 500 );
 			expect( isViewportWidthLessThan( 400 ) ).toBe( false );
 		} );
 	} );
 
 	describe( 'isViewportWidthGreaterThanOrEqualTo', () => {
 		it( 'should return true when width is greater than or equal to breakpoint', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 500,
-				writable: true,
-			} );
+			setViewportSize( 500 );
 			expect( isViewportWidthGreaterThanOrEqualTo( 400 ) ).toBe( true );
 		} );
 
 		it( 'should return false when width is less than breakpoint', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 300,
-				writable: true,
-			} );
+			setViewportSize( 300 );
 			expect( isViewportWidthGreaterThanOrEqualTo( 400 ) ).toBe( false );
 		} );
 	} );
@@ -93,120 +94,78 @@ describe( 'Viewport Utilities', () => {
 	describe( 'getCurrentBreakpoint', () => {
 		it( 'should return correct breakpoint for different screen sizes', () => {
 			// Test mobile
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 300,
-				writable: true,
-			} );
+			setViewportSize( 300 );
 			expect( getCurrentBreakpoint() ).toBe( 'mobile' );
 
 			// Test tablet (660px is the tablet breakpoint)
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 700,
-				writable: true,
-			} );
+			setViewportSize( 700 );
 			expect( getCurrentBreakpoint() ).toBe( 'tablet' );
 
 			// Test desktop (800px is the desktop breakpoint)
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 900,
-				writable: true,
-			} );
+			setViewportSize( 900 );
 			expect( getCurrentBreakpoint() ).toBe( 'desktop' );
 		} );
 	} );
 
 	describe( 'isBreakpoint', () => {
 		it( 'should return true for current breakpoint', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 700,
-				writable: true,
-			} );
+			setViewportSize( 700 );
 			expect( isBreakpoint( 'tablet' ) ).toBe( true );
 		} );
 
 		it( 'should return false for different breakpoint', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 700,
-				writable: true,
-			} );
+			setViewportSize( 700 );
 			expect( isBreakpoint( 'desktop' ) ).toBe( false );
 		} );
 	} );
 
 	describe( 'isMobile', () => {
 		it( 'should return true for mobile screens', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 400,
-				writable: true,
-			} );
+			setViewportSize( 400 );
 			expect( isMobile() ).toBe( true );
 		} );
 
 		it( 'should return false for larger screens', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 700,
-				writable: true,
-			} );
+			setViewportSize( 700 );
 			expect( isMobile() ).toBe( false );
 		} );
 	} );
 
 	describe( 'isTablet', () => {
 		it( 'should return true for tablet screens', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 700,
-				writable: true,
-			} );
+			setViewportSize( 700 );
 			expect( isTablet() ).toBe( true );
 		} );
 
 		it( 'should return false for other screen sizes', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 400,
-				writable: true,
-			} );
+			setViewportSize( 400 );
 			expect( isTablet() ).toBe( false );
 
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 900,
-				writable: true,
-			} );
+			setViewportSize( 900 );
 			expect( isTablet() ).toBe( false );
 		} );
 	} );
 
 	describe( 'isDesktop', () => {
 		it( 'should return true for desktop screens', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 900,
-				writable: true,
-			} );
+			setViewportSize( 900 );
 			expect( isDesktop() ).toBe( true );
 		} );
 
 		it( 'should return false for smaller screens', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 700,
-				writable: true,
-			} );
+			setViewportSize( 700 );
 			expect( isDesktop() ).toBe( false );
 		} );
 	} );
 
 	describe( 'isVerySmallMobile', () => {
 		it( 'should return true for very small mobile screens', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 300,
-				writable: true,
-			} );
+			setViewportSize( 300 );
 			expect( isVerySmallMobile() ).toBe( true );
 		} );
 
 		it( 'should return false for larger screens', () => {
-			Object.defineProperty( global.window, 'innerWidth', {
-				value: 400,
-				writable: true,
-			} );
+			setViewportSize( 400 );
 			expect( isVerySmallMobile() ).toBe( false );
 		} );
 	} );

@@ -32,6 +32,7 @@ use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
@@ -2508,11 +2509,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intention_status', $intent->get_status() );
 		$order->update_status( Order_Status::PROCESSING );
 
-		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
-		$get_intent_request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $intent );
-
+		if ( in_array( $intent->get_status(), [ Intent_Status::SUCCEEDED, Intent_Status::CANCELED ], true ) ) {
+			// There is no need to call an API if the intent state is final.
+			$this->mock_wcpay_request( Get_Intention::class, 0, $intent_id );
+		} else {
+			$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+			$get_intent_request->expects( $this->once() )
+				->method( 'format_response' )
+				->willReturn( $intent );
+		}
 		$this->mock_wcpay_request( Cancel_Intention::class, 0, $intent_id );
 
 		$order->set_status( Order_Status::CANCELLED );
@@ -4286,6 +4291,50 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_process_payment_still_checks_fraud_when_the_request_only_looks_like_woopay() {
+		$order = WC_Helper_Order::create_order();
+
+		// A Cart-Token plus `User-Agent: WooPay`, which is what any visitor can send. The
+		// companion test below pins that consulting the service is what a real vouch skips.
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} finally {
+			unset( $_SERVER['HTTP_USER_AGENT'], $_SERVER['HTTP_CART_TOKEN'] );
+		}
+	}
+
+	public function test_process_payment_still_checks_fraud_when_the_vouch_is_stale() {
+		$order = WC_Helper_Order::create_order();
+
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		// Sealed correctly, but outside the freshness window.
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header( time() - 3600 );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} finally {
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+		}
+	}
+
 	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
 
@@ -4670,10 +4719,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
-	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_from_woopay() {
+	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_vouched_by_woopay() {
 		$order = WC_Helper_Order::create_order();
 
-		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		// The credential itself, rather than a filter standing in for one. Turning
+		// card-testing protection off is not something a shopper should be able to ask for.
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
 
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 
@@ -4696,7 +4749,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 
-		remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+	}
+
+	/**
+	 * Seals a vouch envelope the way WooPay does, and encodes it for the header.
+	 *
+	 * @param int|null $timestamp Envelope timestamp, defaulting to now.
+	 *
+	 * @return string The header value.
+	 */
+	private function build_woopay_vouch_header( ?int $timestamp = null ): string {
+		// Bound to the cart the request carries, as WooPay seals it.
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+
+		$key        = WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE );
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$plaintext  = wp_json_encode(
+			[
+				'timestamp'  => $timestamp ?? time(),
+				'cart_token' => hash( 'sha256', $_SERVER['HTTP_CART_TOKEN'] ),
+			]
+		);
+		$ciphertext = openssl_encrypt( $plaintext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		$envelope = array_map(
+			'base64_encode',
+			[
+				'data' => $ciphertext,
+				'iv'   => $iv,
+				'hash' => hash_hmac( 'sha256', $iv . $ciphertext, $key ),
+			]
+		);
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		return base64_encode( wp_json_encode( $envelope ) );
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
@@ -5643,7 +5730,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'seti_mock_pm_change';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'              => 'update_order_status',
 			'order_id'            => $order->get_id(),
@@ -5698,7 +5785,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_renewal';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5760,7 +5847,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_renewal_meta';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5825,7 +5912,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_renewal_email';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5902,7 +5989,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_mock_3ds_no_save';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -5990,7 +6077,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'seti_mock_free_trial';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -6066,7 +6153,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'seti_mock_link_free_trial';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
-		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
 		$_POST                = [
 			'action'                     => 'update_order_status',
 			'order_id'                   => $order->get_id(),
@@ -6105,6 +6192,110 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $saved->get_meta( 'last4' ), 'Link must not persist the underlying card last4.' );
 		$this->assertEmpty( $saved->get_meta( '_card_brand' ), 'Link must not persist the underlying card brand.' );
 		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'A Link payment must not be titled as a branded card.' );
+	}
+
+	/**
+	 * @dataProvider provider_unauthorized_update_order_status_nonces
+	 *
+	 * @param string $nonce_action The nonce action an unauthorized caller might present.
+	 */
+	public function test_update_order_status_rejects_a_nonce_not_bound_to_the_target_order( string $nonce_action ) {
+		// Regression guard for WOOPMNT-6380: the update_order_status nonce is bound to
+		// the order id. A caller must not be able to write an attacker-controlled note
+		// into an order it does not own via the empty_intent_id / intent_id_mismatch
+		// branch. This covers both the documented exploit (the general, pre-fix nonce
+		// every guest received) and a nonce a shopper obtained for a different order.
+		$victim_order = WC_Helper_Order::create_order();
+
+		if ( '__foreign_order__' === $nonce_action ) {
+			$nonce_action = 'wcpay_update_order_status_nonce_' . ( $victim_order->get_id() + 1 );
+		}
+
+		$nonce                = wp_create_nonce( $nonce_action );
+		$_POST                = [
+			'action'    => 'update_order_status',
+			'order_id'  => $victim_order->get_id(),
+			'intent_id' => 'attacker-supplied-value',
+			'_wpnonce'  => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			$output = ob_get_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$this->assertStringContainsString(
+			'Please refresh the page and try again',
+			$output,
+			'A nonce not bound to the target order must be rejected as an invalid referrer.'
+		);
+
+		$notes = wc_get_order_notes( [ 'order_id' => $victim_order->get_id() ] );
+		foreach ( $notes as $note ) {
+			$this->assertStringNotContainsString(
+				'attacker-supplied-value',
+				$note->content,
+				'No attacker-controlled note may be written to an order the caller does not own.'
+			);
+		}
+	}
+
+	public function provider_unauthorized_update_order_status_nonces(): array {
+		return [
+			'general pre-fix nonce'        => [ 'wcpay_update_order_status_nonce' ],
+			'nonce bound to another order' => [ '__foreign_order__' ],
+		];
+	}
+
+	public function test_update_order_status_accepts_a_nonce_bound_to_the_same_order() {
+		// A correctly scoped request (nonce bound to the same order) must still write the
+		// legitimate intent-mismatch diagnostic note. Behaviour preserved from before
+		// WOOPMNT-6380.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_intent_id_for_order( $order, 'pi_stored_on_order' );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'    => 'update_order_status',
+			'order_id'  => $order->get_id(),
+			'intent_id' => 'pi_does_not_match',
+			'_wpnonce'  => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_get_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = wp_list_pluck( $notes, 'content' );
+		$found    = false;
+		foreach ( $contents as $content ) {
+			if ( false !== strpos( $content, 'pi_does_not_match' ) ) {
+				$found = true;
+				break;
+			}
+		}
+		$this->assertTrue(
+			$found,
+			'A nonce bound to the same order must still allow the intent-mismatch diagnostic note.'
+		);
 	}
 
 	public function return_ajax_wp_die_handler() {

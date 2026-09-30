@@ -243,12 +243,6 @@ declare global {
 		exitSurveyLastShown: string | null;
 	};
 
-	const wcpayReviewPromptSettings: {
-		version: string;
-		experiment: string;
-		variant: string;
-	};
-
 	const wcpayTestToLiveNoticeSettings: {
 		ctaUrl: string;
 		dismissUrl: string;
@@ -340,7 +334,6 @@ declare global {
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
-		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
 		wcpayTestToLiveNoticeSettings?: typeof wcpayTestToLiveNoticeSettings;
 		wcpayPostKycActivationNoticeSettings?: typeof wcpayPostKycActivationNoticeSettings;
 		wcpayOneAndDoneNoticeSettings?: typeof wcpayOneAndDoneNoticeSettings;

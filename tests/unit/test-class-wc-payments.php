@@ -42,6 +42,10 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10, $install_actions_priority );
 	}
 
+	public function test_it_does_not_clean_up_deprecated_notes_on_admin_init() {
+		$this->assertFalse( has_action( 'admin_init', [ WC_Payments::class, 'remove_deprecated_notes' ] ) );
+	}
+
 	public function test_it_calls_upgrade_hook_during_upgrade() {
 		update_option( 'woocommerce_woocommerce_payments_version', '1.0.0' );
 

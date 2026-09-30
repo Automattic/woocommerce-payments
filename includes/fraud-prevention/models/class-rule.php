@@ -23,6 +23,17 @@ class Rule {
 	const FRAUD_OUTCOME_BLOCK  = 'block';
 
 	/**
+	 * Every valid fraud outcome status.
+	 *
+	 * @var string[]
+	 */
+	const FRAUD_OUTCOME_STATUSES = [
+		self::FRAUD_OUTCOME_ALLOW,
+		self::FRAUD_OUTCOME_BLOCK,
+		self::FRAUD_OUTCOME_REVIEW,
+	];
+
+	/**
 	 * Rule key.
 	 *
 	 * @var string
@@ -128,15 +139,7 @@ class Rule {
 	 * @return bool Whether it is a valid Rule array.
 	 */
 	public static function is_valid_fraud_outcome_status( string $outcome ): bool {
-		return in_array(
-			$outcome,
-			[
-				self::FRAUD_OUTCOME_BLOCK,
-				self::FRAUD_OUTCOME_REVIEW,
-				self::FRAUD_OUTCOME_ALLOW,
-			],
-			true
-		);
+		return in_array( $outcome, self::FRAUD_OUTCOME_STATUSES, true );
 	}
 
 	/**

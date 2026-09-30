@@ -51,6 +51,30 @@ class List_Deposits_Test extends WCPAY_UnitTestCase {
 		$request->set_date_before( '2022-01-01' );
 	}
 
+	public function test_list_deposits_request_has_default_sort_params() {
+		$request = new List_Deposits( $this->mock_api_client, $this->mock_wc_payments_http_client );
+
+		$params = $request->get_params();
+
+		$this->assertSame( 'date', $params['sort'] );
+		$this->assertSame( 'desc', $params['direction'] );
+		$this->assertSame( 0, $params['page'] );
+		$this->assertSame( 25, $params['pagesize'] );
+	}
+
+	public function test_list_deposits_request_from_rest_request_uses_default_sort_params_when_omitted() {
+		$rest_request = new WP_REST_Request( 'GET' );
+		$rest_request->set_param( 'page', 1 );
+		$rest_request->set_param( 'pagesize', 10 );
+
+		$request = List_Deposits::from_rest_request( $rest_request );
+
+		$params = $request->get_params();
+
+		$this->assertSame( 'date', $params['sort'] );
+		$this->assertSame( 'desc', $params['direction'] );
+	}
+
 	public function test_list_deposits_request_will_be_date() {
 		$page          = 2;
 		$page_size     = 50;
