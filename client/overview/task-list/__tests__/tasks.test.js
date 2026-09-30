@@ -13,6 +13,8 @@ import { getTasks, taskSort } from '../tasks';
 import { getDisputeResolutionTask } from '../tasks/dispute-task';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
+import { dispatch } from '@wordpress/data';
+import { setEarlyFraudWarningDismissed } from 'wcpay/data/early-fraud-warnings/api';
 
 const mockHistoryPush = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -22,6 +24,14 @@ jest.mock( '@woocommerce/navigation', () => ( {
 } ) );
 jest.mock( 'tracks', () => ( {
 	recordEvent: jest.fn(),
+} ) );
+
+jest.mock( 'wcpay/data/early-fraud-warnings/api', () => ( {
+	setEarlyFraudWarningDismissed: jest.fn(),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	dispatch: jest.fn(),
 } ) );
 
 const mockActiveDisputes = [
@@ -947,5 +957,73 @@ describe( 'taskSort()', () => {
 				} ),
 			] )
 		);
+	} );
+
+	describe( 'early fraud warning task dismissal', () => {
+		const warning = {
+			order_id: 12,
+			order_number: '12',
+			charge_id: 'ch_efw_1',
+			created: 1719800000,
+		};
+
+		it( 'owns its dismissal, so the order decides whether it shows', () => {
+			const [ task ] = getTasks( {
+				activeEarlyFraudWarnings: [ warning ],
+			} );
+
+			expect( task.isDismissable ).toBe( true );
+			expect( task.ownsDismissal ).toBe( true );
+		} );
+
+		it( 'records the dismissal on the order', () => {
+			setEarlyFraudWarningDismissed.mockResolvedValue( {
+				dismissed: true,
+			} );
+			const [ task ] = getTasks( {
+				activeEarlyFraudWarnings: [ warning ],
+			} );
+
+			task.onDismiss();
+
+			expect( setEarlyFraudWarningDismissed ).toHaveBeenCalledWith(
+				12,
+				true
+			);
+		} );
+
+		it( 'restores the warning when the dismissal is undone', () => {
+			setEarlyFraudWarningDismissed.mockResolvedValue( {
+				dismissed: false,
+			} );
+			const [ task ] = getTasks( {
+				activeEarlyFraudWarnings: [ warning ],
+			} );
+
+			task.onUndoDismiss();
+
+			expect( setEarlyFraudWarningDismissed ).toHaveBeenCalledWith(
+				12,
+				false
+			);
+		} );
+
+		it( 'shows an error notice when the dismissal cannot be saved', async () => {
+			const createErrorNotice = jest.fn();
+			dispatch.mockReturnValue( { createErrorNotice } );
+			setEarlyFraudWarningDismissed.mockRejectedValue(
+				new Error( 'nope' )
+			);
+			const [ task ] = getTasks( {
+				activeEarlyFraudWarnings: [ warning ],
+			} );
+
+			await task.onDismiss();
+
+			expect( dispatch ).toHaveBeenCalledWith( 'core/notices' );
+			expect( createErrorNotice ).toHaveBeenCalledWith(
+				'There was an error updating the early fraud warning. Please try again later.'
+			);
+		} );
 	} );
 } );

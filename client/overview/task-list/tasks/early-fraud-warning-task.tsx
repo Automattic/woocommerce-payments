@@ -3,6 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -11,6 +12,7 @@ import type { TaskItemProps } from '../types';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
+import { setEarlyFraudWarningDismissed } from 'wcpay/data/early-fraud-warnings/api';
 
 const taskKeyPrefix = 'early-fraud-warning-task-';
 
@@ -18,6 +20,17 @@ const buildTaskKey = ( chargeId: string ): string => taskKeyPrefix + chargeId;
 
 const getOrderNumber = ( warning: ActiveEarlyFraudWarning ): string =>
 	warning.order_number || String( warning.order_id );
+
+// The task list only hides the task; the order holds the dismissal both screens read.
+const persistDismissal = ( orderId: number, dismissed: boolean ) =>
+	setEarlyFraudWarningDismissed( orderId, dismissed ).catch( () => {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'There was an error updating the early fraud warning. Please try again later.',
+				'woocommerce-payments'
+			)
+		);
+	} );
 
 const buildEarlyFraudWarningTask = (
 	warning: ActiveEarlyFraudWarning,
@@ -61,6 +74,9 @@ const buildEarlyFraudWarningTask = (
 		// has no other way to clear the task: the warning only resolves on a full refund
 		// or a platform update, and neither is theirs to trigger.
 		isDismissable: true,
+		ownsDismissal: true,
+		onDismiss: () => persistDismissal( warning.order_id, true ),
+		onUndoDismiss: () => persistDismissal( warning.order_id, false ),
 		showActionButton: true,
 		actionLabel: __( 'Review payment', 'woocommerce-payments' ),
 		action: handleClick,
