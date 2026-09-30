@@ -265,10 +265,10 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	}
 
 	/**
-	 * The order confirmation blocks are matched by class and method name, so a WooCommerce change to
+	 * The WooCommerce methods above are matched by name in the backtrace, so a WooCommerce change to
 	 * them would silently stop the match. This fails instead.
 	 */
-	public function test_order_confirmation_block_render_method_still_exists() {
+	public function test_matched_woocommerce_methods_keep_their_backtrace_names() {
 		// Static, so PHP reports it as WC_Order_Factory::get_order in the backtrace however it's called.
 		$this->assertTrue( ( new ReflectionMethod( 'WC_Order_Factory', 'get_order' ) )->isStatic() );
 
