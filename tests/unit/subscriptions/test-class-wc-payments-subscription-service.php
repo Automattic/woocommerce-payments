@@ -762,6 +762,25 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test WC_Payments_Subscription_Service->show_wcpay_subscription_id() when a third party has made
+	 * wcs_is_subscription() return true for an object that isn't actually a WC_Subscription instance.
+	 */
+	public function test_show_wcpay_subscription_id_with_non_subscription_order() {
+		// A plain WC_Order, even though wcs_is_subscription() below is stubbed to claim otherwise.
+		$order = WC_Helper_Order::create_order();
+
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $_unused_order ) {
+				return true;
+			}
+		);
+
+		$this->expectOutputString( '' );
+
+		$this->subscription_service->show_wcpay_subscription_id( $order );
+	}
+
+	/**
 	 * Test WC_Payments_Subscription_Service->get_wcpay_subscription_id()
 	 */
 	public function test_get_wcpay_subscription_id() {
