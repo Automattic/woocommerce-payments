@@ -3087,84 +3087,109 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Reads a private method's return value off the card gateway.
+	 * Runs a callback while recording every text domain passed through the translation functions.
 	 *
-	 * @param string $name The method name.
-	 * @return mixed
+	 * @param callable $callback The callback to run.
+	 * @return string[] The text domains, one entry per translation call.
 	 */
-	private function call_private_gateway_method( string $name ) {
-		$method = new ReflectionMethod( WC_Payment_Gateway_WCPay::class, $name );
-		$method->setAccessible( true );
+	private function translation_domains_used_by( callable $callback ): array {
+		$domains = [];
+		$spy     = function ( $translation, $text, $domain ) use ( &$domains ) {
+			$domains[] = $domain;
+			return $translation;
+		};
 
-		return $method->invoke( $this->card_gateway );
+		add_filter( 'gettext', $spy, 10, 3 );
+		try {
+			$callback();
+		} finally {
+			remove_filter( 'gettext', $spy, 10 );
+		}
+
+		return $domains;
 	}
 
 	/**
-	 * Before `init`, the fields must carry nothing that needs translating, at any depth, or
-	 * building them triggers the _load_textdomain_just_in_time notice. See WOOPMNT-5380.
+	 * Translates the WooPay terms message as a Spanish site would.
+	 *
+	 * @param string $translation The current translation.
+	 * @param string $text        The source text.
+	 * @param string $domain      The text domain.
+	 * @return string
 	 */
-	public function test_form_fields_carry_no_translatable_text_before_init() {
-		$this->with_uninitialized_init(
-			function () {
-				$fields = $this->card_gateway->get_form_fields();
+	public function translate_woopay_message_to_spanish( $translation, $text, $domain ) {
+		if ( 'woocommerce-payments' === $domain && 'By placing this order, you agree to our [terms] and understand our [privacy_policy].' === $text ) {
+			return 'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].';
+		}
 
-				array_walk_recursive(
-					$fields,
-					function ( $value, $key ) {
-						$this->assertNotContains(
-							$key,
-							[ 'title', 'label', 'description', 'options', 'custom_attributes' ],
-							"Field key {$key} should not be present before init."
-						);
+		return $translation;
+	}
+
+	/**
+	 * Before `init`, building the fields must not ask for any of this plugin's translations, or it
+	 * triggers the _load_textdomain_just_in_time notice. See WOOPMNT-5380.
+	 */
+	public function test_form_fields_ask_for_no_translations_before_init() {
+		$domains = $this->translation_domains_used_by(
+			function () {
+				$this->with_uninitialized_init(
+					function () {
+						$this->card_gateway->get_form_fields();
 					}
 				);
-
-				foreach ( $fields as $key => $field ) {
-					foreach ( [ 'title', 'label', 'description', 'options', 'custom_attributes' ] as $translated_key ) {
-						$this->assertArrayNotHasKey( $translated_key, $field, "Field {$key} should carry no translated text before init." );
-					}
-				}
 			}
 		);
+
+		$this->assertNotContains( 'woocommerce-payments', $domains );
 	}
 
 	/**
-	 * The two sets of definitions must agree on the fields, their types and their defaults.
-	 *
-	 * Compares against the translated definitions themselves rather than the merged result:
-	 * array_replace_recursive() fills gaps in a list-valued default from the untranslated copy,
-	 * so comparing against the merge would hide a default that had been shortened in one place
-	 * only. See WOOPMNT-5380.
+	 * Shoppers see the WooPay terms message, so once translations are available its default is
+	 * in the site's language.
 	 */
-	public function test_untranslated_form_fields_match_translated_definitions() {
-		$untranslated = ( new ReflectionClassConstant( WC_Payment_Gateway_WCPay::class, 'MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS' ) )->getValue();
-		$translated   = $this->call_private_gateway_method( 'get_main_gateway_translated_form_fields' );
+	public function test_woopay_custom_message_default_is_translated_after_init() {
+		add_filter( 'gettext', [ $this, 'translate_woopay_message_to_spanish' ], 10, 3 );
+
+		$fields = $this->card_gateway->get_form_fields();
 
 		$this->assertSame(
-			array_keys( $translated ),
-			array_keys( $untranslated ),
-			'Both sets should declare the same fields, in the same order.'
+			'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].',
+			$fields['platform_checkout_custom_message']['default']
+		);
+	}
+
+	/**
+	 * On a fresh install the defaults are first read on `plugins_loaded`, in English. They are
+	 * read again as `init` starts, before install_actions() runs the migrations that can make the
+	 * first save, so the WooPay terms message is stored in the site's language, as it was before
+	 * this fix. See WOOPMNT-5380.
+	 */
+	public function test_fresh_install_defaults_are_read_again_once_translations_load() {
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+		add_filter( 'gettext', [ $this, 'translate_woopay_message_to_spanish' ], 10, 3 );
+
+		$this->with_uninitialized_init(
+			function () {
+				$this->card_gateway->init_settings();
+			}
+		);
+		$this->assertSame(
+			'By placing this order, you agree to our [terms] and understand our [privacy_policy].',
+			$this->card_gateway->settings['platform_checkout_custom_message']
 		);
 
-		foreach ( $translated as $key => $field ) {
-			foreach ( [ 'type', 'default' ] as $shared_key ) {
-				$this->assertSame(
-					array_key_exists( $shared_key, $field ),
-					array_key_exists( $shared_key, $untranslated[ $key ] ),
-					"Field {$key} should declare {$shared_key} in both sets, or in neither."
-				);
+		$this->card_gateway->init_hooks();
+		$this->assertSame( 0, has_action( 'init', [ $this->card_gateway, 'init_settings' ] ) );
+		$this->assertSame( 10, has_action( 'init', [ WC_Payments::class, 'install_actions' ] ) );
 
-				if ( ! array_key_exists( $shared_key, $field ) ) {
-					continue;
-				}
+		$this->card_gateway->init_settings();
+		$this->card_gateway->update_option( 'test_mode', 'yes' );
 
-				$this->assertSame(
-					$field[ $shared_key ],
-					$untranslated[ $key ][ $shared_key ],
-					"Field {$key} should have the same {$shared_key} in both sets."
-				);
-			}
-		}
+		$stored = get_option( 'woocommerce_woocommerce_payments_settings' );
+		$this->assertSame(
+			'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].',
+			$stored['platform_checkout_custom_message']
+		);
 	}
 
 	/**
