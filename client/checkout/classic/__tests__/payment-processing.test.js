@@ -724,7 +724,7 @@ describe( 'Payment processing', () => {
 		expect( checkoutForm.submit ).toHaveBeenCalled();
 	} );
 
-	test( 'Payment processing skips the additional actions handler when payment method fails to be created', async () => {
+	test( 'Add payment method shows the error without submitting when payment method fails to be created', async () => {
 		getFingerprint.mockImplementation( () => {
 			return { visitorId: 'fingerprint' };
 		} );
@@ -767,22 +767,13 @@ describe( 'Payment processing', () => {
 		// Wait for promises to resolve.
 		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
-		expect( appendPaymentMethodIdToForm ).toHaveBeenCalledWith(
-			addPaymentMethodForm,
-			PAYMENT_METHOD_ERROR
+		expect( showErrorCheckout ).toHaveBeenCalledWith(
+			'Your card was declined.'
 		);
-
-		expect( appendPaymentMethodErrorDataToForm ).toHaveBeenCalledWith(
-			addPaymentMethodForm,
-			errorData
-		);
-
-		// The handler must not be invoked with an undefined payment method.
+		expect( appendPaymentMethodIdToForm ).not.toHaveBeenCalled();
+		expect( appendPaymentMethodErrorDataToForm ).not.toHaveBeenCalled();
 		expect( apiMock.setupIntent ).not.toHaveBeenCalled();
-
-		// The Stripe error is surfaced server-side after the form submits.
-		expect( showErrorCheckout ).not.toHaveBeenCalled();
-		expect( addPaymentMethodForm.submit ).toHaveBeenCalled();
+		expect( addPaymentMethodForm.submit ).not.toHaveBeenCalled();
 	} );
 
 	test( 'Payment processing invokes the additional actions handler when the payment method is created', async () => {

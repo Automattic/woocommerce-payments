@@ -470,6 +470,15 @@ export const processPayment = (
 				paymentMethodType
 			);
 
+			// There is no order on the add payment method page, so a submission
+			// has nothing to record: show the error without leaving the page.
+			if (
+				paymentMethodObject.error &&
+				$form.attr( 'id' ) === 'add_payment_method'
+			) {
+				throw paymentMethodObject.error;
+			}
+
 			if ( paymentMethodObject.error ) {
 				appendPaymentMethodIdToForm( $form, PAYMENT_METHOD_ERROR );
 				appendPaymentMethodErrorDataToForm(
@@ -484,17 +493,11 @@ export const processPayment = (
 			}
 			appendFingerprintInputToForm( $form, fingerprint );
 			appendFraudPreventionTokenInputToForm( $form );
-			if ( ! paymentMethodObject.error ) {
-				// Additional actions (e.g. confirming a setup intent on the
-				// add payment method page) require a created payment method.
-				// When Stripe rejected the card data, the form is submitted
-				// with the error information so the server can display it.
-				await additionalActionsHandler(
-					paymentMethodObject.paymentMethod,
-					$form,
-					api
-				);
-			}
+			await additionalActionsHandler(
+				paymentMethodObject.paymentMethod,
+				$form,
+				api
+			);
 			hasCheckoutCompleted = true;
 			submitForm( $form );
 		} catch ( err ) {
