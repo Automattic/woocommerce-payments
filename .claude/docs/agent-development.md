@@ -74,15 +74,13 @@ pnpm run psalm                       # PHP static analysis
 Prefer per-file runs over full-suite runs:
 
 ```bash
-# PHPStan: one "file:line:message" per error (workers crash at PHP's default 128M memory_limit)
+# Workers crash at PHP's default 128M memory_limit.
 vendor/bin/phpstan analyse --error-format=raw --no-progress --memory-limit=2G <files>
 
-# PHPCS: -q drops the progress line and config deprecation notices. Keep the default
-# report, which groups errors per file; --report=emacs repeats the path on every line.
 vendor/bin/phpcs --standard=phpcs.xml.dist -q <files>
-
-# PHPUnit: use --filter (see PHP Tests above). PHPUnit 9.6 has no --no-progress flag.
 ```
+
+For PHPUnit, use `--filter` (see PHP Tests above). PHPUnit 9.6 has no `--no-progress` flag.
 
 ### Changelog
 ```bash
