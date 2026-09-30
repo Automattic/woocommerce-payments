@@ -76,8 +76,12 @@ describe( 'EmbeddedKyc Component', () => {
 			'Your store is in development mode.'
 		);
 		expect( container.textContent ).toContain(
-			'can only create test accounts'
+			'can only create test accounts while development mode is on.'
 		);
+		expect( container.textContent ).toContain(
+			'To set up a live account, use your live store.'
+		);
+		expect( container.textContent ).not.toContain( 'WCPAY_DEV_MODE' );
 	} );
 
 	it( 'does not show dev mode warning when dev mode is not active', async () => {
