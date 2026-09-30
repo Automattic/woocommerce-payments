@@ -270,9 +270,15 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	 * them would silently stop the match. This fails instead.
 	 */
 	public function test_order_confirmation_block_render_method_still_exists() {
-		$this->assertTrue( method_exists( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock', 'render' ) );
 		$this->assertTrue( method_exists( 'WC_Order_Factory', 'get_order' ) );
 		$this->assertTrue( method_exists( 'WC_Order_Factory', 'get_order_item' ) );
+
+		// The CI matrix still runs WooCommerce 7.6, which predates the order confirmation blocks.
+		if ( version_compare( WC_VERSION, '9.0.0', '<' ) ) {
+			$this->markTestSkipped( 'The order confirmation blocks are not in this WooCommerce version.' );
+		}
+
+		$this->assertTrue( method_exists( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock', 'render' ) );
 	}
 
 	/**
