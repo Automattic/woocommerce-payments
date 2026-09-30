@@ -27,23 +27,74 @@ class WC_REST_WooPay_Session_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	private $controller;
 
+	/**
+	 * The account service to put back after a test swaps it for a mock.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $original_account_service;
+
 	public function set_up() {
 		parent::set_up();
 
-		$this->controller = new WC_REST_WooPay_Session_Controller();
+		$this->controller               = new WC_REST_WooPay_Session_Controller();
+		$this->original_account_service = WC_Payments::get_account_service();
 
 		Jetpack_Options::update_option( 'blog_token', self::BLOG_TOKEN );
 
 		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
 	}
 
+	/**
+	 * Puts this store on the signed path, as the platform's account payload does.
+	 *
+	 * A signature only authenticates a request for a store the platform says WooPay still
+	 * signs for, so every test of the signed path has to say which kind of store this is.
+	 *
+	 * @param bool $forced Whether the platform has this store on the signed path.
+	 */
+	private function set_forced_signed_requests( bool $forced = true ): void {
+		$cache = $this->createMock( WCPay\Database_Cache::class );
+		$cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => $forced ] );
+
+		WC_Payments::set_database_cache( $cache );
+	}
+
 	public function tear_down() {
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		WC_Payments::set_database_cache( new WCPay\Database_Cache() );
+
 		unset(
 			$_SERVER['HTTP_USER_AGENT'],
 			$_SERVER['HTTP_CART_TOKEN']
 		);
 
 		parent::tear_down();
+	}
+
+	public function test_a_signed_request_is_refused_when_the_store_is_not_on_the_signed_path() {
+		// The signature is real; this store is simply not one WooPay signs for any more.
+		// Accepting it on the strength of being signed would leave the old credential live
+		// on every store, which is what moving off it was for.
+		$this->set_forced_signed_requests( false );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$request = new WP_REST_Request( 'GET', '/payments/woopay/session' );
+
+		$this->assertFalse( $this->controller->check_permission( $request ) );
+	}
+
+	public function test_permission_is_granted_for_a_signed_request() {
+		$this->set_forced_signed_requests();
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		// Nothing is attested here. A signature is what WooPay sends while it is told to
+		// keep signing for this store, and the route has to keep answering it or that
+		// rollback does not work.
+		$request = new WP_REST_Request( 'GET', '/payments/woopay/session' );
+
+		$this->assertTrue( $this->controller->check_permission( $request ) );
 	}
 
 	public function test_permission_is_granted_for_an_attested_email() {

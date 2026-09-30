@@ -112,7 +112,24 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
 
+		WC_Payments::set_database_cache( new WCPay\Database_Cache() );
+
 		parent::tear_down();
+	}
+
+	/**
+	 * Puts this store on the signed path, as the platform's account payload does.
+	 *
+	 * A signature only authenticates a request for a store the platform says WooPay still
+	 * signs for, so every test of the signed path has to say which kind of store this is.
+	 *
+	 * @param bool $forced Whether the platform has this store on the signed path.
+	 */
+	private function set_forced_signed_requests( bool $forced = true ): void {
+		$cache = $this->createMock( WCPay\Database_Cache::class );
+		$cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => $forced ] );
+
+		WC_Payments::set_database_cache( $cache );
 	}
 
 	public function test_a_sealed_shopper_ip_is_recorded_on_the_order() {
@@ -613,6 +630,53 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
 	}
 
+	public function test_a_signed_request_vouches_for_the_email_it_names() {
+		$this->set_forced_signed_requests();
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		// A signed request is WooPay by definition, so the email needs no envelope. This is
+		// the pre-11.2.0 behaviour, kept for stores WooPay is told to keep signing for.
+		$this->assertTrue( WooPay_Session::is_email_attested_by_woopay( 'shopper@example.com' ) );
+
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+	}
+
+	public function test_a_signed_request_resolves_the_session_customer_without_a_nonce() {
+		$this->set_forced_signed_requests();
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$shopper = self::factory()->user->create_and_get();
+
+		$_SERVER['HTTP_CART_TOKEN'] = WooPay_Store_Api_Token::init()->get_cart_token();
+
+		$this->setup_session( $shopper->ID );
+
+		// No HTTP_NONCE: the signature is what pairs the request with the account, the way
+		// it did before the store started asking for a store-minted nonce.
+		$this->assertEquals( $shopper->ID, WooPay_Session::get_user_id_from_cart_token() );
+
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+	}
+
+	public function test_a_signed_request_resolves_the_verified_email_without_a_nonce() {
+		$this->set_forced_signed_requests();
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$verified_user = self::factory()->user->create_and_get();
+
+		$_SERVER['HTTP_CART_TOKEN']                      = WooPay_Store_Api_Token::init()->get_cart_token();
+		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
+
+		$this->setup_session( 0, $verified_user->user_email );
+		$this->setup_adapted_extensions();
+
+		// No HTTP_NONCE: the signature authenticates the verified email header, as it did
+		// before the store started asking for email_verified_session_nonce.
+		$this->assertEquals( $verified_user->ID, WooPay_Session::get_user_id_from_cart_token() );
+
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+	}
+
 	public function test_email_is_not_attested_without_an_envelope() {
 		$woopay_request = $this->attested_request();
 
@@ -845,6 +909,17 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 	public function test_unauthenticated_request_is_rejected_as_carrying_nothing() {
 		$this->expect_woopay_request_to_die( 'WooPay request is not signed correctly.' );
+	}
+
+	public function test_signed_request_without_a_cart_token_is_let_through() {
+		$this->set_forced_signed_requests();
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		// No Cart-Token, which is refused above when unsigned. Signed, the request is not
+		// refused, and with no Cart-Token to resolve an account from it keeps the user it had.
+		$this->assertSame( 0, WooPay_Session::determine_current_user_for_woopay( 0 ) );
+
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
 	}
 
 	public function test_invalid_cart_token_is_rejected_as_invalid() {
