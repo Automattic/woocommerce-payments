@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix order price rounding when switching to a zero-decimal currency on block-based order pages
+Fix order totals rounded to the selected currency's decimals on the order received and view order pages in block themes
