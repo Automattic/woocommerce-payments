@@ -99,11 +99,9 @@ class WC_Payments_Admin_Settings {
 				<?php
 				if ( WC_Payments::mode()->is_dev() ) {
 					printf(
-						/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
-						esc_html__( 'Test mode is active because your store is running in a development or staging environment. To disable it, switch to a production %1$sWordPress environment%2$s or remove the WCPAY_DEV_MODE constant. %3$sLearn more%4$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>',
-						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/' ) . '" target="_blank" rel="noreferrer noopener">',
+						/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
+						esc_html__( 'Test mode is on because development mode is on. Development mode is on for staging and development sites. To accept real payments, use your live store. %1$sLearn more%2$s', 'woocommerce-payments' ),
+						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>'
 					);
 				} else {
@@ -149,7 +147,7 @@ class WC_Payments_Admin_Settings {
 		?>
 		<div id="wcpay-test-account-notice" class="notice notice-warning">
 			<p>
-				<b><?php echo esc_html__( 'You are using a test account.', 'woocommerce-payments' ) . ' '; ?></b>
+				<b><?php echo esc_html( WC_Payments::mode()->is_dev() ? __( 'You\'re in development mode and using a test account.', 'woocommerce-payments' ) : __( 'You are using a test account.', 'woocommerce-payments' ) ) . ' '; ?></b>
 				<?php
 				if ( ! WC_Payments::mode()->is_dev() ) {
 					printf(
@@ -159,13 +157,11 @@ class WC_Payments_Admin_Settings {
 						'</a>'
 					);
 				} else {
-					esc_html_e( '⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!', 'woocommerce-payments' );
-					echo '</br>';
+					esc_html_e( 'Live payments can\'t be activated while development mode is on.', 'woocommerce-payments' );
+					echo '<br />';
 					printf(
-					/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
-						esc_html__( 'To begin accepting real payments, please go to the live store or change your %1$sWordPress environment%2$s to a production one. %3$sLearn more%4$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>',
+						/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
+						esc_html__( 'Development mode is on for staging and development sites. To accept real payments, use your live store. %1$sLearn more%2$s', 'woocommerce-payments' ),
 						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>'
 					);
@@ -228,7 +224,7 @@ class WC_Payments_Admin_Settings {
 		?>
 		<div id="wcpay-test-account-notice" class="notice notice-warning">
 			<p>
-				<b><?php echo esc_html__( 'You are using a sandbox test account.', 'woocommerce-payments' ) . ' '; ?></b>
+				<b><?php echo esc_html( WC_Payments::mode()->is_dev() ? __( 'You\'re in development mode and using a test account.', 'woocommerce-payments' ) : __( 'You are using a sandbox test account.', 'woocommerce-payments' ) ) . ' '; ?></b>
 				<?php
 				if ( ! WC_Payments::mode()->is_dev() ) {
 					printf(
@@ -240,13 +236,11 @@ class WC_Payments_Admin_Settings {
 						'</a>',
 					);
 				} else {
-					esc_html_e( '⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!', 'woocommerce-payments' );
-					echo '</br>';
+					esc_html_e( 'Live payments can\'t be activated while development mode is on.', 'woocommerce-payments' );
+					echo '<br />';
 					printf(
-					/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
-						esc_html__( 'To begin accepting real payments, please go to the live store or change your %1$sWordPress environment%2$s to a production one. %3$sLearn more%4$s', 'woocommerce-payments' ),
-						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
-						'</a>',
+						/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
+						esc_html__( 'Development mode is on for staging and development sites. To accept real payments, use your live store. %1$sLearn more%2$s', 'woocommerce-payments' ),
 						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>'
 					);
