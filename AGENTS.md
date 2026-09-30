@@ -11,7 +11,7 @@ Before working in an area below, read its linked reference and follow the applic
 | PHP, checkout, server requests, WooCommerce hooks or code placement | [Architecture and code placement](.claude/docs/agent-architecture.md) |
 | Setup, builds, tests, dependencies, commits, PRs, Docker or tunnels | [Development and delivery](.claude/docs/agent-development.md) |
 | Public signatures, hooks, subclass overrides, REST/Abilities, asset handles, options/meta, migrations, upstream contracts, multisite or install paths | [Compatibility and migrations](.claude/docs/agent-compatibility.md) |
-| Writing or reviewing tests, styles cache, Abilities, ExPlat/Tracks, query encoding or agent documentation | [Feature rules and documentation](.claude/docs/agent-feature-rules.md) |
+| Writing or reviewing tests, PHPCS method-ordering scope, styles cache, Abilities, ExPlat/Tracks, query encoding or agent documentation | [Feature rules and documentation](.claude/docs/agent-feature-rules.md) |
 | E2E execution, setup or debugging | [E2E skill](.claude/skills/e2e-testing/SKILL.md) and [test overview](tests/README.md) |
 | Code review | [.claude/review-rules.md](.claude/review-rules.md), plus the references for the affected areas |
 
