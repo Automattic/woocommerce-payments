@@ -47,6 +47,19 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Snapshotted in set_up: these globals are process-shared, so an order-pay test would
+	 * otherwise leak its query vars into later tests.
+	 *
+	 * @var array
+	 */
+	private $original_wp_query_vars = [];
+
+	/**
+	 * @var array
+	 */
+	private $original_wp_query_query_vars = [];
+
+	/**
 	 * Mock WC_Payments_Order_Service.
 	 *
 	 * @var WC_Payments_Order_Service|MockObject
@@ -59,6 +72,10 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		global $wp, $wp_query;
+		$this->original_wp_query_vars       = $wp->query_vars ?? [];
+		$this->original_wp_query_query_vars = $wp_query->query_vars ?? [];
+
 		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_account         = $this->createMock( WC_Payments_Account::class );
 		$this->mock_session_service = $this->createMock( WC_Payments_Session_Service::class );
@@ -70,6 +87,12 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tear_down() {
+		unset( $_GET['pay_for_order'], $_GET['key'] );
+
+		global $wp, $wp_query;
+		$wp->query_vars       = $this->original_wp_query_vars;
+		$wp_query->query_vars = $this->original_wp_query_query_vars;
+
 		delete_user_option( 1, self::CUSTOMER_LIVE_META_KEY );
 		delete_user_option( 1, self::CUSTOMER_TEST_META_KEY );
 		delete_user_option( 1, '_wcpay_customer_id' );
@@ -645,6 +668,35 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Points the current request at the order-pay endpoint for the given order.
+	 *
+	 * @param \WC_Order $order The order being paid.
+	 */
+	private function setup_pay_for_order_request( \WC_Order $order ) {
+		global $wp, $wp_query;
+		$wp->query_vars       = array_merge( (array) ( $wp->query_vars ?? [] ), [ 'order-pay' => strval( $order->get_id() ) ] );
+		$wp_query->query_vars = array_merge( (array) ( $wp_query->query_vars ?? [] ), [ 'order-pay' => strval( $order->get_id() ) ] );
+		set_query_var( 'order-pay', $order->get_id() );
+
+		$_GET['pay_for_order'] = 'true';
+		$_GET['key']           = $order->get_order_key();
+	}
+
+	/**
+	 * Asserts the order's billing details did not reach the customer data.
+	 *
+	 * @param array|null $result The return value under test.
+	 */
+	private function assert_order_data_withheld( $result ) {
+		$this->assertIsArray( $result );
+
+		$this->assertSame( ' ', $result['name'] );
+		$this->assertEmpty( $result['email'] );
+		$this->assertEmpty( $result['billing_country'] );
+		$this->assertNull( $result['address'] );
+	}
+
+	/**
 	 * Test get_prepared_customer_data returns null when not on a relevant page.
 	 */
 	public function test_get_prepared_customer_data_returns_null_when_not_on_relevant_page() {
@@ -659,16 +711,12 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * Test get_prepared_customer_data returns order data when the user can pay for the order.
 	 */
 	public function test_get_prepared_customer_data_returns_order_data_when_user_can_pay() {
-		global $wp;
-
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
 		// Set the current user to the order owner so current_user_can( 'pay_for_order' ) passes.
 		wp_set_current_user( $order->get_customer_id() );
-
-		$_GET['pay_for_order']       = 'true';
-		$wp->query_vars['order-pay'] = $order->get_id();
+		$this->setup_pay_for_order_request( $order );
 
 		$result = $this->customer_service->get_prepared_customer_data();
 
@@ -677,44 +725,29 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $result['email'] );
 		$this->assertIsArray( $result['address'] );
 		$this->assertNotEmpty( $result['address']['country'] );
-
-		// Clean up.
-		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
 	}
 
 	/**
 	 * Test get_prepared_customer_data does not return order data when the user cannot pay for the order.
 	 */
 	public function test_get_prepared_customer_data_omits_order_data_when_user_cannot_pay() {
-		global $wp;
-
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
 		// Set a different user who is not the order owner.
 		$other_user_id = $this->factory->user->create( [ 'role' => 'customer' ] );
 		wp_set_current_user( $other_user_id );
-
-		$_GET['pay_for_order']       = 'true';
-		$wp->query_vars['order-pay'] = $order->get_id();
+		$this->setup_pay_for_order_request( $order );
 
 		$result = $this->customer_service->get_prepared_customer_data();
 
-		$this->assertIsArray( $result );
-		$this->assertSame( ' ', $result['name'] );
-		$this->assertEmpty( $result['email'] );
-		$this->assertNull( $result['address'] );
-
-		// Clean up.
-		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
+		$this->assert_order_data_withheld( $result );
 	}
 
 	/**
 	 * Test get_prepared_customer_data returns order data for a guest order (no user assigned).
 	 */
 	public function test_get_prepared_customer_data_returns_order_data_for_guest_order() {
-		global $wp;
-
 		$order = WC_Helper_Order::create_order();
 		$order->set_customer_id( 0 );
 		$order->save();
@@ -722,18 +755,86 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		// Any logged-in user can pay for a guest order per WooCommerce's pay_for_order capability.
 		$user_id = $this->factory->user->create( [ 'role' => 'customer' ] );
 		wp_set_current_user( $user_id );
-
-		$_GET['pay_for_order']       = 'true';
-		$wp->query_vars['order-pay'] = $order->get_id();
+		$this->setup_pay_for_order_request( $order );
 
 		$result = $this->customer_service->get_prepared_customer_data();
 
 		$this->assertIsArray( $result );
 		$this->assertNotEmpty( $result['email'] );
 		$this->assertIsArray( $result['address'] );
+	}
 
-		// Clean up.
-		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
+	/**
+	 * Everyone holds pay_for_order on a guest order, so the key is the only thing standing
+	 * between an enumerated order ID and its billing details.
+	 *
+	 * @dataProvider provider_unauthorized_pay_for_order_requests
+	 *
+	 * @param callable $arrange Receives the order and sets up the unauthorized request.
+	 */
+	public function test_get_prepared_customer_data_withholds_guest_order_data_for_unauthorized_request( callable $arrange ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->save();
+
+		wp_set_current_user( 0 );
+		$this->setup_pay_for_order_request( $order );
+		$arrange( $order );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assert_order_data_withheld( $result );
+	}
+
+	/**
+	 * @return array<string, array{callable}>
+	 */
+	public function provider_unauthorized_pay_for_order_requests(): array {
+		return [
+			'no key'    => [
+				function () {
+					unset( $_GET['key'] );
+				},
+			],
+			'wrong key' => [
+				function () {
+					$_GET['key'] = 'wc_order_wrongkey';
+				},
+			],
+			'array key' => [
+				function () {
+					$_GET['key'] = [ 'x' ];
+				},
+			],
+		];
+	}
+
+	/**
+	 * The ID comes from the URL, so it can resolve to a refund, which has no order key.
+	 */
+	public function test_get_prepared_customer_data_withholds_order_data_for_refund_id() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->save();
+
+		$refund = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 1,
+			]
+		);
+
+		wp_set_current_user( 0 );
+		$this->setup_pay_for_order_request( $order );
+
+		global $wp, $wp_query;
+		$wp->query_vars['order-pay']       = strval( $refund->get_id() );
+		$wp_query->query_vars['order-pay'] = strval( $refund->get_id() );
+		set_query_var( 'order-pay', $refund->get_id() );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assert_order_data_withheld( $result );
 	}
 
 	/**

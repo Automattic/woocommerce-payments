@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Disable Xdebug in PHP unit test jobs that do not collect coverage.

@@ -210,34 +210,18 @@ class WC_Payments_Checkout {
 	 * Checks whether the current request is a Pay for Order checkout page the current user is
 	 * allowed to pay, independent of whether the pay-for-order form is rendered.
 	 *
-	 * The request must be on the checkout pay page with a `key` matching the order, the order must still need
-	 * payment, and the current user must be allowed to pay for it (guests are allowed to
-	 * pay for guest orders by order key). See WOOPMNT-6405.
+	 * See WOOPMNT-6405.
 	 *
 	 * @return bool
 	 */
 	private function is_valid_pay_for_order_endpoint(): bool {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
-		// is_string() guards against an array being passed (e.g. ?key[]=x): wc_clean() would return
-		// an array and hash_equals() would throw a TypeError. The checkout pay page is public, so
-		// malformed query string input is reachable unauthenticated.
-		if ( ! is_checkout_pay_page() || ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+		if ( ! is_checkout_pay_page() ) {
 			return false;
 		}
 
-		$order_id = absint( get_query_var( 'order-pay' ) );
-		$order    = wc_get_order( $order_id );
+		$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-		if ( ! $order || ! hash_equals( (string) $order->get_order_key(), wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
-			return false;
-		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-		if ( ! $order->needs_payment() ) {
-			return false;
-		}
-
-		return current_user_can( 'pay_for_order', $order->get_id() );
+		return $order instanceof \WC_Order && $order->needs_payment();
 	}
 
 	/**
@@ -329,12 +313,11 @@ class WC_Payments_Checkout {
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
-			$order_id = absint( get_query_var( 'order-pay' ) );
-			$order    = wc_get_order( $order_id );
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
+			if ( $order instanceof \WC_Order ) {
 				$payment_fields['isOrderPay'] = true;
-				$payment_fields['orderId']    = $order_id;
+				$payment_fields['orderId']    = $order->get_id();
 				$order_currency               = $order->get_currency();
 				$payment_fields['currency']   = $order_currency;
 				$payment_fields['cartTotal']  = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );

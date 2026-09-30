@@ -1,6 +1,6 @@
 # Compatibility and migrations
 
-**Last updated:** 2026-09-05
+**Last updated:** 2026-09-30
 
 Read the sections relevant to the current task. Paths and commands in this reference are relative to the repository root unless stated otherwise.
 
@@ -27,6 +27,8 @@ Treat a symbol as **externally exposed** when it is implemented or consumed outs
 Adding a **required** method to an interface that external code can implement is backward-incompatible — existing implementers fatal on load. Prefer a non-breaking alternative: add the method to a concrete class, introduce a separate new interface, or provide a default via an abstract base class.
 
 **Deprecate, don't rename.** Never rename or remove an existing public symbol (class, interface, method, constant, hook, option key) in place. Mark the old one `@deprecated`, add the replacement alongside it, and keep both working through a deprecation window so consumers can migrate.
+
+**Retire internal implementation with its feature.** The deprecation rule protects external contracts, and PHP visibility alone does not create one. Remove a symbol outright, no shim, when nothing outside its feature could obtain it (no accessor, no hook or filter handing it out, no registration the retirement keeps; use by name, `new`, `extends` or static calls, is what the search finds) and a search of public GitHub and the WooCommerce.com marketplace finds no consumer. A search cannot rule out private consumers, so state in the PR what went, when it shipped, where you looked, and what a remaining caller would hit. A no-op shim gives that caller the name without the behaviour. Anything on a long-lived public class, or behind a static accessor on `WC_Payments`, keeps the deprecation path. If you cannot run a check, flag it for review.
 
 **As a consumer of upstream WooCommerce contracts.** WooPayments extends and implements upstream WooCommerce classes and interfaces — e.g. `WC_Payment_Gateway_CC`, `Blocks\Payments\Integrations\AbstractPaymentMethodType`, and `Blocks\Integrations\IntegrationInterface`. The `Internal` namespace is not a stability guarantee upstream either: WooCommerce can change these contracts, and doing so is exactly the class of break this guardrail exists to prevent (a WC 10.9.0 change to an `Internal` `FeedInterface` fataled older WooCommerce Stripe Gateway versions on load). When implementing an upstream contract, keep the implementation compatible across the supported WC range (L, L-1, L-2) and guard against contract changes rather than assuming the interface is frozen.
 
@@ -59,7 +61,7 @@ Migration classes live in `includes/migrations/` and run on `woocommerce_woocomm
 ### Before changing any public or externally exposed surface (agent checklist)
 
 1. Identify the contract you are touching: signature, hook, global/scope expectation, site topology, or install layout.
-2. Assume unseen consumers. You cannot enumerate third-party code; if the surface is reachable from outside this plugin, someone consumes it.
+2. Account for unseen consumers. A public search shows usage but cannot rule out private extensions or merchant customizations. State the evidence and the uncertainty in the PR.
 3. Prefer the additive path (new optional method, appended hook argument, new symbol + deprecation) over changing what exists.
 4. State the impact in the PR description: what changed, who could consume it, and why it is safe or what the deprecation path is.
 5. If you cannot establish the impact, stop and flag it to the user as needing review.

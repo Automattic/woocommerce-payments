@@ -1,5 +1,6 @@
 module.exports = {
 	rootDir: '../../',
+	cacheDirectory: '<rootDir>/node_modules/.cache/jest',
 	moduleDirectories: [
 		'node_modules',
 		'<rootDir>/client',

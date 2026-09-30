@@ -24,6 +24,9 @@ For feature-specific investigations, the architecture reference indexes payment 
 - In `includes/`, keep the file docblock immediately after `<?php`; do not add `declare(strict_types=1)`. Import or fully qualify global classes from namespaced files. Run `composer run phpstan` before pushing new cross-namespace references.
 - Reuse nearby WooPayments/WooCommerce UI and WordPress components, tokens and patterns. Check the WordPress/WooCommerce Storybooks before creating custom components. Prefer TypeScript for new client code and `@wordpress/data` for shared state.
 - Trace upstream WooCommerce behavior for base classes, hooks and order/customer/product operations, particularly order-status emails and per-request hook costs. Check the supported dependency version and the actual configured lint scope.
+- Verify assumptions against the current implementation. Trace affected callers and the source of the data before changing shared behavior.
+- Handle failures, missing data and successful empty results explicitly. Preserve meaningful `false`, `0` and `null` values rather than treating them as absence.
+- When fixing a bug, check nearby code and other callers for the same cause. Report related issues outside the change's scope rather than silently expanding it.
 
 ## Compatibility essentials
 
@@ -35,6 +38,7 @@ For feature-specific investigations, the architecture reference indexes payment 
 ## Verification and local environment
 
 - Match checks to the affected behavior and complete required repository checks. Distinguish passes, failures and checks that could not run. Add tests that protect meaningful behavior; broaden or repeat checks only for a new change, failure or unresolved risk.
+- Tests must exercise the changed behavior and assert an observable outcome. Do not mock away the behavior being checked; await asynchronous assertions and restore shared test state. Confirm a regression test fails without the fix where practical. Check version and feature gates before citing green CI.
 - PHP tests require Docker. Read the development reference for commands and use the E2E skill when an E2E check is needed. Confirm tested code and built assets match the intended revision; run `pnpm run watch` when testing local frontend/admin edits.
 - Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the development login is `admin` / `admin`.
 - Follow the user's checkout preference. Never remove a worktree that is the current working directory; perform any authorised cleanup from the main clone.
@@ -45,4 +49,5 @@ For feature-specific investigations, the architecture reference indexes payment 
 - Before pushing, check whether the branch belonged to a merged PR. If so, create a new branch from `develop`. Push only the current branch with `git push origin HEAD` (or `git push -u origin HEAD`). Pull with rebase.
 - Before creating a PR, add and commit a changelog entry with `pnpm run changelog:add --type=<type> --entry="<description>"`. Use [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) and open the PR in draft mode.
 - After creating the PR, ask the author to review its description and testing instructions, then manually test. Add `pr: needs review` and reviewers only after manual testing and only when explicitly requested.
-- Explain non-obvious constraints near their owner. Keep incident details and command catalogs in the linked references. Add broadly applicable agent rules once, in the appropriate owner, and update living reference dates when editing them.
+- Explain non-obvious constraints once, near their owner, and avoid comments that narrate the code. Update affected comments, reference docs and the PR description when the implementation changes.
+- Keep incident details and command catalogs in the linked references. Add agent rules only when they apply beyond the incident that prompted them, once, in the appropriate owner, and update living reference dates when editing them.

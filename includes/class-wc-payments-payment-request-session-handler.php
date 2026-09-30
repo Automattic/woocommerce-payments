@@ -169,6 +169,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		if ( $this->_dirty ) {
 			global $wpdb;
 
+			// phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter -- $this->_table is set by WC_Session_Handler to $wpdb->prefix . 'woocommerce_sessions', never user input.
 			$wpdb->query(
 				$wpdb->prepare(
 					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared

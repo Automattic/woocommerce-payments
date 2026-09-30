@@ -15,6 +15,7 @@ use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WC_Payments_Token_Service;
 use WC_Payments;
+use WC_Helper_Order;
 use WC_Subscriptions;
 
 /**
@@ -283,6 +284,38 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		$payment_details = [ 'some_key' => 'some_value' ];
 
 		$this->assertSame( 'Mock Method', $payment_method->get_title( 'US', $payment_details ) );
+	}
+
+	public function test_link_supports_usd_and_gbp() {
+		$payment_method = $this->mock_payment_methods['link'];
+
+		$this->assertSame(
+			[ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING ],
+			$payment_method->get_currencies()
+		);
+		$this->assertFalse( $payment_method->has_domestic_transactions_restrictions() );
+	}
+
+	/**
+	 * @dataProvider provider_test_link_is_currency_valid
+	 */
+	public function test_link_is_currency_valid( string $order_currency, string $account_currency, bool $expected ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( $order_currency );
+		$order->save();
+
+		$this->assertSame( $expected, $this->mock_payment_methods['link']->is_currency_valid( $account_currency, $order->get_id() ) );
+	}
+
+	public function provider_test_link_is_currency_valid(): array {
+		return [
+			'USD in a US store' => [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::UNITED_STATES_DOLLAR, true ],
+			'GBP in a US store' => [ Currency_Code::POUND_STERLING, Currency_Code::UNITED_STATES_DOLLAR, true ],
+			'GBP in a GB store' => [ Currency_Code::POUND_STERLING, Currency_Code::POUND_STERLING, true ],
+			'USD in a GB store' => [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING, true ],
+			'EUR in a US store' => [ Currency_Code::EURO, Currency_Code::UNITED_STATES_DOLLAR, false ],
+			'EUR in a GB store' => [ Currency_Code::EURO, Currency_Code::POUND_STERLING, false ],
+		];
 	}
 
 	public function test_get_title_uses_default_when_no_payment_details() {
