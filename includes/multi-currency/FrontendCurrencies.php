@@ -521,7 +521,9 @@ class FrontendCurrencies {
 		// classes above. Other prices on these pages, like the mini-cart, keep the selected currency.
 		if ( null !== $this->get_order_id_from_query_vars() ) {
 			$calls[] = 'WC_Order_Factory::get_order';
+			$calls[] = 'WC_Order_Factory->get_order';
 			$calls[] = 'WC_Order_Factory::get_order_item';
+			$calls[] = 'WC_Order_Factory->get_order_item';
 			$calls[] = 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render';
 		}
 

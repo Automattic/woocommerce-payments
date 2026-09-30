@@ -266,6 +266,16 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	}
 
 	/**
+	 * The order confirmation blocks are matched by class and method name, so a WooCommerce change to
+	 * them would silently stop the match. This fails instead.
+	 */
+	public function test_order_confirmation_block_render_method_still_exists() {
+		$this->assertTrue( method_exists( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock', 'render' ) );
+		$this->assertTrue( method_exists( 'WC_Order_Factory', 'get_order' ) );
+		$this->assertTrue( method_exists( 'WC_Order_Factory', 'get_order_item' ) );
+	}
+
+	/**
 	 * Prices on a single-order page that are not the order's, like the mini-cart, keep the
 	 * selected currency. See WOOPMNT-3978.
 	 */
