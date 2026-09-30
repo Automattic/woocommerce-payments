@@ -18,6 +18,9 @@ import { saveOption } from 'wcpay/data/settings/actions';
 const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const [ visibleTasks, setVisibleTasks ] = useState( tasks );
+	// Tasks that own their dismissal are hidden here for the session only; their own
+	// storage decides whether they come back on the next load.
+	const [ sessionDismissedKeys, setSessionDismissedKeys ] = useState( [] );
 	const { deletedTodoTasks, dismissedTodoTasks, remindMeLaterTodoTasks } =
 		overviewTasksVisibility;
 
@@ -30,12 +33,20 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 			return tasks.filter(
 				( task ) =>
 					! deletedTodoTasks.includes( task.key ) &&
-					! dismissedTodoTasks.includes( task.key ) &&
+					( task.ownsDismissal
+						? ! sessionDismissedKeys.includes( task.key )
+						: ! dismissedTodoTasks.includes( task.key ) ) &&
 					( ! remindOverride[ task.key ] ||
 						remindOverride[ task.key ] < nowTimestamp )
 			);
 		},
-		[ deletedTodoTasks, dismissedTodoTasks, remindMeLaterTodoTasks, tasks ]
+		[
+			deletedTodoTasks,
+			dismissedTodoTasks,
+			remindMeLaterTodoTasks,
+			sessionDismissedKeys,
+			tasks,
+		]
 	);
 
 	useEffect( () => {
@@ -81,6 +92,11 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	};
 
 	const dismissTask = ( task, type ) => {
+		if ( type === 'dismiss' && task.ownsDismissal ) {
+			dismissOwnedTask( task );
+			return;
+		}
+
 		const params =
 			type === 'dismiss'
 				? {
@@ -102,6 +118,36 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 						optionName: 'woocommerce_deleted_todo_tasks',
 				  };
 		dismissSelectedTask( params );
+	};
+
+	const dismissOwnedTask = ( { key, onDismiss, onUndoDismiss } ) => {
+		setSessionDismissedKeys( ( keys ) => [ ...keys, key ] );
+
+		createNotice(
+			'success',
+			__( 'Task dismissed', 'woocommerce-payments' ),
+			{
+				actions: [
+					{
+						label: __( 'Undo', 'woocommerce-payments' ),
+						onClick: () => {
+							setSessionDismissedKeys( ( keys ) =>
+								keys.filter(
+									( dismissedKey ) => dismissedKey !== key
+								)
+							);
+							if ( onUndoDismiss ) {
+								onUndoDismiss();
+							}
+						},
+					},
+				],
+			}
+		);
+
+		if ( onDismiss ) {
+			onDismiss();
+		}
 	};
 
 	const undoRemindTaskLater = useCallback(

@@ -22,6 +22,18 @@ export interface TaskItemProps
 	 */
 	isDismissable?: boolean;
 
+	/**
+	 * The task stores its own dismissal and decides its visibility from it. The task
+	 * list then hides it for the session only, and neither writes it to nor filters it
+	 * by the dismissed-tasks option.
+	 */
+	ownsDismissal?: boolean;
+
+	/**
+	 * Called when the merchant undoes the dismissal of a task that owns its dismissal.
+	 */
+	onUndoDismiss?: () => void;
+
 	inProgress?: boolean;
 
 	inProgressLabel?: string;
