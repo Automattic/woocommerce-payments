@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Moved multi-currency store settings state to Redux store

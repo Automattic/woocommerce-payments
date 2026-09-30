@@ -100,6 +100,12 @@ class WC_Payments_Checkout {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		// Hooked to wp_footer (like the Stripe gateway) rather than wp_enqueue_scripts on purpose:
+		// on a normal pay-for-order page payment_fields() enqueues during the body render, so by
+		// wp_footer the script is already enqueued and this loader no-ops — letting payment_fields()
+		// own the full setup (CSS, wcpayCustomerData, action hooks). It only acts when the form was
+		// not rendered (the guest verification interstitial). Priority stays below wp_print_footer_scripts (20).
+		add_action( 'wp_footer', [ $this, 'maybe_load_pay_for_order_scripts' ] );
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
 		add_filter( 'woocommerce_update_order_review_fragments', [ $this, 'add_payment_methods_config_to_update_order_review_fragments' ] );
 	}
@@ -166,6 +172,59 @@ class WC_Payments_Checkout {
 	}
 
 	/**
+	 * Ensures the checkout scripts load on the Pay for Order endpoint even when the
+	 * pay-for-order form is not rendered.
+	 *
+	 * For guest orders past WooCommerce's email-verification grace period, core renders
+	 * the "Verify email" form instead of the pay-for-order form. In that case neither
+	 * `payment_fields()` nor the `woocommerce_after_checkout_form` fallback runs, so
+	 * `wcpay-upe-checkout` is not enqueued. When a 3DS payment then returns to the
+	 * order-pay URL with a `#wcpay-confirm-...` fragment, there is no script to process
+	 * the authentication continuation and the shopper is stuck on the verification form.
+	 *
+	 * Loading the scripts here — keyed on the checkout pay page rather than on the
+	 * form being rendered — lets
+	 * the existing on-load continuation logic complete the payment. It runs on wp_footer so that, on a
+	 * normal pay-for-order page, payment_fields() has already enqueued the script during the
+	 * render and the not-already-enqueued guard below makes this a no-op — payment_fields()
+	 * keeps ownership of the full asset setup (CSS, wcpayCustomerData, action hooks). See
+	 * WOOPMNT-6405.
+	 */
+	public function maybe_load_pay_for_order_scripts() {
+		if ( 'yes' !== $this->gateway->enabled ) {
+			return;
+		}
+
+		if ( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
+			return;
+		}
+
+		if ( ! $this->is_valid_pay_for_order_endpoint() ) {
+			return;
+		}
+
+		$this->load_checkout_scripts();
+	}
+
+	/**
+	 * Checks whether the current request is a Pay for Order checkout page the current user is
+	 * allowed to pay, independent of whether the pay-for-order form is rendered.
+	 *
+	 * See WOOPMNT-6405.
+	 *
+	 * @return bool
+	 */
+	private function is_valid_pay_for_order_endpoint(): bool {
+		if ( ! is_checkout_pay_page() ) {
+			return false;
+		}
+
+		$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
+
+		return $order instanceof \WC_Order && $order->needs_payment();
+	}
+
+	/**
 	 * Generates the configuration values, needed for payment fields.
 	 *
 	 * Isolated as a separate method in order to be available both
@@ -204,6 +263,13 @@ class WC_Payments_Checkout {
 			'isShortcodeCheckout'               => is_checkout() && ! has_block( 'woocommerce/checkout' ),
 			'woopayHost'                        => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'              => wp_create_nonce( 'platform_tracks_nonce' ),
+			/**
+			 * Filters the account ID used for payment intent confirmation.
+			 *
+			 * @since 3.9.0
+			 *
+			 * @param string $account_id The account ID for intent confirmation.
+			 */
 			'accountIdForIntentConfirmation'    => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'                => WCPAY_VERSION_NUMBER,
 			'woopaySignatureNonce'              => wp_create_nonce( 'woopay_signature_nonce' ),
@@ -247,12 +313,11 @@ class WC_Payments_Checkout {
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
-			$order_id = absint( get_query_var( 'order-pay' ) );
-			$order    = wc_get_order( $order_id );
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
+			if ( $order instanceof \WC_Order ) {
 				$payment_fields['isOrderPay'] = true;
-				$payment_fields['orderId']    = $order_id;
+				$payment_fields['orderId']    = $order->get_id();
 				$order_currency               = $order->get_currency();
 				$payment_fields['currency']   = $order_currency;
 				$payment_fields['cartTotal']  = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
@@ -268,6 +333,8 @@ class WC_Payments_Checkout {
 
 		/**
 		 * Allows filtering of the JS config for the payment fields.
+		 *
+		 * @since 5.2.0
 		 *
 		 * @param array $js_config The JS config for the payment fields.
 		 */
@@ -413,6 +480,11 @@ class WC_Payments_Checkout {
 						if ( ! did_action( '__wcpay_upe_config_localized' ) ) {
 							wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
 						}
+						/**
+						 * Fires once the UPE config has been localized, to guard against duplicate localization.
+						 *
+						 * @since 8.5.0
+						 */
 						do_action( '__wcpay_upe_config_localized' );
 					}
 				);
@@ -425,6 +497,11 @@ class WC_Payments_Checkout {
 							if ( ! did_action( '__wcpay_customer_data_localized' ) ) {
 								wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 							}
+							/**
+							 * Fires once the customer data has been localized, to guard against duplicate localization.
+							 *
+							 * @since 8.5.0
+							 */
 							do_action( '__wcpay_customer_data_localized' );
 						}
 					);
@@ -484,6 +561,13 @@ class WC_Payments_Checkout {
 				<?php
 					$this->gateway->display_gateway_html();
 				if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
+					/**
+					 * Filters whether to display the "save payment method" checkbox.
+					 *
+					 * @since 1.3.0
+					 *
+					 * @param bool $display_tokenization Whether tokenization is being displayed.
+					 */
 					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
 					if ( is_user_logged_in() || $force_save_payment ) {
 						$this->gateway->save_payment_method_checkbox( $force_save_payment );
@@ -495,6 +579,13 @@ class WC_Payments_Checkout {
 			</div>
 			<?php
 
+			/**
+			 * Fires after the UPE payment fields have been rendered.
+			 *
+			 * @since 3.4.0
+			 *
+			 * @param string $gateway_id The gateway ID.
+			 */
 			do_action( 'wcpay_payment_fields_upe', $this->gateway->id );
 
 		} catch ( \Exception $e ) {

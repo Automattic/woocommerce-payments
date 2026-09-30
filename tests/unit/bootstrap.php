@@ -41,6 +41,11 @@ function _manually_load_plugin() {
 	// Load the WooCommerce plugin so we can use its classes in our WooPayments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
+	// AbilityDefinition stub for WC < 10.9 test environments. The file's own
+	// `interface_exists()` guard keeps the real interface canonical when WC
+	// 10.9 is around.
+	require_once __DIR__ . '/../../dev/phpstan-abilities-stubs.php';
+
 	// Set a default currency to be used for the multi-currency tests because the default
 	// is not loaded even though it's set during the tests setup.
 	update_option( 'woocommerce_currency', 'USD' );
@@ -51,7 +56,7 @@ function _manually_load_plugin() {
 	// via update_option().
 	add_filter(
 		'default_option__wcpay_feature_subscriptions',
-		function ( $default ) {
+		function ( $_unused_default_value ) {
 			return '1';
 		},
 		10,
@@ -79,6 +84,11 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
+	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
+	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
+	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
+	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
+	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
@@ -89,11 +99,15 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
 	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
@@ -114,6 +128,19 @@ function _manually_load_plugin() {
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+
+/**
+ * Add WooCommerce roles and capabilities after WordPress installs the test database.
+ */
+function wcpay_install_woocommerce_roles() {
+	WC_Install::create_roles();
+
+	// Reload the role objects after adding capabilities. See WordPress Trac #28374.
+	$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	wp_roles();
+}
+
+tests_add_filter( 'setup_theme', 'wcpay_install_woocommerce_roles' );
 
 // Need those polyfills to run tests in CI.
 require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';

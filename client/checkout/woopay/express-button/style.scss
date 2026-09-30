@@ -5,13 +5,24 @@
 
 	a.woopay-express-button {
 		text-decoration: none;
-		color: inherit;
 
+		&,
 		&:hover,
 		&:focus,
-		&:visited {
+		&:visited,
+		&:active {
 			text-decoration: none;
-			color: inherit;
+			// Use the same explicit color as .woopay-express-button to prevent
+			// theme link styles (e.g. Storefront a:hover) from overriding.
+			color: $studio-black;
+		}
+
+		&[data-theme='dark'],
+		&[data-theme='dark']:hover,
+		&[data-theme='dark']:focus,
+		&[data-theme='dark']:visited,
+		&[data-theme='dark']:active {
+			color: $white;
 		}
 	}
 
@@ -44,6 +55,54 @@
 			justify-content: center;
 			transform: scale( 0.9 );
 			max-width: 100%;
+			// (2) Min padding so content doesn't bleed at narrow widths.
+			padding: 0 12px;
+		}
+
+		.woopay-button-separator {
+			display: inline-block;
+			width: 1px;
+			height: 1.2em;
+			background-color: rgba( 0, 0, 0, 0.3 );
+			// (1) Visually equal spacing around the separator.
+			// The WooPay SVG has ~5px of dead space on its right edge
+			// (viewBox is wider than the artwork), so we use less left
+			// margin to compensate.
+			margin: 0 10px 0 4px;
+		}
+
+		.woopay-button-card-brand {
+			// (3) Slightly smaller icon to better match the WooPay logo weight.
+			height: 18px;
+			width: auto;
+			margin-right: 4px;
+			vertical-align: middle;
+		}
+
+		.woopay-button-last4 {
+			// (3) Smaller digits to reduce visual weight vs the WooPay logo.
+			font-size: 0.75em;
+			letter-spacing: 0.5px;
+		}
+
+		&[data-size='small'] {
+			.woopay-button-card-brand {
+				height: 14px;
+			}
+
+			.woopay-button-last4 {
+				font-size: 0.7em;
+			}
+		}
+
+		&[data-size='large'] {
+			.woopay-button-card-brand {
+				height: 22px;
+			}
+
+			.woopay-button-last4 {
+				font-size: 0.8em;
+			}
 		}
 
 		&:not( :disabled ):not( .is-placeholder ) {
@@ -124,6 +183,11 @@
 			svg {
 				fill: $white;
 			}
+
+			.woopay-button-separator {
+				background-color: rgba( 255, 255, 255, 0.4 );
+			}
+
 			&:not( :disabled ):not( .is-placeholder ):hover {
 				border-color: $studio-woocommerce-purple-30;
 				background: $studio-woocommerce-purple-30;

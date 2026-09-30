@@ -47,6 +47,26 @@ interface IssuerEvidence {
 	text_evidence: string | null;
 }
 
+/**
+ * Payment-method-specific dispute details, passed through from Stripe.
+ *
+ * See https://docs.stripe.com/api/disputes/object#dispute_object-payment_method_details
+ */
+interface DisputePaymentMethodDetails {
+	type?: string;
+	klarna?: {
+		/**
+		 * Why Klarna decided against the merchant, mapped by Stripe from Klarna's
+		 * own loss reason. Only populated once Klarna has closed a chargeback, and
+		 * Klarna doesn't always supply one — the documented codes include
+		 * `reason_unspecified`.
+		 *
+		 * See https://docs.stripe.com/payments/klarna/disputes#klarna-chargeback-loss-reason-code
+		 */
+		chargeback_loss_reason_code?: string | null;
+	};
+}
+
 export type DisputeReason =
 	| 'bank_cannot_process'
 	| 'check_returned'
@@ -63,6 +83,15 @@ export type DisputeReason =
 	| 'subscription_canceled'
 	| 'noncompliant'
 	| 'unrecognized';
+
+export type ProductType =
+	| 'physical_product'
+	| 'digital_product_or_service'
+	| 'offline_service'
+	| 'event'
+	| 'booking_reservation'
+	| 'multiple'
+	| 'other';
 
 export type DisputeStatus =
 	| 'warning_needs_response'
@@ -92,6 +121,8 @@ export interface Dispute {
 		 * Unix timestamp of when dispute evidence was submitted.
 		 */
 		__evidence_submitted_at?: string;
+		/** Product type the merchant selected via the response wizard. */
+		__product_type?: string;
 		/* eslint-enable @typescript-eslint/naming-convention */
 	};
 	order: null | OrderDetails;
@@ -99,7 +130,7 @@ export interface Dispute {
 	issuer_evidence: IssuerEvidence[] | null;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
-	charge: Charge | string;
+	charge: Charge;
 	amount: number;
 	currency: string;
 	created: number;
@@ -109,8 +140,24 @@ export interface Dispute {
 	 * A second balance transaction with the `reporting_category: 'dispute_reversal'` will be present if funds have been reinstated to the account.
 	 */
 	balance_transactions: BalanceTransaction[];
+	/**
+	 * Server-computed dispute fee after accounting for reversals.
+	 * - `null` → the dispute fee was reversed (or never charged).
+	 * - `{ amount, currency }` → the effective fee the merchant paid.
+	 * - `undefined` → older server that hasn't annotated this field;
+	 *   callers should fall back to scanning `balance_transactions`.
+	 *
+	 * Prefer reading this over re-implementing the reversal rule
+	 * client-side.
+	 */
+	effective_fee?: { amount: number; currency: string } | null;
 	payment_intent: string;
 	enhanced_eligibility_types?: string[];
+	/**
+	 * Absent on payloads that don't come straight from Stripe, e.g. the cached
+	 * disputes list. Callers must treat every field as optional.
+	 */
+	payment_method_details?: DisputePaymentMethodDetails;
 }
 
 export interface CachedDispute {
@@ -132,11 +179,15 @@ export interface CachedDispute {
 	due_by: string;
 }
 
+export interface DisputesSummaryData {
+	count?: number;
+	currencies?: string[];
+	amount_by_currency?: Record< string, number > | [];
+	earliest_due_by?: string | null;
+}
+
 export interface DisputesSummary {
-	disputesSummary: {
-		count?: number;
-		currencies?: string[];
-	};
+	disputesSummary: DisputesSummaryData;
 	isLoading: boolean;
 }
 

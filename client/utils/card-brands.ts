@@ -13,7 +13,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 /**
  * Card brand object interface
  */
-interface CardBrand {
+export interface CardBrand {
 	name: string;
 	component: string;
 }

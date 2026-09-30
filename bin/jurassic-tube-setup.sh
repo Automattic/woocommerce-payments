@@ -37,8 +37,8 @@ echo
 read -p "Go to https://jurassic.tube/ in a browser, add a subdomain using the desired name for your subdomain, and click 'Add Subdomain'. The subdomain name is what you will use to access WC Payments in a browser. When this is done, type the subdomain name here and press enter. Please just type in the subdomain, not the full URL: " subdomain
 echo
 
-# npm run wp option update home https://${subdomain}.jurassic.tube/
-# npm run wp option update siteurl https://${subdomain}.jurassic.tube/
+# pnpm run wp option update home https://${subdomain}.jurassic.tube/
+# pnpm run wp option update siteurl https://${subdomain}.jurassic.tube/
 
 read -p "Please enter your Automattic/WordPress.com username: " username
 echo
@@ -53,5 +53,5 @@ echo "username=${username}" >> "${JT_DIR}/config.env"
 echo "subdomain=${subdomain}" >> "${JT_DIR}/config.env"
 
 echo "Setup complete!"
-echo "Use the command: npm run tube:start from the root directory of your WC Payments project to start running Jurassic Tube."
+echo "Use the command: pnpm run tube:start from the root directory of your WC Payments project to start running Jurassic Tube."
 echo

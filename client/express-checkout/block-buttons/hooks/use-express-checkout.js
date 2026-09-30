@@ -54,10 +54,13 @@ export const useExpressCheckout = ( {
 		window.location = redirectUrl;
 	};
 
-	const abortPayment = ( message ) => {
-		setExpressPaymentError( message );
-		onAbortPaymentHandler();
-	};
+	const abortPayment = useCallback(
+		( message ) => {
+			setExpressPaymentError( message );
+			onAbortPaymentHandler();
+		},
+		[ setExpressPaymentError ]
+	);
 
 	const onButtonClick = useCallback(
 		( event ) => {

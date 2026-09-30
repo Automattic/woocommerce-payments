@@ -5,6 +5,11 @@ interface MyWindow extends Window {
 declare let window: MyWindow;
 
 /**
+ * Stripe setupFutureUsage for express checkout ConfirmationTokens.
+ */
+export type SetupFutureUsage = 'off_session' | null;
+
+/**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
  */
 export interface WCPayExpressCheckoutParams {
@@ -32,9 +37,19 @@ export interface WCPayExpressCheckoutParams {
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
 		currency_decimals: number;
+		stripe_minor_unit: number;
 	};
 
 	has_subscription?: boolean;
+
+	/**
+	 * The `setup_future_usage` the ConfirmationToken must be minted with, computed
+	 * server-side. Used on the product page (no Store API cart yet) and pay-for-order
+	 * (order API, which does not carry the cart `wcpay` extension). Cart and checkout
+	 * read it from the live cart response instead.
+	 */
+	setup_future_usage?: SetupFutureUsage;
+
 	is_manual_capture?: boolean;
 
 	/**
@@ -87,8 +102,17 @@ export interface WCPayExpressCheckoutParams {
 
 	/**
 	 * The available express checkout methods for the current page context.
+	 * Filtered by location, the merchant's settings, and the currency at the
+	 * time the page was rendered — so it can go stale if the currency changes.
 	 */
 	enabled_methods: Array< 'payment_request' | 'amazon_pay' >;
+
+	/**
+	 * The methods the merchant enabled at the current page's location, straight
+	 * from the location settings — no currency or availability gating. Used to
+	 * re-apply location gating to the location-blind cart Store API method list.
+	 */
+	methods_enabled_at_location: Array< 'payment_request' | 'amazon_pay' >;
 	flags: {
 		isEceUsingConfirmationTokens: boolean;
 	};
@@ -114,4 +138,27 @@ export const getExpressCheckoutData = <
 	}
 
 	return null;
+};
+
+/**
+ * Re-applies location gating to the cart's express method list.
+ *
+ * The cart Store API extension is currency-fresh but location-blind, so on its
+ * own it can surface a method the merchant disabled on the current page.
+ * Intersecting with the raw, currency-independent location allow-list keeps
+ * location gating intact without falling back on the currency-stale
+ * `enabled_methods`.
+ *
+ * @param cartMethods Methods from the cart Store API extension.
+ * @return The methods enabled at the current location.
+ */
+export const filterCartMethodsByLocation = (
+	cartMethods: string[]
+): string[] => {
+	const locationAllowed: string[] =
+		getExpressCheckoutData( 'methods_enabled_at_location' ) ?? [];
+
+	return cartMethods.filter( ( method ) =>
+		locationAllowed.includes( method )
+	);
 };

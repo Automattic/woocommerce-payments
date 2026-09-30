@@ -22,6 +22,7 @@ const blockedCharge = {
 	outcome: { type: 'blocked' },
 };
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
+const authorizedPaymentIntent = { status: 'requires_capture' };
 const getDisputedChargeWithStatus = ( status ) => ( {
 	disputed: true,
 	dispute: { status: status },
@@ -120,6 +121,63 @@ describe( 'Charge utilities', () => {
 				false
 			);
 		} );
+
+		test.each( [ 'failed', 'canceled' ] )(
+			'should identify a charge with only %s refunds as refund failed',
+			( status ) => {
+				const charge = {
+					...paidCharge,
+					refunded: false,
+					amount_refunded: 300,
+					refunds: {
+						data: [
+							{
+								status,
+								balance_transaction: { amount: -300 },
+							},
+						],
+					},
+				};
+
+				expect( utils.getChargeStatus( charge ) ).toEqual(
+					'refund_failed'
+				);
+			}
+		);
+
+		test.each( [ 'succeeded', 'future_status', undefined, null ] )(
+			'should not identify a %s refund as refund failed',
+			( status ) => {
+				const charge = {
+					...paidCharge,
+					refunded: false,
+					amount_refunded: 0,
+					refunds: {
+						data: [
+							{
+								status,
+								balance_transaction: { amount: -300 },
+							},
+						],
+					},
+				};
+
+				expect( utils.isChargeRefundFailed( charge ) ).toEqual( false );
+				expect( utils.getChargeStatus( charge ) ).toEqual( 'paid' );
+			}
+		);
+
+		test( 'should not identify an empty refund list as refund failed', () => {
+			const charge = {
+				...paidCharge,
+				refunded: false,
+				amount_refunded: 0,
+				refunds: { data: [] },
+			};
+
+			expect( utils.isChargeRefundFailed( charge ) ).toEqual( false );
+			expect( utils.getChargeStatus( charge ) ).toEqual( 'paid' );
+		} );
 	} );
 
 	describe( 'getChargeStatus', () => {
@@ -137,6 +195,15 @@ describe( 'Charge utilities', () => {
 				expect( utils.getChargeStatus( charge ) ).toEqual( status );
 			}
 		);
+
+		test( 'returns authorized when payment intent requires capture', () => {
+			expect(
+				utils.getChargeStatus(
+					authorizedCharge,
+					authorizedPaymentIntent
+				)
+			).toEqual( 'authorized' );
+		} );
 
 		const disputeStatuses = [
 			'needs_response',
@@ -171,6 +238,49 @@ describe( 'Charge utilities', () => {
 				);
 			}
 		);
+	} );
+} );
+
+describe( 'Charge utilities / getDisputeOrdinals', () => {
+	test( 'numbers disputes oldest-first regardless of array order', () => {
+		const charge = {
+			disputes: [
+				{ id: 'dp_newer', created: 2000 },
+				{ id: 'dp_older', created: 1000 },
+			],
+		};
+
+		const { orderById, total } = utils.getDisputeOrdinals( charge );
+
+		expect( orderById ).toEqual( { dp_older: 1, dp_newer: 2 } );
+		expect( total ).toBe( 2 );
+	} );
+
+	test( 'reports total 1 for a single dispute', () => {
+		const charge = {
+			disputes: [ { id: 'dp_only', created: 1000 } ],
+		};
+
+		const { orderById, total } = utils.getDisputeOrdinals( charge );
+
+		expect( orderById ).toEqual( { dp_only: 1 } );
+		expect( total ).toBe( 1 );
+	} );
+
+	test( 'falls back to the singular dispute field', () => {
+		const charge = { dispute: { id: 'dp_single', created: 1000 } };
+
+		const { orderById, total } = utils.getDisputeOrdinals( charge );
+
+		expect( orderById ).toEqual( { dp_single: 1 } );
+		expect( total ).toBe( 1 );
+	} );
+
+	test( 'reports total 0 when there are no disputes', () => {
+		const { orderById, total } = utils.getDisputeOrdinals( {} );
+
+		expect( orderById ).toEqual( {} );
+		expect( total ).toBe( 0 );
 	} );
 } );
 
@@ -249,6 +359,80 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 				charge.amount_refunded,
 			fee: charge.application_fee_amount,
 			refunded: charge.amount_refunded,
+		} );
+	} );
+
+	test.each( [ 'failed', 'canceled' ] )(
+		'does not deduct a %s refund from legacy amounts',
+		( status ) => {
+			const charge = {
+				amount: 1800,
+				currency: 'usd',
+				application_fee_amount: 82,
+				amount_refunded: 300,
+				balance_transaction: {
+					amount: 1800,
+					currency: 'usd',
+					fee: 82,
+				},
+				refunds: {
+					data: [
+						{
+							status,
+							balance_transaction: { amount: -300 },
+						},
+					],
+				},
+			};
+
+			expect( utils.getChargeAmounts( charge ) ).toEqual( {
+				amount: 1800,
+				currency: 'usd',
+				net: 1718,
+				fee: 82,
+				refunded: 0,
+			} );
+		}
+	);
+
+	test( 'deducts compatible refunds from mixed legacy amounts', () => {
+		const charge = {
+			amount: 1800,
+			currency: 'usd',
+			application_fee_amount: 82,
+			amount_refunded: 900,
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			refunds: {
+				data: [
+					{
+						status: 'failed',
+						balance_transaction: { amount: -100 },
+					},
+					{
+						status: 'succeeded',
+						balance_transaction: { amount: -200 },
+					},
+					{
+						status: 'future_status',
+						balance_transaction: { amount: -300 },
+					},
+					{
+						balance_transaction: { amount: -400 },
+					},
+				],
+			},
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
+			net: 818,
+			fee: 82,
+			refunded: 900,
 		} );
 	} );
 
@@ -387,6 +571,56 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			net: 0 - charge.application_fee_amount - 1500,
 			fee: charge.application_fee_amount + 1500,
 			refunded: charge.dispute.amount,
+		} );
+	} );
+
+	test( 'legacy path folds every dispute in the disputes array', () => {
+		const charge = {
+			amount: 1800,
+			application_fee_amount: 82,
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			disputed: true,
+			dispute: {
+				amount: 1000,
+				balance_transactions: [
+					{
+						amount: -1000,
+						fee: 1500,
+					},
+				],
+			},
+			disputes: [
+				{
+					amount: 1000,
+					balance_transactions: [
+						{
+							amount: -1000,
+							fee: 1500,
+						},
+					],
+				},
+				{
+					amount: 800,
+					balance_transactions: [
+						{
+							amount: -800,
+							fee: 1500,
+						},
+					],
+				},
+			],
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
+			net: 1800 - 82 - 3000 - 1800,
+			fee: 82 + 3000,
+			refunded: 1800,
 		} );
 	} );
 

@@ -3,21 +3,61 @@
 /**
  * External dependencies
  */
-import { sumBy, get } from 'lodash';
+import { sumBy } from 'lodash';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { Dispute } from 'types/disputes';
-import { Charge, ChargeAmounts } from 'types/charges';
+import { Charge, ChargeAmounts, ChargeDispute } from 'types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
+
+// Prefer the array when the server sends it — it's authoritative and already
+// includes the singular dispute. Fall back to `charge.dispute` for payloads
+// without the array: responses from before the companion server change
+// deploys, and any where the server omits it (e.g. its List Disputes call
+// failed), so a single dispute still renders.
+export const getChargeDisputes = ( charge: Charge ): ChargeDispute[] => {
+	if ( charge.disputes?.length ) {
+		return charge.disputes;
+	}
+	return charge.dispute ? [ charge.dispute ] : [];
+};
+
+export interface DisputeOrder {
+	orderById: Record< string, number >;
+	total: number;
+}
+
+// Numbering the disputes by their creation time (not array order) is what lets
+// the summary panes and the timeline agree on "Dispute N of M": both derive the
+// ordinal from this single mapping keyed by dispute id, so the oldest dispute is
+// always "Dispute 1" wherever it appears. `created` can be missing on some
+// payloads; when it is, the sort leaves those entries in their original
+// relative position, so the result is still deterministic.
+export const getDisputeOrdinals = ( charge: Charge ): DisputeOrder => {
+	const disputes = [ ...getChargeDisputes( charge ) ].sort(
+		( a, b ) => ( a.created ?? 0 ) - ( b.created ?? 0 )
+	);
+
+	const orderById: Record< string, number > = {};
+	disputes.forEach( ( dispute, index ) => {
+		orderById[ dispute.id ] = index + 1;
+	} );
+
+	return { orderById, total: disputes.length };
+};
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
+const unsuccessfulRefundStatuses = [ 'failed', 'canceled' ];
+
+const isUnsuccessfulRefund = ( refund: { status?: string | null } ): boolean =>
+	unsuccessfulRefundStatuses.includes( refund.status ?? '' );
 
 export const getDisputeStatus = (
-	dispute: null | Dispute = <Dispute>{}
+	dispute: null | Pick< Dispute, 'status' > = <Dispute>{}
 ): string => dispute?.status || '';
 
 export const getChargeOutcomeType = ( charge: Charge = <Charge>{} ): string =>
@@ -43,8 +83,16 @@ export const isChargeDisputed = ( charge: Charge = <Charge>{} ): boolean =>
 export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	charge.amount_refunded > 0;
 
-export const isChargeRefundFailed = ( charge: Charge = <Charge>{} ): boolean =>
-	charge.refunded === false && get( charge, 'refunds.data', [] ).length > 0;
+export const isChargeRefundFailed = (
+	charge: Charge = <Charge>{}
+): boolean => {
+	const refunds = charge.refunds?.data ?? [];
+	return (
+		charge.refunded === false &&
+		refunds.length > 0 &&
+		refunds.every( isUnsuccessfulRefund )
+	);
+};
 
 export const isChargeFullyRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	charge.refunded === true;
@@ -90,7 +138,11 @@ export const isBlockedByFraudTools = (
 	return [ 'block', 'review_blocked' ].includes( fraudMetaBoxType );
 };
 
-/* TODO: implement authorization and SCA charge statuses */
+const getPaymentIntentDerivedStatus = (
+	paymentIntent?: PaymentIntent
+): string | undefined =>
+	paymentIntent?.status === 'requires_capture' ? 'authorized' : undefined;
+
 export const getChargeStatus = (
 	charge: Charge = <Charge>{},
 	paymentIntent?: PaymentIntent
@@ -112,19 +164,44 @@ export const getChargeStatus = (
 	if ( isChargeDisputed( charge ) ) {
 		return 'disputed_' + getDisputeStatus( charge.dispute );
 	}
+	if ( isChargeRefundFailed( charge ) ) {
+		return 'refund_failed';
+	}
 	if ( isChargePartiallyRefunded( charge ) ) {
 		return 'refunded_partial';
 	}
 	if ( isChargeFullyRefunded( charge ) ) {
 		return 'refunded_full';
 	}
-	if ( isChargeRefundFailed( charge ) ) {
-		return 'refund_failed';
+	const paymentIntentStatus = getPaymentIntentDerivedStatus( paymentIntent );
+	if ( paymentIntentStatus ) {
+		return paymentIntentStatus;
 	}
 	if ( isChargeSuccessful( charge ) ) {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';
 	}
 	return charge.status;
+};
+
+/**
+ * Envelope fee totals can't be trusted if its declared currency disagrees
+ * with the charge's balance_transaction — a mismatch could shift amounts
+ * by 100× via zero-decimal currency rules, so callers fall back to legacy
+ * fields. Missing `balance_transaction.currency` is not a mismatch; the
+ * envelope's own currency stands.
+ */
+export const canUseFeeBreakdownData = ( charge: Charge ): boolean => {
+	const feeTotal = charge.fee_breakdown_v1?.totals?.fee;
+	if ( ! feeTotal ) {
+		return false;
+	}
+
+	const chargeCurrency = charge.balance_transaction?.currency;
+	if ( ! chargeCurrency ) {
+		return true;
+	}
+
+	return feeTotal.currency.toLowerCase() === chargeCurrency.toLowerCase();
 };
 
 /**
@@ -134,6 +211,49 @@ export const getChargeStatus = (
  * @return {ChargeAmounts} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
+	// FEE_BREAKDOWN_FORK_PATCH: remove the legacy branch when the envelope
+	// is the only path. The two branches answer the same question from
+	// different sources — the envelope reports the charge's current state,
+	// the legacy path reconstructs it from balance transactions — and they
+	// derive opposite fields: the envelope is handed `net` and works out
+	// `refunded`, the legacy path accumulates `refunded` and works out
+	// `net`. A change to either needs checking against the other.
+	const breakdown = charge.fee_breakdown_v1;
+	if (
+		canUseFeeBreakdownData( charge ) &&
+		breakdown?.totals?.net &&
+		breakdown.totals.gross
+	) {
+		// Envelope is authoritative for the charge's *current* state: the
+		// server has already folded customer-refunds, dispute fees, and
+		// dispute balance adjustments into `totals.fee` / `totals.net`, so
+		// there is no client-side subtraction here. `refunded` is derived
+		// for backward compatibility with consumers that still read it.
+		//
+		// `totalFee` has to be the full Stripe deduction — fee plus tax,
+		// not `totals.fee.amount` alone — because it is both what we report
+		// as the fee and what gets subtracted to derive `refunded`. Dropping
+		// the tax would understate the first and overstate the second.
+		// Prefer the server-pre-summed `fee_plus_tax`; fall back to
+		// fee + tax for older servers.
+		const totalFee =
+			breakdown.totals.fee_plus_tax?.amount ??
+			breakdown.totals.fee.amount + ( breakdown.totals.tax?.amount ?? 0 );
+		return {
+			currency: breakdown.totals.fee.currency.toLowerCase(),
+			amount: breakdown.totals.gross.amount,
+			fee: totalFee,
+			net: breakdown.totals.net.amount,
+			refunded:
+				breakdown.totals.gross.amount -
+				breakdown.totals.net.amount -
+				totalFee,
+		};
+	}
+
+	// Legacy fallback path: the envelope is absent, currencies mismatch,
+	// or the charge predates the envelope rollout. Reconstruct net the
+	// old way, absorbing customer refunds and dispute adjustments here.
 	const balance = charge.balance_transaction
 		? {
 				currency: charge.balance_transaction.currency,
@@ -151,22 +271,25 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		  };
 
 	if ( isChargeRefunded( charge ) ) {
-		// Refund balance_transactions have negative amount.
 		balance.refunded -= sumBy(
-			charge.refunds?.data,
+			( charge.refunds?.data ?? [] ).filter(
+				( refund ) => ! isUnsuccessfulRefund( refund )
+			),
 			'balance_transaction.amount'
 		);
 	}
 
-	if ( isChargeDisputed( charge ) && typeof charge.dispute !== 'undefined' ) {
-		balance.fee += sumBy( charge.dispute?.balance_transactions, 'fee' );
-		balance.refunded -= sumBy(
-			charge.dispute?.balance_transactions,
-			'amount'
+	if ( isChargeDisputed( charge ) ) {
+		// A charge can carry more than one dispute; fold every dispute's
+		// balance transactions into the fee/refund totals so a second dispute
+		// isn't silently dropped from `Total fees` on this fallback path.
+		const disputeBalanceTransactions = getChargeDisputes( charge ).flatMap(
+			( dispute ) => dispute.balance_transactions ?? []
 		);
+		balance.fee += sumBy( disputeBalanceTransactions, 'fee' );
+		balance.refunded -= sumBy( disputeBalanceTransactions, 'amount' );
 	}
 
-	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
 	balance.net = balance.amount - balance.fee - balance.refunded;
 
 	return balance;

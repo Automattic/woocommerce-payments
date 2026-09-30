@@ -70,6 +70,10 @@ const receiveMultiCurrencies = (
 							data.wcpay_multi_currency_rendering_mode,
 						is_cache_optimized_feature_enabled:
 							data.is_cache_optimized_feature_enabled,
+						should_recommend_cache_mode:
+							data.should_recommend_cache_mode,
+						cache_recommendation_dismissed:
+							data.cache_recommendation_dismissed,
 						site_theme: data.site_theme,
 						date_format: data.date_format,
 						time_format: data.time_format,

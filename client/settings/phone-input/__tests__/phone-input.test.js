@@ -85,4 +85,30 @@ describe( 'PhoneNumberInput', () => {
 			true
 		);
 	} );
+
+	it( 'should sync the dial code font size with the phone input', () => {
+		const originalGetComputedStyle = window.getComputedStyle;
+		const spy = jest
+			.spyOn( window, 'getComputedStyle' )
+			.mockImplementation( ( element, ...args ) => {
+				if ( element instanceof HTMLInputElement ) {
+					return { fontSize: '13px' };
+				}
+				return originalGetComputedStyle( element, ...args );
+			} );
+
+		const { container } = render(
+			<PhoneNumberInput
+				onValueChange={ handlePhoneNumberChangeMock }
+				onValidationChange={ handlePhoneValidationChangeMock }
+				value="123"
+			/>
+		);
+
+		const dialCode = container.querySelector( '.iti__selected-dial-code' );
+		expect( dialCode ).toBeInTheDocument();
+		expect( dialCode.style.fontSize ).toBe( '13px' );
+
+		spy.mockRestore();
+	} );
 } );

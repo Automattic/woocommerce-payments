@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Tell the customer when a new default payment method fails to save on the server, instead of failing the request.

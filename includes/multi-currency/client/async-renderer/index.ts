@@ -4,6 +4,7 @@
  * External dependencies
  */
 import Decimal from 'decimal.js-light';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -14,6 +15,15 @@ const TIMEOUT_MS = 10000;
 const MAX_CACHE_SIZE = 500;
 const SESSION_CACHE_KEY = 'wcpay_mc_async_config';
 const SESSION_CACHE_TTL_MS = 300000; // 5 minutes, matches Cache-Control max-age.
+
+// Markup that still needs a conversion pass when it shows up in the DOM. Block
+// prices carry no "converted" marker because blocks re-render them, so they are
+// matched unconditionally and reconverted idempotently.
+const PENDING_PRICE_SELECTORS = [
+	'[data-wcpay-price]:not(.wcpay-price-converted)',
+	'[data-wcpay-sr-type]:not(.wcpay-sr-converted)',
+	'.wc-block-components-product-price',
+];
 
 type SymbolPosition = 'left' | 'left_space' | 'right' | 'right_space';
 
@@ -67,6 +77,19 @@ interface JQueryObject {
 	off( events: string, handler: () => void ): JQueryObject;
 }
 
+declare global {
+	interface Window {
+		wcpayAsyncCurrency?: { ready: Promise< string > };
+	}
+}
+
+const whenDomReady = (): Promise< void > =>
+	document.readyState === 'loading'
+		? new Promise( ( resolve ) =>
+				document.addEventListener( 'DOMContentLoaded', () => resolve() )
+		  )
+		: Promise.resolve();
+
 /**
  * Async price renderer for cache-optimized multi-currency mode.
  *
@@ -115,6 +138,7 @@ class WCPayAsyncPriceRenderer {
 			clearTimeout( timeoutId! );
 
 			this.convertAllPrices();
+			this.syncCurrencySwitchers();
 			this.observeDynamicContent();
 			this.listenToWooCommerceEvents();
 		} catch ( error ) {
@@ -436,6 +460,7 @@ class WCPayAsyncPriceRenderer {
 		} );
 
 		this.convertScreenReaderText();
+		this.convertBlockScreenReaderText();
 	}
 
 	/**
@@ -515,6 +540,104 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
+	 * Rewrite WooCommerce Blocks price-range screen-reader labels in the selected currency.
+	 *
+	 * Blocks build the "Price between X and Y" label with the global
+	 * `wcSettings.currency` rather than the per-product Store API currency (see
+	 * WooCommerce's `product-price` base component). Cache-optimized mode
+	 * deliberately leaves that global as the store currency so the served HTML
+	 * stays identical for every visitor, which leaves the label — and only the
+	 * label — in the store currency.
+	 *
+	 * The visible prices next to it already come from the per-product Store API
+	 * currency and are correct, so the label is rebuilt from those rendered
+	 * values instead of re-converting the raw amounts, which the block markup
+	 * does not expose.
+	 */
+	convertBlockScreenReaderText(): void {
+		if (
+			! this.config ||
+			this.config.selected_currency === this.config.default_currency
+		) {
+			return;
+		}
+
+		const priceElements = document.querySelectorAll(
+			'.wc-block-components-product-price'
+		);
+
+		priceElements.forEach( ( priceEl ) => {
+			// Blocks render the range label as a direct child; SSR prices
+			// annotated by AsyncPriceRenderer are handled elsewhere.
+			const srEl = priceEl.querySelector(
+				':scope > .screen-reader-text:not([data-wcpay-sr-type])'
+			);
+
+			// Only the range variant wraps its prices in an aria-hidden span
+			// with both ends of the range; sale prices render a single value.
+			const values = priceEl.querySelectorAll(
+				'[aria-hidden="true"] .wc-block-components-product-price__value'
+			);
+
+			if ( ! srEl || values.length < 2 ) {
+				return;
+			}
+
+			const from = values[ 0 ].textContent?.trim();
+			const to = values[ values.length - 1 ].textContent?.trim();
+
+			if ( ! from || ! to ) {
+				return;
+			}
+
+			const label = sprintf(
+				// Uses WC's text domain so the label matches the block's own
+				// translation in every locale.
+				// eslint-disable-next-line @wordpress/i18n-text-domain
+				__( 'Price between %1$s and %2$s', 'woocommerce' ),
+				from,
+				to
+			);
+
+			// Assigning only on change keeps this idempotent, so repeated
+			// passes (MutationObserver, WC AJAX events) are free and a block
+			// re-render is picked up again.
+			if ( srEl.textContent !== label ) {
+				srEl.textContent = label;
+			}
+		} );
+	}
+
+	/**
+	 * Sync every currency switcher to the selected (localized) currency.
+	 *
+	 * In cache-optimized mode the switcher's selected <option> is baked into the
+	 * cached HTML as the store default (no server-side session), so realign it
+	 * client-side to match the converted prices. Assigning select.value does not
+	 * fire a change event, so onchange="this.form.submit()" never runs: no
+	 * session is created and caching is preserved.
+	 */
+	syncCurrencySwitchers(): void {
+		const selectedCode = this.config?.selected_currency;
+		if ( ! selectedCode ) {
+			return;
+		}
+
+		const selects = document.querySelectorAll< HTMLSelectElement >(
+			'select.js-woopayments-currency-switcher'
+		);
+
+		selects.forEach( ( select ) => {
+			const hasOption = Array.from( select.options ).some(
+				( option ) => option.value === selectedCode
+			);
+			if ( hasOption && select.value !== selectedCode ) {
+				select.value = selectedCode;
+			}
+		} );
+	}
+
+	/**
 	 * Set up a MutationObserver to convert prices in dynamically added content.
 	 */
 	observeDynamicContent(): void {
@@ -528,20 +651,13 @@ class WCPayAsyncPriceRenderer {
 					}
 
 					const el = node as Element;
-					if (
-						el.matches?.(
-							'[data-wcpay-price]:not(.wcpay-price-converted)'
-						) ||
-						el.querySelector?.(
-							'[data-wcpay-price]:not(.wcpay-price-converted)'
-						) ||
-						el.matches?.(
-							'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
-						) ||
-						el.querySelector?.(
-							'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
-						)
-					) {
+					const matchesAny = PENDING_PRICE_SELECTORS.some(
+						( selector ) =>
+							el.matches?.( selector ) ||
+							el.querySelector?.( selector )
+					);
+
+					if ( matchesAny ) {
 						hasNewPrices = true;
 						break;
 					}
@@ -672,9 +788,13 @@ export { WCPayAsyncPriceRenderer };
 if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
 	const renderer = new WCPayAsyncPriceRenderer();
 
-	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', () => renderer.init() );
-	} else {
-		renderer.init();
-	}
+	// ECE awaits this before calling stripe.elements so it doesn't
+	// race the REST fetch.
+	window.wcpayAsyncCurrency = {
+		ready: whenDomReady()
+			.then( () => renderer.init() )
+			.then( () =>
+				( renderer.config?.selected_currency ?? '' ).toLowerCase()
+			),
+	};
 }

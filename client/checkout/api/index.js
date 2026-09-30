@@ -8,9 +8,6 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { getAppearance, getFontRulesFromPage } from 'checkout/upe-styles';
-import { getAppearanceType } from '../utils';
-import { isShortcodeCheckout } from 'wcpay/checkout/woopay/utils';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -27,7 +24,6 @@ export default class WCPayAPI {
 		this.stripe = null;
 		this.stripePlatform = null;
 		this.request = request;
-		this.isWooPayRequesting = false;
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
@@ -122,9 +118,11 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
 	async loadStripeForExpressCheckout() {
-		// Force Stripe to be loadded with the connected account.
+		// Force Stripe to be loaded with the connected account.
 		try {
-			return this.getStripe( true );
+			// `await` so getStripe()'s async rejection (e.g. the window.Stripe
+			// timeout) is caught here and returned as `{ error }`.
+			return await this.getStripe( true );
 		} catch ( error ) {
 			// In order to avoid showing console error publicly to users,
 			// we resolve instead of rejecting when there is an error.
@@ -152,29 +150,10 @@ export default class WCPayAPI {
 		}
 
 		const isSetupIntent = partials[ 1 ] === 'si';
-		let orderId = partials[ 2 ];
+		const orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
 		const confirmationToken = partials[ 5 ] || null;
-		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
-		const isOrderPage = orderPayIndex > -1;
-
-		// If we're on the Pay for Order page, get the order ID
-		// directly from the URL instead of relying on the hash.
-		// The checkout URL does not contain the string 'order-pay'.
-		// The Pay for Order page contains the string 'order-pay' and
-		// can have these formats:
-		// Plain permalinks:
-		// /?page_id=7&order-pay=189&pay_for_order=true&key=wc_order_key
-		// Non-plain permalinks:
-		// /checkout/order-pay/189/
-		// Match for consecutive digits after the string 'order-pay' to get the order ID.
-		const orderIdPartials =
-			isOrderPage &&
-			redirectUrl.substring( orderPayIndex ).match( /\d+/ );
-		if ( orderIdPartials ) {
-			orderId = orderIdPartials[ 0 ];
-		}
 
 		const confirmPaymentOrSetup = async () => {
 			const { locale, publishableKey } = this.options;
@@ -306,13 +285,17 @@ export default class WCPayAPI {
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.
+	 * @param {string} fingerprint     User fingerprint for fraud prevention.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	async setupIntent( paymentMethodId ) {
+	async setupIntent( paymentMethodId, fingerprint = '' ) {
 		const response = await this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+			'wcpay-fraud-prevention-token':
+				window.wcpayFraudPreventionToken ?? '',
+			'wcpay-fingerprint': fingerprint,
 		} );
 
 		if ( ! response.success ) {
@@ -336,39 +319,6 @@ export default class WCPayAPI {
 		}
 
 		return setupIntent;
-	}
-
-	initWooPay( userEmail, woopayUserSession ) {
-		if ( ! this.isWooPayRequesting ) {
-			this.isWooPayRequesting = true;
-			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
-			const nonce = getConfig( 'initWooPayNonce' );
-			let appearance = null;
-			let fontRules = null;
-			if ( getConfig( 'isWooPayGlobalThemeSupportEnabled' ) ) {
-				if ( isShortcodeCheckout() ) {
-					const appearanceType = getAppearanceType();
-					appearance = getAppearance( appearanceType, true );
-					fontRules = getFontRulesFromPage();
-				} else {
-					appearance = getConfig( 'woopayAppearance' );
-					fontRules = getConfig( 'woopayFontRules' );
-				}
-			}
-
-			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
-				_wpnonce: nonce,
-				appearance,
-				font_rules: fontRules,
-				email: userEmail,
-				user_session: woopayUserSession,
-				order_id: getConfig( 'order_id' ),
-				key: getConfig( 'key' ),
-				billing_email: getConfig( 'billing_email' ),
-			} ).finally( () => {
-				this.isWooPayRequesting = false;
-			} );
-		}
 	}
 
 	expressCheckoutAddToCart( productData ) {

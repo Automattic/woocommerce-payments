@@ -15,7 +15,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
 	useExpressCheckoutInPaymentMethodsEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ] =

@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Admin\WCAdminHelper;
+use WCPay\Constants\Order_Mode;
 use WCPay\Database_Cache;
 
 /**
@@ -17,6 +18,40 @@ use WCPay\Database_Cache;
  */
 class WC_Payments_Incentives_Service {
 	const PREFIX = 'woocommerce_admin_pes_incentive_';
+
+	/**
+	 * The option name used to store whether the store had WooPayments in use.
+	 *
+	 * We use the same option key as the WC core suggestion incentives.
+	 *
+	 * @see \Automattic\WooCommerce\Internal\Admin\Suggestions\Incentives\WooPayments
+	 */
+	const STORE_HAD_WOOPAYMENTS_OPTION_NAME = self::PREFIX . 'woopayments_store_had_woopayments';
+
+	/**
+	 * The option name used to store the logic version that determined the store had WooPayments value.
+	 *
+	 * We use the same option key as the WC core suggestion incentives.
+	 *
+	 * @see \Automattic\WooCommerce\Internal\Admin\Suggestions\Incentives\WooPayments
+	 */
+	const STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME = self::STORE_HAD_WOOPAYMENTS_OPTION_NAME . '_version';
+
+	/**
+	 * The version of the logic used to determine if the store had WooPayments in use.
+	 *
+	 * The determined value is stored long-term (see `has_wcpay()`), and WooCommerce core
+	 * stores its own determination under the very same option name. Persisting the version
+	 * alongside the value lets us tell a value determined by the current logic from one
+	 * determined by an earlier (or by WC core's, potentially older) logic, so a stale
+	 * positive gets re-determined instead of being trusted forever.
+	 *
+	 * Bump this whenever the determination logic gets stricter. Keep it in sync with the
+	 * WC core copy of this logic.
+	 *
+	 * @var int
+	 */
+	private const STORE_HAD_WOOPAYMENTS_LOGIC_VERSION = 2;
 
 	/**
 	 * The transient name for incentives cache.
@@ -38,6 +73,13 @@ class WC_Payments_Incentives_Service {
 	 * @var string
 	 */
 	private $store_had_woopayments_option_name;
+
+	/**
+	 * The option name used to store the logic version that determined the store had WooPayments value.
+	 *
+	 * @var string
+	 */
+	private $store_had_woopayments_version_option_name;
 
 	/**
 	 * The memoized incentives to avoid fetching multiple times during a request.
@@ -66,7 +108,9 @@ class WC_Payments_Incentives_Service {
 		// @see \Automattic\WooCommerce\Internal\Admin\Suggestions\Incentives\WooPayments.
 		$this->cache_transient_name              = self::PREFIX . 'woopayments_cache';
 		$this->store_has_orders_transient_name   = self::PREFIX . 'woopayments_store_has_orders';
-		$this->store_had_woopayments_option_name = self::PREFIX . 'woopayments_store_had_woopayments';
+		$this->store_had_woopayments_option_name = self::STORE_HAD_WOOPAYMENTS_OPTION_NAME;
+
+		$this->store_had_woopayments_version_option_name = self::STORE_HAD_WOOPAYMENTS_VERSION_OPTION_NAME;
 	}
 
 	/**
@@ -367,7 +411,7 @@ class WC_Payments_Incentives_Service {
 
 	/**
 	 * Check if WooPayments payment gateway was active and set up at some point,
-	 * or there are orders processed with it, at some moment.
+	 * or there are live-mode orders processed with it, at some moment.
 	 *
 	 * @return boolean Whether the store has WooPayments.
 	 */
@@ -378,20 +422,46 @@ class WC_Payments_Incentives_Service {
 		// Since the past can't be changed, neither can this value.
 		$had_wcpay = get_option( $this->store_had_woopayments_option_name );
 		if ( false !== $had_wcpay ) {
-			return filter_var( $had_wcpay, FILTER_VALIDATE_BOOLEAN );
+			$stored_value = filter_var( $had_wcpay, FILTER_VALIDATE_BOOLEAN );
+
+			// A stored negative is always trusted: each revision of this logic is stricter than
+			// the one before it, so a store that didn't qualify under an earlier revision can't
+			// start qualifying under this one.
+			//
+			// A stored positive is only trusted when the current logic determined it. Earlier
+			// revisions counted test-mode usage (a test-drive account or a test-mode order) as
+			// the real thing and froze the result, so those positives get re-determined once.
+			// WooCommerce core writes this same option and may still be running an older
+			// revision of the shared logic, so this is what keeps the two safe to ship in any
+			// order rather than whichever one runs first winning permanently.
+			if ( ! $stored_value
+				|| (int) get_option( $this->store_had_woopayments_version_option_name, 0 ) >= self::STORE_HAD_WOOPAYMENTS_LOGIC_VERSION ) {
+
+				return $stored_value;
+			}
 		}
 
 		// We need to determine the value.
 		// Start with the assumption that the store didn't have WooPayments in use.
 		$had_wcpay = false;
 
-		// We consider the store to have WooPayments if there is meaningful account data in the WooPayments account cache.
-		// This implies that WooPayments was active at some point and that it was connected.
+		// We consider the store to have WooPayments if there is meaningful live account data
+		// in the WooPayments account cache.
+		// This implies that WooPayments was active at some point and that it was connected with a live account.
 		if ( $this->has_wcpay_account_data() ) {
 			$had_wcpay = true;
 		}
 
-		// If there is at least one order processed with WooPayments, we consider the store to have WooPayments.
+		// If there is at least one live-mode order processed with WooPayments, we consider the store to have WooPayments.
+		// Test-mode orders (e.g. placed while trialing WooPayments with a test-drive account) don't count
+		// since they don't represent real usage of WooPayments.
+		//
+		// Orders carrying no order mode meta at all don't count either, since the meta is what tells the two
+		// apart. That covers orders placed before WooPayments started saving it (April 2022, WooPayments 4.1.0)
+		// and orders created outside the checkout flow that saves it, like WooPayments Subscriptions renewals.
+		// Such a store may end up considered incentive-eligible despite having used WooPayments, which is the
+		// far less harmful direction to err in than permanently withholding incentives from a store that only
+		// ever tried WooPayments out.
 		if ( false === $had_wcpay && ! empty(
 			wc_get_orders(
 				[
@@ -399,30 +469,55 @@ class WC_Payments_Incentives_Service {
 					'return'         => 'ids',
 					'limit'          => 1,
 					'orderby'        => 'none',
+					// Use the order mode meta saved by WooPayments to only count live-mode orders.
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+					'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'meta_value'     => Order_Mode::PRODUCTION,
 				]
 			)
 		) ) {
 			$had_wcpay = true;
 		}
 
-		// Store the value for future use.
+		// Store the value, and the logic version that determined it, for future use.
 		update_option( $this->store_had_woopayments_option_name, $had_wcpay ? 'yes' : 'no' );
+		update_option( $this->store_had_woopayments_version_option_name, self::STORE_HAD_WOOPAYMENTS_LOGIC_VERSION );
 
 		return $had_wcpay;
 	}
 
 	/**
-	 * Check if there is meaningful data in the WooPayments account cache.
+	 * Check if there is meaningful live account data in the WooPayments account cache.
+	 *
+	 * Sandbox accounts don't count: a test-drive account is a trial of WooPayments,
+	 * not actual use of it. This mirrors how we decide whether an account belongs to
+	 * a genuine live merchant.
+	 *
+	 * @see WC_Payments_Account::maybe_record_kyc_completion_date()
 	 *
 	 * @return boolean
 	 */
 	private function has_wcpay_account_data(): bool {
 		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY, true );
-		if ( ! empty( $account_data['account_id'] ) ) {
-			return true;
+		if ( empty( $account_data['account_id'] ) ) {
+			return false;
 		}
 
-		return false;
+		// A test-drive account is a trial of WooPayments, not real usage of it.
+		if ( ! empty( $account_data['is_test_drive'] ) ) {
+			return false;
+		}
+
+		// Sandbox accounts don't count either.
+		// Both flags are only acted upon when present: cached account data written by
+		// older WooPayments versions may not carry them, and we'd rather keep counting
+		// those stores as WooPayments users than reclassify them on missing data.
+		if ( isset( $account_data['is_live'] ) && ! $account_data['is_live'] ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

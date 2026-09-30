@@ -630,7 +630,7 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		// Mock the wcs_create_renewal_order function.
 		WC_Subscriptions::wcs_create_renewal_order(
-			function ( $subscription ) use ( &$renewal_order_created ) {
+			function ( $_unused_subscription ) use ( &$renewal_order_created ) {
 				$renewal_order_created = true;
 				return WC_Helper_Order::create_order();
 			}
@@ -1168,7 +1168,7 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		// Mock the wcs_get_page_screen_id function.
 		if ( ! function_exists( 'wcs_get_page_screen_id' ) ) {
-			function wcs_get_page_screen_id( $type ) {
+			function wcs_get_page_screen_id( $_unused_type ) {
 				return 'wc-orders--shop_order';
 			}
 		}

@@ -23,9 +23,11 @@ import strings from 'onboarding/strings';
  */
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
-	const countries = getAvailableCountries();
-	const businessTypes = getBusinessTypes();
-	const mccsFlatList = getMccsFlatList();
+
+	// These read from wcpaySettings, which the page localises once and never changes.
+	const countries = React.useMemo( () => getAvailableCountries(), [] );
+	const businessTypes = React.useMemo( () => getBusinessTypes(), [] );
+	const mccsFlatList = React.useMemo( () => getMccsFlatList(), [] );
 
 	const selectedCountry = businessTypes.find( ( country ) => {
 		// Special case for Puerto Rico as it's considered a separate country in Core, but the business country should be US.
@@ -37,20 +39,49 @@ const BusinessDetails: React.FC = () => {
 	} );
 
 	// Reorder the country business types so company is always first, if it exists.
-	const reorderedBusinessTypes = selectedCountry?.types.sort( ( a, b ) =>
-		// eslint-disable-next-line no-nested-ternary
-		a.key === 'company' ? -1 : b.key === 'company' ? 1 : 0
-	);
+	// Sort on a copy — the source list is built once and shared across renders.
+	const reorderedBusinessTypes = selectedCountry
+		? [ ...selectedCountry.types ].sort( ( a, b ) =>
+				// eslint-disable-next-line no-nested-ternary
+				a.key === 'company' ? -1 : b.key === 'company' ? 1 : 0
+		  )
+		: undefined;
 
 	const selectedBusinessType = reorderedBusinessTypes?.find(
 		( type ) => type.key === data.business_type
 	);
 
+	const selectedBusinessStructures = selectedBusinessType?.structures ?? [];
+	const shouldDisplayBusinessStructure =
+		selectedBusinessStructures.length > 0 &&
+		selectedBusinessType?.requires_structure !== false &&
+		! (
+			selectedBusinessStructures.length === 1 &&
+			selectedBusinessStructures[ 0 ].key === 'nil'
+		);
 	const selectedBusinessStructure =
-		selectedBusinessType?.structures.length === 0 ||
-		selectedBusinessType?.structures.find(
+		! shouldDisplayBusinessStructure ||
+		selectedBusinessStructures.find(
 			( structure ) => structure.key === data[ 'company.structure' ]
 		);
+
+	React.useEffect( () => {
+		// handleTiedChange clears the structure when the merchant changes business type.
+		// This catches cached/initial structure values for business types whose structure field
+		// is hidden.
+		if (
+			selectedBusinessType &&
+			! shouldDisplayBusinessStructure &&
+			data[ 'company.structure' ]
+		) {
+			setData( { 'company.structure': undefined } );
+		}
+	}, [
+		data,
+		selectedBusinessType,
+		setData,
+		shouldDisplayBusinessStructure,
+	] );
 
 	const handleTiedChange = (
 		name: keyof OnboardingFields,
@@ -76,11 +107,11 @@ const BusinessDetails: React.FC = () => {
 					onChange={ handleTiedChange }
 				/>
 			</span>
-			{ selectedCountry && selectedCountry.types.length > 0 && (
+			{ reorderedBusinessTypes && reorderedBusinessTypes.length > 0 && (
 				<span data-testid="business-type-select">
 					<OnboardingSelectField
 						name="business_type"
-						options={ selectedCountry.types }
+						options={ reorderedBusinessTypes }
 						onChange={ handleTiedChange }
 					>
 						{ ( item: Item & BusinessType ) => (
@@ -94,16 +125,15 @@ const BusinessDetails: React.FC = () => {
 					</OnboardingSelectField>
 				</span>
 			) }
-			{ selectedBusinessType &&
-				selectedBusinessType.structures.length > 0 && (
-					<span data-testid={ 'business-structure-select' }>
-						<OnboardingSelectField
-							name="company.structure"
-							options={ selectedBusinessType.structures }
-							onChange={ handleTiedChange }
-						/>
-					</span>
-				) }
+			{ selectedBusinessType && shouldDisplayBusinessStructure && (
+				<span data-testid={ 'business-structure-select' }>
+					<OnboardingSelectField
+						name="company.structure"
+						options={ selectedBusinessStructures }
+						onChange={ handleTiedChange }
+					/>
+				</span>
+			) }
 			{ selectedCountry &&
 				selectedBusinessType &&
 				selectedBusinessStructure && (

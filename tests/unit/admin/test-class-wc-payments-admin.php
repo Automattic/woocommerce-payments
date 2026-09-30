@@ -223,6 +223,126 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
 	}
 
+	/**
+	 * @dataProvider data_rejected_or_under_review_menu
+	 */
+	public function test_rejected_or_under_review_account_registers_limited_menu( bool $is_rejected, bool $is_under_review ) {
+		global $submenu;
+
+		add_filter(
+			'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME,
+			function () {
+				return '1';
+			}
+		);
+
+		$this->mock_current_user_is_admin();
+
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
+		$this->mock_account->method( 'is_account_rejected' )->willReturn( $is_rejected );
+		$this->mock_account->method( 'is_account_under_review' )->willReturn( $is_under_review );
+
+		try {
+			$this->payments_admin->add_payments_menu();
+
+			$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+
+			// These pages should be registered for rejected/under-review accounts.
+			$this->assertArrayHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
+			$this->assertArrayHasKey( 'wc-admin&path=/payments/transactions', $item_names_by_urls );
+			$this->assertArrayHasKey( 'wc-admin&path=/payments/disputes', $item_names_by_urls );
+
+			// These pages should NOT be registered.
+			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/deposits', $item_names_by_urls );
+			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/reports', $item_names_by_urls );
+			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/settings/regular', $item_names_by_urls );
+			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/documents', $item_names_by_urls );
+		} finally {
+			remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
+		}
+	}
+
+	public function data_rejected_or_under_review_menu(): array {
+		return [
+			'rejected account'     => [ true, false ],
+			'under review account' => [ false, true ],
+		];
+	}
+
+	public function test_reports_menu_item_is_hidden_when_feature_flag_is_disabled() {
+		global $submenu;
+
+		$this->mock_current_user_is_admin();
+
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
+
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/reports', $item_names_by_urls );
+	}
+
+	public function test_reports_route_redirects_when_feature_flag_is_enabled_but_account_is_invalid() {
+		add_filter(
+			'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME,
+			function () {
+				return '1';
+			}
+		);
+
+		$this->mock_current_user_is_admin();
+
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
+
+		try {
+			$this->payments_admin->add_payments_menu();
+
+			$_GET = [
+				'page' => 'wc-admin',
+				'path' => '/payments/reports',
+			];
+
+			$this->mock_account
+				->expects( $this->once() )
+				->method( 'redirect_to_onboarding_welcome_page' );
+
+			$this->assertTrue( $this->payments_admin->maybe_redirect_from_payments_admin_child_pages() );
+		} finally {
+			$_GET = [];
+			remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
+		}
+	}
+
+	public function test_reports_menu_item_is_visible_when_feature_flag_is_enabled() {
+		global $submenu;
+
+		add_filter(
+			'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME,
+			function () {
+				return '1';
+			}
+		);
+
+		$this->mock_current_user_is_admin();
+
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
+
+		try {
+			$this->payments_admin->add_payments_menu();
+
+			$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+
+			$this->assertArrayHasKey( 'wc-admin&path=/payments/reports', $item_names_by_urls );
+		} finally {
+			remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
+		}
+	}
+
 	private function mock_current_user_is_admin() {
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );
@@ -487,180 +607,69 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Transactions', $transactions_menu_item );
 	}
 
-	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_wrong_page() {
-		global $wp_scripts, $wp_styles;
-
-		// Arrange.
-		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-
-		$_GET['page'] = 'wc-payments';
-		$_GET['tab']  = 'products'; // Wrong WC settings tab.
-
-		// Mock the current screen.
-		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
-
-		// Mock the WooCommerce version to be at the minimum required version.
-		Constants::set_constant( 'WC_VERSION', '9.9.2' );
-
-		// Act.
-		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
-
-		// Assert.
-		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-
-		// Clean up.
-		unset( $_GET['page'], $_GET['tab'] );
-		Constants::clear_constants();
-	}
-
-	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_old_wc_version() {
-		global $wp_scripts, $wp_styles;
-
-		// Arrange.
-		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-
-		$_GET['page'] = 'wc-payments';
-		$_GET['tab']  = 'checkout';
-
-		// Mock the current screen.
-		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
-
-		// Mock the WooCommerce version to NOT be at the minimum required version.
-		Constants::set_constant( 'WC_VERSION', '9.9.1' );
-
-		// Act.
-		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
-
-		// Assert.
-		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-
-		// Clean up.
-		unset( $_GET['page'], $_GET['tab'] );
-		Constants::clear_constants();
-	}
-
 	/**
-	 * Data provider for test_should_show_review_prompt.
+	 * Data provider for test_enqueue_wc_payment_settings_spotlight.
 	 *
 	 * @return array
 	 */
-	public function provider_should_show_review_prompt() {
+	public function provider_enqueue_wc_payment_settings_spotlight(): array {
 		return [
-			'should not show on section page'            => [
-				'page_setup'  => [
-					'page'    => 'wc-settings',
-					'tab'     => 'checkout',
-					'section' => 'woocommerce_payments',
-				],
-				'is_eligible' => true,
-				'dismissed'   => 0,
-				'maybe_later' => 0,
-				'expected'    => false,
+			'wrong settings tab'              => [
+				'page=wc-settings&tab=products',
+				'9.9.2',
+				false,
 			],
-			'should not show when account not eligible'  => [
-				'page_setup'  => [
-					'page' => 'wc-settings',
-					'tab'  => 'checkout',
-				],
-				'is_eligible' => false,
-				'dismissed'   => 0,
-				'maybe_later' => 0,
-				'expected'    => false,
+			'payment method section'          => [
+				'page=wc-settings&tab=checkout&section=woocommerce_payments',
+				'9.9.2',
+				false,
 			],
-			'should not show when permanently dismissed' => [
-				'page_setup'  => [
-					'page' => 'wc-settings',
-					'tab'  => 'checkout',
-				],
-				'is_eligible' => true,
-				'dismissed'   => time(),
-				'maybe_later' => 0,
-				'expected'    => false,
+			'top-level page with a spotlight' => [
+				'page=wc-settings&tab=checkout',
+				'9.9.2',
+				true,
 			],
-			'should not show when in cooldown'           => [
-				'page_setup'  => [
-					'page' => 'wc-settings',
-					'tab'  => 'checkout',
-				],
-				'is_eligible' => true,
-				'dismissed'   => 0,
-				'maybe_later' => time() - ( 5 * DAY_IN_SECONDS ), // 5 days ago.
-				'expected'    => false,
-			],
-			'should show when cooldown expired'          => [
-				'page_setup'  => [
-					'page' => 'wc-settings',
-					'tab'  => 'checkout',
-				],
-				'is_eligible' => true,
-				'dismissed'   => 0,
-				'maybe_later' => time() - ( 11 * DAY_IN_SECONDS ), // 11 days ago.
-				'expected'    => true,
-			],
-			'should show when all conditions pass'       => [
-				'page_setup'  => [
-					'page' => 'wc-settings',
-					'tab'  => 'checkout',
-				],
-				'is_eligible' => true,
-				'dismissed'   => 0,
-				'maybe_later' => 0,
-				'expected'    => true,
+			'unsupported WooCommerce version' => [
+				'page=wc-settings&tab=checkout',
+				'9.9.1',
+				false,
 			],
 		];
 	}
 
 	/**
-	 * Test should_show_review_prompt method with various scenarios.
+	 * @testdox The settings spotlight is enqueued only on the supported top-level Payments page.
+	 * @dataProvider provider_enqueue_wc_payment_settings_spotlight
 	 *
-	 * @dataProvider provider_should_show_review_prompt
-	 *
-	 * @param array $page_setup   Page setup parameters.
-	 * @param bool  $is_eligible  Whether account is eligible.
-	 * @param int   $dismissed    Timestamp when dismissed (0 if not dismissed).
-	 * @param int   $maybe_later  Timestamp when maybe later clicked (0 if not).
-	 * @param bool  $expected     Expected return value.
+	 * @param string $request_query  Request parameters as a query string.
+	 * @param string $wc_version    WooCommerce version.
+	 * @param bool   $should_enqueue Whether the spotlight assets should be enqueued.
 	 */
-	public function test_should_show_review_prompt( $page_setup, $is_eligible, $dismissed, $maybe_later, $expected ) {
-		// Arrange: Set up page.
-		foreach ( $page_setup as $key => $value ) {
-			$_REQUEST[ $key ] = $value;
-		}
+	public function test_enqueue_wc_payment_settings_spotlight( string $request_query, string $wc_version, bool $should_enqueue ) {
+		global $wp_scripts, $wp_styles;
 
-		// Mock the current screen.
+		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		parse_str( $request_query, $_REQUEST );
+
 		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+		Constants::set_constant( 'WC_VERSION', $wc_version );
+		$this->mock_pm_promotions_service->method( 'get_visible_promotions' )->willReturn( [ [ 'type' => 'spotlight' ] ] );
 
-		// Mock account eligibility.
-		$this->mock_account->method( 'is_review_prompt_eligible' )->willReturn( $is_eligible );
+		wp_register_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', false, [], '1.0', true );
+		wp_register_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', false, [], '1.0' );
 
-		// Mock current user and set user meta.
-		$user_id = 1;
-		wp_set_current_user( $user_id );
+		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
 
-		if ( $dismissed > 0 ) {
-			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', $dismissed );
-		}
+		$this->assertSame( $should_enqueue, wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertSame( $should_enqueue, wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
 
-		if ( $maybe_later > 0 ) {
-			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', $maybe_later );
-		}
-
-		// Act.
-		$result = $this->payments_admin->should_show_review_prompt();
-
-		// Assert.
-		$this->assertSame( $expected, $result );
-
-		// Clean up.
-		foreach ( array_keys( $page_setup ) as $key ) {
-			unset( $_REQUEST[ $key ] );
-		}
-		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed' );
-		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later' );
+		wp_dequeue_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_dequeue_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_deregister_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_deregister_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		$_REQUEST = [];
+		Constants::clear_constants();
 	}
 
 	/**

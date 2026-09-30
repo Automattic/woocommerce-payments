@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add defensive checks before initializing WC_Payments_Captured_Event_Note to prevent fatal errors when timeline data is missing or malformed.

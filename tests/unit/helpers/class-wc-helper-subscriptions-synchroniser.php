@@ -30,7 +30,7 @@ class WC_Subscriptions_Synchroniser {
 		return self::$is_syncing_enabled;
 	}
 
-	public static function subscription_contains_synced_product( $subscription ) {
+	public static function subscription_contains_synced_product( $_unused_subscription ) {
 		return self::$subscription_contains_synced_product;
 	}
 }

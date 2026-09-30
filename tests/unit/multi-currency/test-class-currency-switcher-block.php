@@ -125,6 +125,20 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		}
 	}
 
+	public function test_render_block_widget_adds_aria_label() {
+		$this->mock_compatibility->expects( $this->once() )
+			->method( 'should_disable_currency_switching' )
+			->willReturn( false );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_enabled_currencies' )
+			->willReturn( $this->mock_currencies );
+
+		$result = $this->currency_switcher_block->render_block_widget( [], '' );
+
+		$this->assertStringContainsString( 'aria-label="Select your currency"', $result );
+	}
+
 	public function block_widget_attributes_provider(): array {
 		return [
 			'with_defaults'                 => [

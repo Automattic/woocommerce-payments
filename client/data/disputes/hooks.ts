@@ -16,8 +16,14 @@ import type {
 	CachedDisputes,
 	DisputesSummary,
 } from 'wcpay/types/disputes';
+import type { ChargeDispute } from 'wcpay/types/charges';
 import type { ApiError } from 'wcpay/types/errors';
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
+
+const emptyCachedDisputes: CachedDisputes = {
+	disputes: [],
+	isLoading: false,
+};
 
 /**
  * Returns the dispute object, error object, and loading state.
@@ -32,13 +38,23 @@ export const useDispute = (
 } => {
 	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
-			const { getDispute, getDisputeError, isResolving } =
-				select( STORE_NAME );
+			const {
+				getDispute,
+				getDisputeError,
+				isResolving,
+				hasFinishedResolution,
+			} = select( STORE_NAME );
 
 			return {
 				dispute: <Dispute | undefined>getDispute( id ),
 				error: <ApiError | undefined>getDisputeError( id ),
-				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
+				// Match the sibling data hooks (charges, deposits, payment
+				// intents): derive loading from hasFinishedResolution so it stays
+				// true until the resolver settles. isResolving alone is false on
+				// the first render, before resolution starts.
+				isLoading:
+					<boolean>isResolving( 'getDispute', [ id ] ) ||
+					! hasFinishedResolution( 'getDispute', [ id ] ),
 			};
 		},
 		[ id ]
@@ -52,7 +68,7 @@ export const useDispute = (
  * Does not return or fetch the dispute object.
  */
 export const useDisputeAccept = (
-	dispute: Dispute
+	dispute: Pick< ChargeDispute, 'id' | 'payment_intent' >
 ): {
 	doAccept: () => void;
 	isLoading: boolean;
@@ -79,23 +95,31 @@ export const useDisputeEvidence = (): {
 	return { updateDispute };
 };
 
-export const useDisputes = ( {
-	paged,
-	per_page: perPage,
-	store_currency_is: storeCurrencyIs,
-	match,
-	date_before: dateBefore,
-	date_after: dateAfter,
-	date_between: dateBetween,
-	filter,
-	status_is: statusIs,
-	status_is_not: statusIsNot,
-	orderby: orderBy,
-	order,
-}: Query ): CachedDisputes =>
+export const useDisputes = (
+	{
+		paged,
+		per_page: perPage,
+		store_currency_is: storeCurrencyIs,
+		match,
+		date_before: dateBefore,
+		date_after: dateAfter,
+		date_between: dateBetween,
+		filter,
+		status_is: statusIs,
+		status_is_not: statusIsNot,
+		orderby: orderBy,
+		order,
+	}: Query,
+	shouldLoad?: boolean
+): CachedDisputes =>
 	useSelect(
 		( select ) => {
-			const { getDisputes, isResolving } = select( STORE_NAME );
+			if ( shouldLoad === false ) {
+				return emptyCachedDisputes;
+			}
+
+			const { getDisputes, isResolving, hasFinishedResolution } =
+				select( STORE_NAME );
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -122,7 +146,10 @@ export const useDisputes = ( {
 
 			return {
 				disputes: getDisputes( query ),
-				isLoading: isResolving( 'getDisputes', [ query ] ),
+				isLoading:
+					isResolving( 'getDisputes', [ query ] ) ||
+					( shouldLoad === true &&
+						! hasFinishedResolution( 'getDisputes', [ query ] ) ),
 			};
 		},
 		[
@@ -138,6 +165,7 @@ export const useDisputes = ( {
 			statusIsNot,
 			orderBy,
 			order,
+			shouldLoad,
 		]
 	);
 

@@ -24,13 +24,78 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->payments_order_success_page = new WC_Payments_Order_Success_Page();
+		$this->payments_order_success_page->init_hooks();
 	}
 
 	public function tear_down() {
 		global $wp;
 		unset( $_GET['key'] );
 		unset( $wp->query_vars['order-received'] );
+		if ( WC()->session ) {
+			WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
+		}
 		parent::tear_down();
+	}
+
+	/**
+	 * Builds a WooPayments order with the given intent attached.
+	 *
+	 * @param string $intent_id The payment intent id to attach to the order.
+	 * @return WC_Order
+	 */
+	private function create_paid_woopayments_order( $intent_id = 'pi_abc123' ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->set_date_paid( time() );
+		$order->save();
+
+		return $order;
+	}
+
+	/**
+	 * Records the intent the current session paid, mirroring what the gateway stores at payment time.
+	 *
+	 * @param string $intent_id The paid intent id.
+	 */
+	private function set_session_paid_intent_id( $intent_id ) {
+		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, $intent_id );
+	}
+
+	public function test_skips_email_verification_for_the_session_that_paid() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_abc123' );
+
+		$this->assertFalse(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_when_the_session_has_no_paid_intent() {
+		// A bare order-key leak in another session carries no paid intent, so verification still applies.
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_when_the_session_intent_does_not_match_the_order() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_someone_elses' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-received' )
+		);
+	}
+
+	public function test_keeps_email_verification_outside_the_order_received_context() {
+		$order = $this->create_paid_woopayments_order( 'pi_abc123' );
+		$this->set_session_paid_intent_id( 'pi_abc123' );
+
+		$this->assertTrue(
+			$this->payments_order_success_page->maybe_skip_email_verification_after_payment( true, $order, 'order-pay' )
+		);
 	}
 
 	public function test_show_card_payment_method_name_without_card_brand() {
@@ -266,5 +331,50 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
 
 		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_show_express_checkout_payment_method_name_amazon_pay_with_last4() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( 'last4', '4242' );
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'Amazon Pay' );
+		$payment_method->method( 'get_icon' )->willReturn( 'amazon-pay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'amazon-pay.svg' );
+
+		$original_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $original_map, [ 'amazon_pay' => $payment_method ] ) );
+
+		$result = $this->payments_order_success_page->show_express_checkout_payment_method_name( $order, 'amazon_pay' );
+
+		$this->set_payment_method_map( $original_map );
+
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
+		$this->assertStringContainsString( 'amazon', strtolower( $result ) );
+		$this->assertStringContainsString( '•••', $result );
+		$this->assertStringContainsString( '4242', $result );
+	}
+
+	public function test_show_express_checkout_payment_method_name_amazon_pay_without_last4() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments_amazon_pay' );
+		$order->save();
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'Amazon Pay' );
+		$payment_method->method( 'get_icon' )->willReturn( 'amazon-pay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'amazon-pay.svg' );
+
+		$original_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $original_map, [ 'amazon_pay' => $payment_method ] ) );
+
+		$result = $this->payments_order_success_page->show_express_checkout_payment_method_name( $order, 'amazon_pay' );
+
+		$this->set_payment_method_map( $original_map );
+
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
+		$this->assertStringNotContainsString( '•••', $result );
 	}
 }

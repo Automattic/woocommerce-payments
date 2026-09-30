@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa compliance dispute with NonCompliantDisputeSteps 1`] = `
 .emotion-2 {
@@ -298,8 +298,9 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                     aria-hidden="true"
                     class="wcpay-accordion__arrow"
                     focusable="false"
-                    size="24"
+                    height="24"
                     viewBox="0 0 24 24"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
@@ -329,16 +330,18 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                   class="dispute-steps__items"
                 >
                   <div
-                    class="dispute-steps__item"
+                    class="dispute-step-item"
                   >
                     <div
-                      class="dispute-steps__item-icon"
+                      aria-hidden="true"
+                      class="dispute-step-item__icon"
                     >
                       <svg
                         aria-hidden="true"
                         focusable="false"
-                        size="24"
+                        height="24"
                         viewBox="0 0 24 24"
+                        width="24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
@@ -350,21 +353,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       </svg>
                     </div>
                     <div
-                      class="dispute-steps__item-content"
+                      class="dispute-step-item__content"
                     >
                       <div
-                        class="dispute-steps__item-name"
+                        class="dispute-step-item__name"
                       >
                         Accepting the dispute
                       </div>
                       <div
-                        class="dispute-steps__item-description"
+                        class="dispute-step-item__description"
                       >
                         Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa network fee.
                       </div>
                     </div>
                     <div
-                      class="dispute-steps__item-action"
+                      class="dispute-step-item__action"
                     >
                       <a
                         class="components-button is-secondary"
@@ -378,16 +381,18 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                     </div>
                   </div>
                   <div
-                    class="dispute-steps__item"
+                    class="dispute-step-item"
                   >
                     <div
-                      class="dispute-steps__item-icon"
+                      aria-hidden="true"
+                      class="dispute-step-item__icon"
                     >
                       <svg
                         aria-hidden="true"
                         focusable="false"
-                        size="24"
+                        height="24"
                         viewBox="0 0 24 24"
+                        width="24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
@@ -398,21 +403,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       </svg>
                     </div>
                     <div
-                      class="dispute-steps__item-content"
+                      class="dispute-step-item__content"
                     >
                       <div
-                        class="dispute-steps__item-name"
+                        class="dispute-step-item__name"
                       >
                         Challenge the dispute
                       </div>
                       <div
-                        class="dispute-steps__item-description"
+                        class="dispute-step-item__description"
                       >
                         Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.
                       </div>
                     </div>
                     <div
-                      class="dispute-steps__item-action"
+                      class="dispute-step-item__action"
                     >
                       <a
                         class="components-button is-secondary"

@@ -185,5 +185,111 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
 			} );
 		} );
+
+		describe( 'when the cart Store API extension carries a method list', () => {
+			beforeEach( () => {
+				// Both methods are enabled at this location. `enabled_methods`
+				// stands in for the stale, currency-gated localized list — the
+				// cart response is what's authoritative for currency.
+				global.wcpayExpressCheckoutParams = {
+					enabled_methods: [ 'payment_request', 'amazon_pay' ],
+					methods_enabled_at_location: [
+						'payment_request',
+						'amazon_pay',
+					],
+				};
+				checkPaymentMethodIsAvailable.mockResolvedValue( true );
+			} );
+
+			const cartWithMethods = ( methods ) => ( {
+				...mockCart,
+				extensions: {
+					wcpay: {
+						express_checkout_methods: methods,
+					},
+				},
+			} );
+
+			it( 'rejects amazon_pay when the cart extension excludes it', () => {
+				const result = expressCheckoutElementAmazonPay(
+					mockApi
+				).canMakePayment( {
+					cart: cartWithMethods( [ 'payment_request' ] ),
+				} );
+
+				expect( result ).toBe( false );
+				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
+			} );
+
+			it( 'still allows apple/google pay when the cart extension keeps payment_request', () => {
+				expressCheckoutElementApplePay( mockApi ).canMakePayment( {
+					cart: cartWithMethods( [ 'payment_request' ] ),
+				} );
+
+				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
+					'applePay',
+					expect.any( Object ),
+					mockApi
+				);
+			} );
+
+			it( 'allows amazon_pay when the cart extension keeps it', () => {
+				expressCheckoutElementAmazonPay( mockApi ).canMakePayment( {
+					cart: cartWithMethods( [
+						'payment_request',
+						'amazon_pay',
+					] ),
+				} );
+
+				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
+					'amazonPay',
+					expect.any( Object ),
+					mockApi
+				);
+			} );
+
+			it( 'does not resurrect a method the merchant disabled at this location', () => {
+				// The cart extension is currency-gated but not location-gated, so
+				// it may list a method disabled here. Intersecting with the
+				// location-only allow-list keeps that method suppressed.
+				global.wcpayExpressCheckoutParams.methods_enabled_at_location =
+					[ 'payment_request' ];
+
+				const result = expressCheckoutElementAmazonPay(
+					mockApi
+				).canMakePayment( {
+					cart: cartWithMethods( [
+						'payment_request',
+						'amazon_pay',
+					] ),
+				} );
+
+				expect( result ).toBe( false );
+				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
+			} );
+
+			it( 'recovers a method the stale localized currency gating dropped', () => {
+				// US merchant, amazon_pay enabled at this location. Page loaded
+				// under a EUR cart, so the localized list dropped amazon_pay on
+				// currency grounds. A plugin then flipped the cart to USD and the
+				// cart response now includes it — it must come back.
+				global.wcpayExpressCheckoutParams.enabled_methods = [
+					'payment_request',
+				];
+
+				expressCheckoutElementAmazonPay( mockApi ).canMakePayment( {
+					cart: cartWithMethods( [
+						'payment_request',
+						'amazon_pay',
+					] ),
+				} );
+
+				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
+					'amazonPay',
+					expect.any( Object ),
+					mockApi
+				);
+			} );
+		} );
 	} );
 } );

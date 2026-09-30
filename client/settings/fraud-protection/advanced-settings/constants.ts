@@ -31,6 +31,12 @@ export const Checks = {
 	CHECK_ORDER_TOTAL: 'order_total',
 };
 
+// Countries where AVS (Address Verification System) post code checks are
+// commonly supported by card issuers. AVS is unreliable or unsupported
+// elsewhere, so the AVS Mismatch filter only does something useful when a
+// store sells to at least one of these.
+export const avsSupportedCountries = [ 'US', 'CA', 'GB' ];
+
 export const CheckOperators = {
 	LIST_OPERATOR_AND: 'and',
 	LIST_OPERATOR_OR: 'or',

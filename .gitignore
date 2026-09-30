@@ -20,6 +20,7 @@ CLAUDE.local.md
 .serena/
 .zed/
 .phpactor.json
+.superpowers/
 
 # Bundle
 dist
@@ -59,6 +60,7 @@ tests/cli/vendor
 /tests/e2e/config/local.env
 /tests/e2e/docker
 /tests/e2e/deps
+/tests/e2e/.cache/
 phpcs.xml
 phpunit.xml
 .phpunit.result.cache
@@ -102,6 +104,7 @@ tests/e2e/reports
 /blob-report/
 tests/e2e/.auth/
 tests/e2e/test-results/
+tests/e2e/.slack-thread-state.json
 tests/e2e/playwright/.cache/
 tests/e2e/tests/e2e/.auth/*
 
@@ -113,3 +116,6 @@ bin/jurassictube/
 
 # Git worktrees
 .worktrees/
+
+# Playwright MCP browser-automation artifacts
+.playwright-mcp/

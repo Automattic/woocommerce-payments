@@ -13,8 +13,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { DepositsFilters } from '../';
 
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
-jest.mock( '@woocommerce/settings', () => ( {
-	...jest.requireActual( '@woocommerce/settings' ),
+jest.mock( 'wcpay/utils/wc-settings', () => ( {
 	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
@@ -72,11 +71,6 @@ describe( 'Deposits filters', () => {
 			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
-
-			expect( console ).toHaveWarnedWith(
-				'wp.date.__experimentalGetSettings is deprecated since version 6.1. Please use wp.date.getSettings instead.'
-			);
-			expect( console ).toHaveErrored();
 		} );
 
 		test( 'should filter by after', async () => {

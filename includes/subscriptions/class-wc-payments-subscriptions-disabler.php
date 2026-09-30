@@ -118,11 +118,11 @@ class WC_Payments_Subscriptions_Disabler {
 	 *
 	 * We run this at priority 99 to ensure it executes after WCS adds the meta box.
 	 *
-	 * @param string                $post_type The post type of the current post being edited.
-	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
+	 * @param string                $_unused_post_type The post type of the current post being edited.
+	 * @param WP_Post|WC_Order|null $_unused_post_or_order_object The post or order currently being edited.
 	 * @return void
 	 */
-	public function remove_related_orders_meta_box( $post_type, $post_or_order_object = null ) {
+	public function remove_related_orders_meta_box( $_unused_post_type, $_unused_post_or_order_object = null ) {
 		// Only process when WCS functions are available.
 		if ( ! function_exists( 'wcs_get_page_screen_id' ) ) {
 			return;

@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { SelectorMap, useSelect } from '@wordpress/data';
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import { ChargeResponse } from './types';
 
 export const getChargeData = (

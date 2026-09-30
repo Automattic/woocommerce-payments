@@ -47,6 +47,8 @@ class WC_REST_Payments_Capital_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Retrieve the summary of the active Capital loan.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetActiveLoanSummary
 	 */
 	public function get_active_loan_summary() {
 		$request = Request::get( WC_Payments_API_Client::CAPITAL_API . '/active_loan_summary' );

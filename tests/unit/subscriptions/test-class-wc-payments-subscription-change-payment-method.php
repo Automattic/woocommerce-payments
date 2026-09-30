@@ -197,7 +197,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 	 */
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $_unused_order ) use ( $subscriptions ) {
 				return $subscriptions;
 			}
 		);
@@ -219,7 +219,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 
 		// Mock the wcs_get_subscription function to return our mock subscription.
 		WC_Subscriptions::set_wcs_get_subscription(
-			function ( $id ) use ( $mock_subscription ) {
+			function ( $_unused_id ) use ( $mock_subscription ) {
 				return $mock_subscription;
 			}
 		);

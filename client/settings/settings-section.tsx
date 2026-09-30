@@ -10,6 +10,8 @@ import clsx from 'clsx';
  */
 import './settings-section.scss';
 
+const NullDescription = () => null;
+
 const SettingsSection: React.FunctionComponent< {
 	children?: React.ReactNode;
 	className?: string;
@@ -17,7 +19,7 @@ const SettingsSection: React.FunctionComponent< {
 	title?: string;
 	id?: string;
 } > = ( {
-	description: Description = () => null,
+	description: Description = NullDescription,
 	children,
 	className,
 	id,

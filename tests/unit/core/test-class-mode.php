@@ -179,4 +179,76 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 		// Dev mode is deactivated.
 		$this->assertFalse( $this->mode->is_dev() );
 	}
+
+	public function test_get_dev_mode_triggers_returns_empty_when_not_in_dev_mode() {
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'test_mode' => 'no' ] );
+
+		$this->mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
+		$this->mode->method( 'get_wp_environment_type' )->willReturn( null );
+		$this->mode->method( 'wp_get_development_mode' )->willReturn( '' );
+
+		$this->assertFalse( $this->mode->is_dev() );
+		$this->assertSame( [], $this->mode->get_dev_mode_triggers() );
+	}
+
+	public function test_get_dev_mode_triggers_returns_wcpay_dev_mode_constant() {
+		$this->mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( true );
+
+		$this->assertSame( [ 'WCPAY_DEV_MODE' ], $this->mode->get_dev_mode_triggers() );
+	}
+
+	public function test_get_dev_mode_triggers_returns_wp_environment_type() {
+		$this->mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
+		$this->mode->method( 'get_wp_environment_type' )->willReturn( 'staging' );
+		$this->mode->method( 'wp_get_development_mode' )->willReturn( '' );
+
+		$this->assertSame( [ 'WP_ENVIRONMENT_TYPE=staging' ], $this->mode->get_dev_mode_triggers() );
+	}
+
+	public function test_get_dev_mode_triggers_returns_wp_development_mode() {
+		$this->mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
+		$this->mode->method( 'get_wp_environment_type' )->willReturn( null );
+		$this->mode->method( 'wp_get_development_mode' )->willReturn( 'plugin' );
+
+		$this->assertSame( [ 'WP_DEVELOPMENT_MODE=plugin' ], $this->mode->get_dev_mode_triggers() );
+	}
+
+	public function test_get_dev_mode_triggers_returns_filter_trigger_when_filter_enables_dev_mode() {
+		$this->mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
+		$this->mode->method( 'get_wp_environment_type' )->willReturn( null );
+		$this->mode->method( 'wp_get_development_mode' )->willReturn( '' );
+
+		add_filter( 'wcpay_dev_mode', '__return_true' );
+
+		$this->assertSame( [ 'wcpay_dev_mode filter' ], $this->mode->get_dev_mode_triggers() );
+	}
+
+	public function test_get_dev_mode_triggers_returns_empty_when_filter_disables_dev_mode() {
+		$this->mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( true );
+		$this->mode->method( 'get_wp_environment_type' )->willReturn( null );
+		$this->mode->method( 'wp_get_development_mode' )->willReturn( '' );
+
+		add_filter( 'wcpay_dev_mode', '__return_false' );
+
+		$this->assertFalse( $this->mode->is_dev() );
+		$this->assertSame( [], $this->mode->get_dev_mode_triggers() );
+	}
+
+	public function test_get_dev_mode_triggers_returns_multiple_triggers() {
+		$this->mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
+		$this->mode->method( 'get_wp_environment_type' )->willReturn( 'development' );
+		$this->mode->method( 'wp_get_development_mode' )->willReturn( 'plugin' );
+
+		$this->assertSame(
+			[ 'WP_ENVIRONMENT_TYPE=development', 'WP_DEVELOPMENT_MODE=plugin' ],
+			$this->mode->get_dev_mode_triggers()
+		);
+	}
+
+	public function test_dev_sets_manual_trigger() {
+		$this->mode->dev();
+
+		$this->assertTrue( $this->mode->is_dev() );
+		$this->assertSame( [ 'manual' ], $this->mode->get_dev_mode_triggers() );
+	}
 }

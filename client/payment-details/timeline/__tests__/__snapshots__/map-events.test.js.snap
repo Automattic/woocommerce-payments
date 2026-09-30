@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`mapTimelineEvents 3-currency scenarios formats captured events with 3 currencies - different order, settlement, and base fee 1`] = `
 [
@@ -366,6 +366,7 @@ exports[`mapTimelineEvents Multi-Currency events formats full_refund events 1`] 
     "body": [
       "1,00 EUR → 1,20222 USD: 21,64 $ USD",
       "",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of 18,00 € EUR was successfully refunded.",
@@ -400,11 +401,114 @@ exports[`mapTimelineEvents Multi-Currency events formats partial_refund events 1
     "body": [
       "1,00 EUR → 1,2 USD: 6,00 $ USD",
       "Acquirer Reference Number (ARN) 4785767637658864",
+      "",
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of 5,00 € EUR was successfully refunded.",
     "icon": <CheckmarkIcon
       className="is-success"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents formats actionable early_fraud_warning events 1`] = `
+[
+  {
+    "body": [],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Early fraud warning
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [
+      "The card issuer flagged this payment as likely fraudulent.",
+      "Reported reason: Made with stolen card",
+      <React.Fragment>
+        Refunding this payment now can prevent a dispute. 
+        <ForwardRef(UnforwardedButton)
+          onClick={[MockFunction]}
+          variant="link"
+        >
+          Refund this payment
+        </ForwardRef(UnforwardedButton)>
+      </React.Fragment>,
+    ],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": "Payment received an early fraud warning",
+    "icon": <NoticeOutlineIcon
+      className="is-warning"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents formats actionable early_fraud_warning events with an unknown fraud type 1`] = `
+[
+  {
+    "body": [],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Early fraud warning
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [
+      "The card issuer flagged this payment as likely fraudulent.",
+      <React.Fragment>
+        Refunding this payment now can prevent a dispute. 
+        <ForwardRef(UnforwardedButton)
+          onClick={[MockFunction]}
+          variant="link"
+        >
+          Refund this payment
+        </ForwardRef(UnforwardedButton)>
+      </React.Fragment>,
+    ],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": "Payment received an early fraud warning",
+    "icon": <NoticeOutlineIcon
+      className="is-warning"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents formats actionable early_fraud_warning events without a refund handler 1`] = `
+[
+  {
+    "body": [],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Early fraud warning
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [
+      "The card issuer flagged this payment as likely fraudulent.",
+      "Reported reason: Made with stolen card",
+      "Refunding this payment now can prevent a dispute.",
+    ],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": "Payment received an early fraud warning",
+    "icon": <NoticeOutlineIcon
+      className="is-warning"
     />,
   },
 ]
@@ -605,6 +709,32 @@ exports[`mapTimelineEvents formats refund_failed events 1`] = `
     "icon": <NoticeOutlineIcon
       className="is-error"
     />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents formats resolved early_fraud_warning events 1`] = `
+[
+  {
+    "body": [],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Early fraud warning resolved
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [
+      "The payment was refunded or disputed, so no further action is needed to avoid a dispute.",
+      "Reported reason: Made with stolen card",
+    ],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": "This early fraud warning is no longer actionable.",
+    "icon": <NoticeOutlineIcon />,
   },
 ]
 `;
@@ -1187,6 +1317,7 @@ exports[`mapTimelineEvents single currency events formats full_refund events 1`]
     "body": [
       undefined,
       "Acquirer Reference Number (ARN) 4785767637658864",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of $100.00 USD was successfully refunded.",
@@ -1220,6 +1351,7 @@ exports[`mapTimelineEvents single currency events formats partial_refund events 
   {
     "body": [
       undefined,
+      "",
       "",
     ],
     "date": 2020-04-03T18:58:01.000Z,

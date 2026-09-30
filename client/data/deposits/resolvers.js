@@ -11,7 +11,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { NAMESPACE, STORE_NAME } from '../constants';
+import { NAMESPACE } from '../constants';
+import { DEPOSITS_STORE_NAME as STORE_NAME } from '../store-names';
 import {
 	updateDeposit,
 	updateDeposits,

@@ -107,9 +107,25 @@ export type AccordionBodyProps = {
 	 */
 	scrollAfterOpen?: boolean;
 	/**
-	 * Optional subtitle text that appears below the title.
+	 * Optional subtitle text that appears below the title, rendered
+	 * inside the title's toggle button. Plain string only — for
+	 * subtitles that need to host interactive content (links,
+	 * buttons), use `subtitleNode` instead.
 	 */
 	subtitle?: string;
+	/**
+	 * Optional subtitle content rendered as a sibling of the title's
+	 * toggle button (not inside it). Use this when the subtitle needs
+	 * to host interactive content like links, which can't be nested
+	 * inside the toggle button. Mutually exclusive with `subtitle`;
+	 * when set, `subtitle` is ignored.
+	 *
+	 * Visible only when the accordion is expanded — `subtitleNode` is
+	 * treated as body content, not header chrome. Use the plain
+	 * `subtitle` prop when the text must persist in the collapsed
+	 * state.
+	 */
+	subtitleNode?: React.ReactNode;
 	/**
 	 * Ref to be forwarded to the body element
 	 */

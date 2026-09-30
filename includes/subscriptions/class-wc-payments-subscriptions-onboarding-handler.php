@@ -38,7 +38,12 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	 */
 	public function __construct( WC_Payments_Account $account ) {
 		$this->account = $account;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
 			return;
 		}

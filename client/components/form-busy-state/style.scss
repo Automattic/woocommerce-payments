@@ -1,0 +1,9 @@
+.wcpay-form-busy-state {
+	// Dim as a visual "busy" cue without disabling, so inputs stay navigable.
+	transition: opacity 0.2s ease-in-out;
+
+	&.is-busy {
+		opacity: 0.6;
+		cursor: progress;
+	}
+}

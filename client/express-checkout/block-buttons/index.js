@@ -11,7 +11,7 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
-import { getExpressCheckoutData } from '../utils';
+import { getExpressCheckoutData, filterCartMethodsByLocation } from '../utils';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
 
@@ -32,6 +32,15 @@ const LazyAmazonPayPreview = lazy( () =>
 );
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
+
+const getEnabledMethodsForCart = ( cart ) => {
+	const fromCart = cart?.extensions?.wcpay?.express_checkout_methods;
+	if ( Array.isArray( fromCart ) ) {
+		return filterCartMethodsByLocation( fromCart );
+	}
+
+	return getExpressCheckoutData( 'enabled_methods' ) ?? [];
+};
 
 const ApplePayPreview = ( props ) => (
 	<Suspense fallback={ <PreviewFallback /> }>
@@ -73,8 +82,7 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		const enabledMethods = getEnabledMethodsForCart( cart );
 		if ( ! enabledMethods.includes( 'payment_request' ) ) {
 			return false;
 		}
@@ -108,8 +116,7 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			return false;
 		}
 
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		const enabledMethods = getEnabledMethodsForCart( cart );
 		if ( ! enabledMethods.includes( 'payment_request' ) ) {
 			return false;
 		}
@@ -140,8 +147,7 @@ export const expressCheckoutElementAmazonPay = ( api ) => ( {
 			return false;
 		}
 
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		const enabledMethods = getEnabledMethodsForCart( cart );
 		if ( ! enabledMethods.includes( 'amazon_pay' ) ) {
 			return false;
 		}

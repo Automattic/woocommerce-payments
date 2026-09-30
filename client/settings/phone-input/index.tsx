@@ -4,7 +4,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import intlTelInput from 'intl-tel-input';
-import './style.scss';
 
 /**
  * Internal dependencies
@@ -144,6 +143,16 @@ const PhoneNumberInput = ( {
 				...phoneCountries,
 			} );
 			setInputInstance( iti );
+
+			// The dial code sits outside the input element, so theme CSS
+			// targeting inputs never reaches it; match the input's size.
+			const dialCode = currentRef
+				.closest( '.iti' )
+				?.querySelector< HTMLElement >( '.iti__selected-dial-code' );
+			if ( dialCode ) {
+				dialCode.style.fontSize =
+					window.getComputedStyle( currentRef ).fontSize;
+			}
 
 			currentRef.addEventListener( 'countrychange', handleCountryChange );
 

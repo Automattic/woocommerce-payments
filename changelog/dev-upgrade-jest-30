@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Upgrade Jest to 30 and adapt the JS test suite to jsdom 26, which makes `window.location` unforgeable.

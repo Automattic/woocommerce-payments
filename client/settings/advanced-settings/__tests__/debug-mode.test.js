@@ -9,10 +9,10 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import { useDebugLog, useDevMode } from 'wcpay/data';
+import { useDebugLog, useDevMode } from 'wcpay/data/settings';
 import DebugMode from '../debug-mode';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useDevMode: jest.fn().mockReturnValue( false ),
 	useDebugLog: jest.fn().mockReturnValue( [ false, jest.fn() ] ),
 } ) );

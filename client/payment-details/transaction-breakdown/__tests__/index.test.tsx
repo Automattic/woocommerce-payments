@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import PaymentTransactionBreakdown from '../';
-import { useTimeline } from 'wcpay/data';
+import { useTimeline } from 'wcpay/data/timeline';
 import { useTransactionAmounts } from '../hooks';
 import { TimelineItem } from 'wcpay/data/timeline/types';
 import { TransactionDetails } from '../types';
@@ -17,7 +17,7 @@ jest.mock( '@wordpress/i18n', () => ( {
 	__: jest.fn().mockImplementation( ( str ) => str ),
 } ) );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/timeline', () => ( {
 	useTimeline: jest.fn(),
 } ) );
 

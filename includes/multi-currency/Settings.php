@@ -62,10 +62,10 @@ class Settings extends \WC_Settings_Page {
 	/**
 	 * Get settings array.
 	 *
-	 * @param string $current_section Section being shown.
+	 * @param string $_unused_current_section Section being shown.
 	 * @return array
 	 */
-	public function get_settings( $current_section = '' ) {
+	public function get_settings( $_unused_current_section = '' ) {
 		return [
 			[
 				'type' => 'wcpay_multi_currency_settings_page',
@@ -80,7 +80,7 @@ class Settings extends \WC_Settings_Page {
 		// Hide original save button.
 		$GLOBALS['hide_save_button'] = true;
 		?>
-			<div id="wcpay_multi_currency_settings_container" aria-describedby="wcpay_multi_currency_settings_container-description"></div>
+			<div id="wcpay_multi_currency_settings_container" class="wc-settings-prevent-change-event" aria-describedby="wcpay_multi_currency_settings_container-description"></div>
 		<?php
 	}
 

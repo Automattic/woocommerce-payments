@@ -39,10 +39,10 @@ if ( ! class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
 		/**
 		 * Stub for will_subscription_update_all_payment_methods.
 		 *
-		 * @param WC_Order $order The order.
+		 * @param WC_Order $_unused_order The order.
 		 * @return bool
 		 */
-		public static function will_subscription_update_all_payment_methods( $order ) {
+		public static function will_subscription_update_all_payment_methods( $_unused_order ) {
 			return self::$will_update_all_return;
 		}
 

@@ -25,7 +25,7 @@ import {
  * Internal dependencies.
  */
 import type { CachedDeposit } from 'types/deposits';
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data/deposits';
 import TransactionsList from 'transactions/list';
 import { CopyButton } from 'components/copy-button';
 import Page from 'components/page';
@@ -346,7 +346,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 									components: {
 										learnMoreLink: (
 											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#transactions" />
+											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
 										),
 									},
 								} ) }

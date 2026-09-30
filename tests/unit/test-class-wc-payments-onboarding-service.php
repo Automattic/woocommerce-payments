@@ -148,6 +148,32 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
 		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->onboarding_service, 'clear_cached_onboarding_fields_data' ] ) );
+	}
+
+	public function test_clear_cached_onboarding_fields_data() {
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ Database_Cache::ONBOARDING_FIELDS_DATA_KEY ],
+				[ Database_Cache::BUSINESS_TYPES_KEY ]
+			);
+
+		$this->onboarding_service->clear_cached_onboarding_fields_data();
+	}
+
+	public function test_cleanup_on_account_reset_deletes_store_had_woopayments_options() {
+		// Arrange.
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'yes' );
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version', 2 );
+
+		// Act.
+		$this->onboarding_service->cleanup_on_account_reset();
+
+		// Assert.
+		$this->assertFalse( get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+		$this->assertFalse( get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' ) );
 	}
 
 	public function test_create_embedded_kyc_session() {
@@ -325,6 +351,155 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'no', get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' ) );
 
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_records_enabled_date() {
+		$before = time();
+		$this->onboarding_service->set_test_mode( true );
+		$after = time();
+
+		$date = get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		$this->assertGreaterThanOrEqual( $before, $date );
+		$this->assertLessThanOrEqual( $after, $date );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_preserves_original_enabled_date() {
+		$original_date = time() - 100;
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, $original_date );
+
+		$this->onboarding_service->set_test_mode( true );
+
+		$this->assertEquals( $original_date, get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_clears_enabled_date_when_disabled() {
+		$this->onboarding_service->set_test_mode( true );
+		$this->assertNotFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		$this->onboarding_service->set_test_mode( false );
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_invalidates_eligibility_transient() {
+		set_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$this->onboarding_service->set_test_mode( true );
+
+		$this->assertFalse(
+			get_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE ),
+			'set_test_mode() owns the eligibility transient cleanup so every flip site stays in sync.'
+		);
+
+		// Same on the way back to live.
+		set_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		$this->onboarding_service->set_test_mode( false );
+		$this->assertFalse( get_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_records_date_when_toggled_on() {
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertNotFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_preserves_existing_date() {
+		$original_date = time() - 5 * DAY_IN_SECONDS;
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, $original_date );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertEquals( $original_date, get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_clears_date_when_toggled_off() {
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, time() );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'yes' ],
+			[ 'test_mode' => 'no' ]
+		);
+
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_does_not_write_onboarding_test_mode_option() {
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertFalse(
+			get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION ),
+			'Gateway toggle handler must not write TEST_MODE_OPTION — that flag is the higher-priority override and should only be flipped by set_test_mode() callers.'
+		);
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_invalidates_eligibility_cache() {
+		set_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertFalse( get_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_no_op_when_unchanged() {
+		set_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'yes' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertSame( '1', get_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE ) );
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_transient( WC_Payments_Test_To_Live_Notice::TRANSIENT_ELIGIBLE );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_treats_non_array_old_value_as_off() {
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+
+		// First save: $old_value comes through as '' from update_option_<option> when the option didn't exist.
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			'',
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertNotFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
 	}
 
 	public function test_is_embedded_kyc_in_progress() {
@@ -836,5 +1011,65 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( [] );
 
 		$this->assertSame( '', $result['woocommerce_store_id'] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_explicitly_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_enabled_via_capabilities() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids(
+			$mock_gateway,
+			[
+				'woopay' => true,
+				'link'   => true,
+			]
+		);
+	}
+
+	public function test_update_enabled_payment_methods_ids_enables_woopay_when_link_not_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( true );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_disables_woopay_when_capability_absent() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [] );
+	}
+
+	public function test_maybe_add_test_drive_settings_adds_capabilities_and_keeps_transient() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[
+				'capabilities'            => [ 'link_payments' => [ 'requested' => 'true' ] ],
+				'enabled_payment_methods' => [ 'card', 'link' ],
+			],
+			HOUR_IN_SECONDS
+		);
+
+		$args = $this->onboarding_service->maybe_add_test_drive_settings_to_new_account_request( [ 'account_data' => [] ] );
+
+		$this->assertSame( [ 'link_payments' => [ 'requested' => 'true' ] ], $args['account_data']['capabilities'] );
+		$this->assertNotFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
 }

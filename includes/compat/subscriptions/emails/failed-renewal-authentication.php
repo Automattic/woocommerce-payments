@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 
-<?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
+<?php do_action( 'woocommerce_email_header', $email_heading, $email ); /* phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments. */ ?>
 
 <p>
 	<?php
@@ -19,6 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	?>
 </p>
 
-<?php do_action( 'woocommerce_subscriptions_email_order_details', $order, $sent_to_admin, $plain_text, $email ); ?>
+<?php do_action( 'woocommerce_subscriptions_email_order_details', $order, $sent_to_admin, $plain_text, $email ); /* phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce Subscriptions hook, not defined by WooPayments. */ ?>
 
-<?php do_action( 'woocommerce_email_footer', $email ); ?>
+<?php do_action( 'woocommerce_email_footer', $email ); /* phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments. */ ?>

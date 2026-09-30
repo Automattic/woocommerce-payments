@@ -3,7 +3,6 @@
  */
 import WCPayAPI from '..';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import { getConfig } from 'wcpay/utils/checkout';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
@@ -16,42 +15,6 @@ jest.mock( 'wcpay/utils/express-checkout', () => ( {
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
-
-const mockAppearance = {
-	rules: {
-		'.Block': {},
-		'.Input': {},
-		'.Input--invalid': {},
-		'.Label': {},
-		'.Label--resting': {},
-		'.Tab': {},
-		'.Tab--selected': {},
-		'.Tab:hover': {},
-		'.TabIcon--selected': {
-			color: undefined,
-		},
-		'.TabIcon:hover': {
-			color: undefined,
-		},
-		'.Text': {},
-		'.Text--redirect': {},
-		'.Heading': {},
-		'.Button': {},
-		'.Link': {},
-		'.Container': {},
-		'.Footer': {},
-		'.Footer-link': {},
-		'.Header': {},
-	},
-	theme: 'stripe',
-	variables: {
-		colorBackground: '#ffffff',
-		colorText: undefined,
-		fontFamily: undefined,
-		fontSizeBase: undefined,
-	},
-	labels: 'above',
-};
 
 describe( 'WCPayAPI', () => {
 	describe( 'getStripe', () => {
@@ -93,77 +56,46 @@ describe( 'WCPayAPI', () => {
 		} );
 	} );
 
-	test( 'does not initialize woopay if already requesting', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				order_id: 1,
-				key: 'testkey',
-				billing_email: 'test@example.com',
-			};
-			return mockProperties[ key ];
+	describe( 'confirmIntent', () => {
+		const payForOrderUrls = [
+			'/checkout/order-pay/456/#wcpay-confirm-pi:123:secret:nonce',
+			'/?page_id=7&order-pay=456&pay_for_order=true&key=key#wcpay-confirm-pi:123:secret:nonce',
+		];
+
+		beforeEach( () => {
+			getConfig.mockImplementation( ( key ) => {
+				if ( key === 'ajaxUrl' ) {
+					return '/ajax';
+				}
+				return null;
+			} );
 		} );
 
-		const api = new WCPayAPI( {}, request );
-		api.isWooPayRequesting = true;
-		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
+		test.each( payForOrderUrls )(
+			'uses the order ID paired with the nonce for %s',
+			async ( redirectUrl ) => {
+				const apiRequest = jest
+					.fn()
+					.mockResolvedValue( { return_url: '/success' } );
+				const handleNextAction = jest.fn().mockResolvedValue( {
+					paymentIntent: { id: 'pi_test' },
+				} );
+				const api = new WCPayAPI( {}, apiRequest );
+				api.getStripe = jest
+					.fn()
+					.mockResolvedValue( { handleNextAction } );
 
-		expect( request ).not.toHaveBeenCalled();
-		expect( api.isWooPayRequesting ).toBe( true );
-	} );
+				await api.confirmIntent( redirectUrl );
 
-	test( 'initializes woopay using config params', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				order_id: 1,
-				key: 'testkey',
-				billing_email: 'test@example.com',
-				isWooPayGlobalThemeSupportEnabled: true,
-				woopayAppearance: mockAppearance,
-			};
-			return mockProperties[ key ];
-		} );
-
-		const api = new WCPayAPI( {}, request );
-		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
-
-		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
-			_wpnonce: 'foo',
-			appearance: mockAppearance,
-			email: 'foo@bar.com',
-			user_session: 'qwerty123',
-			order_id: 1,
-			key: 'testkey',
-			billing_email: 'test@example.com',
-		} );
-		expect( api.isWooPayRequesting ).toBe( false );
-	} );
-
-	test( 'WooPay should not support global theme styles', async () => {
-		buildAjaxURL.mockReturnValue( 'https://example.org/' );
-		getConfig.mockImplementation( ( key ) => {
-			const mockProperties = {
-				initWooPayNonce: 'foo',
-				isWooPayGlobalThemeSupportEnabled: false,
-			};
-			return mockProperties[ key ];
-		} );
-
-		const api = new WCPayAPI( {}, request );
-		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
-
-		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
-			_wpnonce: 'foo',
-			appearance: null,
-			font_rules: null,
-			email: 'foo@bar.com',
-			user_session: 'qwerty123',
-			order_id: undefined,
-			key: undefined,
-			billing_email: undefined,
-		} );
+				expect( apiRequest ).toHaveBeenCalledWith( '/ajax', {
+					action: 'update_order_status',
+					order_id: '123',
+					_ajax_nonce: 'nonce',
+					intent_id: 'pi_test',
+					should_save_payment_method: 'false',
+					is_changing_payment: 'false',
+				} );
+			}
+		);
 	} );
 } );

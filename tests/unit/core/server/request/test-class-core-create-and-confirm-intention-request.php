@@ -146,7 +146,7 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 				return $new_class;
 			}
 		);
-		$request->apply_filters( 'cac_test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied' );
+		$request->apply_filters( 'cac_test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
 	public function test_create_intent_request_will_be_created() {

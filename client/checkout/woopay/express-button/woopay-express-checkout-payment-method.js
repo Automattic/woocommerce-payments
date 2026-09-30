@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
@@ -12,6 +12,7 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import { getConfig } from '../../../utils/checkout';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+import usePreferredCard from './use-preferred-card';
 
 export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
 	'woocommerce_payments_woopay_express_checkout';
@@ -28,25 +29,40 @@ const api = new WCPayAPI(
 );
 
 const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
-	const onRefChange = useCallback(
-		( node ) => {
-			if ( node ) {
-				const root = createRoot( node );
+	const preferredCard = usePreferredCard();
 
-				root.render(
-					<WoopayExpressCheckoutButton
-						buttonSettings={ getConfig( 'woopayButton' ) }
-						api={ api }
-						emailSelector="#email"
-						buttonAttributes={ buttonAttributes }
-					/>
-				);
-			}
-		},
-		[ buttonAttributes ]
-	);
+	const rootRef = useRef( null );
 
-	return <span ref={ onRefChange } />;
+	useEffect( () => {
+		return () => {
+			const root = rootRef.current;
+			rootRef.current = null;
+			// Defer unmount to avoid race with React's own unmount cycle.
+			setTimeout( () => root?.unmount(), 0 );
+		};
+	}, [] );
+
+	const onRefChange = useCallback( ( node ) => {
+		if ( node && ! rootRef.current ) {
+			rootRef.current = createRoot( node );
+		}
+	}, [] );
+
+	useEffect( () => {
+		if ( rootRef.current ) {
+			rootRef.current.render(
+				<WoopayExpressCheckoutButton
+					buttonSettings={ getConfig( 'woopayButton' ) }
+					api={ api }
+					emailSelector="#email"
+					buttonAttributes={ buttonAttributes }
+					preferredCard={ preferredCard }
+				/>
+			);
+		}
+	}, [ buttonAttributes, preferredCard ] );
+
+	return <div ref={ onRefChange } />;
 };
 
 const wooPayExpressCheckoutPaymentMethod = () => ( {

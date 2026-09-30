@@ -185,7 +185,6 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'add_css_classes' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payment_settings_spotlight' ] );
 		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payments_review_prompt' ] );
 	}
 
 	/**
@@ -366,6 +365,19 @@ class WC_Payments_Admin {
 			],
 		];
 
+		if ( WC_Payments_Features::is_reports_area_enabled() ) {
+			$this->admin_child_pages['wc-payments-reports'] = [
+				'id'       => 'wc-payments-reports',
+				'title'    => __( 'Reports', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/reports',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 35,
+				],
+			];
+		}
+
 		try {
 			// Render full payments menu with sub-items only if:
 			// - we have working WPCOM/Jetpack connection;
@@ -397,12 +409,39 @@ class WC_Payments_Admin {
 			]
 		);
 
-		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
-		// That's expected, because account under review is hard-blocked account that spends in a review pretty short time-frame.
-		// Either merchant gets approved and continues to use payments or they remain suspended and can't use payments.
+		// Rejected and under-review merchants get a limited menu: Overview, Transactions, and Disputes.
+		// They need Disputes access to respond to dispute emails they receive, and Transactions for context.
+		// Payouts, Settings, Card Readers, Capital, and Documents remain hidden.
 		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
-			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-disputes'] );
+
+			// Register detail sub-pages so merchants can view individual items.
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-transaction-details',
+					'title'  => __( 'Payment details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions',
+					'path'   => '/payments/transactions/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-details-legacy-redirect',
+					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes',
+					'path'   => '/payments/disputes/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-challenge',
+					'title'  => __( 'Challenge dispute', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes-details-legacy-redirect',
+					'path'   => '/payments/disputes/challenge',
+				]
+			);
 			return;
 		}
 
@@ -687,17 +726,6 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/wc-payments-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/wc-payments-settings-spotlight.css' ),
-			'all'
-		);
-
-		WC_Payments::register_script_with_dependencies( 'WCPAY_REVIEW_PROMPT', 'dist/wc-payments-review-prompt' );
-		wp_set_script_translations( 'WCPAY_REVIEW_PROMPT', 'woocommerce-payments' );
-
-		WC_Payments_Utils::register_style(
-			'WCPAY_REVIEW_PROMPT',
-			plugins_url( 'dist/wc-payments-review-prompt.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/wc-payments-review-prompt.css' ),
 			'all'
 		);
 	}
@@ -1519,73 +1547,5 @@ class WC_Payments_Admin {
 			! isset( $_REQUEST['section'] )
 			&& is_admin();
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-	}
-
-	/**
-	 * Check if the review prompt should be shown based on eligibility and user state.
-	 *
-	 * @return bool True if the prompt should be shown, false otherwise.
-	 */
-	public function should_show_review_prompt() {
-		// Only show on top-level Payments Settings page.
-		if ( ! $this->is_wc_admin_payments_settings_page() ) {
-			return false;
-		}
-
-		// Check account eligibility.
-		if ( ! $this->account->is_review_prompt_eligible() ) {
-			return false;
-		}
-
-		// Check user dismissal/cooldown state.
-		$user_id     = get_current_user_id();
-		$dismissed   = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', true );
-		$maybe_later = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', true );
-
-		// If dismissed permanently, don't show.
-		if ( $dismissed > 0 ) {
-			return false;
-		}
-
-		// If cooldown is active (within 10 days), don't show.
-		if ( $maybe_later > 0 ) {
-			$cooldown_seconds = 10 * DAY_IN_SECONDS;
-			$now              = time();
-			if ( $now < ( $maybe_later + $cooldown_seconds ) ) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Enqueue the review prompt script on top-level Payments Settings page.
-	 */
-	public function enqueue_wc_payments_review_prompt() {
-		if ( ! $this->should_show_review_prompt() ) {
-			return;
-		}
-
-		add_action( 'admin_footer', [ $this, 'inject_review_prompt_container' ] );
-
-		wp_localize_script(
-			'WCPAY_REVIEW_PROMPT',
-			'wcpayReviewPromptSettings',
-			[
-				'isLive'  => WC_Payments::mode()->is_live(),
-				'version' => WCPAY_VERSION_NUMBER,
-			]
-		);
-
-		wp_enqueue_script( 'WCPAY_REVIEW_PROMPT' );
-		wp_enqueue_style( 'WCPAY_REVIEW_PROMPT' );
-	}
-
-	/**
-	 * Inject the container div for the review prompt on top-level Payments settings page.
-	 */
-	public function inject_review_prompt_container() {
-		echo '<div id="wcpay-review-prompt"></div>';
 	}
 }

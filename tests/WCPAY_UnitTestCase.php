@@ -23,11 +23,17 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		// But by default we will intercept all external requests.
 		add_filter( 'pre_http_request', [ $this, 'filter_intercept_external_requests' ], 9, 3 );
 		add_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
+
+		// WC 10.9+ EmailLogger adds order notes after every transactional email. Suppress in tests
+		// so note-count and note-index assertions remain stable across WC versions. Priority 9
+		// matches the other filters here, so a test that wants notes back can re-enable at 10.
+		add_filter( 'woocommerce_email_log_add_order_note', '__return_false', 9 );
 	}
 
 	public function tear_down() {
 		remove_filter( 'pre_http_request', [ $this, 'filter_intercept_external_requests' ], 9, 3 );
 		remove_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
+		remove_filter( 'woocommerce_email_log_add_order_note', '__return_false', 9 );
 
 		parent::tear_down();
 	}
@@ -40,13 +46,13 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 *
 	 * @see WP_Http::request()
 	 *
-	 * @param false|array|WP_Error $response    A preemptive return value of an HTTP request. Default false.
-	 * @param array                $parsed_args HTTP request arguments.
-	 * @param string               $url         The request URL.
+	 * @param false|array|WP_Error $_unused_response    A preemptive return value of an HTTP request. Default false.
+	 * @param array                $_unused_parsed_args HTTP request arguments.
+	 * @param string               $_unused_url         The request URL.
 	 *
 	 * @return array
 	 */
-	public function filter_intercept_external_requests( $response, $parsed_args, $url ) {
+	public function filter_intercept_external_requests( $_unused_response, $_unused_parsed_args, $_unused_url ) {
 		// Return a service unavailable response.
 		return [
 			'body'          => '',

@@ -210,6 +210,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_convert_shipping_method_rate_cost_for_string_cost() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturn( true );
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'get_price' )
@@ -254,6 +255,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_convert_shipping_method_rate_cost_for_array_cost() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturn( true );
 		$matcher = $this->exactly( 2 );
 		$this->mock_multi_currency
 			->expects( $matcher )
@@ -307,6 +309,19 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		// Cost gets converted and taxes properly calculated based on it.
 		$this->assertSame( '11.00', $shipping_rate->cost );
 		$this->assertSame( 1.1, $shipping_rate->taxes[1] );
+	}
+
+	public function test_convert_shipping_method_rate_cost_skips_conversion_on_compatibility() {
+		$shipping_method = new \WC_Shipping_Flat_Rate();
+		$this->mock_compatibility
+			->method( 'should_convert_shipping_amount' )
+			->with( $shipping_method )
+			->willReturn( false );
+		$this->mock_multi_currency->expects( $this->never() )->method( 'get_price' );
+
+		$args = $this->frontend_prices->convert_shipping_method_rate_cost( [ 'cost' => '10' ], $shipping_method );
+
+		$this->assertSame( '10', $args['cost'] );
 	}
 
 	public function test_get_coupon_amount_returns_empty_amount() {
@@ -586,7 +601,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency
 			->method( 'get_raw_conversion' )
 			->willReturnCallback(
-				function ( $price, $from_currency, $to_currency ) {
+				function ( $price, $_unused_from_currency, $_unused_to_currency ) {
 					return (float) $price * 0.75;
 				}
 			);

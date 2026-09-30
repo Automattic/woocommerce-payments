@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
@@ -26,7 +26,9 @@ import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
-import { useDisputes, useGetSettings, useSettings } from 'data';
+import DisputeReadinessCard from './dispute-readiness';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
+import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
@@ -95,15 +97,29 @@ const OverviewPage = () => {
 		useState( false );
 	const settings = useGetSettings();
 
-	const { disputes: activeDisputes } = useDisputes( {
+	const {
+		disputesSummary: activeDisputesSummary,
+		isLoading: activeDisputesSummaryIsLoading,
+	} = useDisputesSummary( {
 		filter: 'awaiting_response',
-		per_page: 50,
 	} );
+	const shouldLoadSingleDispute = activeDisputesSummary?.count === 1;
+	const { disputes: activeDisputes, isLoading: activeDisputesIsLoading } =
+		useDisputes(
+			{
+				filter: 'awaiting_response',
+				per_page: 1,
+			},
+			shouldLoadSingleDispute
+		);
 
 	const tasksUnsorted = getTasks( {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		activeDisputes,
+		activeDispute: activeDisputes[ 0 ],
+		activeDisputesSummary,
+		activeDisputeTaskIsLoading:
+			activeDisputesSummaryIsLoading || activeDisputesIsLoading,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -131,6 +147,10 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
+	const showDisputeReadinessCard =
+		wcpaySettings.featureFlags?.isDisputeReadinessOverviewEnabled &&
+		! accountRejected &&
+		! accountUnderReview;
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
@@ -139,9 +159,10 @@ const OverviewPage = () => {
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
+			// The settings can be empty when the request fails; don't crash the page.
 			const isPaymentMethodEnabled =
 				! settingsIsLoading &&
-				settings.enabled_payment_method_ids.filter(
+				( settings.enabled_payment_method_ids ?? [] ).filter(
 					( enabledMethod ) => {
 						return enabledMethod === key;
 					}
@@ -168,14 +189,6 @@ const OverviewPage = () => {
 		// Ensure the success message is displayed only once.
 		setTestDriveSuccessDisplayed( true );
 	}
-
-	// Show old tasks if the embedded component fails to load.
-	useEffect( () => {
-		if ( stripeNotificationsBannerErrorMessage ) {
-			setShowUpdateDetailsTask( true );
-			setStripeComponentLoading( false );
-		}
-	}, [ stripeNotificationsBannerErrorMessage ] );
 
 	// eslint-disable-next-line valid-jsdoc
 	/**
@@ -335,6 +348,7 @@ const OverviewPage = () => {
 									setStripeNotificationsBannerErrorType(
 										loadError.error.type
 									);
+									setShowUpdateDetailsTask( true );
 									setStripeComponentLoading( false );
 								} }
 								onNotificationsChange={
@@ -373,6 +387,11 @@ const OverviewPage = () => {
 					accountLink={ accountStatus.accountLink }
 				/>
 			</ErrorBoundary>
+			{ showDisputeReadinessCard && (
+				<ErrorBoundary>
+					<DisputeReadinessCard />
+				</ErrorBoundary>
+			) }
 			{ hasActiveLoan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />

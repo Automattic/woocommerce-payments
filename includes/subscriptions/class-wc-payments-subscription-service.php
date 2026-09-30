@@ -128,7 +128,12 @@ class WC_Payments_Subscription_Service {
 		$this->customer_service    = $customer_service;
 		$this->product_service     = $product_service;
 		$this->invoice_service     = $invoice_service;
+	}
 
+	/**
+	 * Registers the hooks for this class.
+	 */
+	public function init_hooks() {
 		/**
 		 * When a store is in staging mode, we don't want any subscription updates or purchases to be sent to the server.
 		 *
@@ -286,6 +291,36 @@ class WC_Payments_Subscription_Service {
 	 */
 	public static function is_wcpay_subscription( WC_Subscription $subscription ): bool {
 		return ! WC_Payments_Subscriptions::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+	}
+
+	/**
+	 * Determines whether any subscription related to an order is billed through Stripe Billing.
+	 *
+	 * Answers "is this payment actually billed by Stripe Billing?" rather than
+	 * "does this store have the Stripe Billing feature switched on?". The two diverge for any
+	 * subscription that predates the feature being enabled, was migrated off Stripe Billing, or
+	 * was never created there — all of which keep renewing on-site while the store-level flag
+	 * stays on. Only the former justifies the additional Stripe Billing fee.
+	 *
+	 * Returns true when *any* related subscription is Stripe-billed, matching
+	 * `is_wcpay_subscription_renewal_order()` in the subscriptions gateway trait.
+	 *
+	 * @param WC_Order $order Order to inspect. Any order type (parent, renewal, switch, resubscribe).
+	 *
+	 * @return bool
+	 */
+	public static function is_wcpay_subscription_order( WC_Order $order ): bool {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return false;
+		}
+
+		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] ) as $subscription ) {
+			if ( self::is_wcpay_subscription( $subscription ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -700,7 +735,7 @@ class WC_Payments_Subscription_Service {
 			return $actions;
 		}
 
-		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
+		if ( wcs_is_subscription( $theorder ) && $theorder instanceof WC_Subscription && self::is_wcpay_subscription( $theorder ) ) {
 			unset(
 				$actions['wcs_create_pending_parent'],
 				$actions['wcs_create_pending_renewal'],
@@ -716,7 +751,7 @@ class WC_Payments_Subscription_Service {
 	 * @param WC_Order|WC_Subscription $order The order object.
 	 */
 	public function show_wcpay_subscription_id( WC_Order $order ) {
-		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
+		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $order ) || ! $order instanceof WC_Subscription || ! self::is_wcpay_subscription( $order ) ) {
 			return;
 		}
 
@@ -815,6 +850,13 @@ class WC_Payments_Subscription_Service {
 			$data['billing_cycle_anchor'] = $subscription->get_time( 'next_payment' );
 		}
 
+		/**
+		 * Filters the subscription data prepared for creating a WCPay subscription.
+		 *
+		 * @since 3.2.0
+		 *
+		 * @param array $data The prepared subscription data.
+		 */
 		return apply_filters( 'wcpay_subscriptions_prepare_subscription_data', $data );
 	}
 

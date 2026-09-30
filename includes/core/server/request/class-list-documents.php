@@ -17,6 +17,11 @@ class List_Documents extends Paginated {
 
 	use Date_Parameters;
 
+	const DEFAULT_PARAMS = [
+		'sort'      => 'date',
+		'direction' => 'desc',
+	];
+
 	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
@@ -56,12 +61,12 @@ class List_Documents extends Paginated {
 	/**
 	 * Set match.
 	 *
-	 * @param string $match Match.
+	 * @param string $match_type Match type.
 	 *
 	 * @return void
 	 */
-	public function set_match( string $match ) {
-		$this->set_param( 'match', $match );
+	public function set_match( string $match_type ) {
+		$this->set_param( 'match', $match_type );
 	}
 
 

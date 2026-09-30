@@ -71,6 +71,12 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WCPAY_UnitTest
 		$this->render_widget( $instance );
 	}
 
+	public function test_widget_renders_fallback_aria_label_when_title_is_empty() {
+		$this->mock_compatibility->method( 'should_disable_currency_switching' )->willReturn( false );
+		$this->expectOutputRegex( '/aria-label="Select your currency"/' );
+		$this->render_widget();
+	}
+
 	public function test_widget_renders_enabled_currencies_with_symbol() {
 		$this->mock_compatibility->method( 'should_disable_currency_switching' )->willReturn( false );
 		$this->expectOutputRegex( '/value="USD">&#36; USD.+value="CAD">&#36; CAD.+value="EUR">&euro; EUR.+value="CHF">CHF/s' );

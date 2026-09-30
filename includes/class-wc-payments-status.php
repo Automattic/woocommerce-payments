@@ -481,6 +481,24 @@ class WC_Payments_Status {
 						<td><?php WC_Payments::mode()->is_test() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
 					</tr>
 					<tr>
+						<td data-export-label="Dev Mode"><?php esc_html_e( 'Dev Mode', 'woocommerce-payments' ); ?>:</td>
+						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether WooPayments is running in dev (sandbox) mode and what triggered it.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
+						<td>
+						<?php
+						if ( WC_Payments::mode()->is_dev() ) {
+							$triggers = WC_Payments::mode()->get_dev_mode_triggers();
+							$label    = __( 'Enabled', 'woocommerce-payments' );
+							if ( ! empty( $triggers ) ) {
+								$label .= ' (' . implode( ', ', $triggers ) . ')';
+							}
+							echo esc_html( $label );
+						} else {
+							esc_html_e( 'Disabled', 'woocommerce-payments' );
+						}
+						?>
+						</td>
+					</tr>
+					<tr>
 						<td data-export-label="Enabled APMs"><?php esc_html_e( 'Enabled APMs', 'woocommerce-payments' ); ?>:</td>
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'What payment methods are enabled for the store.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php echo esc_html( implode( ',', $this->gateway->get_upe_enabled_payment_method_ids() ) ); ?></td>

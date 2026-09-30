@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+defined( 'ABSPATH' ) || exit;
+
 ?>
 <script type="text/template" id="tmpl-wcpay-subscriptions-plugin-warning">
 	<div id="wcpay-subscriptions-plugin-warning-notice" class="wc-backbone-modal woopayments-plugin-warning-modal">
@@ -36,7 +38,7 @@
 							printf(
 								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation. $3 is WooPayments.
 								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel these subscriptions%2$s prior to deactivating %3$s.', 'woocommerce-payments' ),
-								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription" target="_blank">',
+								'<a href="https://woocommerce.com/document/subscriptions/customers-view/suspend-cancel-or-remove-an-item/#how-to-cancel-a-subscription-as-a-store-manager" target="_blank" rel="noreferrer noopener">',
 								'</a>',
 								'Woo Subscriptions'
 							);

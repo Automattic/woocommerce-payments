@@ -14,12 +14,12 @@ import { ExternalLink } from '@wordpress/components';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
-import { Dispute } from 'wcpay/types/disputes';
+import type { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface DisputeNoticeProps {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'reason' | 'status' | 'evidence_details' >;
 	isUrgent: boolean;
 	paymentMethod: string | null;
 	bankName: string | null;

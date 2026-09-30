@@ -11,7 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import { Button, ExternalLink } from '@wordpress/components';
-import { getAdminUrl } from 'wcpay/utils';
+import { getAdminUrl, redirectTo } from 'wcpay/utils';
 import InlineNotice from 'components/inline-notice';
 import DisputeEvidenceSubmittedIllustration from 'assets/images/dispute-evidence-submitted.svg?asset';
 
@@ -201,10 +201,12 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 						<Button
 							variant="secondary"
 							onClick={ () => {
-								window.location.href = getAdminUrl( {
-									page: 'wc-admin',
-									path: '/payments/disputes',
-								} );
+								redirectTo(
+									getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/disputes',
+									} )
+								);
 							} }
 						>
 							{ __(
@@ -215,11 +217,13 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 						<Button
 							variant="primary"
 							onClick={ () => {
-								window.location.href = getAdminUrl( {
-									page: 'wc-admin',
-									path: '/payments/disputes/challenge',
-									id: disputeId,
-								} );
+								redirectTo(
+									getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/disputes/challenge',
+										id: disputeId,
+									} )
+								);
 							} }
 						>
 							{ __(

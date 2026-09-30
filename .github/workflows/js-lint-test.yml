@@ -14,39 +14,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
+      # blocked by the Automattic enterprise Actions allowlist.
+      - run: corepack enable
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v4
-        with:
-          path: ~/.npm/
-          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # install dependencies and run linter
-      - run: npm ci && npm run lint:js && npm run lint:css
+      - run: pnpm install --frozen-lockfile && pnpm run lint:js && pnpm run lint:css
 
   test:
     name:    JS testing
     runs-on: ubuntu-latest
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # corepack (bundled with Node) provisions pnpm; pnpm/action-setup is
+      # blocked by the Automattic enterprise Actions allowlist.
+      - run: corepack enable
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v4
-        with:
-          path: ~/.npm/
-          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # install dependencies and run linter
-      - run: npm ci && npm run test:js
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Jest transforms
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.cache/jest
+          key: ${{ runner.os }}-jest-${{ hashFiles('.nvmrc', 'pnpm-lock.yaml', 'babel.config.js', 'tsconfig.json', 'tests/js/**') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ hashFiles('.nvmrc', 'pnpm-lock.yaml', 'babel.config.js', 'tsconfig.json', 'tests/js/**') }}-
+      - run: pnpm run test:js

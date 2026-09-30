@@ -131,12 +131,12 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 * Validate the promotion ID parameter.
 	 *
 	 * @param mixed           $value   The parameter value.
-	 * @param WP_REST_Request $request The request object.
-	 * @param string          $param   The parameter name.
+	 * @param WP_REST_Request $_unused_request The request object.
+	 * @param string          $_unused_param   The parameter name.
 	 *
 	 * @return bool True if valid, false otherwise.
 	 */
-	public function validate_promotion_id( $value, WP_REST_Request $request, string $param ): bool {
+	public function validate_promotion_id( $value, WP_REST_Request $_unused_request, string $_unused_param ): bool {
 		if ( ! is_string( $value ) || empty( $value ) ) {
 			return false;
 		}

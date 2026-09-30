@@ -11,6 +11,7 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
+	disableEditorWelcomeGuide,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 	goToMultiCurrencySettings,
@@ -59,39 +60,26 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 
 		await goToNewPost( adminPage );
 
-		if (
-			await adminPage.getByRole( 'button', { name: 'Close' } ).isVisible()
-		) {
-			await adminPage.getByRole( 'button', { name: 'Close' } ).click();
-		}
+		// Dismiss the Welcome Guide; its overlay blocks the block inserter.
+		await disableEditorWelcomeGuide( adminPage );
 
-		if ( await adminPage.locator( '[name="editor-canvas"]' ).isVisible() ) {
-			await expect(
-				adminPage.locator( '[name="editor-canvas"]' )
-			).toBeAttached();
-			const editor = adminPage
-				.locator( '[name="editor-canvas"]' )
-				.contentFrame();
-			await editor.getByRole( 'button', { name: 'Add block' } ).click();
-		} else {
-			// Fallback for WC 7.7.0.
-			await adminPage
-				.getByRole( 'button', { name: 'Add block' } )
-				.click();
-		}
-
+		// The toolbar inserter works with both iframed and inline editors.
 		await adminPage
-			.locator( 'input[placeholder="Search"]' )
-			.pressSequentially( 'switcher', { delay: 20 } );
-		await expect(
-			adminPage.getByRole( 'option', {
+			.getByLabel( 'Editor top bar' )
+			.getByRole( 'button', { name: 'Block Inserter', exact: true } )
+			.click();
+
+		const blockLibrary = adminPage.getByRole( 'region', {
+			name: 'Block Library',
+		} );
+		await blockLibrary
+			.getByLabel( 'Search', { exact: true } )
+			.fill( 'switcher' );
+		await blockLibrary
+			.getByRole( 'option', {
 				name: 'Currency Switcher Block',
+				exact: true,
 			} )
-		).toBeVisible();
-
-		// Insert the block.
-		await adminPage
-			.getByRole( 'option', { name: 'Currency Switcher Block' } )
 			.click();
 
 		// Publish the post — click the top bar button to open the publish panel.

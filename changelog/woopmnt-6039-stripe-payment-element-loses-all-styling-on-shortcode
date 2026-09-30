@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Stripe Payment Element losing styling on shortcode checkout with non-standard themes like Avada

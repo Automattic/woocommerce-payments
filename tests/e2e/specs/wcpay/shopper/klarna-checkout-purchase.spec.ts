@@ -50,6 +50,10 @@ test.describe( 'Klarna Checkout', () => {
 		).not.toBeEmpty();
 	} );
 
+	// Order-visibility and refund are intentionally NOT asserted for Klarna: the
+	// Klarna playground redirect cannot be driven to a completed order without
+	// flakiness (see the redirect-only assertion below), so there is no captured
+	// order or transaction to verify or refund. Tracked alongside #6763.
 	test(
 		'allows to use Klarna as a payment method',
 		{ tag: '@critical' },
@@ -68,10 +72,7 @@ test.describe( 'Klarna Checkout', () => {
 				}
 			);
 
-			await shopperPage
-				.locator( '.wc_payment_methods' )
-				.getByText( 'Klarna' )
-				.click();
+			await shopper.selectPaymentMethod( shopperPage, 'Klarna' );
 
 			await shopper.placeOrder( shopperPage );
 

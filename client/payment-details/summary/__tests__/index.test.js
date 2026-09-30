@@ -12,8 +12,10 @@ import moment from 'moment';
  * Internal dependencies
  */
 import PaymentDetailsSummary from '../';
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
+import { recordEvent } from 'wcpay/tracks';
+import { _resetOutcomeViewTrackingForTests } from '../../dispute-outcome/tracks';
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {
@@ -26,17 +28,27 @@ jest.mock( '@wordpress/date', () => ( {
 
 const mockDisputeDoAccept = jest.fn();
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorization: jest.fn( () => ( {
 		authorization: null,
 	} ) ),
+} ) );
+jest.mock( 'wcpay/data/disputes', () => ( {
 	useDisputeAccept: jest.fn( () => ( {
 		doAccept: mockDisputeDoAccept,
 		isLoading: false,
 	} ) ),
 } ) );
 
+jest.mock( 'wcpay/tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -193,6 +205,7 @@ describe( 'PaymentDetailsSummary', () => {
 			timeFormat: 'g:ia',
 			featureFlags: {
 				isDisputeIssuerEvidenceEnabled: false,
+				isDisputeOutcomeViewEnabled: false,
 			},
 		};
 
@@ -252,6 +265,24 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders refund failure without deducting the failed refund', () => {
+		const charge = getBaseCharge();
+		charge.refunded = false;
+		charge.amount_refunded = 2000;
+		charge.refunds?.data.push( {
+			status: 'failed',
+			balance_transaction: {
+				amount: -charge.amount_refunded,
+				currency: 'usd',
+			},
+		} );
+
+		renderCharge( charge );
+
+		screen.getByText( 'Refund failure' );
+		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
+	} );
+
 	test( 'renders the Tap to Pay channel from metadata with ios COTS_DEVICE', () => {
 		const charge = getBaseCharge();
 		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
@@ -287,6 +318,40 @@ describe( 'PaymentDetailsSummary', () => {
 
 	test( 'renders loading state', () => {
 		expect( renderCharge( {}, true ) ).toMatchSnapshot();
+	} );
+
+	describe( 'refund-modal opener registered for sibling surfaces', () => {
+		test( 'ignores invocations while the charge is still loading', () => {
+			let openRefundModal;
+			renderCharge( {}, {}, true, {
+				onRegisterRefundOpener: ( open ) => ( openRefundModal = open ),
+			} );
+
+			act( () => openRefundModal() );
+
+			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+			expect( recordEvent ).not.toHaveBeenCalledWith(
+				'payments_transactions_details_refund_modal_open',
+				expect.anything()
+			);
+		} );
+
+		test( 'opens the refund modal once the charge has loaded', () => {
+			let openRefundModal;
+			renderCharge( getBaseCharge(), {}, false, {
+				onRegisterRefundOpener: ( open ) => ( openRefundModal = open ),
+			} );
+
+			act( () => openRefundModal() );
+
+			expect(
+				screen.getByRole( 'dialog', { name: 'Refund transaction' } )
+			).toBeInTheDocument();
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_transactions_details_refund_modal_open',
+				{ payment_intent_id: 'pi_abc' }
+			);
+		} );
 	} );
 
 	describe( 'capture notification and fraud buttons', () => {
@@ -419,27 +484,27 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		screen.getByText( /Contact your customer/i, {
-			selector: '.dispute-steps__item-name',
+			selector: '.dispute-step-item__name',
 		} );
 		screen.getByText( /Ask for the dispute to be withdrawn/i, {
-			selector: '.dispute-steps__item-name',
+			selector: '.dispute-step-item__name',
 		} );
 		screen.getByText( /Challenge or accept the dispute/i, {
-			selector: '.dispute-steps__item-name',
+			selector: '.dispute-step-item__name',
 		} );
 
 		screen.getByText(
 			/Identify the issue and work towards a resolution where possible\./i,
-			{ selector: '.dispute-steps__item-description' }
+			{ selector: '.dispute-step-item__description' }
 		);
 		screen.getByText(
 			/If you've managed to resolve the issue with your customer, help them with the withdrawal of their dispute\./i,
-			{ selector: '.dispute-steps__item-description' }
+			{ selector: '.dispute-step-item__description' }
 		);
 		screen.getByText(
 			// eslint-disable-next-line max-len
 			/Disagree with the dispute\? You can challenge it with the customer's bank\. Otherwise, accept it to close the case — the order amount and dispute fee won't be refunded\./i,
-			{ selector: '.dispute-steps__item-description' }
+			{ selector: '.dispute-step-item__description' }
 		);
 		screen.getByRole( 'link', { name: /Email customer/i } );
 		expect(
@@ -460,6 +525,277 @@ describe( 'PaymentDetailsSummary', () => {
 				name: /Transaction actions/i,
 			} )
 		).toBeNull();
+	} );
+
+	describe( 'multiple disputes per charge', () => {
+		test( 'treats charge.disputes as authoritative, one pane per distinct dispute', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const first = getBaseDispute();
+			first.id = 'dp_1';
+			first.status = 'needs_response';
+			const second = getBaseDispute();
+			second.id = 'dp_2';
+			second.status = 'needs_response';
+			// charge.dispute duplicates the first array entry; it must not add
+			// a third pane.
+			charge.dispute = first;
+			charge.disputes = [ first, second ];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 2 );
+
+			const challengeHrefs = screen
+				.getAllByRole( 'button', { name: /Challenge dispute/ } )
+				.map( ( button ) =>
+					button.closest( 'a' ).getAttribute( 'href' )
+				);
+
+			expect( challengeHrefs ).toEqual(
+				expect.arrayContaining( [
+					expect.stringContaining( 'id=dp_1' ),
+					expect.stringContaining( 'id=dp_2' ),
+				] )
+			);
+		} );
+
+		test( 'renders both an awaiting-response pane and a resolution footer for a mixed-status charge', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const awaiting = getBaseDispute();
+			awaiting.id = 'dp_awaiting';
+			awaiting.status = 'needs_response';
+			const resolved = getBaseDispute();
+			resolved.id = 'dp_resolved';
+			resolved.status = 'won';
+			resolved.metadata.__evidence_submitted_at = '1693400000';
+			charge.dispute = awaiting;
+			charge.disputes = [ awaiting, resolved ];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-footer'
+				).length
+			).toBeGreaterThanOrEqual( 1 );
+
+			const challengeLink = screen
+				.getByRole( 'button', { name: /Challenge dispute/ } )
+				.closest( 'a' );
+
+			expect( challengeLink.getAttribute( 'href' ) ).toEqual(
+				expect.stringContaining( 'id=dp_awaiting' )
+			);
+
+			const detailsLink = screen
+				.getByRole( 'button', { name: /View dispute details/i } )
+				.closest( 'a' );
+
+			expect( detailsLink.getAttribute( 'href' ) ).toEqual(
+				expect.stringContaining( 'id=dp_resolved' )
+			);
+		} );
+
+		test( 'falls back to charge.dispute and renders one pane when disputes array is absent', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+		} );
+
+		test( 'falls back to charge.dispute and renders one pane when disputes array is empty', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+			charge.disputes = [];
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelectorAll(
+					'.transaction-details-dispute-details-wrapper'
+				)
+			).toHaveLength( 1 );
+		} );
+
+		test( 'sums every dispute fee in the breakdown tooltip on the envelope path', async () => {
+			const charge = getBaseCharge();
+			charge.balance_transaction = {
+				amount: 2000,
+				currency: 'usd',
+				fee: 70,
+			};
+			charge.disputed = true;
+			const first = getBaseDispute();
+			first.id = 'dp_1';
+			first.status = 'under_review';
+			first.balance_transactions = [
+				{
+					amount: -1500,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				},
+			];
+			const second = getBaseDispute();
+			second.id = 'dp_2';
+			second.status = 'under_review';
+			second.balance_transactions = [
+				{
+					amount: -1000,
+					fee: 1500,
+					currency: 'usd',
+					reporting_category: 'dispute',
+				},
+			];
+			charge.dispute = first;
+			charge.disputes = [ first, second ];
+			// Envelope path: the server folds both dispute fees into the
+			// totals, so `Total fees` reflects them and the tooltip's summed
+			// `Dispute fee` line reconciles. The legacy fallback sums the
+			// disputes client-side (see the charge-utils tests).
+			charge.fee_breakdown_v1 = {
+				rows: [],
+				totals: {
+					fee: { amount: 3070, currency: 'usd' },
+					tax: { amount: 0, currency: 'usd' },
+					net: { amount: -1070, currency: 'usd' },
+					gross: { amount: 2000, currency: 'usd' },
+					fee_plus_tax: { amount: 3070, currency: 'usd' },
+				},
+				notes: [],
+			};
+
+			renderCharge( charge );
+
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /Fee breakdown/i } )
+			);
+
+			const tooltipContent = screen.getByRole( 'tooltip' );
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Transaction fee/ )
+			).toHaveTextContent( /\$0.70/ );
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Dispute fee/ )
+			).toHaveTextContent( /\$30.00/ );
+
+			// Two fees are summed, so the label reads plural.
+			expect(
+				within( tooltipContent ).getByText( 'Dispute fees' )
+			).toBeInTheDocument();
+
+			expect(
+				within( tooltipContent ).getByLabelText( /Total fees/ )
+			).toHaveTextContent( /\$30.70/ );
+		} );
+
+		test( 'labels each pane "Dispute N of M", ordered oldest-first', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const newer = getBaseDispute();
+			newer.id = 'dp_newer';
+			newer.status = 'needs_response';
+			newer.created = 2000;
+			const older = getBaseDispute();
+			older.id = 'dp_older';
+			older.status = 'needs_response';
+			older.created = 1000;
+			charge.dispute = newer;
+			// Deliberately out of creation order to prove the numbering sorts.
+			charge.disputes = [ newer, older ];
+
+			const container = renderCharge( charge );
+
+			const labels = Array.from(
+				container.querySelectorAll(
+					'.payment-details-summary__dispute-label'
+				)
+			).map( ( node ) => node.textContent );
+
+			expect( labels ).toEqual( [ 'Dispute 1 of 2', 'Dispute 2 of 2' ] );
+		} );
+
+		test( 'omits the pane label when there is a single dispute', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			const container = renderCharge( charge );
+
+			expect(
+				container.querySelector(
+					'.payment-details-summary__dispute-label'
+				)
+			).toBeNull();
+			expect( screen.queryByText( 'Dispute 1 of 1' ) ).toBeNull();
+		} );
+
+		test( 'hides the refund menu when any dispute is non-refundable', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const refundable = getBaseDispute();
+			refundable.id = 'dp_1';
+			refundable.status = 'won';
+			const nonRefundable = getBaseDispute();
+			nonRefundable.id = 'dp_2';
+			nonRefundable.status = 'needs_response';
+			charge.dispute = refundable;
+			charge.disputes = [ refundable, nonRefundable ];
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'button', {
+					name: /Transaction actions/i,
+				} )
+			).toBeNull();
+		} );
+
+		test( 'shows the refund menu when every dispute is refundable', () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			const won = getBaseDispute();
+			won.id = 'dp_1';
+			won.status = 'won';
+			const inquiry = getBaseDispute();
+			inquiry.id = 'dp_2';
+			inquiry.status = 'warning_closed';
+			charge.dispute = won;
+			charge.disputes = [ won, inquiry ];
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'button', {
+					name: /Transaction actions/i,
+				} )
+			).toBeInTheDocument();
+		} );
 	} );
 
 	test( 'renders the information of a disputed charge when the store/charge currency differ', () => {
@@ -530,6 +866,100 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'labels a zero-fee dispute as deducted, not refunded', () => {
+		// The label keys on the dispute, not the dispute fee: the disputed
+		// amount left the account as a deduction whether or not a fee rode
+		// along with it.
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				currency: 'usd',
+				fee: 0,
+				reporting_category: 'dispute',
+			},
+		];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Deducted:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'labels a refund on a charge with an inquiry as refunded', () => {
+		// An inquiry withdraws nothing, so the only money that moved is the
+		// customer refund. The label must not follow the mere presence of a
+		// dispute record.
+		const charge = getBaseCharge();
+		charge.amount_refunded = 1000;
+		charge.refunds = {
+			data: [
+				{
+					amount: 1000,
+					currency: 'usd',
+					balance_transaction: {
+						amount: -1000,
+						currency: 'usd',
+						fee: 0,
+					},
+				},
+			],
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'warning_needs_response';
+		charge.dispute.balance_transactions = [];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Refunded:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Deducted:/i ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'labels a refund on a charge with a won dispute as refunded', () => {
+		// The dispute rows net to zero, so nothing was deducted; the refund is
+		// the only withdrawal.
+		const charge = getBaseCharge();
+		charge.amount_refunded = 1000;
+		charge.refunds = {
+			data: [
+				{
+					amount: 1000,
+					currency: 'usd',
+					balance_transaction: {
+						amount: -1000,
+						currency: 'usd',
+						fee: 0,
+					},
+				},
+			],
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'won';
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				currency: 'usd',
+				fee: 1500,
+				reporting_category: 'dispute',
+			},
+			{
+				amount: 2000,
+				currency: 'usd',
+				fee: -1500,
+				reporting_category: 'dispute_reversal',
+			},
+		];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Refunded:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Deducted:/i ) ).not.toBeInTheDocument();
+	} );
+
 	test( 'renders the fee breakdown tooltip of a disputed charge', async () => {
 		const charge = {
 			...getBaseCharge(),
@@ -573,6 +1003,11 @@ describe( 'PaymentDetailsSummary', () => {
 		expect(
 			within( tooltipContent ).getByLabelText( /Dispute fee/ )
 		).toHaveTextContent( /\$15.00/ );
+
+		// A single fee keeps the label singular.
+		expect(
+			within( tooltipContent ).getByText( 'Dispute fee' )
+		).toBeInTheDocument();
 
 		expect(
 			within( tooltipContent ).getByLabelText( /Total fees/ )
@@ -1040,6 +1475,423 @@ describe( 'PaymentDetailsSummary', () => {
 			expect(
 				screen.queryByLabelText( 'Transaction actions' )
 			).not.toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'Dispute outcome view feature flag', () => {
+		const getResolvedCharge = ( status ) => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = status;
+			charge.dispute.metadata = {
+				__dispute_closed_at: '1693626817',
+				// Set a real product type so `resolveProductType()` lands
+				// on a real matrix cell. Drives the matrix-derived rows
+				// (e.g., "Customer communication"), not just the universal
+				// cover letter row, so the tests exercise the data path.
+				__product_type: 'physical_product',
+			};
+			// Top up evidence with rows the matrix expects for
+			// fraudulent × physical_product so we get at least one
+			// matrix-driven "provided" row alongside the cover letter.
+			charge.dispute.evidence = {
+				...charge.dispute.evidence,
+				shipping_date: '2026-01-01',
+				customer_communication: 'Email thread with the customer',
+			};
+			return charge;
+		};
+
+		test( 'renders DisputeResolutionFooter for a resolved dispute when the flag is off', () => {
+			renderCharge( getResolvedCharge( 'won' ) );
+
+			expect(
+				screen.getByText( /Good news/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).toBeInTheDocument();
+		} );
+
+		// The Outcome View no longer replaces the resolution banner with an
+		// Evidence Submitted list; design folded that section away (2026-05-26
+		// review), so the banner renders for won/lost as it does with the flag
+		// off, alongside the separate recommendations card.
+		test( 'renders the resolution banner and no Evidence Submitted section for a won dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'won' ) );
+
+			expect(
+				screen.getByText( /Good news/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', { name: 'Evidence Submitted' } )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'renders the resolution banner and no Evidence Submitted section for a lost dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'lost' ) );
+
+			// The fixture submits no evidence, so the footer renders the
+			// non-response copy; the point is that the banner is present.
+			expect(
+				screen.getByText( /This dispute was lost/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', { name: 'Evidence Submitted' } )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'still renders DisputeResolutionFooter for an under_review dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'under_review' ) );
+
+			expect(
+				screen.getByText(
+					/is currently reviewing the evidence you submitted/i,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+		} );
+
+		test( 'still renders DisputeAwaitingResponseDetails for an unresolved dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByText(
+					/The cardholder claims this is an unauthorized transaction/,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+		} );
+
+		test( 'renders the recommendations card for a lost dispute with a matching reason × product type', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'lost' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+			charge.dispute.evidence = {}; // tracking missing → critical recommendation fires
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).toBeInTheDocument();
+		} );
+
+		test( 'renders the recommendations card for a won dispute with a matching reason × product type', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'won' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+			charge.dispute.evidence = {
+				shipping_tracking_number: '1Z999',
+				shipping_carrier: 'UPS',
+			};
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'heading', { name: /what's working well/i } )
+			).toBeInTheDocument();
+		} );
+
+		test( 'does not render the recommendations card for a warning_closed dispute', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'warning_closed' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what's working well/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render the recommendations card when the flag is off', () => {
+			// Flag intentionally off; getResolvedCharge does not toggle it.
+			const charge = getResolvedCharge( 'lost' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render the recommendations card on an accepted lost dispute', () => {
+			// Accept-path: __closed_by_merchant === '1' means the merchant
+			// chose not to challenge. Coaching them to "submit evidence next
+			// time" misreads the choice, so the card suppresses. Per RiskOps
+			// review.
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'lost' );
+			charge.dispute.reason = 'fraudulent';
+			charge.dispute.metadata.__product_type = 'physical_product';
+			charge.dispute.metadata.__closed_by_merchant = '1';
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what's working well/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		// Recommendations are the same for every dispute on a charge whenever
+		// they share the order-derived productType, so the cards are deduped by
+		// recommendation signature while analytics stay per-dispute.
+		describe( 'recommendations card dedup across disputes', () => {
+			const makeWonDispute = ( id ) => {
+				const dispute = getBaseDispute();
+				dispute.id = id;
+				dispute.status = 'won';
+				dispute.reason = 'product_not_received';
+				dispute.metadata = {
+					__dispute_closed_at: '1693626817',
+					__product_type: 'physical_product',
+				};
+				// Tracking only (no carrier/receipt/communication) yields
+				// keep_doing tips → the "Tips for future disputes" section.
+				dispute.evidence = { shipping_tracking_number: '1Z999' };
+				return dispute;
+			};
+
+			beforeEach( () => {
+				recordEvent.mockClear();
+				_resetOutcomeViewTrackingForTests();
+				global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+			} );
+
+			test( 'renders a single card for two won disputes with the same recommendations', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				const first = makeWonDispute( 'dp_won_1' );
+				const second = makeWonDispute( 'dp_won_2' );
+				charge.dispute = first;
+				charge.disputes = [ first, second ];
+
+				renderCharge( charge );
+
+				expect(
+					screen.getAllByRole( 'heading', {
+						name: /tips for future disputes/i,
+					} )
+				).toHaveLength( 1 );
+			} );
+
+			test( 'renders one card for a single won dispute', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				charge.dispute = makeWonDispute( 'dp_won_1' );
+
+				renderCharge( charge );
+
+				expect(
+					screen.getAllByRole( 'heading', {
+						name: /tips for future disputes/i,
+					} )
+				).toHaveLength( 1 );
+			} );
+
+			test( 'fires the outcome-viewed event once per dispute despite the deduped card', () => {
+				const charge = getBaseCharge();
+				charge.disputed = true;
+				const first = makeWonDispute( 'dp_won_1' );
+				const second = makeWonDispute( 'dp_won_2' );
+				charge.dispute = first;
+				charge.disputes = [ first, second ];
+
+				renderCharge( charge );
+
+				const viewedCalls = recordEvent.mock.calls.filter(
+					( [ name ] ) => name === 'wcpay_dispute_outcome_viewed'
+				);
+
+				expect( viewedCalls ).toHaveLength( 2 );
+
+				expect(
+					viewedCalls
+						.map( ( [ , props ] ) => props.dispute_id )
+						.sort()
+				).toEqual( [ 'dp_won_1', 'dp_won_2' ] );
+			} );
+		} );
+
+		// Wrapper-lifecycle coverage for the Tracks dedup. The function-level
+		// guard is unit-tested in `dispute-outcome/__tests__/tracks.test.ts`;
+		// these tests cover the remount path the dedup actually defends.
+		describe( 'Tracks dedup across the wrapper lifecycle', () => {
+			// The wrapper also renders the recommendations card, which fires its
+			// own section-viewed events, so count only the viewed-event firings.
+			const outcomeViewedCalls = () =>
+				recordEvent.mock.calls.filter(
+					( [ name ] ) => name === 'wcpay_dispute_outcome_viewed'
+				);
+
+			beforeEach( () => {
+				recordEvent.mockClear();
+				_resetOutcomeViewTrackingForTests();
+				global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+			} );
+
+			test( 'rerendering with a fresh charge object but the same dispute id fires the event once', () => {
+				const first = getResolvedCharge( 'won' );
+				const { rerender } = render(
+					<PaymentDetailsSummary charge={ first } />
+				);
+
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
+
+				// Fresh object, same id: useEffect deps change; the Set catches it.
+				const second = getResolvedCharge( 'won' );
+				rerender( <PaymentDetailsSummary charge={ second } /> );
+
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
+			} );
+
+			test( 'unmounting and remounting the wrapper with the same dispute id fires the event once', () => {
+				const charge = getResolvedCharge( 'won' );
+				const { unmount } = render(
+					<PaymentDetailsSummary charge={ charge } />
+				);
+
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
+
+				// Production regression: per-instance refs reset on unmount;
+				// the module-scoped Set must survive it.
+				unmount();
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
+			} );
+
+			test( 'a different dispute id after the first fires its own event', () => {
+				const first = getResolvedCharge( 'won' );
+				const { unmount } = render(
+					<PaymentDetailsSummary charge={ first } />
+				);
+				expect( outcomeViewedCalls() ).toHaveLength( 1 );
+
+				// Dedup keyed by dispute id, not "have we ever fired".
+				unmount();
+				const second = getResolvedCharge( 'lost' );
+				second.dispute.id = 'dp_2';
+				render( <PaymentDetailsSummary charge={ second } /> );
+
+				const viewed = outcomeViewedCalls();
+				expect( viewed ).toHaveLength( 2 );
+				expect( viewed[ 1 ][ 1 ] ).toEqual(
+					expect.objectContaining( { dispute_id: 'dp_2' } )
+				);
+			} );
+		} );
+
+		// has_recommendations must mirror what the card actually renders, so it
+		// is gated by the same conditions as the card (won/lost, matching
+		// catalog entry, not merchant-accepted), not merely by the catalog match.
+		describe( 'has_recommendations property', () => {
+			beforeEach( () => {
+				recordEvent.mockClear();
+				_resetOutcomeViewTrackingForTests();
+				global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+			} );
+
+			test( 'fires has_recommendations: true when the card has entries', () => {
+				const charge = getResolvedCharge( 'lost' );
+				charge.dispute.reason = 'product_not_received';
+				charge.dispute.metadata.__product_type = 'physical_product';
+				charge.dispute.evidence = {}; // tracking missing → critical fires
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: true } )
+				);
+			} );
+
+			test( 'fires has_recommendations: false when no catalog entry matches', () => {
+				const charge = getResolvedCharge( 'won' );
+				charge.dispute.reason = 'bank_cannot_process';
+				charge.dispute.metadata.__product_type = 'physical_product';
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: false } )
+				);
+			} );
+
+			test( 'fires has_recommendations: false on an accepted dispute even when entries would match', () => {
+				// The card suppresses on __closed_by_merchant, so the flag must
+				// too: the merchant sees no card, so has_recommendations is false.
+				const charge = getResolvedCharge( 'lost' );
+				charge.dispute.reason = 'product_not_received';
+				charge.dispute.metadata.__product_type = 'physical_product';
+				charge.dispute.evidence = {};
+				charge.dispute.metadata.__closed_by_merchant = '1';
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: false } )
+				);
+			} );
+
+			test( 'fires has_recommendations: false for a warning_closed inquiry', () => {
+				const charge = getResolvedCharge( 'warning_closed' );
+				charge.dispute.reason = 'product_not_received';
+				charge.dispute.metadata.__product_type = 'physical_product';
+
+				render( <PaymentDetailsSummary charge={ charge } /> );
+
+				expect( recordEvent ).toHaveBeenCalledWith(
+					'wcpay_dispute_outcome_viewed',
+					expect.objectContaining( { has_recommendations: false } )
+				);
+			} );
 		} );
 	} );
 } );

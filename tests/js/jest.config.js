@@ -1,5 +1,6 @@
 module.exports = {
 	rootDir: '../../',
+	cacheDirectory: '<rootDir>/node_modules/.cache/jest',
 	moduleDirectories: [
 		'node_modules',
 		'<rootDir>/client',
@@ -16,6 +17,7 @@ module.exports = {
 		'^assets(.*?)(\\?.*)?$': '<rootDir>/assets$1',
 		'^@woocommerce/blocks-registry$':
 			'<rootDir>/tests/js/woocommerce-blocks-registry',
+		'^@woocommerce/settings$': '<rootDir>/client/utils/wc-settings.ts',
 		'^uuid$': require.resolve( 'uuid' ),
 		'^jest-utils(.*)$': '<rootDir>/tests/js/utilities$1',
 	},
@@ -40,6 +42,10 @@ module.exports = {
 	testPathIgnorePatterns: [
 		'/node_modules/',
 		'/vendor/',
+		// Nested git worktrees (gitignored, developer-local) carry their own
+		// copies of every test; without this Jest runs all of them against the
+		// current branch's node_modules and reports other branches' failures.
+		'/\\.worktrees/',
 		'<rootDir>/.*/build/',
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/docker/',
@@ -47,6 +53,7 @@ module.exports = {
 		'<rootDir>/tests/qit',
 	],
 	modulePathIgnorePatterns: [
+		'<rootDir>/\\.worktrees/',
 		'<rootDir>/docker/',
 		'<rootDir>/vendor/',
 		'<rootDir>/.*/build/',
@@ -63,11 +70,27 @@ module.exports = {
 	],
 	transform: {
 		'^.+\\.jsx?$': 'babel-jest',
-		'^.+\\.tsx?$': [ 'ts-jest', { isolatedModules: true } ],
+		'^.+\\.tsx?$': 'ts-jest',
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [
-		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
+		// The optional `.pnpm/*/node_modules/` prefix lets these packages match
+		// under pnpm's symlinked store layout as well as a flat node_modules.
+		[
+			'/node_modules/(?!',
+			'(\\.pnpm/[^/]+/node_modules/)?',
+			'(',
+			'(@woocommerce/.+)',
+			'|@wordpress/dataviews/',
+			'|gridicons',
+			'|@automattic/components/',
+			'|@automattic/material-design-icons/',
+			'|parsel-js/',
+			// d3 packages bumped for ReDoS fix ship pure ESM and need Babel transform.
+			'|d3-(color|interpolate|scale|scale-chromatic|format|time|time-format|array)/',
+			'|internmap/',
+			'))',
+		].join( '' ),
 	],
 	snapshotSerializers: [ '@emotion/jest/serializer' ],
 };

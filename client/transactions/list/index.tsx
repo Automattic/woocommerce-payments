@@ -22,9 +22,13 @@ import {
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'wcpay/data';
-import { Transaction } from 'wcpay/data/transactions/hooks';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
+import { Transaction, TransactionType } from 'wcpay/data/transactions/hooks';
 import OrderLink from 'wcpay/components/order-link';
+import EarlyFraudWarningPill from 'wcpay/components/early-fraud-warning-pill';
 import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
 import ClickableCell from 'wcpay/components/clickable-cell';
 import { getDetailsURL } from 'wcpay/components/details-link';
@@ -48,7 +52,7 @@ import DownloadButton from 'wcpay/components/download-button';
 import {
 	getTransactionsCSVRequestURL,
 	transactionsDownloadEndpoint,
-} from '../../data/transactions/resolvers';
+} from 'wcpay/data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
@@ -59,6 +63,10 @@ import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTr
 interface TransactionsListProps {
 	depositId?: string;
 }
+
+// Rows that represent the payment itself. Its refund rows repeat the same charge
+// ID, so restricting to these keeps the fraud warning on one row per payment.
+const paymentTransactionTypes: TransactionType[] = [ 'charge', 'payment' ];
 
 interface Column extends TableCardColumn {
 	key:
@@ -323,6 +331,7 @@ export const TransactionsList = (
 				: txn.type );
 		const clickable =
 			txn.type !== 'financing_payout' &&
+			txn.type !== 'network_costs' &&
 			! ( txn.type === 'financing_paydown' && txn.charge_id === '' )
 				? ( children: React.ReactNode ) => (
 						<ClickableCell href={ detailsURL }>
@@ -422,6 +431,8 @@ export const TransactionsList = (
 
 		const isReaderFee = dataType === 'card_reader_fee';
 
+		const isNetworkCosts = txn.type === 'network_costs';
+
 		const deposit = ! isFinancingType && (
 			<Deposit
 				depositId={ txn.deposit_id }
@@ -461,13 +472,21 @@ export const TransactionsList = (
 			type: {
 				value: displayType[ dataType ],
 				display: clickable(
-					displayType[ dataType ] || formatStringValue( dataType )
+					<Fragment>
+						{ displayType[ dataType ] ||
+							formatStringValue( dataType ) }
+						{ paymentTransactionTypes.includes( txn.type ) && (
+							<EarlyFraudWarningPill
+								earlyFraudWarning={ txn.early_fraud_warning }
+							/>
+						) }
+					</Fragment>
 				),
 			},
 			source: {
 				value: txn.source,
 				display:
-					! isFinancingType && ! isReaderFee ? (
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts ? (
 						clickable(
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
@@ -503,14 +522,14 @@ export const TransactionsList = (
 			customer_name: {
 				value: txn.customer_name,
 				display:
-					! isFinancingType && ! isReaderFee
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts
 						? customerName
 						: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
 				display:
-					! isFinancingType && ! isReaderFee
+					! isFinancingType && ! isReaderFee && ! isNetworkCosts
 						? customerEmail
 						: __( 'N/A', 'woocommerce-payments' ),
 			},

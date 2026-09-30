@@ -5,11 +5,15 @@
 	bottom: $gap-large;
 	right: $gap-large;
 	z-index: 999;
-	width: 300px;
+	width: var( --wcpay-spotlight-width, 300px );
 	opacity: 0;
 	transform: translateX( 100% );
 	transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-	font-family: 'SF Pro Display', $default-font;
+	font-family: var(
+		--wcpay-spotlight-font-family,
+		'SF Pro Display',
+		#{$default-font}
+	);
 
 	&--visible {
 		opacity: 1;
@@ -156,7 +160,11 @@
 .wcpay-spotlight__heading {
 	@include heading-lg;
 
-	margin: 0 0 $gap-small;
+	margin: 0;
+	margin-bottom: var(
+		--wcpay-spotlight-heading-margin-bottom,
+		#{$gap-small}
+	);
 	color: $gray-900;
 }
 

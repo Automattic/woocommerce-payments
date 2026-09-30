@@ -13,9 +13,9 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
 	useManualCapture: jest.fn(),

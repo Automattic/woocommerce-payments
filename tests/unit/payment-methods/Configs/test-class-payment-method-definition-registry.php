@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\PaymentMethods\Configs;
 
+use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPAY_UnitTestCase;
@@ -227,19 +228,19 @@ class PaymentMethodDefinitionRegistryTest extends WCPAY_UnitTestCase {
 		$registry->register_payment_method( SecondMockPaymentMethodDefinition::class );
 
 		// Test filtering by currency.
-		$methods = $registry->get_available_payment_method_definitions( 'US', 'USD' );
+		$methods = $registry->get_available_payment_method_definitions( 'US', Currency_Code::UNITED_STATES_DOLLAR );
 		$this->assertCount( 2, $methods, 'Both methods should be available for USD in US.' );
 		$this->assertArrayHasKey( 'mock_method', $methods );
 		$this->assertArrayHasKey( 'second_mock_method', $methods );
 
 		// Test filtering by unsupported currency.
-		$methods = $registry->get_available_payment_method_definitions( 'US', 'EUR' );
+		$methods = $registry->get_available_payment_method_definitions( 'US', Currency_Code::EURO );
 		$this->assertCount( 1, $methods, 'Only one method should support EUR.' );
 		$this->assertArrayHasKey( 'second_mock_method', $methods );
 		$this->assertArrayNotHasKey( 'mock_method', $methods );
 
 		// Test filtering by country.
-		$methods = $registry->get_available_payment_method_definitions( 'CA', 'USD' );
+		$methods = $registry->get_available_payment_method_definitions( 'CA', Currency_Code::UNITED_STATES_DOLLAR );
 		$this->assertCount( 1, $methods, 'Only one method should be available in Canada.' );
 		$this->assertArrayHasKey( 'mock_method', $methods );
 		$this->assertArrayNotHasKey( 'second_mock_method', $methods );
@@ -256,7 +257,7 @@ class PaymentMethodDefinitionRegistryTest extends WCPAY_UnitTestCase {
 		$registry->register_payment_method( SecondMockPaymentMethodDefinition::class );
 
 		// Test with unsupported currency and country combination.
-		$methods = $registry->get_available_payment_method_definitions( 'GB', 'EUR' );
+		$methods = $registry->get_available_payment_method_definitions( 'GB', Currency_Code::EURO );
 		$this->assertIsArray( $methods );
 		$this->assertEmpty( $methods );
 	}

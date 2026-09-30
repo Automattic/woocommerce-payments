@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Invalidate multi-currency exchange rate cache when the store base currency changes.

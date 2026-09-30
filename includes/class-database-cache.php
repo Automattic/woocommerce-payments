@@ -109,6 +109,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	private $in_memory_cache = [];
 
 	/**
+	 * Values resolved by get_or_add() during this request, keyed by cache key.
+	 *
+	 * Repeated calls are served from here once the caller's validate_data
+	 * callback approves the value; rejected values fall through to the full
+	 * read/refresh path. Cleared by add() and delete().
+	 *
+	 * @var array
+	 */
+	private $resolved_values = [];
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -136,6 +147,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return mixed|null The cached value. NULL on failure to regenerate or validate the data.
 	 */
 	public function get_or_add( string $key, callable $generator, callable $validate_data, bool $force_refresh = false, bool &$refreshed = false ) {
+		if ( ! $force_refresh && array_key_exists( $key, $this->resolved_values ) && $validate_data( $this->resolved_values[ $key ] ) ) {
+			$refreshed = false;
+			return $this->resolved_values[ $key ];
+		}
+
 		$cache_contents = $this->get_from_cache( $key );
 		$data           = null;
 		$old_data       = null;
@@ -164,6 +180,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 
 			$this->write_to_cache( $key, $data, $errored );
 		}
+
+		$this->resolved_values[ $key ] = $data;
 
 		return $data;
 	}
@@ -198,6 +216,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	public function add( string $key, $data ) {
+		unset( $this->resolved_values[ $key ] );
 		$this->write_to_cache( $key, $data, false );
 	}
 
@@ -209,8 +228,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	public function delete( string $key ) {
-		// Remove from the in-memory cache.
+		// Remove from the in-memory caches.
 		unset( $this->in_memory_cache[ $key ] );
+		unset( $this->resolved_values[ $key ] );
 
 		// Remove from the DB cache.
 		delete_option( $key );
@@ -342,11 +362,24 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	private function write_to_cache( string $key, $data, bool $errored ) {
-		// Add the  data and expiry time to the array we're caching.
-		$cache_contents            = [];
-		$cache_contents['data']    = $data;
-		$cache_contents['fetched'] = time();
-		$cache_contents['errored'] = $errored;
+		// Compute the new consecutive_errors value before rebuilding the payload.
+		// Each errored write increments the counter; a successful write resets it.
+		// Legacy entries without the field are treated as zero.
+		$consecutive_errors = 0;
+		if ( $errored ) {
+			$previous           = $this->get_from_cache( $key );
+			$previous_count     = ( is_array( $previous ) && isset( $previous['consecutive_errors'] ) )
+				? (int) $previous['consecutive_errors']
+				: 0;
+			$consecutive_errors = $previous_count + 1;
+		}
+
+		// Add the data and expiry time to the array we're caching.
+		$cache_contents                       = [];
+		$cache_contents['data']               = $data;
+		$cache_contents['fetched']            = time();
+		$cache_contents['errored']            = $errored;
+		$cache_contents['consecutive_errors'] = $consecutive_errors;
 
 		// Write the in-memory cache.
 		$this->in_memory_cache[ $key ] = $cache_contents;
@@ -390,13 +423,18 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return integer The cache TTL.
 	 */
 	private function get_ttl( string $key, array $cache_contents ): int {
+		// Legacy cache entries written before the `errored` field existed do not carry the key,
+		// and get() reaches get_ttl() (via is_expired) without guaranteeing it. Default to false so
+		// the reads below cannot emit a PHP 8 "Undefined array key" warning.
+		$errored = $cache_contents['errored'] ?? false;
+
 		switch ( $key ) {
 			case self::ACCOUNT_KEY:
 				if ( is_admin() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+					if ( $errored ) {
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 2h.
 						$ttl = 2 * HOUR_IN_SECONDS;
@@ -409,9 +447,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			case self::CURRENCIES_KEY:
 				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+					if ( $errored ) {
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 3h.
 						$ttl = 3 * HOUR_IN_SECONDS;
@@ -423,8 +461,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 			case self::BUSINESS_TYPES_KEY:
 			case self::ONBOARDING_FIELDS_DATA_KEY:
-				// Cache these for a week.
-				$ttl = WEEK_IN_SECONDS;
+				// Cache successful data for a week, but back off quickly on errors so a
+				// single transient failure does not block onboarding for the full week.
+				$ttl = $errored
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: WEEK_IN_SECONDS;
 				break;
 			case self::CONNECT_INCENTIVE_KEY:
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
@@ -435,10 +476,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::TRACKING_INFO_KEY:
-				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
+				$ttl = $errored
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
-				$ttl = 12 * HOUR_IN_SECONDS;
+				if ( $errored ) {
+					// Retry quickly after a transient failure so address autocomplete recovers promptly.
+					$ttl = 2 * MINUTE_IN_SECONDS;
+				} else {
+					$ttl = 12 * HOUR_IN_SECONDS;
+				}
 				break;
 			default:
 				// Default to 24h.
@@ -446,6 +494,39 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 		}
 
+		/**
+		 * Allows filtering of the time-to-live (in seconds) for a WooPayments database cache entry.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param int    $ttl            The cache TTL in seconds.
+		 * @param string $key            The cache key.
+		 * @param mixed  $cache_contents The contents being cached.
+		 */
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );
+	}
+
+	/**
+	 * Maps a consecutive-errors count to a TTL using a fixed backoff ladder.
+	 *
+	 * Ladder: 1 → 2 min, 2 → 5 min, 3 → 10 min, 4+ → 15 min. Values ≤ 0 are
+	 * clamped to the first step, matching the behaviour of legacy cache entries
+	 * that were written before the counter existed.
+	 *
+	 * @param int $consecutive_errors Number of consecutive errored writes (including the current one).
+	 *
+	 * @return int TTL in seconds.
+	 */
+	private function get_errored_ttl( int $consecutive_errors ): int {
+		$ladder = [
+			2 * MINUTE_IN_SECONDS,
+			5 * MINUTE_IN_SECONDS,
+			10 * MINUTE_IN_SECONDS,
+			15 * MINUTE_IN_SECONDS,
+		];
+
+		$index = max( 0, min( count( $ladder ) - 1, $consecutive_errors - 1 ) );
+
+		return $ladder[ $index ];
 	}
 }

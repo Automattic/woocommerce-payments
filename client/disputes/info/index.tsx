@@ -34,8 +34,7 @@ const fields: { key: string; label: string }[] = [
 ];
 
 const composeTransactionIdLink = ( dispute: Dispute ): JSX.Element => {
-	const chargeId =
-		typeof dispute.charge === 'object' ? dispute.charge.id : dispute.charge;
+	const chargeId = dispute.charge.id;
 	return (
 		<Link href={ getDetailsURL( chargeId, 'transactions' ) }>
 			{ chargeId }
@@ -83,10 +82,7 @@ const Info = ( {
 				order: dispute.order ? (
 					<OrderLink order={ dispute.order } />
 				) : null,
-				customer:
-					typeof dispute.charge === 'object'
-						? dispute.charge.billing_details.name
-						: null,
+				customer: dispute.charge.billing_details.name,
 				transactionId: composeTransactionIdLink( dispute ),
 		  };
 

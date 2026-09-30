@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix NOX in-context onboarding flow detection from referer URL

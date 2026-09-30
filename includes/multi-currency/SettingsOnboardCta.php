@@ -86,10 +86,10 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	/**
 	 * Get settings array.
 	 *
-	 * @param string $current_section Section being shown.
+	 * @param string $_unused_current_section Section being shown.
 	 * @return array
 	 */
-	public function get_settings( $current_section = '' ) {
+	public function get_settings( $_unused_current_section = '' ) {
 		// Hide the save button because there are no settings to save.
 		global $hide_save_button;
 		$hide_save_button = true;

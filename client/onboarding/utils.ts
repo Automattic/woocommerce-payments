@@ -7,7 +7,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'data/constants';
+import { NAMESPACE } from 'wcpay/data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
 import { Country, FinalizeOnboardingResponse } from './types';

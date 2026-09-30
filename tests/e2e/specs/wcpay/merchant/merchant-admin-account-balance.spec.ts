@@ -52,51 +52,8 @@ test.describe( 'Merchant account balance overview', () => {
 		}
 	);
 
-	test(
-		'View the total and available account balance for multiple deposit currencies',
-		{
-			tag: [ '@critical', '@todo' ],
-			annotation: [
-				{
-					type: 'issue',
-					description:
-						'https://github.com/Automattic/woocommerce-payments/issues/9188',
-				},
-				{
-					type: 'description',
-					description:
-						'Test requirements not yet met: A merchant account with multiple deposit currencies must be available in our e2e environment',
-				},
-			],
-		},
-		async () => {
-			await test.step( 'Navigate to the Payments Overview screen', () => {
-				// @todo
-			} );
-
-			await test.step( 'Select a deposit currency using the currency select input', async () => {
-				// @todo
-			} );
-
-			await test.step( 'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
-				// @todo
-			} );
-
-			await test.step( 'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
-				// @todo
-			} );
-
-			await test.step( 'Select a second deposit currency using the currency select input', async () => {
-				// @todo
-			} );
-
-			await test.step( 'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
-				// @todo
-			} );
-
-			await test.step( 'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
-				// @todo
-			} );
-		}
-	);
+	// Multi-deposit-currency coverage tracked in
+	// https://github.com/Automattic/woocommerce-payments/issues/9188 — blocked
+	// on test-environment fixture work. Re-add the spec when a merchant
+	// account with multiple deposit currencies is available in CI.
 } );

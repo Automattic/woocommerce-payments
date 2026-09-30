@@ -13,11 +13,11 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import { DocumentsList } from '../';
-import { useDocuments, useDocumentsSummary } from 'data/index';
-import type { Document } from 'data/documents/hooks';
+import { useDocuments, useDocumentsSummary } from 'wcpay/data/documents';
+import type { Document } from 'wcpay/data/documents/hooks';
 import VatForm from 'wcpay/vat/form';
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data/documents', () => ( {
 	useDocuments: jest.fn(),
 	useDocumentsSummary: jest.fn(),
 } ) );

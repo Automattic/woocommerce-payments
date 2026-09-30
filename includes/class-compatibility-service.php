@@ -47,12 +47,12 @@ class Compatibility_Service {
 	}
 
 	/**
-	 * Schedules the sending of the compatibility data to send only the last update in T minutes.
+	 * Schedules the sending of the compatibility data, at most once per two minutes.
 	 *
 	 * @return void
 	 */
 	public function update_compatibility_data() {
-		// This will delete the previous compatibility requests in the last two minutes, and only send the last update to the server, ensuring there's only one update in two minutes.
+		// A pending request within the next two minutes is kept rather than replaced; it collects the data when it runs, so it still sends the latest state.
 		WC_Payments::get_action_scheduler_service()->schedule_job( time() + 2 * MINUTE_IN_SECONDS, self::UPDATE_COMPATIBILITY_DATA );
 	}
 

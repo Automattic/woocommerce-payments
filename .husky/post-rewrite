@@ -1,9 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# using `--no-install` just in case it's the first time a person is checking out the repo and doesn't have yarnhook installed
-npx --no-install yarnhook
-
-# make sure composer packages are installed and the autoload files are regenerated
-# --ignore-platform-req=php allows dev-only packages (like qit-cli) that need PHP 7.4+
-composer install --ignore-platform-req=php
+. "$(dirname "$0")/install-deps.sh" ORIG_HEAD HEAD

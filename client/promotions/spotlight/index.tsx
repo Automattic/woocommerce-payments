@@ -9,8 +9,11 @@ import React, { useCallback, useMemo } from 'react';
  * Internal dependencies
  */
 import Spotlight from 'components/spotlight';
-import { usePmPromotions, usePmPromotionActions } from 'wcpay/data';
-import { PmPromotion } from 'data/pm-promotions/types';
+import {
+	usePmPromotions,
+	usePmPromotionActions,
+} from 'wcpay/data/pm-promotions';
+import { PmPromotion } from 'wcpay/data/pm-promotions/types';
 import { recordEvent } from 'tracks';
 
 /**

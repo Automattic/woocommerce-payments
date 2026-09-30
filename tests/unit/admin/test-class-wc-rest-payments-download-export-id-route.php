@@ -6,8 +6,8 @@
  */
 
 /**
- * Tests for the export_id route parameter regex used in transactions and
- * disputes download endpoints.
+ * Tests for the export_id route parameter regex used in transaction report
+ * download endpoints.
  *
  * The regex [^/\\%]+ must:
  *  - Allow any valid Stripe export ID (alphanumeric, hyphens, dots, UTF-8).
@@ -17,7 +17,7 @@
 class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * The regex that the export_id capture group uses in both controllers.
+	 * The regex that the export_id capture group uses in download routes.
 	 * Must stay in sync with the route definitions:
 	 *   - WC_REST_Payments_Transactions_Controller
 	 *   - WC_REST_Payments_Disputes_Controller

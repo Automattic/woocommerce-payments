@@ -42,6 +42,10 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10, $install_actions_priority );
 	}
 
+	public function test_it_does_not_clean_up_deprecated_notes_on_admin_init() {
+		$this->assertFalse( has_action( 'admin_init', [ WC_Payments::class, 'remove_deprecated_notes' ] ) );
+	}
+
 	public function test_it_calls_upgrade_hook_during_upgrade() {
 		update_option( 'woocommerce_woocommerce_payments_version', '1.0.0' );
 
@@ -77,6 +81,23 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_maybe_display_express_checkout_buttons_bails_during_cron_requests() {
+		$this->mock_cache->expects( $this->never() )->method( 'get' );
+
+		add_filter( 'wp_doing_cron', '__return_true' );
+		WC_Payments::maybe_display_express_checkout_buttons();
+		remove_filter( 'wp_doing_cron', '__return_true' );
+	}
+
+	public function test_maybe_display_express_checkout_buttons_checks_account_on_regular_requests() {
+		$this->mock_cache->expects( $this->once() )
+			->method( 'get' )
+			->with( 'wcpay_account_data', true )
+			->willReturn( null );
+
+		WC_Payments::maybe_display_express_checkout_buttons();
+	}
+
 	public function test_it_skips_stripe_link_gateway_registration() {
 		$all_gateways_before_registration = count( WC_Payments::get_payment_method_map() );
 		$card_gateway_mock                = $this->createMock( WC_Payment_Gateway_WCPay::class );
@@ -94,6 +115,25 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
 	}
 
+	public function test_fit_card_brand_icon_for_printable_order_receipt_updates_wcpay_receipt_css() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$result = WC_Payments::fit_card_brand_icon_for_printable_order_receipt( '.card-icon { width: 2rem; }', $order );
+
+		$this->assertStringContainsString( 'background-position: center', $result );
+		$this->assertStringContainsString( 'background-size: contain', $result );
+	}
+
+	public function test_fit_card_brand_icon_for_printable_order_receipt_leaves_non_wcpay_receipts_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'bacs' );
+
+		$css = '.card-icon { width: 2rem; }';
+
+		$this->assertSame( $css, WC_Payments::fit_card_brand_icon_for_printable_order_receipt( $css, $order ) );
+	}
+
 	public function test_rest_endpoints_validate_nonce() {
 
 		if ( $this->is_wpcom() ) {
@@ -107,6 +147,24 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 401, $response->get_status() );
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
+	}
+
+	public function test_init_rest_api_registers_routes_when_admin_screen_is_set() {
+		global $wp_rest_server, $current_screen;
+		$previous_server = $wp_rest_server;
+		$previous_screen = $current_screen;
+		$wp_rest_server  = null;
+
+		set_current_screen( 'edit-page' );
+
+		try {
+			$routes = rest_get_server()->get_routes( 'wc/v3' );
+			$this->assertArrayHasKey( '/wc/v3/payments/onboarding/fields', $routes );
+		} finally {
+			$wp_rest_server = $previous_server;
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the screen snapshot taken above.
+			$current_screen = $previous_screen;
+		}
 	}
 
 	/**
@@ -125,7 +183,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 	}
 
 	private function set_woopay_enabled( $is_enabled ) {
@@ -141,7 +199,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_woopay_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle
 	}
 
 	public function test_set_woopayments_gateways_before_other_gateways_when_not_in_ordering() {

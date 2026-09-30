@@ -14,7 +14,7 @@ The `WCPay\Core\Server\Request\List_Documents` class is used to construct the re
 | `match`       | `set_match( string $match )`              |     -     |    -     |       -       |
 | `page`        | `set_page( int $page )`                   |    Yes    |    -     |       -       |
 | `pagesize`    | `set_page_size( int $page_size )`         |    Yes    |    -     |     `25`      |
-| `sort`        | `set_sort_by( string $sort )`             |    Yes    |    -     |  `'created'`  |
+| `sort`        | `set_sort_by( string $sort )`             |    Yes    |    -     |   `'date'`    |
 | `direction`   | `set_sort_direction( string $direction )` |    Yes    |    -     |   `'desc'`    |
 | `type_is`     | `set_type_is( string $type_is )`          |     -     |    -     |       -       |
 | `type_is_not` | `set_type_is_not( string $type_is_not )`  |     -     |    -     |       -       |

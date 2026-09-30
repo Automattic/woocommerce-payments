@@ -42,11 +42,11 @@ final class Generic extends Request {
 	/**
 	 * Creates a new instance of the class.
 	 *
-	 * @param mixed $id The identifier for various update/get/delete requests.
+	 * @param mixed $_unused_id The identifier for various update/get/delete requests.
 	 *
 	 * @throws Server_Request_Exception
 	 */
-	public static function create( $id = null ) {
+	public static function create( $_unused_id = null ) {
 		throw new Server_Request_Exception( 'You cannot create request this way.', 'wcpay_core_server_request_invalid_method_call' );
 	}
 

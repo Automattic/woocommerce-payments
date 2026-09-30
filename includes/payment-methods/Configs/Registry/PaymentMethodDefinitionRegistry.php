@@ -16,7 +16,6 @@ use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GrabPayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
@@ -25,7 +24,6 @@ use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\MultibancoDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 use WCPay\PaymentMethods\Configs\Definitions\SepaDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\WechatPayDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
@@ -55,7 +53,6 @@ class PaymentMethodDefinitionRegistry {
 		BancontactDefinition::class,
 		BecsDefinition::class,
 		EpsDefinition::class,
-		GiropayDefinition::class,
 		GrabPayDefinition::class,
 		IdealDefinition::class,
 		LinkDefinition::class,
@@ -63,7 +60,6 @@ class PaymentMethodDefinitionRegistry {
 		KlarnaDefinition::class,
 		P24Definition::class,
 		SepaDefinition::class,
-		SofortDefinition::class,
 		WechatPayDefinition::class,
 		ApplePayDefinition::class,
 		GooglePayDefinition::class,

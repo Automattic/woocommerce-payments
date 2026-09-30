@@ -58,7 +58,6 @@ class Analytics {
 	public function __construct( MultiCurrency $multi_currency, MultiCurrencySettingsInterface $settings_service ) {
 		$this->multi_currency   = $multi_currency;
 		$this->settings_service = $settings_service;
-		$this->init();
 	}
 
 	/**
@@ -66,7 +65,7 @@ class Analytics {
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public function init_hooks() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 			$this->register_customer_currencies();
@@ -146,7 +145,7 @@ class Analytics {
 
 			$currency_details   = $available_currencies[ $currency ];
 			$currency_options[] = [
-				'label' => html_entity_decode( $currency_details->get_name() ),
+				'label' => \WC_Payments_Utils::decode_html_entities( $currency_details->get_name() ),
 				'value' => $currency_details->get_code(),
 			];
 		}
@@ -169,11 +168,11 @@ class Analytics {
 	 * Disables report caching. Used for development of analytics related functionality.
 	 * To disable report caching
 	 *
-	 * @param array $args Filter arguments.
+	 * @param array $_unused_args Filter arguments.
 	 *
 	 * @return boolean
 	 */
-	public function disable_report_caching( $args ): bool {
+	public function disable_report_caching( $_unused_args ): bool {
 		return false;
 	}
 
@@ -204,12 +203,23 @@ class Analytics {
 			return $args;
 		}
 
-		$stripe_exchange_rate = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
-			? (float) $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true )
-			: null;
-		$order_exchange_rate  = ( 1 / (float) $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
+		// Prefer the rate the payment processor applied, and fall back to the rate the order was placed at.
+		$stripe_exchange_rate = $this->get_valid_exchange_rate( $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true ) );
+		$order_exchange_rate  = $this->get_valid_exchange_rate( $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true ) );
 
-		$exchange_rate = $stripe_exchange_rate ?? $order_exchange_rate;
+		$exchange_rate = $stripe_exchange_rate;
+		if ( null === $exchange_rate && null !== $order_exchange_rate ) {
+			// The order rate converts store currency to order currency, so invert it. Re-validate the
+			// inverse: a tiny saved value overflows to infinity.
+			$exchange_rate = $this->get_valid_exchange_rate( 1 / $order_exchange_rate );
+		}
+
+		if ( null === $exchange_rate ) {
+			// Neither saved rate is usable, so there is no basis for a conversion. Leave the amounts as
+			// WooCommerce recorded them rather than inventing a figure, and make the order findable.
+			Logger::error( sprintf( 'Multi-Currency Analytics: order %d has no valid saved exchange rate, its order stats were not converted.', $order->get_id() ) );
+			return $args;
+		}
 
 		$dp                     = wc_get_price_decimals();
 		$args['net_total']      = round( $this->convert_amount( (float) $args['net_total'], $exchange_rate ), $dp );
@@ -234,6 +244,13 @@ class Analytics {
 			return $clauses;
 		}
 
+		/**
+		 * Filters whether the Multi-Currency SELECT clauses modification should be disabled.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param bool $disable Whether to disable the SELECT clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_clauses', false ) ) {
 			return $clauses;
 		}
@@ -281,6 +298,13 @@ class Analytics {
 			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate';
 		}
 
+		/**
+		 * Filters the SELECT clauses after the Multi-Currency columns have been added.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param string[] $new_clauses The SELECT clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_clauses', $new_clauses );
 	}
 
@@ -295,6 +319,13 @@ class Analytics {
 	public function filter_join_clauses( array $clauses, $context ): array {
 		global $wpdb;
 
+		/**
+		 * Filters whether the Multi-Currency JOIN clauses modification should be disabled.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param bool $disable Whether to disable the JOIN clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_join_clauses', false ) ) {
 			return $clauses;
 		}
@@ -332,6 +363,13 @@ class Analytics {
 			$clauses[] = "LEFT JOIN {$meta_table} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.{$id_field} AND {$stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
+		/**
+		 * Filters the JOIN clauses after the Multi-Currency currency JOINs have been added.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param string[] $clauses The JOIN clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_join_clauses', $clauses );
 	}
 
@@ -343,6 +381,13 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_where_clauses( array $clauses ): array {
+		/**
+		 * Filters whether the Multi-Currency WHERE clauses modification should be disabled.
+		 *
+		 * @since 4.5.1
+		 *
+		 * @param bool $disable Whether to disable the WHERE clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_where_clauses', false ) ) {
 			return $clauses;
 		}
@@ -371,6 +416,13 @@ class Analytics {
 			$clauses[]  = $wpdb->prepare( $expression, $currency_args['currency'] ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
+		/**
+		 * Filters the WHERE clauses after Multi-Currency customer currency filtering has been applied.
+		 *
+		 * @since 4.5.1
+		 *
+		 * @param string[] $clauses The WHERE clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
 	}
 
@@ -382,6 +434,13 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_select_orders_clauses( array $clauses ): array {
+		/**
+		 * Filters whether the Multi-Currency SELECT orders clauses modification should be disabled.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param bool $disable Whether to disable the SELECT orders clauses modification. Default false.
+		 */
 		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_orders_clauses', false ) ) {
 			return $clauses;
 		}
@@ -400,8 +459,8 @@ class Analytics {
 
 				$clauses[ $k ] = str_replace(
 					$variable,
-					$this->generate_case_when(
-						$stripe_exchange_rate,
+					$this->generate_rate_conversion(
+						$net_total,
 						"ROUND($net_total / $stripe_exchange_rate, $dp)",
 						"ROUND($net_total * $exchange_rate, $dp)"
 					) . $alias,
@@ -410,6 +469,13 @@ class Analytics {
 			}
 		}
 
+		/**
+		 * Filters the SELECT orders clauses after Multi-Currency conversions have been applied.
+		 *
+		 * @since 4.9.0
+		 *
+		 * @param string[] $clauses The SELECT orders clauses to be applied.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_orders_clauses', $clauses );
 	}
 
@@ -445,6 +511,29 @@ class Analytics {
 	 */
 	private function convert_amount( float $amount, float $exchange_rate ): float {
 		return $amount * $exchange_rate;
+	}
+
+	/**
+	 * Validate an exchange rate read from order meta.
+	 *
+	 * Meta values are strings and may be missing, non-numeric, zero, negative or overflow to infinity.
+	 * None of those can be used as a conversion basis.
+	 *
+	 * @param mixed $rate The saved exchange rate.
+	 *
+	 * @return float|null The rate as a float, or null when it cannot be used.
+	 */
+	private function get_valid_exchange_rate( $rate ): ?float {
+		if ( ! is_numeric( $rate ) ) {
+			return null;
+		}
+
+		$rate = (float) $rate;
+		if ( ! is_finite( $rate ) || $rate <= 0 ) {
+			return null;
+		}
+
+		return $rate;
 	}
 
 	/**
@@ -490,14 +579,35 @@ class Analytics {
 	/**
 	 * Generate a case when statement using the provided variables.
 	 *
-	 * @param string $variable The SQL variable we want to check for NULL.
-	 * @param string $then     The THEN clause.
-	 * @param string $else     The ELSE clause.
+	 * @param string $variable    The SQL variable we want to check for NULL.
+	 * @param string $then        The THEN clause.
+	 * @param string $else_clause The ELSE clause.
 	 *
 	 * @return string
 	 */
-	private function generate_case_when( string $variable, string $then, string $else ): string {
-		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else} END";
+	private function generate_case_when( string $variable, string $then, string $else_clause ): string {
+		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else_clause} END";
+	}
+
+	/**
+	 * Generate a CASE statement that converts an amount with the first usable saved exchange rate.
+	 *
+	 * Saved rates are order meta strings. Only a rate above zero is a conversion basis: NULL, empty,
+	 * non-numeric, zero and negative values all compare false. The processor rate is preferred, the
+	 * order rate is the fallback, and with neither usable the amount is left as recorded. This is the
+	 * same order of preference update_order_stats_data() uses when it writes the stats row.
+	 *
+	 * @param string $amount              The SQL amount to convert.
+	 * @param string $processor_rate_then The conversion using the processor exchange rate.
+	 * @param string $order_rate_then     The conversion using the order exchange rate.
+	 *
+	 * @return string
+	 */
+	private function generate_rate_conversion( string $amount, string $processor_rate_then, string $order_rate_then ): string {
+		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
+		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
+
+		return "CASE WHEN {$stripe_exchange_rate} > 0 THEN {$processor_rate_then} WHEN {$exchange_rate} > 0 THEN {$order_rate_then} ELSE {$amount} END";
 	}
 
 	/**
@@ -583,9 +693,9 @@ class Analytics {
 		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
 		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
 
-		$discount_amount       = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(discount_amount * {$stripe_exchange_rate}, 2)", "ROUND(discount_amount * (1 / {$exchange_rate} ), 2)" ), 'discount_amount' );
-		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
-		$product_gross_revenue = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_gross_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_gross_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_gross_revenue' );
+		$discount_amount       = $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'discount_amount', "ROUND(discount_amount * {$stripe_exchange_rate}, 2)", "ROUND(discount_amount * (1 / {$exchange_rate} ), 2)" ), 'discount_amount' );
+		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'product_net_revenue', "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
+		$product_gross_revenue = $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'product_gross_revenue', "ROUND(product_gross_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_gross_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_gross_revenue' );
 
 		$this->sql_replacements = [
 			'generic'    => [
@@ -609,9 +719,9 @@ class Analytics {
 				'product_gross_revenue' => $product_gross_revenue,
 			],
 			'taxes'      => [
-				'SUM(total_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(total_tax * {$stripe_exchange_rate}, 2)", "ROUND(total_tax * (1 / {$exchange_rate} ), 2)" ), 'total_tax' ) . ')',
-				'SUM(order_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(order_tax * {$stripe_exchange_rate}, 2)", "ROUND(order_tax * (1 / {$exchange_rate} ), 2)" ), 'order_tax' ) . ')',
-				'SUM(shipping_tax)' => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(shipping_tax * {$stripe_exchange_rate}, 2)", "ROUND(shipping_tax * (1 / {$exchange_rate} ), 2)" ), 'shipping_tax' ) . ')',
+				'SUM(total_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'total_tax', "ROUND(total_tax * {$stripe_exchange_rate}, 2)", "ROUND(total_tax * (1 / {$exchange_rate} ), 2)" ), 'total_tax' ) . ')',
+				'SUM(order_tax)'    => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'order_tax', "ROUND(order_tax * {$stripe_exchange_rate}, 2)", "ROUND(order_tax * (1 / {$exchange_rate} ), 2)" ), 'order_tax' ) . ')',
+				'SUM(shipping_tax)' => 'SUM(' . $this->generate_case_when( $default_currency, $this->generate_rate_conversion( 'shipping_tax', "ROUND(shipping_tax * {$stripe_exchange_rate}, 2)", "ROUND(shipping_tax * (1 / {$exchange_rate} ), 2)" ), 'shipping_tax' ) . ')',
 			],
 			'coupons'    => [
 				'discount_amount' => $discount_amount,

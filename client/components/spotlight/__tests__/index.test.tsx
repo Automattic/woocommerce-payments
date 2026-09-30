@@ -51,15 +51,25 @@ describe( 'Spotlight Component', () => {
 		expect( screen.getByText( 'Test Heading' ) ).toBeInTheDocument();
 	} );
 
+	it( 'renders primary button', () => {
+		render( <Spotlight { ...defaultProps } /> );
+
+		expect( screen.getByText( 'Activate' ) ).toHaveClass( 'is-primary' );
+	} );
+
 	it( 'renders secondary button when provided', () => {
 		const propsWithSecondary = {
 			...defaultProps,
 			secondaryButtonLabel: 'Learn more',
 			onSecondaryClick: jest.fn(),
 		};
-		render( <Spotlight { ...propsWithSecondary } /> );
+		const { container } = render( <Spotlight { ...propsWithSecondary } /> );
 
-		expect( screen.getByText( 'Learn more' ) ).toBeInTheDocument();
+		const footerButtons = Array.from(
+			container.querySelectorAll( '.wcpay-spotlight__footer button' )
+		).map( ( button ) => button.textContent );
+
+		expect( footerButtons ).toEqual( [ 'Learn more', 'Activate' ] );
 	} );
 
 	it( 'renders footnote when provided', () => {

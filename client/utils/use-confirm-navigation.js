@@ -17,14 +17,14 @@ import { getHistory } from '@woocommerce/navigation';
  * @return {Function} The callback to execute
  */
 const useConfirmNavigation = ( getMessage ) => {
-	const savedCallback = useRef();
+	const savedCallbackRef = useRef();
 
 	useEffect( () => {
-		savedCallback.current = getMessage;
+		savedCallbackRef.current = getMessage;
 	} );
 
 	return useCallback( () => {
-		const message = savedCallback.current();
+		const message = savedCallbackRef.current();
 		if ( ! message ) {
 			return;
 		}

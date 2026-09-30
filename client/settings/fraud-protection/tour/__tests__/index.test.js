@@ -13,11 +13,15 @@ jest.mock( '@woocommerce/components', () => ( {
 	TourKit: () => <div data-testid="tour-kit" />,
 } ) );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	useDispatch: jest.fn( () => ( {
 		updateOptions: jest.fn(),
 	} ) ),
@@ -78,7 +82,7 @@ describe( 'FraudProtectionTour', () => {
 	} );
 
 	it( 'should not render the tour component if settings are loading', () => {
-		jest.requireMock( 'wcpay/data' ).useSettings.mockReturnValue( {
+		jest.requireMock( 'wcpay/data/settings' ).useSettings.mockReturnValue( {
 			isLoading: true,
 		} );
 

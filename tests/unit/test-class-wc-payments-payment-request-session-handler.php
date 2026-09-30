@@ -110,7 +110,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertArrayNotHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
 
 		$session_handler->save_data();
-		do_action( 'woocommerce_set_cart_cookies', true );
+		do_action( 'woocommerce_set_cart_cookies', true ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		$session_data = $wpdb->get_row(
 			$wpdb->prepare(
@@ -154,7 +154,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertArrayNotHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
 
 		$session_handler->save_data();
-		do_action( 'woocommerce_set_cart_cookies', true );
+		do_action( 'woocommerce_set_cart_cookies', true ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		$session_data = $wpdb->get_row(
 			$wpdb->prepare(

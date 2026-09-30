@@ -17,6 +17,8 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
+import FormBusyState from 'wcpay/components/form-busy-state';
+import { useSettings } from 'wcpay/data/settings';
 import { WooIcon } from 'wcpay/payment-methods-icons';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 
@@ -164,6 +166,7 @@ const methods = {
 };
 
 const ExpressCheckoutSettings = ( { methodId } ) => {
+	const { isSaving } = useSettings();
 	const method = methods[ methodId ];
 
 	if ( ! method ) {
@@ -178,34 +181,37 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	}
 
 	// Only show the 'general' section of the WooPay method if the WooPay express checkout feature is enabled.
+	let { sections } = method;
 	if (
 		method.title === 'WooPay' &&
 		! wcpaySettings.featureFlags.woopayExpressCheckout
 	) {
-		method.sections = method.sections.filter( ( section ) => {
+		sections = sections.filter( ( section ) => {
 			return section.section !== 'general';
 		} );
 	}
 
-	const { sections, controls: Controls } = method;
+	const { controls: Controls } = method;
 
 	return (
 		<SettingsLayout>
-			{ sections.map( ( { section, description } ) => (
-				<SettingsSection
-					key={ section }
-					description={ description }
-					className={ `wcpay-express-checkout__${ section }` }
-				>
-					<LoadableSettingsSection numLines={ 30 }>
-						<ErrorBoundary>
-							<Controls section={ section } />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) ) }
+			<FormBusyState isBusy={ isSaving }>
+				{ sections.map( ( { section, description } ) => (
+					<SettingsSection
+						key={ section }
+						description={ description }
+						className={ `wcpay-express-checkout__${ section }` }
+					>
+						<LoadableSettingsSection numLines={ 30 }>
+							<ErrorBoundary>
+								<Controls section={ section } />
+							</ErrorBoundary>
+						</LoadableSettingsSection>
+					</SettingsSection>
+				) ) }
 
-			<SaveSettingsSection />
+				<SaveSettingsSection />
+			</FormBusyState>
 		</SettingsLayout>
 	);
 };

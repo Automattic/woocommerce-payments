@@ -108,6 +108,31 @@ class Create_And_Confirm_Setup_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WC_Payments_API_Client::SETUP_INTENTS_API, $request->get_api() );
 	}
 
+	public function test_set_fingerprint_without_prior_metadata_does_not_throw() {
+		$request = new Create_And_Confirm_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_customer( 'cus_1' );
+		$request->set_payment_method( 'pm_1' );
+
+		// set_fingerprint() must work without a prior set_metadata() call.
+		$request->set_fingerprint( 'visitor-fingerprint' );
+
+		$params = $request->get_params();
+		$this->assertArrayHasKey( 'metadata', $params );
+		$this->assertTrue( $params['metadata']['fraud_prevention_data_available'] );
+	}
+
+	public function test_set_fingerprint_preserves_existing_metadata() {
+		$request = new Create_And_Confirm_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_customer( 'cus_1' );
+		$request->set_payment_method( 'pm_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_fingerprint( 'visitor-fingerprint' );
+
+		$params = $request->get_params();
+		$this->assertSame( 1, $params['metadata']['order_number'] );
+		$this->assertTrue( $params['metadata']['fraud_prevention_data_available'] );
+	}
+
 	public function test_exception_will_throw_if_confirmation_token_is_invalid() {
 		$request = new Create_And_Confirm_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );

@@ -19,10 +19,10 @@ import {
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
 	useExpressCheckoutInPaymentMethodsEnabledSettings,
-} from '../../../data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePaymentRequestLocations: jest.fn(),
 	useTestMode: jest.fn().mockReturnValue( [ false ] ),

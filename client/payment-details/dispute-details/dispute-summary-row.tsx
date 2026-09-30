@@ -21,7 +21,10 @@ import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { ExternalLink } from '@wordpress/components';
 
 interface Props {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		'amount' | 'created' | 'currency' | 'evidence_details' | 'reason'
+	>;
 }
 
 const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {

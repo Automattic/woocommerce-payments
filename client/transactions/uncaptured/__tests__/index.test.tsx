@@ -13,7 +13,10 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import Authorizations, { AuthorizationsList } from '..';
-import { useAuthorizations, useAuthorizationsSummary } from 'wcpay/data';
+import {
+	useAuthorizations,
+	useAuthorizationsSummary,
+} from 'wcpay/data/authorizations';
 import { Authorization } from 'wcpay/types/authorizations';
 
 // Workaround for mocking @wordpress/data.
@@ -32,7 +35,7 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorizations: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
 	useAuthorization: jest.fn( () => ( {

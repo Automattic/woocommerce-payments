@@ -21,10 +21,20 @@ import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import {
 	getDisputeFeeFormatted,
+	getKlarnaLossReason,
 	isVisaComplianceDispute,
 } from 'wcpay/disputes/utils';
 import './style.scss';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
+
+const getDisputeTracksProperties = (
+	dispute: Pick< Dispute, 'id' | 'status' | 'reason' >
+) => ( {
+	dispute_id: dispute.id,
+	dispute_status: dispute.status,
+	dispute_reason: dispute.reason,
+	on_page: 'transaction_details',
+} );
 
 const DisputeUnderReviewFooter: React.FC< {
 	dispute: Pick<
@@ -80,9 +90,9 @@ const DisputeUnderReviewFooter: React.FC< {
 									strong: <strong />,
 								}
 						  ) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#monitor-status">
 						{ __(
-							'Learn more about the dispute process.',
+							'Learn more about monitoring dispute status.',
 							'woocommerce-payments'
 						) }
 					</ExternalLink>
@@ -100,10 +110,7 @@ const DisputeUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								recordEvent(
 									'wcpay_view_submitted_evidence_clicked',
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									getDisputeTracksProperties( dispute )
 								);
 							} }
 						>
@@ -173,7 +180,7 @@ const DisputeWonFooter: React.FC< {
 									strong: <strong />,
 								}
 						  ) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
 						{ __(
 							'Learn more about preventing disputes.',
 							'woocommerce-payments'
@@ -193,10 +200,7 @@ const DisputeWonFooter: React.FC< {
 							onClick={ () => {
 								recordEvent(
 									'wcpay_view_submitted_evidence_clicked',
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									getDisputeTracksProperties( dispute )
 								);
 							} }
 						>
@@ -221,12 +225,13 @@ const DisputeLostFooter: React.FC< {
 		| 'balance_transactions'
 		| 'reason'
 		| 'enhanced_eligibility_types'
+		| 'payment_method_details'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
-	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
+	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true );
 
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? formatDateTimeFromTimestamp(
@@ -254,12 +259,70 @@ const DisputeLostFooter: React.FC< {
 		);
 	}
 
+	// Klarna is the only provider that reports why it decided against the
+	// merchant. Show it only once evidence was submitted: that's the case where
+	// the merchant is left asking how their evidence was weighed, and where a
+	// "Klarna gave no reason" statement is worth making. The accepted and
+	// non-response paths already explain themselves.
+	const klarnaLossReason = isSubmitted
+		? getKlarnaLossReason( dispute )
+		: null;
+	const statedLossReason =
+		klarnaLossReason?.type === 'stated' ? klarnaLossReason.display : null;
+
+	// Klarna disputes get their own voice, per the design: Klarna is not a bank,
+	// so it's "payment provider" here. The other methods keep saying "bank"
+	// until WOOPMNT-6349 reworks that wording across every dispute surface.
+	const isKlarnaDispute = dispute.payment_method_details?.type === 'klarna';
+
 	if ( isSubmitted ) {
 		if ( isVisaComplianceDispute( dispute ) ) {
+			// Visa compliance disputes are card disputes, so they never carry a
+			// Klarna loss reason.
 			messagePrefix = sprintf(
 				/* Translators: %1$s - formatted date */
 				__(
-					"<strong>Unfortunately, you've lost this dispute. Visa reached this decision on %1$s.</strong>",
+					"<strong>Unfortunately, you've lost this dispute.</strong> Visa reached this decision on %1$s.",
+					'woocommerce-payments'
+				),
+				closedDateFormatted
+			);
+		} else if ( isKlarnaDispute && bankName && statedLossReason ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - payment provider name, %2$s - formatted date, %3$s - the reason given for the decision, eg "Shipping policy violated" */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider, <strong>%1$s</strong>, decided against you on %2$s, citing “%3$s”.',
+					'woocommerce-payments'
+				),
+				bankName,
+				closedDateFormatted,
+				statedLossReason
+			);
+		} else if ( isKlarnaDispute && bankName ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - payment provider name, %2$s - formatted date */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider, <strong>%1$s</strong>, decided against you on %2$s.',
+					'woocommerce-payments'
+				),
+				bankName,
+				closedDateFormatted
+			);
+		} else if ( isKlarnaDispute && statedLossReason ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - formatted date, %2$s - the reason given for the decision, eg "Shipping policy violated" */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider decided against you on %1$s, citing “%2$s”.',
+					'woocommerce-payments'
+				),
+				closedDateFormatted,
+				statedLossReason
+			);
+		} else if ( isKlarnaDispute ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - formatted date */
+				__(
+					'<strong>Unfortunately, you lost the dispute.</strong> The customer’s payment provider decided against you on %1$s.',
 					'woocommerce-payments'
 				),
 				closedDateFormatted
@@ -268,7 +331,7 @@ const DisputeLostFooter: React.FC< {
 			messagePrefix = sprintf(
 				/* Translators: %1$s - bank name, %2$s - formatted date */
 				__(
-					"<strong>Unfortunately, you've lost this dispute. The customer's bank, %1$s, reached this decision on %2$s.</strong>",
+					"<strong>Unfortunately, you've lost this dispute.</strong> The customer's bank, <strong>%1$s</strong>, reached this decision on %2$s.",
 					'woocommerce-payments'
 				),
 				bankName,
@@ -278,13 +341,24 @@ const DisputeLostFooter: React.FC< {
 			messagePrefix = sprintf(
 				/* Translators: %s - formatted date */
 				__(
-					"<strong>Unfortunately, you've lost this dispute. The customer's bank reached this decision on %1$s.</strong>",
+					"<strong>Unfortunately, you've lost this dispute.</strong> The customer's bank reached this decision on %1$s.",
 					'woocommerce-payments'
 				),
 				closedDateFormatted
 			);
 		}
 	}
+
+	// An unstated reason has no sentence to fold into, so it stays a statement
+	// of its own: the merchant's complaint is not knowing, and silence here
+	// reads as a gap in our UI rather than an answer from Klarna.
+	const lossReasonText =
+		klarnaLossReason?.type === 'unspecified'
+			? __(
+					'Klarna did not share a reason for this decision.',
+					'woocommerce-payments'
+			  )
+			: '';
 
 	return (
 		<CardFooter className="transaction-details-dispute-footer">
@@ -293,20 +367,38 @@ const DisputeLostFooter: React.FC< {
 					{ createInterpolateElement( messagePrefix, {
 						strong: <strong />,
 					} ) }{ ' ' }
-					{ sprintf(
-						/* Translators: %1$s – the formatted dispute fee amount */
-						__(
-							'The %1$s fee has been deducted from your account, and the disputed amount has been returned to your customer.',
-							'woocommerce-payments'
-						),
-						disputeFeeFormatted
-					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
-						{ __(
-							'Learn more about preventing disputes.',
-							'woocommerce-payments'
-						) }
-					</ExternalLink>
+					{ lossReasonText && <>{ lossReasonText } </> }
+					{ disputeFeeFormatted ? (
+						<>
+							{ sprintf(
+								/* Translators: %1$s – the formatted dispute fee amount */
+								__(
+									'The %1$s fee has been deducted from your account, and the disputed amount has been returned to your customer.',
+									'woocommerce-payments'
+								),
+								disputeFeeFormatted
+							) }{ ' ' }
+							<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#fees">
+								{ __(
+									'Learn more about dispute fees.',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						</>
+					) : (
+						<>
+							{ __(
+								'The disputed amount has been returned to your customer.',
+								'woocommerce-payments'
+							) }{ ' ' }
+							<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#amounts">
+								{ __(
+									'Learn more about disputed amounts.',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						</>
+					) }
 				</FlexItem>
 
 				{ isSubmitted && (
@@ -323,10 +415,7 @@ const DisputeLostFooter: React.FC< {
 								onClick={ () => {
 									recordEvent(
 										'wcpay_view_submitted_evidence_clicked',
-										{
-											dispute_status: dispute.status,
-											on_page: 'transaction_details',
-										}
+										getDisputeTracksProperties( dispute )
 									);
 								} }
 							>
@@ -344,7 +433,7 @@ const DisputeLostFooter: React.FC< {
 };
 
 const InquiryUnderReviewFooter: React.FC< {
-	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' | 'reason' >;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
@@ -380,7 +469,7 @@ const InquiryUnderReviewFooter: React.FC< {
 							strong: <strong />,
 						}
 					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries">
 						{ __( 'Learn more.', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</FlexItem>
@@ -397,10 +486,7 @@ const InquiryUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								recordEvent(
 									'wcpay_view_submitted_evidence_clicked',
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									getDisputeTracksProperties( dispute )
 								);
 							} }
 						>
@@ -417,7 +503,7 @@ const InquiryUnderReviewFooter: React.FC< {
 };
 
 const InquiryClosedFooter: React.FC< {
-	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' | 'reason' >;
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
@@ -438,7 +524,7 @@ const InquiryClosedFooter: React.FC< {
 						),
 						closedDateFormatted
 					) }{ ' ' }
-					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
 						{ __(
 							'Learn more about preventing disputes.',
 							'woocommerce-payments'
@@ -460,10 +546,7 @@ const InquiryClosedFooter: React.FC< {
 								onClick={ () => {
 									recordEvent(
 										'wcpay_view_submitted_evidence_clicked',
-										{
-											dispute_status: dispute.status,
-											on_page: 'transaction_details',
-										}
+										getDisputeTracksProperties( dispute )
 									);
 								} }
 							>
@@ -489,6 +572,7 @@ const DisputeResolutionFooter: React.FC< {
 		| 'balance_transactions'
 		| 'reason'
 		| 'enhanced_eligibility_types'
+		| 'payment_method_details'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {

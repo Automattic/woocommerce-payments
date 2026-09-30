@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Convert async price renderer to TypeScript and add sessionStorage caching

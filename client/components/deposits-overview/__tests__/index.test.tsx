@@ -18,16 +18,11 @@ import {
 	useSelectedCurrencyOverview,
 	useSelectedCurrency,
 } from 'wcpay/overview/hooks';
-import {
-	useDepositIncludesLoan,
-	useDeposits,
-	useAllDepositsOverviews,
-} from 'wcpay/data';
+import { useDeposits, useAllDepositsOverviews } from 'wcpay/data/deposits';
 import type { CachedDeposit } from 'wcpay/types/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
-jest.mock( 'wcpay/data', () => ( {
-	useDepositIncludesLoan: jest.fn(),
+jest.mock( 'wcpay/data/deposits', () => ( {
 	useInstantDeposit: jest.fn(),
 	useDeposits: jest.fn(),
 	useAllDepositsOverviews: jest.fn(),
@@ -163,10 +158,6 @@ const createMockNewAccountOverview = (
 	};
 };
 
-const mockUseDepositIncludesLoan =
-	useDepositIncludesLoan as jest.MockedFunction<
-		typeof useDepositIncludesLoan
-	>;
 const mockUseSelectedCurrencyOverview =
 	useSelectedCurrencyOverview as jest.MockedFunction<
 		typeof useSelectedCurrencyOverview
@@ -246,10 +237,6 @@ describe( 'Deposits Overview information', () => {
 			},
 			dateFormat: 'F j, Y',
 		};
-		mockUseDepositIncludesLoan.mockReturnValue( {
-			includesFinancingPayout: false,
-			isLoading: false,
-		} );
 		mockAccount.deposits_blocked = false;
 	} );
 	afterEach( () => {
@@ -274,6 +261,38 @@ describe( 'Deposits Overview information', () => {
 		getByText( 'View full payout history' );
 		getByText( 'Change payout schedule' );
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'does not render the icon when loading', () => {
+		mockUseSelectedCurrencyOverview.mockReturnValue( {
+			account: mockAccount,
+			overview: createMockOverview( 'usd' ),
+			isLoading: true,
+		} );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: true,
+		} );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { container } = render( <DepositsOverview /> );
+
+		const placeholders = container.querySelectorAll(
+			'.is-loadable-placeholder'
+		);
+
+		expect( placeholders.length ).toBeGreaterThan( 0 );
+
+		// no help icon (or any SVG) inside the loading state
+		placeholders.forEach( ( placeholder ) => {
+			expect(
+				placeholder.querySelector( 'svg' )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	test( `Component doesn't render for new accounts with no pending funds`, () => {
@@ -356,67 +375,6 @@ describe( 'Deposits Overview information', () => {
 		const { container } = render( <RecentDepositsList deposits={ [] } /> );
 
 		expect( container ).toBeEmptyDOMElement();
-	} );
-
-	// Capital loans notice temporarily disabled, tests skipped until resolved. See #7689.
-	test.skip( 'Renders capital loan notice if deposit includes financing payout', () => {
-		mockUseDepositIncludesLoan.mockReturnValue( {
-			includesFinancingPayout: true,
-			isLoading: false,
-		} );
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'eur',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
-
-		const { getByRole, getByText } = render( <DepositsOverview /> );
-
-		getByText(
-			'deposit will include funds from your WooCommerce Capital loan',
-			{
-				exact: false,
-				ignore: '.a11y-speak-region',
-			}
-		);
-		expect(
-			getByRole( 'link', {
-				name: 'Learn more',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
-		);
-	} );
-
-	// Capital loans notice temporarily disabled, tests skipped until resolved. See #7689.
-	test.skip( `Doesn't render capital loan notice if deposit does not include financing payout`, () => {
-		mockUseDepositIncludesLoan.mockReturnValue( {
-			includesFinancingPayout: false,
-			isLoading: false,
-		} );
-		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
-		mockUseSelectedCurrency.mockReturnValue( {
-			selectedCurrency: 'eur',
-			setSelectedCurrency: mockSetSelectedCurrency,
-		} );
-
-		const { queryByRole, queryByText } = render( <DepositsOverview /> );
-
-		expect(
-			queryByText(
-				'payout will include funds from your WooCommerce Capital loan',
-				{
-					exact: false,
-					ignore: '.a11y-speak-region',
-				}
-			)
-		).toBeFalsy();
-		expect(
-			queryByRole( 'link', {
-				name: 'Learn more',
-			} )
-		).toBeFalsy();
 	} );
 
 	test( 'Confirm new account waiting period notice does not show if outside waiting period', () => {

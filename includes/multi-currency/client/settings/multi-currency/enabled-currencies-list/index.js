@@ -47,10 +47,8 @@ const EnabledCurrenciesSettingsDescription = () => (
 
 const EnabledCurrencies = () => {
 	const { isLoading } = useCurrencies();
-	const {
-		enabledCurrencies,
-		submitEnabledCurrenciesUpdate,
-	} = useEnabledCurrencies();
+	const { enabledCurrencies, submitEnabledCurrenciesUpdate } =
+		useEnabledCurrencies();
 	const classBase = 'wcpay-multi-currency';
 
 	const handleDeleteClick = ( code ) => {
@@ -77,7 +75,9 @@ const EnabledCurrencies = () => {
 					<div />
 				</CardBody>
 				<CardDivider />
-				<CardBody size={ null }>
+				<CardBody
+					className={ `${ classBase }__enabled-currencies-list-body` }
+				>
 					<EnabledCurrenciesList className="enabled-currencies-list">
 						{ ! isLoading &&
 							enabledCurrencies &&

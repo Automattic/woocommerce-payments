@@ -13,9 +13,9 @@ import {
 	useManualCapture,
 	useCardPresentEligible,
 	useStripeBilling,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useManualCapture: jest.fn(),
 	useCardPresentEligible: jest.fn(),
 	useStripeBilling: jest.fn(),

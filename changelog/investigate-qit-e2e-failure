@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Skip async renderer QIT E2E tests pending environment investigation (WOOPMNT-5992).

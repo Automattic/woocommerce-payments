@@ -18,7 +18,7 @@ else
 fi
 
 echo "Stopping containers for this worktree"
-npm run down
+pnpm run down
 
 # Drop test database if it exists
 TEST_DB_NAME="wcpay_tests_${WORKTREE_ID}"

@@ -9,7 +9,11 @@ inputs:
     description: "Whether the action runs in the context of a pre-release (default: true)"
     required: true
     default: "true"
-    
+  push:
+    description: "Push the branch to origin after creating it (default: true)"
+    required: false
+    default: "true"
+
 outputs:
   trimmed-version:
     description: "The trimmed version"
@@ -34,6 +38,7 @@ runs:
       env:
         IS_PRERELEASE: ${{ inputs.is-pre-release }}
         VERSION: ${{ steps.version_format_check.outputs.trimmed-version }}
+        PUSH: ${{ inputs.push }}
       run: |
         if ${{ env.IS_PRERELEASE == 'true' }}; then
           BRANCH_NAME="testing/$VERSION"
@@ -44,5 +49,9 @@ runs:
         fi
 
         git checkout -b $BRANCH_NAME
-        git push origin $BRANCH_NAME
+        if [ "$PUSH" = "true" ]; then
+          git push origin $BRANCH_NAME
+        else
+          echo ":no_entry_sign: Dry-run: branch $BRANCH_NAME created locally but not pushed." >> $GITHUB_STEP_SUMMARY
+        fi
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT

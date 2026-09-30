@@ -16,7 +16,13 @@ import {
 	Authorization,
 	CaptureAuthorizationApiResponse,
 } from 'wcpay/types/authorizations';
-import { STORE_NAME } from '../constants';
+import { AUTHORIZATIONS_STORE_NAME as STORE_NAME } from '../store-names';
+// Capturing/cancelling an authorization invalidates cached resolutions that
+// live in other stores. Importing their names registers those stores so the
+// invalidations actually reach them.
+import { STORE_NAME as TRANSACTIONS_STORE_NAME } from '../transactions/store';
+import { STORE_NAME as TIMELINE_STORE_NAME } from '../timeline/store';
+import { STORE_NAME as PAYMENT_INTENTS_STORE_NAME } from '../payment-intents/store';
 import { ApiError } from 'wcpay/types/errors';
 import { formatCurrency } from 'multi-currency/utils/currency';
 
@@ -227,32 +233,32 @@ export function* submitCaptureAuthorization(
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			TRANSACTIONS_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getFraudOutcomeTransactions'
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			TRANSACTIONS_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getFraudOutcomeTransactionsSummary'
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			TIMELINE_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getTimeline'
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			PAYMENT_INTENTS_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getPaymentIntent'
 		);
 
 		// Need to invalidate transactions tab to update newly captured transaction if needed.
 		yield controls.dispatch(
-			STORE_NAME,
+			TRANSACTIONS_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getTransactions'
 		);
@@ -364,25 +370,25 @@ export function* submitCancelAuthorization(
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			TRANSACTIONS_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getFraudOutcomeTransactions'
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			TRANSACTIONS_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getFraudOutcomeTransactionsSummary'
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			TIMELINE_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getTimeline'
 		);
 
 		yield controls.dispatch(
-			STORE_NAME,
+			PAYMENT_INTENTS_STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getPaymentIntent'
 		);

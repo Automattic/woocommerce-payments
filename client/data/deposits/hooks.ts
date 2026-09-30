@@ -10,7 +10,7 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import type { Query } from '@woocommerce/navigation';
 import type {
 	CachedDeposits,

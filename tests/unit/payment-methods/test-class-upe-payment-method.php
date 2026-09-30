@@ -9,11 +9,13 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\Tests\PaymentMethods\Configs\MockPaymentMethodDefinition;
 use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WC_Payments_Token_Service;
 use WC_Payments;
+use WC_Helper_Order;
 use WC_Subscriptions;
 
 /**
@@ -86,12 +88,10 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 		];
 
@@ -139,7 +139,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 	public function test_klarna_get_countries_with_eu_country_and_eu_currency() {
 		$this->currency_filter_callback = function () {
-			return 'EUR';
+			return Currency_Code::EURO;
 		};
 		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
 
@@ -169,7 +169,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 	public function test_klarna_get_countries_with_eu_country_and_non_eu_currency() {
 		$this->currency_filter_callback = function () {
-			return 'AUD';
+			return Currency_Code::AUSTRALIAN_DOLLAR;
 		};
 		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
 
@@ -198,16 +198,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			'Payment method supported in a single country' => [
 				'payment_method_id' => 'bancontact',
 				'expected_result'   => [ Country_Code::BELGIUM ],
-			],
-			'Payment method supported in multiple countries' => [
-				'payment_method_id' => 'sofort',
-				'expected_result'   => [
-					Country_Code::AUSTRIA,
-					Country_Code::BELGIUM,
-					Country_Code::GERMANY,
-					Country_Code::NETHERLANDS,
-					Country_Code::SPAIN,
-				],
 			],
 			'Payment method with domestic restrictions (US)' => [
 				'payment_method_id' => 'affirm',
@@ -294,6 +284,38 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		$payment_details = [ 'some_key' => 'some_value' ];
 
 		$this->assertSame( 'Mock Method', $payment_method->get_title( 'US', $payment_details ) );
+	}
+
+	public function test_link_supports_usd_and_gbp() {
+		$payment_method = $this->mock_payment_methods['link'];
+
+		$this->assertSame(
+			[ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING ],
+			$payment_method->get_currencies()
+		);
+		$this->assertFalse( $payment_method->has_domestic_transactions_restrictions() );
+	}
+
+	/**
+	 * @dataProvider provider_test_link_is_currency_valid
+	 */
+	public function test_link_is_currency_valid( string $order_currency, string $account_currency, bool $expected ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( $order_currency );
+		$order->save();
+
+		$this->assertSame( $expected, $this->mock_payment_methods['link']->is_currency_valid( $account_currency, $order->get_id() ) );
+	}
+
+	public function provider_test_link_is_currency_valid(): array {
+		return [
+			'USD in a US store' => [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::UNITED_STATES_DOLLAR, true ],
+			'GBP in a US store' => [ Currency_Code::POUND_STERLING, Currency_Code::UNITED_STATES_DOLLAR, true ],
+			'GBP in a GB store' => [ Currency_Code::POUND_STERLING, Currency_Code::POUND_STERLING, true ],
+			'USD in a GB store' => [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING, true ],
+			'EUR in a US store' => [ Currency_Code::EURO, Currency_Code::UNITED_STATES_DOLLAR, false ],
+			'EUR in a GB store' => [ Currency_Code::EURO, Currency_Code::POUND_STERLING, false ],
+		];
 	}
 
 	public function test_get_title_uses_default_when_no_payment_details() {

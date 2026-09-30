@@ -15,6 +15,11 @@ import * as navigation from '../../../utils/shopper-navigation';
 const changePaymentMethodButtonSelector =
 	'button[name="woocommerce_change_payment"], #place_order';
 
+// Target the subscription action by the query arg the change-payment endpoint reads.
+// Subscriptions renders these actions as anchors styled as buttons, so matching on an
+// ARIA role couples the test to markup that has already changed once upstream.
+const changePaymentMethodActionSelector = 'a[href*="change_payment_method="]';
+
 const navigateToSubscriptionDetails = async (
 	page: Page,
 	subscriptionId: string
@@ -24,7 +29,7 @@ const navigateToSubscriptionDetails = async (
 		.getByLabel( `View subscription number ${ subscriptionId }` )
 		.click();
 
-	await page.getByRole( 'button', { name: 'Change payment' } ).click();
+	await page.locator( changePaymentMethodActionSelector ).first().click();
 
 	await expect(
 		page.getByRole( 'heading', {
@@ -32,7 +37,9 @@ const navigateToSubscriptionDetails = async (
 		} )
 	).toBeVisible();
 
-	await page.getByText( 'Choose a new payment method' ).isVisible();
+	await expect(
+		page.getByText( 'Choose a new payment method' )
+	).toBeVisible();
 };
 
 describeif( shouldRunSubscriptionsTests )(
@@ -71,7 +78,7 @@ describeif( shouldRunSubscriptionsTests )(
 			await page
 				.locator( changePaymentMethodButtonSelector )
 				.first()
-				.click( { noWaitAfter: true } );
+				.click();
 
 			await expect(
 				page.getByText( 'Payment method updated.' )
@@ -87,7 +94,7 @@ describeif( shouldRunSubscriptionsTests )(
 			await page
 				.locator( changePaymentMethodButtonSelector )
 				.first()
-				.click( { noWaitAfter: true } );
+				.click();
 
 			await expect(
 				page.getByText( 'Payment method updated.' )

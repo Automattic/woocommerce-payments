@@ -9,7 +9,11 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useDevMode, useTestMode, useTestModeOnboarding } from 'wcpay/data';
+import {
+	useDevMode,
+	useTestMode,
+	useTestModeOnboarding,
+} from 'wcpay/data/settings';
 import CardBody from '../card-body';
 import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import TestModeConfirmationModal from './test-mode-confirm-modal';

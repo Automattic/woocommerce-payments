@@ -81,6 +81,13 @@ class Compatibility extends BaseCompatibility {
 	 * @return mixed Three letter currency code or false if not.
 	 */
 	public function override_selected_currency() {
+		/**
+		 * Filters the currency code that should override the selected currency.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param mixed $currency Three letter currency code to use, or false to not override. Default false.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', false );
 	}
 
@@ -116,9 +123,25 @@ class Compatibility extends BaseCompatibility {
 		// If someone has hooked into the deprecated filter, throw a notice and then apply the filtering.
 		if ( has_action( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets' ) ) {
 			wc_deprecated_hook( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', '6.5.0', MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching' );
+			/**
+			 * Filters whether the currency switcher widgets should be hidden.
+			 *
+			 * @deprecated 6.5.0 Use wcpay_multi_currency_should_disable_currency_switching instead.
+			 *
+			 * @since 3.3.0
+			 *
+			 * @param bool $return Whether the widgets should be hidden. Default false.
+			 */
 			$return = apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', $return );
 		}
 
+		/**
+		 * Filters whether currency switching (widgets and automatic geolocation switching) should be disabled.
+		 *
+		 * @since 6.6.0
+		 *
+		 * @param bool $return Whether currency switching should be disabled. Default false.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', $return );
 	}
 
@@ -134,6 +157,14 @@ class Compatibility extends BaseCompatibility {
 			return true;
 		}
 
+		/**
+		 * Filters whether a coupon's amount should be converted to the selected currency.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param bool   $convert Whether the coupon amount should be converted. Default true.
+		 * @param object $coupon  The coupon object being tested.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_coupon_amount', true, $coupon );
 	}
 
@@ -149,7 +180,41 @@ class Compatibility extends BaseCompatibility {
 			return true;
 		}
 
+		/**
+		 * Filters whether a product's price should be converted to the selected currency.
+		 *
+		 * @since 3.3.0
+		 *
+		 * @param bool   $convert Whether the product price should be converted. Default true.
+		 * @param object $product The product object being tested.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', true, $product );
+	}
+
+	/**
+	 * Checks to see if the shipping cost should be converted.
+	 *
+	 * @param object $shipping_method Shipping method object to test.
+	 *
+	 * @return bool True if it should be converted.
+	 */
+	public function should_convert_shipping_amount( $shipping_method = null ): bool {
+		if ( ! $shipping_method ) {
+			return true;
+		}
+
+		/**
+		 * Filters whether a shipping rate's cost should be converted to the selected currency.
+		 *
+		 * Some shipping methods (such as live-rate plugins) return costs that are already
+		 * converted to the customer's currency. Converting again would double-convert the cost.
+		 *
+		 * @since 10.10.0
+		 *
+		 * @param bool   $convert         Whether the shipping cost should be converted. Default true.
+		 * @param object $shipping_method The shipping method object adding the rate.
+		 */
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_convert_shipping_amount', true, $shipping_method );
 	}
 
 	/**
@@ -158,6 +223,13 @@ class Compatibility extends BaseCompatibility {
 	 * @return bool
 	 */
 	public function should_return_store_currency(): bool {
+		/**
+		 * Filters whether the store's default currency should be returned instead of the selected currency.
+		 *
+		 * @since 3.2.0
+		 *
+		 * @param bool $return_store_currency Whether to return the store currency. Default false.
+		 */
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', false );
 	}
 

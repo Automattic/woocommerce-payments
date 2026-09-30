@@ -7,7 +7,6 @@ import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -23,11 +22,7 @@ import {
 	updateFraudOutcomeTransactionsSummary,
 	updateErrorForFraudOutcomeTransactionsSummary,
 } from './actions';
-import { formatDateValue } from 'utils';
-
-function getUserTimeZone() {
-	return moment( new Date() ).format( 'Z' );
-}
+import { formatDateValue, getUserTimeZone } from 'utils';
 
 export const formatQueryFilters = ( query ) => ( {
 	user_email: query.userEmail,

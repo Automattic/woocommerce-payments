@@ -72,6 +72,11 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client );
 		$this->compatibility_service->init_hooks();
 
+		// The Compatibility_Service goes through the singleton WC_Payments_Action_Scheduler_Service
+		// (via WC_Payments::get_action_scheduler_service()), whose in-request dedupe set persists
+		// across PHPUnit test methods. Reset it so schedule_job() actually schedules each test.
+		WC_Payments::get_action_scheduler_service()->reset_scheduled_in_request();
+
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();
 		$this->insert_test_posts();
@@ -267,7 +272,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$stylesheet = $stylesheet ?? $this->stylesheet;
 		add_filter(
 			'stylesheet',
-			function ( $theme ) use ( $stylesheet ) {
+			function ( $_unused_theme ) use ( $stylesheet ) {
 				return $stylesheet;
 			}
 		);
@@ -290,7 +295,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$plugins = $plugins ?? $this->active_plugins;
 		add_filter(
 			'option_active_plugins',
-			function ( $active_plugins ) use ( $plugins ) {
+			function ( $_unused_active_plugins ) use ( $plugins ) {
 				return $plugins;
 			}
 		);

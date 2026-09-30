@@ -11,6 +11,7 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
+	disableEditorWelcomeGuide,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 } from '../../../utils/merchant';
@@ -51,8 +52,10 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 		// ).toHaveScreenshot();
 	} );
 
-	test( 'add the currency switcher to the sidebar', async () => {
-		await addMulticurrencyWidget( page );
+	test( 'add the currency switcher to the sidebar', async ( {}, {
+		project,
+	} ) => {
+		await addMulticurrencyWidget( page, project.use.baseURL );
 	} );
 
 	test( 'can add the currency switcher to a post/page and verify on frontend', async () => {
@@ -61,33 +64,26 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 
 		await navigation.goToNewPost( page );
 
-		if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
-			await page.getByRole( 'button', { name: 'Close' } ).click();
-		}
+		// Dismiss the Welcome Guide; its overlay blocks the block inserter.
+		await disableEditorWelcomeGuide( page );
 
-		if ( await page.locator( '[name="editor-canvas"]' ).isVisible() ) {
-			await expect(
-				page.locator( '[name="editor-canvas"]' )
-			).toBeAttached();
-			const editor = page
-				.locator( '[name="editor-canvas"]' )
-				.contentFrame();
-			await editor.getByRole( 'button', { name: 'Add block' } ).click();
-		} else {
-			// Fallback for WC 7.7.0.
-			await page.getByRole( 'button', { name: 'Add block' } ).click();
-		}
-
+		// The toolbar inserter works with both iframed and inline editors.
 		await page
-			.locator( 'input[placeholder="Search"]' )
-			.pressSequentially( 'switcher', { delay: 20 } );
-		await expect(
-			page.getByRole( 'option', { name: 'Currency Switcher Block' } )
-		).toBeVisible();
+			.getByLabel( 'Editor top bar' )
+			.getByRole( 'button', { name: 'Block Inserter', exact: true } )
+			.click();
 
-		// Insert the block.
-		await page
-			.getByRole( 'option', { name: 'Currency Switcher Block' } )
+		const blockLibrary = page.getByRole( 'region', {
+			name: 'Block Library',
+		} );
+		await blockLibrary
+			.getByLabel( 'Search', { exact: true } )
+			.fill( 'switcher' );
+		await blockLibrary
+			.getByRole( 'option', {
+				name: 'Currency Switcher Block',
+				exact: true,
+			} )
 			.click();
 
 		// Publish the post — click the top bar button to open the publish panel.

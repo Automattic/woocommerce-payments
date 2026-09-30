@@ -7,7 +7,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'data/constants';
+import { NAMESPACE } from 'wcpay/data/constants';
 import { AccountSession } from './types';
 import { OnboardingFields } from 'wcpay/onboarding/types';
 import { fromDotNotation } from 'wcpay/onboarding/utils';

@@ -7,6 +7,7 @@
 
 use WCPay\WC_Payments_Checkout;
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -81,8 +82,26 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	 */
 	private $default_gateway;
 
+	/**
+	 * Snapshot of global $wp->query_vars, restored in tear_down.
+	 *
+	 * @var array|null
+	 */
+	private $original_wp_query_vars;
+
+	/**
+	 * Snapshot of global $wp_query->query_vars, restored in tear_down.
+	 *
+	 * @var array|null
+	 */
+	private $original_wp_query_query_vars;
+
 	public function set_up() {
 		parent::set_up();
+
+		global $wp, $wp_query;
+		$this->original_wp_query_vars       = isset( $wp->query_vars ) ? $wp->query_vars : null;
+		$this->original_wp_query_query_vars = isset( $wp_query->query_vars ) ? $wp_query->query_vars : null;
 
 		// Setup the gateway mock.
 		$this->mock_wcpay_gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
@@ -108,7 +127,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway->id = 'woocommerce_payments';
 		$this->mock_wcpay_gateway
 			->method( 'get_account_domestic_currency' )
-			->willReturn( 'USD' );
+			->willReturn( Currency_Code::UNITED_STATES_DOLLAR );
 
 		$this->mock_woopay_utilities = $this->createMock( WooPay_Utilities::class );
 		$this->mock_woopay_utilities = $this->getMockBuilder( WooPay_Utilities::class )
@@ -147,6 +166,358 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_gateway( $this->default_gateway );
+		unset( $_GET['key'] );
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+		wp_dequeue_script( 'wcpay-upe-checkout' );
+		// Deregister too, so localized wcpay_upe_config data does not leak into later tests.
+		wp_deregister_script( 'wcpay-upe-checkout' );
+
+		global $wp, $wp_query;
+		if ( isset( $wp ) ) {
+			$wp->query_vars = $this->original_wp_query_vars;
+		}
+		if ( isset( $wp_query ) ) {
+			$wp_query->query_vars = $this->original_wp_query_query_vars;
+		}
+	}
+
+	/**
+	 * Sets the order-pay query data for the given order.
+	 *
+	 * Merges the endpoint query var rather than replacing the whole array; the originals are
+	 * snapshotted in set_up and restored in tear_down so these process-shared globals do not
+	 * leak into later tests.
+	 *
+	 * @param \WC_Order $order The order being paid.
+	 */
+	private function setup_order_pay_query_data( \WC_Order $order ) {
+		global $wp, $wp_query;
+		$wp->query_vars       = array_merge( (array) ( $wp->query_vars ?? [] ), [ 'order-pay' => strval( $order->get_id() ) ] );
+		$wp_query->query_vars = array_merge( (array) ( $wp_query->query_vars ?? [] ), [ 'order-pay' => strval( $order->get_id() ) ] );
+		set_query_var( 'order-pay', $order->get_id() );
+		$_GET['key'] = $order->get_order_key();
+	}
+
+	/**
+	 * Points the current request at the checkout Pay for Order page for the given order.
+	 *
+	 * @param \WC_Order $order The order being paid.
+	 */
+	private function setup_pay_for_order_endpoint( \WC_Order $order ) {
+		$this->setup_order_pay_query_data( $order );
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+	}
+
+	/**
+	 * Invokes the private is_valid_pay_for_order_endpoint() method.
+	 *
+	 * @return bool
+	 */
+	private function invoke_is_valid_pay_for_order_endpoint(): bool {
+		$method = new \ReflectionMethod( $this->system_under_test, 'is_valid_pay_for_order_endpoint' );
+		$method->setAccessible( true );
+
+		return (bool) $method->invoke( $this->system_under_test );
+	}
+
+	/**
+	 * Creates a guest order that still needs payment.
+	 *
+	 * @return \WC_Order
+	 */
+	private function create_guest_order_needing_payment(): \WC_Order {
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->set_status( 'pending' );
+		$order->save();
+
+		return $order;
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_true_for_guest_order_with_matching_key() {
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertTrue( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_not_order_pay_endpoint() {
+		$order       = $this->create_guest_order_needing_payment();
+		$_GET['key'] = $order->get_order_key();
+		// No order-pay query var set.
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_for_bare_order_pay_query_var_outside_checkout() {
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_order_pay_query_data( $order );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_key_does_not_match() {
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+		$_GET['key'] = 'wc_order_wrongkey';
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_order_does_not_need_payment() {
+		$order = $this->create_guest_order_needing_payment();
+		$order->set_status( 'completed' );
+		$order->save();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_order_missing() {
+		global $wp, $wp_query;
+		$wp->query_vars       = [ 'order-pay' => '999999' ];
+		$wp_query->query_vars = [ 'order-pay' => '999999' ];
+		set_query_var( 'order-pay', 999999 );
+		$_GET['key'] = 'wc_order_whatever';
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_for_array_key_without_error() {
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+		// An array key (e.g. ?key[]=x) must not reach hash_equals(), which would throw a TypeError.
+		$_GET['key'] = [ 'x' ];
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_when_user_cannot_pay_for_order() {
+		// An order owned by one customer, viewed by a different, non-owner customer, must fail the
+		// current_user_can( 'pay_for_order' ) check even though the endpoint + key + needs_payment pass.
+		$owner_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+		$other_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( $owner_id );
+		$order->set_status( 'pending' );
+		$order->save();
+
+		wp_set_current_user( $other_id );
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+
+		wp_set_current_user( 0 );
+	}
+
+	/**
+	 * Stubs out paymentMethodsConfig, which is irrelevant to the order-pay gating under test.
+	 */
+	private function stub_enabled_payment_methods() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+	}
+
+	/**
+	 * Creates a guest order priced in a currency other than the store's, so the assertions can
+	 * tell the order's values apart from the fallbacks.
+	 *
+	 * @return \WC_Order
+	 */
+	private function create_guest_order_pay_order(): \WC_Order {
+		$order = $this->create_guest_order_needing_payment();
+		$order->set_currency( Currency_Code::EURO );
+		$order->set_total( '123.45' );
+		$order->save();
+
+		return $order;
+	}
+
+	public function test_get_payment_fields_js_config_exposes_order_for_guest_order_with_matching_key() {
+		$this->stub_enabled_payment_methods();
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_pay_order();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertTrue( $payment_fields['isOrderPay'] );
+		$this->assertSame( $order->get_id(), $payment_fields['orderId'] );
+
+		$this->assertSame( 'EUR', $payment_fields['currency'] );
+		$this->assertSame( 12345, $payment_fields['cartTotal'] );
+	}
+
+	/**
+	 * @dataProvider provider_unauthorized_order_pay_requests
+	 *
+	 * @param callable $arrange Receives the order and sets up the unauthorized request.
+	 */
+	public function test_get_payment_fields_js_config_withholds_order_for_unauthorized_request( callable $arrange ) {
+		$this->stub_enabled_payment_methods();
+		wp_set_current_user( 0 );
+		$order = $this->create_guest_order_pay_order();
+		$this->setup_pay_for_order_endpoint( $order );
+		$arrange( $order );
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayNotHasKey( 'isOrderPay', $payment_fields );
+		$this->assertArrayNotHasKey( 'orderId', $payment_fields );
+
+		$this->assertSame( 'USD', $payment_fields['currency'] );
+		$this->assertSame( 0, $payment_fields['cartTotal'] );
+	}
+
+	/**
+	 * @return array<string, array{callable}>
+	 */
+	public function provider_unauthorized_order_pay_requests(): array {
+		return [
+			'no key'    => [
+				function () {
+					unset( $_GET['key'] );
+				},
+			],
+			'wrong key' => [
+				function () {
+					$_GET['key'] = 'wc_order_wrongkey';
+				},
+			],
+			'array key' => [
+				function () {
+					$_GET['key'] = [ 'x' ];
+				},
+			],
+		];
+	}
+
+	public function test_get_payment_fields_js_config_withholds_order_when_user_cannot_pay_for_order() {
+		$this->stub_enabled_payment_methods();
+		$owner_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+		$other_id = self::factory()->user->create( [ 'role' => 'customer' ] );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( $owner_id );
+		$order->set_status( 'pending' );
+		$order->set_currency( Currency_Code::EURO );
+		$order->set_total( '123.45' );
+		$order->save();
+
+		wp_set_current_user( $other_id );
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayNotHasKey( 'isOrderPay', $payment_fields );
+		$this->assertArrayNotHasKey( 'orderId', $payment_fields );
+
+		wp_set_current_user( 0 );
+	}
+
+	public function test_is_valid_pay_for_order_endpoint_false_for_refund_id_without_error() {
+		$order  = $this->create_guest_order_needing_payment();
+		$refund = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 1,
+			]
+		);
+		$this->setup_pay_for_order_endpoint( $order );
+
+		global $wp, $wp_query;
+		$wp->query_vars['order-pay']       = strval( $refund->get_id() );
+		$wp_query->query_vars['order-pay'] = strval( $refund->get_id() );
+		set_query_var( 'order-pay', $refund->get_id() );
+
+		$this->assertFalse( $this->invoke_is_valid_pay_for_order_endpoint() );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_enqueues_on_valid_endpoint() {
+		wp_set_current_user( 0 );
+		$this->mock_wcpay_gateway->enabled = 'yes';
+		// register_scripts() runs at priority 10 in production; register here so the enqueue sticks.
+		wp_register_script( 'wcpay-upe-checkout', 'https://example.com/wcpay-checkout.js', [], '1.0.0', true );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->assertFalse( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
+
+		$this->system_under_test->maybe_load_pay_for_order_scripts();
+
+		$this->assertTrue( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_skips_when_gateway_disabled() {
+		wp_set_current_user( 0 );
+		$this->mock_wcpay_gateway->enabled = 'no';
+		wp_register_script( 'wcpay-upe-checkout', 'https://example.com/wcpay-checkout.js', [], '1.0.0', true );
+		$order = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		$this->system_under_test->maybe_load_pay_for_order_scripts();
+
+		$this->assertFalse( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_skips_when_not_pay_for_order_endpoint() {
+		$this->mock_wcpay_gateway->enabled = 'yes';
+		wp_register_script( 'wcpay-upe-checkout', 'https://example.com/wcpay-checkout.js', [], '1.0.0', true );
+
+		$this->system_under_test->maybe_load_pay_for_order_scripts();
+
+		$this->assertFalse( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_skips_when_already_enqueued() {
+		wp_set_current_user( 0 );
+		$this->mock_wcpay_gateway->enabled = 'yes';
+		$order                             = $this->create_guest_order_needing_payment();
+		$this->setup_pay_for_order_endpoint( $order );
+
+		// Simulate payment_fields() having already enqueued the script (the normal-page case).
+		wp_register_script( 'wcpay-upe-checkout', 'https://example.com/wcpay-checkout.js', [], '1.0.0', true );
+		wp_enqueue_script( 'wcpay-upe-checkout' );
+		$this->assertTrue( wp_script_is( 'wcpay-upe-checkout', 'enqueued' ), 'Precondition: the script is already enqueued.' );
+
+		$this->system_under_test->maybe_load_pay_for_order_scripts();
+
+		// The loader must early-return without running load_checkout_scripts(), so it must not
+		// localize its own wcpay_upe_config over what payment_fields() already set up.
+		$data = wp_scripts()->get_data( 'wcpay-upe-checkout', 'data' );
+		$this->assertStringNotContainsString( 'wcpay_upe_config', (string) $data );
+	}
+
+	public function test_maybe_load_pay_for_order_scripts_is_hooked_on_wp_footer_not_enqueue_scripts() {
+		$this->system_under_test->init_hooks();
+
+		try {
+			// wp_footer wins the race with wp_print_footer_scripts (priority 20) and, crucially,
+			// runs after payment_fields() on a normal page so this loader no-ops there.
+			$this->assertNotFalse(
+				has_action( 'wp_footer', [ $this->system_under_test, 'maybe_load_pay_for_order_scripts' ] ),
+				'The pay-for-order loader must run on wp_footer.'
+			);
+			$this->assertFalse(
+				has_action( 'wp_enqueue_scripts', [ $this->system_under_test, 'maybe_load_pay_for_order_scripts' ] ),
+				'The pay-for-order loader must not run on wp_enqueue_scripts, where it would pre-empt payment_fields().'
+			);
+		} finally {
+			remove_action( 'wc_payments_set_gateway', [ $this->system_under_test, 'set_gateway' ] );
+			remove_action( 'wc_payments_add_upe_payment_fields', [ $this->system_under_test, 'payment_fields' ] );
+			remove_action( 'wp', [ $this->mock_wcpay_gateway, 'maybe_process_upe_redirect' ] );
+			remove_action( 'wp_enqueue_scripts', [ $this->system_under_test, 'register_scripts' ] );
+			remove_action( 'wp_enqueue_scripts', [ $this->system_under_test, 'register_scripts_for_zero_order_total' ], 11 );
+			remove_action( 'wp_footer', [ $this->system_under_test, 'maybe_load_pay_for_order_scripts' ] );
+			remove_action( 'woocommerce_after_checkout_form', [ $this->system_under_test, 'maybe_load_checkout_scripts' ] );
+			remove_filter( 'woocommerce_update_order_review_fragments', [ $this->system_under_test, 'add_payment_methods_config_to_update_order_review_fragments' ] );
+		}
 	}
 
 	public function test_save_payment_method_checkbox_not_called_when_saved_cards_disabled() {
@@ -603,7 +974,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 	/**
 	 * Tests that get_enabled_payment_method_config uses get_payment_method_ids_enabled_at_checkout
-	 * which filters payment methods by currency. This ensures Link is only available for USD.
+	 * which filters payment methods by currency. This ensures Link is only available for USD and GBP.
 	 */
 	public function test_get_enabled_payment_method_config_uses_currency_filtered_payment_methods() {
 		$this->mock_wcpay_account
@@ -611,7 +982,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( 'US' );
 
 		// Simulate that get_payment_method_ids_enabled_at_checkout returns only 'card'
-		// (because Link would be filtered out for non-USD currency).
+		// (because Link would be filtered out for currencies other than USD and GBP).
 		$this->mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )

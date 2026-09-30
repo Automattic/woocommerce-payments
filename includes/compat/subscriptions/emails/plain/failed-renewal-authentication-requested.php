@@ -31,21 +31,21 @@ echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n"
 /**
  * Shows the order details table.
  */
-do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
+do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 echo "\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
 
 /**
-* Shows order meta data.
-*/
-do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
+ * Shows order meta data.
+ */
+do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 /**
-* Shows customer details, and email address.
-*/
-do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email );
+ * Shows customer details, and email address.
+ */
+do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 echo "\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
 
-// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Following WooCommerce core pattern for email footer text.
+// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped,WooCommerce.Commenting.CommentHooks.MissingHookComment -- Following WooCommerce core pattern for email footer text; WC core hook, not defined by WooPayments.
 echo apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) );

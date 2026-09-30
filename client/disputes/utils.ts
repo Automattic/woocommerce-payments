@@ -14,6 +14,9 @@ import type {
 	EvidenceDetails,
 } from 'wcpay/types/disputes';
 import type { BalanceTransaction } from 'wcpay/types/balance-transactions';
+import type { Charge } from 'wcpay/types/charges';
+import { getChargeDisputes } from 'wcpay/utils/charge';
+import { formatStringValue } from 'wcpay/utils';
 import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
@@ -22,6 +25,7 @@ import {
 	formatCurrency,
 	formatExplicitCurrency,
 } from 'multi-currency/interface/functions';
+import { klarnaChargebackLossReasons } from 'wcpay/disputes/strings';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -105,20 +109,93 @@ export const isVisaComplianceDispute = (
 };
 
 /**
+ * What Klarna said about a chargeback it ruled against the merchant.
+ *
+ * - `stated`      — Klarna gave a reason, ready to display.
+ * - `unspecified` — Klarna closed the dispute without giving one. This is a
+ *   fact worth telling the merchant, so it stays distinct from "we don't know".
+ */
+export type KlarnaLossReason =
+	| { type: 'stated'; display: string }
+	| { type: 'unspecified' };
+
+/**
+ * Returns Klarna's stated reason for ruling against the merchant, if there is one.
+ *
+ * Klarna is the only payment method that reports a loss reason, and it only does
+ * so once it closes a chargeback. Returns `null` when there's nothing to say:
+ * a non-Klarna dispute, or a Klarna dispute Stripe hasn't annotated (yet).
+ *
+ * @param {Pick<Dispute, 'payment_method_details'>} dispute - The dispute object.
+ * @return {KlarnaLossReason | null} The loss reason, or null if none is available.
+ */
+export const getKlarnaLossReason = (
+	dispute: Pick< Dispute, 'payment_method_details' >
+): KlarnaLossReason | null => {
+	const code =
+		dispute?.payment_method_details?.klarna?.chargeback_loss_reason_code
+			?.trim()
+			.toLowerCase()
+			.replace( /[\s-]+/g, '_' );
+
+	if ( ! code ) {
+		return null;
+	}
+
+	if ( code === 'reason_unspecified' ) {
+		return { type: 'unspecified' };
+	}
+
+	// Codes read as English phrases, so humanizing an unmapped one still tells
+	// the merchant more than hiding it would. Translated once it's in the map.
+	const display =
+		klarnaChargebackLossReasons[ code ] ?? formatStringValue( code );
+
+	return { type: 'stated', display };
+};
+
+/**
+ * Returns Klarna's loss reasons for a charge's disputes, keyed by dispute id.
+ *
+ * The timeline's `dispute_lost` events carry no loss reason of their own, so the
+ * timeline reads them off the charge instead. Only disputes Klarna gave a reason
+ * for appear here.
+ *
+ * @param {Charge} charge - The charge to collect loss reasons from.
+ * @return {Record<string, KlarnaLossReason>} Loss reasons keyed by dispute id.
+ */
+export const getKlarnaLossReasons = (
+	charge: Charge
+): Record< string, KlarnaLossReason > => {
+	const reasonById: Record< string, KlarnaLossReason > = {};
+
+	getChargeDisputes( charge ).forEach( ( dispute ) => {
+		const lossReason = getKlarnaLossReason( dispute );
+		if ( lossReason ) {
+			reasonById[ dispute.id ] = lossReason;
+		}
+	} );
+
+	return reasonById;
+};
+
+/**
  * Returns the dispute fee balance transaction for a dispute if it exists
  * and the deduction has not been reversed.
+ *
+ * Legacy-only implementation: the "fee reversed when dispute_reversal row
+ * exists" rule is business logic the server should own. Prefer reading
+ * `dispute.effective_fee` (set by Disputes_Controller) via
+ * `getDisputeFeeFormatted` — this helper is retained for consumers that
+ * pre-date the server annotation.
  */
 const getDisputeDeductedBalanceTransaction = (
 	dispute: Pick< Dispute, 'balance_transactions' >
 ): BalanceTransaction | undefined => {
-	// Note that there can only be, at most, two balance transactions for a given dispute:
-
-	// One balance transaction with reporting_category: 'dispute' will be present if funds have been withdrawn from the account.
 	const disputeFee = dispute.balance_transactions.find(
 		( transaction ) => transaction.reporting_category === 'dispute'
 	);
 
-	// A second balance transaction with the reporting_category: 'dispute_reversal' will be present if funds have been reinstated to the account.
 	const disputeFeeReversal = dispute.balance_transactions.find(
 		( transaction ) => transaction.reporting_category === 'dispute_reversal'
 	);
@@ -131,22 +208,54 @@ const getDisputeDeductedBalanceTransaction = (
 };
 
 /**
- * Returns the dispute fee formatted as a currency string if it exists
- * and the deduction has not been reversed.
+ * Returns the effective dispute fee as a raw `{ amount, currency }` pair if a
+ * non-zero fee exists and the deduction has not been reversed.
+ *
+ * Prefers the server-computed `dispute.effective_fee` when present.
+ * Falls back to inspecting `balance_transactions` directly for responses
+ * from older servers that don't emit the annotation.
+ *
+ * Callers that need the number (e.g. summing across a charge's disputes)
+ * use this; `getDisputeFeeFormatted` formats the same value for display.
+ */
+export const getDisputeFeeAmount = (
+	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >
+): { amount: number; currency: string } | undefined => {
+	let fee: { amount: number; currency: string } | undefined;
+
+	if ( dispute.effective_fee !== undefined ) {
+		// Server-computed: an object while the fee is effective, explicitly
+		// null once it has been reversed.
+		fee = dispute.effective_fee ?? undefined;
+	} else {
+		// Legacy fallback.
+		const row = getDisputeDeductedBalanceTransaction( dispute );
+		fee = row ? { amount: row.fee, currency: row.currency } : undefined;
+	}
+
+	// A zero fee is no fee. Callers phrase this as "the %s fee has been
+	// deducted from your account", which is false at $0.00 — the same
+	// copy/reality mismatch as a reversed fee. The finite check keeps a
+	// malformed amount from reaching the currency formatter and rendering
+	// as "$NaN".
+	return fee && Number.isFinite( fee.amount ) && fee.amount !== 0
+		? fee
+		: undefined;
+};
+
+/**
+ * Returns the dispute fee formatted as a currency string if a non-zero fee
+ * exists and the deduction has not been reversed.
  */
 export const getDisputeFeeFormatted = (
-	dispute: Pick< Dispute, 'balance_transactions' >,
+	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >,
 	appendCurrencyCode?: boolean
 ): string | undefined => {
-	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
-
+	const disputeFee = getDisputeFeeAmount( dispute );
 	if ( ! disputeFee ) {
 		return undefined;
 	}
-
-	if ( appendCurrencyCode ) {
-		return formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
-	}
-
-	return formatCurrency( disputeFee.fee, disputeFee.currency );
+	return appendCurrencyCode
+		? formatExplicitCurrency( disputeFee.amount, disputeFee.currency )
+		: formatCurrency( disputeFee.amount, disputeFee.currency );
 };

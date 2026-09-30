@@ -99,6 +99,29 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			);
 		} );
 
+		it( 'syncs the currency switcher after converting prices', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			const select = document.createElement( 'select' );
+			select.name = 'currency';
+			select.className = 'js-woopayments-currency-switcher';
+			[ 'USD', 'EUR' ].forEach( ( code ) => {
+				const option = document.createElement( 'option' );
+				option.value = code;
+				option.textContent = code;
+				select.appendChild( option );
+			} );
+			document.body.appendChild( select );
+
+			await renderer.init();
+
+			// mockConfig.selected_currency is 'EUR'.
+			expect( select.value ).toBe( 'EUR' );
+		} );
+
 		it( 'shows error state on fetch failure', async () => {
 			global.fetch = jest
 				.fn()
@@ -116,6 +139,31 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			expect(
 				document.querySelector( '.wcpay-price-error' )
 			).not.toBeNull();
+		} );
+
+		it( 'does not sync the currency switcher when config fetch fails', async () => {
+			global.fetch = jest
+				.fn()
+				.mockRejectedValue( new Error( 'Network error' ) );
+
+			const select = document.createElement( 'select' );
+			select.name = 'currency';
+			select.className = 'js-woopayments-currency-switcher';
+			[ 'USD', 'EUR' ].forEach( ( code ) => {
+				const option = document.createElement( 'option' );
+				option.value = code;
+				option.textContent = code;
+				if ( code === 'USD' ) {
+					option.selected = true;
+				}
+				select.appendChild( option );
+			} );
+			document.body.appendChild( select );
+
+			await renderer.init();
+
+			// On fetch failure the switcher must keep its server-rendered value.
+			expect( select.value ).toBe( 'USD' );
 		} );
 
 		it( 'only initializes once', async () => {
@@ -698,6 +746,136 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 	} );
 
+	describe( 'convertBlockScreenReaderText', () => {
+		// Mirrors the markup WooCommerce's product-price block renders for a
+		// range-priced product: the visible prices carry the per-product Store
+		// API currency, the screen-reader label the (store) global currency.
+		const renderBlockPriceRange = ( { srText, min, max } ) => {
+			const wrapper = document.createElement( 'span' );
+			wrapper.className = 'price wc-block-components-product-price';
+			wrapper.innerHTML =
+				`<span class="screen-reader-text">${ srText }</span>` +
+				'<span aria-hidden="true">' +
+				`<span class="wc-block-components-product-price__value">${ min }</span>` +
+				'&nbsp;&mdash;&nbsp;' +
+				`<span class="wc-block-components-product-price__value">${ max }</span>` +
+				'</span>';
+			document.body.appendChild( wrapper );
+			return wrapper;
+		};
+
+		beforeEach( () => {
+			document.body.textContent = '';
+		} );
+
+		it( 'rebuilds the label from the visible prices', () => {
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '14,00 €',
+				max: '18,00 €',
+			} );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between 14,00 € and 18,00 €' );
+		} );
+
+		it( 'picks up a re-rendered block on a second pass', () => {
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '14,00 €',
+				max: '18,00 €',
+			} );
+
+			renderer.convertBlockScreenReaderText();
+
+			wrapper.querySelector( '.screen-reader-text' ).textContent =
+				'Price between $20.00 and $30.00';
+			wrapper.querySelectorAll(
+				'.wc-block-components-product-price__value'
+			)[ 0 ].textContent = '20,00 €';
+			wrapper.querySelectorAll(
+				'.wc-block-components-product-price__value'
+			)[ 1 ].textContent = '30,00 €';
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between 20,00 € and 30,00 €' );
+		} );
+
+		it( 'leaves the label alone when the selected currency is the default', () => {
+			renderer.config = { ...mockConfig, selected_currency: 'USD' };
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '$14.00',
+				max: '$18.00',
+			} );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between $14.00 and $18.00' );
+		} );
+
+		it( 'leaves sale-price labels alone', () => {
+			const wrapper = document.createElement( 'span' );
+			wrapper.className = 'price wc-block-components-product-price';
+			wrapper.innerHTML =
+				'<span class="screen-reader-text">Previous price:</span>' +
+				'<del class="wc-block-components-product-price__regular">18,00 €</del>' +
+				'<span class="screen-reader-text">Discounted price:</span>' +
+				'<ins class="wc-block-components-product-price__value">14,00 €</ins>';
+			document.body.appendChild( wrapper );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Previous price:' );
+		} );
+
+		it( 'leaves server-rendered annotated labels to convertScreenReaderText', () => {
+			const wrapper = document.createElement( 'span' );
+			wrapper.className = 'price wc-block-components-product-price';
+			wrapper.innerHTML =
+				'<span class="screen-reader-text" data-wcpay-sr-type="range" ' +
+				'data-wcpay-sr-price-from="10" data-wcpay-sr-price-to="30">' +
+				'Price range: $10.00 through $30.00</span>' +
+				'<span aria-hidden="true">' +
+				'<span class="wc-block-components-product-price__value">8,99 €</span>' +
+				'<span class="wc-block-components-product-price__value">25,99 €</span>' +
+				'</span>';
+			document.body.appendChild( wrapper );
+
+			renderer.convertBlockScreenReaderText();
+
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price range: $10.00 through $30.00' );
+		} );
+
+		it( 'does nothing when the config has not loaded', () => {
+			renderer.config = null;
+			const wrapper = renderBlockPriceRange( {
+				srText: 'Price between $14.00 and $18.00',
+				min: '14,00 €',
+				max: '18,00 €',
+			} );
+
+			expect( () =>
+				renderer.convertBlockScreenReaderText()
+			).not.toThrow();
+			expect(
+				wrapper.querySelector( '.screen-reader-text' ).textContent
+			).toBe( 'Price between $14.00 and $18.00' );
+		} );
+	} );
+
 	describe( 'convertAllPrices calls convertScreenReaderText', () => {
 		beforeEach( () => {
 			document.body.textContent = '';
@@ -970,6 +1148,78 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			expect( config ).toEqual( mockConfig );
 			expect( global.fetch ).toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'syncCurrencySwitchers', () => {
+		const createSwitcher = (
+			selected = 'USD',
+			codes = [ 'USD', 'EUR' ]
+		) => {
+			const select = document.createElement( 'select' );
+			select.name = 'currency';
+			select.className = 'js-woopayments-currency-switcher';
+			codes.forEach( ( code ) => {
+				const option = document.createElement( 'option' );
+				option.value = code;
+				option.textContent = code;
+				if ( code === selected ) {
+					option.selected = true;
+				}
+				select.appendChild( option );
+			} );
+			document.body.appendChild( select );
+			return select;
+		};
+
+		beforeEach( () => {
+			document.body.textContent = '';
+		} );
+
+		it( 'syncs the switcher to the selected currency', () => {
+			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'EUR' );
+		} );
+
+		it( 'leaves the switcher unchanged when the selected currency is not an option', () => {
+			const select = createSwitcher( 'USD', [ 'USD', 'GBP' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'USD' );
+		} );
+
+		it( 'is a no-op when the selected currency is already selected', () => {
+			const select = createSwitcher( 'EUR', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'EUR' );
+		} );
+
+		it( 'does not throw when no switcher is present', () => {
+			expect( () => renderer.syncCurrencySwitchers() ).not.toThrow();
+		} );
+
+		it( 'updates every switcher on the page', () => {
+			const a = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			const b = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( a.value ).toBe( 'EUR' );
+			expect( b.value ).toBe( 'EUR' );
+		} );
+
+		it( 'does not fire a change event when updating the value', () => {
+			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			const changeHandler = jest.fn();
+			select.addEventListener( 'change', changeHandler );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'EUR' );
+			expect( changeHandler ).not.toHaveBeenCalled();
+		} );
+
+		it( 'does nothing when config has no selected_currency', () => {
+			renderer.config = { ...mockConfig, selected_currency: '' };
+			const select = createSwitcher( 'USD', [ 'USD', 'EUR' ] );
+			renderer.syncCurrencySwitchers();
+			expect( select.value ).toBe( 'USD' );
 		} );
 	} );
 

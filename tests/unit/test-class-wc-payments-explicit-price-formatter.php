@@ -121,6 +121,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
+		remove_all_filters( 'wcpay_multi_currency_should_output_explicit_price' );
 		remove_all_filters( 'woocommerce_currency' );
 		remove_all_filters( 'stylesheet' );
 
@@ -214,6 +215,27 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_explicit_price_skips_already_explicit_prices_on_frontend_with_multiple_enabled_currencies() {
 		$this->assertSame( '$10.30 USD', WC_Payments_Explicit_Price_Formatter::get_explicit_price( '$10.30 USD' ) );
+	}
+
+	public function test_filter_can_force_explicit_price_off_with_multiple_enabled_currencies() {
+		add_filter( 'wcpay_multi_currency_should_output_explicit_price', '__return_false' );
+
+		// Without the filter this would return 'R$ 5,90 BRL' (see the test above).
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_currency' )->willReturn( 'BRL' );
+
+		$this->assertSame( 'R$ 5,90', WC_Payments_Explicit_Price_Formatter::get_explicit_price( 'R$ 5,90', $order ) );
+	}
+
+	public function test_filter_can_force_explicit_price_on_with_one_enabled_currency() {
+		$this->prepare_one_enabled_currency();
+		add_filter( 'wcpay_multi_currency_should_output_explicit_price', '__return_true' );
+
+		// Without the filter this would return 'R$ 5,90' (see the test above).
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_currency' )->willReturn( 'BRL' );
+
+		$this->assertSame( 'R$ 5,90 BRL', WC_Payments_Explicit_Price_Formatter::get_explicit_price( 'R$ 5,90', $order ) );
 	}
 
 	private function prepare_one_enabled_currency() {

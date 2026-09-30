@@ -15,7 +15,7 @@ import {
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from 'settings/phone-input';
+import PhoneNumberInput from 'settings/phone-input/lazy';
 import { getConfig } from 'utils/checkout';
 import { buildAjaxURL } from 'utils/express-checkout';
 import AdditionalInformation from './additional-information';
@@ -153,6 +153,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			setPhoneNumber( getPhoneFieldValue() );
 		} else {
 			setPhoneNumber( '' );
+			onPhoneValidationChange( null );
+			clearValidationError( errorId );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -181,10 +183,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 	useEffect( () => {
 		if ( ! isSaveDetailsChecked ) {
-			clearValidationError( errorId );
-			if ( isPhoneValid !== null ) {
-				onPhoneValidationChange( null );
-			}
 			return;
 		}
 

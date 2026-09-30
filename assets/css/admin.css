@@ -35,8 +35,13 @@
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
-	border-radius: 2px;
-	outline: 1px solid rgba( 0, 0, 0, 0.25 );
+	/*
+	 * Match the refreshed badges: a box-shadow ring (not an `outline`, which
+	 * only tracks border-radius in Safari 16.4+) at the badges' baked corner
+	 * radius (4.6875% = 3/64, 7.5% = 3/40).
+	 */
+	border-radius: 4.6875% / 7.5%;
+	box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.07 );
 }
 
 .payment-method__brand--amex {
@@ -65,6 +70,19 @@
 
 .payment-method__brand--visa {
 	background-image: url( '../images/cards/visa.svg' );
+}
+
+.payment-method__brand--eftpos_au {
+	background-image: url( '../images/cards/eftpos_au.svg' );
+	background-color: #fff;
+	background-size: contain;
+}
+
+.payment-method__brand--cartes_bancaires,
+.payment-method__brand--eftpos_au {
+	background-size: contain;
+	/* These brands opt out of the chip ring (their art carries its own frame). */
+	box-shadow: none;
 }
 
 .payment-method__brand--alipay {
@@ -266,6 +284,12 @@
 	margin-bottom: 0;
 }
 
+/* wp-admin resets `ul` to `list-style: none; padding: 0`, so the bullets need restoring. */
+.wcpay-fraud-risk-triggered-filters {
+	list-style: disc outside;
+	margin: 0 0 6px 1.8em;
+}
+
 .wcpay-fraud-risk-meta-allow,
 .wcpay-fraud-risk-meta-review,
 .wcpay-fraud-risk-meta-blocked {
@@ -291,4 +315,37 @@
 
 .wcpay-fraud-risk-meta-blocked {
 	color: #b32d2e;
+}
+
+.wcpay-fraud-risk-efw {
+	border-bottom: 1px solid #ddd;
+	padding: 8px 12px;
+}
+
+.wcpay-fraud-risk-efw > p {
+	margin: 0 0 6px;
+}
+
+.wcpay-fraud-risk-efw > p:last-child {
+	margin-bottom: 0;
+}
+
+.wcpay-fraud-risk-efw__title {
+	font-weight: 600;
+}
+
+.wcpay-fraud-risk-efw__title img {
+	margin: 0 3px -3px 0;
+}
+
+.wcpay-fraud-risk-efw__reason {
+	color: #50575e;
+}
+
+.wcpay-fraud-risk-efw--actionable .wcpay-fraud-risk-efw__title {
+	color: #b26200;
+}
+
+.wcpay-fraud-risk-efw--resolved .wcpay-fraud-risk-efw__title {
+	color: #008a20;
 }

@@ -7,7 +7,6 @@
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
-use WC_Payments_Utils;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\Constants\Country_Code;
@@ -77,12 +76,12 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get a dynamic title based on charge details from Stripe.
 	 *
-	 * @param string $account_country The merchant's account country.
-	 * @param array  $payment_details The payment method details from the Stripe charge.
+	 * @param string $_unused_account_country The merchant's account country.
+	 * @param array  $_unused_payment_details The payment method details from the Stripe charge.
 	 *
 	 * @return string|null The dynamic title, or null to use the default get_title().
 	 */
-	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+	public static function get_title_from_charge_details( string $_unused_account_country, array $_unused_payment_details ): ?string {
 		return null;
 	}
 
@@ -227,10 +226,10 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the testing instructions for the payment method
 	 *
-	 * @param string $account_country The merchant's account country.
+	 * @param string $_unused_account_country The merchant's account country.
 	 * @return string HTML string containing testing instructions
 	 */
-	public static function get_testing_instructions( string $account_country ): string {
+	public static function get_testing_instructions( string $_unused_account_country ): string {
 		return '';
 	}
 
@@ -240,7 +239,38 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
 	public static function get_limits_per_currency(): array {
-		return WC_Payments_Utils::get_bnpl_limits_per_currency( self::get_id() );
+		return [
+			Currency_Code::AUSTRALIAN_DOLLAR    => [
+				Country_Code::AUSTRALIA => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents AUD 1 - 2,000 AUD.
+			],
+			Currency_Code::CANADIAN_DOLLAR      => [
+				Country_Code::CANADA => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents CAD 1 - 2,000 CAD.
+			],
+			Currency_Code::NEW_ZEALAND_DOLLAR   => [
+				Country_Code::NEW_ZEALAND => [
+					'min' => 100,
+					'max' => 200000,
+				], // Represents NZD 1 - 2,000 NZD.
+			],
+			Currency_Code::POUND_STERLING       => [
+				Country_Code::UNITED_KINGDOM => [
+					'min' => 100,
+					'max' => 120000,
+				], // Represents GBP 1 - 1,200 GBP.
+			],
+			Currency_Code::UNITED_STATES_DOLLAR => [
+				Country_Code::UNITED_STATES => [
+					'min' => 100,
+					'max' => 400000,
+				], // Represents USD 1 - 4,000 USD.
+			],
+		];
 	}
 
 	/**

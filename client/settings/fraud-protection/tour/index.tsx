@@ -7,7 +7,7 @@ import { TourKit } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { useSettings } from 'wcpay/data';
+import { useSettings } from 'wcpay/data/settings';
 import { steps } from './steps';
 import { recordEvent } from 'tracks';
 import { saveOption } from 'wcpay/data/settings/actions';

@@ -15,19 +15,32 @@ const expressCheckoutButtonUi = {
 		return $expressCheckoutSeparator;
 	},
 
+	// blockUI clears this on `unblock()`, before the overlay finishes fading.
+	isBlocked: () => !! get$Container().data( 'blockUI.isBlocked' ),
+
 	blockButton: () => {
-		// check if element isn't already blocked before calling block() to avoid blinking overlay issues
-		// blockUI.isBlocked is either undefined or 0 when element is not blocked
-		if ( get$Container().data( 'blockUI.isBlocked' ) ) {
+		// re-blocking a blocked element would blink the overlay.
+		if ( expressCheckoutButtonUi.isBlocked() ) {
 			return;
 		}
 
-		get$Container().block( { message: null } );
+		// Same overlay WooCommerce paints over the order review during a refresh.
+		get$Container()
+			.attr( 'aria-busy', 'true' )
+			.block( {
+				message: null,
+				overlayCSS: { background: '#fff', opacity: 0.6 },
+			} );
+	},
+
+	// Lifts the overlay without touching visibility, unlike `unblockButton()`.
+	unblock: () => {
+		get$Container().removeAttr( 'aria-busy' ).unblock();
 	},
 
 	unblockButton: () => {
 		expressCheckoutButtonUi.showContainer();
-		get$Container().unblock();
+		expressCheckoutButtonUi.unblock();
 	},
 
 	renderButton: ( eceButton ) => {

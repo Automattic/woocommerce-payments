@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@playwright/test": "^1.54.2",
-    "axios": "^1.6.0"
+    "axios": "^1.15.2"
   },
   "keywords": [
     "qit",

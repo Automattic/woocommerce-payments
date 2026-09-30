@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Output the email header.
  */
-do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
+do_action( 'woocommerce_email_header', $email_heading, $email ); /* phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments. */ ?>
 
 <p>
 	<?php
@@ -36,19 +36,19 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 /**
  * Shows the order details table.
  */
-do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
+do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 /**
-* Shows order meta data.
-*/
-do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email );
+ * Shows order meta data.
+ */
+do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 /**
-* Shows customer details, and email address.
-*/
-do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email );
+ * Shows customer details, and email address.
+ */
+do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.
 
 /**
-* Output the email footer.
-*/
-do_action( 'woocommerce_email_footer', $email );
+ * Output the email footer.
+ */
+do_action( 'woocommerce_email_footer', $email ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- WooCommerce core hook, not defined by WooPayments.

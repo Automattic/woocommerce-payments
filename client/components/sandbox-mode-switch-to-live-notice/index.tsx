@@ -91,7 +91,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/'
 															}
 															target="_blank"
-															rel="noreferrer"
+															rel="noreferrer noopener"
 															type="external"
 															onClick={ () =>
 																recordEvent(
@@ -251,7 +251,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 														<Link
 															href={
 																// eslint-disable-next-line max-len
-																'https://woocommerce.com/document/woopayments/startup-guide/#sign-up-process'
+																'https://woocommerce.com/document/woopayments/startup-guide/#signup-process'
 															}
 															target="_blank"
 															rel="noreferrer"

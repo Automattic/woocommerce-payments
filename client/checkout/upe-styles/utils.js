@@ -178,6 +178,41 @@ export const maybeConvertRGBAtoRGB = ( color ) => {
 };
 
 /**
+ * Whether the theme's checkout label follows the floating-label pattern.
+ *
+ * Stock WC Blocks positions the input label absolutely inside the field, so it
+ * occupies no height and the floating-label padding compensation applies. Some
+ * themes restyle it into a static label above the input; subtracting the label
+ * height there produces a negative input padding.
+ *
+ * @param {string} labelSelector Selector of the cloned active-state label.
+ * @param {Object} scope         The document scope to search in.
+ * @return {boolean} True when the label is positioned out of the normal flow.
+ */
+export const usesFloatingLabelPattern = ( labelSelector, scope = document ) => {
+	let label;
+	try {
+		label = scope.querySelector( labelSelector );
+	} catch ( e ) {
+		return true;
+	}
+	if ( ! label ) {
+		return true;
+	}
+	const windowObject = scope.defaultView || window;
+	const position = windowObject
+		.getComputedStyle( label )
+		.getPropertyValue( 'position' );
+
+	// Default to the floating pattern when position can't be determined.
+	if ( ! position ) {
+		return true;
+	}
+
+	return position === 'absolute' || position === 'fixed';
+};
+
+/**
  * Modifies the appearance object to include styles for floating label.
  *
  * @param {Object} appearance          object to modify.

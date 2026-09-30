@@ -116,7 +116,7 @@ class WC_Payments_Payment_Request_Session {
 		return JsonWebToken::create(
 			[
 				'session_id' => WC()->session->session_id,
-				'exp'        => time() + intval( apply_filters( 'wc_session_expiration', DAY_IN_SECONDS * 2 ) ),
+				'exp'        => time() + intval( apply_filters( 'wc_session_expiration', DAY_IN_SECONDS * 2 ) ), // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 				'iss'        => 'woopayments/product-page',
 			],
 			'@' . wp_salt()

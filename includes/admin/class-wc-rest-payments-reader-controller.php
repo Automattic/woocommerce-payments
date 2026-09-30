@@ -172,10 +172,10 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Proxies the get all readers request to the server.
 	 *
-	 * @param WP_REST_Request $request Request object.
+	 * @param WP_REST_Request $_unused_request Request object.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_all_readers( $request ) {
+	public function get_all_readers( $_unused_request ) {
 		try {
 			return rest_ensure_response( $this->fetch_readers() );
 		} catch ( API_Exception $e ) {

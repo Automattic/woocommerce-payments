@@ -6,6 +6,8 @@ import {
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
+// eslint-disable-next-line import/no-unresolved
+import { ExperimentalOrderMeta } from '@woocommerce/blocks-checkout';
 
 /**
  * Internal dependencies
@@ -45,8 +47,6 @@ const normalizeAmount = ( amount, decimalPlaces = 2 ) => {
 	return amount * Math.pow( 10, 2 - decimalPlaces );
 };
 
-const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
-
 const ProductDetail = ( { cart, context } ) => {
 	const [ appearance, setAppearance ] = useState( () =>
 		getCachedAppearance(
@@ -65,6 +65,13 @@ const ProductDetail = ( { cart, context } ) => {
 				getUPEConfig( 'stylesCacheVersion' ),
 				computed
 			);
+			// Effect syncs an external module-level cache (localStorage +
+			// wcpay_elements_appearance CustomEvent) that must run post-commit,
+			// and mirrors the result into local state so <Elements> re-renders
+			// with the resolved appearance. The setState is intentional because
+			// the appearance is derived from a DOM read that isn't safe in
+			// render or in a lazy useState initializer.
+			// eslint-disable-next-line react-hooks/set-state-in-effect
 			setAppearance( computed );
 		}
 	}, [ appearance ] );

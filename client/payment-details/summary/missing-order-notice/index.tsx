@@ -12,7 +12,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 
-import './style.scss';
 import CardNotice from 'wcpay/components/card-notice';
 import Loadable from 'wcpay/components/loadable';
 import { Charge } from 'wcpay/types/charges';

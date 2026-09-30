@@ -43,23 +43,26 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			$line_items_data = $this->format_line_items( $order_data );
 		}
 
+		$payment_method_details = $charge['payment_method_details']['card_present'];
+
 		ob_start();
 
 		wc_get_template(
 			'html-in-person-payment-receipt.php',
 			[
-				'amount_captured'        => $charge['amount_captured'] / 100,
-				'coupon_lines'           => $order_data['coupon_lines'] ?? [],
-				'branding_logo'          => $settings['branding_logo'] ?? [],
-				'business_name'          => $settings['business_name'],
-				'line_items'             => $line_items_data,
-				'order'                  => $order_data,
-				'payment_method_details' => $charge['payment_method_details']['card_present'],
-				'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
-				'support_address'        => $settings['support_info']['address'],
-				'support_email'          => $settings['support_info']['email'],
-				'support_phone'          => $settings['support_info']['phone'],
-				'tax_lines'              => $order_data['tax_lines'] ?? [],
+				'amount_captured'             => $charge['amount_captured'] / 100,
+				'coupon_lines'                => $order_data['coupon_lines'] ?? [],
+				'branding_logo'               => $settings['branding_logo'] ?? [],
+				'business_name'               => $settings['business_name'],
+				'line_items'                  => $line_items_data,
+				'order'                       => $order_data,
+				'payment_method_details'      => $payment_method_details,
+				'payment_method_display_name' => WC_Payments_Utils::get_terminal_card_display_name( $payment_method_details ),
+				'receipt'                     => $payment_method_details['receipt'],
+				'support_address'             => $settings['support_info']['address'],
+				'support_email'               => $settings['support_info']['email'],
+				'support_phone'               => $settings['support_info']['phone'],
+				'tax_lines'                   => $order_data['tax_lines'] ?? [],
 			],
 			'',
 			__DIR__ . '/templates/'

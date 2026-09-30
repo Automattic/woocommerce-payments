@@ -60,6 +60,51 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10, has_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->mock_compatibility_service, 'update_compatibility_data_hook' ] ) );
 	}
 
+	public function test_init_hooks_registers_dedupe_reset_on_action_scheduler_begin_execute() {
+		$this->action_scheduler_service->init_hooks();
+
+		try {
+			$this->assertEquals(
+				10,
+				has_action( 'action_scheduler_begin_execute', [ $this->action_scheduler_service, 'reset_scheduled_in_request' ] ),
+				'init_hooks() must register reset_scheduled_in_request() on action_scheduler_begin_execute so the AS queue runner gets a fresh dedupe scope per action.'
+			);
+		} finally {
+			remove_action( 'action_scheduler_begin_execute', [ $this->action_scheduler_service, 'reset_scheduled_in_request' ] );
+		}
+	}
+
+	public function test_reset_scheduled_in_request_lets_a_subsequent_same_key_call_schedule_again() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_reset_dedupe_' . uniqid();
+		$args  = [ 55 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( 200, $hook, $args, $group );
+
+					// Simulate the ActionScheduler queue runner beginning the next action within
+					// the same PHP process (as happens when do_batch() re-claims after our callback
+					// scheduled a follow-up).
+					$this->action_scheduler_service->reset_scheduled_in_request();
+
+					$this->action_scheduler_service->schedule_job( 100, $hook, $args, $group );
+
+					$this->assertSame(
+						100,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'After reset, a subsequent same-key schedule_job() with an earlier timestamp must reach the AS store and move the pending action earlier.'
+					);
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
 	public function test_track_new_order_action() {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
@@ -156,6 +201,329 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->action_scheduler_service->track_update_order_action( $order->get_data() ) );
 	}
 
+	public function test_schedule_job_dedupes_deferred_callbacks_for_same_key() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_dedupe_' . uniqid();
+		$args  = [ 42 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+
+		$this->with_uninitialized_action_scheduler(
+			function () use ( $hook, $args, $group ) {
+				$this->action_scheduler_service->schedule_job( 100, $hook, $args, $group );
+				$this->action_scheduler_service->schedule_job( 200, $hook, $args, $group );
+				$this->action_scheduler_service->schedule_job( 300, $hook, $args, $group );
+
+				$this->assertSame(
+					1,
+					$this->count_action_scheduler_init_callbacks(),
+					'Duplicate pre-init schedule_job() calls should register exactly one action_scheduler_init callback.'
+				);
+			}
+		);
+	}
+
+	public function test_schedule_job_uses_latest_timestamp_when_action_scheduler_initializes() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook      = 'wcpay_test_latest_ts_' . uniqid();
+		$args      = [ 7 ];
+		$group     = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$latest_ts = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_uninitialized_action_scheduler(
+				function () use ( $hook, $args, $group, $latest_ts ) {
+					$this->action_scheduler_service->schedule_job( time() + 10, $hook, $args, $group );
+					$this->action_scheduler_service->schedule_job( time() + 20, $hook, $args, $group );
+					$this->action_scheduler_service->schedule_job( $latest_ts, $hook, $args, $group );
+
+					$this->invoke_isolated_action_scheduler_init_callbacks();
+				}
+			);
+
+			$this->assertSame(
+				$latest_ts,
+				as_next_scheduled_action( $hook, $args, $group ),
+				'The scheduled action should use the latest timestamp from the sequence of deferred calls.'
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_registers_separate_callbacks_for_distinct_keys() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$this->with_uninitialized_action_scheduler(
+			function () {
+				$this->action_scheduler_service->schedule_job( 100, 'wcpay_test_hook_a_' . uniqid(), [ 1 ] );
+				$this->action_scheduler_service->schedule_job( 100, 'wcpay_test_hook_b_' . uniqid(), [ 1 ] );
+
+				$shared_hook = 'wcpay_test_hook_shared_' . uniqid();
+				$this->action_scheduler_service->schedule_job( 100, $shared_hook, [ 1 ] );
+				$this->action_scheduler_service->schedule_job( 100, $shared_hook, [ 2 ] );
+
+				$this->assertSame(
+					4,
+					$this->count_action_scheduler_init_callbacks(),
+					'Distinct hook+args combinations should each register their own callback.'
+				);
+			}
+		);
+	}
+
+	public function test_schedule_job_schedules_directly_when_action_scheduler_already_initialized() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_direct_' . uniqid();
+		$args  = [];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( $ts, $hook, $args, $group );
+
+					$this->assertSame(
+						0,
+						$this->count_action_scheduler_init_callbacks(),
+						'When action_scheduler_init has already fired, schedule_job() should not register any deferred callback.'
+					);
+					$this->assertSame(
+						$ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'Post-init schedule_job() should schedule the action directly.'
+					);
+
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->assertSame(
+						$ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'Repeat schedule_job() calls in the same request should be no-ops.'
+					);
+
+					$canceled = as_get_scheduled_actions(
+						[
+							'hook'   => $hook,
+							'group'  => $group,
+							'status' => ActionScheduler_Store::STATUS_CANCELED,
+						]
+					);
+					$this->assertCount(
+						0,
+						$canceled,
+						'A no-op schedule_job() call should not produce a canceled row.'
+					);
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_dedupes_repeat_calls_after_init_within_request() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_dedupe_post_init_' . uniqid();
+		$args  = [ 42 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( 100, $hook, $args, $group );
+					$this->action_scheduler_service->schedule_job( 200, $hook, $args, $group );
+					$this->action_scheduler_service->schedule_job( 300, $hook, $args, $group );
+
+					$this->assertSame(
+						100,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'Repeat schedule_job() calls in the same request should keep the first-scheduled timestamp.'
+					);
+
+					$canceled = as_get_scheduled_actions(
+						[
+							'hook'   => $hook,
+							'group'  => $group,
+							'status' => ActionScheduler_Store::STATUS_CANCELED,
+						]
+					);
+					$this->assertCount(
+						0,
+						$canceled,
+						'Repeat schedule_job() calls in the same request should not produce canceled rows in the AS table.'
+					);
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_dedupes_across_pre_and_post_init_in_same_request() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_pre_post_' . uniqid();
+		$args  = [ 7 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			// Step A: schedule while ActionScheduler is "not initialized," then trigger the deferred callback.
+			$this->with_uninitialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( $ts, $hook, $args, $group );
+					$this->invoke_isolated_action_scheduler_init_callbacks();
+				}
+			);
+
+			$this->assertSame(
+				$ts,
+				as_next_scheduled_action( $hook, $args, $group ),
+				'Deferred callback should have scheduled the action at the recorded timestamp.'
+			);
+
+			// Step B: now pretend action_scheduler_init has already fired and call schedule_job again.
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->assertSame(
+						$ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'Post-init schedule_job() for a key already scheduled via the deferred branch should be a no-op.'
+					);
+
+					$canceled = as_get_scheduled_actions(
+						[
+							'hook'   => $hook,
+							'group'  => $group,
+							'status' => ActionScheduler_Store::STATUS_CANCELED,
+						]
+					);
+					$this->assertCount( 0, $canceled );
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_keeps_pending_action_from_a_previous_request_when_it_runs_no_later() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_keep_pending_' . uniqid();
+		$args  = [ 11 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( $ts, $hook, $args, $group );
+
+					// A later request, e.g. a webhook or the 3DS return saving the order again.
+					$this->action_scheduler_service->reset_scheduled_in_request();
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->assertSame(
+						$ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'A pending action that runs no later than requested should be kept.'
+					);
+					$this->assertCount( 0, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_CANCELED ) );
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_PENDING ) );
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_moves_pending_action_from_a_previous_request_earlier() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_move_earlier_' . uniqid();
+		$args  = [ 12 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->action_scheduler_service->reset_scheduled_in_request();
+					$this->action_scheduler_service->schedule_job( $ts, $hook, $args, $group );
+
+					$this->assertSame(
+						$ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'A pending action that runs later than requested should be replaced by the earlier one.'
+					);
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_CANCELED ) );
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_PENDING ) );
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_schedules_new_action_while_an_equivalent_one_is_running() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_running_' . uniqid();
+		$args  = [ 13 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$running_id = as_schedule_single_action( $ts, $hook, $args, $group );
+					ActionScheduler::store()->log_execution( $running_id );
+
+					// The running action may already have read the order, so this change needs its own run.
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_RUNNING ) );
+					$this->assertCount(
+						1,
+						$this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_PENDING ),
+						'A running action must not stop a new pending one from being scheduled.'
+					);
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	/**
+	 * Get the IDs of actions for a hook and group with the given status.
+	 *
+	 * @param string $hook   Hook name.
+	 * @param string $group  Group name.
+	 * @param string $status Action status.
+	 *
+	 * @return array
+	 */
+	private function get_actions_with_status( string $hook, string $group, string $status ): array {
+		return as_get_scheduled_actions(
+			[
+				'hook'     => $hook,
+				'group'    => $group,
+				'status'   => $status,
+				'per_page' => -1,
+			],
+			'ids'
+		);
+	}
+
 	/**
 	 * Get a mock of the order data expected to be passed into the `track_order` function.
 	 *
@@ -172,5 +540,120 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 				'_wcpay_mode'         => WC_Payments::mode()->is_test() ? 'test' : 'prod',
 			]
 		);
+	}
+
+	/**
+	 * Skip the current test when the WC/ActionScheduler version in use does not expose the
+	 * `action_scheduler_init` hook. The deferred-scheduling branch being exercised was introduced
+	 * in ActionScheduler 3.5.5 (WC 7.9.0); the CI matrix pins a lower WC_MIN_SUPPORTED_VERSION.
+	 */
+	private function skip_if_deferred_schedule_path_unavailable() {
+		if ( version_compare( WC()->version, '7.9.0', '<' ) ) {
+			$this->markTestSkipped( 'schedule_job() deferred-callback path requires WC 7.9.0+ (ActionScheduler 3.5.5+).' );
+		}
+	}
+
+	/**
+	 * Run the given callback while pretending ActionScheduler has not been initialized yet.
+	 *
+	 * Clears `$wp_actions['action_scheduler_init']` so `did_action()` returns 0, and replaces
+	 * `$wp_filter['action_scheduler_init']` with an empty hook so the callbacks registered by
+	 * the code under test can be counted and inspected in isolation. State is restored after
+	 * the callback returns, even if it throws.
+	 */
+	private function with_uninitialized_action_scheduler( callable $callback ) {
+		global $wp_actions, $wp_filter;
+
+		$original_action = $wp_actions['action_scheduler_init'] ?? null;
+		$original_filter = $wp_filter['action_scheduler_init'] ?? null;
+
+		unset( $wp_actions['action_scheduler_init'] );
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolating the hook for the duration of this test.
+		$wp_filter['action_scheduler_init'] = new WP_Hook();
+
+		try {
+			$callback();
+		} finally {
+			if ( null !== $original_action ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
+				$wp_actions['action_scheduler_init'] = $original_action;
+			}
+			if ( null !== $original_filter ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_filter snapshot taken above.
+				$wp_filter['action_scheduler_init'] = $original_filter;
+			} else {
+				unset( $wp_filter['action_scheduler_init'] );
+			}
+		}
+	}
+
+	/**
+	 * Run the given callback while pretending ActionScheduler has already been initialized.
+	 *
+	 * Sets `$wp_actions['action_scheduler_init'] = 1` so `did_action()` returns 1, and replaces
+	 * `$wp_filter['action_scheduler_init']` with an empty hook so any callbacks registered by
+	 * the code under test can be counted and inspected in isolation. State is restored after
+	 * the callback returns, even if it throws.
+	 */
+	private function with_initialized_action_scheduler( callable $callback ) {
+		global $wp_actions, $wp_filter;
+
+		$original_action = $wp_actions['action_scheduler_init'] ?? null;
+		$original_filter = $wp_filter['action_scheduler_init'] ?? null;
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulating a fired hook for the duration of this test.
+		$wp_actions['action_scheduler_init'] = 1;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolating the hook for the duration of this test.
+		$wp_filter['action_scheduler_init'] = new WP_Hook();
+
+		try {
+			$callback();
+		} finally {
+			if ( null !== $original_action ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
+				$wp_actions['action_scheduler_init'] = $original_action;
+			} else {
+				unset( $wp_actions['action_scheduler_init'] );
+			}
+			if ( null !== $original_filter ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_filter snapshot taken above.
+				$wp_filter['action_scheduler_init'] = $original_filter;
+			} else {
+				unset( $wp_filter['action_scheduler_init'] );
+			}
+		}
+	}
+
+	/**
+	 * Count the callbacks currently attached to `action_scheduler_init` across all priorities.
+	 */
+	private function count_action_scheduler_init_callbacks(): int {
+		global $wp_filter;
+
+		if ( ! isset( $wp_filter['action_scheduler_init'] ) ) {
+			return 0;
+		}
+
+		return array_sum( array_map( 'count', $wp_filter['action_scheduler_init']->callbacks ) );
+	}
+
+	/**
+	 * Directly invoke callbacks currently attached to `action_scheduler_init`.
+	 *
+	 * Used instead of `do_action()` so we don't also fire the real ActionScheduler
+	 * bootstrap (and other unrelated listeners) during the test.
+	 */
+	private function invoke_isolated_action_scheduler_init_callbacks() {
+		global $wp_filter;
+
+		if ( ! isset( $wp_filter['action_scheduler_init'] ) ) {
+			return;
+		}
+
+		foreach ( $wp_filter['action_scheduler_init']->callbacks as $priority_callbacks ) {
+			foreach ( $priority_callbacks as $cb ) {
+				call_user_func( $cb['function'] );
+			}
+		}
 	}
 }

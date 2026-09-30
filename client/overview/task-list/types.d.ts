@@ -3,7 +3,11 @@
  */
 import { TaskItem } from '@woocommerce/experimental';
 
-export interface TaskItemProps extends React.ComponentProps< typeof TaskItem > {
+export interface TaskItemProps
+	extends Omit<
+		React.ComponentProps< typeof TaskItem >,
+		'inProgress' | 'inProgressLabel' | 'content'
+	> {
 	/**
 	 * Unique key for the task.
 	 */
@@ -17,6 +21,10 @@ export interface TaskItemProps extends React.ComponentProps< typeof TaskItem > {
 	 * Whether the task is dismissable.
 	 */
 	isDismissable?: boolean;
+
+	inProgress?: boolean;
+
+	inProgressLabel?: string;
 
 	content: string | React.ReactElement;
 }

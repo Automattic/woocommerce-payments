@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Prevent Stripe card element from temporarily rendering country and zip fields

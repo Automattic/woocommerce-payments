@@ -14,6 +14,7 @@ import {
 	deleteSkipWooPayCookie,
 } from './utils';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -458,7 +459,7 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	window.addEventListener( 'message', ( e ) => {
-		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
+		if ( e.origin !== new URL( getConfig( 'woopayHost' ) ).origin ) {
 			return;
 		}
 		switch ( e.data.action ) {
@@ -472,13 +473,14 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				const promise = api.initWooPay(
+				const promise = initWooPay(
+					api.request,
 					woopayEmailInput.value,
 					e.data.platformCheckoutUserSession
 				);
 
 				// The <Login> component on WooPay re-renders sending the `redirect_to_platform_checkout` message twice.
-				// `api.initWooPay` skips the request the second time and returns undefined.
+				// `initWooPay` skips the request the second time and returns undefined.
 				if ( ! promise ) {
 					break;
 				}

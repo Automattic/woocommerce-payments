@@ -31,11 +31,12 @@ class API_Merchant_Exception extends API_Exception {
 	 * @param string|null     $decline_code The decline code if it is a card error.
 	 * @param int             $code       The Exception code.
 	 * @param \Throwable|null $previous   The previous exception used for the exception chaining.
+	 * @param string|null     $intent_id  The payment intent ID associated with the error, if any.
 	 */
-	public function __construct( $message, $error_code, $http_code, $merchant_message, $error_type = null, $decline_code = null, $code = 0, $previous = null ) {
+	public function __construct( $message, $error_code, $http_code, $merchant_message, $error_type = null, $decline_code = null, $code = 0, $previous = null, $intent_id = null ) {
 		$this->merchant_message = $merchant_message;
 
-		parent::__construct( $message, $error_code, $http_code, $error_type, $decline_code, $code, $previous );
+		parent::__construct( $message, $error_code, $http_code, $error_type, $decline_code, $code, $previous, null, $intent_id );
 	}
 
 	/**
