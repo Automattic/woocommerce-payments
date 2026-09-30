@@ -40,6 +40,20 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 		setLivePaymentsModalVisible( true );
 	};
 
+	// A live account is forced into test mode while development mode is on, e.g. on a staging copy of a live store.
+	const hasLiveAccountInDevMode =
+		isInDevMode() &&
+		!! wcpaySettings?.isAccountConnected &&
+		!! wcpaySettings?.accountStatus?.isLive;
+
+	if (
+		! hasTestAccount() &&
+		! hasSandboxAccount() &&
+		! hasLiveAccountInDevMode
+	) {
+		return null;
+	}
+
 	return (
 		<>
 			<BannerNotice
@@ -124,14 +138,10 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 				{ hasTestAccount() &&
 					isInDevMode() &&
 					interpolateComponents( {
-						mixedString: sprintf(
-							/* translators: %1$s: WooPayments */
-							__(
-								// eslint-disable-next-line max-len
-								"{{div}}{{strong}}You're using a test account.{{/strong}} ⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!{{/div}}{{learnMoreIcon/}}",
-								'woocommerce-payments'
-							),
-							'WooPayments'
+						mixedString: __(
+							// eslint-disable-next-line max-len
+							"{{div}}{{strong}}You're in development mode and using a test account.{{/strong}} Live payments can't be activated while development mode is on.{{/div}}{{learnMoreIcon/}}",
+							'woocommerce-payments'
 						),
 						components: {
 							div: <div />,
@@ -147,27 +157,12 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 									content={
 										<>
 											{ interpolateComponents( {
-												mixedString: sprintf(
-													/* translators: 1: WooPayments */
-													__(
-														// eslint-disable-next-line max-len
-														'To begin accepting real payments, please go to the live store or change your {{wpEnvLink}}WordPress environment{{/wpEnvLink}} to a production one. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-														'woocommerce-payments'
-													),
-													'WooPayments'
+												mixedString: __(
+													// eslint-disable-next-line max-len
+													'Development mode is on for staging and development sites. To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													'woocommerce-payments'
 												),
 												components: {
-													wpEnvLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<Link
-															type="external"
-															target="_blank"
-															rel="noreferrer"
-															href={
-																'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/'
-															}
-														/>
-													),
 													learnMoreLink: (
 														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
@@ -280,11 +275,69 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 				{ hasSandboxAccount() &&
 					isInDevMode() &&
 					interpolateComponents( {
+						mixedString: __(
+							// eslint-disable-next-line max-len
+							"{{div}}{{strong}}You're in development mode and using a test account.{{/strong}} Live payments can't be activated while development mode is on.{{/div}}{{learnMoreIcon/}}",
+							'woocommerce-payments'
+						),
+						components: {
+							div: <div />,
+							strong: <strong />,
+							learnMoreIcon: (
+								<ClickTooltip
+									buttonIcon={ <HelpOutlineIcon /> }
+									buttonLabel={ __(
+										'Learn more about development mode',
+										'woocommerce-payments'
+									) }
+									maxWidth={ '250px' }
+									content={
+										<>
+											{ interpolateComponents( {
+												mixedString: __(
+													// eslint-disable-next-line max-len
+													'Development mode is on for staging and development sites. To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													'woocommerce-payments'
+												),
+												components: {
+													learnMoreLink: (
+														// eslint-disable-next-line jsx-a11y/anchor-has-content
+														<Link
+															href={
+																// eslint-disable-next-line max-len
+																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
+															}
+															target="_blank"
+															rel="noreferrer"
+															type="external"
+															onClick={ () =>
+																recordEvent(
+																	'wcpay_overview_sandbox_mode_learn_more_clicked',
+																	{
+																		account_type:
+																			'sandbox',
+																		is_dev_mode:
+																			true,
+																	}
+																)
+															}
+														/>
+													),
+												},
+											} ) }
+										</>
+									}
+								/>
+							),
+						},
+					} ) }
+				{ hasLiveAccountInDevMode &&
+					interpolateComponents( {
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
 								// eslint-disable-next-line max-len
-								'{{div}}{{strong}}You are using a sandbox test account.{{/strong}} ⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!{{/div}}{{learnMoreIcon/}}',
+								'{{div}}{{strong}}%1$s is in test mode — all transactions are simulated!{{/strong}} Test mode is on because development mode is on.{{/div}}{{learnMoreIcon/}}',
 								'woocommerce-payments'
 							),
 							'WooPayments'
@@ -303,27 +356,12 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 									content={
 										<>
 											{ interpolateComponents( {
-												mixedString: sprintf(
-													/* translators: 1: WooPayments */
-													__(
-														// eslint-disable-next-line max-len
-														'To begin accepting real payments, please go to the live store or change your {{wpEnvLink}}WordPress environment{{/wpEnvLink}} to a production one. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-														'woocommerce-payments'
-													),
-													'WooPayments'
+												mixedString: __(
+													// eslint-disable-next-line max-len
+													'Development mode is on for staging and development sites. To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													'woocommerce-payments'
 												),
 												components: {
-													wpEnvLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<Link
-															type="external"
-															target="_blank"
-															rel="noreferrer"
-															href={
-																'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/'
-															}
-														/>
-													),
 													learnMoreLink: (
 														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<Link
@@ -339,7 +377,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																	'wcpay_overview_sandbox_mode_learn_more_clicked',
 																	{
 																		account_type:
-																			'sandbox',
+																			'live',
 																		is_dev_mode:
 																			true,
 																	}
