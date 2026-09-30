@@ -516,14 +516,12 @@ class FrontendCurrencies {
 		];
 
 		// On a single-order page the order can be loaded before its details render (for the page
-		// title in block themes, or the account navigation), and loading rounds its totals to the
-		// current decimals. Block-based order confirmation pages also render without the shortcode
-		// classes above. Other prices on these pages, like the mini-cart, keep the selected currency.
+		// title in block themes, the account navigation, or the payment on order pay), and loading
+		// rounds its total to the current decimals. Block-based order confirmation pages also render
+		// without the shortcode classes above. Other prices on these pages, like the mini-cart, keep
+		// the selected currency.
 		if ( null !== $this->get_order_id_from_query_vars() ) {
 			$calls[] = 'WC_Order_Factory::get_order';
-			$calls[] = 'WC_Order_Factory->get_order';
-			$calls[] = 'WC_Order_Factory::get_order_item';
-			$calls[] = 'WC_Order_Factory->get_order_item';
 			$calls[] = 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render';
 		}
 

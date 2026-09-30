@@ -231,7 +231,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	}
 
 	/**
-	 * On single-order pages the order can be loaded, and its totals rounded, before its details
+	 * On single-order pages the order can be loaded, and its total rounded, before its details
 	 * render, and block-based pages render without the shortcode classes. See WOOPMNT-3978.
 	 */
 	public function test_single_order_pages_use_order_currency_while_loading_the_order_and_rendering_blocks() {
@@ -249,7 +249,6 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 				$this->callback(
 					function ( $calls ) {
 						return in_array( 'WC_Order_Factory::get_order', $calls, true )
-							&& in_array( 'WC_Order_Factory::get_order_item', $calls, true )
 							&& in_array( 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render', $calls, true )
 							&& in_array( 'WC_Shortcode_Checkout::order_received', $calls, true );
 					}
@@ -270,8 +269,8 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	 * them would silently stop the match. This fails instead.
 	 */
 	public function test_order_confirmation_block_render_method_still_exists() {
-		$this->assertTrue( method_exists( 'WC_Order_Factory', 'get_order' ) );
-		$this->assertTrue( method_exists( 'WC_Order_Factory', 'get_order_item' ) );
+		// Static, so PHP reports it as WC_Order_Factory::get_order in the backtrace however it's called.
+		$this->assertTrue( ( new ReflectionMethod( 'WC_Order_Factory', 'get_order' ) )->isStatic() );
 
 		// The CI matrix still runs WooCommerce 7.6, which predates the order confirmation blocks.
 		if ( version_compare( WC_VERSION, '9.0.0', '<' ) ) {
