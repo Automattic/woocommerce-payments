@@ -238,7 +238,8 @@ class WC_Payments_Action_Scheduler_Service {
 	 * Within the current request, calls after the first for the same $hook+$args+$group are no-ops:
 	 * this collapses the schedule-then-cancel churn from repeated woocommerce_update_order fires
 	 * during checkout down to a single AS write. Across requests, an existing pending action with
-	 * the same key is unscheduled and replaced with the new timestamp.
+	 * the same key is kept when it runs no later than $timestamp, and replaced when it runs later,
+	 * so the earliest requested time wins. Hook callbacks must read live state when they run.
 	 *
 	 * @param int    $timestamp When the job will run.
 	 * @param string $hook      The hook to trigger.
@@ -301,9 +302,10 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
-	 * Schedule an action while unscheduling any scheduled actions that are exactly the same.
+	 * Schedule an action unless an equivalent pending one already runs no later than $timestamp.
 	 *
-	 * We will look for scheduled actions with the same name, args and group when unscheduling.
+	 * Otherwise, any pending action with the same name, args and group is unscheduled and replaced,
+	 * which moves it earlier.
 	 *
 	 * @param int    $timestamp When the action will run.
 	 * @param string $action    The action name to schedule.
@@ -315,6 +317,27 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	private function schedule_action_and_prevent_duplicates( int $timestamp, string $action, array $args = [], string $group = self::GROUP_ID ) {
+		// A pending action with the same name, args, and group that runs no later than requested already
+		// covers this call, since the hook callbacks read live state when they run. Keeping it avoids a
+		// cancel-and-reinsert on every order save, which merchants see as canceled rows.
+		// Running actions are deliberately not matched: one may have read its data before the caller's change.
+		$pending = as_get_scheduled_actions(
+			[
+				'hook'         => $action,
+				'args'         => $args,
+				'group'        => $group,
+				'status'       => ActionScheduler_Store::STATUS_PENDING,
+				'date'         => $timestamp,
+				'date_compare' => '<=',
+				'orderby'      => 'none',
+				'per_page'     => 1,
+			],
+			'ids'
+		);
+		if ( ! empty( $pending ) ) {
+			return;
+		}
+
 		// Unschedule any previously scheduled actions with the same name, args, and group combination.
 		// It is more efficient/performant to check if the action is already scheduled before unscheduling it.
 		// @see https://github.com/Automattic/woocommerce-payments/issues/6662.

@@ -84,19 +84,19 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		try {
 			$this->with_initialized_action_scheduler(
 				function () use ( $hook, $args, $group ) {
-					$this->action_scheduler_service->schedule_job( 100, $hook, $args, $group );
+					$this->action_scheduler_service->schedule_job( 200, $hook, $args, $group );
 
 					// Simulate the ActionScheduler queue runner beginning the next action within
 					// the same PHP process (as happens when do_batch() re-claims after our callback
 					// scheduled a follow-up).
 					$this->action_scheduler_service->reset_scheduled_in_request();
 
-					$this->action_scheduler_service->schedule_job( 200, $hook, $args, $group );
+					$this->action_scheduler_service->schedule_job( 100, $hook, $args, $group );
 
 					$this->assertSame(
-						200,
+						100,
 						as_next_scheduled_action( $hook, $args, $group ),
-						'After reset, a subsequent same-key schedule_job() must reach the AS store and (per current post-revert semantics) replace the pending action with the new timestamp.'
+						'After reset, a subsequent same-key schedule_job() with an earlier timestamp must reach the AS store and move the pending action earlier.'
 					);
 				}
 			);
@@ -410,6 +410,118 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		} finally {
 			as_unschedule_all_actions( $hook, $args, $group );
 		}
+	}
+
+	public function test_schedule_job_keeps_pending_action_from_a_previous_request_when_it_runs_no_later() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_keep_pending_' . uniqid();
+		$args  = [ 11 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( $ts, $hook, $args, $group );
+
+					// A later request, e.g. a webhook or the 3DS return saving the order again.
+					$this->action_scheduler_service->reset_scheduled_in_request();
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->assertSame(
+						$ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'A pending action that runs no later than requested should be kept.'
+					);
+					$this->assertCount( 0, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_CANCELED ) );
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_PENDING ) );
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_moves_pending_action_from_a_previous_request_earlier() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_move_earlier_' . uniqid();
+		$args  = [ 12 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->action_scheduler_service->reset_scheduled_in_request();
+					$this->action_scheduler_service->schedule_job( $ts, $hook, $args, $group );
+
+					$this->assertSame(
+						$ts,
+						as_next_scheduled_action( $hook, $args, $group ),
+						'A pending action that runs later than requested should be replaced by the earlier one.'
+					);
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_CANCELED ) );
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_PENDING ) );
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	public function test_schedule_job_schedules_new_action_while_an_equivalent_one_is_running() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
+		$hook  = 'wcpay_test_running_' . uniqid();
+		$args  = [ 13 ];
+		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
+		$ts    = time() + HOUR_IN_SECONDS;
+
+		try {
+			$this->with_initialized_action_scheduler(
+				function () use ( $ts, $hook, $args, $group ) {
+					$running_id = as_schedule_single_action( $ts, $hook, $args, $group );
+					ActionScheduler::store()->log_execution( $running_id );
+
+					// The running action may already have read the order, so this change needs its own run.
+					$this->action_scheduler_service->schedule_job( $ts + HOUR_IN_SECONDS, $hook, $args, $group );
+
+					$this->assertCount( 1, $this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_RUNNING ) );
+					$this->assertCount(
+						1,
+						$this->get_actions_with_status( $hook, $group, ActionScheduler_Store::STATUS_PENDING ),
+						'A running action must not stop a new pending one from being scheduled.'
+					);
+				}
+			);
+		} finally {
+			as_unschedule_all_actions( $hook, $args, $group );
+		}
+	}
+
+	/**
+	 * Get the IDs of actions for a hook and group with the given status.
+	 *
+	 * @param string $hook   Hook name.
+	 * @param string $group  Group name.
+	 * @param string $status Action status.
+	 *
+	 * @return array
+	 */
+	private function get_actions_with_status( string $hook, string $group, string $status ): array {
+		return as_get_scheduled_actions(
+			[
+				'hook'     => $hook,
+				'group'    => $group,
+				'status'   => $status,
+				'per_page' => -1,
+			],
+			'ids'
+		);
 	}
 
 	/**
