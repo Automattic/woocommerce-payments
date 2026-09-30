@@ -128,4 +128,132 @@ class WC_REST_Payments_Early_Fraud_Warnings_Controller_Test extends WCPAY_UnitTe
 		// Assert: The client always receives a list.
 		$this->assertSame( [], $response->get_data() );
 	}
+
+	private function dismiss_request( int $order_id, bool $dismissed ): WP_REST_Request {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'order_id', $order_id );
+		$request->set_param( 'dismissed', $dismissed );
+
+		return $request;
+	}
+
+	public function test_dismiss_route_is_registered_for_post() {
+		$routes = rest_get_server()->get_routes();
+
+		$this->assertArrayHasKey( '/wc/v3/payments/early_fraud_warnings/(?P<order_id>\d+)/dismiss', $routes );
+		$this->assertTrue( $routes['/wc/v3/payments/early_fraud_warnings/(?P<order_id>\d+)/dismiss'][0]['methods']['POST'] );
+	}
+
+	public function test_check_permission_requires_manage_woocommerce() {
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
+		$this->assertFalse( $this->controller->check_permission() );
+
+		$user = self::factory()->user->create_and_get();
+		$user->add_cap( 'manage_woocommerce' );
+		wp_set_current_user( $user->ID );
+		$this->assertTrue( $this->controller->check_permission() );
+	}
+
+	public function test_dismiss_records_the_dismissal_and_clears_the_cache() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->method( 'get_early_fraud_warning_for_order' )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_1',
+					'efw_actionable' => true,
+				]
+			);
+		$this->order_service->expects( $this->once() )->method( 'dismiss_early_fraud_warning' );
+		$this->order_service->expects( $this->never() )->method( 'undismiss_early_fraud_warning' );
+		$this->order_service->method( 'is_early_fraud_warning_dismissed' )->willReturn( true );
+		$this->database_cache->expects( $this->once() )->method( 'delete_early_fraud_warning_caches' );
+
+		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( $order->get_id(), true ) );
+
+		$this->assertSame( [ 'dismissed' => true ], $response->get_data() );
+	}
+
+	public function test_undo_clears_the_dismissal_and_clears_the_cache() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->method( 'get_early_fraud_warning_for_order' )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_1',
+					'efw_actionable' => true,
+				]
+			);
+		$this->order_service->expects( $this->once() )->method( 'undismiss_early_fraud_warning' );
+		$this->order_service->expects( $this->never() )->method( 'dismiss_early_fraud_warning' );
+		$this->order_service->method( 'is_early_fraud_warning_dismissed' )->willReturn( false );
+		$this->database_cache->expects( $this->once() )->method( 'delete_early_fraud_warning_caches' );
+
+		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( $order->get_id(), false ) );
+
+		$this->assertSame( [ 'dismissed' => false ], $response->get_data() );
+	}
+
+	public function test_undo_is_allowed_once_the_warning_is_resolved() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->method( 'get_early_fraud_warning_for_order' )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_1',
+					'efw_actionable' => false,
+				]
+			);
+		$this->order_service->expects( $this->once() )->method( 'undismiss_early_fraud_warning' );
+
+		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( $order->get_id(), false ) );
+
+		$this->assertInstanceOf( WP_REST_Response::class, $response );
+	}
+
+	public function test_dismiss_rejects_a_resolved_warning() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->method( 'get_early_fraud_warning_for_order' )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_1',
+					'efw_actionable' => false,
+				]
+			);
+		$this->order_service->expects( $this->never() )->method( 'dismiss_early_fraud_warning' );
+		$this->database_cache->expects( $this->never() )->method( 'delete_early_fraud_warning_caches' );
+
+		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( $order->get_id(), true ) );
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_efw_not_actionable', $response->get_error_code() );
+		$this->assertSame( 400, $response->get_error_data()['status'] );
+	}
+
+	public function test_dismiss_returns_404_for_an_order_without_a_warning() {
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->method( 'get_early_fraud_warning_for_order' )->willReturn( null );
+
+		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( $order->get_id(), true ) );
+
+		$this->assertSame( 'wcpay_efw_not_found', $response->get_error_code() );
+		$this->assertSame( 404, $response->get_error_data()['status'] );
+	}
+
+	public function test_dismiss_returns_404_for_a_missing_order() {
+		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( 999999, true ) );
+
+		$this->assertSame( 'wcpay_efw_not_found', $response->get_error_code() );
+		$this->assertSame( 404, $response->get_error_data()['status'] );
+	}
+
+	public function test_dismiss_reports_not_dismissed_when_nothing_could_be_recorded() {
+		// A warning without an ID: the service records nothing, and the response must say so.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->method( 'get_early_fraud_warning_for_order' )
+			->willReturn( [ 'efw_actionable' => true ] );
+		$this->order_service->method( 'dismiss_early_fraud_warning' )->willReturn( false );
+		$this->order_service->method( 'is_early_fraud_warning_dismissed' )->willReturn( false );
+
+		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( $order->get_id(), true ) );
+
+		$this->assertSame( [ 'dismissed' => false ], $response->get_data() );
+	}
 }

@@ -69,6 +69,22 @@ class WC_REST_Payments_Early_Fraud_Warnings_Controller extends WC_Payments_REST_
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<order_id>\d+)/dismiss',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'set_early_fraud_warning_dismissed' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'dismissed' => [
+						'type'     => 'boolean',
+						'required' => true,
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -92,5 +108,45 @@ class WC_REST_Payments_Early_Fraud_Warnings_Controller extends WC_Payments_REST_
 		);
 
 		return rest_ensure_response( is_array( $early_fraud_warnings ) ? $early_fraud_warnings : [] );
+	}
+
+	/**
+	 * Dismiss, or restore, the early fraud warning on an order.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function set_early_fraud_warning_dismissed( $request ) {
+		$order               = wc_get_order( (int) $request->get_param( 'order_id' ) );
+		$early_fraud_warning = $order ? $this->order_service->get_early_fraud_warning_for_order( $order ) : null;
+
+		if ( null === $early_fraud_warning ) {
+			return new WP_Error(
+				'wcpay_efw_not_found',
+				__( 'This order has no early fraud warning.', 'woocommerce-payments' ),
+				[ 'status' => 404 ]
+			);
+		}
+
+		if ( (bool) $request->get_param( 'dismissed' ) ) {
+			// A resolved warning has nothing left to dismiss; restoring one is always allowed.
+			if ( empty( $early_fraud_warning['efw_actionable'] ) ) {
+				return new WP_Error(
+					'wcpay_efw_not_actionable',
+					__( 'This early fraud warning is no longer actionable.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$this->order_service->dismiss_early_fraud_warning( $order );
+		} else {
+			$this->order_service->undismiss_early_fraud_warning( $order );
+		}
+
+		$this->database_cache->delete_early_fraud_warning_caches();
+
+		return rest_ensure_response(
+			[ 'dismissed' => $this->order_service->is_early_fraud_warning_dismissed( $order ) ]
+		);
 	}
 }
