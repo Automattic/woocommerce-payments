@@ -9,7 +9,14 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_NAME } from './store';
-import { ActiveEarlyFraudWarningsResponse } from './types';
+import {
+	ActiveEarlyFraudWarning,
+	ActiveEarlyFraudWarningsResponse,
+} from './types';
+
+// One shared instance: a fresh [] fails useSelect's shallow compare, so the Overview
+// would re-render on every store change until the resolver settles.
+const noWarnings: ActiveEarlyFraudWarning[] = [];
 
 export const useActiveEarlyFraudWarnings =
 	(): ActiveEarlyFraudWarningsResponse =>
@@ -21,7 +28,8 @@ export const useActiveEarlyFraudWarnings =
 			} = select( STORE_NAME );
 
 			return {
-				activeEarlyFraudWarnings: getActiveEarlyFraudWarnings() ?? [],
+				activeEarlyFraudWarnings:
+					getActiveEarlyFraudWarnings() ?? noWarnings,
 				activeEarlyFraudWarningsError:
 					getActiveEarlyFraudWarningsError(),
 				// Gate on resolution having finished rather than on isResolving, which is
