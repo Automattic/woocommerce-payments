@@ -4,7 +4,7 @@ WooPayments is a WordPress/WooCommerce payment plugin with a PHP backend and Rea
 
 ## Load the relevant references
 
-Before working in an area below, read its linked reference and follow the applicable constraints. These references own the detailed rules and commands; load only the sections needed for the task. Paths and commands are relative to the repository root unless stated otherwise.
+Before working in an area below, read its linked reference and follow the applicable constraints. They are not loaded automatically. These references own the detailed rules and commands; load only the sections needed for the task. Paths and commands are relative to the repository root unless stated otherwise.
 
 | Task | Required reference |
 |------|--------------------|
@@ -41,11 +41,11 @@ For feature-specific investigations, the architecture reference indexes payment 
 - Tests must exercise the changed behavior and assert an observable outcome. Do not mock away the behavior being checked; await asynchronous assertions and restore shared test state. Confirm a regression test fails without the fix where practical. Check version and feature gates before citing green CI.
 - PHP tests require Docker. Read the development reference for commands and use the E2E skill when an E2E check is needed. Confirm tested code and built assets match the intended revision; run `pnpm run watch` when testing local frontend/admin edits.
 - Check `.env` for the WordPress port. Preserve existing data, unrelated containers and user processes. Do not reset the local admin password unless explicitly requested; the development login is `admin` / `admin`.
-- Follow the user's checkout preference. Never remove a worktree that is the current working directory; perform any authorised cleanup from the main clone.
+- Never remove a worktree that is the current working directory; perform any authorised cleanup from the main clone.
 
 ## Git and delivery
 
-- Base PRs on `develop`; `trunk` is the release branch. Use Conventional Commits and one logical change per commit.
+- Base PRs on `develop`; `trunk` is the release branch.
 - Before pushing, check whether the branch belonged to a merged PR. If so, create a new branch from `develop`. Push only the current branch with `git push origin HEAD` (or `git push -u origin HEAD`). Pull with rebase.
 - Before creating a PR, add and commit a changelog entry with `pnpm run changelog:add --type=<type> --entry="<description>"`. Use [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) and open the PR in draft mode.
 - After creating the PR, ask the author to review its description and testing instructions, then manually test. Add `pr: needs review` and reviewers only after manual testing and only when explicitly requested.
