@@ -2096,6 +2096,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_early_fraud_warning( $dismissed_order, 'ch_dismissed', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
 		$this->order_service->dismiss_early_fraud_warning( $dismissed_order );
 
+		// Dismissing drops the index key, which already keeps the order out of the query. Put
+		// it back, as a row indexed by an older build would look, so only the skip guards it.
+		$dismissed_order->update_meta_data( '_wcpay_early_fraud_warning_actionable', 1719800000 );
+		$dismissed_order->save_meta_data();
+
 		$active_order = WC_Helper_Order::create_order();
 		$this->order_service->set_charge_id_for_order( $active_order, 'ch_active' );
 		$this->order_service->mark_payment_early_fraud_warning( $active_order, 'ch_active', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
