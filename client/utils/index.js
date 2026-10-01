@@ -187,13 +187,26 @@ export const getPaymentSettingsUrl = () => {
  *
  * @return {string} URL to the payment method's settings page.
  */
+const settingsScreenSubPages = {
+	woopay: 'woopay',
+	payment_request: 'apple-pay-google-pay',
+	amazon_pay: 'amazon-pay',
+};
+
 export const getPaymentMethodSettingsUrl = ( method ) => {
+	// On the new settings screen, the customisation pages are sub-pages, which WooCommerce opens in place.
+	if ( window.wcpaySettingsScreen && settingsScreenSubPages[ method ] ) {
+		return getAdminUrl( {
+			page: 'wc-payment-settings-wp-admin',
+			p: `/settings/woopayments/${ settingsScreenSubPages[ method ] }`,
+		} );
+	}
 	return getAdminUrl( {
 		page: 'wc-settings',
 		tab: 'checkout',
 		section: 'woocommerce_payments',
 		method,
-		// On the new settings screen, the customisation pages stay on the classic settings page.
+		// On the new settings screen, other methods' pages stay on the classic settings page.
 		...( window.wcpaySettingsScreen && { wc_classic_settings: '1' } ),
 	} );
 };

@@ -29,7 +29,37 @@ export type FieldParts = {
 	isDisabled?: ( args: { item: Settings } ) => boolean;
 	render?: React.ComponentType< { item: Settings } >;
 	getValue?: ( args: { item: Settings } ) => unknown;
+	setValue?: ( args: { item: Settings; value: unknown } ) => Settings;
 };
+
+/** Shows an express checkout at one location, stored as the method's ID in that location's list of methods. */
+export const expressCheckoutLocation = (
+	method: string,
+	location: string
+): FieldParts => {
+	const key = `express_checkout_${ location }_methods`;
+	const methods = ( item: Settings ) =>
+		Array.isArray( item[ key ] ) ? ( item[ key ] as string[] ) : [];
+	return {
+		getValue: ( { item } ) => methods( item ).includes( method ),
+		setValue: ( { item, value } ) => ( {
+			[ key ]: [
+				...methods( item ).filter( ( entry ) => entry !== method ),
+				...( value ? [ method ] : [] ),
+			],
+		} ),
+	};
+};
+
+const getExpressCheckoutLocations = (): Record< string, FieldParts > =>
+	Object.fromEntries(
+		[ 'woopay', 'payment_request', 'amazon_pay' ].flatMap( ( method ) =>
+			[ 'product', 'cart', 'checkout' ].map( ( location ) => [
+				`${ method }_on_${ location }`,
+				expressCheckoutLocation( method, location ),
+			] )
+		)
+	);
 
 declare global {
 	const wcpaySettingsScreenConfig: {
@@ -229,6 +259,7 @@ const getCardDescriptions = (): Record< string, FieldParts > => ( {
 
 export const getFieldParts = (): Record< string, FieldParts > => ( {
 	...getCardDescriptions(),
+	...getExpressCheckoutLocations(),
 	is_test_mode_enabled: {
 		// Test accounts and development mode can only take test payments, so test mode stays on.
 		getValue: ( { item } ) =>

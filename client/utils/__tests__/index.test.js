@@ -18,6 +18,27 @@ describe( 'Utilities', () => {
 		);
 	} );
 
+	describe( 'on the new settings screen', () => {
+		beforeEach( () => {
+			window.wcpaySettingsScreen = { fieldParts: {} };
+		} );
+		afterEach( () => {
+			delete window.wcpaySettingsScreen;
+		} );
+
+		test( 'opens express checkout customisation on its sub-page', () => {
+			expect( getPaymentMethodSettingsUrl( 'payment_request' ) ).toEqual(
+				'admin.php?page=wc-payment-settings-wp-admin&p=%2Fsettings%2Fwoopayments%2Fapple-pay-google-pay'
+			);
+		} );
+
+		test( 'keeps other methods on the classic page', () => {
+			expect( getPaymentMethodSettingsUrl( 'foo' ) ).toEqual(
+				'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=foo&wc_classic_settings=1'
+			);
+		} );
+	} );
+
 	test( 'document url matches the expected URL', () => {
 		expect( getDocumentUrl( 'documentID' ) ).toEqual(
 			'https://site.com/wp-json/wc/v3/payments/documents/documentID?_wpnonce=random_wp_rest_nonce'
