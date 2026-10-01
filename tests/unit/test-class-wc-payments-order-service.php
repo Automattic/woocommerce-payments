@@ -2172,6 +2172,70 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Dismissed warnings rarely resolve, so they would pile up in the bounded window
+	 * and hide older active ones unless dismissing frees the slot.
+	 */
+	public function test_dismissed_warnings_do_not_consume_the_query_window() {
+		// Arrange: An older active warning, and a newer dismissed one.
+		$active_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $active_order, 'ch_active' );
+		$this->order_service->mark_payment_early_fraud_warning( $active_order, 'ch_active', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$dismissed_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $dismissed_order, 'ch_dismissed' );
+		$this->order_service->mark_payment_early_fraud_warning( $dismissed_order, 'ch_dismissed', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+		$this->order_service->dismiss_early_fraud_warning( $dismissed_order );
+
+		// Act: Inspect a single order.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: The newer dismissed order did not squeeze out the active one.
+		$this->assertSame( [ $active_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	public function test_undismiss_early_fraud_warning_restores_the_actionable_index() {
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
+
+		$this->order_service->undismiss_early_fraud_warning( $this->order );
+
+		$this->assertSame( '1719800000', (string) $this->order->get_meta( '_wcpay_early_fraud_warning_actionable', true ) );
+	}
+
+	public function test_undismiss_early_fraud_warning_does_not_index_a_resolved_warning() {
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', false, 'made_with_stolen_card', 1719800000 );
+
+		$this->order_service->undismiss_early_fraud_warning( $this->order );
+
+		$this->assertSame( '', $this->order->get_meta( '_wcpay_early_fraud_warning_actionable', true ) );
+	}
+
+	public function test_an_update_to_the_dismissed_warning_does_not_restore_the_actionable_index() {
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
+
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$this->assertSame( '', $this->order->get_meta( '_wcpay_early_fraud_warning_actionable', true ) );
+	}
+
+	public function test_a_new_warning_after_a_dismissal_is_indexed() {
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
+
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_2', true, 'made_with_lost_card', 1719900000 );
+
+		$this->assertSame( '1719900000', (string) $this->order->get_meta( '_wcpay_early_fraud_warning_actionable', true ) );
+	}
+
+	/**
 	 * Tests that warnings stored against the other mode's orders are ignored.
 	 */
 	public function test_get_actionable_early_fraud_warning_orders_excludes_test_mode_orders_when_live() {

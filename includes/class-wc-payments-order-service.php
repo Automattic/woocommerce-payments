@@ -264,10 +264,10 @@ class WC_Payments_Order_Service {
 	/**
 	 * Meta key indexing orders whose stored early fraud warning is still actionable.
 	 *
-	 * Present only while actionable, so the bounded warning query can filter on it: the
-	 * warning itself is a serialized array MySQL cannot read, and its row is never removed
-	 * (the order screen keeps showing resolved warnings), so without this key resolved rows
-	 * would hold window slots forever and hide older still-actionable ones.
+	 * Present only while actionable and not dismissed, so the bounded warning query can
+	 * filter on it: the warning itself is a serialized array MySQL cannot read, and its row
+	 * is never removed (the order screen keeps showing resolved warnings), so without this
+	 * key resolved or dismissed rows would hold window slots forever and hide older active ones.
 	 *
 	 * The value is the warning's Unix `created` timestamp, so `wc_get_orders` can sort by
 	 * when the warning arrived rather than when the order was placed.
@@ -1329,16 +1329,7 @@ class WC_Payments_Order_Service {
 	public function set_early_fraud_warning_for_order( $order, array $early_fraud_warning ) {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, $early_fraud_warning );
-
-		if ( ! empty( $early_fraud_warning['efw_actionable'] ) ) {
-			$order->update_meta_data(
-				self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
-				(int) ( $early_fraud_warning['created'] ?? 0 )
-			);
-		} else {
-			$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY );
-		}
-
+		$this->update_early_fraud_warning_index( $order );
 		$order->save_meta_data();
 	}
 
@@ -1376,6 +1367,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY, $efw_id );
+		$this->update_early_fraud_warning_index( $order );
 		$order->save_meta_data();
 
 		return true;
@@ -1393,6 +1385,7 @@ class WC_Payments_Order_Service {
 	public function undismiss_early_fraud_warning( $order ): void {
 		$order = $this->get_order( $order );
 		$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY );
+		$this->update_early_fraud_warning_index( $order );
 		$order->save_meta_data();
 	}
 
@@ -3374,6 +3367,29 @@ class WC_Payments_Order_Service {
 			),
 			$formatted_amount
 		);
+	}
+
+	/**
+	 * Writes or removes the actionable index to match the order's warning and dismissal.
+	 *
+	 * Dismissed warnings rarely resolve, so they stay out of the index or they would
+	 * crowd still-active warnings out of the bounded query window.
+	 *
+	 * @param WC_Order $order The order. The caller saves its meta.
+	 *
+	 * @return void
+	 */
+	private function update_early_fraud_warning_index( WC_Order $order ): void {
+		$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
+
+		if ( ! empty( $early_fraud_warning['efw_actionable'] ) && ! $this->is_early_fraud_warning_dismissed( $order ) ) {
+			$order->update_meta_data(
+				self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
+				(int) ( $early_fraud_warning['created'] ?? 0 )
+			);
+		} else {
+			$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY );
+		}
 	}
 
 	/**
