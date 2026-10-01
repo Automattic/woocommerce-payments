@@ -1081,5 +1081,80 @@ describe( 'taskSort()', () => {
 				invalidateResolutionForStoreSelector
 			).not.toHaveBeenCalled();
 		} );
+
+		describe( 'when an undo follows a dismissal that is still in flight', () => {
+			// Its own order, so no earlier test's request sits ahead of it.
+			const pendingWarning = {
+				order_id: 13,
+				order_number: '13',
+				charge_id: 'ch_efw_2',
+				created: 1719900000,
+			};
+			const flushPromises = () =>
+				new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
+
+			it( 'sends the undo only once the dismissal has settled', async () => {
+				let resolveDismissal;
+				setEarlyFraudWarningDismissed
+					.mockReturnValueOnce(
+						new Promise( ( resolve ) => {
+							resolveDismissal = resolve;
+						} )
+					)
+					.mockResolvedValueOnce( { dismissed: false } );
+				const [ task ] = getTasks( {
+					activeEarlyFraudWarnings: [ pendingWarning ],
+				} );
+
+				task.onDismiss();
+				const undo = task.onUndoDismiss();
+				await flushPromises();
+
+				expect( setEarlyFraudWarningDismissed ).toHaveBeenCalledTimes(
+					1
+				);
+				expect( setEarlyFraudWarningDismissed ).toHaveBeenCalledWith(
+					13,
+					true
+				);
+
+				resolveDismissal( { dismissed: true } );
+				await undo;
+
+				expect( setEarlyFraudWarningDismissed ).toHaveBeenCalledTimes(
+					2
+				);
+				expect(
+					setEarlyFraudWarningDismissed
+				).toHaveBeenLastCalledWith( 13, false );
+			} );
+
+			it( 'still reports a failed dismissal and sends the undo after it', async () => {
+				let rejectDismissal;
+				setEarlyFraudWarningDismissed
+					.mockReturnValueOnce(
+						new Promise( ( resolve, reject ) => {
+							rejectDismissal = reject;
+						} )
+					)
+					.mockResolvedValueOnce( { dismissed: false } );
+				const [ task ] = getTasks( {
+					activeEarlyFraudWarnings: [ pendingWarning ],
+				} );
+
+				task.onDismiss();
+				const undo = task.onUndoDismiss();
+				rejectDismissal( new Error( 'nope' ) );
+				await undo;
+
+				expect( createErrorNotice ).toHaveBeenCalledTimes( 1 );
+				expect( createErrorNotice ).toHaveBeenCalledWith(
+					'There was an error updating the early fraud warning. Please try again later.'
+				);
+				expect(
+					setEarlyFraudWarningDismissed
+				).toHaveBeenLastCalledWith( 13, false );
+			} );
+		} );
 	} );
 } );

@@ -24,7 +24,10 @@ const getOrderNumber = ( warning: ActiveEarlyFraudWarning ): string =>
 	warning.order_number || String( warning.order_id );
 
 // The task list only hides the task; the order holds the dismissal both screens read.
-const persistDismissal = ( orderId: number, dismissed: boolean ) =>
+const sendDismissal = (
+	orderId: number,
+	dismissed: boolean
+): Promise< void > =>
 	setEarlyFraudWarningDismissed( orderId, dismissed ).then(
 		() => {
 			// Otherwise a remounted Overview re-shows the task from the pre-dismissal list.
@@ -43,6 +46,19 @@ const persistDismissal = ( orderId: number, dismissed: boolean ) =>
 			);
 		}
 	);
+
+// Each order's requests wait for the one before, so an Undo cannot overtake its dismissal.
+const latestRequests = new Map< number, Promise< void > >();
+
+const persistDismissal = ( orderId: number, dismissed: boolean ) => {
+	const send = () => sendDismissal( orderId, dismissed );
+	const request = ( latestRequests.get( orderId ) ?? Promise.resolve() ).then(
+		send,
+		send
+	);
+	latestRequests.set( orderId, request );
+	return request;
+};
 
 const buildEarlyFraudWarningTask = (
 	warning: ActiveEarlyFraudWarning,
