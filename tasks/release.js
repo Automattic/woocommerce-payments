@@ -50,9 +50,8 @@ rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
 
-// combine-pot-files.php reads the top-level maps to reference the built bundles
-// in the POT; that ran during build:client above.
-rm( '-f', 'dist/**/*.map' );
+// Only combine-pot-files.php needs these, and it already ran during build:client.
+rm( '-f', 'dist/**/*.map', 'dist/i18n-chunk-entries.json' );
 
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
