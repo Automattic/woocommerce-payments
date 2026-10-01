@@ -901,9 +901,12 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$this->order_service->mark_payment_early_fraud_warning( $order, $charge_id, $efw_id, (bool) $actionable, (string) $fraud_type, (int) $created );
 
-		// The actionable flag is the only field the cached warning list is built from, so an
-		// update that leaves it alone does not need to force a rebuild of that list.
-		if ( ( $previous_warning['efw_actionable'] ?? null ) !== (bool) $actionable ) {
+		// The cached warning list reads the actionable flag and, through the dismissal, the
+		// warning ID, so an update that changes neither does not need to rebuild it.
+		if (
+			( $previous_warning['efw_actionable'] ?? null ) !== (bool) $actionable
+			|| ( $previous_warning['efw_id'] ?? null ) !== (string) $efw_id
+		) {
 			$this->database_cache->delete_early_fraud_warning_caches();
 		}
 	}
