@@ -13,6 +13,8 @@ import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
 import { setEarlyFraudWarningDismissed } from 'wcpay/data/early-fraud-warnings/api';
+// From the store module, not `store-names`: the import is what registers the store.
+import { STORE_NAME as EARLY_FRAUD_WARNINGS_STORE_NAME } from 'wcpay/data/early-fraud-warnings/store';
 
 const taskKeyPrefix = 'early-fraud-warning-task-';
 
@@ -23,14 +25,24 @@ const getOrderNumber = ( warning: ActiveEarlyFraudWarning ): string =>
 
 // The task list only hides the task; the order holds the dismissal both screens read.
 const persistDismissal = ( orderId: number, dismissed: boolean ) =>
-	setEarlyFraudWarningDismissed( orderId, dismissed ).catch( () => {
-		dispatch( 'core/notices' ).createErrorNotice(
-			__(
-				'There was an error updating the early fraud warning. Please try again later.',
-				'woocommerce-payments'
-			)
-		);
-	} );
+	setEarlyFraudWarningDismissed( orderId, dismissed ).then(
+		() => {
+			// Otherwise a remounted Overview re-shows the task from the pre-dismissal list.
+			dispatch(
+				EARLY_FRAUD_WARNINGS_STORE_NAME
+			).invalidateResolutionForStoreSelector(
+				'getActiveEarlyFraudWarnings'
+			);
+		},
+		() => {
+			dispatch( 'core/notices' ).createErrorNotice(
+				__(
+					'There was an error updating the early fraud warning. Please try again later.',
+					'woocommerce-payments'
+				)
+			);
+		}
+	);
 
 const buildEarlyFraudWarningTask = (
 	warning: ActiveEarlyFraudWarning,

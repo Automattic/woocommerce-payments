@@ -30,7 +30,13 @@ jest.mock( 'wcpay/data/early-fraud-warnings/api', () => ( {
 	setEarlyFraudWarningDismissed: jest.fn(),
 } ) );
 
+// A requireActual spread re-enters this factory half-loaded, since @wordpress/data
+// requires its own root (https://github.com/WordPress/gutenberg/issues/15031).
+// Stub the registration the early fraud warning store module runs on import instead.
 jest.mock( '@wordpress/data', () => ( {
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
+	combineReducers: jest.fn(),
 	dispatch: jest.fn(),
 } ) );
 
@@ -966,6 +972,19 @@ describe( 'taskSort()', () => {
 			charge_id: 'ch_efw_1',
 			created: 1719800000,
 		};
+		const createErrorNotice = jest.fn();
+		const invalidateResolutionForStoreSelector = jest.fn();
+
+		beforeEach( () => {
+			dispatch.mockClear();
+			createErrorNotice.mockClear();
+			invalidateResolutionForStoreSelector.mockClear();
+			setEarlyFraudWarningDismissed.mockReset();
+			dispatch.mockReturnValue( {
+				createErrorNotice,
+				invalidateResolutionForStoreSelector,
+			} );
+		} );
 
 		it( 'owns its dismissal, so the order decides whether it shows', () => {
 			const [ task ] = getTasks( {
@@ -976,7 +995,7 @@ describe( 'taskSort()', () => {
 			expect( task.ownsDismissal ).toBe( true );
 		} );
 
-		it( 'records the dismissal on the order', () => {
+		it( 'records the dismissal on the order', async () => {
 			setEarlyFraudWarningDismissed.mockResolvedValue( {
 				dismissed: true,
 			} );
@@ -984,7 +1003,7 @@ describe( 'taskSort()', () => {
 				activeEarlyFraudWarnings: [ warning ],
 			} );
 
-			task.onDismiss();
+			await task.onDismiss();
 
 			expect( setEarlyFraudWarningDismissed ).toHaveBeenCalledWith(
 				12,
@@ -992,7 +1011,7 @@ describe( 'taskSort()', () => {
 			);
 		} );
 
-		it( 'restores the warning when the dismissal is undone', () => {
+		it( 'restores the warning when the dismissal is undone', async () => {
 			setEarlyFraudWarningDismissed.mockResolvedValue( {
 				dismissed: false,
 			} );
@@ -1000,7 +1019,7 @@ describe( 'taskSort()', () => {
 				activeEarlyFraudWarnings: [ warning ],
 			} );
 
-			task.onUndoDismiss();
+			await task.onUndoDismiss();
 
 			expect( setEarlyFraudWarningDismissed ).toHaveBeenCalledWith(
 				12,
@@ -1008,9 +1027,43 @@ describe( 'taskSort()', () => {
 			);
 		} );
 
+		it( 'refreshes the warning list after a dismissal is saved', async () => {
+			setEarlyFraudWarningDismissed.mockResolvedValue( {
+				dismissed: true,
+			} );
+			const [ task ] = getTasks( {
+				activeEarlyFraudWarnings: [ warning ],
+			} );
+
+			await task.onDismiss();
+
+			expect( dispatch ).toHaveBeenCalledWith(
+				'wc/payments/earlyFraudWarnings'
+			);
+			expect( invalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
+				'getActiveEarlyFraudWarnings'
+			);
+		} );
+
+		it( 'refreshes the warning list after an undo is saved', async () => {
+			setEarlyFraudWarningDismissed.mockResolvedValue( {
+				dismissed: false,
+			} );
+			const [ task ] = getTasks( {
+				activeEarlyFraudWarnings: [ warning ],
+			} );
+
+			await task.onUndoDismiss();
+
+			expect( dispatch ).toHaveBeenCalledWith(
+				'wc/payments/earlyFraudWarnings'
+			);
+			expect( invalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
+				'getActiveEarlyFraudWarnings'
+			);
+		} );
+
 		it( 'shows an error notice when the dismissal cannot be saved', async () => {
-			const createErrorNotice = jest.fn();
-			dispatch.mockReturnValue( { createErrorNotice } );
 			setEarlyFraudWarningDismissed.mockRejectedValue(
 				new Error( 'nope' )
 			);
@@ -1024,6 +1077,9 @@ describe( 'taskSort()', () => {
 			expect( createErrorNotice ).toHaveBeenCalledWith(
 				'There was an error updating the early fraud warning. Please try again later.'
 			);
+			expect(
+				invalidateResolutionForStoreSelector
+			).not.toHaveBeenCalled();
 		} );
 	} );
 } );
