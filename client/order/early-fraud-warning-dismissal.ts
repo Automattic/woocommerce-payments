@@ -48,6 +48,10 @@ export const toggleEarlyFraudWarningDismissal = async (
 			'woocommerce-payments'
 		);
 		button.closest( 'p' )?.after( error );
+
+		// Disabling the button dropped its focus to the page; give it back for keyboard users.
+		button.disabled = false;
+		button.focus();
 	} finally {
 		button.disabled = false;
 	}

@@ -112,6 +112,24 @@ describe( 'toggleEarlyFraudWarningDismissal', () => {
 		expect( dismissButton.disabled ).toBe( false );
 	} );
 
+	it( 'returns focus to the pressed button when the request fails', async () => {
+		const { dismissButton } = renderBlock();
+		mockSetDismissed.mockImplementation( () => {
+			// Browsers drop focus from a button once it is disabled; jsdom does not, and
+			// ignores blur() on a disabled element, so re-enable it briefly to blur it.
+			dismissButton.disabled = false;
+			dismissButton.blur();
+			dismissButton.disabled = true;
+			return Promise.reject( new Error( 'nope' ) );
+		} );
+		dismissButton.focus();
+
+		await toggleEarlyFraudWarningDismissal( dismissButton );
+
+		// eslint-disable-next-line @wordpress/no-global-active-element
+		expect( document.activeElement ).toBe( dismissButton );
+	} );
+
 	it( 'clears an earlier error when a retry succeeds', async () => {
 		mockSetDismissed.mockRejectedValueOnce( new Error( 'nope' ) );
 		mockSetDismissed.mockResolvedValueOnce( { dismissed: true } );
