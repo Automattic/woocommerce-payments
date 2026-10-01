@@ -3087,6 +3087,73 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Reads a private method's return value off the card gateway.
+	 *
+	 * @param string $name The method name.
+	 * @return mixed
+	 */
+	private function call_private_gateway_method( string $name ) {
+		$method = new ReflectionMethod( WC_Payment_Gateway_WCPay::class, $name );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->card_gateway );
+	}
+
+	/**
+	 * The two sets of definitions must agree on the fields, their types and their defaults.
+	 *
+	 * Compares against the translated definitions themselves rather than the merged result:
+	 * array_replace_recursive() fills gaps in a list-valued default from the untranslated copy,
+	 * so comparing against the merge would hide a default that had been shortened in one place
+	 * only. See WOOPMNT-5380.
+	 */
+	public function test_untranslated_form_fields_match_translated_definitions() {
+		$untranslated = ( new ReflectionClassConstant( WC_Payment_Gateway_WCPay::class, 'MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS' ) )->getValue();
+		$translated   = $this->call_private_gateway_method( 'get_main_gateway_translated_form_fields' );
+
+		$this->assertSame(
+			array_keys( $translated ),
+			array_keys( $untranslated ),
+			'Both sets should declare the same fields, in the same order.'
+		);
+
+		foreach ( $translated as $key => $field ) {
+			foreach ( [ 'type', 'default' ] as $shared_key ) {
+				$this->assertSame(
+					array_key_exists( $shared_key, $field ),
+					array_key_exists( $shared_key, $untranslated[ $key ] ),
+					"Field {$key} should declare {$shared_key} in both sets, or in neither."
+				);
+
+				if ( ! array_key_exists( $shared_key, $field ) ) {
+					continue;
+				}
+
+				$this->assertSame(
+					$field[ $shared_key ],
+					$untranslated[ $key ][ $shared_key ],
+					"Field {$key} should have the same {$shared_key} in both sets."
+				);
+			}
+		}
+	}
+
+	/**
+	 * After `init` the field labels are translated, since WooCommerce's payment gateways REST
+	 * endpoint returns them. See WOOPMNT-5380.
+	 */
+	public function test_form_field_labels_are_translated_after_init() {
+		$translate = function ( $translation, $text, $domain ) {
+			return 'woocommerce-payments' === $domain && 'Manual capture' === $text ? 'Captura manual' : $translation;
+		};
+		add_filter( 'gettext', $translate, 10, 3 );
+
+		$fields = $this->card_gateway->get_form_fields();
+
+		$this->assertSame( 'Captura manual', $fields['manual_capture']['title'] );
+	}
+
+	/**
 	 * Runs a callback while recording every text domain passed through the translation functions.
 	 *
 	 * @param callable $callback The callback to run.
