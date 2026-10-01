@@ -2023,17 +2023,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dismiss_early_fraud_warning_records_the_current_warning() {
 		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
 
-		$dismissed = $this->order_service->dismiss_early_fraud_warning( $this->order );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
 
-		$this->assertTrue( $dismissed );
 		$this->assertSame( 'issfr_1', $this->order->get_meta( '_wcpay_early_fraud_warning_dismissed', true ) );
 		$this->assertTrue( $this->order_service->is_early_fraud_warning_dismissed( $this->order ) );
 	}
 
 	public function test_dismiss_early_fraud_warning_without_a_warning_records_nothing() {
-		$dismissed = $this->order_service->dismiss_early_fraud_warning( $this->order );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
 
-		$this->assertFalse( $dismissed );
 		$this->assertSame( '', $this->order->get_meta( '_wcpay_early_fraud_warning_dismissed', true ) );
 		$this->assertFalse( $this->order_service->is_early_fraud_warning_dismissed( $this->order ) );
 	}
@@ -2049,7 +2047,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->assertFalse( $this->order_service->dismiss_early_fraud_warning( $this->order ) );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
+
+		$this->assertSame( '', $this->order->get_meta( '_wcpay_early_fraud_warning_dismissed', true ) );
 		$this->assertFalse( $this->order_service->is_early_fraud_warning_dismissed( $this->order ) );
 	}
 
@@ -2074,8 +2074,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dismissing_twice_keeps_the_dismissal() {
 		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_1', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
 
-		$this->assertTrue( $this->order_service->dismiss_early_fraud_warning( $this->order ) );
-		$this->assertTrue( $this->order_service->dismiss_early_fraud_warning( $this->order ) );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
+		$this->order_service->dismiss_early_fraud_warning( $this->order );
 
 		$this->assertTrue( $this->order_service->is_early_fraud_warning_dismissed( $this->order ) );
 	}

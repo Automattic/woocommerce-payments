@@ -1352,25 +1352,26 @@ class WC_Payments_Order_Service {
 	/**
 	 * Marks the order's current early fraud warning as dismissed.
 	 *
+	 * Records nothing when the warning has no ID, since a later warning could not be told apart from it.
+	 *
 	 * @param WC_Order|int $order The order.
 	 *
-	 * @return bool Whether a warning was dismissed; false when there is no warning ID to record.
+	 * @return void
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function dismiss_early_fraud_warning( $order ): bool {
-		$order  = $this->get_order( $order );
-		$efw_id = $this->get_early_fraud_warning_id( $order );
+	public function dismiss_early_fraud_warning( $order ): void {
+		$order               = $this->get_order( $order );
+		$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
+		$efw_id              = (string) ( $early_fraud_warning['efw_id'] ?? '' );
 
 		if ( '' === $efw_id ) {
-			return false;
+			return;
 		}
 
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY, $efw_id );
-		$this->update_early_fraud_warning_index( $order, $this->get_early_fraud_warning_for_order( $order ) );
+		$this->update_early_fraud_warning_index( $order, $early_fraud_warning );
 		$order->save_meta_data();
-
-		return true;
 	}
 
 	/**

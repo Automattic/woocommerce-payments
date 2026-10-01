@@ -244,12 +244,11 @@ class WC_REST_Payments_Early_Fraud_Warnings_Controller_Test extends WCPAY_UnitTe
 		$this->assertSame( 404, $response->get_error_data()['status'] );
 	}
 
-	public function test_dismiss_reports_not_dismissed_when_nothing_could_be_recorded() {
-		// A warning without an ID: the service records nothing, and the response must say so.
+	public function test_dismiss_responds_with_the_recorded_state_not_the_requested_one() {
+		// A warning without an ID: the service records nothing, so the response says not dismissed.
 		$order = WC_Helper_Order::create_order();
 		$this->order_service->method( 'get_early_fraud_warning_for_order' )
 			->willReturn( [ 'efw_actionable' => true ] );
-		$this->order_service->method( 'dismiss_early_fraud_warning' )->willReturn( false );
 		$this->order_service->method( 'is_early_fraud_warning_dismissed' )->willReturn( false );
 
 		$response = $this->controller->set_early_fraud_warning_dismissed( $this->dismiss_request( $order->get_id(), true ) );
