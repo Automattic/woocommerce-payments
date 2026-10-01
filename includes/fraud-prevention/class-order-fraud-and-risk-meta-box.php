@@ -309,16 +309,13 @@ class Order_Fraud_And_Risk_Meta_Box {
 				'alt' => __( 'Green check mark', 'woocommerce-payments' ),
 			];
 
-		$modifier = $actionable ? 'actionable' : 'resolved';
-		$title    = $actionable
+		$modifier  = $actionable ? 'actionable' : 'resolved';
+		$dismissed = $actionable && $this->order_service->is_early_fraud_warning_dismissed( $order );
+		$title     = $actionable
 			? __( 'Early fraud warning', 'woocommerce-payments' )
 			: __( 'Early fraud warning resolved', 'woocommerce-payments' );
 
-		$description = $actionable
-			? __( 'The card issuer flagged this payment as likely fraudulent. Refunding it now can prevent a dispute.', 'woocommerce-payments' )
-			: __( 'This payment was refunded or disputed, so the warning is no longer actionable.', 'woocommerce-payments' );
-
-		echo '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--' . esc_attr( $modifier ) . '">';
+		echo '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--' . esc_attr( $modifier ) . ( $dismissed ? ' wcpay-fraud-risk-efw--dismissed' : '' ) . '">';
 		echo '<p class="wcpay-fraud-risk-efw__title"><img src="' . esc_url( $icon['url'] ) . '" alt="' . esc_attr( $icon['alt'] ) . '"> ' . esc_html( $title ) . '</p>';
 
 		if ( '' !== $fraud_type_text ) {
@@ -329,19 +326,27 @@ class Order_Fraud_And_Risk_Meta_Box {
 			) . '</p>';
 		}
 
-		echo '<p>' . esc_html( $description ) . '</p>';
-
-		if ( $actionable ) {
-			// The refund is managed on this same screen, so admin JS intercepts the
-			// click and opens WooCommerce's inline refund panel instead (see
-			// client/order/index.js). The payment details href is the fallback for
-			// when the panel is unavailable (e.g. refunds locked during a dispute).
-			$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-			if ( '' !== $transaction_url ) {
-				echo '<p><a href="' . esc_url( $transaction_url ) . '" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund this payment', 'woocommerce-payments' ) . '</a></p>';
-			}
+		if ( ! $actionable ) {
+			echo '<p>' . esc_html__( 'This payment was refunded or disputed, so the warning is no longer actionable.', 'woocommerce-payments' ) . '</p>';
+			echo '</div>';
+			return;
 		}
 
+		// Both descriptions render so the order screen can switch state without a reload;
+		// CSS shows the one matching the block's modifier.
+		echo '<p class="wcpay-fraud-risk-efw__description wcpay-fraud-risk-efw__description--active">' . esc_html__( 'The card issuer flagged this payment as likely fraudulent. Refunding it now can prevent a dispute.', 'woocommerce-payments' ) . '</p>';
+		echo '<p class="wcpay-fraud-risk-efw__description wcpay-fraud-risk-efw__description--dismissed">' . esc_html__( 'The card issuer flagged this payment as likely fraudulent. This warning was dismissed; refunding it can still prevent a dispute.', 'woocommerce-payments' ) . '</p>';
+
+		// The refund is managed on this same screen, so admin JS intercepts the
+		// click and opens WooCommerce's inline refund panel instead (see
+		// client/order/index.js). The payment details href is the fallback for
+		// when the panel is unavailable (e.g. refunds locked during a dispute).
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+		if ( '' !== $transaction_url ) {
+			echo '<p><a href="' . esc_url( $transaction_url ) . '" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund this payment', 'woocommerce-payments' ) . '</a></p>';
+		}
+
+		$this->print_early_fraud_warning_dismissal_controls( $order->get_id() );
 		echo '</div>';
 	}
 
@@ -363,5 +368,22 @@ class Order_Fraud_And_Risk_Meta_Box {
 				'type_is'   => 'meta_box',
 			]
 		);
+	}
+
+	/**
+	 * Prints the buttons that dismiss or restore the early fraud warning.
+	 *
+	 * Both render; CSS shows the one matching the block's state, and client/order swaps
+	 * the state after the request succeeds.
+	 *
+	 * @param int $order_id The order's ID.
+	 *
+	 * @return void
+	 */
+	private function print_early_fraud_warning_dismissal_controls( int $order_id ) {
+		echo '<p class="wcpay-fraud-risk-efw__dismissal">';
+		echo '<button type="button" class="button-link wcpay-efw-dismiss-toggle wcpay-efw-dismiss-toggle--dismiss" data-order-id="' . esc_attr( (string) $order_id ) . '" data-dismissed="1">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</button>';
+		echo '<button type="button" class="button-link wcpay-efw-dismiss-toggle wcpay-efw-dismiss-toggle--undo" data-order-id="' . esc_attr( (string) $order_id ) . '" data-dismissed="0">' . esc_html__( 'Undo dismissal', 'woocommerce-payments' ) . '</button>';
+		echo '</p>';
 	}
 }

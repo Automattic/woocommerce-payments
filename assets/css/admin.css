@@ -349,3 +349,10 @@
 .wcpay-fraud-risk-efw--resolved .wcpay-fraud-risk-efw__title {
 	color: #008a20;
 }
+
+.wcpay-fraud-risk-efw--dismissed .wcpay-fraud-risk-efw__description--active,
+.wcpay-fraud-risk-efw--dismissed .wcpay-efw-dismiss-toggle--dismiss,
+.wcpay-fraud-risk-efw:not(.wcpay-fraud-risk-efw--dismissed) .wcpay-fraud-risk-efw__description--dismissed,
+.wcpay-fraud-risk-efw:not(.wcpay-fraud-risk-efw--dismissed) .wcpay-efw-dismiss-toggle--undo {
+	display: none;
+}
