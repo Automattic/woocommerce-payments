@@ -15,6 +15,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
+use WCPay\Internal\Logger as InternalLogger;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicates_Detection_Service;
@@ -222,6 +223,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
 		WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
+		wcpay_get_test_container()->reset_all_replacements();
+		WC_Payments::mode()->live();
 
 		parent::tear_down();
 	}
@@ -751,6 +754,53 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			'Card declined'    => [ 'Error: Your card was declined.', 'card_declined', 'Your card was declined.' ],
 			'Incorrect number' => [ 'Error: Your card number is incorrect.', 'incorrect_number', 'Your card number is incorrect.' ],
 			'Incorrect CVC'    => [ "Error: Your card's security code is incorrect.", 'incorrect_cvc', 'Your card security code is incorrect.' ],
+		];
+	}
+
+	/**
+	 * @dataProvider setup_future_usage_mismatch_error_code_provider
+	 */
+	public function test_logs_the_express_checkout_filter_hint_only_for_a_setup_future_usage_mismatch( $error_code, $expect_hint ) {
+		$order  = WC_Helper_Order::create_order();
+		$logged = $this->capture_wcpay_logs();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->throwException( new API_Exception( 'Error: payment rejected.', $error_code, 400 ) ) );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$hints = array_values(
+			array_filter(
+				$logged->getArrayCopy(),
+				function ( $entry ) {
+					return false !== strpos( $entry['message'], 'wcpay_express_checkout_setup_future_usage' );
+				}
+			)
+		);
+
+		if ( ! $expect_hint ) {
+			$this->assertSame( [], $hints );
+			return;
+		}
+
+		$this->assertCount( 1, $hints );
+		$this->assertSame( 'error', $hints[0]['level'] );
+		$this->assertStringContainsString(
+			'Order ' . $order->get_id() . ': the express checkout token and the payment disagree about saving the card.',
+			$hints[0]['message']
+		);
+	}
+
+	public function setup_future_usage_mismatch_error_code_provider() {
+		return [
+			'Mismatch code'  => [ 'confirmation_token_setup_future_usage_mismatch', true ],
+			'Unrelated code' => [ 'card_declined', false ],
 		];
 	}
 
@@ -2441,5 +2491,38 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			'missing payment method' => [ 'No such payment_method: pm_123' ],
 			'missing price'          => [ 'No such price: price_123' ],
 		];
+	}
+
+	/**
+	 * Replaces the internal logger with one that records every call.
+	 *
+	 * @return ArrayObject Collected [ level, message ] pairs, filled as the test runs.
+	 */
+	private function capture_wcpay_logs(): ArrayObject {
+		$logged = new ArrayObject();
+
+		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
+			->setMethods( [ 'log' ] )
+			->getMock();
+
+		$mock_logger
+			->method( 'log' )
+			->willReturnCallback(
+				function ( $level, $message ) use ( $logged ) {
+					$logged[] = [
+						'level'   => $level,
+						'message' => $message,
+					];
+				}
+			);
+
+		wcpay_get_test_container()->replace(
+			InternalLogger::class,
+			new InternalLogger( $mock_logger, WC_Payments::mode() )
+		);
+		// The logger only writes in dev mode or with logging enabled.
+		WC_Payments::mode()->dev();
+
+		return $logged;
 	}
 }
