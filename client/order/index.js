@@ -12,6 +12,7 @@ import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 import getStatusChangeStrategy from './order-status-change-strategies';
+import { toggleEarlyFraudWarningDismissal } from './early-fraud-warning-dismissal';
 
 function disableWooOrderRefundButton( disputeStatus ) {
 	const refundButton = document.querySelector( 'button.refund-items' );
@@ -109,6 +110,11 @@ jQuery( function ( $ ) {
 			behavior: 'smooth',
 			block: 'center',
 		} );
+	} );
+
+	$( document ).on( 'click', '.wcpay-efw-dismiss-toggle', function ( event ) {
+		event.preventDefault();
+		toggleEarlyFraudWarningDismissal( this );
 	} );
 
 	$( 'select#order_status' ).on( 'change', function () {
