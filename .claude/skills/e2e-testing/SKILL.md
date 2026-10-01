@@ -1,7 +1,8 @@
 ---
 name: e2e-testing
-description: Use when running E2E tests, setting up the E2E environment, debugging E2E test failures, or verifying code changes work from a user's perspective. Triggers include "run E2E tests", "verify changes", "Playwright", "test setup", "E2E failures".
-version: 1.0.0
+description: Run or debug WooPayments Playwright E2E tests and set up its local E2E environment. Use when an E2E check is requested or needed for the affected flow, not for every code change.
+metadata:
+  version: "1.0.0"
 ---
 
 # WooPayments E2E Testing
@@ -10,10 +11,12 @@ Run Playwright E2E tests to verify changes work from a user's perspective — re
 
 ## When to Use
 
-- **After implementing a feature or fix** — verify it works end-to-end
+- **Verifying a changed flow that needs E2E coverage**: choose the smallest relevant scenario
 - **Setting up E2E environment** for the first time
 - **Debugging E2E test failures** — reading traces, screenshots, logs
 - **Writing new E2E tests** — structure and conventions
+
+Choose a focused spec or scenario, and inspect the current environment before setup or rebuilding. Broaden checks only when a failure, new change or specific unresolved risk warrants it. A request to test does not authorise resetting data or stopping unrelated containers. Use test-mode payment data.
 
 ## Quick Reference
 
@@ -22,7 +25,7 @@ Run Playwright E2E tests to verify changes work from a user's perspective — re
 | First-time setup | `bin/setup-e2e-local.sh && pnpm run build:client && pnpm run test:e2e-setup` |
 | Run all tests | `pnpm run test:e2e` |
 | Run specific test | `pnpm run test:e2e tests/e2e/specs/wcpay/merchant/file.spec.ts` |
-| Run by name | `pnpm run test:e2e -- -g "test name"` |
+| Run by name | `pnpm run test:e2e -g "test name"` |
 | Run merchant tests | `pnpm run test:e2e tests/e2e/specs/wcpay/merchant` |
 | Run shopper tests | `pnpm run test:e2e tests/e2e/specs/wcpay/shopper` |
 | UI mode | `pnpm run test:e2e-ui` (open http://localhost:8077) |
@@ -108,7 +111,7 @@ Before running `pnpm run test:e2e-setup`, these steps are required:
 
 ### Troubleshooting Setup
 
-- **Port 8084 already in use:** Stop conflicting containers with `docker ps` then `docker stop <container>`
+- **Port 8084 already in use:** Identify the owner with `docker ps` and reuse the intended E2E service if healthy. Preserve unrelated containers. Resolve the port configuration or report the collision; stop a service only within the authorised scope.
 - **`host.docker.internal` not found (Linux):** Create `tests/e2e/docker-compose.override.yml`:
   ```yaml
   services:
@@ -120,49 +123,28 @@ Before running `pnpm run test:e2e-setup`, these steps are required:
 - **"Critical error" on server startup:** Missing `server/` dir in the E2E clone. Run rsync step above.
 - **"vendor/autoload.php not found" in dev tools:** Run `composer install` in `tests/e2e/deps/wcp-dev-tools-e2e/`.
 - **Onboarding wizard shown instead of admin pages:** The Stripe test account isn't fully onboarded. Re-run `bin/setup-e2e-local.sh` (auto-creates and onboards), or complete setup in Stripe Dashboard.
-- **"Already linked" error:** Run `pnpm run test:e2e-reset` first for a clean start.
+- **"Already linked" error:** Inspect the configured account and existing site link first. Reuse valid state or correct the specific configuration. `pnpm run test:e2e-reset` deletes environment data; use it only when that reset is explicitly authorised.
 
 ## Workflow 2: Running Tests (Agent Verification)
 
-### Before running tests — prerequisites check
+### Before running tests
 
-```bash
-# 1. Docker running?
-docker info > /dev/null 2>&1 || echo "Start Docker first"
-
-# 2. E2E containers up?
-docker ps --format '{{.Names}}' | grep -q wcp_e2e_wordpress || pnpm run test:e2e-up
-
-# 3. Client built with latest changes?
-pnpm run build:client
-```
+1. Check Docker with `docker info` and inspect running services with `docker ps`. Start the existing E2E environment with `pnpm run test:e2e-up` when needed; use first-time setup only if it has not been configured.
+2. Confirm the checkout and client assets match the revision being tested. Run `pnpm run build:client` only if assets are missing or stale. Reuse a current build.
+3. Inspect the relevant specs and their prerequisites. Select the smallest scenario that observes the changed behavior, including relevant failure paths.
 
 ### Choosing what to run
 
-**After a change to merchant admin UI:**
-```bash
-pnpm run test:e2e tests/e2e/specs/wcpay/merchant/
-```
+Run a focused spec, optionally narrowed to a test name:
 
-**After a change to checkout/shopper flow:**
-```bash
-pnpm run test:e2e tests/e2e/specs/wcpay/shopper/
-```
-
-**After a change to a specific feature (e.g., disputes):**
-```bash
-pnpm run test:e2e -- -g "dispute"
-```
-
-**Run a single spec file:**
 ```bash
 pnpm run test:e2e tests/e2e/specs/wcpay/merchant/merchant-admin-disputes.spec.ts
+pnpm run test:e2e tests/e2e/specs/wcpay/merchant/merchant-admin-disputes.spec.ts -g "test name"
 ```
 
-**Run block-based checkout tests only:**
-```bash
-pnpm run test:e2e -- --grep @blocks
-```
+Use the feature mapping below to locate candidates, then inspect the current filenames and test names. Run a merchant/shopper directory, tag group or full suite only when explicitly requested or when the affected shared behavior needs that breadth. State the gap the broader run will cover.
+
+Stop when the relevant checks pass. If setup or an integration blocks a check, report the blocker and what remains unverified; do not substitute an unrelated passing suite. Clean up only agent-owned processes and temporary test state.
 
 ### Reading results
 
@@ -295,6 +277,8 @@ Defined in `tests/e2e/config/default.ts`:
 | Playwright UI | http://localhost:8077 | (via docker-compose) |
 
 ## Lifecycle Commands
+
+Cleanup and reset remove dependencies or volumes. Inspect ownership and obtain explicit authorisation for data deletion before using them. Stop only services owned by the current task or covered by existing authorisation.
 
 ```bash
 pnpm run test:e2e-setup    # First-time: build + start + configure everything
