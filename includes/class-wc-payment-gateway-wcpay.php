@@ -1337,6 +1337,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
+			// The server rejects an express checkout confirmation token minted without setup_future_usage
+			// when this payment saves the card.
+			if ( $e instanceof API_Exception && 'confirmation_token_setup_future_usage_mismatch' === $e->get_error_code() ) {
+				Logger::error(
+					sprintf(
+						'Order %s: the express checkout token and the payment disagree about saving the card. '
+						. 'If a plugin other than WooCommerce Subscriptions saves cards, return \'off_session\' '
+						. 'from the wcpay_express_checkout_setup_future_usage filter.',
+						$order_id
+					)
+				);
+			}
+
 			if ( $blocked_by_fraud_rules ) {
 				$ruleset_results = [];
 				if ( $e instanceof Blocked_By_Fraud_Rules_Exception ) {
