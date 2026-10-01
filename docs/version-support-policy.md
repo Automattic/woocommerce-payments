@@ -6,7 +6,7 @@ However, in the practice, we're really enforcing only WordPress core with the `R
 
 For WooCommerce, we are yet to fully support this L-2 policy. The real minimum WooCommerce version can be found on [`woocommerce-payments.php`](https://github.com/Automattic/woocommerce-payments/blob/develop/woocommerce-payments.php) with the `WC requires at least` tag. There are two main reasons for this:
 
-- There is no reliable built-in functionality that prevents a merchant from installing the latest version of WooCommerce Payments (WCPay) with an unsupported WooCommerce version. To deal with this issue, we continue loading WCPay if sites have an active WCPay account, but nudge their owners to upgrade WooCommerce. More details in [this PR](https://github.com/Automattic/woocommerce-payments/pull/3010), which is later refactored to `WC_Payments_Dependency_Service`.
+- There is no reliable built-in functionality that prevents a merchant from installing WooPayments with an unsupported WooCommerce version. `WC_Payments_Dependency_Service` warns about unsupported versions without stopping initialization, even when the account cache is empty or cleared during an update. Missing WooCommerce or disabled WooCommerce Admin still prevents service initialization. This avoids a shutdown caused by the version check; it does not guarantee compatibility with every older version.
 - Some of our internal consumers are also not yet using the latest version of WooCommerce. See paJDYF-3fF-p2#comment-9591
 
 ## What does this policy mean for contributors?
