@@ -1400,11 +1400,9 @@ class WC_Payments_Order_Service {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function is_early_fraud_warning_dismissed( $order ): bool {
-		$order  = $this->get_order( $order );
-		$efw_id = $this->get_early_fraud_warning_id( $order );
+		$order = $this->get_order( $order );
 
-		return '' !== $efw_id
-			&& $efw_id === (string) $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY, true );
+		return $this->matches_dismissed_early_fraud_warning( $order, $this->get_early_fraud_warning_for_order( $order ) );
 	}
 
 	/**
@@ -3382,9 +3380,8 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function update_early_fraud_warning_index( WC_Order $order, ?array $early_fraud_warning ): void {
-		$efw_id    = (string) ( $early_fraud_warning['efw_id'] ?? '' );
 		$is_active = ! empty( $early_fraud_warning['efw_actionable'] )
-			&& ( '' === $efw_id || $efw_id !== (string) $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY, true ) );
+			&& ! $this->matches_dismissed_early_fraud_warning( $order, $early_fraud_warning );
 
 		if ( $is_active ) {
 			$order->update_meta_data(
@@ -3397,15 +3394,19 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * The ID of the order's stored early fraud warning, or an empty string when there is none.
+	 * Whether the given warning is the one the order records as dismissed.
 	 *
-	 * @param WC_Order $order The order.
+	 * A warning without an ID never matches.
 	 *
-	 * @return string
+	 * @param WC_Order   $order               The order.
+	 * @param array|null $early_fraud_warning The warning to check.
+	 *
+	 * @return bool
 	 */
-	private function get_early_fraud_warning_id( WC_Order $order ): string {
-		$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
+	private function matches_dismissed_early_fraud_warning( WC_Order $order, ?array $early_fraud_warning ): bool {
+		$efw_id = (string) ( $early_fraud_warning['efw_id'] ?? '' );
 
-		return (string) ( $early_fraud_warning['efw_id'] ?? '' );
+		return '' !== $efw_id
+			&& $efw_id === (string) $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY, true );
 	}
 }
