@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Modernize React root mounting and ref callbacks for React 19 compatibility.
