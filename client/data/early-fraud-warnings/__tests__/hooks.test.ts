@@ -57,6 +57,28 @@ describe( 'Early fraud warning data hooks', () => {
 		);
 	} );
 
+	it( 'reports not loaded before the first list arrives', () => {
+		getActiveEarlyFraudWarnings.mockReturnValue( undefined );
+		hasFinishedResolution.mockReturnValue( false );
+
+		expect( useActiveEarlyFraudWarnings().hasLoaded ).toBe( false );
+	} );
+
+	// Invalidating the list after a dismissal starts a refetch; blanking every task until it
+	// returns made the Overview blink.
+	it( 'keeps reporting loaded, with the earlier list, while a refetch is in flight', () => {
+		const warnings: ActiveEarlyFraudWarning[] = [
+			{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+		];
+		getActiveEarlyFraudWarnings.mockReturnValue( warnings );
+		hasFinishedResolution.mockReturnValue( false );
+
+		const result = useActiveEarlyFraudWarnings();
+
+		expect( result.hasLoaded ).toBe( true );
+		expect( result.activeEarlyFraudWarnings ).toBe( warnings );
+	} );
+
 	it( 'passes the resolver error through', () => {
 		const error = { code: 'boom' };
 		getActiveEarlyFraudWarnings.mockReturnValue( undefined );

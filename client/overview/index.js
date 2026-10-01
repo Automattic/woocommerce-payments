@@ -124,7 +124,7 @@ const OverviewPage = () => {
 		activeDisputesSummary,
 		activeDisputeTaskIsLoading:
 			activeDisputesSummaryIsLoading || activeDisputesIsLoading,
-		// Withhold the list until the request settles, so the task does not render
+		// Withhold the list until the first request settles, so a task does not render
 		// absent and then appear a beat later.
 		activeEarlyFraudWarnings: hasLoadedEarlyFraudWarnings
 			? activeEarlyFraudWarnings

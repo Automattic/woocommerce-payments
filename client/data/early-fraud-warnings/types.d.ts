@@ -43,10 +43,11 @@ export interface ActiveEarlyFraudWarningsResponse {
 	activeEarlyFraudWarnings: ActiveEarlyFraudWarning[];
 	activeEarlyFraudWarningsError?: ApiError;
 	/**
-	 * True once the request has settled, either with data or with an error.
+	 * True once a list has been loaded, or the first request has settled with an error.
 	 *
-	 * `isResolving` is false on the very first render, before the resolver starts, so
-	 * callers that gate on it alone briefly treat "not asked yet" as "nothing to show".
+	 * Stays true while a later refetch is in flight, so callers keep showing the previous
+	 * list rather than blanking it. `isResolving` would not do: it is false on the very
+	 * first render, before the resolver starts, and would read "not asked yet" as "nothing".
 	 */
 	hasLoaded: boolean;
 }

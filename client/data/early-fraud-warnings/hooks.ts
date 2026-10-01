@@ -27,15 +27,20 @@ export const useActiveEarlyFraudWarnings =
 				hasFinishedResolution,
 			} = select( STORE_NAME );
 
+			const activeEarlyFraudWarnings:
+				| ActiveEarlyFraudWarning[]
+				| undefined = getActiveEarlyFraudWarnings();
+
 			return {
 				activeEarlyFraudWarnings:
-					getActiveEarlyFraudWarnings() ?? noWarnings,
+					activeEarlyFraudWarnings ?? noWarnings,
 				activeEarlyFraudWarningsError:
 					getActiveEarlyFraudWarningsError(),
-				// Gate on resolution having finished rather than on isResolving, which is
-				// false before the resolver starts and would read as "no warnings".
-				hasLoaded: hasFinishedResolution(
-					'getActiveEarlyFraudWarnings'
-				),
+				// A stored list counts as loaded during a refetch, so refreshing it after a
+				// dismissal doesn't blank every other task. Otherwise gate on resolution
+				// finishing: isResolving is false before the resolver starts.
+				hasLoaded:
+					activeEarlyFraudWarnings !== undefined ||
+					hasFinishedResolution( 'getActiveEarlyFraudWarnings' ),
 			};
 		}, [] );
