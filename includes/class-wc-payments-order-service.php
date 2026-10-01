@@ -1329,7 +1329,7 @@ class WC_Payments_Order_Service {
 	public function set_early_fraud_warning_for_order( $order, array $early_fraud_warning ) {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_META_KEY, $early_fraud_warning );
-		$this->update_early_fraud_warning_index( $order );
+		$this->update_early_fraud_warning_index( $order, $early_fraud_warning );
 		$order->save_meta_data();
 	}
 
@@ -1367,7 +1367,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$order->update_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY, $efw_id );
-		$this->update_early_fraud_warning_index( $order );
+		$this->update_early_fraud_warning_index( $order, $this->get_early_fraud_warning_for_order( $order ) );
 		$order->save_meta_data();
 
 		return true;
@@ -1385,7 +1385,7 @@ class WC_Payments_Order_Service {
 	public function undismiss_early_fraud_warning( $order ): void {
 		$order = $this->get_order( $order );
 		$order->delete_meta_data( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY );
-		$this->update_early_fraud_warning_index( $order );
+		$this->update_early_fraud_warning_index( $order, $this->get_early_fraud_warning_for_order( $order ) );
 		$order->save_meta_data();
 	}
 
@@ -3375,14 +3375,17 @@ class WC_Payments_Order_Service {
 	 * Dismissed warnings rarely resolve, so they stay out of the index or they would
 	 * crowd still-active warnings out of the bounded query window.
 	 *
-	 * @param WC_Order $order The order. The caller saves its meta.
+	 * @param WC_Order   $order               The order. The caller saves its meta.
+	 * @param array|null $early_fraud_warning The order's current warning.
 	 *
 	 * @return void
 	 */
-	private function update_early_fraud_warning_index( WC_Order $order ): void {
-		$early_fraud_warning = $this->get_early_fraud_warning_for_order( $order );
+	private function update_early_fraud_warning_index( WC_Order $order, ?array $early_fraud_warning ): void {
+		$efw_id    = (string) ( $early_fraud_warning['efw_id'] ?? '' );
+		$is_active = ! empty( $early_fraud_warning['efw_actionable'] )
+			&& ( '' === $efw_id || $efw_id !== (string) $order->get_meta( self::WCPAY_EARLY_FRAUD_WARNING_DISMISSED_META_KEY, true ) );
 
-		if ( ! empty( $early_fraud_warning['efw_actionable'] ) && ! $this->is_early_fraud_warning_dismissed( $order ) ) {
+		if ( $is_active ) {
 			$order->update_meta_data(
 				self::WCPAY_EARLY_FRAUD_WARNING_ACTIONABLE_META_KEY,
 				(int) ( $early_fraud_warning['created'] ?? 0 )

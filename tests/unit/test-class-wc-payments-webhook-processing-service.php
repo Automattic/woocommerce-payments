@@ -2590,14 +2590,17 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order
 			->method( 'get_meta' )
-			->with( '_wcpay_early_fraud_warning', true )
-			->willReturn(
-				[
-					'efw_id'         => 'issfr_123',
-					'efw_actionable' => true,
-					'efw_type'       => 'made_with_stolen_card',
-					'created'        => 1719800000,
-				]
+			->willReturnCallback(
+				function ( $key ) {
+					return '_wcpay_early_fraud_warning' === $key
+						? [
+							'efw_id'         => 'issfr_123',
+							'efw_actionable' => true,
+							'efw_type'       => 'made_with_stolen_card',
+							'created'        => 1719800000,
+						]
+						: '';
+				}
 			);
 
 		$this->mock_db_wrapper
