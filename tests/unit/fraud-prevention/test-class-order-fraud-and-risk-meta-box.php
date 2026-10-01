@@ -45,6 +45,9 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->order = WC_Helper_Order::create_order();
 		$this->order->set_payment_method( 'woocommerce_payments' );
 		$this->order->save();
+
+		// The early fraud warning dismissal buttons only render for store managers.
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'shop_manager' ] ) );
 	}
 
 	public function test_registers_action_properly() {
@@ -687,6 +690,47 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->expectOutputString( $efw_block . $risk_actions_block );
 	}
 
+	public function test_display_early_fraud_warning_without_dismissal_buttons_for_user_who_cannot_manage_woocommerce() {
+		// Arrange: The viewer can see the order but cannot call the dismiss route.
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'editor' ] ) );
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
+		$this->mock_order_service
+			->method( 'get_early_fraud_warning_for_order' )
+			->willReturn(
+				[
+					'efw_id'         => 'issfr_123',
+					'efw_actionable' => true,
+					'efw_type'       => 'made_with_stolen_card',
+					'created'        => 1719800000,
+				]
+			);
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: The warning and its refund link show, without the dismiss and undo buttons.
+		$efw_block          = $this->compose_actionable_efw_block( '<p class="wcpay-fraud-risk-efw__reason">Reported reason: Made with stolen card</p>', false, false );
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $efw_block . $risk_actions_block );
+	}
+
 	public function test_do_not_display_early_fraud_warning_in_order_fraud_and_risk_meta_box_without_one() {
 		// Arrange: Set the return results for the order service methods.
 		$this->mock_order_service
@@ -729,11 +773,16 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @param string $reason_html The reported-reason paragraph, or '' when there is none.
 	 * @param bool   $dismissed   Whether the block renders in its dismissed state.
+	 * @param bool   $controls    Whether the dismiss and undo buttons render.
 	 *
 	 * @return string
 	 */
-	private function compose_actionable_efw_block( string $reason_html, bool $dismissed = false ): string {
+	private function compose_actionable_efw_block( string $reason_html, bool $dismissed = false, bool $controls = true ): string {
 		$order_id = $this->order->get_id();
+		$controls = ! $controls ? '' : '<p class="wcpay-fraud-risk-efw__dismissal">'
+			. '<button type="button" class="button-link wcpay-efw-dismiss-toggle wcpay-efw-dismiss-toggle--dismiss" data-order-id="' . $order_id . '" data-dismissed="1">Dismiss</button>'
+			. '<button type="button" class="button-link wcpay-efw-dismiss-toggle wcpay-efw-dismiss-toggle--undo" data-order-id="' . $order_id . '" data-dismissed="0">Undo dismissal</button>'
+			. '</p>';
 
 		return '<div class="wcpay-fraud-risk-efw wcpay-fraud-risk-efw--actionable' . ( $dismissed ? ' wcpay-fraud-risk-efw--dismissed' : '' ) . '">'
 			. '<p class="wcpay-fraud-risk-efw__title"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Early fraud warning</p>'
@@ -741,10 +790,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			. '<p class="wcpay-fraud-risk-efw__description wcpay-fraud-risk-efw__description--active">The card issuer flagged this payment as likely fraudulent. Refunding it now can prevent a dispute.</p>'
 			. '<p class="wcpay-fraud-risk-efw__description wcpay-fraud-risk-efw__description--dismissed">The card issuer flagged this payment as likely fraudulent. This warning was dismissed; refunding it can still prevent a dispute.</p>'
 			. '<p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=%2Fpayments%2Ftransactions%2Fdetails&#038;id=pi_mock" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refund this payment</a></p>'
-			. '<p class="wcpay-fraud-risk-efw__dismissal">'
-			. '<button type="button" class="button-link wcpay-efw-dismiss-toggle wcpay-efw-dismiss-toggle--dismiss" data-order-id="' . $order_id . '" data-dismissed="1">Dismiss</button>'
-			. '<button type="button" class="button-link wcpay-efw-dismiss-toggle wcpay-efw-dismiss-toggle--undo" data-order-id="' . $order_id . '" data-dismissed="0">Undo dismissal</button>'
-			. '</p>'
+			. $controls
 			. '</div>';
 	}
 

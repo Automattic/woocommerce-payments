@@ -346,7 +346,10 @@ class Order_Fraud_And_Risk_Meta_Box {
 			echo '<p><a href="' . esc_url( $transaction_url ) . '" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Refund this payment', 'woocommerce-payments' ) . '</a></p>';
 		}
 
-		$this->print_early_fraud_warning_dismissal_controls( $order->get_id() );
+		// The dismiss route requires manage_woocommerce; don't offer buttons that would 403.
+		if ( current_user_can( 'manage_woocommerce' ) ) {
+			$this->print_early_fraud_warning_dismissal_controls( $order->get_id() );
+		}
 		echo '</div>';
 	}
 
