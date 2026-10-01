@@ -601,6 +601,7 @@ class WC_Payments {
 		self::$order_success_page->init_hooks();
 		self::$action_scheduler_service->init_hooks();
 		self::$account->init_hooks();
+		wcpay_get_container()->get( \WCPay\Internal\Service\SettingsDataFormService::class )->init_hooks();
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
