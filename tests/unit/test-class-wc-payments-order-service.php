@@ -2654,6 +2654,19 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $this->order->get_meta( '_wcpay_early_fraud_warning', true ), $early_fraud_warning );
 	}
 
+	public function test_set_early_fraud_warning_for_order_indexes_an_actionable_warning_without_an_id() {
+		$this->order_service->set_early_fraud_warning_for_order(
+			$this->order,
+			[
+				'efw_actionable' => true,
+				'efw_type'       => 'made_with_stolen_card',
+				'created'        => 1719800000,
+			]
+		);
+
+		$this->assertSame( '1719800000', (string) $this->order->get_meta( '_wcpay_early_fraud_warning_actionable', true ) );
+	}
+
 	public function test_get_early_fraud_warning_for_order() {
 		$early_fraud_warning = [
 			'efw_id'         => 'issfr_123',
