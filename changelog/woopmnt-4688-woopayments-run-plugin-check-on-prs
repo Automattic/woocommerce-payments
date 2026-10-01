@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Run WordPress.org Plugin Check on pull requests, and fix the license, PHP requirement, readme tags and unused image it flagged.
+Run WordPress.org Plugin Check on pull requests, and fix the readme PHP requirement it flagged.
