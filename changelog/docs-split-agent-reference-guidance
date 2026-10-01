@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Split agent guidance into task-specific references.

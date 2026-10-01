@@ -2234,6 +2234,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function setup_saved_payment_method() {
+		// Saved tokens are only usable by their logged-in owner.
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'customer' ] ) );
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
 		return [
