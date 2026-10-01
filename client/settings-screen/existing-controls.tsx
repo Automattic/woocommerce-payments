@@ -2,7 +2,8 @@
  * External dependencies
  */
 import React, { useMemo, useState } from 'react';
-import { SlotFillProvider } from '@wordpress/components';
+import { SlotFillProvider, TabPanel } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import { RegistryProvider, useRegistry } from '@wordpress/data';
 
 /**
@@ -60,16 +61,41 @@ const ExistingSettings = ( { children }: React.PropsWithChildren ) => {
 	);
 };
 
+const getMethodTabs = () => [
+	{
+		name: 'checkout',
+		title: __( 'Payments accepted on checkout', 'woocommerce-payments' ),
+	},
+	{
+		name: 'buy-now-pay-later',
+		title: __( 'Buy now, pay later', 'woocommerce-payments' ),
+	},
+	{
+		name: 'express-checkouts',
+		title: __( 'Express checkouts', 'woocommerce-payments' ),
+	},
+];
+
+/** The payment method, buy now pay later and express checkout lists, in tabs inside the Payment methods card. */
 export const PaymentMethods = () => (
 	<ExistingSettings>
-		<PaymentMethodsControl />
-		<BuyNowPayLaterControl>
-			<BuyNowPayLaterMethodsDescription />
-		</BuyNowPayLaterControl>
-	</ExistingSettings>
-);
-export const ExpressCheckouts = () => (
-	<ExistingSettings>
-		<ExpressCheckoutControl />
+		<TabPanel
+			className="wcpay-settings-screen__method-tabs"
+			tabs={ getMethodTabs() }
+		>
+			{ ( tab ) => {
+				if ( tab.name === 'buy-now-pay-later' ) {
+					return (
+						<BuyNowPayLaterControl>
+							<BuyNowPayLaterMethodsDescription />
+						</BuyNowPayLaterControl>
+					);
+				}
+				if ( tab.name === 'express-checkouts' ) {
+					return <ExpressCheckoutControl />;
+				}
+				return <PaymentMethodsControl />;
+			} }
+		</TabPanel>
 	</ExistingSettings>
 );

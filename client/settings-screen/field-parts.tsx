@@ -2,13 +2,14 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { ExternalLink } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
-import { ExpressCheckouts, PaymentMethods } from './existing-controls';
+import { PaymentMethods } from './existing-controls';
 
 export type Settings = Record< string, unknown >;
 
@@ -20,6 +21,7 @@ export type FieldParts = {
 	Edit?: React.ComponentType;
 	isVisible?: ( item: Settings ) => boolean;
 	isDisabled?: ( args: { item: Settings } ) => boolean;
+	render?: React.ComponentType< { item: Settings } >;
 };
 
 declare global {
@@ -39,7 +41,143 @@ const isPayoutScheduleLocked = ( { item }: { item: Settings } ) =>
 	item.deposit_restrictions === 'schedule_restricted' ||
 	item.deposit_completed_waiting_period !== true;
 
+/** A card's description, shown by a read-only field since DataForm card descriptions can only be text. */
+const CardDescription = ( {
+	text,
+	link,
+}: {
+	text: string;
+	link?: { href: string; label: string };
+} ) => (
+	<p className="wcpay-settings-screen__card-description">
+		{ text }
+		{ link && (
+			<>
+				{ ' ' }
+				<ExternalLink href={ link.href }>{ link.label }</ExternalLink>
+			</>
+		) }
+	</p>
+);
+
+const getCardDescriptions = (): Record< string, FieldParts > => ( {
+	test_mode_description: {
+		render: () => (
+			<CardDescription
+				text={ __(
+					'Test mode allows you to place test orders and issue refunds without using real payment details.',
+					'woocommerce-payments'
+				) }
+				link={ {
+					href: 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/',
+					label: __(
+						'Learn more about test mode',
+						'woocommerce-payments'
+					),
+				} }
+			/>
+		),
+	},
+	fraud_protection_description: {
+		render: () => (
+			<CardDescription
+				text={ __(
+					'Help avoid unauthorized transactions and disputes by setting your fraud protection level.',
+					'woocommerce-payments'
+				) }
+				link={ {
+					href: 'https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/',
+					label: __(
+						'Learn more about fraud protection',
+						'woocommerce-payments'
+					),
+				} }
+			/>
+		),
+	},
+	payouts_description: {
+		render: ( { item } ) => (
+			<CardDescription
+				text={ sprintf(
+					/* translators: %s: number of business days. */
+					__(
+						'Funds are available for payout %s business days after they’re received.',
+						'woocommerce-payments'
+					),
+					String( item.deposit_delay_days ?? '' )
+				) }
+				link={ {
+					href: 'https://woocommerce.com/document/woopayments/payouts/payout-schedule/',
+					label: __(
+						'Learn more about payout schedules',
+						'woocommerce-payments'
+					),
+				} }
+			/>
+		),
+	},
+	transactions_description: {
+		render: () => (
+			<CardDescription
+				text={ __(
+					"Update your store's configuration to ensure smooth transactions.",
+					'woocommerce-payments'
+				) }
+				link={ {
+					href: 'https://woocommerce.com/document/woopayments/',
+					label: __(
+						'View our documentation',
+						'woocommerce-payments'
+					),
+				} }
+			/>
+		),
+	},
+	account_notifications_description: {
+		render: () => (
+			<CardDescription
+				text={ __(
+					'Receive important notifications about your WooPayments account.',
+					'woocommerce-payments'
+				) }
+				link={ {
+					href: 'https://woocommerce.com/document/woopayments/settings-guide/#account-notifications',
+					label: __( 'Learn more', 'woocommerce-payments' ),
+				} }
+			/>
+		),
+	},
+	customer_facing_details_description: {
+		render: () => (
+			<CardDescription
+				text={ __(
+					'Update the details your customers see on their bank statement and when they reach out for support.',
+					'woocommerce-payments'
+				) }
+			/>
+		),
+	},
+	advanced_description: {
+		render: () => (
+			<CardDescription
+				text={ __(
+					'More options for specific payment needs.',
+					'woocommerce-payments'
+				) }
+				link={ {
+					href: 'https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings',
+					label: __(
+						'View our documentation',
+						'woocommerce-payments'
+					),
+				} }
+			/>
+		),
+	},
+} );
+
 export const getFieldParts = (): Record< string, FieldParts > => ( {
+	...getCardDescriptions(),
 	is_test_mode_enabled: {
 		isVisible: ( item ) => item.is_test_mode_onboarding !== true,
 		isDisabled: isDevMode,
@@ -55,9 +193,6 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 	},
 	enabled_payment_method_ids: {
 		Edit: PaymentMethods,
-	},
-	is_payment_request_enabled: {
-		Edit: ExpressCheckouts,
 	},
 	is_manual_capture_enabled: {
 		isDisabled: ( { item } ) => item.is_stripe_billing_enabled === true,

@@ -42,6 +42,20 @@ class SettingsScreenService {
 	const FIELDS_MODULE_ID = 'woocommerce-payments/settings-screen-fields';
 
 	/**
+	 * Cards with a description. DataForm card descriptions can only be text, so each description is a
+	 * read-only field, rendered with its links by the screen's script and placed first in its card.
+	 */
+	private const CARD_DESCRIPTIONS = [
+		'test-mode'               => 'test_mode_description',
+		'fraud-protection'        => 'fraud_protection_description',
+		'payouts'                 => 'payouts_description',
+		'transactions'            => 'transactions_description',
+		'account-notifications'   => 'account_notifications_description',
+		'customer-facing-details' => 'customer_facing_details_description',
+		'advanced'                => 'advanced_description',
+	];
+
+	/**
 	 * Registers hooks when the screen is enabled.
 	 */
 	public function init_hooks(): void {
@@ -204,67 +218,79 @@ class SettingsScreenService {
 			unset( $intervals['daily'] );
 		}
 
-		return [
-			$toggle( 'is_wcpay_enabled', __( 'Enable WooPayments', 'woocommerce-payments' ) ),
-			$toggle(
-				'is_test_mode_enabled',
-				__( 'Enable test mode', 'woocommerce-payments' ),
-				__( 'Use test transactions instead of real payments.', 'woocommerce-payments' )
-			),
-			$text( 'account_communications_email', __( 'Account email', 'woocommerce-payments' ), 'email' ),
-			$select(
-				'current_protection_level',
-				__( 'Fraud protection level', 'woocommerce-payments' ),
+		$descriptions = array_map(
+			static fn( string $id ): array => [
+				'id'       => $id,
+				'type'     => 'text',
+				'label'    => __( 'Description', 'woocommerce-payments' ),
+				'readOnly' => true,
+			],
+			array_values( self::CARD_DESCRIPTIONS )
+		);
+
+		return array_merge(
+			$descriptions,
+			[
+				$toggle(
+					'is_test_mode_enabled',
+					__( 'Enable test mode', 'woocommerce-payments' ),
+					__( 'Use test transactions instead of real payments.', 'woocommerce-payments' )
+				),
+				$text( 'account_communications_email', __( 'Account email', 'woocommerce-payments' ), 'email' ),
+				$select(
+					'current_protection_level',
+					__( 'Fraud protection level', 'woocommerce-payments' ),
+					[
+						'basic'    => __( 'Basic', 'woocommerce-payments' ),
+						'advanced' => __( 'Advanced', 'woocommerce-payments' ),
+					]
+				),
 				[
-					'basic'    => __( 'Basic', 'woocommerce-payments' ),
-					'advanced' => __( 'Advanced', 'woocommerce-payments' ),
-				]
-			),
-			[
-				'id'    => 'enabled_payment_method_ids',
-				'label' => __( 'Payment methods', 'woocommerce-payments' ),
-			],
-			[
-				'id'    => 'is_payment_request_enabled',
-				'label' => __( 'Express checkouts', 'woocommerce-payments' ),
-			],
-			$toggle( 'is_saved_cards_enabled', __( 'Enable payments via saved cards', 'woocommerce-payments' ) ),
-			$toggle(
-				'is_manual_capture_enabled',
-				__( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
-				__( 'Charge must be captured on the order details screen within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' )
-			),
-			$text( 'account_statement_descriptor', __( 'Full bank statement', 'woocommerce-payments' ) ),
-			$text( 'account_statement_descriptor_kanji', __( 'Full bank statement (Kanji)', 'woocommerce-payments' ) ),
-			$text( 'account_statement_descriptor_kana', __( 'Full bank statement (Kana)', 'woocommerce-payments' ) ),
-			$text( 'account_business_support_email', __( 'Support email', 'woocommerce-payments' ), 'email' ),
-			$text( 'account_business_support_phone', __( 'Support phone number', 'woocommerce-payments' ) ),
-			$select( 'deposit_schedule_interval', __( 'Payout frequency', 'woocommerce-payments' ), $intervals ),
-			$select(
-				'deposit_schedule_weekly_anchor',
-				__( 'Payout day', 'woocommerce-payments' ),
+					'id'    => 'enabled_payment_method_ids',
+					'label' => __( 'Payment methods', 'woocommerce-payments' ),
+				],
 				[
-					'monday'    => __( 'Monday', 'woocommerce-payments' ),
-					'tuesday'   => __( 'Tuesday', 'woocommerce-payments' ),
-					'wednesday' => __( 'Wednesday', 'woocommerce-payments' ),
-					'thursday'  => __( 'Thursday', 'woocommerce-payments' ),
-					'friday'    => __( 'Friday', 'woocommerce-payments' ),
-				]
-			),
-			[
-				'id'    => 'deposit_schedule_monthly_anchor',
-				'type'  => 'integer',
-				'label' => __( 'Payout date', 'woocommerce-payments' ),
-				'Edit'  => 'select',
-			],
-			$toggle( 'is_multi_currency_enabled', __( 'Enable customer multi-currency', 'woocommerce-payments' ) ),
-			$toggle( 'is_stripe_billing_enabled', __( 'Enable Stripe Billing for future subscriptions', 'woocommerce-payments' ) ),
-			$toggle( 'is_debug_log_enabled', __( 'Log error messages', 'woocommerce-payments' ) ),
-		];
+					'id'    => 'is_payment_request_enabled',
+					'label' => __( 'Express checkouts', 'woocommerce-payments' ),
+				],
+				$toggle( 'is_saved_cards_enabled', __( 'Enable payments via saved cards', 'woocommerce-payments' ) ),
+				$toggle(
+					'is_manual_capture_enabled',
+					__( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
+					__( 'Charge must be captured on the order details screen within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' )
+				),
+				$text( 'account_statement_descriptor', __( 'Full bank statement', 'woocommerce-payments' ) ),
+				$text( 'account_statement_descriptor_kanji', __( 'Full bank statement (Kanji)', 'woocommerce-payments' ) ),
+				$text( 'account_statement_descriptor_kana', __( 'Full bank statement (Kana)', 'woocommerce-payments' ) ),
+				$text( 'account_business_support_email', __( 'Support email', 'woocommerce-payments' ), 'email' ),
+				$text( 'account_business_support_phone', __( 'Support phone number', 'woocommerce-payments' ) ),
+				$select( 'deposit_schedule_interval', __( 'Payout frequency', 'woocommerce-payments' ), $intervals ),
+				$select(
+					'deposit_schedule_weekly_anchor',
+					__( 'Payout day', 'woocommerce-payments' ),
+					[
+						'monday'    => __( 'Monday', 'woocommerce-payments' ),
+						'tuesday'   => __( 'Tuesday', 'woocommerce-payments' ),
+						'wednesday' => __( 'Wednesday', 'woocommerce-payments' ),
+						'thursday'  => __( 'Thursday', 'woocommerce-payments' ),
+						'friday'    => __( 'Friday', 'woocommerce-payments' ),
+					]
+				),
+				[
+					'id'    => 'deposit_schedule_monthly_anchor',
+					'type'  => 'integer',
+					'label' => __( 'Payout date', 'woocommerce-payments' ),
+					'Edit'  => 'select',
+				],
+				$toggle( 'is_multi_currency_enabled', __( 'Enable customer multi-currency', 'woocommerce-payments' ) ),
+				$toggle( 'is_stripe_billing_enabled', __( 'Enable Stripe Billing for future subscriptions', 'woocommerce-payments' ) ),
+				$toggle( 'is_debug_log_enabled', __( 'Log error messages', 'woocommerce-payments' ) ),
+			]
+		);
 	}
 
 	/**
-	 * Groups the fields into cards. The screen's tabs show a set of these cards each.
+	 * Lays the fields out as one page of cards, in the order of the designs.
 	 *
 	 * @param mixed $config The View Config container.
 	 * @return mixed
@@ -274,21 +300,41 @@ class SettingsScreenService {
 			return $config;
 		}
 
+		// The payment methods control shows the express checkouts too, in tabs inside its card.
+		$payment_methods = [
+			'id'     => 'enabled_payment_method_ids',
+			'layout' => [
+				'type'          => 'regular',
+				'labelPosition' => 'none',
+			],
+		];
+
 		$cards = [
-			'general'               => [ __( 'General', 'woocommerce-payments' ), [ 'is_wcpay_enabled', 'is_test_mode_enabled' ] ],
-			'fraud-protection'      => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level' ] ],
-			'account-notifications' => [ __( 'Account notifications', 'woocommerce-payments' ), [ 'account_communications_email' ] ],
-			'payment-methods'       => [ __( 'Payment methods', 'woocommerce-payments' ), [ 'enabled_payment_method_ids' ] ],
-			'express-checkouts'     => [ __( 'Express checkouts', 'woocommerce-payments' ), [ 'is_payment_request_enabled' ] ],
-			'transactions'          => [ __( 'Transactions', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled' ] ],
-			'bank-statement'        => [ __( 'Customer bank statement', 'woocommerce-payments' ), [ 'account_statement_descriptor', 'account_statement_descriptor_kanji', 'account_statement_descriptor_kana' ] ],
-			'customer-support'      => [ __( 'Customer support', 'woocommerce-payments' ), [ 'account_business_support_email', 'account_business_support_phone' ] ],
-			'payouts'               => [ __( 'Payout schedule', 'woocommerce-payments' ), [ 'deposit_schedule_interval', 'deposit_schedule_weekly_anchor', 'deposit_schedule_monthly_anchor' ] ],
-			'advanced'              => [ __( 'Advanced settings', 'woocommerce-payments' ), [ 'is_multi_currency_enabled', 'is_stripe_billing_enabled', 'is_debug_log_enabled' ] ],
+			'test-mode'               => [ __( 'Test mode', 'woocommerce-payments' ), [ 'is_test_mode_enabled' ] ],
+			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level' ] ],
+			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ 'deposit_schedule_interval', 'deposit_schedule_weekly_anchor', 'deposit_schedule_monthly_anchor' ] ],
+			'payment-methods'         => [ __( 'Payment methods', 'woocommerce-payments' ), [ $payment_methods ] ],
+			'transactions'            => [ __( 'Transaction preferences', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled' ] ],
+			'account-notifications'   => [ __( 'Account notifications', 'woocommerce-payments' ), [ 'account_communications_email' ] ],
+			'customer-facing-details' => [ __( 'Customer-facing details', 'woocommerce-payments' ), [ 'account_statement_descriptor', 'account_statement_descriptor_kanji', 'account_statement_descriptor_kana', 'account_business_support_email', 'account_business_support_phone' ] ],
+			'advanced'                => [ __( 'Advanced settings', 'woocommerce-payments' ), [ 'is_multi_currency_enabled', 'is_stripe_billing_enabled' ] ],
+			'debug'                   => [ __( 'Debug mode', 'woocommerce-payments' ), [ 'is_debug_log_enabled' ] ],
 		];
 
 		$fields = [];
 		foreach ( $cards as $id => [ $label, $children ] ) {
+			if ( isset( self::CARD_DESCRIPTIONS[ $id ] ) ) {
+				array_unshift(
+					$children,
+					[
+						'id'     => self::CARD_DESCRIPTIONS[ $id ],
+						'layout' => [
+							'type'          => 'regular',
+							'labelPosition' => 'none',
+						],
+					]
+				);
+			}
 			$fields[] = [
 				'id'       => $id,
 				'label'    => $label,
