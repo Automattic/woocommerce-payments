@@ -34,6 +34,7 @@ class WC_Payments_Features {
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
+	const SETTINGS_DATAFORM_FLAG_NAME                         = '_wcpay_feature_settings_dataform';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -380,6 +381,15 @@ class WC_Payments_Features {
 		}
 
 		return '1' === get_option( self::REPORTS_AREA_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether the settings screen built on WooCommerce's experimental payment settings screen is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_settings_dataform_enabled(): bool {
+		return '1' === get_option( self::SETTINGS_DATAFORM_FLAG_NAME, '0' );
 	}
 
 	/**
