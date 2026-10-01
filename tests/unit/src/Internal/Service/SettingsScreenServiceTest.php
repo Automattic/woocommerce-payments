@@ -92,6 +92,57 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'wcpay-settings-screen' ], $screens['woopayments']['scripts'] );
 	}
 
+	/**
+	 * @testWith ["woopay", "woopay"]
+	 *           ["payment_request", "apple-pay-google-pay"]
+	 *           ["amazon_pay", "amazon-pay"]
+	 *
+	 * @param string $method The classic `method` argument.
+	 * @param string $path   The sub-page path.
+	 */
+	public function test_opens_classic_customisation_links_on_their_sub_page( string $method, string $path ): void {
+		$location = $this->sut->get_classic_location(
+			[
+				'path' => '',
+				'args' => [
+					'method' => $method,
+					'other'  => 'kept',
+				],
+			],
+			'woopayments'
+		);
+
+		$this->assertSame(
+			[
+				'path' => $path,
+				'args' => [ 'other' => 'kept' ],
+			],
+			$location
+		);
+	}
+
+	public function test_leaves_other_classic_links_unchanged(): void {
+		$location = [
+			'path' => '',
+			'args' => [ 'method' => 'card' ],
+		];
+
+		$this->assertSame( $location, $this->sut->get_classic_location( $location, 'woopayments' ) );
+		$this->assertSame(
+			[
+				'path' => '',
+				'args' => [ 'method' => 'woopay' ],
+			],
+			$this->sut->get_classic_location(
+				[
+					'path' => '',
+					'args' => [ 'method' => 'woopay' ],
+				],
+				'other'
+			)
+		);
+	}
+
 	public function test_save_returns_saved_record(): void {
 		update_option( 'wcpay_settings_screen_test', true );
 		$request = new WP_REST_Request( 'PUT', '/wc/v3/payments/settings-dataform' );
@@ -173,10 +224,19 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 
 		$this->sut->get_view_config( $config );
 
-		$in_cards = array_map(
-			static fn( $child ) => is_array( $child ) ? $child['id'] : $child,
-			array_merge( ...array_column( $config->merged['form']['fields'], 'children' ) )
-		);
+		// Groups (cards and sub-pages) aren't fields, so collect only the fields inside them.
+		$collect  = static function ( array $entries ) use ( &$collect ): array {
+			$ids = [];
+			foreach ( $entries as $entry ) {
+				if ( is_array( $entry ) && isset( $entry['children'] ) ) {
+					$ids = array_merge( $ids, $collect( $entry['children'] ) );
+				} else {
+					$ids[] = is_array( $entry ) ? $entry['id'] : $entry;
+				}
+			}
+			return $ids;
+		};
+		$in_cards = array_values( array_unique( $collect( $config->merged['form']['fields'] ) ) );
 		// The payment methods control shows the express checkouts in its own tabs.
 		$in_cards[] = 'is_payment_request_enabled';
 		$field_ids  = array_column( $this->sut->get_fields(), 'id' );
