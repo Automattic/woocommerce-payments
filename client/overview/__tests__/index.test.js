@@ -135,9 +135,7 @@ describe( 'Overview page', () => {
 				},
 				discount: [],
 			},
-			featureFlags: {
-				accountOverviewTaskList: true,
-			},
+			featureFlags: {},
 			accountLoans: {},
 			accountDetails: {
 				account_status: {
@@ -219,19 +217,6 @@ describe( 'Overview page', () => {
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
-		const { container } = render( <OverviewPage /> );
-
-		expect(
-			container.querySelector( '.woocommerce-experimental-list' )
-		).toBeNull();
-	} );
-
-	it( 'Skips rendering task list when accountOverviewTaskList feature flag is off', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			featureFlags: {},
-		};
-
 		const { container } = render( <OverviewPage /> );
 
 		expect(
