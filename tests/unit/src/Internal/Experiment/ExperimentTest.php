@@ -29,6 +29,33 @@ class ExperimentTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * @testdox It builds an ExPlat client with the base factory.
+	 */
+	public function test_create_abtest_builds_an_explat_client() {
+		$experiment = new class( $this->mock_legacy_proxy ) extends Experiment {
+			public function name(): string {
+				return 'test_experiment';
+			}
+
+			protected function assignment_key(): string {
+				return 'store_123';
+			}
+
+			protected function variants(): array {
+				return [ self::VARIANT_CONTROL ];
+			}
+		};
+
+		$method = new \ReflectionMethod( Experiment::class, 'create_abtest' );
+		$method->setAccessible( true );
+
+		$this->assertInstanceOf(
+			Experimental_Abtest::class,
+			$method->invoke( $experiment, 'woo:cJ8kL2mN' )
+		);
+	}
+
+	/**
 	 * Build an experiment test double with a fixed ExPlat response.
 	 *
 	 * @param mixed       $abtest_variation  What the stubbed abtest returns (string|null|array).
