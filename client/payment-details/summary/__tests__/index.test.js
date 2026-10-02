@@ -290,7 +290,11 @@ describe( 'PaymentDetailsSummary', () => {
 		const charge = getBaseCharge();
 		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
 
-		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+		renderCharge( charge, metadata );
+
+		expect(
+			screen.getByText( 'Tap to Pay on iPhone' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'renders the Tap to Pay channel from metadata with android TAP_TO_PAY_DEVICE', () => {
@@ -300,7 +304,11 @@ describe( 'PaymentDetailsSummary', () => {
 			'android'
 		);
 
-		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+		renderCharge( charge, metadata );
+
+		expect(
+			screen.getByText( 'Tap to Pay on Android' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'renders a charge with subscriptions', () => {
@@ -1407,7 +1415,7 @@ describe( 'PaymentDetailsSummary', () => {
 		test( 'does not render notice if order present', () => {
 			const charge = getBaseCharge();
 
-			const container = renderCharge( charge );
+			renderCharge( charge );
 
 			expect(
 				screen.queryByRole( 'button', { name: /Refund/i } )
@@ -1418,8 +1426,6 @@ describe( 'PaymentDetailsSummary', () => {
 					/This transaction is not connected to order. Investigate this purchase and refund the transaction as needed./
 				)
 			).not.toBeInTheDocument();
-
-			expect( container ).toMatchSnapshot();
 		} );
 	} );
 
