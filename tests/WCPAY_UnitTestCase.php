@@ -59,6 +59,10 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		$this->reset_subscriptions_function_stubs();
 		$this->restore_wc_payments_services();
 
+		if ( class_exists( \WCPay\Payment_Methods\WC_Helper_Site_Currency::class ) ) {
+			\WCPay\Payment_Methods\WC_Helper_Site_Currency::$mock_site_currency = '';
+		}
+
 		parent::tear_down();
 	}
 
