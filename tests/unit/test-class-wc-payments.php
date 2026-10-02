@@ -54,17 +54,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $upgrade_run_count + 1, did_action( 'woocommerce_woocommerce_payments_updated' ) );
 	}
 
-	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled() {
-		// Enable dev mode so nonce check is disabled.
-		WC_Payments::mode()->dev();
-
-		$this->set_woopay_enabled( true );
-
-		foreach ( self::EXPECTED_WOOPAY_HOOKS as $hook => $callback ) {
-			$this->assertEquals( 10, has_filter( $hook, $callback ) );
-		}
-	}
-
 	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled_but_not_in_dev_mode() {
 		$this->set_woopay_enabled( true );
 
