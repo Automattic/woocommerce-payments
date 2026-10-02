@@ -10,10 +10,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { useCharge, useChargeFromOrder } from '../';
 import { STORE_NAME } from '../store';
-import {
-	chargeId,
-	chargeMock,
-} from '../../payment-intents/__tests__/hooks.test';
+import { chargeId, chargeMock } from '../../payment-intents/__fixtures__';
 
 jest.mock( '@wordpress/data' );
 
