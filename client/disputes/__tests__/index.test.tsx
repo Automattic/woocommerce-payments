@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import { useUserPreferences } from '@woocommerce/data';
 import userEvent from '@testing-library/user-event';
@@ -229,6 +229,71 @@ describe( 'Disputes list', () => {
 
 		const { container: list } = render( <DisputesList /> );
 		expect( list ).toMatchSnapshot();
+	} );
+
+	const getRespondByCell = () => {
+		const column = screen
+			.getAllByRole( 'columnheader' )
+			.findIndex( ( header ) =>
+				header.textContent?.includes( 'Respond by' )
+			);
+		const [ , firstRow ] = screen.getAllByRole( 'row' );
+		return firstRow.children[ column ].firstElementChild as HTMLElement;
+	};
+
+	// The mocked current time is 2019-11-07 12:33:37 UTC.
+	test.each( [
+		[ 'needs_response', '2019-11-08 02:46:00', 'Last day today' ],
+		[ 'needs_response', '2019-11-08 22:00:00', '1 day left' ],
+		[ 'needs_response', '2019-11-10 02:46:00', '2 days left' ],
+		[ 'needs_response', '2019-11-06 23:00:59', null ],
+		[ 'under_review', '2019-11-08 02:46:00', null ],
+	] )(
+		'renders the respond-by chip for a %s dispute due %s',
+		( status, dueBy, expectedChip ) => {
+			mockUseDisputes.mockReturnValue( {
+				isLoading: false,
+				disputes: [
+					{
+						...mockDisputes[ 0 ],
+						status: status as DisputeStatus,
+						due_by: dueBy,
+					},
+				],
+			} );
+			mockUseDisputesSummary.mockReturnValue( {
+				isLoading: false,
+				disputesSummary: { count: 1 },
+			} );
+
+			render( <DisputesList /> );
+
+			const respondByCell = getRespondByCell();
+			if ( expectedChip ) {
+				expect(
+					within( respondByCell ).getByText( expectedChip )
+				).toHaveClass( 'chip-alert' );
+			} else {
+				expect( respondByCell ).toBeEmptyDOMElement();
+			}
+		}
+	);
+
+	test( 'renders the respond-by date when the dispute is due in more than 72 hours', () => {
+		mockUseDisputes.mockReturnValue( {
+			isLoading: false,
+			disputes: [
+				{ ...mockDisputes[ 0 ], due_by: '2019-11-10 22:00:00' },
+			],
+		} );
+		mockUseDisputesSummary.mockReturnValue( {
+			isLoading: false,
+			disputesSummary: { count: 1 },
+		} );
+
+		render( <DisputesList /> );
+
+		expect( getRespondByCell() ).toHaveTextContent( '2019-11-10 / 5:00PM' );
 	} );
 
 	test( 'renders columns hidden as per user preferences', () => {
