@@ -113,11 +113,29 @@ class WC_Payments_Express_Checkout_Currency_Guard_Test extends WCPAY_UnitTestCas
 	}
 
 	public function test_register_hooks_the_assertion_on_store_api_order_build() {
+		$count_guard_callbacks = function () {
+			global $wp_filter;
+			$count = 0;
+			$hook  = $wp_filter['woocommerce_store_api_checkout_update_order_from_request'] ?? null;
+			foreach ( $hook->callbacks[10] ?? [] as $callback ) {
+				if ( is_array( $callback['function'] )
+					&& $callback['function'][0] instanceof WC_Payments_Express_Checkout_Currency_Guard
+					&& 'assert_currency_matches_element' === $callback['function'][1]
+					&& 2 === $callback['accepted_args'] ) {
+					++$count;
+				}
+			}
+			return $count;
+		};
+
+		$before = $count_guard_callbacks();
+
 		WC_Payments_Express_Checkout_Currency_Guard::register();
 
-		$this->assertNotFalse(
-			has_action( 'woocommerce_store_api_checkout_update_order_from_request' ),
-			'Expected register() to hook woocommerce_store_api_checkout_update_order_from_request.'
+		$this->assertSame(
+			$before + 1,
+			$count_guard_callbacks(),
+			'Expected register() to hook assert_currency_matches_element() on woocommerce_store_api_checkout_update_order_from_request.'
 		);
 	}
 
