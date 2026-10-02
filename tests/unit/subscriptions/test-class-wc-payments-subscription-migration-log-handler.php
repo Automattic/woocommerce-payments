@@ -40,6 +40,8 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 			)
 		);
 
+		Constants::clear_single_constant( 'WC_LOG_HANDLER' );
+
 		parent::tearDown();
 	}
 
