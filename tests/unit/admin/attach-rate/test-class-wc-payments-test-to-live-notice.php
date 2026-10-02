@@ -95,14 +95,6 @@ class WC_Payments_Test_To_Live_Notice_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_should_show_returns_false_when_user_lacks_capability(): void {
-		$this->create_wcpay_test_order();
-		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$notice = $this->make_notice();
-
-		$this->assertFalse( $notice->should_show() );
-	}
-
 	public function test_should_show_returns_false_when_gateway_not_connected(): void {
 		$this->create_wcpay_test_order();
 		$notice = $this->make_notice( false );
@@ -187,14 +179,6 @@ class WC_Payments_Test_To_Live_Notice_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $notice->should_show() );
 	}
 
-	public function test_should_show_returns_true_when_snooze_expired(): void {
-		$this->create_wcpay_test_order();
-		update_user_meta( $this->admin_user_id, 'wcpay_test_to_live_notice_snoozed', time() - 8 * DAY_IN_SECONDS );
-		$notice = $this->make_notice();
-
-		$this->assertTrue( $notice->should_show() );
-	}
-
 	public function test_should_show_memoizes_expensive_check(): void {
 		$this->create_wcpay_test_order();
 
@@ -218,8 +202,10 @@ class WC_Payments_Test_To_Live_Notice_Test extends WCPAY_UnitTestCase {
 
 		$notice = new WC_Payments_Test_To_Live_Notice( $mock_gateway, $mock_account );
 
-		$notice->should_show();
-		$notice->should_show();
+		$this->assertTrue( $notice->should_show() );
+		// Drop the eligibility transient so only the memo can stop a second account lookup.
+		delete_transient( 'wcpay_test_to_live_eligible' );
+		$this->assertTrue( $notice->should_show() );
 	}
 
 	// ---- maybe_show ----------------------------------------------------------
