@@ -15,8 +15,17 @@ use WCPay\Core\Server\Response;
  * Class WP_UnitTestCase
  */
 class WCPAY_UnitTestCase extends WP_UnitTestCase {
+	/**
+	 * Copy of the shared `WC_Payments::mode()` state, restored after each test.
+	 *
+	 * @var \WCPay\Core\Mode|null
+	 */
+	private $mode_backup;
+
 	public function set_up() {
 		parent::set_up();
+
+		$this->mode_backup = WC_Payments::mode() ? clone WC_Payments::mode() : null;
 
 		// Use a priority of 9 to ensure that these filters will allow tests that want to mock external requests
 		// to hook in with the regular 10 priority and do their thing.
@@ -35,7 +44,28 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		remove_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
 		remove_filter( 'woocommerce_email_log_add_order_note', '__return_false', 9 );
 
+		$this->restore_mode();
+
 		parent::tear_down();
+	}
+
+	/**
+	 * Restores `WC_Payments::mode()` to the state it had before the test, so a test that
+	 * switches to dev, test or live mode doesn't change the mode of the tests that follow.
+	 */
+	private function restore_mode() {
+		if ( null === $this->mode_backup || ! WC_Payments::mode() ) {
+			return;
+		}
+
+		foreach ( ( new ReflectionClass( $this->mode_backup ) )->getProperties() as $property ) {
+			if ( $property->isStatic() ) {
+				continue;
+			}
+			$property->setAccessible( true );
+			$property->setValue( WC_Payments::mode(), $property->getValue( $this->mode_backup ) );
+		}
+		$this->mode_backup = null;
 	}
 
 	/**
