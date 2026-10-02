@@ -180,12 +180,32 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 		$test_body             = $this->get_mock_test_body( $wcpay_subscription_id, $wcpay_customer_id, $wcpay_invoiceid );
 		$mock_subscription     = new WC_Subscription();
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
+		$mock_subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, $wcpay_invoiceid );
 		$mock_subscription->next_payment = time();
 
-		$this->expectException( Invalid_Webhook_Data_Exception::class );
-		$this->expectExceptionMessage( 'Cannot find subscription for the incoming "invoice.paid" event.' );
+		WC_Subscriptions::set_wcs_get_subscriptions(
+			function ( $_unused_args ) use ( $mock_subscription ) {
+				return [ $mock_subscription ];
+			}
+		);
+
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $_unused_subscription ) {
+				return WC_Helper_Order::create_order();
+			}
+		);
+
+		// The parent order's invoice is already paid, so no renewal order is created or marked paid.
+		$this->mock_invoice_service->expects( $this->never() )
+			->method( 'set_order_invoice_id' );
+
+		$this->mock_invoice_service->expects( $this->never() )
+			->method( 'mark_pending_invoice_paid_for_subscription' );
 
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
+
+		WC_Subscriptions::set_wcs_get_subscriptions( null );
+		WC_Subscriptions::wcs_create_renewal_order( null );
 	}
 
 	/**
