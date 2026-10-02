@@ -34,12 +34,27 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 	 * @var Checkout_Service $checkout_service
 	 */
 	private $checkout_service;
+
+	/**
+	 * @var array|null $original_gateway_map
+	 */
+	private $original_gateway_map;
+
 	public function set_up() {
 		parent::set_up();
 
 		$this->checkout_service    = new Checkout_Service();
 		$this->request             = new Create_And_Confirm_Intention( $this->createMock( WC_Payments_API_Client::class ), $this->createMock( WC_Payments_Http_Interface::class ) );
 		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
+	}
+
+	public function tear_down() {
+		if ( null !== $this->original_gateway_map ) {
+			$this->get_gateway_map_property()->setValue( null, $this->original_gateway_map );
+		}
+		unset( $_POST['express_payment_type'] );
+
+		parent::tear_down();
 	}
 
 	public function test_exception_will_throw_if_base_request_parameter_is_invalid() {
@@ -51,16 +66,21 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->checkout_service->create_intention_request( $this->request, $this->payment_information );
 	}
 	public function test_is_platform_payment_method_will_return_if_saved_payment_method_is_used() {
+		$this->set_card_gateway_platform_checkout( true );
 		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), new WC_Payment_Token_WCPay_SEPA(), null, null, null, '', 'card' );
 		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
-	public function test_is_platform_payment_method_will_return_if_is_platform_payment_method_parameter_is_missing() {
-		$this->payment_information = new Payment_Information( 'pm_mock', wc_create_order(), Payment_Type::SINGLE(), null, null, null, null, '', 'card' );
-		$this->checkout_service->is_platform_payment_method( $this->payment_information );
+	public function test_is_platform_payment_method_returns_false_when_gateway_does_not_use_platform_checkout() {
+		$this->set_card_gateway_platform_checkout( false );
 		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
-	public function test_is_platform_payment_method_will_return_if_is_platform_payment_method_parameter_is_not_boolean() {
-		$_POST['wcpay-is-platform-payment-method'] = 'foo';
+	public function test_is_platform_payment_method_returns_true_for_new_payment_method_on_platform_checkout() {
+		$this->set_card_gateway_platform_checkout( true );
+		$this->assertTrue( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
+	}
+	public function test_is_platform_payment_method_returns_false_for_express_checkout() {
+		$this->set_card_gateway_platform_checkout( true );
+		$_POST['express_payment_type'] = 'google_pay';
 		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
 	}
 
@@ -121,5 +141,26 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $request->get_param( 'save_payment_method_to_platform' ) );
 		$this->assertTrue( $request->get_param( 'save_in_platform_account' ) );
 		remove_filter( 'test_create_and_confirm_setup_intention_request_will_create_request_for_woopay', [ $class, 'create_and_confirm_setup_intention_request' ], 1 );
+	}
+
+	/**
+	 * Replaces the card gateway with one that reports whether checkout uses the Stripe platform.
+	 *
+	 * @param bool $should_use_platform What should_use_stripe_platform_on_checkout_page() returns.
+	 */
+	private function set_card_gateway_platform_checkout( bool $should_use_platform ): void {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( $should_use_platform );
+
+		$property                   = $this->get_gateway_map_property();
+		$this->original_gateway_map = $property->getValue();
+		$property->setValue( null, array_merge( $this->original_gateway_map, [ 'card' => $gateway ] ) );
+	}
+
+	private function get_gateway_map_property(): ReflectionProperty {
+		$property = new ReflectionProperty( WC_Payments::class, 'payment_gateway_map' );
+		$property->setAccessible( true );
+
+		return $property;
 	}
 }
