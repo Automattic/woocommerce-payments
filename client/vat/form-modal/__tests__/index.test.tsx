@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 
 /**
@@ -45,16 +45,22 @@ describe( 'Tax details modal', () => {
 		).toBeNull();
 	} );
 
-	it( 'should render the VAT Form', () => {
+	it( 'should render the VAT Form inside the dialog', () => {
+		const onCompleted = jest.fn();
 		render(
 			<VatFormModal
 				isModalOpen={ true }
 				setModalOpen={ () => ( {} ) }
-				onCompleted={ () => ( {} ) }
+				onCompleted={ onCompleted }
 			/>
 		);
 		expect(
-			screen.getByRole( 'dialog', { name: 'Set your tax details' } )
-		).toMatchSnapshot();
+			within(
+				screen.getByRole( 'dialog', { name: 'Set your tax details' } )
+			).getByText( 'VAT Form' )
+		).toBeInTheDocument();
+		expect( jest.mocked( VatForm ).mock.lastCall?.[ 0 ] ).toEqual( {
+			onCompleted,
+		} );
 	} );
 } );
