@@ -153,5 +153,6 @@ class GetDisputesTest extends WCPAY_UnitTestCase {
 		}
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wcpay_test_error', $result->get_error_code() );
 	}
 }
