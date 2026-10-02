@@ -126,7 +126,7 @@ const availableCurrencies = {
 		id: 'dkk',
 		is_default: false,
 		flag: '🇩🇰',
-		symbol: 'DKK',
+		symbol: 'kr.',
 	},
 	BIF: {
 		code: 'BIF',

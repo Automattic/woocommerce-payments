@@ -967,7 +967,8 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                               class="enabled-currency-checkbox__code"
                             >
                               (
-                              DKK
+                              kr.
+                               DKK
                               )
                             </span>
                           </label>
