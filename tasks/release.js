@@ -50,11 +50,15 @@ rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
 
-// Only combine-pot-files.php needs these, and it already ran during build:client.
-rm( '-f', 'dist/**/*.map', 'dist/i18n-chunk-entries.json' );
-
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
+
+// these files are only needed by `combine-pot-files.php`, keeping them out of the zip.
+rm(
+	'-f',
+	targetFolder + '/dist/**/*.map',
+	targetFolder + '/dist/i18n-chunk-entries.json'
+);
 
 // The '/includes/multi-currency/client' directory is removed because '/includes/multi-currency/*' should contain only server-side files.
 // Furthermore, the './client' directory is already included in 'dist' during the build step.
