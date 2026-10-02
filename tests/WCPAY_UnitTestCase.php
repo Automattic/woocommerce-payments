@@ -45,6 +45,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		remove_filter( 'woocommerce_email_log_add_order_note', '__return_false', 9 );
 
 		$this->restore_mode();
+		$this->reset_subscriptions_function_stubs();
 
 		parent::tear_down();
 	}
@@ -66,6 +67,22 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			$property->setValue( WC_Payments::mode(), $property->getValue( $this->mode_backup ) );
 		}
 		$this->mode_backup = null;
+	}
+
+	/**
+	 * Clears the `wcs_*` callbacks that tests set on the `WC_Subscriptions` test helper, so a stub
+	 * such as `wcs_order_contains_subscription` returning true doesn't apply to later tests.
+	 */
+	private function reset_subscriptions_function_stubs() {
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			return;
+		}
+
+		foreach ( ( new ReflectionClass( 'WC_Subscriptions' ) )->getProperties( ReflectionProperty::IS_STATIC ) as $property ) {
+			if ( 0 === strpos( $property->getName(), 'wcs_' ) ) {
+				$property->setValue( null, null );
+			}
+		}
 	}
 
 	/**
