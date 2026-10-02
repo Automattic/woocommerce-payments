@@ -295,6 +295,10 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		return base64_encode( wp_json_encode( $envelope ) );
 	}
 
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
 	public function test_get_user_id_from_cart_token_with_guest_user() {
 		define( 'REST_REQUEST', true );
 
