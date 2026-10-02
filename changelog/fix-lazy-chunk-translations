@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Translate strings in lazy-loaded admin pages, such as Overview, Payouts, Reports and Disputes, and in multi-currency scripts on non-English sites.
