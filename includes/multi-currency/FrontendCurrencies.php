@@ -381,14 +381,26 @@ class FrontendCurrencies {
 	 * @return void
 	 */
 	public function init_order_currency_from_query_vars() {
-		global $wp;
-		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
-			$this->init_order_currency( $wp->query_vars['order-pay'] );
-		} elseif ( ! empty( $wp->query_vars['order-received'] ) ) {
-			$this->init_order_currency( $wp->query_vars['order-received'] );
-		} elseif ( ! empty( $wp->query_vars['view-order'] ) ) {
-			$this->init_order_currency( $wp->query_vars['view-order'] );
+		$order_id = $this->get_order_id_from_query_vars();
+		if ( null !== $order_id ) {
+			$this->init_order_currency( $order_id );
 		}
+	}
+
+	/**
+	 * Returns the order id of a single-order page (order pay, order received or view order), if this is one.
+	 *
+	 * @return mixed|null The order id from the query vars, or null.
+	 */
+	private function get_order_id_from_query_vars() {
+		global $wp;
+		foreach ( [ 'order-pay', 'order-received', 'view-order' ] as $var ) {
+			if ( ! empty( $wp->query_vars[ $var ] ) ) {
+				return $wp->query_vars[ $var ];
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -492,17 +504,27 @@ class FrontendCurrencies {
 		$pages = [ 'my-account', 'checkout' ];
 		$vars  = [ 'order-received', 'order-pay', 'orders', 'view-order' ];
 
-		if ( $this->utils->is_page_with_vars( $pages, $vars ) ) {
-			return $this->utils->is_call_in_backtrace(
-				[
-					'WC_Shortcode_My_Account::view_order',
-					'WC_Shortcode_Checkout::order_received',
-					'WC_Shortcode_Checkout::order_pay',
-					'WC_Order->get_formatted_order_total',
-				]
-			);
+		if ( ! $this->utils->is_page_with_vars( $pages, $vars ) ) {
+			return false;
 		}
 
-		return false;
+		$calls = [
+			'WC_Shortcode_My_Account::view_order',
+			'WC_Shortcode_Checkout::order_received',
+			'WC_Shortcode_Checkout::order_pay',
+			'WC_Order->get_formatted_order_total',
+		];
+
+		// On a single-order page the order can be loaded before its details render (for the page
+		// title in block themes, the account navigation, or the payment on order pay), and loading
+		// rounds its total to the current decimals. Block-based order confirmation pages also render
+		// without the shortcode classes above. Other prices on these pages, like the mini-cart, keep
+		// the selected currency.
+		if ( null !== $this->get_order_id_from_query_vars() ) {
+			$calls[] = 'WC_Order_Factory::get_order';
+			$calls[] = 'Automattic\WooCommerce\Blocks\BlockTypes\OrderConfirmation\AbstractOrderConfirmationBlock->render';
+		}
+
+		return $this->utils->is_call_in_backtrace( $calls );
 	}
 }
