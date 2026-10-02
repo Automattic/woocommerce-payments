@@ -5034,8 +5034,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $order->get_checkout_order_received_url(), $result['redirect'] );
 	}
 
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
+	public function test_is_proper_intent_used_with_order_returns_false_for_mismatched_intent() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached' );
+		$order->save();
+
+		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( $order, 'pi_from_request' ) );
+	}
+
+	public function test_is_proper_intent_used_with_order_returns_true_for_matching_intent() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached' );
+		$order->save();
+
+		$this->assertTrue( $this->card_gateway->is_proper_intent_used_with_order( $order, 'pi_attached' ) );
 	}
 
 	public function test_get_recommended_payment_method() {
