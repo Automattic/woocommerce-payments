@@ -197,11 +197,13 @@ describe( 'Charge utilities', () => {
 		);
 
 		test( 'returns authorized when payment intent requires capture', () => {
+			const pendingCharge = {
+				status: 'pending',
+				paid: false,
+				captured: false,
+			};
 			expect(
-				utils.getChargeStatus(
-					authorizedCharge,
-					authorizedPaymentIntent
-				)
+				utils.getChargeStatus( pendingCharge, authorizedPaymentIntent )
 			).toEqual( 'authorized' );
 		} );
 
