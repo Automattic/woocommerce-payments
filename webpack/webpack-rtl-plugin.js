@@ -40,14 +40,17 @@ class WebpackRTLPlugin {
 			// runtime has to pick the RTL file itself. WordPress sets
 			// `<html dir="rtl">` whenever `is_rtl()` is true, which makes
 			// `document.dir` work for every entry without extra globals.
+			// The runtime looks up loaded tags by `data-href || href` against
+			// the LTR URL, so `data-href` keeps that URL for de-duplication
+			// and HMR.
 			MiniCssExtractPlugin.getCompilationHooks(
 				compilation
 			).beforeTagInsert.tap(
 				pluginName,
 				( source, { tag, href } ) =>
-					`${ source }\nif (document.dir === "rtl") ${ tag }.href = ${ href }.replace(${ cssRe }, ${ JSON.stringify(
+					`${ source }\nif (document.dir === "rtl") { ${ tag }.setAttribute("data-href", ${ href }); ${ tag }.href = ${ href }.replace(${ cssRe }, ${ JSON.stringify(
 						filenameSuffix
-					) });`
+					) }); }`
 			);
 
 			compilation.hooks.processAssets.tapPromise(

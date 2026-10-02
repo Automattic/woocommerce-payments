@@ -88,6 +88,16 @@ describe( 'WebpackRTLPlugin', () => {
 		);
 	} );
 
+	it( 'finds the RTL stylesheet already on the page', () => {
+		document.dir = 'rtl';
+		loadLazyChunk();
+		loadLazyChunk();
+
+		expect(
+			document.head.querySelectorAll( 'link[rel="stylesheet"]' )
+		).toHaveLength( 1 );
+	} );
+
 	it( 'loads the plain stylesheet on LTR pages', () => {
 		expect( loadLazyChunk() ).toMatch( /\/dist\/\w+\.css\?ver=[0-9a-f]+$/ );
 	} );
