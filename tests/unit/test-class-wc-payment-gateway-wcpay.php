@@ -317,6 +317,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Restore the gateway in the main class.
 		WC_Payments::set_gateway( $this->_gateway );
 
+		// Restore the fraud prevention service that some tests replace with a mock.
+		Fraud_Prevention_Service::set_instance( null );
+
 		// Restore the original payment gateway map to prevent test pollution.
 		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
 
