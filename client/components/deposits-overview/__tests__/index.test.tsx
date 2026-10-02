@@ -336,8 +336,8 @@ describe( 'Deposits Overview information', () => {
 				ignore: '.a11y-speak-region',
 			}
 		);
-		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
-		expect( queryByText( 'View full deposits history' ) ).toBeFalsy();
+		expect( queryByText( 'Change payout schedule' ) ).toBeFalsy();
+		expect( queryByText( 'View full payout history' ) ).toBeFalsy();
 	} );
 
 	test( 'Confirm notice renders if deposits blocked', () => {
@@ -361,7 +361,7 @@ describe( 'Deposits Overview information', () => {
 		// Check that the buttons are rendered as expected.
 		getByText( 'View full payout history' );
 		// This one is not rendered when deposits are blocked.
-		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
+		expect( queryByText( 'Change payout schedule' ) ).toBeFalsy();
 	} );
 
 	test( 'Confirm recent deposits renders ', () => {
