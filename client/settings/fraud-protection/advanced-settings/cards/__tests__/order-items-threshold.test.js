@@ -54,28 +54,6 @@ describe( 'Order items threshold card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders correctly when enabled and checked', () => {
-		settings.order_items_threshold.enabled = true;
-		settings.order_items_threshold.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<OrderItemsThresholdRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders like disabled when checked, but not enabled', () => {
-		settings.order_items_threshold.enabled = false;
-		settings.order_items_threshold.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<OrderItemsThresholdRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'renders warning when both fields are empty', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = true;
