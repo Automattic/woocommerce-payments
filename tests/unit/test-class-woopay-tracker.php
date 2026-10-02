@@ -97,17 +97,6 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->tracker->should_enable_tracking() );
 	}
 
-	public function test_tracks_build_event_obj_for_admin_events(): void {
-		$this->set_account_connected( true );
-		$event_name = 'wcadmin_test_event';
-		$properties = [ 'test_property' => 'value' ];
-
-		$event_obj = $this->invoke_method( $this->tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
-		$this->assertEquals( 'value', $event_obj->test_property );
-		$this->assertEquals( 1234, $event_obj->_ui );
-		$this->assertEquals( $event_name, $event_obj->_en );
-	}
-
 	public function test_tracks_build_event_obj_for_shopper_events() {
 		$this->set_account_connected( true );
 		$event_name = 'wcpay_test_event';

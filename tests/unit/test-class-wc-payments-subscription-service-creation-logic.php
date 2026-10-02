@@ -261,8 +261,8 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 		// Even with payment tokens, automatic subscriptions use different logic.
 		$subscription->payment_tokens = [ 'pm_test123' ];
 		$subscription->payment_method = 'woocommerce_payments';
-		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, uniqid( 'sub_' ) );
-		$subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, uniqid( 'order_' ) );
+		// No WCPay subscription yet, so only the automatic renewal setting should stop the creation.
+		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, '' );
 		$subscription->save();
 
 		// Mock subscription creation API call should NOT be called.

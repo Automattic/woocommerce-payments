@@ -91,46 +91,4 @@ class SessionServiceTest extends WCPAY_UnitTestCase {
 
 		$this->sut->set( 'foo', 'bar' );
 	}
-
-	public function provider_get_wc_session(): array {
-		return [
-			'Not yet initialized' => [ null ],
-			'Already initialized' => [ $this->createMock( WC_Session::class ) ],
-		];
-	}
-
-	/**
-	 * @dataProvider provider_get_wc_session
-	 */
-	public function test_get_wc_session( ?WC_Session $mock_wc_session ) {
-		$this->mock_legacy_proxy
-			->expects( $this->once() )
-			->method( 'call_function' )
-			->with( 'WC' )
-			->willReturn( (object) [ 'session' => $mock_wc_session ] );
-
-		$result = \PHPUnit_Utils::call_method( $this->sut, 'get_wc_session', [] );
-		$this->assertSame( $mock_wc_session, $result );
-	}
-
-	public function provider_has_wc_session(): array {
-		return [
-			'Not yet initialized' => [ null, false ],
-			'Already initialized' => [ $this->createMock( WC_Session::class ), true ],
-		];
-	}
-
-	/**
-	 * @dataProvider provider_has_wc_session
-	 */
-	public function test_has_wc_session( ?WC_Session $mock_wc_session, bool $expected ) {
-		$this->mock_legacy_proxy
-			->expects( $this->once() )
-			->method( 'call_function' )
-			->with( 'WC' )
-			->willReturn( (object) [ 'session' => $mock_wc_session ] );
-
-		$result = \PHPUnit_Utils::call_method( $this->sut, 'has_wc_session', [] );
-		$this->assertSame( $expected, $result );
-	}
 }

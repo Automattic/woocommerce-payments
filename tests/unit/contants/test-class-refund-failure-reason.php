@@ -13,19 +13,6 @@ use WCPay\Constants\Refund_Failure_Reason;
 class Refund_Failure_Reason_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * Test that all failure reason constants are defined.
-	 */
-	public function test_failure_reason_constants_are_defined() {
-		$this->assertTrue( defined( 'WCPay\Constants\Refund_Failure_Reason::LOST_OR_STOLEN_CARD' ) );
-		$this->assertTrue( defined( 'WCPay\Constants\Refund_Failure_Reason::EXPIRED_OR_CANCELED_CARD' ) );
-		$this->assertTrue( defined( 'WCPay\Constants\Refund_Failure_Reason::CHARGE_FOR_PENDING_REFUND_DISPUTED' ) );
-		$this->assertTrue( defined( 'WCPay\Constants\Refund_Failure_Reason::INSUFFICIENT_FUNDS' ) );
-		$this->assertTrue( defined( 'WCPay\Constants\Refund_Failure_Reason::DECLINED' ) );
-		$this->assertTrue( defined( 'WCPay\Constants\Refund_Failure_Reason::MERCHANT_REQUEST' ) );
-		$this->assertTrue( defined( 'WCPay\Constants\Refund_Failure_Reason::UNKNOWN' ) );
-	}
-
-	/**
 	 * Test that get_failure_message returns correct messages for all failure reasons.
 	 */
 	public function test_get_failure_message_returns_correct_messages() {

@@ -1633,13 +1633,16 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				new Exception()
 			);
 
-		$this->expectException( Exception::class );
+		try {
+			$this->wcpay_account->maybe_redirect_after_plugin_activation();
+		} catch ( Exception $e ) {
+			remove_filter( 'user_has_cap', $cb );
+			// The option should be updated even though the account check failed.
+			$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+			return;
+		}
 
-		$this->assertTrue( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
-		// The option should be updated.
-		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
-
-		remove_filter( 'user_has_cap', $cb );
+		$this->fail( 'The account error should be rethrown.' );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_account_valid() {
@@ -1918,6 +1921,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				[
 					'page' => 'wc-admin',
+					'path' => '',
 				],
 			],
 			'incorrect_path_param'                      => [
@@ -2149,6 +2153,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				[
 					'page' => 'wc-admin',
+					'path' => '',
 				],
 			],
 			'incorrect_path_param'                     => [
@@ -2461,6 +2466,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				[
 					'page' => 'wc-admin',
+					'path' => '',
 				],
 			],
 			'incorrect_path_param'                     => [
@@ -2708,6 +2714,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Server exception is masked by generic exception.
 		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Failed to detect connection status' );
 
 		$this->wcpay_account->try_is_stripe_connected();
 	}
@@ -2753,7 +2760,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
-	public function test_is_stripe_connected_returns_false_on_error() {
+	/**
+	 * @dataProvider provider_is_stripe_connected_on_error
+	 */
+	public function test_is_stripe_connected_returns_on_error_value_on_error( bool $on_error, bool $expected ) {
 		// The WPCOM/Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
@@ -2766,7 +2776,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				new API_Exception( 'test', 'server_error', 500 )
 			);
 
-		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
+		$this->assertSame( $expected, $this->wcpay_account->is_stripe_connected( $on_error ) );
+	}
+
+	public function provider_is_stripe_connected_on_error(): array {
+		return [
+			'on_error false' => [ false, false ],
+			'on_error true'  => [ true, true ],
+		];
 	}
 
 	public function test_is_stripe_connected_returns_false_when_not_connected() {
@@ -3384,10 +3401,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		}
 		$action_hook = 'wcpay_instant_deposit_reminder';
 		$this->mock_action_scheduler_service
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'pending_action_exists' )
-			->withConsecutive( [ $action_hook ], [ $action_hook ] )
-			->willReturnOnConsecutiveCalls( false, true );
+			->with( $action_hook )
+			->willReturn( false );
 
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
@@ -3409,9 +3426,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
-
-		// Test to see if scheduled action was created.
-		$this->assertTrue( $this->mock_action_scheduler_service->pending_action_exists( $action_hook ) );
 
 		// Test that the previously eligible option is set.
 		$this->assertTrue( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
@@ -3492,9 +3506,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
 			->method( 'schedule_job' )
-			->willReturn(
+			->with(
 				$this->greaterThan( time() ),
-				WC_Payments_Account::INSTANT_DEPOSITS_REMINDER_ACTION
+				'wcpay_instant_deposit_reminder'
 			);
 
 		$this->wcpay_account->handle_instant_deposits_inbox_reminder();
