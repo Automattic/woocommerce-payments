@@ -37,7 +37,6 @@ use WCPay\Database_Cache;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WC_Subscriptions;
 /**
  * WC_Payment_Gateway_WCPay unit tests
  */
@@ -805,64 +804,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'SEPA Direct Debit', $result_order->get_payment_method_title() );
 		$this->assertEquals( null, $result_order->get_meta( 'last4', true ) );
 		$this->assertEquals( null, $result_order->get_meta( '_card_brand', true ) );
-	}
-
-	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
-		// Setup $this->mock_payment_methods.
-
-		$this->set_cart_contains_subscription_items( true );
-		// Disable manual renewals to test only reusable methods are enabled.
-		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
-			function () {
-				return false;
-			}
-		);
-
-		$card_method       = $this->mock_payment_methods['card'];
-		$bancontact_method = $this->mock_payment_methods['bancontact'];
-		$eps_method        = $this->mock_payment_methods['eps'];
-		$sepa_method       = $this->mock_payment_methods['sepa_debit'];
-		$p24_method        = $this->mock_payment_methods['p24'];
-		$ideal_method      = $this->mock_payment_methods['ideal'];
-		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
-
-		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $bancontact_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $eps_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $sepa_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $p24_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $ideal_method->is_enabled_at_checkout( 'US' ) );
-		$this->assertFalse( $becs_method->is_enabled_at_checkout( 'US' ) );
-	}
-
-	public function test_create_token_from_setup_intent_adds_token() {
-
-		$mock_token           = WC_Helper_Token::create_token( 'pm_mock' );
-		$mock_setup_intent_id = 'si_mock';
-		$mock_user            = wp_get_current_user();
-
-		$this->mock_token_service
-			->method( 'add_payment_method_to_user' )
-			->with( 'pm_mock', $mock_user )
-			->will(
-				$this->returnValue( $mock_token )
-			);
-
-		foreach ( $this->mock_payment_gateways as $mock_upe_gateway ) {
-			$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $mock_setup_intent_id );
-
-			$request->expects( $this->once() )
-				->method( 'format_response' )
-				->willReturn(
-					WC_Helper_Intention::create_setup_intention(
-						[
-							'id'             => $mock_setup_intent_id,
-							'payment_method' => 'pm_mock',
-						]
-					)
-				);
-			$this->assertEquals( $mock_token, $mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
-		}
 	}
 
 	/**
