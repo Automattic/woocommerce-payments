@@ -3,10 +3,7 @@
 /**
  * Internal dependencies
  */
-import {
-	chargeId,
-	chargeMock,
-} from '../../payment-intents/__tests__/hooks.test';
+import { chargeId, chargeMock } from '../../payment-intents/__fixtures__';
 import {
 	getCharge,
 	getChargeError,

@@ -13,7 +13,7 @@ import moment from 'moment';
  */
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data/authorizations';
-import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
+import { paymentIntentMock } from 'wcpay/data/payment-intents/__fixtures__';
 import { recordEvent } from 'wcpay/tracks';
 import { _resetOutcomeViewTrackingForTests } from '../../dispute-outcome/tracks';
 
