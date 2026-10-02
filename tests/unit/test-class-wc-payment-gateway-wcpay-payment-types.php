@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Session_Rate_Limiter;
@@ -235,6 +236,10 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_wcs_order_contains_subscription( false );
 		$this->mock_wcs_get_subscriptions_for_order( [] );
 
+		$this->mock_wcpay_gateway->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->anything(), Payment_Type::SINGLE() );
+
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
@@ -263,6 +268,10 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_wcs_order_contains_subscription( true );
 		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
 
+		$this->mock_wcpay_gateway->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->anything(), Payment_Type::RECURRING() );
+
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
@@ -287,6 +296,10 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_wcs_get_subscriptions_for_renewal_order( [] );
 
 		$order->add_payment_token( $this->token );
+
+		$this->mock_wcpay_gateway->expects( $this->once() )
+			->method( 'get_metadata_from_order' )
+			->with( $this->anything(), Payment_Type::RECURRING() );
 
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
