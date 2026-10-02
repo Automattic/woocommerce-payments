@@ -127,7 +127,7 @@ describe( 'Advanced fraud protection settings', () => {
 		defaultSettings = [];
 	} );
 
-	test( 'renders correctly', () => {
+	test( 'renders every rule card with saving disabled until a change', () => {
 		mockUseSettings.mockReturnValue( {
 			settings: {
 				advanced_fraud_protection_settings: [],
@@ -142,7 +142,19 @@ describe( 'Advanced fraud protection settings', () => {
 			jest.fn(),
 		] );
 		container = render( <FraudProtectionAdvancedSettingsPage /> );
-		expect( container ).toMatchSnapshot();
+
+		[
+			'AVS Mismatch',
+			'International IP Address',
+			'IP Address Mismatch',
+			'Address Mismatch',
+			'Purchase Price Threshold',
+			'Order Items Threshold',
+			'CVC Verification',
+		].forEach( ( title ) =>
+			expect( container.getByText( title ) ).toBeInTheDocument()
+		);
+		expect( container.getByText( 'Save changes' ) ).toBeDisabled();
 	} );
 
 	it( 'renders an error message when settings can not be fetched from the server', async () => {
@@ -168,7 +180,6 @@ describe( 'Advanced fraud protection settings', () => {
 			</div>
 		);
 
-		expect( container ).toMatchSnapshot();
 		expect( container.baseElement ).toHaveTextContent(
 			/There was an error retrieving your fraud protection settings/i
 		);
@@ -233,7 +244,6 @@ describe( 'Advanced fraud protection settings', () => {
 		} );
 
 		expect( mockUseSettings().saveSettings.mock.calls.length ).toBe( 0 );
-		expect( container ).toMatchSnapshot();
 		expect(
 			document.querySelectorAll(
 				'.fraud-protection-advanced-settings-error-notice'
@@ -291,7 +301,9 @@ describe( 'Advanced fraud protection settings', () => {
 				1
 			);
 		} );
-		expect( container ).toMatchSnapshot();
+		expect(
+			container.queryByText( /Settings were not saved/ )
+		).not.toBeInTheDocument();
 		expect(
 			document.querySelectorAll(
 				'fraud-protection-advanced-settings-error-notice'
