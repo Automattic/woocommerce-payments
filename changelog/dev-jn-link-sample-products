@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
+Comment: chore(ci): add sample products to the PR build JN link and fix outdated links
 
-Update the Jurassic Ninja link in PR build comments to import sample products and drop the obsolete shortlived option.
