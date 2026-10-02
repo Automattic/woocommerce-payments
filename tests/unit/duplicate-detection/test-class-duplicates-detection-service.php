@@ -46,6 +46,15 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	 * Pre-test setup
 	 */
 	public function set_up() {
+		parent::set_up();
+
+		// Start from an empty registry. WCPAY_UnitTestCase puts the shared one back in tear_down.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
+
 		$this->service = new Duplicates_Detection_Service();
 
 		$this->woopayments_gateway         = new Test_Gateway();
@@ -62,12 +71,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		WC()->payment_gateways()->payment_gateways = $this->cached_gateways;
 
-		// resetting to prevent test pollution.
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
+		parent::tear_down();
 	}
 
 	public function test_two_cc_both_enabled() {
