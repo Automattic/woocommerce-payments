@@ -22,10 +22,21 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 */
 	private $mode_backup;
 
+	/**
+	 * `WC_Payments` account service and express checkout helper before the test, restored after it.
+	 *
+	 * @var array
+	 */
+	private $wc_payments_services_backup = [];
+
 	public function set_up() {
 		parent::set_up();
 
-		$this->mode_backup = WC_Payments::mode() ? clone WC_Payments::mode() : null;
+		$this->mode_backup                 = WC_Payments::mode() ? clone WC_Payments::mode() : null;
+		$this->wc_payments_services_backup = [
+			'account'                 => WC_Payments::get_account_service(),
+			'express_checkout_helper' => WC_Payments::get_express_checkout_helper(),
+		];
 
 		// Use a priority of 9 to ensure that these filters will allow tests that want to mock external requests
 		// to hook in with the regular 10 priority and do their thing.
@@ -46,6 +57,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 
 		$this->restore_mode();
 		$this->reset_subscriptions_function_stubs();
+		$this->restore_wc_payments_services();
 
 		parent::tear_down();
 	}
@@ -67,6 +79,20 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			$property->setValue( WC_Payments::mode(), $property->getValue( $this->mode_backup ) );
 		}
 		$this->mode_backup = null;
+	}
+
+	/**
+	 * Puts back the `WC_Payments` account service and express checkout helper that a test replaced
+	 * with `set_account_service()` or `set_express_checkout_helper()`.
+	 */
+	private function restore_wc_payments_services() {
+		if ( $this->wc_payments_services_backup['account'] ?? null ) {
+			WC_Payments::set_account_service( $this->wc_payments_services_backup['account'] );
+		}
+		if ( $this->wc_payments_services_backup['express_checkout_helper'] ?? null ) {
+			WC_Payments::set_express_checkout_helper( $this->wc_payments_services_backup['express_checkout_helper'] );
+		}
+		$this->wc_payments_services_backup = [];
 	}
 
 	/**
