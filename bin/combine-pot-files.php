@@ -132,7 +132,7 @@ function load_js_transpiling_source_maps(): array {
 
 	if ( empty( $mappings ) ) {
 		echo "[ERROR] Unable to load JS transpiling mappings from 'dist/*.js.map' files. Make sure the JS assets compilation was successful.\n";
-		die();
+		die( 1 );
 	}
 
 	return $mappings;
