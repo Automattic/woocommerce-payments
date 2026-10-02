@@ -64,24 +64,20 @@ describe( 'Date/Time Formatting', () => {
 			expect( formatted ).toBe( '2024-10-23 - 15:28' );
 		} );
 
-		it( 'should handle different timezones correctly', () => {
+		it( 'should leave the timezone to the site default when none is provided', () => {
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const dateI18n = require( '@wordpress/date' ).dateI18n;
-			// Temporarily modify the mock to use a different timezone: America/New_York
-			dateI18n.mockImplementationOnce(
-				( format: string, date: string | number ) => {
-					return jest
-						.requireActual( '@wordpress/date' )
-						.dateI18n( format, date, 'America/New_York' );
-				}
-			);
 
 			const dateTime = '2024-10-23 15:28:26';
-			const formatted = formatDateTimeFromString( dateTime, {
+			formatDateTimeFromString( dateTime, {
 				includeTime: true,
 			} );
 
-			expect( formatted ).toBe( '2024-10-23 / 11:28' );
+			expect( dateI18n ).toHaveBeenCalledWith(
+				'Y-m-d / H:i',
+				'2024-10-23T15:28:26.000Z',
+				undefined
+			);
 		} );
 
 		it( 'should respect explicitly provided timezone', () => {
@@ -139,25 +135,20 @@ describe( 'Date/Time Formatting', () => {
 			expect( formatted ).toBe( '2024-10-24 - 10:48' );
 		} );
 
-		it( 'should handle different timezones correctly', () => {
+		it( 'should leave the timezone to the site default when none is provided', () => {
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const dateI18n = require( '@wordpress/date' ).dateI18n;
-			// Temporarily modify the mock to use a different timezone: America/New_York
-			dateI18n.mockImplementationOnce(
-				( format: string, date: string | number ) => {
-					return jest
-						.requireActual( '@wordpress/date' )
-						.dateI18n( format, date, 'America/New_York' );
-				}
-			);
 
 			const timestamp = 1729766906; // 2024-10-24 10:48:26 UTC
-			const formatted = formatDateTimeFromTimestamp( timestamp, {
+			formatDateTimeFromTimestamp( timestamp, {
 				includeTime: true,
 			} );
 
-			// In New York (EDT), this should be 4 hours behind UTC
-			expect( formatted ).toBe( '2024-10-24 / 06:48' );
+			expect( dateI18n ).toHaveBeenCalledWith(
+				'Y-m-d / H:i',
+				'2024-10-24T10:48:26.000Z',
+				undefined
+			);
 		} );
 
 		it( 'should respect explicitly provided timezone', () => {
