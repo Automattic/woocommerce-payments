@@ -4885,18 +4885,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->card_gateway->should_use_stripe_platform_on_checkout_page() );
 	}
 
-	public function is_woopay_falsy_value_provider() {
-		return [
-			[ '0' ],
-			[ 0 ],
-			[ null ],
-			[ false ],
-			'(bool) true is not strictly equal to (int) 1' => [ true ],
-			[ 'foo' ],
-			[ [] ],
-		];
-	}
-
 	/**
 	 * Create a partial mock for WC_Payment_Gateway_WCPay class.
 	 *
@@ -5034,8 +5022,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $order->get_checkout_order_received_url(), $result['redirect'] );
 	}
 
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
+	public function test_is_proper_intent_used_with_order_returns_false_for_mismatched_intent() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached' );
+		$order->save();
+
+		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( $order, 'pi_from_request' ) );
+	}
+
+	public function test_is_proper_intent_used_with_order_returns_true_for_matching_intent() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', 'pi_attached' );
+		$order->save();
+
+		$this->assertTrue( $this->card_gateway->is_proper_intent_used_with_order( $order, 'pi_attached' ) );
 	}
 
 	public function test_get_recommended_payment_method() {
