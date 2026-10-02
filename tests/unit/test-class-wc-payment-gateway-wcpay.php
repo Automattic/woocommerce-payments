@@ -4885,18 +4885,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->card_gateway->should_use_stripe_platform_on_checkout_page() );
 	}
 
-	public function is_woopay_falsy_value_provider() {
-		return [
-			[ '0' ],
-			[ 0 ],
-			[ null ],
-			[ false ],
-			'(bool) true is not strictly equal to (int) 1' => [ true ],
-			[ 'foo' ],
-			[ [] ],
-		];
-	}
-
 	/**
 	 * Create a partial mock for WC_Payment_Gateway_WCPay class.
 	 *
