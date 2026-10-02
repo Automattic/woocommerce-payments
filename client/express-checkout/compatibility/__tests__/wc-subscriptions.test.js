@@ -185,10 +185,10 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 		expect(
 			applyFilters(
 				'wcpay.express-checkout.is-cart-eligible',
-				true,
+				false,
 				cart
 			)
-		).toBe( true );
+		).toBe( false );
 	} );
 
 	describe( 'total-amount filter', () => {
