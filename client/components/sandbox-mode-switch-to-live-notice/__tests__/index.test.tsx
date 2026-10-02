@@ -96,7 +96,7 @@ describe( 'SandboxModeSwitchToLiveNotice in development mode', () => {
 		expect(
 			container.querySelector( '.sandbox-mode-notice' )
 		).toHaveTextContent(
-			'WooPayments is in test mode — all transactions are simulated! Test mode is on because development mode is on.'
+			'WooPayments is in test mode — all transactions are simulated. Test mode is on because development mode is on.'
 		);
 	} );
 

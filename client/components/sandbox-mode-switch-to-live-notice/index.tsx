@@ -337,7 +337,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							/* translators: %1$s: WooPayments */
 							__(
 								// eslint-disable-next-line max-len
-								'{{div}}{{strong}}%1$s is in test mode — all transactions are simulated!{{/strong}} Test mode is on because development mode is on.{{/div}}{{learnMoreIcon/}}',
+								'{{div}}{{strong}}%1$s is in test mode — all transactions are simulated.{{/strong}} Test mode is on because development mode is on.{{/div}}{{learnMoreIcon/}}',
 								'woocommerce-payments'
 							),
 							'WooPayments'

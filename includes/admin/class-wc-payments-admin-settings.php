@@ -91,7 +91,7 @@ class WC_Payments_Admin_Settings {
 					<?php
 						printf(
 							/* translators: %s: WooPayments */
-							esc_html__( '%s is in test mode — all transactions are simulated!', 'woocommerce-payments' ) . ' ',
+							esc_html__( '%s is in test mode — all transactions are simulated.', 'woocommerce-payments' ) . ' ',
 							'WooPayments'
 						);
 					?>
