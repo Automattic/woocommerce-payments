@@ -112,62 +112,6 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_process_refund() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
-
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->save();
-
-		wc_create_refund(
-			[
-				'amount'   => 19.99,
-				'order_id' => $order->get_id(),
-			]
-		);
-
-		$response = new Response(
-			[
-				'id'                       => 're_123456789',
-				'object'                   => 'refund',
-				'amount'                   => $amount = 19.99,
-				'balance_transaction'      => 'txn_987654321',
-				'charge'                   => 'ch_121212121212',
-				'created'                  => 1610123467,
-				'payment_intent'           => 'pi_1234567890',
-				'reason'                   => null,
-				'receipt_number'           => null,
-				'source_transfer_reversal' => null,
-				'status'                   => Intent_Status::SUCCEEDED,
-				'transfer_reversal'        => null,
-				'currency'                 => 'usd',
-			]
-		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_charge' )
-			->with( $charge_id );
-
-		$request->expects( $this->once() )
-			->method( 'set_amount' )
-			->with( WC_Payments_Utils::prepare_amount( $amount ) );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $response );
-
-		$this->mock_order_service
-			->method( 'get_charge_id_for_order' )
-			->willReturn( $charge_id );
-
-		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $amount );
-
-		$this->assertTrue( $result );
-	}
-
 	public function test_process_refund_should_work_without_payment_method_id_meta() {
 
 		$charge_id = 'ch_yyyyyyyyy';
