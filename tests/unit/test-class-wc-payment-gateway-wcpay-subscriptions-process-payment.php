@@ -288,9 +288,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -334,9 +332,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -406,6 +402,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$subscriptions = [ new WC_Subscription() ];
 		$subscriptions[0]->set_parent( $order );
 
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 
 		$request->expects( $this->once() )
@@ -426,9 +425,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -509,9 +506,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
@@ -550,9 +545,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			if ( [] !== $payment_tokens ) {
-				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
-			}
+			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 		}
 	}
 
