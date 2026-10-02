@@ -93,4 +93,5 @@ module.exports = {
 		].join( '' ),
 	],
 	snapshotSerializers: [ '@emotion/jest/serializer' ],
+	clearMocks: true,
 };
