@@ -82,7 +82,10 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent( 'Card transactions' );
+		expect( accountFees ).toHaveTextContent(
+			'2.9% + $0.30 per transaction 2.9% + $0.30 per transaction'
+		);
 	} );
 
 	test( 'renders non-USD base fee', () => {
@@ -110,7 +113,10 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent( 'Euro (EUR)' );
+		expect( accountFees ).toHaveTextContent(
+			'2.9% + 0,25 € per transaction 2.9% + 0,30 € per transaction'
+		);
 	} );
 
 	test( 'renders discounted base fee', () => {
@@ -135,7 +141,11 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent( '2% + $0.20 per transaction' );
+		expect( accountFees ).toHaveTextContent( '$12,345.56' );
+		expect( accountFees ).toHaveTextContent(
+			'Discounted base fee expires after the first $1,000,000.00 of total payment volume.'
+		);
 	} );
 
 	test( 'renders discounted non-USD base fee', () => {
@@ -160,7 +170,12 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent(
+			'0.7% + £0.10 per transaction'
+		);
+		expect( accountFees ).toHaveTextContent(
+			'Discounted base fee expires after the first £1,000,000.00 of total payment volume.'
+		);
 	} );
 
 	test( 'renders discounted fee with USD volume currency and non-USD base fee', () => {
@@ -185,7 +200,12 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent(
+			'0.7% + £0.10 per transaction'
+		);
+		expect( accountFees ).toHaveTextContent(
+			'Discounted base fee expires after the first $1,000,000.00 of total payment volume.'
+		);
 	} );
 
 	test( 'renders discounted fee without volume limit', () => {
@@ -207,7 +227,10 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent(
+			'2.03% + $0.21 per transaction (30% discount)'
+		);
+		expect( accountFees ).not.toHaveTextContent( 'expires' );
 	} );
 
 	test( 'renders discounted fee with volume limit', () => {
@@ -231,7 +254,12 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent(
+			'2.03% + $0.21 per transaction (30% discount)'
+		);
+		expect( accountFees ).toHaveTextContent(
+			'Discounted base fee expires after the first $25,000.00 of total payment volume.'
+		);
 	} );
 
 	test( 'renders discounted fee with end date', () => {
@@ -254,7 +282,13 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent(
+			'2.03% + $0.21 per transaction (30% discount)'
+		);
+		expect( accountFees ).toHaveTextContent(
+			'Discounted base fee expires on March 31, 2025.'
+		);
+		expect( accountFees ).not.toHaveTextContent( 'total payment volume' );
 	} );
 
 	test( 'renders discounted fee with volume limit and end date', () => {
@@ -279,7 +313,9 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent(
+			'Discounted base fee expires after the first $25,000.00 of total payment volume or on March 31, 2025.'
+		);
 	} );
 
 	test( 'renders first discounted fee ignoring the rest', () => {
@@ -308,13 +344,15 @@ describe( 'AccountFees', () => {
 				},
 			},
 		] );
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent(
+			'2.32% + $0.24 per transaction (20% discount)'
+		);
 	} );
 
 	test( 'renders without any discounts', () => {
 		const { container: accountFees } = renderAccountFees( [] );
 
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toBeEmptyDOMElement();
 	} );
 
 	test( 'renders discounts multiple payment methods', () => {
@@ -392,6 +430,9 @@ describe( 'AccountFees', () => {
 			},
 		] );
 
-		expect( accountFees ).toMatchSnapshot();
+		expect( accountFees ).toHaveTextContent( 'Card transactions' );
+		expect( accountFees ).toHaveTextContent( 'giropay transactions' );
+		expect( accountFees ).toHaveTextContent( 'Sofort transactions' );
+		expect( accountFees ).not.toHaveTextContent( 'In-person transactions' );
 	} );
 } );
