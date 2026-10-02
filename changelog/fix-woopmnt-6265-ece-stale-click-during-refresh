@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix express checkout buttons opening or crashing on stale cart data while the cart is being refreshed on classic pages.
