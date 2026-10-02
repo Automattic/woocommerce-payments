@@ -1,19 +1,5 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`Test mode notification Returns empty div if not in test mode 1`] = `<div />`;
-
-exports[`Test mode notification Returns empty div if not in test mode 2`] = `<div />`;
-
-exports[`Test mode notification Returns empty div if not in test mode 3`] = `<div />`;
-
-exports[`Test mode notification Returns empty div if not in test mode 4`] = `<div />`;
-
-exports[`Test mode notification Returns empty div if not in test mode 5`] = `<div />`;
-
-exports[`Test mode notification Returns empty div if not in test mode 6`] = `<div />`;
-
-exports[`Test mode notification Returns empty div if not in test mode 7`] = `<div />`;
-
 exports[`Test mode notification Returns valid component for deposits page 1`] = `
 <div>
   <div
