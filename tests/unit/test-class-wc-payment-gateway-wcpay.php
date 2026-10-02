@@ -2855,11 +2855,25 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'square' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' );
+		$order->delete_meta_data( '_new_order_tracking_complete' );
+		$order->save_meta_data();
 
 		// If the payment gateway isn't WC Pay, this function should never get called.
 		$this->mock_action_scheduler_service
 			->expects( $this->never() )
 			->method( 'schedule_job' );
+
+		$this->mock_fraud_service
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
 
 		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
@@ -4961,7 +4975,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' );
 
 		// Act: process payment.
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame(
+			[
+				'result'   => 'success',
+				'redirect' => '',
+			],
+			$result
+		);
+		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
