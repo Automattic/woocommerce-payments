@@ -7,6 +7,7 @@ import { fireEvent, render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
+import { List } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -169,6 +170,14 @@ const expandAccordion = ( title ) => {
 	fireEvent.click( accordionTitle );
 };
 
+// `List` warns about its deprecated `items` prop only once per process, so the
+// first test to render it would fail on the warning, depending on test order.
+beforeAll( () => {
+	// eslint-disable-next-line testing-library/no-render-in-setup
+	render( <List items={ [] } /> ).unmount();
+	expect( console ).toHaveWarned();
+} );
+
 describe( 'PaymentDetailsSummary', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -221,12 +230,6 @@ describe( 'PaymentDetailsSummary', () => {
 
 	test( 'correctly renders a charge', () => {
 		expect( renderCharge( getBaseCharge() ) ).toMatchSnapshot();
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		expect( console ).toHaveWarnedWith(
-			// eslint-disable-next-line max-len
-			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
-		);
 	} );
 
 	test( 'correctly renders when payment intent is missing', () => {
