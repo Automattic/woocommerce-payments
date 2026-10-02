@@ -88,6 +88,14 @@ describe( 'Spotlight Component', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'does not render a footnote when none is provided', () => {
+		const { container } = render( <Spotlight { ...defaultProps } /> );
+
+		expect(
+			container.querySelector( '.wcpay-spotlight__footnote' )
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'renders footnote with React component content', () => {
 		const propsWithReactFootnote = {
 			...defaultProps,
