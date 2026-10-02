@@ -127,6 +127,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Start from an empty registry. WCPAY_UnitTestCase puts the shared one back in tear_down.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
+
 		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 
 		self::$settings_route = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/settings';
@@ -245,12 +252,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 		WC_Payments::set_database_cache( $this->_cache );
 		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
-
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
