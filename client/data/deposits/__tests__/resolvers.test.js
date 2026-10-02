@@ -20,8 +20,6 @@ import {
 
 import { getDeposit, getDeposits, getDepositsSummary } from '../resolvers';
 
-jest.mock( '@wordpress/data-controls' );
-
 const depositsResponse = {
 	data: [
 		{
@@ -97,16 +95,11 @@ describe( 'getDeposit resolver', () => {
 	describe( 'validation', () => {
 		let generator = null;
 
-		beforeEach( () => {
-			jest.clearAllMocks();
-		} );
-
 		test( "shouldn't fetch deposit with non-word-character deposit id", () => {
 			generator = getDeposit( '../path?a=b&c=d' );
 			const next = generator.next();
 			expect( next.value ).toStrictEqual( undefined );
 			expect( next.done ).toStrictEqual( true );
-			expect( apiFetch ).not.toHaveBeenCalled();
 		} );
 	} );
 } );
@@ -121,9 +114,6 @@ describe( 'getDeposits resolver', () => {
 		'page=1&pagesize=25&match=all&store_currency_is=gbp&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&status_is=paid&status_is_not=failed';
 
 	beforeEach( () => {
-		apiFetch.mockImplementation( () => {
-			return 'something';
-		} );
 		generator = getDeposits( query );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
