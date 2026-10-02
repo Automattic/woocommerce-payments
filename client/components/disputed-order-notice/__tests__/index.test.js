@@ -98,16 +98,20 @@ describe( 'DisputedOrderNoticeHandler', () => {
 	} );
 
 	test( 'does not render notice if dispute is not awaiting response', () => {
-		mockCharge.dispute.status = 'won';
-		render(
+		const fixedDate = new Date( '2023-10-28T00:00:00Z' );
+		jest.useFakeTimers();
+		jest.setSystemTime( fixedDate );
+		useCharge.mockReturnValue( {
+			data: { dispute: { ...mockCharge.dispute, status: 'won' } },
+		} );
+
+		const { container } = render(
 			<DisputedOrderNoticeHandler
 				chargeId="ch_123"
 				onDisableOrderRefund={ jest.fn() }
 			/>
 		);
-		expect(
-			screen.queryByText( /Please resolve the dispute on this order of/ )
-		).not.toBeInTheDocument();
+		expect( container ).toBeEmptyDOMElement();
 	} );
 
 	test( 'consolidates multiple awaiting-response disputes into one notice, using the summed amount and earliest due date', () => {
