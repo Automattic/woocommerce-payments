@@ -14,9 +14,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 const rtlcss = require( 'rtlcss' );
+const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const { ConcatSource } = require( 'webpack' ).sources;
 
 const pluginName = 'WebpackRTLPlugin';
+const cssRe = /\.css(?=$|\?)/;
 
 class WebpackRTLPlugin {
 	constructor( options ) {
@@ -30,14 +32,33 @@ class WebpackRTLPlugin {
 	}
 
 	apply( compiler ) {
+		const filenameSuffix = this.options.filenameSuffix || '.rtl$&';
+
 		compiler.hooks.thisCompilation.tap( pluginName, ( compilation ) => {
+			// WordPress swaps in the RTL file only for stylesheets it enqueues.
+			// Lazy chunk CSS is loaded by the webpack runtime instead, so the
+			// runtime has to pick the RTL file itself. WordPress sets
+			// `<html dir="rtl">` whenever `is_rtl()` is true, which makes
+			// `document.dir` work for every entry without extra globals.
+			// The runtime looks up loaded tags by `data-href || href` against
+			// the LTR URL, so `data-href` keeps that URL for de-duplication
+			// and HMR.
+			MiniCssExtractPlugin.getCompilationHooks(
+				compilation
+			).beforeTagInsert.tap(
+				pluginName,
+				( source, { tag, href } ) =>
+					`${ source }\nif (document.dir === "rtl") { ${ tag }.setAttribute("data-href", ${ href }); ${ tag }.href = ${ href }.replace(${ cssRe }, ${ JSON.stringify(
+						filenameSuffix
+					) }); }`
+			);
+
 			compilation.hooks.processAssets.tapPromise(
 				{
 					name: pluginName,
 					stage: compilation.PROCESS_ASSETS_STAGE_DERIVED,
 				},
 				async ( assets ) => {
-					const cssRe = /\.css(?=$|\?)/;
 					return Promise.all(
 						Array.from( compilation.chunks )
 							.flatMap( ( chunk ) =>
@@ -59,7 +80,7 @@ class WebpackRTLPlugin {
 								// Compute the filename
 								const filename = asset.replace(
 									cssRe,
-									this.options.filenameSuffix || `.rtl$&`
+									filenameSuffix
 								);
 								const assetInstance = assets[ asset ];
 								chunk.files.add( filename );
