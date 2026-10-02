@@ -2913,6 +2913,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'failed',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_db_wrapper
@@ -2922,6 +2923,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service
 			->expects( $this->never() )
 			->method( 'add_note_and_metadata_for_created_refund' );
+
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	public function test_process_refund_throws_when_order_not_found(): void {
