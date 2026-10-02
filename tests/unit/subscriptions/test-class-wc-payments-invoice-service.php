@@ -67,6 +67,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_pending_invoice_paid_for_subscription() {
 		$mock_subscription = new WC_Subscription();
+		$mock_subscription->update_meta_data( self::PENDING_INVOICE_ID_KEY, 'in_123abc' );
 
 		$this->invoice_service->mark_pending_invoice_paid_for_subscription( $mock_subscription );
 		$this->assertEquals( '', $mock_subscription->get_meta( self::PENDING_INVOICE_ID_KEY, true ) );
