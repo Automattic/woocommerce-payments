@@ -29,6 +29,15 @@ jest.mock( '@wordpress/data', () => ( {
 
 describe( 'FraudProtectionTour', () => {
 	let mockIntersectionObserver;
+	let referenceElement;
+
+	const reportReferenceVisible = () => {
+		act( () => {
+			mockIntersectionObserver.mock.calls.forEach( ( [ callback ] ) =>
+				callback( [ { isIntersecting: true } ] )
+			);
+		} );
+	};
 
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -38,6 +47,9 @@ describe( 'FraudProtectionTour', () => {
 		};
 
 		jest.clearAllMocks();
+		jest.requireMock( 'wcpay/data/settings' ).useSettings.mockReturnValue( {
+			isLoading: false,
+		} );
 
 		mockIntersectionObserver = jest.fn();
 		mockIntersectionObserver.mockReturnValue( {
@@ -45,6 +57,14 @@ describe( 'FraudProtectionTour', () => {
 			disconnect: jest.fn(),
 		} );
 		window.IntersectionObserver = mockIntersectionObserver;
+
+		referenceElement = document.createElement( 'div' );
+		referenceElement.id = 'fp-settings';
+		document.body.appendChild( referenceElement );
+	} );
+
+	afterEach( () => {
+		referenceElement.remove();
 	} );
 
 	it( 'should not render the tour component initially', () => {
@@ -53,21 +73,11 @@ describe( 'FraudProtectionTour', () => {
 	} );
 
 	it( 'should render the tour when reference element is visible', () => {
-		const referenceElement = document.createElement( 'div' );
-		referenceElement.id = 'fp-settings';
-		document.body.appendChild( referenceElement );
-
 		const { queryByTestId } = render( <FraudProtectionTour /> );
 
-		// Simulate intersection
-		const [ observerCallback ] = mockIntersectionObserver.mock.calls[ 0 ];
-		act( () => {
-			observerCallback( [ { isIntersecting: true } ] );
-		} );
+		reportReferenceVisible();
 
 		expect( queryByTestId( 'tour-kit' ) ).toBeInTheDocument();
-
-		document.body.removeChild( referenceElement );
 	} );
 
 	it( 'should not render the tour component if it was already dismissed', () => {
@@ -78,6 +88,8 @@ describe( 'FraudProtectionTour', () => {
 		};
 
 		const { queryByTestId } = render( <FraudProtectionTour /> );
+		reportReferenceVisible();
+
 		expect( queryByTestId( 'tour-kit' ) ).not.toBeInTheDocument();
 	} );
 
@@ -87,11 +99,17 @@ describe( 'FraudProtectionTour', () => {
 		} );
 
 		const { queryByTestId } = render( <FraudProtectionTour /> );
+		reportReferenceVisible();
+
 		expect( queryByTestId( 'tour-kit' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'should not render the tour if reference element is not found', () => {
+		referenceElement.remove();
+
 		const { queryByTestId } = render( <FraudProtectionTour /> );
+		reportReferenceVisible();
+
 		expect( queryByTestId( 'tour-kit' ) ).not.toBeInTheDocument();
 	} );
 } );
