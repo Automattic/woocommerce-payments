@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -10,22 +10,27 @@ import { render } from '@testing-library/react';
 import { AccordionRow } from '../';
 
 describe( 'AccordionRow', () => {
-	test( 'renders with default props', () => {
-		const { container } = render(
-			<AccordionRow>Test Content</AccordionRow>
+	test( 'renders its content in a row container', () => {
+		render( <AccordionRow>Test Content</AccordionRow> );
+
+		expect( screen.getByText( 'Test Content' ) ).toHaveClass(
+			'wcpay-accordion__row'
 		);
-		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders with custom className', () => {
-		const { container } = render(
+		render(
 			<AccordionRow className="custom-class">Test Content</AccordionRow>
 		);
-		expect( container ).toMatchSnapshot();
+
+		expect( screen.getByText( 'Test Content' ) ).toHaveClass(
+			'wcpay-accordion__row',
+			'custom-class'
+		);
 	} );
 
 	test( 'renders with complex content', () => {
-		const { container } = render(
+		render(
 			<AccordionRow>
 				<div>
 					<h3>Title</h3>
@@ -33,6 +38,11 @@ describe( 'AccordionRow', () => {
 				</div>
 			</AccordionRow>
 		);
-		expect( container ).toMatchSnapshot();
+
+		expect(
+			screen
+				.getByRole( 'heading', { name: 'Title' } )
+				.closest( '.wcpay-accordion__row' )
+		).toContainElement( screen.getByText( 'Description' ) );
 	} );
 } );
