@@ -163,7 +163,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 */
 	public function test_webhook_is_not_created_for_under_review() {
 		wp_set_current_user( self::$admin_user->ID );
-		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( true );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 
@@ -179,7 +179,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	 */
 	public function test_webhook_is_not_created_for_rejected() {
 		wp_set_current_user( self::$admin_user->ID );
-		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( true );
 
