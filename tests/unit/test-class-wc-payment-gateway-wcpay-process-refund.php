@@ -940,7 +940,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order->get_id() );
-		$this->assertFalse( $this->wcpay_gateway->has_refund_failed( $order ) );
+		$this->assertSame( 'successful', $order->get_meta( '_wcpay_refund_status', true ) );
 	}
 
 	public function test_process_refund_failure_sets_refund_failed_meta() {
@@ -969,15 +969,11 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			->method( 'get_charge_id_for_order' )
 			->willReturn( $charge_id );
 
-		$this->mock_order_service
-			->method( 'get_wcpay_refund_status_for_order' )
-			->willReturn( 'failed' );
-
 		$this->wcpay_gateway->process_refund( $order_id, 19.99 );
 
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order_id );
-		$this->assertTrue( $this->wcpay_gateway->has_refund_failed( $order ) );
+		$this->assertSame( 'failed', $order->get_meta( '_wcpay_refund_status', true ) );
 	}
 
 	public function test_process_refund_on_api_error() {
