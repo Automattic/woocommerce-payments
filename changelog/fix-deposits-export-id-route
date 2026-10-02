@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Reject payout export download requests whose export ID contains path characters, matching the transaction and dispute export downloads.
