@@ -9,6 +9,7 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import SandboxModeSwitchToLiveNotice from '..';
+import { recordEvent } from 'wcpay/tracks';
 
 jest.mock( 'wcpay/tracks', () => ( {
 	recordEvent: jest.fn(),
@@ -88,7 +89,7 @@ describe( 'SandboxModeSwitchToLiveNotice in development mode', () => {
 		}
 	);
 
-	it( 'explains test mode for a live account', () => {
+	it( 'explains test mode and tracks Learn more for a live account', async () => {
 		setAccount( { isLive: true, testDrive: false, devMode: true } );
 
 		const { container } = renderNotice();
@@ -97,6 +98,25 @@ describe( 'SandboxModeSwitchToLiveNotice in development mode', () => {
 			container.querySelector( '.sandbox-mode-notice' )
 		).toHaveTextContent(
 			'WooPayments is in test mode — all transactions are simulated. Test mode is on because development mode is on.'
+		);
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Learn more about development mode',
+			} )
+		);
+		const learnMoreLink = screen.getByRole( 'link', {
+			name: 'Learn more',
+		} );
+		expect( learnMoreLink ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
+		);
+
+		await user.click( learnMoreLink );
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_overview_sandbox_mode_learn_more_clicked',
+			{ account_type: 'live', is_dev_mode: true }
 		);
 	} );
 
