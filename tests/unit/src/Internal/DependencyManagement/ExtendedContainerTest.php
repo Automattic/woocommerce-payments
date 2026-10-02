@@ -38,6 +38,12 @@ class ExtendedContainerTest extends WCPAY_UnitTestCase {
 	 * Tests that there is nothing done whenever a replacement to reset has been not found.
 	 */
 	public function test_reset_replacement_does_nothing_if_replacement_not_found() {
-		$this->assertNull( $this->sut->reset_replacement( 'SomeUnknownClass' ) );
+		$replacement = new stdClass();
+		$this->sut->add( 'SomeKnownClass', new stdClass() );
+		$this->sut->replace( 'SomeKnownClass', $replacement );
+
+		$this->sut->reset_replacement( 'SomeUnknownClass' );
+
+		$this->assertSame( $replacement, $this->sut->get( 'SomeKnownClass' ) );
 	}
 }
