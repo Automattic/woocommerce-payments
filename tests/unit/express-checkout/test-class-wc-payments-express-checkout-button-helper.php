@@ -131,10 +131,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		return 'incl';
 	}
 
-	public function __return_base() {
-		return 'base';
-	}
-
 	/**
 	 * @return WC_Payment_Gateway_WCPay
 	 */
@@ -1172,13 +1168,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 */
 	public function return_eur_currency() {
 		return Currency_Code::EURO;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function return_usd_currency() {
-		return Currency_Code::UNITED_STATES_DOLLAR;
 	}
 
 	/**

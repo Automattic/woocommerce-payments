@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Blocks\RestApi;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Compatibility_Service;
 use WCPay\Constants\Country_Code;
@@ -1081,21 +1079,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 			return $allcaps;
 		};
-	}
-
-	/**
-	 * Deregister WooCommerce Blocks REST routes to prevent _doing_it_wrong() notices
-	 * after calls to rest_do_request().
-	 */
-	public function deregister_wc_blocks_rest_api() {
-		try {
-			/* For WooCommerce Blocks >= 2.6.0: */
-			$wc_blocks_rest_api = Package::container()->get( RestApi::class );
-			remove_action( 'rest_api_init', [ $wc_blocks_rest_api, 'register_rest_routes' ] );
-		} catch ( Exception $e ) {
-			/* For WooCommerce Blocks < 2.6.0: */
-			remove_action( 'rest_api_init', [ RestApi::class, 'register_rest_routes' ] );
-		}
 	}
 
 	public function test_get_settings_card_eligible_flag(): void {
