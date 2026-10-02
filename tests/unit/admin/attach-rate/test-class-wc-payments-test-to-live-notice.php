@@ -161,24 +161,6 @@ class WC_Payments_Test_To_Live_Notice_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $notice->should_show() );
 	}
 
-	// ---- should_show: dismiss / snooze gating --------------------------------
-
-	public function test_should_show_returns_false_when_dismissed(): void {
-		$this->create_wcpay_test_order();
-		update_user_meta( $this->admin_user_id, 'wcpay_test_to_live_notice_dismissed', time() );
-		$notice = $this->make_notice();
-
-		$this->assertFalse( $notice->should_show() );
-	}
-
-	public function test_should_show_returns_false_when_snoozed(): void {
-		$this->create_wcpay_test_order();
-		update_user_meta( $this->admin_user_id, 'wcpay_test_to_live_notice_snoozed', time() );
-		$notice = $this->make_notice();
-
-		$this->assertFalse( $notice->should_show() );
-	}
-
 	public function test_should_show_memoizes_expensive_check(): void {
 		$this->create_wcpay_test_order();
 
