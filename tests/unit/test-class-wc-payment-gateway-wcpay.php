@@ -2658,6 +2658,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_add_payment_method_no_method() {
 		$result = $this->card_gateway->add_payment_method();
 		$this->assertEquals( 'error', $result['result'] );
+
+		$notices = wc_get_notices( 'error' );
+		wc_clear_notices();
+		$this->assertStringContainsString( 'payment method was not provided', $notices[0]['notice'] );
 	}
 
 	public function test_create_and_confirm_setup_intent_existing_customer() {
@@ -2772,11 +2776,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$manage->invoke( $this->card_gateway, $order, [] );
 
 		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
-	}
-
-	public function test_add_payment_method_no_intent() {
-		$result = $this->card_gateway->add_payment_method();
-		$this->assertEquals( 'error', $result['result'] );
 	}
 
 	public function test_add_payment_method_success() {
