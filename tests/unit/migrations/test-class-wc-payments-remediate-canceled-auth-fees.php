@@ -54,10 +54,6 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_class_exists() {
-		$this->assertInstanceOf( WC_Payments_Remediate_Canceled_Auth_Fees::class, $this->remediation );
-	}
-
 	public function test_is_complete_returns_false_when_not_started() {
 		$this->assertFalse( $this->remediation->is_complete() );
 	}
@@ -580,11 +576,26 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$mock_remediation->method( 'is_hpos_enabled' )->willReturn( true );
 
-		// HPOS tables don't exist in the test environment, so this should return empty.
-		// This test verifies the HPOS code path is taken without errors.
+		global $wpdb;
+		$queries       = [];
+		$capture_query = function ( $query ) use ( &$queries ) {
+			$queries[] = $query;
+			return $query;
+		};
+		add_filter( 'query', $capture_query );
+
 		$orders = $mock_remediation->get_affected_orders( 10 );
 
+		remove_filter( 'query', $capture_query );
+
 		$this->assertIsArray( $orders );
+		$hpos_queries = array_filter(
+			$queries,
+			function ( $query ) use ( $wpdb ) {
+				return false !== strpos( $query, "FROM {$wpdb->prefix}wc_orders orders" );
+			}
+		);
+		$this->assertNotEmpty( $hpos_queries, 'Expected the affected orders query to read the HPOS orders table.' );
 	}
 
 	public function test_get_affected_orders_uses_cpt_when_hpos_disabled() {
@@ -616,19 +627,23 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$result = $reflection->invoke( $this->remediation );
 
-		$this->assertIsBool( $result );
+		$this->assertSame( WC_Payments_Utils::is_hpos_tables_usage_enabled(), $result );
 	}
 
-	public function test_sync_order_stats_does_not_throw_when_class_unavailable() {
+	public function test_sync_order_stats_writes_the_order_stats_row() {
+		global $wpdb;
+		$order = WC_Helper_Order::create_order();
+		$wpdb->delete( $wpdb->prefix . 'wc_order_stats', [ 'order_id' => $order->get_id() ] );
+
 		// Use reflection to test protected method.
 		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'sync_order_stats' );
 		$reflection->setAccessible( true );
+		$reflection->invoke( $this->remediation, $order->get_id() );
 
-		// This should not throw, even if OrdersStatsDataStore is unavailable.
-		$reflection->invoke( $this->remediation, 123 );
-
-		// If we get here without exception, the test passes.
-		$this->assertTrue( true );
+		$this->assertSame(
+			'1',
+			$wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}wc_order_stats WHERE order_id = %d", $order->get_id() ) )
+		);
 	}
 
 	public function test_remediate_order_calls_delete_order_stats_for_each_wcpay_refund() {
