@@ -29,6 +29,10 @@ describe( 'Spotlight Component', () => {
 		jest.clearAllMocks();
 	} );
 
+	afterEach( () => {
+		jest.useRealTimers();
+	} );
+
 	it( 'renders the spotlight with all basic elements', () => {
 		render( <Spotlight { ...defaultProps } /> );
 
@@ -153,8 +157,6 @@ describe( 'Spotlight Component', () => {
 
 		// onDismiss should NOT be called - backend handles dismissal on activation
 		expect( onDismiss ).not.toHaveBeenCalled();
-
-		jest.useRealTimers();
 	} );
 
 	it( 'calls onSecondaryClick when secondary button is clicked', async () => {
@@ -222,8 +224,6 @@ describe( 'Spotlight Component', () => {
 		await waitFor( () => {
 			expect( screen.getByText( 'Test Heading' ) ).toBeInTheDocument();
 		} );
-
-		jest.useRealTimers();
 	} );
 
 	it( 'renders description with React component content', () => {
@@ -292,8 +292,6 @@ describe( 'Spotlight Component', () => {
 		await waitFor( () => {
 			expect( onView ).toHaveBeenCalledTimes( 1 );
 		} );
-
-		jest.useRealTimers();
 	} );
 
 	describe( 'Accessibility', () => {
