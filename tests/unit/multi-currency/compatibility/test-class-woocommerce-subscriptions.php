@@ -20,6 +20,21 @@ use WCPay\MultiCurrency\Utils;
 class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTestCase {
 
 	/**
+	 * Frame lists that `should_convert_product_price()` looks for in the backtrace, keyed by the data provider's names.
+	 */
+	const PRODUCT_PRICE_BACKTRACES = [
+		'renewal_cart_setup'  => [ 'WCS_Cart_Renewal->setup_cart' ],
+		'cart_totals'         => [
+			'WC_Cart_Totals->calculate_item_totals',
+			'WC_Cart->get_product_subtotal',
+			'wc_get_price_excluding_tax',
+			'wc_get_price_including_tax',
+		],
+		'recurring_item_data' => [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ],
+		'product_get_price'   => [ 'WC_Product->get_price' ],
+	];
+
+	/**
 	 * Mock WCPay\MultiCurrency\MultiCurrency.
 	 *
 	 * @var WCPay\MultiCurrency\MultiCurrency|PHPUnit_Framework_MockObject_MockObject
@@ -490,236 +505,51 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	/**
-	 * Tests that should_convert_product_price returns true when WooCommerce Subscriptions is setting up WC cart with the renewal item.
+	 * Confirms which call stacks stop a product price from being converted. The backtrace stub answers by
+	 * frame list rather than call order, so reordering equivalent checks in production doesn't break this test.
+	 *
+	 * @dataProvider provider_should_convert_product_price
 	 */
-	public function test_should_convert_product_price_return_true_when_renewal_in_cart_and_cart_is_being_set_up() {
-		// Arrange: Create a subscription and cart_items to be used.
-		[ $_unused_mock_subscription, $_unused_cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
+	public function test_should_convert_product_price( $cart_subscription_type, array $matching_backtraces, bool $expected ) {
+		if ( $cart_subscription_type ) {
+			$this->get_mock_subscription_and_session_cart_items( $cart_subscription_type );
+		}
 
-		// Arrange: Set expectation and return for is_call_in_backtrace.
+		$matching_frames = array_map(
+			function ( $backtrace ) {
+				return self::PRODUCT_PRICE_BACKTRACES[ $backtrace ];
+			},
+			$matching_backtraces
+		);
 		$this->mock_utils
-			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
-			->with( [ 'WCS_Cart_Renewal->setup_cart' ] )
-			->willReturn( true );
+			->willReturnCallback(
+				function ( array $frames ) use ( $matching_frames ) {
+					return in_array( $frames, $matching_frames, true );
+				}
+			);
 
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+		$this->assertSame( $expected, $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
 	}
 
-	/**
-	 * Confirm that false is returned if renewal is in cart and there are specific calls in the backtrace.
-	 */
-	public function test_should_convert_product_price_return_false_when_renewal_in_cart_and_backtrace_match() {
-		// Arrange: Create a subscription and cart_items to be used.
-		[ $_unused_mock_subscription, $_unused_cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
-
-		// Arrange: Set expectation and return for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->exactly( 2 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive(
-				[ [ 'WCS_Cart_Renewal->setup_cart' ] ],
-				[
-					[
-						'WC_Cart_Totals->calculate_item_totals',
-						'WC_Cart->get_product_subtotal',
-						'wc_get_price_excluding_tax',
-						'wc_get_price_including_tax',
-					],
-				]
-			)
-			->willReturn( false, true );
-
-		// Act/Assert: Confirm the result value is false.
-		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	/**
-	 * Confirm that false is returned if resubscribe is in cart and there are specific calls in the backtrace.
-	 */
-	public function test_should_convert_product_price_return_false_when_resubscribe_in_cart_and_backtrace_match() {
-		// Arrange: Create a subscription and cart_items to be used.
-		[ $_unused_mock_subscription, $_unused_cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'resubscribe' );
-
-		// Arrange: Set expectation and return for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with(
-				[
-					'WC_Cart_Totals->calculate_item_totals',
-					'WC_Cart->get_product_subtotal',
-					'wc_get_price_excluding_tax',
-					'wc_get_price_including_tax',
-				]
-			)
-			->willReturn( true );
-
-		// Act/Assert: Confirm the result value is false.
-		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	/**
-	 * Confirm that true is returned even if there is renewal in the cart, but the backtraces are not correct.
-	 */
-	public function test_should_convert_product_price_return_true_when_renewal_in_cart_and_backtraces_do_not_match() {
-		// Arrange: Create a subscription and cart_items to be used.
-		[ $_unused_mock_subscription, $_unused_cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
-
-		// Arrange: Set expectations and returns for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->exactly( 3 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive(
-				[ [ 'WCS_Cart_Renewal->setup_cart' ] ],
-				[
-					[
-						'WC_Cart_Totals->calculate_item_totals',
-						'WC_Cart->get_product_subtotal',
-						'wc_get_price_excluding_tax',
-						'wc_get_price_including_tax',
-					],
-				],
-				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ]
-			)
-			->willReturn( false );
-
-		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	/**
-	 * Confirm that true is returned even if there is resubscribe in the cart, but the backtraces are not correct.
-	 */
-	public function test_should_convert_product_price_return_true_when_resubscribe_in_cart_and_backtraces_do_not_match() {
-		// Arrange: Create a subscription and cart_items to be used.
-		[ $_unused_mock_subscription, $_unused_cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'resubscribe' );
-
-		// Arrange: Set expectations and returns for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->exactly( 2 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive(
-				[
-					[
-						'WC_Cart_Totals->calculate_item_totals',
-						'WC_Cart->get_product_subtotal',
-						'wc_get_price_excluding_tax',
-						'wc_get_price_including_tax',
-					],
-				],
-				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ]
-			)
-			->willReturn( false );
-
-		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	/**
-	 * Confirm that true is returned even if there is renewal in the cart, but the backtraces are not correct.
-	 * This is the same as the above, with the second backtrace check being true, so the third one is now checked.
-	 */
-	public function test_should_convert_product_price_return_true_when_renewal_in_cart_and_backtraces_do_not_match_exactly() {
-		// Arrange: Create a subscription and cart_items to be used.
-		[ $_unused_mock_subscription, $_unused_cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
-
-		// Arrange: Set expectations and returns for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->exactly( 4 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive(
-				[ [ 'WCS_Cart_Renewal->setup_cart' ] ],
-				[
-					[
-						'WC_Cart_Totals->calculate_item_totals',
-						'WC_Cart->get_product_subtotal',
-						'wc_get_price_excluding_tax',
-						'wc_get_price_including_tax',
-					],
-				],
-				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ],
-				[ [ 'WC_Product->get_price' ] ]
-			)
-			->willReturn( false, false, true, false );
-
-		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	/**
-	 * Confirm that true is returned even if there is resubscribe in the cart, but the backtraces are not correct.
-	 * This is the same as the above, with the second backtrace check being true, so the third one is now checked.
-	 */
-	public function test_should_convert_product_price_return_true_when_resubscribe_in_cart_and_backtraces_do_not_match_exactly() {
-		// Arrange: Create a subscription and cart_items to be used.
-		[ $_unused_mock_subscription, $_unused_cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'resubscribe' );
-
-		// Arrange: Set expectations and returns for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->exactly( 3 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive(
-				[
-					[
-						'WC_Cart_Totals->calculate_item_totals',
-						'WC_Cart->get_product_subtotal',
-						'wc_get_price_excluding_tax',
-						'wc_get_price_including_tax',
-					],
-				],
-				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ],
-				[ [ 'WC_Product->get_price' ] ]
-			)
-			->willReturn( false, true, false );
-
-		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	// Confirm if there are no sub_types in cart and the first backtrace does not match, true is returned.
-	public function test_should_convert_product_price_return_true_with_no_sub_types_in_cart_and_no_backtrace_match() {
-		// Arrange: Set expectation and return for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->once() )
-			->method( 'is_call_in_backtrace' )
-			->with( [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] )
-			->willReturn( false );
-
-		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	// Confirm if there are no sub_types in cart and the second backtrace does not match, true is returned.
-	public function test_should_convert_product_price_return_true_with_no_sub_types_in_cart_and_no_second_backtrace_match() {
-		// Arrange: Set expectations and returns for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->exactly( 2 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive(
-				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ],
-				[ [ 'WC_Product->get_price' ] ]
-			)
-			->willReturn( true, false );
-
-		// Act/Assert: Confirm the result value is true.
-		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
-	}
-
-	// Test for when WCPay Subs is getting the product's price for the sub creation.
-	public function test_should_convert_product_price_return_false_when_get_recurring_item_data_for_subscription() {
-		// Arrange: Set expectations and returns for is_call_in_backtrace.
-		$this->mock_utils
-			->expects( $this->exactly( 2 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive(
-				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ],
-				[ [ 'WC_Product->get_price' ] ]
-			)
-			->willReturn( true, true );
-
-		// Act/Assert: Confirm the result value is false.
-		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_coupon ) );
+	public function provider_should_convert_product_price(): array {
+		return [
+			'no subscription in cart, no backtrace matches' => [ null, [], true ],
+			'no subscription in cart, cart totals in backtrace' => [ null, [ 'cart_totals' ], true ],
+			'no subscription in cart, only recurring item data' => [ null, [ 'recurring_item_data' ], true ],
+			'no subscription in cart, only product get_price' => [ null, [ 'product_get_price' ], true ],
+			'no subscription in cart, recurring item data price' => [ null, [ 'recurring_item_data', 'product_get_price' ], false ],
+			'renewal in cart, no backtrace matches'      => [ 'renewal', [], true ],
+			'renewal in cart, cart totals in backtrace'  => [ 'renewal', [ 'cart_totals' ], false ],
+			'renewal in cart, cart being set up'         => [ 'renewal', [ 'renewal_cart_setup', 'cart_totals' ], true ],
+			'renewal in cart, only recurring item data'  => [ 'renewal', [ 'recurring_item_data' ], true ],
+			'renewal in cart, recurring item data price' => [ 'renewal', [ 'recurring_item_data', 'product_get_price' ], false ],
+			'resubscribe in cart, no backtrace matches'  => [ 'resubscribe', [], true ],
+			'resubscribe in cart, cart totals in backtrace' => [ 'resubscribe', [ 'cart_totals' ], false ],
+			'resubscribe in cart, renewal cart setup does not apply' => [ 'resubscribe', [ 'renewal_cart_setup', 'cart_totals' ], false ],
+			'resubscribe in cart, only recurring item data' => [ 'resubscribe', [ 'recurring_item_data' ], true ],
+			'resubscribe in cart, recurring item data price' => [ 'resubscribe', [ 'recurring_item_data', 'product_get_price' ], false ],
+		];
 	}
 
 	/**
