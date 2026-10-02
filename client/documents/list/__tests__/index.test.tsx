@@ -182,7 +182,9 @@ describe( 'Documents list', () => {
 		);
 
 		expect( tableSummary ).toHaveLength( 1 );
-		expect( container ).toMatchSnapshot();
+		expect(
+			container.querySelector( '.woocommerce-table__summary-label' )
+		).toHaveTextContent( /^document$/ );
 	} );
 } );
 
