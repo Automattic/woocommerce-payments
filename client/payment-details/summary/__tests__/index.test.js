@@ -317,7 +317,7 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	test( 'renders loading state', () => {
-		expect( renderCharge( {}, true ) ).toMatchSnapshot();
+		expect( renderCharge( {}, {}, true ) ).toMatchSnapshot();
 	} );
 
 	describe( 'refund-modal opener registered for sibling surfaces', () => {
@@ -856,7 +856,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		const container = renderCharge( charge );
 		expect(
-			screen.queryByText( /Deducted: \$-15.00/i )
+			screen.queryByText( /Deducted: -\$15\.00/i )
 		).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'button', {
