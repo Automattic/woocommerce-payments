@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -82,7 +82,7 @@ describe( 'Test mode notification', () => {
 		expect( testModeNotice ).toMatchSnapshot();
 	} );
 
-	test( 'Shows dev mode explanation on overview page when dev mode forces test', () => {
+	test( 'directs development-mode Overview users to the live store', () => {
 		mockIsInTestMode.mockReturnValue( true );
 		mockIsInDevMode.mockReturnValue( true );
 
@@ -90,8 +90,14 @@ describe( 'Test mode notification', () => {
 			<TestModeNotice currentPage="overview" />
 		);
 
-		expect( container.textContent ).toContain(
-			'development or staging environment'
+		expect( container ).toHaveTextContent(
+			'WooPayments is in test mode — all transactions are simulated. Development mode is on. To accept real payments, use your live store.'
+		);
+		expect(
+			screen.getByRole( 'link', { name: /Learn more/ } )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
 		);
 	} );
 

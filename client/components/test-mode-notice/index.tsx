@@ -74,8 +74,8 @@ const getNoticeContent = (
 							mixedString: sprintf(
 								/* translators: %1$s: WooPayments */
 								__(
-									'{{strong}}%1$s is in test mode{{/strong}} because your store is running in a development or staging environment. ' +
-										'To use live mode, switch to a production {{wpEnvLink}}WordPress environment{{/wpEnvLink}} or remove the WCPAY_DEV_MODE constant. ' +
+									'{{strong}}%1$s is in test mode — all transactions are simulated.{{/strong}} Development mode is on. ' +
+										'To accept real payments, use your live store. ' +
 										'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 									'woocommerce-payments'
 								),
@@ -83,19 +83,11 @@ const getNoticeContent = (
 							),
 							components: {
 								strong: <strong />,
-								wpEnvLink: (
-									// @ts-expect-error: children is provided when interpolating the component
-									<ExternalLink
-										href={
-											'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/'
-										}
-									/>
-								),
 								learnMoreLink: (
 									// @ts-expect-error: children is provided when interpolating the component
 									<ExternalLink
 										href={
-											'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/'
+											'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
 										}
 										onClick={ () =>
 											recordEvent(

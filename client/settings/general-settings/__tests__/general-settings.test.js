@@ -191,8 +191,18 @@ describe( 'GeneralSettings', () => {
 		renderWithSettingsProvider( <GeneralSettings /> );
 
 		expect(
-			screen.queryByText( /development or staging environment/i )
+			screen.queryByText(
+				/Test mode is on because development mode is on\./
+			)
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				/To accept real payments, use your live store\./
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /WCPAY_DEV_MODE/ )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not disable test mode checkbox when dev mode is not enabled', () => {

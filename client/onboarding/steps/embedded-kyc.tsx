@@ -98,8 +98,8 @@ const EmbeddedKyc: React.FC< Props > = ( {
 						mixedString: sprintf(
 							/* translators: %1$s: WooPayments */
 							__(
-								'{{strong}}Your store is in development mode.{{/strong}} %1$s can only create test accounts in development or staging environments. ' +
-									'To set up a live account, switch to a production {{wpEnvLink}}WordPress environment{{/wpEnvLink}} or remove the WCPAY_DEV_MODE constant. ' +
+								'{{strong}}Your store is in development mode.{{/strong}} %1$s can only create test accounts while development mode is on. ' +
+									'Development mode is on for staging and development sites. To set up a live account, use your live store. ' +
 									'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
@@ -107,19 +107,11 @@ const EmbeddedKyc: React.FC< Props > = ( {
 						),
 						components: {
 							strong: <strong />,
-							wpEnvLink: (
-								// @ts-expect-error: children is provided when interpolating the component
-								<ExternalLink
-									href={
-										'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/'
-									}
-								/>
-							),
 							learnMoreLink: (
 								// @ts-expect-error: children is provided when interpolating the component
 								<ExternalLink
 									href={
-										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/'
+										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
 									}
 								/>
 							),
