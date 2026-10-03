@@ -2,16 +2,14 @@
 
 set -e
 
-# Source .env if available for worktree-specific config (needed for WORKTREE_ID)
-WORKTREE_ID="default"
-if [ -f ".env" ]; then
-    source .env
-fi
-
-# Generate unique test database name per worktree
-TEST_DB_NAME="wcpay_tests_${WORKTREE_ID}"
-
 WATCH_FLAG=false
+
+# Checked before getopts, which would match single letters inside PHPUnit options such as --filter.
+PREPARE_ARGS=()
+if [ "$1" == "--reinstall" ]; then
+	PREPARE_ARGS=(--reinstall)
+	shift
+fi
 
 while getopts ':w' OPTION; do
 	case $OPTION in
@@ -22,11 +20,7 @@ while getopts ':w' OPTION; do
 	esac
 done
 
-echo "Installing the test environment..."
-echo "Using test database: ${TEST_DB_NAME}"
-
-docker compose exec -u www-data wordpress \
-	/var/www/html/wp-content/plugins/woocommerce-payments/bin/install-wp-tests.sh "${TEST_DB_NAME}"
+"$(dirname "$0")/prepare-test-env.sh" "${PREPARE_ARGS[@]}"
 
 if $WATCH_FLAG; then
 	echo "Running the tests on watch mode..."
@@ -38,8 +32,14 @@ if $WATCH_FLAG; then
 else
 	echo "Running the tests..."
 
+	STATUS=0
 	docker compose exec -u www-data wordpress \
 		/var/www/html/wp-content/plugins/woocommerce-payments/vendor/bin/phpunit \
 		--configuration /var/www/html/wp-content/plugins/woocommerce-payments/phpunit.xml.dist \
-		$*
+		$* || STATUS=$?
+
+	if [ $STATUS -ne 0 ]; then
+		echo "If the failures look environment-related (database errors, missing WordPress or WooCommerce classes), rebuild the test environment with: pnpm run test:php -- --reinstall"
+	fi
+	exit $STATUS
 fi
