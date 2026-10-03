@@ -42,6 +42,35 @@ describe( 'Transactions selectors', () => {
 		error: 'Something went wrong!',
 		code: 400,
 	};
+	const mockBlockedTransactions = [
+		{
+			id: 1236,
+			amount: 3000,
+			fees: 150,
+			net: 2850,
+		},
+	];
+	const mockBlockedSummary = {
+		total: 3000,
+		fees: 150,
+		net: 2850,
+	};
+	const mockBlockedError = {
+		error: 'Blocked transactions failed to load',
+		code: 500,
+	};
+	const fraudOutcomeMocks = {
+		review: {
+			transactions: mockTransactions,
+			summary: mockSummary,
+			error: mockError,
+		},
+		block: {
+			transactions: mockBlockedTransactions,
+			summary: mockBlockedSummary,
+			error: mockBlockedError,
+		},
+	};
 
 	// Sections in initial state are empty.
 	const emptyState = {
@@ -60,21 +89,21 @@ describe( 'Transactions selectors', () => {
 	const emptySummaryErrorState = {
 		transactions: {
 			summary: {
-				[ getResourceId( mockQuery ) ]: {
+				[ getResourceId( mockSummaryQuery ) ]: {
 					error: {},
 				},
 			},
 			fraudProtection: {
 				review: {
 					summary: {
-						[ getResourceId( mockQuery ) ]: {
+						[ getResourceId( mockSummaryQuery ) ]: {
 							error: {},
 						},
 					},
 				},
 				block: {
 					summary: {
-						[ getResourceId( mockQuery ) ]: {
+						[ getResourceId( mockSummaryQuery ) ]: {
 							error: {},
 						},
 					},
@@ -107,11 +136,11 @@ describe( 'Transactions selectors', () => {
 				},
 				block: {
 					[ getResourceId( mockQuery ) ]: {
-						data: mockTransactions,
+						data: mockBlockedTransactions,
 					},
 					summary: {
 						[ getResourceId( mockSummaryQuery ) ]: {
-							data: mockSummary,
+							data: mockBlockedSummary,
 						},
 					},
 				},
@@ -142,11 +171,11 @@ describe( 'Transactions selectors', () => {
 				},
 				block: {
 					[ getResourceId( mockQuery ) ]: {
-						error: mockError,
+						error: mockBlockedError,
 					},
 					summary: {
 						[ getResourceId( mockSummaryQuery ) ]: {
-							error: mockError,
+							error: mockBlockedError,
 						},
 					},
 				},
@@ -222,7 +251,7 @@ describe( 'Transactions selectors', () => {
 			} );
 
 			test( `Returns transactions list from state - ${ status }`, () => {
-				const expected = mockTransactions;
+				const expected = fraudOutcomeMocks[ status ].transactions;
 				expect(
 					getFraudOutcomeTransactions(
 						filledSuccessState,
@@ -243,7 +272,7 @@ describe( 'Transactions selectors', () => {
 			} );
 
 			test( `Returns transactions list error from state - ${ status }`, () => {
-				const expected = mockError;
+				const expected = fraudOutcomeMocks[ status ].error;
 				expect(
 					getFraudOutcomeTransactionsError(
 						filledErrorState,
@@ -264,7 +293,7 @@ describe( 'Transactions selectors', () => {
 			} );
 
 			test( `Returns transactions summary from state - ${ status }`, () => {
-				const expected = mockSummary;
+				const expected = fraudOutcomeMocks[ status ].summary;
 				expect(
 					getFraudOutcomeTransactionsSummary(
 						filledSuccessState,
@@ -295,7 +324,7 @@ describe( 'Transactions selectors', () => {
 			} );
 
 			test( `Returns transactions summary error from state - ${ status }`, () => {
-				const expected = mockError;
+				const expected = fraudOutcomeMocks[ status ].error;
 				expect(
 					getFraudOutcomeTransactionsSummaryError(
 						filledErrorState,

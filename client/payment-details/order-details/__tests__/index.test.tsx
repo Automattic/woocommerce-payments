@@ -11,7 +11,7 @@ import React from 'react';
  * Internal dependencies
  */
 import PaymentOrderDetails from '..';
-import { chargeMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
+import { chargeMock } from 'wcpay/data/payment-intents/__fixtures__';
 import { useAuthorization } from 'wcpay/data/authorizations';
 import { useChargeFromOrder } from 'wcpay/data/charges';
 import { useTimeline } from 'wcpay/data/timeline';

@@ -3,10 +3,7 @@
  */
 import reducer from '../reducer';
 import { updateCharge, updateErrorForCharge } from '../actions';
-import {
-	chargeId,
-	chargeMock,
-} from 'wcpay/data/payment-intents/__tests__/hooks.test';
+import { chargeId, chargeMock } from 'wcpay/data/payment-intents/__fixtures__';
 
 describe( 'Charges reducer tests', () => {
 	test( 'default state equals expected', () => {

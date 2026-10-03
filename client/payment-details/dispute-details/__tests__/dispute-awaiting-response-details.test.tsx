@@ -532,7 +532,11 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 			isLoading: true, // Request in progress
 		} );
 
-		const dispute = getBaseDispute();
+		const dispute: ChargeDispute = {
+			...getBaseDispute(),
+			reason: 'fraudulent',
+			enhanced_eligibility_types: [],
+		};
 		const customer = getBaseBillingDetails();
 
 		renderWithContext(

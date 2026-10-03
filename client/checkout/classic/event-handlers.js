@@ -6,7 +6,6 @@
 import './style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
-import { getIconTheme } from 'wcpay/checkout/utils/icon-theme';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
@@ -34,6 +33,7 @@ import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 import { getCardBrands } from 'wcpay/utils/card-brands';
+import { swapDarkIcons } from './swap-dark-icons';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -383,26 +383,6 @@ jQuery( function ( $ ) {
 
 		// Update on window resize
 		window.addEventListener( 'resize', updateLogos );
-	}
-
-	function swapDarkIcons() {
-		const useDark = getIconTheme( 'classic' ) === 'night';
-
-		document.querySelectorAll( '.wcpay-upe-element' ).forEach( ( el ) => {
-			const type = el.dataset.paymentMethodType;
-			if ( type === 'card' ) {
-				return;
-			}
-			const config = getUPEConfig( 'paymentMethodsConfig' )?.[ type ];
-			const targetIcon = useDark ? config?.darkIcon : config?.icon;
-			if ( targetIcon ) {
-				el.closest( '.wc_payment_method' )
-					?.querySelectorAll( 'label img' )
-					.forEach( ( img ) => {
-						img.src = targetIcon;
-					} );
-			}
-		} );
 	}
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {

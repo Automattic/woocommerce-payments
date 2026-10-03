@@ -14,6 +14,7 @@ import { getDisputeResolutionTask } from '../tasks/dispute-task';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 
+const realDateNow = Date.now;
 const mockHistoryPush = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
 	getHistory: () => ( {
@@ -170,8 +171,7 @@ describe( 'getTasks()', () => {
 		};
 	} );
 	afterEach( () => {
-		// roll it back
-		Date.now = () => new Date();
+		Date.now = realDateNow;
 		moment.tz.setDefault( currentTimezone );
 	} );
 	it( 'should include business details when flag is set', () => {
@@ -532,8 +532,7 @@ describe( 'getDisputeResolutionTask()', () => {
 		};
 	} );
 	afterEach( () => {
-		// roll it back
-		Date.now = () => new Date();
+		Date.now = realDateNow;
 		moment.tz.setDefault( currentTimezone );
 	} );
 
@@ -742,8 +741,7 @@ describe( 'taskSort()', () => {
 		};
 	} );
 	afterEach( () => {
-		// roll it back
-		Date.now = () => new Date();
+		Date.now = realDateNow;
 	} );
 	it( 'should sort the tasks', () => {
 		const unsortedTasks = getTasks( {

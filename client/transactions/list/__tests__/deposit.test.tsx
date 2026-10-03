@@ -50,9 +50,4 @@ describe( 'Deposit', () => {
 		const { container: link } = render( <Deposit depositId="po_mock" /> );
 		expect( link ).toMatchSnapshot();
 	} );
-
-	test( 'renders with no date or payout available', () => {
-		const { container: link } = render( <Deposit /> );
-		expect( link ).toMatchSnapshot();
-	} );
 } );

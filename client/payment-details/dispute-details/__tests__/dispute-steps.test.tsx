@@ -214,7 +214,7 @@ describe( 'NonCompliantDisputeSteps', () => {
 
 		// Should not have "Email customer" button (unlike regular DisputeSteps)
 		expect(
-			screen.queryByRole( 'button', { name: /Email customer/i } )
+			screen.queryByText( /Email customer/i )
 		).not.toBeInTheDocument();
 	} );
 

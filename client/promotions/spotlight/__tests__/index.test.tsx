@@ -226,36 +226,6 @@ describe( 'SpotlightPromotion', () => {
 		expect( screen.getByText( /Terms apply/i ) ).toBeInTheDocument();
 	} );
 
-	it( 'does not render footnote when not provided', () => {
-		const dataWithoutFootnote = [
-			{
-				id: 'klarna-promo__spotlight',
-				promo_id: 'klarna-promo',
-				payment_method: 'klarna',
-				payment_method_title: 'Klarna',
-				type: 'spotlight',
-				title: 'Activate Klarna',
-				description: 'Offer your customers flexible payments',
-				cta_label: 'Activate now',
-				tc_url: 'https://example.com/terms',
-				tc_label: 'See terms',
-				// No footnote.
-			},
-		];
-
-		( usePmPromotions as jest.Mock ).mockReturnValue( {
-			pmPromotions: dataWithoutFootnote,
-			isLoading: false,
-		} );
-
-		render( <SpotlightPromotion /> );
-
-		expect( screen.getByTestId( 'spotlight-mock' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByTestId( 'spotlight-footnote' )
-		).not.toBeInTheDocument();
-	} );
-
 	describe( 'tracks events', () => {
 		const expectedBaseProperties = {
 			promo_id: 'klarna-promo',

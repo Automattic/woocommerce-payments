@@ -123,7 +123,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
+		$( document.body ).trigger( 'updated_checkout' );
+		await new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
 
+		expect( apiFetch ).not.toHaveBeenCalled();
 		expect( global.Stripe ).not.toHaveBeenCalled();
 		expect( recordUserEvent ).not.toHaveBeenCalled();
 		expect(
