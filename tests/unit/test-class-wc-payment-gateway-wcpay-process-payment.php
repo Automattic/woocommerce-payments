@@ -1662,13 +1662,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Arrange: WC_Payments_Customer_Service returns a valid customer ID.
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( $customer_id );
 
 		$this->mock_customer_service
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'update_customer_for_user' )
+			->with( 'cus_mock', wp_get_current_user(), $this->isType( 'array' ) )
 			->willReturn( self::CUSTOMER_ID );
 
 		// Arrange: Create a mock cart.
@@ -1676,8 +1677,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
+		// The customer update is deferred to shutdown; isolate it so do_action() only fires that callback.
+		remove_all_actions( 'shutdown' );
+
 		// Act: process a successful payment.
 		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
 	public function test_process_payment_check_session_order_redirect_to_previous_order() {
@@ -1870,7 +1876,12 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
+
+		$saves_before = did_action( 'woocommerce_payments_save_user_in_woopay' );
+
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 1, did_action( 'woocommerce_payments_save_user_in_woopay' ) - $saves_before );
 	}
 
 	public function test_process_payment_using_platform_payment_method_adds_platform_payment_method_flag_to_request() {

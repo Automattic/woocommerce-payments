@@ -9,6 +9,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Refund_Status;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Response;
@@ -110,62 +111,6 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			$this->createMock( Duplicates_Detection_Service::class ),
 			$this->mock_rate_limiter
 		);
-	}
-
-	public function test_process_refund() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
-
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->save();
-
-		wc_create_refund(
-			[
-				'amount'   => 19.99,
-				'order_id' => $order->get_id(),
-			]
-		);
-
-		$response = new Response(
-			[
-				'id'                       => 're_123456789',
-				'object'                   => 'refund',
-				'amount'                   => $amount = 19.99,
-				'balance_transaction'      => 'txn_987654321',
-				'charge'                   => 'ch_121212121212',
-				'created'                  => 1610123467,
-				'payment_intent'           => 'pi_1234567890',
-				'reason'                   => null,
-				'receipt_number'           => null,
-				'source_transfer_reversal' => null,
-				'status'                   => Intent_Status::SUCCEEDED,
-				'transfer_reversal'        => null,
-				'currency'                 => 'usd',
-			]
-		);
-		$request  = $this->mock_wcpay_request( Refund_Charge::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_charge' )
-			->with( $charge_id );
-
-		$request->expects( $this->once() )
-			->method( 'set_amount' )
-			->with( WC_Payments_Utils::prepare_amount( $amount ) );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $response );
-
-		$this->mock_order_service
-			->method( 'get_charge_id_for_order' )
-			->willReturn( $charge_id );
-
-		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $amount );
-
-		$this->assertTrue( $result );
 	}
 
 	public function test_process_refund_should_work_without_payment_method_id_meta() {
@@ -940,7 +885,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order->get_id() );
-		$this->assertFalse( $this->wcpay_gateway->has_refund_failed( $order ) );
+		$this->assertSame( 'successful', $order->get_meta( '_wcpay_refund_status', true ) );
 	}
 
 	public function test_process_refund_failure_sets_refund_failed_meta() {
@@ -969,15 +914,35 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 			->method( 'get_charge_id_for_order' )
 			->willReturn( $charge_id );
 
-		$this->mock_order_service
-			->method( 'get_wcpay_refund_status_for_order' )
-			->willReturn( 'failed' );
-
 		$this->wcpay_gateway->process_refund( $order_id, 19.99 );
 
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order_id );
-		$this->assertTrue( $this->wcpay_gateway->has_refund_failed( $order ) );
+		$this->assertSame( 'failed', $order->get_meta( '_wcpay_refund_status', true ) );
+	}
+
+	/**
+	 * @dataProvider provider_has_refund_failed
+	 */
+	public function test_has_refund_failed_reflects_the_refund_status( $refund_status, $expected ) {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_wcpay_refund_status_for_order' )
+			->with( $order )
+			->willReturn( $refund_status );
+
+		$this->assertSame( $expected, $this->wcpay_gateway->has_refund_failed( $order ) );
+	}
+
+	public function provider_has_refund_failed() {
+		return [
+			'failed'    => [ Refund_Status::FAILED, true ],
+			'succeeded' => [ Refund_Status::SUCCEEDED, false ],
+			'pending'   => [ Refund_Status::PENDING, false ],
+			'no status' => [ '', false ],
+		];
 	}
 
 	public function test_process_refund_on_api_error() {

@@ -317,6 +317,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Restore the gateway in the main class.
 		WC_Payments::set_gateway( $this->_gateway );
 
+		// Restore the fraud prevention service that some tests replace with a mock.
+		Fraud_Prevention_Service::set_instance( null );
+
 		// Restore the original payment gateway map to prevent test pollution.
 		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
 
@@ -2658,6 +2661,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_add_payment_method_no_method() {
 		$result = $this->card_gateway->add_payment_method();
 		$this->assertEquals( 'error', $result['result'] );
+
+		$notices = wc_get_notices( 'error' );
+		wc_clear_notices();
+		$this->assertStringContainsString( 'payment method was not provided', $notices[0]['notice'] );
 	}
 
 	public function test_create_and_confirm_setup_intent_existing_customer() {
@@ -2774,11 +2781,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		do_action( 'shutdown' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 	}
 
-	public function test_add_payment_method_no_intent() {
-		$result = $this->card_gateway->add_payment_method();
-		$this->assertEquals( 'error', $result['result'] );
-	}
-
 	public function test_add_payment_method_success() {
 		$_POST = [ 'wcpay-setup-intent' => 'sti_mock' ];
 
@@ -2855,11 +2857,25 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'square' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' );
+		$order->delete_meta_data( '_new_order_tracking_complete' );
+		$order->save_meta_data();
 
 		// If the payment gateway isn't WC Pay, this function should never get called.
 		$this->mock_action_scheduler_service
 			->expects( $this->never() )
 			->method( 'schedule_job' );
+
+		$this->mock_fraud_service
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
 
 		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
@@ -4961,7 +4977,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' );
 
 		// Act: process payment.
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame(
+			[
+				'result'   => 'success',
+				'redirect' => '',
+			],
+			$result
+		);
+		$this->assertSame( 'pending', wc_get_order( $order->get_id() )->get_status() );
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
