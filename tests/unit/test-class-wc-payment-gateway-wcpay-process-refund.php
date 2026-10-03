@@ -9,6 +9,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Refund_Status;
 use WCPay\Core\Server\Request\List_Charge_Refunds;
 use WCPay\Core\Server\Request\Refund_Charge;
 use WCPay\Core\Server\Response;
@@ -918,6 +919,30 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order_id );
 		$this->assertSame( 'failed', $order->get_meta( '_wcpay_refund_status', true ) );
+	}
+
+	/**
+	 * @dataProvider provider_has_refund_failed
+	 */
+	public function test_has_refund_failed_reflects_the_refund_status( $refund_status, $expected ) {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_wcpay_refund_status_for_order' )
+			->with( $order )
+			->willReturn( $refund_status );
+
+		$this->assertSame( $expected, $this->wcpay_gateway->has_refund_failed( $order ) );
+	}
+
+	public function provider_has_refund_failed() {
+		return [
+			'failed'    => [ Refund_Status::FAILED, true ],
+			'succeeded' => [ Refund_Status::SUCCEEDED, false ],
+			'pending'   => [ Refund_Status::PENDING, false ],
+			'no status' => [ '', false ],
+		];
 	}
 
 	public function test_process_refund_on_api_error() {
