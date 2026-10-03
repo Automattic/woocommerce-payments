@@ -91,7 +91,29 @@ describe( 'CapitalPage', () => {
 		expect(
 			screen.getByRole( 'heading', { name: 'All loans' } )
 		).toBeInTheDocument();
-		expect( container ).toMatchSnapshot();
+		expect(
+			screen.getByText( 'Active loan overview' )
+		).toBeInTheDocument();
+
+		const [ , loanRow ] = screen.getAllByRole( 'row' );
+		expect(
+			Array.from( loanRow.children, ( cell ) => cell.textContent )
+		).toEqual( [
+			'Oct 28, 2024',
+			'Active',
+			'$1,000.00',
+			'$100.00',
+			'15%',
+			'-',
+		] );
+		expect(
+			Array.from(
+				container.querySelectorAll(
+					'.woocommerce-table__summary-item'
+				),
+				( item ) => item.textContent
+			)
+		).toEqual( [ '1loan', '$1,000.00total', '$100.00fixed fees' ] );
 	} );
 
 	it( 'shows loading state when loans are being fetched', () => {
