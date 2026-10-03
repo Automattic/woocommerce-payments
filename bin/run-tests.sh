@@ -4,6 +4,11 @@ set -e
 
 WATCH_FLAG=false
 
+# pnpm passes the -- from `pnpm run test:php -- <args>` through to the script.
+if [ "$1" == "--" ]; then
+	shift
+fi
+
 # Checked before getopts, which would match single letters inside PHPUnit options such as --filter.
 PREPARE_ARGS=()
 if [ "$1" == "--reinstall" ]; then
