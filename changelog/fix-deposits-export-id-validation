@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Payout export downloads now validate the export ID the same way as transaction and dispute export downloads.
+Fix a PHP error when a payout export download is requested with an ID containing a % character.
