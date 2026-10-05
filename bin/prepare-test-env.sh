@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Prepares the PHPUnit environment in the WordPress container, reusing the existing install when it
-# is usable. The WordPress test bootstrap recreates the tables on every run, so installing is only
-# needed once, or with --reinstall to rebuild it with the latest WordPress, WooCommerce and Gutenberg.
+# is usable. The WordPress test bootstrap recreates the core tables on every run, so installing is
+# only needed once. Most WooCommerce tables persist between runs. Rebuild with --reinstall to reset
+# them, or to pick up the latest WordPress, WooCommerce and Gutenberg.
 #
 # Usage: bin/prepare-test-env.sh [--reinstall]
 
