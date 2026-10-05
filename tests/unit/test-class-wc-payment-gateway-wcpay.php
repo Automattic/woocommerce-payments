@@ -5771,6 +5771,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$result_order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'pending', $result_order->get_status() );
 		$this->assertSame( '', $result_order->get_transaction_id() );
+		$this->assertSame( 'succeeded', $this->order_service->get_intention_status_for_order( $result_order ) );
 		foreach ( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) as $note ) {
 			$this->assertStringNotContainsString( 'seti_mock_pm_change', $note->content );
 		}
