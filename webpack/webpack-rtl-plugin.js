@@ -35,14 +35,9 @@ class WebpackRTLPlugin {
 		const filenameSuffix = this.options.filenameSuffix || '.rtl$&';
 
 		compiler.hooks.thisCompilation.tap( pluginName, ( compilation ) => {
-			// WordPress swaps in the RTL file only for stylesheets it enqueues.
-			// Lazy chunk CSS is loaded by the webpack runtime instead, so the
-			// runtime has to pick the RTL file itself. WordPress sets
-			// `<html dir="rtl">` whenever `is_rtl()` is true, which makes
-			// `document.dir` work for every entry without extra globals.
-			// The runtime looks up loaded tags by `data-href || href` against
-			// the LTR URL, so `data-href` keeps that URL for de-duplication
-			// and HMR.
+			// WordPress only swaps in RTL files for stylesheets it enqueues, so the
+			// runtime picks the RTL file for lazy chunks when `<html dir="rtl">`.
+			// `data-href` keeps the LTR URL the runtime uses to find loaded tags.
 			MiniCssExtractPlugin.getCompilationHooks(
 				compilation
 			).beforeTagInsert.tap(
