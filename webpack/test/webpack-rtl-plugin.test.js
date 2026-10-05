@@ -74,6 +74,7 @@ describe( 'WebpackRTLPlugin', () => {
 	it( 'writes a mirrored stylesheet for lazy chunks', () => {
 		const files = fs.readdirSync( path.join( dir, 'dist' ) );
 		const rtlFile = files.find( ( file ) => /-rtl\.css$/.test( file ) );
+		expect( rtlFile ).toBeDefined();
 
 		expect(
 			fs.readFileSync( path.join( dir, 'dist', rtlFile ), 'utf8' )
