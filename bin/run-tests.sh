@@ -4,24 +4,15 @@ set -e
 
 WATCH_FLAG=false
 
-# pnpm passes the -- from `pnpm run test:php -- <args>` through to the script.
-if [ "$1" == "--" ]; then
-	shift
-fi
-
-# Checked before getopts, which would match single letters inside PHPUnit options such as --filter.
+# Matches the runner's own options whole, so letters inside PHPUnit options such as --filter=<name>
+# aren't read as flags. pnpm passes the -- from `pnpm run test:php -- <args>` through to the script.
 PREPARE_ARGS=()
-if [ "$1" == "--reinstall" ]; then
-	PREPARE_ARGS=(--reinstall)
-	shift
-fi
-
-while getopts ':w' OPTION; do
-	case $OPTION in
-		w)
-		WATCH_FLAG=true
-		shift
-		;;
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--) shift ;;
+		--reinstall) PREPARE_ARGS=(--reinstall); shift ;;
+		-w) WATCH_FLAG=true; shift ;;
+		*) break ;;
 	esac
 done
 
