@@ -225,7 +225,7 @@ class SettingsScreenService {
 				'label'    => __( 'Description', 'woocommerce-payments' ),
 				'readOnly' => true,
 			],
-			[ ...array_values( self::CARD_DESCRIPTIONS ), 'payout_bank_account' ]
+			[ ...array_values( self::CARD_DESCRIPTIONS ), 'payout_bank_account', 'test_account_notice' ]
 		);
 
 		return array_merge(
@@ -318,6 +318,13 @@ class SettingsScreenService {
 			'layout'   => [ 'type' => 'row' ],
 			'children' => [ 'deposit_schedule_interval', 'deposit_schedule_weekly_anchor', 'deposit_schedule_monthly_anchor' ],
 		];
+		$test_account_notice = [
+			'id'     => 'test_account_notice',
+			'layout' => [
+				'type'          => 'regular',
+				'labelPosition' => 'none',
+			],
+		];
 		$payout_bank_account = [
 			'id'     => 'payout_bank_account',
 			'layout' => [
@@ -327,7 +334,7 @@ class SettingsScreenService {
 		];
 
 		$cards = [
-			'test-mode'               => [ __( 'Test mode', 'woocommerce-payments' ), [ 'is_test_mode_enabled' ] ],
+			'test-mode'               => [ __( 'Test mode', 'woocommerce-payments' ), [ 'is_test_mode_enabled', $test_account_notice ] ],
 			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level' ] ],
 			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ $payout_schedule, $payout_bank_account ] ],
 			'payment-methods'         => [ __( 'Payment methods', 'woocommerce-payments' ), [ $payment_methods ] ],

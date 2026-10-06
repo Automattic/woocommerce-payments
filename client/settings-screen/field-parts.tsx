@@ -10,6 +10,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import { PaymentMethods } from './existing-controls';
+import TestAccountNotice from './test-account-notice';
 
 export type Settings = Record< string, unknown >;
 
@@ -26,6 +27,7 @@ export type FieldParts = {
 	isVisible?: ( item: Settings ) => boolean;
 	isDisabled?: ( args: { item: Settings } ) => boolean;
 	render?: React.ComponentType< { item: Settings } >;
+	getValue?: ( args: { item: Settings } ) => unknown;
 };
 
 declare global {
@@ -36,6 +38,9 @@ declare global {
 
 const isDevMode = ( { item }: { item: Settings } ) =>
 	item.is_dev_mode_enabled === true;
+
+const isTestAccount = ( item: Settings ) =>
+	item.is_test_mode_onboarding === true;
 
 const isJapaneseAccount = ( item: Settings ) => item.account_country === 'JP';
 
@@ -238,8 +243,17 @@ const getCardDescriptions = (): Record< string, FieldParts > => ( {
 export const getFieldParts = (): Record< string, FieldParts > => ( {
 	...getCardDescriptions(),
 	is_test_mode_enabled: {
-		isVisible: ( item ) => item.is_test_mode_onboarding !== true,
-		isDisabled: isDevMode,
+		// Test accounts and development mode can only take test payments, so test mode stays on.
+		getValue: ( { item } ) =>
+			isTestAccount( item ) ||
+			item.is_dev_mode_enabled === true ||
+			item.is_test_mode_enabled === true,
+		isDisabled: ( { item } ) =>
+			isTestAccount( item ) || item.is_dev_mode_enabled === true,
+	},
+	test_account_notice: {
+		render: TestAccountNotice,
+		isVisible: isTestAccount,
 	},
 	current_protection_level: {
 		elements: [
