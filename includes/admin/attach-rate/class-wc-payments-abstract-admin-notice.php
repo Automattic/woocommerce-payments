@@ -423,15 +423,6 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	}
 
 	/**
-	 * Default cache invalidator wired to external signals.
-	 *
-	 * @return void
-	 */
-	public function invalidate_cache(): void {
-		$this->delete_eligibility_cache();
-	}
-
-	/**
 	 * Standard terminal-CTA flow: record the cta_clicked event, mark the
 	 * notice as dismissed for this user, then redirect to the destination.
 	 * Subclasses with non-terminal CTAs should not call this; they record
