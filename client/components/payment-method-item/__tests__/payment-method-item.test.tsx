@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import PaymentMethodItem from '..';
+import PaymentMethodItem, { PaymentMethodItemToggleContext } from '..';
 
 const MockIcon = () => <img src="mock-icon.svg" alt="Mock" />;
 
@@ -274,5 +274,34 @@ describe( 'PaymentMethodItem', () => {
 		expect(
 			container.querySelector( '.payment-method-item__description' )
 		).not.toBeInTheDocument();
+	} );
+
+	it( 'renders a toggle instead of a checkbox inside the toggle context', async () => {
+		const onChange = jest.fn();
+
+		const { container } = render(
+			<PaymentMethodItemToggleContext.Provider value={ true }>
+				<PaymentMethodItem>
+					<PaymentMethodItem.Checkbox
+						label="Test Method"
+						checked={ false }
+						onChange={ onChange }
+					/>
+					<PaymentMethodItem.Body>
+						<PaymentMethodItem.Subgroup label="Test Method" />
+					</PaymentMethodItem.Body>
+				</PaymentMethodItem>
+			</PaymentMethodItemToggleContext.Provider>
+		);
+
+		expect(
+			container.querySelector( '.components-form-toggle' )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '.components-checkbox-control' )
+		).not.toBeInTheDocument();
+
+		await userEvent.click( screen.getByLabelText( 'Test Method' ) );
+		expect( onChange ).toHaveBeenCalledWith( true );
 	} );
 } );

@@ -7,6 +7,8 @@ import PaymentMethodItemBody from './body';
 import PaymentMethodItemSubgroup from './subgroup';
 import PaymentMethodItemAction from './action';
 
+export { default as PaymentMethodItemToggleContext } from './toggle-context';
+
 const PaymentMethodItem = Object.assign( PaymentMethodItemRoot, {
 	Checkbox: PaymentMethodItemCheckbox,
 	Body: PaymentMethodItemBody,

@@ -18,3 +18,94 @@
 	margin: 0 0 4px;
 	color: $gray-900;
 }
+
+// The payment method lists, laid out as the designs show them: toggle, text, fees, then the logo.
+.wcpay-settings-screen__controls {
+	.payment-method-item {
+		padding: 16px 0;
+	}
+
+	.payment-method-item__row {
+		display: grid;
+		grid-template-columns: auto minmax( 0, 1fr ) auto auto;
+		grid-auto-flow: dense;
+		column-gap: 16px;
+		row-gap: 8px;
+		align-items: start;
+	}
+
+	.payment-method-item__checkbox {
+		grid-column: 1;
+		grid-row: 1;
+		align-self: start;
+		padding-block-start: 2px;
+	}
+
+	.payment-method-item__text-container,
+	.payment-method-item__text-container > div:not( [class*='payment-method'] ),
+	.payment-method-item__subgroup {
+		display: contents;
+	}
+
+	.payment-method-item__label--mobile {
+		display: none;
+	}
+
+	.payment-method-item__label-container {
+		grid-column: 2;
+	}
+
+	.payment-method-item__label {
+		font-weight: 400;
+		font-size: 15px;
+	}
+
+	.payment-method-item__description {
+		color: $gray-700;
+	}
+
+	.payment-method-item__icon {
+		grid-column: 4;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		margin: 0;
+		overflow: hidden;
+		border-radius: 2px;
+
+		img,
+		svg {
+			max-width: 40px;
+			max-height: 40px;
+		}
+	}
+
+	.payment-method__fees {
+		grid-column: 3;
+		align-self: start;
+		margin: 0;
+
+		.woocommerce-pill {
+			padding: 0;
+			border: 0;
+			background: none;
+			color: $gray-700;
+			font-size: 13px;
+		}
+	}
+
+	// The express checkouts' Customize and Read more buttons sit under their description.
+	.express-checkout .payment-method-item__action {
+		grid-column: 2;
+		justify-self: start;
+		margin: 0;
+	}
+
+	.payment-method-item > .wcpay-inline-notice,
+	.payment-method-item > .components-notice {
+		margin-inline-start: 52px;
+		margin-inline-end: 56px;
+	}
+}

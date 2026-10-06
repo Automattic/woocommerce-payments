@@ -22,6 +22,7 @@ import {
 	useSettings,
 } from '../data/settings';
 import FormBusyState from '../components/form-busy-state';
+import { PaymentMethodItemToggleContext } from '../components/payment-method-item';
 import { createSettingsRegistry } from './settings-registry';
 
 const AccountContext = ( { children }: React.PropsWithChildren ) => {
@@ -53,9 +54,11 @@ const ExistingSettings = ( { children }: React.PropsWithChildren ) => {
 	return (
 		<RegistryProvider value={ registry }>
 			<SlotFillProvider>
-				<div className="wcpay-settings-screen__controls">
-					<AccountContext>{ children }</AccountContext>
-				</div>
+				<PaymentMethodItemToggleContext.Provider value={ true }>
+					<div className="wcpay-settings-screen__controls">
+						<AccountContext>{ children }</AccountContext>
+					</div>
+				</PaymentMethodItemToggleContext.Provider>
 			</SlotFillProvider>
 		</RegistryProvider>
 	);
