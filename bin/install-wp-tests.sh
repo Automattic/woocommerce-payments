@@ -139,7 +139,9 @@ configure_wp() {
 	fi
 
     # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
-    sed $ioption -E "s/(Happy publishing.+)/\1\nmysqli_report(MYSQLI_REPORT_OFF);/" "$WP_CORE_DIR/wp-config.php"
+    if ! grep -q 'mysqli_report' "$WP_CORE_DIR/wp-config.php"; then
+        sed $ioption -E "s/(Happy publishing.+)/\1\nmysqli_report(MYSQLI_REPORT_OFF);/" "$WP_CORE_DIR/wp-config.php"
+    fi
 
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
@@ -160,7 +162,7 @@ install_test_suite() {
 		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
 	fi
 
-	if [ ! -f wp-tests-config.php ]; then
+	if [ ! -f "$WP_TESTS_DIR"/wp-tests-config.php ] || ! grep -q "'$DB_NAME'" "$WP_TESTS_DIR"/wp-tests-config.php; then
 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
 
 		# MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions

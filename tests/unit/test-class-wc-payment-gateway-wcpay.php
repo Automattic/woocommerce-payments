@@ -219,6 +219,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		$this->reset_payment_method_registry();
+
 		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 		$this->original_payment_method_map  = $this->get_payment_method_map();
 
@@ -360,13 +362,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp_query;
 		$wp->query_vars       = $this->wp_query_vars_backup;
 		$wp_query->query_vars = $this->wp_query_query_vars_backup;
-
-		// resetting to prevent test pollution.
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -5711,9 +5706,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_update_order_status_does_not_reduce_stock_when_changing_subscription_payment_method() {
+	public function test_update_order_status_does_not_complete_payment_when_changing_subscription_payment_method() {
+		// A 3DS card change finishes here; marking the subscription paid would pay its last unpaid renewal.
 		$product = $this->create_stock_managed_product( 10 );
-		$order   = WC_Helper_Order::create_order( 1, 0, $product );
+		$order   = WC_Helper_Order::create_order( 1, 50, $product );
 
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 		$order->add_payment_token( $token );
@@ -5759,14 +5755,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		try {
 			ob_start();
 			$this->card_gateway->update_order_status();
-			ob_end_clean();
+			$response = json_decode( ob_get_clean(), true );
 		} finally {
 			remove_filter( 'wp_doing_ajax', '__return_true' );
 			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
 		}
 
+		$this->assertArrayHasKey( 'return_url', $response );
+		$this->assertArrayNotHasKey( 'error', $response );
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $result_order->get_status() );
+		$this->assertSame( '', $result_order->get_transaction_id() );
+		$this->assertSame( 'succeeded', $this->order_service->get_intention_status_for_order( $result_order ) );
+		foreach ( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) as $note ) {
+			$this->assertStringNotContainsString( 'seti_mock_pm_change', $note->content );
+		}
 		$this->assertEquals( 10, wc_get_product( $product->get_id() )->get_stock_quantity() );
-		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_order_stock_reduced', true ) );
+		$this->assertEmpty( $result_order->get_meta( '_order_stock_reduced', true ) );
 	}
 
 	public function test_update_order_status_sets_branded_payment_method_title_from_charge_details() {

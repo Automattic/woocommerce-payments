@@ -10,10 +10,7 @@ else
 	COVERAGE=60
 fi
 
-echo "Installing the test environment..."
-
-docker compose exec -u www-data wordpress \
-	/var/www/html/wp-content/plugins/woocommerce-payments/bin/install-wp-tests.sh
+"$(dirname "$0")/prepare-test-env.sh"
 
 echo "Checking coverage..."
 
