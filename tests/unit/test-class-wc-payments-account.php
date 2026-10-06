@@ -4312,6 +4312,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_retired_kyc_recorder_does_not_start_a_new_timer(): void {
+		$this->setExpectedDeprecated( 'WC_Payments_Account::maybe_record_kyc_completion_date' );
 		delete_option( 'wcpay_kyc_completion_date' );
 		update_option( 'wcpay_kyc_submitted_date', time() );
 
@@ -4328,6 +4329,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_retired_kyc_recorder_preserves_history(): void {
+		$this->setExpectedDeprecated( 'WC_Payments_Account::maybe_record_kyc_completion_date' );
 		update_option( 'wcpay_kyc_completion_date', 12345 );
 		update_option( 'wcpay_kyc_submitted_date', 12300 );
 

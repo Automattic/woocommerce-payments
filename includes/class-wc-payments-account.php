@@ -2670,7 +2670,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @param array|bool $account Legacy account data.
 	 * @return void
 	 */
-	public function maybe_record_kyc_completion_date( $account ): void {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve the legacy parameter name.
+	public function maybe_record_kyc_completion_date( $account ): void { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve the legacy parameter name.
+		wc_deprecated_function( __METHOD__, '11.3.0' );
+	}
 
 
 	/**

@@ -364,6 +364,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_mode_changes_do_not_start_retired_notice_timer() {
+		$this->setExpectedDeprecated( 'WC_Payments_Onboarding_Service::maybe_handle_gateway_test_mode_toggle' );
 		delete_option( 'wcpay_test_mode_enabled_date' );
 
 		$this->onboarding_service->set_test_mode( true );

@@ -1096,7 +1096,9 @@ class WC_Payments_Onboarding_Service {
 	 * @param mixed $new_value New gateway settings.
 	 * @return void
 	 */
-	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void {} // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve legacy parameters.
+	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Preserve legacy parameters.
+		wc_deprecated_function( __METHOD__, '11.3.0' );
+	}
 
 	/**
 	 * Determine if test mode onboarding is enabled.
