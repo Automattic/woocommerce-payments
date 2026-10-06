@@ -447,11 +447,13 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'log' )
 			->with( $this->anything(), $this->stringStartsWith( '[Tracking] Error when linking session with user' ) );
 
-		$this->fraud_service->link_session_if_user_just_logged_in();
-
-		// Put the previous gateway and logger back.
-		WC_Payments::set_gateway( $gateway );
-		$logger_ref->setValue( $internal_logger, $wc_logger );
+		try {
+			$this->fraud_service->link_session_if_user_just_logged_in();
+		} finally {
+			// Put the previous gateway and logger back, even if a mock expectation fails above.
+			WC_Payments::set_gateway( $gateway );
+			$logger_ref->setValue( $internal_logger, $wc_logger );
+		}
 	}
 
 	private function mock_in_admin() {
