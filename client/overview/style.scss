@@ -11,6 +11,10 @@
 .wcpay-task-list.woocommerce-experimental-list {
 	position: relative;
 
+	.woocommerce-task-list__item .woocommerce-task-list__item-text {
+		padding: $gap 0;
+	}
+
 	.woocommerce-experimental-list__item {
 		position: relative;
 	}
