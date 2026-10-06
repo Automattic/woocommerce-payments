@@ -1,6 +1,6 @@
 # Development and delivery
 
-**Last updated:** 2026-09-30
+**Last updated:** 2026-10-03
 
 Read the sections relevant to the current task. Paths and commands in this reference are relative to the repository root unless stated otherwise.
 
@@ -19,13 +19,10 @@ pnpm run dev                        # Start Docker + watch mode
 ### PHP Tests
 ```bash
 pnpm run test:php                    # Run all (first run sets up environment)
+pnpm run test:php -- --filter 'TestClassName::test_method_name'  # Specific test
+pnpm run test:php -- --reinstall     # Rebuild the environment, e.g. to update WP/WC (must be first)
 pnpm run test:php-watch              # Watch mode
 pnpm run test:php-coverage           # With coverage
-
-# Specific test (after initial pnpm run test:php setup):
-docker compose exec -u www-data wordpress bash -c \
-  "cd /var/www/html/wp-content/plugins/woocommerce-payments && \
-  vendor/bin/phpunit --configuration phpunit.xml.dist --filter 'TestClassName::test_method_name'"
 ```
 
 ### JavaScript Tests
