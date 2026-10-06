@@ -18,6 +18,8 @@ class Retire_Post_Kyc_Activation_Emails_Test extends WCPAY_UnitTestCase {
 	public function tear_down(): void {
 		as_unschedule_all_actions( 'wcpay_post_kyc_activation_email_send' );
 		as_unschedule_all_actions( 'wcpay_cleanup_test_unrelated' );
+		delete_transient( 'wcpay_test_to_live_eligible' );
+		delete_transient( 'wcpay_post_kyc_activation_eligible' );
 		parent::tear_down();
 	}
 
@@ -64,6 +66,16 @@ class Retire_Post_Kyc_Activation_Emails_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( as_has_scheduled_action( 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' ) );
 		$this->assertSame( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ) );
+	}
+
+	public function test_upgrade_clears_the_retired_notice_caches(): void {
+		set_transient( 'wcpay_test_to_live_eligible', '1', HOUR_IN_SECONDS );
+		set_transient( 'wcpay_post_kyc_activation_eligible', '1', HOUR_IN_SECONDS );
+
+		( new Retire_Post_Kyc_Activation_Emails() )->migrate();
+
+		$this->assertFalse( get_transient( 'wcpay_test_to_live_eligible' ) );
+		$this->assertFalse( get_transient( 'wcpay_post_kyc_activation_eligible' ) );
 	}
 
 	public function test_fresh_install_cleanup_is_harmless(): void {

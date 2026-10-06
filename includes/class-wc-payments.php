@@ -795,8 +795,6 @@ class WC_Payments {
 		// further below, gated on is_admin() && manage_woocommerce.
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
 		$admin_notices = new WC_Payments_Admin_Notices( self::get_gateway(), self::$account );
 		$admin_notices->init_global_hooks();
