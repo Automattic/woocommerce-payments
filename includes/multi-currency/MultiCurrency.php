@@ -1519,6 +1519,7 @@ class MultiCurrency {
 			$this->get_file_version( $script_file ),
 			true
 		);
+		wp_set_script_translations( $handler, 'woocommerce-payments' );
 	}
 
 	/**
