@@ -3,10 +3,13 @@
  */
 import React, { useMemo, useState } from 'react';
 import {
+	BaseControl,
 	ExternalLink,
 	SlotFillProvider,
 	TabPanel,
 } from '@wordpress/components';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { __ } from '@wordpress/i18n';
 import { RegistryProvider, useRegistry } from '@wordpress/data';
 
@@ -25,6 +28,8 @@ import {
 import FormBusyState from '../components/form-busy-state';
 import { PaymentMethodItemToggleContext } from '../components/payment-method-item';
 import { createSettingsRegistry } from './settings-registry';
+import PaymentRequestButtonPreview from '../settings/express-checkout-settings/payment-request-button-preview';
+import { getExpressCheckoutConfig } from 'utils/express-checkout';
 
 const AccountContext = ( { children }: React.PropsWithChildren ) => {
 	const [ dismissedDuplicateNotices, setDismissedDuplicateNotices ] =
@@ -157,3 +162,27 @@ export const PaymentMethods = () => (
 		</TabPanel>
 	</ExistingSettings>
 );
+
+/** A preview of the express checkout buttons with the style being edited. */
+export const ButtonPreview = () => {
+	const stripePromise = useMemo( () => {
+		const stripeSettings = getExpressCheckoutConfig( 'stripe' );
+		return loadStripe( stripeSettings.publishableKey, {
+			stripeAccount: stripeSettings.accountId,
+			locale: stripeSettings.locale,
+		} );
+	}, [] );
+	return (
+		<ExistingSettings>
+			{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+			<BaseControl
+				label={ __( 'Preview', 'woocommerce-payments' ) }
+				__nextHasNoMarginBottom
+			>
+				<Elements stripe={ stripePromise }>
+					<PaymentRequestButtonPreview />
+				</Elements>
+			</BaseControl>
+		</ExistingSettings>
+	);
+};
