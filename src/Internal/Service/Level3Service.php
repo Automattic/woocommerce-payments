@@ -207,16 +207,15 @@ class Level3Service {
 	 * @return array The Level 3 data, or an empty array when none should be sent.
 	 */
 	private function reconcile_with_order_total( $level3_data, WC_Order $order ): array {
-		if ( ! is_array( $level3_data ) || ! is_array( $level3_data['line_items'] ?? null ) ) {
+		if (
+			! is_array( $level3_data )
+			|| ! is_array( $level3_data['line_items'] ?? null )
+			|| ! $this->is_level3_amount( $level3_data['shipping_amount'] ?? 0 )
+		) {
 			return [];
 		}
 
-		$shipping_amount = $level3_data['shipping_amount'] ?? 0;
-		if ( ! $this->is_level3_amount( $shipping_amount ) ) {
-			return [];
-		}
-
-		$level3_total = (int) $shipping_amount;
+		$level3_total = (int) ( $level3_data['shipping_amount'] ?? 0 );
 		// Shipping is rounded once: up to a cent.
 		$max_rounding_error = 1;
 		foreach ( $level3_data['line_items'] as $index => $line_item ) {

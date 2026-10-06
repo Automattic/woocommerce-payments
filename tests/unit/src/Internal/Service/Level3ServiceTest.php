@@ -672,19 +672,52 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'gift-card', $level_3_data['line_items'][1]->product_code );
 	}
 
-	public function test_no_level3_data_when_a_filter_returns_values_stripe_rejects() {
+	public function provider_level3_data_stripe_rejects() {
+		return [
+			'no line items'         => [
+				function () {
+					return [ 'shipping_amount' => 3800 ];
+				},
+			],
+			'negative shipping'     => [
+				function ( $level3_data ) {
+					$level3_data['shipping_amount'] = -100;
+					return $level3_data;
+				},
+			],
+			'empty description'     => [
+				function ( $level3_data ) {
+					$level3_data['line_items'][0]->product_description = '';
+					return $level3_data;
+				},
+			],
+			'product code not text' => [
+				function ( $level3_data ) {
+					$level3_data['line_items'][0]->product_code = null;
+					return $level3_data;
+				},
+			],
+			'fractional unit cost'  => [
+				function ( $level3_data ) {
+					$level3_data['line_items'][0]->unit_cost = 1799.5;
+					return $level3_data;
+				},
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_level3_data_stripe_rejects
+	 */
+	public function test_no_level3_data_when_a_filter_returns_values_stripe_rejects( callable $break_level3_data ) {
 		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
 		$this->mock_level_3_order( '98012' );
 
-		$break_description = function ( $level3_data ) {
-			$level3_data['line_items'][0]->product_description = '';
-			return $level3_data;
-		};
-		add_filter( 'wcpay_payment_request_level3_data', $break_description );
+		add_filter( 'wcpay_payment_request_level3_data', $break_level3_data );
 
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
-		remove_filter( 'wcpay_payment_request_level3_data', $break_description );
+		remove_filter( 'wcpay_payment_request_level3_data', $break_level3_data );
 
 		$this->assertSame( [], $level_3_data );
 	}
