@@ -32,6 +32,7 @@ use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
@@ -218,6 +219,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		$this->reset_payment_method_registry();
+
 		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 		$this->original_payment_method_map  = $this->get_payment_method_map();
 
@@ -359,13 +362,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp_query;
 		$wp->query_vars       = $this->wp_query_vars_backup;
 		$wp_query->query_vars = $this->wp_query_query_vars_backup;
-
-		// resetting to prevent test pollution.
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -4290,6 +4286,50 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_process_payment_still_checks_fraud_when_the_request_only_looks_like_woopay() {
+		$order = WC_Helper_Order::create_order();
+
+		// A Cart-Token plus `User-Agent: WooPay`, which is what any visitor can send. The
+		// companion test below pins that consulting the service is what a real vouch skips.
+		$_SERVER['HTTP_USER_AGENT'] = 'WooPay';
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} finally {
+			unset( $_SERVER['HTTP_USER_AGENT'], $_SERVER['HTTP_CART_TOKEN'] );
+		}
+	}
+
+	public function test_process_payment_still_checks_fraud_when_the_vouch_is_stale() {
+		$order = WC_Helper_Order::create_order();
+
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		// Sealed correctly, but outside the freshness window.
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header( time() - 3600 );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} finally {
+			unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+		}
+	}
+
 	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
 
@@ -4674,10 +4714,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
-	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_from_woopay() {
+	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_vouched_by_woopay() {
 		$order = WC_Helper_Order::create_order();
 
-		add_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		// The credential itself, rather than a filter standing in for one. Turning
+		// card-testing protection off is not something a shopper should be able to ask for.
+		Jetpack_Options::update_option( 'blog_token', 'test.blog.token' );
+
+		$_SERVER[ WooPay_Session::VOUCH_HEADER ] = $this->build_woopay_vouch_header();
 
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 
@@ -4700,7 +4744,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 
-		remove_filter( 'wcpay_is_woopay_store_api_request', '__return_true' );
+		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+	}
+
+	/**
+	 * Seals a vouch envelope the way WooPay does, and encodes it for the header.
+	 *
+	 * @param int|null $timestamp Envelope timestamp, defaulting to now.
+	 *
+	 * @return string The header value.
+	 */
+	private function build_woopay_vouch_header( ?int $timestamp = null ): string {
+		// Bound to the cart the request carries, as WooPay seals it.
+		$_SERVER['HTTP_CART_TOKEN'] = 'the.cart.token';
+
+		$key        = WooPay_Utilities::derive_key_for( WooPay_Utilities::VOUCH_KEY_PURPOSE );
+		$iv         = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+		$plaintext  = wp_json_encode(
+			[
+				'timestamp'  => $timestamp ?? time(),
+				'cart_token' => hash( 'sha256', $_SERVER['HTTP_CART_TOKEN'] ),
+			]
+		);
+		$ciphertext = openssl_encrypt( $plaintext, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		$envelope = array_map(
+			'base64_encode',
+			[
+				'data' => $ciphertext,
+				'iv'   => $iv,
+				'hash' => hash_hmac( 'sha256', $iv . $ciphertext, $key ),
+			]
+		);
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+		return base64_encode( wp_json_encode( $envelope ) );
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
@@ -5628,9 +5706,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_update_order_status_does_not_reduce_stock_when_changing_subscription_payment_method() {
+	public function test_update_order_status_does_not_complete_payment_when_changing_subscription_payment_method() {
+		// A 3DS card change finishes here; marking the subscription paid would pay its last unpaid renewal.
 		$product = $this->create_stock_managed_product( 10 );
-		$order   = WC_Helper_Order::create_order( 1, 0, $product );
+		$order   = WC_Helper_Order::create_order( 1, 50, $product );
 
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 		$order->add_payment_token( $token );
@@ -5676,14 +5755,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		try {
 			ob_start();
 			$this->card_gateway->update_order_status();
-			ob_end_clean();
+			$response = json_decode( ob_get_clean(), true );
 		} finally {
 			remove_filter( 'wp_doing_ajax', '__return_true' );
 			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
 		}
 
+		$this->assertArrayHasKey( 'return_url', $response );
+		$this->assertArrayNotHasKey( 'error', $response );
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'pending', $result_order->get_status() );
+		$this->assertSame( '', $result_order->get_transaction_id() );
+		$this->assertSame( 'succeeded', $this->order_service->get_intention_status_for_order( $result_order ) );
+		foreach ( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) as $note ) {
+			$this->assertStringNotContainsString( 'seti_mock_pm_change', $note->content );
+		}
 		$this->assertEquals( 10, wc_get_product( $product->get_id() )->get_stock_quantity() );
-		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_order_stock_reduced', true ) );
+		$this->assertEmpty( $result_order->get_meta( '_order_stock_reduced', true ) );
 	}
 
 	public function test_update_order_status_sets_branded_payment_method_title_from_charge_details() {

@@ -173,10 +173,10 @@ There are two modes for running tests:
 Additional options:
 
 - Filter by path or glob: `pnpm run test:e2e tests/e2e/specs/**/checkout*.spec.ts`
-- Filter by test title: `pnpm run test:e2e -- -g "Checkout"` (or `--grep`)
+- Filter by test title: `pnpm run test:e2e -g "Checkout"` (or `--grep`)
 - Update snapshots (optionally with a filter):
-  - `pnpm run test:e2e -- --update-snapshots`
-  - `pnpm run test:e2e -- --update-snapshots tests/e2e/specs/**/deposits*.spec.ts`
+  - `pnpm run test:e2e --update-snapshots`
+  - `pnpm run test:e2e --update-snapshots tests/e2e/specs/**/deposits*.spec.ts`
 
 #### Running only a single test suite
 
@@ -198,13 +198,13 @@ You can also run tests using Playwright's tag filtering:
 
 ```bash
 # Run only WooCommerce Blocks tests
-pnpm run test:e2e -- --grep @blocks
+pnpm run test:e2e --grep @blocks
 
 # Run WCPay tests excluding blocks tests
-pnpm run test:e2e wcpay/ -- --grep-invert @blocks
+pnpm run test:e2e wcpay/ --grep-invert @blocks
 
 # Run all critical tests (includes blocks tests)
-pnpm run test:e2e -- --grep @critical
+pnpm run test:e2e --grep @critical
 ```
 
 It is also possible to run the groups using the relative path to the tests. e.g.

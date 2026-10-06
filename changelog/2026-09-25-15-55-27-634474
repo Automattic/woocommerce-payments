@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed a client error on the add payment method page that replaced the Stripe card error message with a 'Cannot destructure property' error when the card data was rejected.

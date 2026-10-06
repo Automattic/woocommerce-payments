@@ -210,6 +210,29 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether WooPay signs this store's requests instead of attesting them.
+	 *
+	 * The platform decides, per account, which of the two credentials WooPay presents: the
+	 * blog token signature every release used to require, or the attestation envelope that
+	 * replaced it. It answers yes for a store below the release that can verify an envelope,
+	 * and for a newer store put back on the signed path by hand while the replacement is
+	 * proved out.
+	 *
+	 * Read from the cached account payload rather than from the request, so what the store
+	 * accepts cannot be chosen by whoever is calling it.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_force_signed_requests_enabled() {
+		// Read directly from cache, ignore cache expiration check: an expired answer is the
+		// one this store has been working from, and guessing instead would change which
+		// credential it accepts at the moment the platform is hardest to reach.
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ( $account['platform_woopay_force_signed_requests'] ?? false );
+	}
+
+	/**
 	 * Checks whether documents section is enabled.
 	 *
 	 * @return bool

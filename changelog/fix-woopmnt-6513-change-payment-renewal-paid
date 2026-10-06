@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix a subscription's failed renewal order being marked as paid, without a charge, when the customer changes the payment method to a card that needs 3D Secure.

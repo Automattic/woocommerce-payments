@@ -470,6 +470,15 @@ export const processPayment = (
 				paymentMethodType
 			);
 
+			// There is no order on the add payment method page, so a submission
+			// has nothing to record: show the error without leaving the page.
+			if (
+				paymentMethodObject.error &&
+				$form.attr( 'id' ) === 'add_payment_method'
+			) {
+				throw paymentMethodObject.error;
+			}
+
 			if ( paymentMethodObject.error ) {
 				appendPaymentMethodIdToForm( $form, PAYMENT_METHOD_ERROR );
 				appendPaymentMethodErrorDataToForm(
