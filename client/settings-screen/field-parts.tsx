@@ -9,7 +9,14 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
-import { PaymentMethods } from './existing-controls';
+import { ButtonPreview, PaymentMethods } from './existing-controls';
+import {
+	BorderRadiusControl,
+	EditProps,
+	isWooPayGlobalThemeSupportEligible,
+	StoreLogoControl,
+	WooPayCheckoutPreview,
+} from './express-checkout-controls';
 
 export type Settings = Record< string, unknown >;
 
@@ -22,11 +29,42 @@ export type FieldParts = {
 		description?: string;
 	}[];
 	// eslint-disable-next-line @typescript-eslint/naming-convention -- DataForm field property.
-	Edit?: React.ComponentType;
+	Edit?: React.ComponentType< EditProps >;
 	isVisible?: ( item: Settings ) => boolean;
 	isDisabled?: ( args: { item: Settings } ) => boolean;
 	render?: React.ComponentType< { item: Settings } >;
+	getValue?: ( args: { item: Settings } ) => unknown;
+	setValue?: ( args: { item: Settings; value: unknown } ) => Settings;
 };
+
+/** Shows an express checkout at one location, stored as the method's ID in that location's list of methods. */
+export const expressCheckoutLocation = (
+	method: string,
+	location: string
+): FieldParts => {
+	const key = `express_checkout_${ location }_methods`;
+	const methods = ( item: Settings ) =>
+		Array.isArray( item[ key ] ) ? ( item[ key ] as string[] ) : [];
+	return {
+		getValue: ( { item } ) => methods( item ).includes( method ),
+		setValue: ( { item, value } ) => ( {
+			[ key ]: [
+				...methods( item ).filter( ( entry ) => entry !== method ),
+				...( value ? [ method ] : [] ),
+			],
+		} ),
+	};
+};
+
+const getExpressCheckoutLocations = (): Record< string, FieldParts > =>
+	Object.fromEntries(
+		[ 'woopay', 'payment_request', 'amazon_pay' ].flatMap( ( method ) =>
+			[ 'product', 'cart', 'checkout' ].map( ( location ) => [
+				`${ method }_on_${ location }`,
+				expressCheckoutLocation( method, location ),
+			] )
+		)
+	);
 
 declare global {
 	const wcpaySettingsScreenConfig: {
@@ -235,8 +273,143 @@ const getCardDescriptions = (): Record< string, FieldParts > => ( {
 	},
 } );
 
+const getExpressCheckoutParts = (): Record< string, FieldParts > => {
+	const methodNames: Record< string, string > = {
+		woopay: __( 'WooPay', 'woocommerce-payments' ),
+		payment_request: __(
+			'Apple Pay and Google Pay',
+			'woocommerce-payments'
+		),
+		amazon_pay: __( 'Amazon Pay', 'woocommerce-payments' ),
+	};
+	const placementDescriptions = Object.fromEntries(
+		Object.entries( methodNames ).map( ( [ method, name ] ) => [
+			`${ method }_placement_description`,
+			{
+				render: () => (
+					<CardDescription
+						text={ sprintf(
+							/* translators: %s: express checkout name, such as WooPay. */
+							__(
+								'Choose where %s buttons appear in your store.',
+								'woocommerce-payments'
+							),
+							name
+						) }
+					/>
+				),
+			},
+		] )
+	);
+
+	return {
+		...placementDescriptions,
+		button_style_description: {
+			render: () => (
+				<CardDescription
+					text={ __(
+						'Configure the display of express checkout buttons on your store.',
+						'woocommerce-payments'
+					) }
+				/>
+			),
+		},
+		payment_request_button_type: {
+			description: __(
+				'Select a button label that fits best with the flow of purchase or payment experience on your store.',
+				'woocommerce-payments'
+			),
+		},
+		payment_request_button_size: {
+			elements: [
+				{
+					value: 'small',
+					label: __( 'Small (40 px)', 'woocommerce-payments' ),
+				},
+				{
+					value: 'medium',
+					label: __( 'Medium (48 px)', 'woocommerce-payments' ),
+				},
+				{
+					value: 'large',
+					label: __( 'Large (55 px)', 'woocommerce-payments' ),
+				},
+			],
+		},
+		payment_request_button_theme: {
+			elements: [
+				{
+					value: 'dark',
+					label: __( 'Dark', 'woocommerce-payments' ),
+					description: __(
+						'Recommended for white or light-colored backgrounds with high contrast.',
+						'woocommerce-payments'
+					),
+				},
+				{
+					value: 'light',
+					label: __( 'Light', 'woocommerce-payments' ),
+					description: __(
+						'Recommended for dark or colored backgrounds with high contrast.',
+						'woocommerce-payments'
+					),
+				},
+				{
+					value: 'light-outline',
+					label: __( 'Outline', 'woocommerce-payments' ),
+					description: __(
+						'Recommended for white or light-colored backgrounds with insufficient contrast.',
+						'woocommerce-payments'
+					),
+				},
+			],
+		},
+		payment_request_button_border_radius: {
+			Edit: BorderRadiusControl,
+		},
+		button_preview: {
+			render: ButtonPreview,
+		},
+		woopay_store_logo: {
+			Edit: StoreLogoControl,
+		},
+		is_woopay_global_theme_support_enabled: {
+			description: (
+				<>
+					{ __(
+						'When enabled, WooPay checkout will be themed with your store’s brand colors and fonts.',
+						'woocommerce-payments'
+					) }{ ' ' }
+					<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance">
+						{ __( 'Learn more', 'woocommerce-payments' ) }
+					</ExternalLink>
+				</>
+			),
+			isVisible: isWooPayGlobalThemeSupportEligible,
+		},
+		woopay_custom_message: {
+			description: (
+				<>
+					{ __(
+						'Override the default privacy policy and terms of service, or add custom text to WooPay checkout.',
+						'woocommerce-payments'
+					) }{ ' ' }
+					<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance">
+						{ __( 'Learn more', 'woocommerce-payments' ) }
+					</ExternalLink>
+				</>
+			),
+		},
+		woopay_checkout_preview: {
+			render: WooPayCheckoutPreview,
+		},
+	};
+};
+
 export const getFieldParts = (): Record< string, FieldParts > => ( {
 	...getCardDescriptions(),
+	...getExpressCheckoutParts(),
+	...getExpressCheckoutLocations(),
 	is_test_mode_enabled: {
 		isVisible: ( item ) => item.is_test_mode_onboarding !== true,
 		isDisabled: isDevMode,
