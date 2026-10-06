@@ -48,7 +48,7 @@ class Retire_Post_Kyc_Activation_Emails_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_upgrade_cancels_pending_reminders(): void {
-		update_option( 'woocommerce_woocommerce_payments_version', '11.1.0' );
+		update_option( 'woocommerce_woocommerce_payments_version', '11.2.0' );
 		as_schedule_single_action( time() + 3600, 'wcpay_post_kyc_activation_email_send', [ 14 ], 'woocommerce-payments' );
 
 		( new Retire_Post_Kyc_Activation_Emails() )->maybe_migrate();
