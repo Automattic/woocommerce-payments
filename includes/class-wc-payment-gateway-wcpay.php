@@ -2207,13 +2207,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-		if ( $is_changing_payment_method_for_subscription ) {
-			$this->with_stock_reduction_disabled(
-				function () use ( $order, $intent ) {
-					$this->order_service->update_order_status_from_intent( $order, $intent );
-				}
-			);
-		} else {
+		// A card change only saves the card, so skip payment completion on the subscription.
+		if ( ! $is_changing_payment_method_for_subscription ) {
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 		}
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
@@ -4365,12 +4360,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 			}
 
+			// A card change only saves the card: completing the subscription would pay its last unpaid renewal.
 			if ( $is_subscription_payment_method_change ) {
-				$this->with_stock_reduction_disabled(
-					function () use ( $order, $intent ) {
-						$this->order_service->update_order_status_from_intent( $order, $intent );
-					}
-				);
+				// Renewals copy this status, and the cancel/capture handlers read a non-terminal one as an open authorization.
+				$this->order_service->set_intention_status_for_order( $order, $status );
 			} else {
 				$this->order_service->update_order_status_from_intent( $order, $intent );
 			}
@@ -5514,37 +5507,5 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
 		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
-	}
-
-	/**
-	 * Runs a callback with the `woocommerce_payment_complete_reduce_order_stock` filter forced to false.
-	 *
-	 * Payment-method-change flows must never decrement stock: the order was already paid once
-	 * and the customer is only updating the stored payment credential. The status transition
-	 * inside WooCommerce core would otherwise trigger `wc_maybe_reduce_stock_levels()` via
-	 * `woocommerce_payment_complete` and `woocommerce_order_status_*` hooks.
-	 *
-	 * The filter is added at `PHP_INT_MAX - 1` so it wins over any upstream filter that
-	 * might re-enable reduction, and we guard against double-adding to stay reentrant.
-	 *
-	 * @param callable $callback Callback to execute with stock reduction suppressed.
-	 * @return mixed The callback's return value.
-	 */
-	private function with_stock_reduction_disabled( callable $callback ) {
-		$filter           = 'woocommerce_payment_complete_reduce_order_stock';
-		$priority         = PHP_INT_MAX - 1;
-		$already_filtered = false !== has_filter( $filter, '__return_false' );
-
-		if ( ! $already_filtered ) {
-			add_filter( $filter, '__return_false', $priority );
-		}
-
-		try {
-			return $callback();
-		} finally {
-			if ( ! $already_filtered ) {
-				remove_filter( $filter, '__return_false', $priority );
-			}
-		}
 	}
 }
