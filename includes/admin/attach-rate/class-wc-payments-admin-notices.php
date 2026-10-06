@@ -65,7 +65,7 @@ class WC_Payments_Admin_Notices {
 	/**
 	 * Keep old dependency handles resolvable without loading retired bundles.
 	 *
-	 * @since 11.2.0
+	 * @since 11.3.0
 	 */
 	public static function register_retired_notice_assets(): void {
 		foreach ( [ 'WCPAY_TEST_TO_LIVE_NOTICE', 'WCPAY_POST_KYC_ACTIVATION_NOTICE' ] as $handle ) {

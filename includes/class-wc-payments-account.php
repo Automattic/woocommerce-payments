@@ -50,14 +50,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	/**
 	 * Historic reminder timestamp.
 	 *
-	 * @deprecated 11.2.0 No longer written.
+	 * @deprecated 11.3.0 No longer written.
 	 */
 	const KYC_COMPLETION_DATE_OPTION = 'wcpay_kyc_completion_date';
 
 	/**
 	 * Historic reminder timestamp.
 	 *
-	 * @deprecated 11.2.0 No longer written.
+	 * @deprecated 11.3.0 No longer written.
 	 */
 	const KYC_SUBMITTED_DATE_OPTION = 'wcpay_kyc_submitted_date';
 
@@ -2666,7 +2666,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	/**
 	 * Compatibility callback for the retired activation reminder clock.
 	 *
-	 * @deprecated 11.2.0 KYC reminder timestamps are no longer recorded.
+	 * @deprecated 11.3.0 KYC reminder timestamps are no longer recorded.
 	 * @param array|bool $account Legacy account data.
 	 * @return void
 	 */

@@ -24,7 +24,7 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Historic reminder timestamp.
 	 *
-	 * @deprecated 11.2.0 No longer written.
+	 * @deprecated 11.3.0 No longer written.
 	 */
 	const TEST_MODE_ENABLED_DATE_OPTION              = 'wcpay_test_mode_enabled_date';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
@@ -1091,7 +1091,7 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Compatibility callback for the retired test-to-live notice timer.
 	 *
-	 * @deprecated 11.2.0 Notice bookkeeping is no longer maintained.
+	 * @deprecated 11.3.0 Notice bookkeeping is no longer maintained.
 	 * @param mixed $old_value Previous gateway settings.
 	 * @param mixed $new_value New gateway settings.
 	 * @return void
