@@ -173,10 +173,19 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 
 		$this->sut->get_view_config( $config );
 
-		$in_cards = array_map(
-			static fn( $child ) => is_array( $child ) ? $child['id'] : $child,
-			array_merge( ...array_column( $config->merged['form']['fields'], 'children' ) )
-		);
+		// Collect the fields in the cards, including those inside groups such as the payout schedule row.
+		$collect  = static function ( array $children ) use ( &$collect ): array {
+			$ids = [];
+			foreach ( $children as $child ) {
+				if ( is_array( $child ) && isset( $child['children'] ) ) {
+					$ids = array_merge( $ids, $collect( $child['children'] ) );
+				} else {
+					$ids[] = is_array( $child ) ? $child['id'] : $child;
+				}
+			}
+			return $ids;
+		};
+		$in_cards = $collect( array_merge( ...array_column( $config->merged['form']['fields'], 'children' ) ) );
 		// The payment methods control shows the express checkouts in its own tabs.
 		$in_cards[] = 'is_payment_request_enabled';
 		$field_ids  = array_column( $this->sut->get_fields(), 'id' );

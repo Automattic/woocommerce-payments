@@ -16,7 +16,11 @@ export type Settings = Record< string, unknown >;
 /** The parts of a field that PHP can't describe. They're merged into the field registered with the Fields API. */
 export type FieldParts = {
 	description?: React.ReactNode;
-	elements?: { value: string | number; label: string }[];
+	elements?: {
+		value: string | number;
+		label: string;
+		description?: string;
+	}[];
 	// eslint-disable-next-line @typescript-eslint/naming-convention -- DataForm field property.
 	Edit?: React.ComponentType;
 	isVisible?: ( item: Settings ) => boolean;
@@ -40,6 +44,25 @@ const isPayoutScheduleLocked = ( { item }: { item: Settings } ) =>
 	item.deposit_status !== 'enabled' ||
 	item.deposit_restrictions === 'schedule_restricted' ||
 	item.deposit_completed_waiting_period !== true;
+
+// Matches the notes under the payout schedule on the existing settings page.
+const getPayoutIntervalNote = ( interval: unknown ) =>
+	( (
+		{
+			daily: __(
+				'Payouts will occur every business day.',
+				'woocommerce-payments'
+			),
+			weekly: __(
+				'Payouts that fall on a holiday will initiate on the next business day.',
+				'woocommerce-payments'
+			),
+			monthly: __(
+				'Payouts scheduled on a weekend will be sent on the next business day.',
+				'woocommerce-payments'
+			),
+		} as Record< string, string >
+	 )[ String( interval ) ] );
 
 /** A card's description, shown by a read-only field since DataForm card descriptions can only be text. */
 const CardDescription = ( {
@@ -97,23 +120,59 @@ const getCardDescriptions = (): Record< string, FieldParts > => ( {
 	},
 	payouts_description: {
 		render: ( { item } ) => (
-			<CardDescription
-				text={ sprintf(
-					/* translators: %s: number of business days. */
-					__(
-						'Funds are available for payout %s business days after they’re received.',
-						'woocommerce-payments'
-					),
-					String( item.deposit_delay_days ?? '' )
+			<>
+				<CardDescription
+					text={ sprintf(
+						/* translators: %s: number of business days. */
+						__(
+							'Funds are available for payout %s business days after they’re received.',
+							'woocommerce-payments'
+						),
+						String( item.deposit_delay_days ?? '' )
+					) }
+					link={ {
+						href: 'https://woocommerce.com/document/woopayments/payouts/payout-schedule/',
+						label: __(
+							'Learn more about payout schedules',
+							'woocommerce-payments'
+						),
+					} }
+				/>
+				{ getPayoutIntervalNote( item.deposit_schedule_interval ) && (
+					<p className="wcpay-settings-screen__card-description">
+						{ getPayoutIntervalNote(
+							item.deposit_schedule_interval
+						) }
+					</p>
 				) }
-				link={ {
-					href: 'https://woocommerce.com/document/woopayments/payouts/payout-schedule/',
-					label: __(
-						'Learn more about payout schedules',
+			</>
+		),
+	},
+	payout_bank_account: {
+		render: () => (
+			<div className="wcpay-settings-screen__bank-account">
+				<p className="wcpay-settings-screen__bank-account-title">
+					{ __( 'Manage your bank account', 'woocommerce-payments' ) }
+				</p>
+				<CardDescription
+					text={ __(
+						'Manage and update your bank account information to receive payouts.',
 						'woocommerce-payments'
-					),
-				} }
-			/>
+					) }
+					link={
+						wcpaySettings.accountStatus?.accountLink
+							? {
+									href: wcpaySettings.accountStatus
+										.accountLink,
+									label: __(
+										'Manage in Stripe',
+										'woocommerce-payments'
+									),
+							  }
+							: undefined
+					}
+				/>
+			</div>
 		),
 	},
 	transactions_description: {
@@ -183,6 +242,24 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 		isDisabled: isDevMode,
 	},
 	current_protection_level: {
+		elements: [
+			{
+				value: 'basic',
+				label: __( 'Basic', 'woocommerce-payments' ),
+				description: __(
+					"Provides basic anti-fraud protection only. Payments will be blocked if the card's issuing bank cannot verify the CVV.",
+					'woocommerce-payments'
+				),
+			},
+			{
+				value: 'advanced',
+				label: __( 'Advanced', 'woocommerce-payments' ),
+				description: __(
+					'Allows you to fine-tune the level of filtering according to your business needs.',
+					'woocommerce-payments'
+				),
+			},
+		],
 		description: (
 			<a href={ wcpaySettingsScreenConfig.fraudRulesUrl }>
 				{ __( 'Configure advanced rules', 'woocommerce-payments' ) }

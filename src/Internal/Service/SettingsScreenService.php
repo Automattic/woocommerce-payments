@@ -225,7 +225,7 @@ class SettingsScreenService {
 				'label'    => __( 'Description', 'woocommerce-payments' ),
 				'readOnly' => true,
 			],
-			array_values( self::CARD_DESCRIPTIONS )
+			[ ...array_values( self::CARD_DESCRIPTIONS ), 'payout_bank_account' ]
 		);
 
 		return array_merge(
@@ -236,14 +236,17 @@ class SettingsScreenService {
 					__( 'Enable test mode', 'woocommerce-payments' ),
 					__( 'Use test transactions instead of real payments.', 'woocommerce-payments' )
 				),
-				$text( 'account_communications_email', __( 'Account email', 'woocommerce-payments' ), 'email' ),
-				$select(
-					'current_protection_level',
-					__( 'Fraud protection level', 'woocommerce-payments' ),
-					[
-						'basic'    => __( 'Basic', 'woocommerce-payments' ),
-						'advanced' => __( 'Advanced', 'woocommerce-payments' ),
-					]
+				$text( 'account_communications_email', __( 'Email address', 'woocommerce-payments' ), 'email' ),
+				array_merge(
+					$select(
+						'current_protection_level',
+						__( 'Set your payment risk level', 'woocommerce-payments' ),
+						[
+							'basic'    => __( 'Basic', 'woocommerce-payments' ),
+							'advanced' => __( 'Advanced', 'woocommerce-payments' ),
+						]
+					),
+					[ 'Edit' => 'radio' ]
 				),
 				[
 					'id'    => 'enabled_payment_method_ids',
@@ -259,15 +262,15 @@ class SettingsScreenService {
 					__( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
 					__( 'Charge must be captured on the order details screen within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' )
 				),
-				$text( 'account_statement_descriptor', __( 'Full bank statement', 'woocommerce-payments' ) ),
+				$text( 'account_statement_descriptor', __( 'Customer bank statement', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor_kanji', __( 'Full bank statement (Kanji)', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor_kana', __( 'Full bank statement (Kana)', 'woocommerce-payments' ) ),
 				$text( 'account_business_support_email', __( 'Support email', 'woocommerce-payments' ), 'email' ),
 				$text( 'account_business_support_phone', __( 'Support phone number', 'woocommerce-payments' ) ),
-				$select( 'deposit_schedule_interval', __( 'Payout frequency', 'woocommerce-payments' ), $intervals ),
+				$select( 'deposit_schedule_interval', __( 'Frequency', 'woocommerce-payments' ), $intervals ),
 				$select(
 					'deposit_schedule_weekly_anchor',
-					__( 'Payout day', 'woocommerce-payments' ),
+					__( 'Day', 'woocommerce-payments' ),
 					[
 						'monday'    => __( 'Monday', 'woocommerce-payments' ),
 						'tuesday'   => __( 'Tuesday', 'woocommerce-payments' ),
@@ -279,7 +282,7 @@ class SettingsScreenService {
 				[
 					'id'    => 'deposit_schedule_monthly_anchor',
 					'type'  => 'integer',
-					'label' => __( 'Payout date', 'woocommerce-payments' ),
+					'label' => __( 'Date', 'woocommerce-payments' ),
 					'Edit'  => 'select',
 				],
 				$toggle( 'is_multi_currency_enabled', __( 'Enable customer multi-currency', 'woocommerce-payments' ) ),
@@ -309,10 +312,24 @@ class SettingsScreenService {
 			],
 		];
 
+		// Frequency and day sit side by side.
+		$payout_schedule     = [
+			'id'       => 'payout-schedule',
+			'layout'   => [ 'type' => 'row' ],
+			'children' => [ 'deposit_schedule_interval', 'deposit_schedule_weekly_anchor', 'deposit_schedule_monthly_anchor' ],
+		];
+		$payout_bank_account = [
+			'id'     => 'payout_bank_account',
+			'layout' => [
+				'type'          => 'regular',
+				'labelPosition' => 'none',
+			],
+		];
+
 		$cards = [
 			'test-mode'               => [ __( 'Test mode', 'woocommerce-payments' ), [ 'is_test_mode_enabled' ] ],
 			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level' ] ],
-			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ 'deposit_schedule_interval', 'deposit_schedule_weekly_anchor', 'deposit_schedule_monthly_anchor' ] ],
+			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ $payout_schedule, $payout_bank_account ] ],
 			'payment-methods'         => [ __( 'Payment methods', 'woocommerce-payments' ), [ $payment_methods ] ],
 			'transactions'            => [ __( 'Transaction preferences', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled' ] ],
 			'account-notifications'   => [ __( 'Account notifications', 'woocommerce-payments' ), [ 'account_communications_email' ] ],
