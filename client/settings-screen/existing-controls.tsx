@@ -2,7 +2,11 @@
  * External dependencies
  */
 import React, { useMemo, useState } from 'react';
-import { SlotFillProvider, TabPanel } from '@wordpress/components';
+import {
+	ExternalLink,
+	SlotFillProvider,
+	TabPanel,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { RegistryProvider, useRegistry } from '@wordpress/data';
 
@@ -10,10 +14,7 @@ import { RegistryProvider, useRegistry } from '@wordpress/data';
  * Internal dependencies
  */
 import { PaymentMethodsControl } from '../settings/payment-methods-section';
-import {
-	BuyNowPayLaterControl,
-	BuyNowPayLaterMethodsDescription,
-} from '../settings/buy-now-pay-later-section';
+import { BuyNowPayLaterControl } from '../settings/buy-now-pay-later-section';
 import { ExpressCheckoutControl } from '../settings/express-checkout';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import DuplicatedPaymentMethodsContext from '../settings/settings-manager/duplicated-payment-methods-context';
@@ -79,6 +80,23 @@ const getMethodTabs = () => [
 	},
 ];
 
+/** A tab's description, with a link to its documentation. */
+const TabDescription = ( {
+	text,
+	link,
+	linkLabel,
+}: {
+	text: string;
+	link: string;
+	linkLabel: string;
+} ) => (
+	<p className="wcpay-settings-screen__card-description wcpay-settings-screen__tab-description">
+		{ text } <ExternalLink href={ link }>{ linkLabel }</ExternalLink>
+	</p>
+);
+
+const learnMore = () => __( 'Learn more', 'woocommerce-payments' );
+
 /** The payment method, buy now pay later and express checkout lists, in tabs inside the Payment methods card. */
 export const PaymentMethods = () => (
 	<ExistingSettings>
@@ -90,14 +108,51 @@ export const PaymentMethods = () => (
 				if ( tab.name === 'buy-now-pay-later' ) {
 					return (
 						<BuyNowPayLaterControl>
-							<BuyNowPayLaterMethodsDescription />
+							<TabDescription
+								text={ __(
+									'Boost sales by offering customers additional buying power and flexible payment options.',
+									'woocommerce-payments'
+								) }
+								link="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/"
+								linkLabel={ learnMore() }
+							/>
 						</BuyNowPayLaterControl>
 					);
 				}
 				if ( tab.name === 'express-checkouts' ) {
-					return <ExpressCheckoutControl />;
+					return (
+						<>
+							<TabDescription
+								text={ __(
+									'Let your customers use their favorite express payment methods and digital wallets ' +
+										'for faster, more secure checkouts across different parts of your store.',
+									'woocommerce-payments'
+								) }
+								link="https://woocommerce.com/document/woopayments/settings-guide/#express-checkouts"
+								linkLabel={ learnMore() }
+							/>
+							<ExpressCheckoutControl />
+						</>
+					);
 				}
-				return <PaymentMethodsControl />;
+				return (
+					<>
+						<TabDescription
+							text={ __(
+								'Add and edit payments available to customers at checkout. ' +
+									'Based on their device type, location, and purchase history, ' +
+									'your customers will only see the most relevant payment methods.',
+								'woocommerce-payments'
+							) }
+							link="https://woocommerce.com/document/woopayments/fees/"
+							linkLabel={ __(
+								'Learn about WooPayments fees in your country',
+								'woocommerce-payments'
+							) }
+						/>
+						<PaymentMethodsControl />
+					</>
+				);
 			} }
 		</TabPanel>
 	</ExistingSettings>

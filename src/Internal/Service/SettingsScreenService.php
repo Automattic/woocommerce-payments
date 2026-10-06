@@ -173,7 +173,7 @@ class SettingsScreenService {
 	 * @return array[]
 	 */
 	public function get_fields(): array {
-		$toggle = static function ( string $id, string $label, string $description = '' ): array {
+		$toggle   = static function ( string $id, string $label, string $description = '' ): array {
 			return array_filter(
 				[
 					'id'          => $id,
@@ -184,14 +184,15 @@ class SettingsScreenService {
 				]
 			);
 		};
-		$text   = static function ( string $id, string $label, string $type = 'text' ): array {
+		$checkbox = static fn( string $id, string $label, string $description = '' ): array => array_merge( $toggle( $id, $label, $description ), [ 'Edit' => 'checkbox' ] );
+		$text     = static function ( string $id, string $label, string $type = 'text' ): array {
 			return [
 				'id'    => $id,
 				'type'  => $type,
 				'label' => $label,
 			];
 		};
-		$select = static function ( string $id, string $label, array $options ): array {
+		$select   = static function ( string $id, string $label, array $options ): array {
 			return [
 				'id'       => $id,
 				'type'     => 'text',
@@ -234,7 +235,7 @@ class SettingsScreenService {
 				$toggle(
 					'is_test_mode_enabled',
 					__( 'Enable test mode', 'woocommerce-payments' ),
-					__( 'Use test transactions instead of real payments.', 'woocommerce-payments' )
+					__( 'When test mode is on, orders are simulated and customers won’t be charged. Turn it off before accepting real payments.', 'woocommerce-payments' )
 				),
 				$text( 'account_communications_email', __( 'Email address', 'woocommerce-payments' ), 'email' ),
 				array_merge(
@@ -256,17 +257,23 @@ class SettingsScreenService {
 					'id'    => 'is_payment_request_enabled',
 					'label' => __( 'Express checkouts', 'woocommerce-payments' ),
 				],
-				$toggle( 'is_saved_cards_enabled', __( 'Enable payments via saved cards', 'woocommerce-payments' ) ),
-				$toggle(
-					'is_manual_capture_enabled',
-					__( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
-					__( 'Charge must be captured on the order details screen within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' )
+				$checkbox(
+					'is_saved_cards_enabled',
+					__( 'Enable payments via saved cards', 'woocommerce-payments' ),
+					__( 'When enabled, users will be able to pay with a saved card during checkout. Card details are stored in our platform, not on your store.', 'woocommerce-payments' )
 				),
+				$checkbox( 'is_manual_capture_enabled', __( 'Enable manual capture', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor', __( 'Customer bank statement', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor_kanji', __( 'Full bank statement (Kanji)', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor_kana', __( 'Full bank statement (Kana)', 'woocommerce-payments' ) ),
-				$text( 'account_business_support_email', __( 'Support email', 'woocommerce-payments' ), 'email' ),
-				$text( 'account_business_support_phone', __( 'Support phone number', 'woocommerce-payments' ) ),
+				array_merge(
+					$text( 'account_business_support_email', __( 'Support email', 'woocommerce-payments' ), 'email' ),
+					[ 'description' => __( 'This may be visible on receipts, invoices, and automated emails from your store.', 'woocommerce-payments' ) ]
+				),
+				array_merge(
+					$text( 'account_business_support_phone', __( 'Support phone number', 'woocommerce-payments' ) ),
+					[ 'description' => __( "This number may appear on customer bank statements and in-person purchase receipts, but not in order emails. Use a number you're comfortable sharing publicly.", 'woocommerce-payments' ) ]
+				),
 				$select( 'deposit_schedule_interval', __( 'Frequency', 'woocommerce-payments' ), $intervals ),
 				$select(
 					'deposit_schedule_weekly_anchor',
@@ -285,9 +292,13 @@ class SettingsScreenService {
 					'label' => __( 'Date', 'woocommerce-payments' ),
 					'Edit'  => 'select',
 				],
-				$toggle( 'is_multi_currency_enabled', __( 'Enable customer multi-currency', 'woocommerce-payments' ) ),
-				$toggle( 'is_stripe_billing_enabled', __( 'Enable Stripe Billing for future subscriptions', 'woocommerce-payments' ) ),
-				$toggle( 'is_debug_log_enabled', __( 'Log error messages', 'woocommerce-payments' ) ),
+				$checkbox( 'is_multi_currency_enabled', __( 'Enable Multi-Currency', 'woocommerce-payments' ) ),
+				$checkbox( 'is_stripe_billing_enabled', __( 'Enable Stripe Billing for future subscriptions', 'woocommerce-payments' ) ),
+				$checkbox(
+					'is_debug_log_enabled',
+					__( 'Log error messages', 'woocommerce-payments' ),
+					__( 'When enabled, payment error logs will be saved to WooCommerce > Status > Logs.', 'woocommerce-payments' )
+				),
 			]
 		);
 	}

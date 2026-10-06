@@ -4,6 +4,7 @@
 import React from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -200,10 +201,13 @@ const getCardDescriptions = (): Record< string, FieldParts > => ( {
 	account_notifications_description: {
 		render: () => (
 			<CardDescription
-				text={ __(
+				text={ `${ __(
 					'Receive important notifications about your WooPayments account.',
 					'woocommerce-payments'
-				) }
+				) } ${ __(
+					'Anyone with access to this email address will be treated as the account owner. Please verify the address carefully.',
+					'woocommerce-payments'
+				) }` }
 				link={ {
 					href: 'https://woocommerce.com/document/woopayments/settings-guide/#account-notifications',
 					label: __( 'Learn more', 'woocommerce-payments' ),
@@ -286,6 +290,18 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 		Edit: PaymentMethods,
 	},
 	is_manual_capture_enabled: {
+		description: interpolateComponents( {
+			mixedString: __(
+				'Issue an authorization on checkout and capture later. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+				'woocommerce-payments'
+			),
+			components: {
+				learnMoreLink: (
+					// @ts-expect-error: children is provided when interpolating the component
+					<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/" />
+				),
+			},
+		} ),
 		isDisabled: ( { item } ) => item.is_stripe_billing_enabled === true,
 	},
 	account_statement_descriptor_kanji: {
@@ -319,7 +335,38 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 		isVisible: ( item ) => item.deposit_schedule_interval === 'monthly',
 		isDisabled: isPayoutScheduleLocked,
 	},
+	is_multi_currency_enabled: {
+		description: interpolateComponents( {
+			mixedString: __(
+				'Allow customers to shop and pay in multiple currencies. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+				'woocommerce-payments'
+			),
+			components: {
+				learnMoreLink: (
+					// @ts-expect-error: children is provided when interpolating the component
+					<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/" />
+				),
+			},
+		} ),
+	},
 	is_stripe_billing_enabled: {
+		description: interpolateComponents( {
+			mixedString: sprintf(
+				__(
+					'By enabling this setting, future %s subscription purchases will utilize Stripe Billing for payment' +
+						' processing. Note: This feature supports card payments only and may lack support for key' +
+						' subscription features. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'woocommerce-payments'
+				),
+				'WooPayments'
+			),
+			components: {
+				learnMoreLink: (
+					// @ts-expect-error: children is provided when interpolating the component
+					<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/" />
+				),
+			},
+		} ),
 		isVisible: () => wcpaySettings.isStripeBillingEligible === true,
 	},
 	is_debug_log_enabled: {
