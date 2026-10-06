@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Cancels the retired experiment's jobs without changing merchant preferences.
  *
- * @since 11.2.0
+ * @since 11.3.0
  */
 class Retire_Post_Kyc_Activation_Emails {
 
@@ -21,7 +21,7 @@ class Retire_Post_Kyc_Activation_Emails {
 	 */
 	public function maybe_migrate() {
 		$previous_version = get_option( 'woocommerce_woocommerce_payments_version', '' );
-		if ( version_compare( '11.2.0', $previous_version, '>' ) ) {
+		if ( version_compare( '11.3.0', $previous_version, '>' ) ) {
 			$this->migrate();
 		}
 	}
