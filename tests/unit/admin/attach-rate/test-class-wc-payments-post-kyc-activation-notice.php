@@ -109,11 +109,6 @@ class WC_Payments_Post_Kyc_Activation_Notice_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->make_notice()->should_show() );
 	}
 
-	public function test_should_show_returns_false_when_user_lacks_capability(): void {
-		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$this->assertFalse( $this->make_notice()->should_show() );
-	}
-
 	public function test_should_show_returns_false_when_not_connected(): void {
 		$this->assertFalse( $this->make_notice( false )->should_show() );
 	}

@@ -284,8 +284,18 @@ class WC_Payments_Post_Kyc_Activation_Email_Service_Test extends WCPAY_UnitTestC
 		update_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION, [ 7 ] );
 		$service = $this->make_service();
 
+		$mails_sent = 0;
+		$count_mail = function () use ( &$mails_sent ) {
+			++$mails_sent;
+			return true;
+		};
+		add_filter( 'pre_wp_mail', $count_mail );
+
 		$service->send_email_for_stage( 7 );
 
+		remove_filter( 'pre_wp_mail', $count_mail );
+
+		$this->assertSame( 0, $mails_sent, 'An already-sent stage must not be emailed again.' );
 		// The marker stayed exactly at the pre-set value (no double-append).
 		$this->assertSame( [ 7 ], get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
 	}

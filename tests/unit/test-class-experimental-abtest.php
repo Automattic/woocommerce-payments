@@ -18,19 +18,23 @@ class Experimental_Abtest_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_variation_returns_control_if_test_name_is_empty() {
-		$abtest = new \WCPay\Experimental_Abtest( '', 'woocommerce', false );
+		$requests = $this->stub_explat_response( '{"variations":{"":"treatment"},"ttl":7200}' );
+		$abtest   = new \WCPay\Experimental_Abtest( 'jetpack:anonJ', 'woocommerce', true );
 
 		$result = $abtest->get_variation( '' );
 
-		$this->assertSame( $result, 'control' );
+		$this->assertSame( 'control', $result );
+		$this->assertSame( 0, $requests->count );
 	}
 
 	public function test_get_variation_returns_control_if_test_name_is_invalid() {
-		$abtest = new \WCPay\Experimental_Abtest( '', 'woocommerce', false );
+		$requests = $this->stub_explat_response( '{"variations":{"invalid-test-name":"treatment"},"ttl":7200}' );
+		$abtest   = new \WCPay\Experimental_Abtest( 'jetpack:anonK', 'woocommerce', true );
 
-		$result = $abtest->get_variation( 'invalid_test_name' );
+		$result = $abtest->get_variation( 'invalid-test-name' );
 
-		$this->assertSame( $result, 'control' );
+		$this->assertSame( 'control', $result );
+		$this->assertSame( 0, $requests->count );
 	}
 
 	public function test_cache_key_is_scoped_to_the_anon_id() {

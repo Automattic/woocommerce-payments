@@ -17,24 +17,25 @@
 class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * The regex that the export_id capture group uses in download routes.
-	 * Must stay in sync with the route definitions:
-	 *   - WC_REST_Payments_Transactions_Controller
-	 *   - WC_REST_Payments_Disputes_Controller
+	 * The REST bases whose download routes take an export_id.
 	 *
-	 * @var string
+	 * @var string[]
 	 */
-	private const EXPORT_ID_PATTERN = '/^[^\/\\\\%]+$/';
+	private const DOWNLOAD_ROUTE_BASES = [
+		'/wc/v3/payments/transactions',
+		'/wc/v3/payments/disputes',
+	];
 
 	/**
 	 * @dataProvider valid_export_id_provider
 	 */
 	public function test_valid_export_ids_are_allowed( string $export_id ): void {
-		$this->assertMatchesRegularExpression(
-			self::EXPORT_ID_PATTERN,
-			$export_id,
-			"Export ID '$export_id' should be allowed but was rejected."
-		);
+		foreach ( self::DOWNLOAD_ROUTE_BASES as $base ) {
+			$this->assertTrue(
+				$this->download_route_matches( $base, $export_id ),
+				"Export ID '$export_id' should be allowed by $base but was rejected."
+			);
+		}
 	}
 
 	public function valid_export_id_provider(): array {
@@ -56,11 +57,12 @@ class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase 
 	 * @dataProvider path_traversal_export_id_provider
 	 */
 	public function test_path_traversal_export_ids_are_blocked( string $export_id ): void {
-		$this->assertDoesNotMatchRegularExpression(
-			self::EXPORT_ID_PATTERN,
-			$export_id,
-			"Export ID '$export_id' should be blocked but was allowed."
-		);
+		foreach ( self::DOWNLOAD_ROUTE_BASES as $base ) {
+			$this->assertFalse(
+				$this->download_route_matches( $base, $export_id ),
+				"Export ID '$export_id' should be blocked by $base but was allowed."
+			);
+		}
 	}
 
 	public function path_traversal_export_id_provider(): array {
@@ -80,5 +82,27 @@ class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase 
 			'percent sign only'                   => [ '%' ],
 			'empty string'                        => [ '' ],
 		];
+	}
+
+	/**
+	 * Matches a download path against the registered route, the way WP_REST_Server does.
+	 *
+	 * @param string $base      The controller's REST base.
+	 * @param string $export_id The export ID in the path.
+	 *
+	 * @return bool Whether the route accepts the path.
+	 */
+	private function download_route_matches( string $base, string $export_id ): bool {
+		$download_routes = array_values(
+			array_filter(
+				array_keys( rest_get_server()->get_routes() ),
+				function ( $route ) use ( $base ) {
+					return 0 === strpos( $route, $base . '/download/' );
+				}
+			)
+		);
+		$this->assertCount( 1, $download_routes, "Expected one download route under $base." );
+
+		return 1 === preg_match( '@^' . $download_routes[0] . '$@i', $base . '/download/' . $export_id );
 	}
 }

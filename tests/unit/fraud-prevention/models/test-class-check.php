@@ -139,8 +139,9 @@ class Fraud_Prevention_Models_Check_Test extends WCPAY_UnitTestCase {
 
 		$this->assertInstanceOf( Check::class, $checklist );
 		$this->assertEquals( $checklist->operator, Check::LIST_OPERATOR_OR );
-		$this->assert_check( $check->checks[0], 'key_mock_1', 500, Check::OPERATOR_LT );
-		$this->assert_check( $check->checks[1], 'key_mock_2', 1500, Check::OPERATOR_GT );
+		$this->assertCount( 2, $checklist->checks );
+		$this->assert_check( $checklist->checks[0], 'key_mock_1', 500, Check::OPERATOR_LT );
+		$this->assert_check( $checklist->checks[1], 'key_mock_2', 1500, Check::OPERATOR_GT );
 	}
 
 	public function test_it_converts_a_check_to_array() {

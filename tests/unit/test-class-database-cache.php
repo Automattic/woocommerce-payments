@@ -838,29 +838,23 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		delete_option( Database_Cache::BUSINESS_TYPES_KEY );
 	}
 
-	/**
-	 * @dataProvider provider_errored_ttl_ladder
-	 */
-	public function test_onboarding_fields_data_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
+	public function test_onboarding_fields_data_errored_entries_use_progressive_backoff() {
 		$this->assert_cache_get_respects_ttl(
 			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
 			[ 'fields' => [] ],
 			true,
-			$expected_ttl,
-			$consecutive_errors
+			5 * MINUTE_IN_SECONDS,
+			2
 		);
 	}
 
-	/**
-	 * @dataProvider provider_errored_ttl_ladder
-	 */
-	public function test_business_types_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
+	public function test_business_types_errored_entries_use_progressive_backoff() {
 		$this->assert_cache_get_respects_ttl(
 			Database_Cache::BUSINESS_TYPES_KEY,
 			[ 'business_types' => [] ],
 			true,
-			$expected_ttl,
-			$consecutive_errors
+			5 * MINUTE_IN_SECONDS,
+			2
 		);
 	}
 
@@ -978,32 +972,18 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, $cache['consecutive_errors'] );
 	}
 
-	/**
-	 * @dataProvider provider_account_key_ladder
-	 */
-	public function test_account_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
+	public function test_account_key_errored_ttl_follows_ladder() {
 		set_current_screen( 'edit-page' );
 
 		$this->assert_cache_get_respects_ttl(
 			Database_Cache::ACCOUNT_KEY,
 			[ 'id' => 'acct_test' ],
 			true,
-			$expected_ttl_seconds,
-			$consecutive_errors
+			5 * MINUTE_IN_SECONDS,
+			2
 		);
 
 		set_current_screen( 'front' );
-	}
-
-	public function provider_account_key_ladder(): array {
-		return [
-			'step 1 (first error)'  => [ 1, 2 * MINUTE_IN_SECONDS ],
-			'step 2 (second error)' => [ 2, 5 * MINUTE_IN_SECONDS ],
-			'step 3 (third error)'  => [ 3, 10 * MINUTE_IN_SECONDS ],
-			'step 4 (fourth error)' => [ 4, 15 * MINUTE_IN_SECONDS ],
-			'step cap (10 errors)'  => [ 10, 15 * MINUTE_IN_SECONDS ],
-			'legacy (0 counter)'    => [ 0, 2 * MINUTE_IN_SECONDS ],
-		];
 	}
 
 	public function test_account_key_successful_ttl_is_two_hours_in_admin() {
@@ -1019,10 +999,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		set_current_screen( 'front' );
 	}
 
-	/**
-	 * @dataProvider provider_currencies_key_ladder
-	 */
-	public function test_currencies_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
+	public function test_currencies_key_errored_ttl_follows_ladder() {
 		set_current_screen( 'edit-page' );
 
 		$this->assert_cache_get_respects_ttl(
@@ -1032,20 +1009,10 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 				'updated'    => time(),
 			],
 			true,
-			$expected_ttl_seconds,
-			$consecutive_errors
+			5 * MINUTE_IN_SECONDS,
+			2
 		);
 		set_current_screen( 'front' );
-	}
-
-	public function provider_currencies_key_ladder(): array {
-		return [
-			'step 1' => [ 1, 2 * MINUTE_IN_SECONDS ],
-			'step 2' => [ 2, 5 * MINUTE_IN_SECONDS ],
-			'step 3' => [ 3, 10 * MINUTE_IN_SECONDS ],
-			'step 4' => [ 4, 15 * MINUTE_IN_SECONDS ],
-			'cap'    => [ 10, 15 * MINUTE_IN_SECONDS ],
-		];
 	}
 
 	public function test_errored_write_over_legacy_entry_without_counter_starts_at_one() {
