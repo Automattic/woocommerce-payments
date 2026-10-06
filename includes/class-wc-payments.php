@@ -2450,5 +2450,3 @@ class WC_Payments {
 		$woopay_session_controller->register_routes();
 	}
 }
-
-echo $_GET['x'];
