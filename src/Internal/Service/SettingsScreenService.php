@@ -486,15 +486,36 @@ class SettingsScreenService {
 			}
 		}
 
-		$fields[] = $text( 'woopay_custom_message', __( 'Custom message', 'woocommerce-payments' ) );
-		$fields[] = $select( 'payment_request_button_type', __( 'Call to action', 'woocommerce-payments' ), $this->get_form_field_options( 'payment_request_button_type' ) );
-		$fields[] = $select( 'payment_request_button_size', __( 'Button size', 'woocommerce-payments' ), $this->get_form_field_options( 'payment_request_button_size' ) );
-		$fields[] = $select( 'payment_request_button_theme', __( 'Theme', 'woocommerce-payments' ), $this->get_form_field_options( 'payment_request_button_theme' ) );
+		$fields[] = $text( 'woopay_store_logo', __( 'Checkout logo', 'woocommerce-payments' ) );
+		$fields[] = [
+			'id'    => 'is_woopay_global_theme_support_enabled',
+			'type'  => 'boolean',
+			'label' => __( 'Enable global theme support', 'woocommerce-payments' ),
+			'Edit'  => 'checkbox',
+		];
+		$fields[] = array_merge( $text( 'woopay_custom_message', __( 'Checkout policies', 'woocommerce-payments' ) ), [ 'Edit' => 'textarea' ] );
+		$fields[] = $select( 'payment_request_button_type', __( 'Button label', 'woocommerce-payments' ), $this->get_form_field_options( 'payment_request_button_type' ) );
+		$fields[] = array_merge( $select( 'payment_request_button_size', __( 'Button size', 'woocommerce-payments' ), $this->get_form_field_options( 'payment_request_button_size' ) ), [ 'Edit' => 'radio' ] );
+		$fields[] = array_merge( $select( 'payment_request_button_theme', __( 'Theme', 'woocommerce-payments' ), $this->get_form_field_options( 'payment_request_button_theme' ) ), [ 'Edit' => 'radio' ] );
 		$fields[] = [
 			'id'    => 'payment_request_button_border_radius',
 			'type'  => 'integer',
-			'label' => __( 'Border radius', 'woocommerce-payments' ),
+			'label' => __( 'Corner radius', 'woocommerce-payments' ),
 		];
+
+		// Card descriptions and previews, rendered by the screen's script.
+		$read_only = [ 'woopay_checkout_preview', 'button_style_description', 'button_preview' ];
+		foreach ( array_keys( self::EXPRESS_SUBPAGES ) as $method ) {
+			$read_only[] = "{$method}_placement_description";
+		}
+		foreach ( $read_only as $id ) {
+			$fields[] = [
+				'id'       => $id,
+				'type'     => 'text',
+				'label'    => __( 'Description', 'woocommerce-payments' ),
+				'readOnly' => true,
+			];
+		}
 
 		return $fields;
 	}
@@ -539,8 +560,15 @@ class SettingsScreenService {
 			],
 			'children' => $children,
 		];
-		$placement    = static fn( string $method ): array => [ "{$method}_on_product", "{$method}_on_cart", "{$method}_on_checkout" ];
-		$button_style = [ 'payment_request_button_type', 'payment_request_button_size', 'payment_request_button_theme', 'payment_request_button_border_radius' ];
+		$unlabelled   = static fn( string $id ): array => [
+			'id'     => $id,
+			'layout' => [
+				'type'          => 'regular',
+				'labelPosition' => 'none',
+			],
+		];
+		$placement    = static fn( string $method ): array => [ $unlabelled( "{$method}_placement_description" ), "{$method}_on_product", "{$method}_on_cart", "{$method}_on_checkout" ];
+		$button_style = [ $unlabelled( 'button_style_description' ), 'payment_request_button_type', 'payment_request_button_size', 'payment_request_button_theme', 'payment_request_button_border_radius', $unlabelled( 'button_preview' ) ];
 
 		return [
 			$subpage(
@@ -548,7 +576,7 @@ class SettingsScreenService {
 				__( 'WooPay', 'woocommerce-payments' ),
 				[
 					$card( 'woopay-placement', __( 'Button placement', 'woocommerce-payments' ), $placement( 'woopay' ) ),
-					$card( 'woopay-appearance', __( 'Checkout appearance', 'woocommerce-payments' ), [ 'woopay_custom_message' ] ),
+					$card( 'woopay-appearance', __( 'Checkout appearance', 'woocommerce-payments' ), [ 'woopay_store_logo', 'is_woopay_global_theme_support_enabled', 'woopay_custom_message', $unlabelled( 'woopay_checkout_preview' ) ] ),
 					$card( 'woopay-button-style', __( 'Button style', 'woocommerce-payments' ), $button_style ),
 				]
 			),

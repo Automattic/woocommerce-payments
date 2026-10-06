@@ -109,3 +109,22 @@
 		margin-inline-end: 56px;
 	}
 }
+
+.wcpay-settings-screen__border-radius {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+
+	.components-range-control {
+		flex: 1;
+	}
+
+	.components-number-control {
+		width: 80px;
+	}
+}
+
+.wcpay-settings-screen__border-radius-suffix {
+	padding-inline-end: 12px;
+	color: var( --wp-admin-theme-color );
+}

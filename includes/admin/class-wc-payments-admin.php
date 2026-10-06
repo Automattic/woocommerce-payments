@@ -686,17 +686,7 @@ class WC_Payments_Admin {
 			'before'
 		);
 
-		wp_localize_script(
-			'WCPAY_ADMIN_SETTINGS',
-			'wcpayExpressCheckoutParams',
-			[
-				'stripe' => [
-					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-					'accountId'      => $this->account->get_stripe_account_id(),
-					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-				],
-			]
-		);
+		wp_localize_script( 'WCPAY_ADMIN_SETTINGS', 'wcpayExpressCheckoutParams', $this->get_express_checkout_preview_params() );
 
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
@@ -909,7 +899,23 @@ class WC_Payments_Admin {
 		}
 		wp_add_inline_script( $handle, new Woo_Payments_Payment_Method_Definitions(), 'before' );
 		wp_localize_script( $handle, 'wcpaySettings', $this->get_js_settings() );
+		wp_localize_script( $handle, 'wcpayExpressCheckoutParams', $this->get_express_checkout_preview_params() );
 		wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
+	}
+
+	/**
+	 * Gets the Stripe details the settings pages need to preview the express checkout buttons.
+	 *
+	 * @return array
+	 */
+	private function get_express_checkout_preview_params(): array {
+		return [
+			'stripe' => [
+				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+				'accountId'      => $this->account->get_stripe_account_id(),
+				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			],
+		];
 	}
 
 	/**
