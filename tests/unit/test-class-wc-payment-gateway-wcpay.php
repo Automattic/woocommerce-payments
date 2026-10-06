@@ -219,6 +219,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		$this->reset_payment_method_registry();
+
 		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 		$this->original_payment_method_map  = $this->get_payment_method_map();
 
@@ -360,13 +362,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp_query;
 		$wp->query_vars       = $this->wp_query_vars_backup;
 		$wp_query->query_vars = $this->wp_query_query_vars_backup;
-
-		// resetting to prevent test pollution.
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {

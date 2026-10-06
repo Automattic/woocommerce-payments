@@ -2249,6 +2249,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( MultiCurrency::is_enabled() );
 	}
 
+	public function test_register_script_with_dependencies_sets_script_translations() {
+		$this->multi_currency->register_script_with_dependencies( 'wcpay-test-multi-currency', 'dist/multi-currency' );
+
+		$this->assertSame( 'woocommerce-payments', wp_scripts()->registered['wcpay-test-multi-currency']->textdomain );
+
+		wp_deregister_script( 'wcpay-test-multi-currency' );
+	}
+
 	private function mock_theme( $theme ) {
 		add_filter(
 			'stylesheet',

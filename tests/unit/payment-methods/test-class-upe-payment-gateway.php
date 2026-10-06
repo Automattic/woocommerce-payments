@@ -185,6 +185,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		$this->reset_payment_method_registry();
+
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
@@ -369,13 +371,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		WC_Payments::set_database_cache( $this->_cache );
 		wcpay_get_test_container()->reset_all_replacements();
-
-		// resetting to prevent test pollution.
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
 	}
 
 	public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {

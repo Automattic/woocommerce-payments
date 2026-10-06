@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * This stub assists IDE in recognizing PHPUnit tests.
@@ -15,8 +16,39 @@ use WCPay\Core\Server\Response;
  * Class WP_UnitTestCase
  */
 class WCPAY_UnitTestCase extends WP_UnitTestCase {
+	/**
+	 * Copy of the shared `WC_Payments::mode()` state, restored after each test.
+	 *
+	 * @var \WCPay\Core\Mode|null
+	 */
+	private $mode_backup;
+
+	/**
+	 * `WC_Payments` account service and express checkout helper before the test, restored after it.
+	 *
+	 * @var array
+	 */
+	private $wc_payments_services_backup = [];
+
+	/**
+	 * Copy of the `PaymentMethodDefinitionRegistry` singleton before the test, which tests reset, empty or
+	 * add definitions to. Null when the singleton wasn't created yet.
+	 *
+	 * @var PaymentMethodDefinitionRegistry|null
+	 */
+	private $payment_method_registry_backup;
+
 	public function set_up() {
 		parent::set_up();
+
+		$this->mode_backup                 = WC_Payments::mode() ? clone WC_Payments::mode() : null;
+		$this->wc_payments_services_backup = [
+			'account'                 => WC_Payments::get_account_service(),
+			'express_checkout_helper' => WC_Payments::get_express_checkout_helper(),
+		];
+
+		$registry                             = $this->get_payment_method_registry_instance_property()->getValue();
+		$this->payment_method_registry_backup = $registry ? clone $registry : null;
 
 		// Use a priority of 9 to ensure that these filters will allow tests that want to mock external requests
 		// to hook in with the regular 10 priority and do their thing.
@@ -35,7 +67,79 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		remove_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
 		remove_filter( 'woocommerce_email_log_add_order_note', '__return_false', 9 );
 
+		$this->restore_mode();
+		$this->reset_subscriptions_function_stubs();
+		$this->restore_wc_payments_services();
+
+		if ( class_exists( \WCPay\Payment_Methods\WC_Helper_Site_Currency::class ) ) {
+			\WCPay\Payment_Methods\WC_Helper_Site_Currency::$mock_site_currency = '';
+		}
+
+		$this->get_payment_method_registry_instance_property()->setValue( null, $this->payment_method_registry_backup );
+		$this->payment_method_registry_backup = null;
+
 		parent::tear_down();
+	}
+
+	/**
+	 * Restores `WC_Payments::mode()` to the state it had before the test, so a test that
+	 * switches to dev, test or live mode doesn't change the mode of the tests that follow.
+	 */
+	private function restore_mode() {
+		if ( null === $this->mode_backup || ! WC_Payments::mode() ) {
+			return;
+		}
+
+		foreach ( ( new ReflectionClass( $this->mode_backup ) )->getProperties() as $property ) {
+			if ( $property->isStatic() ) {
+				continue;
+			}
+			$property->setAccessible( true );
+			$property->setValue( WC_Payments::mode(), $property->getValue( $this->mode_backup ) );
+		}
+		$this->mode_backup = null;
+	}
+
+	/**
+	 * Puts back the `WC_Payments` account service and express checkout helper that a test replaced
+	 * with `set_account_service()` or `set_express_checkout_helper()`.
+	 */
+	private function restore_wc_payments_services() {
+		if ( $this->wc_payments_services_backup['account'] ?? null ) {
+			WC_Payments::set_account_service( $this->wc_payments_services_backup['account'] );
+		}
+		if ( $this->wc_payments_services_backup['express_checkout_helper'] ?? null ) {
+			WC_Payments::set_express_checkout_helper( $this->wc_payments_services_backup['express_checkout_helper'] );
+		}
+		$this->wc_payments_services_backup = [];
+	}
+
+	/**
+	 * Returns the private static `instance` property of `PaymentMethodDefinitionRegistry`.
+	 *
+	 * @return ReflectionProperty
+	 */
+	private function get_payment_method_registry_instance_property(): ReflectionProperty {
+		$property = new ReflectionProperty( PaymentMethodDefinitionRegistry::class, 'instance' );
+		$property->setAccessible( true );
+
+		return $property;
+	}
+
+	/**
+	 * Clears the `wcs_*` callbacks that tests set on the `WC_Subscriptions` test helper, so a stub
+	 * such as `wcs_order_contains_subscription` returning true doesn't apply to later tests.
+	 */
+	private function reset_subscriptions_function_stubs() {
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			return;
+		}
+
+		foreach ( ( new ReflectionClass( 'WC_Subscriptions' ) )->getProperties( ReflectionProperty::IS_STATIC ) as $property ) {
+			if ( 0 === strpos( $property->getName(), 'wcs_' ) ) {
+				$property->setValue( null, null );
+			}
+		}
 	}
 
 	/**
@@ -263,5 +367,13 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		$property->setAccessible( true );
 		$property->setValue( null, $method_map );
 		$property->setAccessible( false );
+	}
+
+	/**
+	 * Empties the `PaymentMethodDefinitionRegistry` singleton, so the next `instance()` call builds a
+	 * new registry. `tear_down` puts the shared registry back.
+	 */
+	protected function reset_payment_method_registry() {
+		$this->get_payment_method_registry_instance_property()->setValue( null, null );
 	}
 }
