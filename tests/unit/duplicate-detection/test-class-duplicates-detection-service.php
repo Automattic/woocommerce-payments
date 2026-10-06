@@ -48,12 +48,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		// Start from an empty registry. WCPAY_UnitTestCase puts the shared one back in tear_down.
-		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
-		$instance_property = $reflection->getProperty( 'instance' );
-		$instance_property->setAccessible( true );
-		$instance_property->setValue( null, null );
-		$instance_property->setAccessible( false );
+		$this->reset_payment_method_registry();
 
 		$this->service = new Duplicates_Detection_Service();
 

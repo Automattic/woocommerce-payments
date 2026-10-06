@@ -337,4 +337,12 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		$property->setValue( null, $method_map );
 		$property->setAccessible( false );
 	}
+
+	/**
+	 * Empties the `PaymentMethodDefinitionRegistry` singleton, so the next `instance()` call builds a
+	 * new registry. `tear_down` puts the shared registry back.
+	 */
+	protected function reset_payment_method_registry() {
+		$this->get_payment_method_registry_instance_property()->setValue( null, null );
+	}
 }
