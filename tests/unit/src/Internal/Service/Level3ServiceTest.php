@@ -172,7 +172,19 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		$this->mock_order( $mock_items, $shipping_postcode );
 	}
 
-	protected function mock_order( array $mock_items, string $shipping_postcode ) {
+	/**
+	 * @param array      $mock_items        Order items.
+	 * @param string     $shipping_postcode Shipping postcode.
+	 * @param float|null $total             Order total. Defaults to what WooCommerce would charge for the items and shipping.
+	 */
+	protected function mock_order( array $mock_items, string $shipping_postcode, ?float $total = null ) {
+		if ( null === $total ) {
+			$total = 30 + 8;
+			foreach ( $mock_items as $mock_item ) {
+				$total += $mock_item->get_total() + $mock_item->get_total_tax();
+			}
+		}
+
 		// Setup the order.
 		$mock_order = $this
 			->getMockBuilder( WC_Order::class )
@@ -182,12 +194,17 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 					'get_id',
 					'get_items',
 					'get_currency',
+					'get_total',
 					'get_shipping_total',
 					'get_shipping_tax',
 					'get_shipping_postcode',
 				]
 			)
 			->getMock();
+
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( (string) $total );
 
 		$mock_order
 			->method( 'get_id' )
@@ -549,5 +566,209 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		$bundled_data = end( $level_3_data['line_items'] );
 
 		$this->assertSame( $bundled_data->product_description, '301 more items' );
+		$this->assertLessThanOrEqual( 12, strlen( $bundled_data->product_code ) );
+	}
+
+	public function test_unit_cost_rounded_up_is_balanced_with_a_discount() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		// 59.83 / 2 rounds to 29.92, a cent over.
+		$mock_items   = [];
+		$mock_items[] = $this->create_mock_item( 'Beanie', 2, 59.83, 0, 30 );
+		$this->mock_order( $mock_items, '98012' );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertCount( 2, $level_3_data['line_items'] );
+		$this->assertEquals(
+			(object) [
+				'product_code'        => 'rounding-fix',
+				'product_description' => 'Rounding fix',
+				'unit_cost'           => 0,
+				'quantity'            => 1,
+				'tax_amount'          => 0,
+				'discount_amount'     => 1,
+			],
+			$level_3_data['line_items'][1]
+		);
+	}
+
+	public function test_lines_rounded_separately_are_balanced_against_the_order_total() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		// "Round tax at subtotal level": WooCommerce rounds 129.655 once, to 129.66.
+		$mock_items = [];
+		foreach ( [ 16.491, 31.991, 25.191, 26.391, 29.591 ] as $index => $price ) {
+			$mock_items[] = $this->create_mock_item( 'Product ' . $index, 1, $price, 0, 30 + $index );
+		}
+		$this->mock_order( $mock_items, '98012', 129.66 + 38 );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertCount( 6, $level_3_data['line_items'] );
+		$this->assertSame( 'rounding-fix', $level_3_data['line_items'][5]->product_code );
+		$this->assertSame( 1, $level_3_data['line_items'][5]->unit_cost );
+		$this->assertSame( 0, $level_3_data['line_items'][5]->discount_amount );
+	}
+
+	public function test_no_level3_data_when_the_order_total_differs_from_its_items() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		// A 30% deposit.
+		$mock_items   = [];
+		$mock_items[] = $this->create_mock_item( 'Catering', 1, 600, 0, 30 );
+		$this->mock_order( $mock_items, '98012', 180 );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertSame( [], $level_3_data );
+	}
+
+	public function test_no_level3_data_when_an_order_without_items_charges_more_than_shipping() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_order( [], '98012', 5 + 38 );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertSame( [], $level_3_data );
+	}
+
+	public function test_level3_data_for_an_order_with_only_shipping() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_order( [], '98012' );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertSame( 3800, $level_3_data['shipping_amount'] );
+		$this->assertSame( [], $level_3_data['line_items'] );
+	}
+
+	public function test_filtered_level3_data_that_balances_is_kept() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		// A gift card paid 10.00 outside the line items.
+		$mock_items   = [];
+		$mock_items[] = $this->create_mock_item( 'Beanie', 1, 18, 2.7, 30 );
+		$this->mock_order( $mock_items, '98012', 18 + 2.7 + 38 - 10 );
+
+		$add_gift_card = function ( $level3_data ) {
+			$level3_data['line_items'][] = (object) [
+				'product_code'        => 'gift-card',
+				'product_description' => 'Gift card',
+				'unit_cost'           => 0,
+				'quantity'            => 1,
+				'tax_amount'          => 0,
+				'discount_amount'     => 1000,
+			];
+			return $level3_data;
+		};
+		add_filter( 'wcpay_payment_request_level3_data', $add_gift_card );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		remove_filter( 'wcpay_payment_request_level3_data', $add_gift_card );
+
+		$this->assertCount( 2, $level_3_data['line_items'] );
+		$this->assertSame( 'gift-card', $level_3_data['line_items'][1]->product_code );
+	}
+
+	public function provider_level3_data_stripe_rejects() {
+		return [
+			'no line items'         => [
+				function () {
+					return [ 'shipping_amount' => 3800 ];
+				},
+			],
+			'negative shipping'     => [
+				function ( $level3_data ) {
+					$level3_data['shipping_amount'] = -100;
+					return $level3_data;
+				},
+			],
+			'empty description'     => [
+				function ( $level3_data ) {
+					$level3_data['line_items'][0]->product_description = '';
+					return $level3_data;
+				},
+			],
+			'product code not text' => [
+				function ( $level3_data ) {
+					$level3_data['line_items'][0]->product_code = null;
+					return $level3_data;
+				},
+			],
+			'fractional unit cost'  => [
+				function ( $level3_data ) {
+					$level3_data['line_items'][0]->unit_cost = 1799.5;
+					return $level3_data;
+				},
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_level3_data_stripe_rejects
+	 */
+	public function test_no_level3_data_when_a_filter_returns_values_stripe_rejects( callable $break_level3_data ) {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_level_3_order( '98012' );
+
+		add_filter( 'wcpay_payment_request_level3_data', $break_level3_data );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		remove_filter( 'wcpay_payment_request_level3_data', $break_level3_data );
+
+		$this->assertSame( [], $level_3_data );
+	}
+
+	public function test_long_filtered_descriptions_are_truncated() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_level_3_order( '98012' );
+
+		$lengthen_description = function ( $level3_data ) {
+			$level3_data['line_items'][0]->product_description = 'Écharpe en laine mérinos extra douce';
+			return $level3_data;
+		};
+		add_filter( 'wcpay_payment_request_level3_data', $lengthen_description );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		remove_filter( 'wcpay_payment_request_level3_data', $lengthen_description );
+
+		$this->assertSame( 'Écharpe en laine mérinos e', $level_3_data['line_items'][0]->product_description );
+		$this->assertSame( 1800, $level_3_data['line_items'][0]->unit_cost );
+	}
+
+	public function test_negative_price_product_is_discounted_for_the_whole_line() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+		$this->mock_level_3_order( '98012', false, true, 2 );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertSame( 0, $level_3_data['line_items'][1]->unit_cost );
+		$this->assertSame( 1899, $level_3_data['line_items'][1]->discount_amount );
+		$this->assertCount( 3, $level_3_data['line_items'] );
+	}
+
+	public function test_items_without_a_name_get_a_description_and_product_code() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		$mock_fee = $this
+			->getMockBuilder( WC_Order_Item_Fee::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_name', 'get_quantity', 'get_total_tax', 'get_total' ] )
+			->getMock();
+		$mock_fee->method( 'get_name' )->willReturn( '' );
+		$mock_fee->method( 'get_quantity' )->willReturn( 1 );
+		$mock_fee->method( 'get_total' )->willReturn( 10 );
+		$mock_fee->method( 'get_total_tax' )->willReturn( 0 );
+
+		$this->mock_order( [ $mock_fee ], '98012' );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertSame( 'fee', $level_3_data['line_items'][0]->product_code );
+		$this->assertSame( 'Item', $level_3_data['line_items'][0]->product_description );
 	}
 }

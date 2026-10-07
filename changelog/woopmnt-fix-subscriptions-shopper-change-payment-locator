@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Make the subscriptions manage-payments E2E test locate the "Change payment" action by its URL contract instead of its ARIA role.

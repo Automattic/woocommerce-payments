@@ -52,6 +52,8 @@ class HooksProxyTest extends WCPAY_UnitTestCase {
 	 * Test setup.
 	 */
 	protected function setUp(): void {
+		parent::setUp();
+
 		$this->sut    = new HooksProxy();
 		$this->helper = $this->createMock( HooksHelper::class );
 	}

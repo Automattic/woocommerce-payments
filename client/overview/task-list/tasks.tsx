@@ -8,13 +8,12 @@
  * Internal dependencies.
  */
 import strings from './strings';
-import {
-	getDisputeResolutionTask,
-	getDisputesDueWithinDays,
-} from './tasks/dispute-task';
+import { getDisputeResolutionTask } from './tasks/dispute-task';
+import { getEarlyFraudWarningTasks } from './tasks/early-fraud-warning-task';
+import type { ActiveEarlyFraudWarning } from 'wcpay/data/early-fraud-warnings/types';
 import { getReconnectWpcomTask } from './tasks/reconnect-task';
 import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
-import { CachedDispute } from 'wcpay/types/disputes';
+import { CachedDispute, DisputesSummaryData } from 'wcpay/types/disputes';
 import { TaskItemProps } from './types';
 import { getGoLiveTask } from './tasks/go-live-task';
 import { isInTestModeOnboarding } from 'wcpay/utils';
@@ -25,14 +24,20 @@ const requirementBlacklist = [ 'invalid_value_other' ];
 interface TaskListProps {
 	showUpdateDetailsTask: boolean;
 	wpcomReconnectUrl: string;
-	activeDisputes?: CachedDispute[];
+	activeDispute?: CachedDispute;
+	activeDisputesSummary?: DisputesSummaryData;
+	activeDisputeTaskIsLoading?: boolean;
+	activeEarlyFraudWarnings?: ActiveEarlyFraudWarning[];
 	showGoLiveTask: boolean;
 }
 
 export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
-	activeDisputes = [],
+	activeDispute,
+	activeDisputesSummary,
+	activeDisputeTaskIsLoading = false,
+	activeEarlyFraudWarnings = [],
 	showGoLiveTask = false,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
@@ -68,10 +73,9 @@ export const getTasks = ( {
 
 	const isUpdateDetailsTaskVisible = showUpdateDetailsTask;
 
-	const isDisputeTaskVisible =
-		!! activeDisputes &&
-		// Only show the dispute task if there are disputes due within 7 days.
-		getDisputesDueWithinDays( activeDisputes, 7 ).length > 0;
+	const disputeResolutionTask = activeDisputeTaskIsLoading
+		? null
+		: getDisputeResolutionTask( activeDisputesSummary, activeDispute );
 
 	const isGoLiveTaskVisible =
 		wcpaySettings.isAccountConnected &&
@@ -89,7 +93,8 @@ export const getTasks = ( {
 				detailsSubmitted ?? true
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
-		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
+		disputeResolutionTask,
+		...getEarlyFraudWarningTasks( activeEarlyFraudWarnings ),
 		isGoLiveTaskVisible && getGoLiveTask(),
 	]
 		.filter( Boolean )

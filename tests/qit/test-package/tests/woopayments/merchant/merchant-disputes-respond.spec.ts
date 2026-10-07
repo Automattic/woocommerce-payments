@@ -538,58 +538,31 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'offline_service' );
 
-				// The product description field is auto-populated asynchronously.
-				// An async React effect may overwrite user input after initial load,
-				// so we retry the fill+verify cycle until the value sticks.
-				await expect( async () => {
-					await adminPage
-						.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-						.fill( 'my product description' );
-
-					// Blur the field to ensure value is committed to state
-					await adminPage
-						.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-						.press( 'Tab' );
-
-					await expect(
-						adminPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
-					).toHaveValue( 'my product description', {
-						timeout: 2000,
-					} );
-				} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
+				await adminPage
+					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
+					.fill( 'my product description' );
+				await expect(
+					adminPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
+				).toHaveValue( 'my product description' );
 			}
 		);
 
 		await test.step( 'Save the dispute challenge for later', async () => {
-			// Evidence form persistence pattern from task template
 			const waitResponse = adminPage.waitForResponse(
 				( r ) =>
 					r.url().includes( '/wc/v3/payments/disputes/' ) &&
 					r.request().method() === 'POST'
 			);
 
-			// Use stable test id for the save button
 			await adminPage.getByTestId( 'save-for-later-button' ).click();
 
 			const response = await waitResponse;
 
-			// Server acknowledged save
 			expect( response.ok() ).toBeTruthy();
+			expect(
+				response.request().postDataJSON().evidence.product_description
+			).toBe( 'my product description' );
 
-			// Validate payload included our description (guards against state not committed)
-			try {
-				const payload = response.request().postDataJSON?.();
-				// Some environments may not expose postDataJSON; guard accordingly
-				if ( payload && payload.evidence ) {
-					expect( payload.evidence.product_description ).toBe(
-						'my product description'
-					);
-				}
-			} catch ( _e ) {
-				// Non-fatal: continue to UI confirmation
-			}
-
-			// Wait for the success snackbar to confirm UI acknowledged the save.
 			await expect(
 				adminPage
 					.locator( '.components-snackbar__content', {
@@ -597,22 +570,13 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 					} )
 					.first()
 			).toBeVisible( { timeout: 10000 } );
-
-			// Allow Stripe API to complete the write operation before we navigate away.
-			// Without this delay, fetching the dispute again may hit a concurrent access
-			// error: "This object cannot be accessed right now because another API request
-			// or Stripe process is currently accessing it."
-			await adminPage.waitForTimeout( 3000 );
 		} );
 
 		await test.step(
 			'Navigate back and verify previously saved values are restored',
 			async () => {
-				// Poll by reloading the challenge page on each retry.
-				// The Stripe API may not return the saved evidence immediately,
-				// so we retry the full navigation cycle until the saved value
-				// appears. This follows the same polling pattern used by the
-				// dispute status checks in the winning/losing evidence tests.
+				// Stripe can take a moment to return the saved evidence, or briefly
+				// lock the dispute after a write, so reload until the value appears.
 				await expect( async () => {
 					await adminPage.goto( paymentDetailsLink );
 					await adminPage.waitForLoadState( 'networkidle' );

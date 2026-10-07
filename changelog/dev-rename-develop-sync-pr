@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Rename the generated develop sync PR to "Sync develop after x.y.z: version bump + changelog" and expand its description, so the title and body both reflect that it carries the version bump as well as the changelog entries.

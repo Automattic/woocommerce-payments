@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Link the "View more details" in a fraud-blocked order note to the specific payment intent that was blocked, so repeated blocks on the same order each point to their own transaction.

@@ -56,6 +56,21 @@ class WC_Payments_Utils {
 	];
 
 	/**
+	 * Decode HTML entities consistently across supported PHP versions.
+	 *
+	 * PHP 8.1 changed the default flags. Specify those defaults explicitly so
+	 * quotes and invalid character sequences are handled consistently on older PHP versions too.
+	 *
+	 * @todo Simplify this helper when PHP 8.1 becomes the minimum supported version.
+	 *
+	 * @param string $value Text containing HTML entities.
+	 * @return string Decoded text.
+	 */
+	public static function decode_html_entities( string $value ): string {
+		return html_entity_decode( $value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
+	}
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -788,7 +803,7 @@ class WC_Payments_Utils {
 					'The selected payment method requires a total amount of at least %s.',
 					'woocommerce-payments'
 				),
-				wp_strip_all_tags( html_entity_decode( $price ) )
+				wp_strip_all_tags( self::decode_html_entities( $price ) )
 			);
 		} elseif ( $e instanceof API_Exception && 'amount_too_large' === $e->get_error_code() ) {
 			$error_message = $e->getMessage();
@@ -1197,7 +1212,7 @@ class WC_Payments_Utils {
 	public static function format_currency( float $amount, string $currency ): string {
 		$currency = strtoupper( $currency );
 
-		$formatted = html_entity_decode(
+		$formatted = self::decode_html_entities(
 			wp_strip_all_tags(
 				wc_price(
 					$amount,
@@ -1232,7 +1247,7 @@ class WC_Payments_Utils {
 			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
 		);
 
-		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
+		$formatted_amount = self::decode_html_entities( wp_strip_all_tags( $formatted_amount ) );
 
 		if ( $skip_symbol ) {
 			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
@@ -1378,6 +1393,40 @@ class WC_Payments_Utils {
 			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
 		}
 		wp_enqueue_style( $handle );
+	}
+
+	/**
+	 * Returns the order the current pay-for-order request is allowed to read, if any.
+	 *
+	 * The `pay_for_order` capability cannot gate an order on its own: WooCommerce grants it to
+	 * everyone, logged out included, for any order without a customer. Only the key from the
+	 * payment link proves the visitor was sent this one. See wc_customer_has_capability().
+	 *
+	 * @return WC_Order|null Null when the request is not allowed to read an order.
+	 */
+	public static function get_authorized_order_from_payment_link(): ?WC_Order {
+		// Not get_query_var(): a secondary WP_Query left unreset would hide the routed request's
+		// own order. `??` because $wp is unset off a routed request, e.g. cron and WP-CLI.
+		global $wp;
+		$order = wc_get_order( absint( $wp->query_vars['order-pay'] ?? 0 ) );
+
+		// The ID comes from the URL, so it can resolve to a refund, which has no order key.
+		if ( ! $order instanceof WC_Order ) {
+			return null;
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading the order key from a public pay-for-order link, not processing a form submission.
+		// is_string() first: wc_clean() hands back an array for ?key[]=x, and key_is_valid() fatals on one.
+		if ( ! isset( $_GET['key'] ) || ! is_string( $_GET['key'] ) ) {
+			return null;
+		}
+
+		if ( ! $order->key_is_valid( wc_clean( wp_unslash( $_GET['key'] ) ) ) ) {
+			return null;
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		return current_user_can( 'pay_for_order', $order->get_id() ) ? $order : null;
 	}
 
 	/**

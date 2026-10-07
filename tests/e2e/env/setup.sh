@@ -641,7 +641,12 @@ else
 fi
 
 info "Installing REST API auth plugin..."
-retry cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
+# Prefer the zip cached by CI (see env-setup action); fall back to GitHub.
+if [[ -f "${E2E_ROOT}/.cache/basic-auth.zip" ]]; then
+	retry cli wp plugin install /var/www/html/wp-content/plugins/woocommerce-payments/tests/e2e/.cache/basic-auth.zip --activate --force
+else
+	retry cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
+fi
 
 info "Installing themes..."
 retry cli wp theme install storefront --activate
@@ -712,6 +717,7 @@ section "WooPayments"
 
 if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
 	info "Installing from build artifact..."
+	unzip -q "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments.zip -d "$WCPAY_ARTIFACT_DIRECTORY" && rm "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments.zip
 	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
     cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
 	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
