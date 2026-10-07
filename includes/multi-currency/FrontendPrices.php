@@ -368,6 +368,13 @@ class FrontendPrices {
 			return;
 		}
 
+		// Multi-Currency can only have converted the order into a currency it has enabled. Any other
+		// currency comes from a third-party switcher, and a rate recorded for it would make Analytics
+		// convert the order on top of the switcher's own conversion.
+		if ( ! isset( $this->multi_currency->get_enabled_currencies()[ $order->get_currency() ] ) ) {
+			return;
+		}
+
 		$exchange_rate = $this->multi_currency->get_price( 1, 'exchange_rate' );
 
 		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $exchange_rate );

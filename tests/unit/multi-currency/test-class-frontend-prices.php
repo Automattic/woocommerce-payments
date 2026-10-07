@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
+
 /**
  * WCPay\MultiCurrency\FrontendPrices unit tests.
  */
@@ -383,8 +385,35 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
 	}
 
+	public function test_add_order_meta_skips_order_in_currency_not_enabled_in_multi_currency() {
+		// An idle Multi-Currency module only has the store currency enabled, while a third-party
+		// currency switcher creates the order in another currency.
+		$default_currency = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn( [ Currency_Code::UNITED_STATES_DOLLAR => $default_currency ] );
+		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 1.0 );
+
+		$order = wc_create_order();
+		$order->set_currency( Currency_Code::EURO );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
 	public function test_add_order_meta() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+		$default_currency = new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+			[
+				Currency_Code::UNITED_STATES_DOLLAR => $default_currency,
+				Currency_Code::POUND_STERLING       => new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::POUND_STERLING ),
+			]
+		);
 		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
 
 		$order = wc_create_order();
