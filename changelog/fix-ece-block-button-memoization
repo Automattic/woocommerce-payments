@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Stabilize the Express Checkout block button's Stripe options and event handlers so unrelated cart updates stop rebuilding them on every render.
