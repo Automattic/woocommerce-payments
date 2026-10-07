@@ -314,6 +314,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
 
+		// Some tests stand in for a request WooPay signed.
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
 		// Restore the gateway in the main class.
 		WC_Payments::set_gateway( $this->_gateway );
 
@@ -4750,6 +4753,54 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 
 		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+	}
+
+	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_signed_on_the_signed_path() {
+		$order = WC_Helper_Order::create_order();
+
+		// A store the platform keeps on the signed path, where WooPay signs the checkout
+		// instead of sending a vouch envelope.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_still_checks_fraud_for_a_signature_off_the_signed_path() {
+		$order = WC_Helper_Order::create_order();
+
+		// A store the platform moved off the signed path refuses a signature however well
+		// formed, so it is no reason to skip card-testing protection there.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => false ] );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->card_gateway->process_payment( $order->get_id() );
 	}
 
 	/**

@@ -1215,8 +1215,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// This asks for proof that WooPay composed the request. A Cart-Token or the
 			// User-Agent is not that: any visitor can send both for their own cart, and turning
 			// card-testing protection off is not something a shopper should be able to ask for
-			// by sending a header.
-			if ( WC()->session && ! WooPay_Session::is_request_vouched_by_woopay() ) {
+			// by sending a header. WooPay seals that proof in the vouch envelope or, for a store
+			// the platform keeps on the signed path, signs the request instead of sending one.
+			if (
+				WC()->session &&
+				! WooPay_Session::is_request_vouched_by_woopay() &&
+				! WooPay_Session::is_authenticated_by_blog_token_signature()
+			) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
