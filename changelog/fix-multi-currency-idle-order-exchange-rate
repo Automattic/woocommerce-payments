@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop Multi-Currency from recording an exchange rate on orders placed in a third-party currency switcher's currency, which made Analytics convert those orders twice
