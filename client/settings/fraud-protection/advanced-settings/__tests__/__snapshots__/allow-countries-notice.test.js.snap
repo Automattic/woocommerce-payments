@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Allowed countries rule card notice tests renders correctly when countries except some are allowed, others will be blocked 1`] = `
 {

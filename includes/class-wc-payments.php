@@ -334,13 +334,6 @@ class WC_Payments {
 	private static $fee_remediation;
 
 	/**
-	 * Instance of WC_Payments_Post_Kyc_Activation_Email_Service, created in init function
-	 *
-	 * @var WC_Payments_Post_Kyc_Activation_Email_Service
-	 */
-	private static $post_kyc_activation_email_service;
-
-	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -372,7 +365,6 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
-		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		// Invalidate styles cache and recompute WooPay appearance when theme or styles change.
@@ -455,7 +447,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-session-service.php';
 		include_once __DIR__ . '/class-wc-payments-redirect-service.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
-		include_once __DIR__ . '/class-wc-payments-post-kyc-activation-email-service.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-logger-context.php';
@@ -479,6 +470,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-large-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
+		include_once __DIR__ . '/exceptions/class-blocked-by-fraud-rules-exception.php';
 		include_once __DIR__ . '/exceptions/class-cannot-combine-currencies-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
@@ -558,9 +550,6 @@ class WC_Payments {
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
-
-		// Register the post-KYC activation reminder email.
-		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_post_kyc_activation_email' ], 10 );
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
@@ -648,8 +637,8 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
-		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway, self::$order_service );
-		self::$post_kyc_activation_email_service->init_hooks();
+		// Inert handler for residual jobs claimed before the retirement cleanup.
+		add_action( 'wcpay_post_kyc_activation_email_send', '__return_null' );
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
@@ -744,6 +733,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
+		require_once __DIR__ . '/migrations/class-qualitative-feedback-admin-note-removal.php';
 		require_once __DIR__ . '/migrations/class-link-woopay-mutual-exclusion-handler.php';
 		require_once __DIR__ . '/migrations/class-gateway-settings-sync.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
@@ -755,24 +745,24 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
+		require_once __DIR__ . '/migrations/class-retire-post-kyc-activation-emails.php';
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Additional_Payment_Methods_Admin_Notes_Removal(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Qualitative_Feedback_Admin_Note_Removal(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 		/**
-		 * Bumped migration version from for giropay from 7.9.0 to 11.0.0 because commit a4739037b re-added giropay to
-		 *              PaymentMethodDefinitionRegistry, which re-enabled them on accounts that
-		 *              still had fee data for them. Re-running the migration ensures those
-		 *              accounts are cleaned up after the registry fix in 11.0.0.
+		 * The version is the release that should run the cleanup, not the one that deprecated the method. A
+		 * cleanup only fires on stores upgrading from below it, so bump it whenever stores need it again.
 		 *
 		 * @see WOOPMNT-6277.
 		 */
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'giropay', '11.0.0' ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'sofort', '8.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), 'sofort', '11.1.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
@@ -781,6 +771,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -804,8 +795,6 @@ class WC_Payments {
 		// further below, gated on is_admin() && manage_woocommerce.
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
 		$admin_notices = new WC_Payments_Admin_Notices( self::get_gateway(), self::$account );
 		$admin_notices->init_global_hooks();
@@ -889,17 +878,6 @@ class WC_Payments {
 	 */
 	public static function add_ipp_emails( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
-		return $email_classes;
-	}
-
-	/**
-	 * Adds the post-KYC activation reminder email to WooCommerce emails.
-	 *
-	 * @param array $email_classes the email classes.
-	 * @return array
-	 */
-	public static function add_post_kyc_activation_email( array $email_classes ): array {
-		$email_classes['WC_Payments_Email_Post_Kyc_Activation'] = include __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
 	}
 
@@ -1089,9 +1067,6 @@ class WC_Payments {
 		return array_merge(
 			$user_data_fields,
 			[
-				// Inbox notifications.
-				'wc_payments_overview_inbox_last_read',
-
 				// Column visibility preferences.
 				'wc_payments_transactions_hidden_columns',
 				'wc_payments_transactions_blocked_hidden_columns',
@@ -1106,10 +1081,6 @@ class WC_Payments {
 				// any future PHP-side consumer MUST validate this shape
 				// before trusting it (it is user-writable JSON).
 				'wc_payments_reports_fees_view',
-
-				// WooPayments review prompt user preferences.
-				'wc_payments_review_prompt_dismissed',
-				'wc_payments_review_prompt_maybe_later',
 
 				// Reports feedback user preferences.
 				'wc_payments_reports_feedback_dismissed',
@@ -2332,6 +2303,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-early-fraud-warnings-controller.php';
+		$early_fraud_warnings_controller = new WC_REST_Payments_Early_Fraud_Warnings_Controller( self::$api_client, self::$order_service, self::$database_cache );
+		$early_fraud_warnings_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
 		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );

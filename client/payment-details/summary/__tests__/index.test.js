@@ -265,6 +265,24 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders refund failure without deducting the failed refund', () => {
+		const charge = getBaseCharge();
+		charge.refunded = false;
+		charge.amount_refunded = 2000;
+		charge.refunds?.data.push( {
+			status: 'failed',
+			balance_transaction: {
+				amount: -charge.amount_refunded,
+				currency: 'usd',
+			},
+		} );
+
+		renderCharge( charge );
+
+		screen.getByText( 'Refund failure' );
+		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
+	} );
+
 	test( 'renders the Tap to Pay channel from metadata with ios COTS_DEVICE', () => {
 		const charge = getBaseCharge();
 		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
@@ -300,6 +318,40 @@ describe( 'PaymentDetailsSummary', () => {
 
 	test( 'renders loading state', () => {
 		expect( renderCharge( {}, true ) ).toMatchSnapshot();
+	} );
+
+	describe( 'refund-modal opener registered for sibling surfaces', () => {
+		test( 'ignores invocations while the charge is still loading', () => {
+			let openRefundModal;
+			renderCharge( {}, {}, true, {
+				onRegisterRefundOpener: ( open ) => ( openRefundModal = open ),
+			} );
+
+			act( () => openRefundModal() );
+
+			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+			expect( recordEvent ).not.toHaveBeenCalledWith(
+				'payments_transactions_details_refund_modal_open',
+				expect.anything()
+			);
+		} );
+
+		test( 'opens the refund modal once the charge has loaded', () => {
+			let openRefundModal;
+			renderCharge( getBaseCharge(), {}, false, {
+				onRegisterRefundOpener: ( open ) => ( openRefundModal = open ),
+			} );
+
+			act( () => openRefundModal() );
+
+			expect(
+				screen.getByRole( 'dialog', { name: 'Refund transaction' } )
+			).toBeInTheDocument();
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_transactions_details_refund_modal_open',
+				{ payment_intent_id: 'pi_abc' }
+			);
+		} );
 	} );
 
 	describe( 'capture notification and fraud buttons', () => {
@@ -812,6 +864,100 @@ describe( 'PaymentDetailsSummary', () => {
 			} )
 		).not.toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'labels a zero-fee dispute as deducted, not refunded', () => {
+		// The label keys on the dispute, not the dispute fee: the disputed
+		// amount left the account as a deduction whether or not a fee rode
+		// along with it.
+		const charge = getBaseCharge();
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				currency: 'usd',
+				fee: 0,
+				reporting_category: 'dispute',
+			},
+		];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Deducted:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'labels a refund on a charge with an inquiry as refunded', () => {
+		// An inquiry withdraws nothing, so the only money that moved is the
+		// customer refund. The label must not follow the mere presence of a
+		// dispute record.
+		const charge = getBaseCharge();
+		charge.amount_refunded = 1000;
+		charge.refunds = {
+			data: [
+				{
+					amount: 1000,
+					currency: 'usd',
+					balance_transaction: {
+						amount: -1000,
+						currency: 'usd',
+						fee: 0,
+					},
+				},
+			],
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'warning_needs_response';
+		charge.dispute.balance_transactions = [];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Refunded:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Deducted:/i ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'labels a refund on a charge with a won dispute as refunded', () => {
+		// The dispute rows net to zero, so nothing was deducted; the refund is
+		// the only withdrawal.
+		const charge = getBaseCharge();
+		charge.amount_refunded = 1000;
+		charge.refunds = {
+			data: [
+				{
+					amount: 1000,
+					currency: 'usd',
+					balance_transaction: {
+						amount: -1000,
+						currency: 'usd',
+						fee: 0,
+					},
+				},
+			],
+		};
+		charge.disputed = true;
+		charge.dispute = getBaseDispute();
+		charge.dispute.status = 'won';
+		charge.dispute.balance_transactions = [
+			{
+				amount: -2000,
+				currency: 'usd',
+				fee: 1500,
+				reporting_category: 'dispute',
+			},
+			{
+				amount: 2000,
+				currency: 'usd',
+				fee: -1500,
+				reporting_category: 'dispute_reversal',
+			},
+		];
+
+		renderCharge( charge );
+
+		expect( screen.getByText( /Refunded:/i ) ).toBeInTheDocument();
+		expect( screen.queryByText( /Deducted:/i ) ).not.toBeInTheDocument();
 	} );
 
 	test( 'renders the fee breakdown tooltip of a disputed charge', async () => {

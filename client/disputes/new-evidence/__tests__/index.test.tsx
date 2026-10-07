@@ -721,6 +721,41 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	it( 'keeps typed evidence when settings finish loading after the dispute', async () => {
+		const loadedSettings = {
+			account_country: 'US',
+			account_business_name: 'Test Store',
+		};
+		let settings = {};
+		mockUseGetSettings.mockImplementation( () => settings );
+
+		const { rerender } = render(
+			<NewEvidence query={ { id: 'dp_test_456' } } />
+		);
+
+		const description = await screen.findByLabelText(
+			'PRODUCT OR SERVICE DESCRIPTION'
+		);
+		fireEvent.change( description, {
+			target: { value: 'my product description' },
+		} );
+
+		settings = loadedSettings;
+		rerender( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByLabelText( 'PRODUCT OR SERVICE DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
+
+		expect(
+			mockApiFetch.mock.calls.filter(
+				( [ options ] ) => ! ( options as { method?: string } ).method
+			)
+		).toHaveLength( 1 );
+	} );
+
 	it( 'should regenerate cover letter when product type changes even if previously edited', async () => {
 		// This test verifies that when a user changes the product type,
 		// the cover letter is regenerated even if it was previously modified.

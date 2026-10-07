@@ -18,6 +18,8 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	];
 
 	public function set_up() {
+		parent::set_up();
+
 		// Mock the main class's cache service.
 		$this->_cache        = WC_Payments::get_database_cache();
 		$this->_card_gateway = WC_Payments::get_gateway();
@@ -40,6 +42,10 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( 10, $install_actions_priority );
+	}
+
+	public function test_it_does_not_clean_up_deprecated_notes_on_admin_init() {
+		$this->assertFalse( has_action( 'admin_init', [ WC_Payments::class, 'remove_deprecated_notes' ] ) );
 	}
 
 	public function test_it_calls_upgrade_hook_during_upgrade() {

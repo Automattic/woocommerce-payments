@@ -368,6 +368,19 @@ class FrontendPrices {
 			return;
 		}
 
+		// A third-party currency switcher sets the order currency through the `woocommerce_currency`
+		// filter, without the shopper selecting it in Multi-Currency. Multi-Currency did not convert
+		// that order, and a rate recorded for it would make Analytics convert the order on top of the
+		// switcher's own conversion. Orders given an explicit currency, such as through the REST API,
+		// are left as they were.
+		$order_currency = $order->get_currency();
+		if (
+			$this->multi_currency->get_selected_currency()->get_code() !== $order_currency
+			&& get_woocommerce_currency() === $order_currency
+		) {
+			return;
+		}
+
 		$exchange_rate = $this->multi_currency->get_price( 1, 'exchange_rate' );
 
 		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $exchange_rate );

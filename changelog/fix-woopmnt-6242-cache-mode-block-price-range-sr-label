@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Multi-Currency: in cache-optimized rendering mode, read the price-range screen-reader label of WooCommerce blocks in the customer's currency instead of the store currency.

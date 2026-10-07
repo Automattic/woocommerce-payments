@@ -199,6 +199,33 @@ class Experimental_Abtest_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_the_explat_request_does_not_use_the_default_wordpress_user_agent() {
+		$captured = null;
+
+		add_filter(
+			'pre_http_request',
+			function ( $pre, $args, $url ) use ( &$captured ) {
+				if ( false === strpos( $url, 'experiments/0.1.0/assignments' ) ) {
+					return $pre;
+				}
+
+				$captured = $args;
+
+				return [ 'body' => '{"variations":{},"assignments":{},"ttl":7200}' ];
+			},
+			10,
+			3
+		);
+
+		( new \WCPay\Experimental_Abtest( 'jetpack:anonJ', 'woocommerce', true ) )->get_variation( 'some_test' );
+
+		$this->assertSame(
+			'WooPayments/' . WCPAY_VERSION_NUMBER,
+			$captured['user-agent'] ?? null,
+			'The default WordPress user agent is bot-filtered by the ExPlat assigner, so no assignment would ever be created.'
+		);
+	}
+
 	/**
 	 * Short-circuit the ExPlat request with a canned response and count the calls.
 	 *

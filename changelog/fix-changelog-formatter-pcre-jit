@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix changelog formatter PCRE JIT stack exhaustion causing changelogger --amend to wipe all existing entries

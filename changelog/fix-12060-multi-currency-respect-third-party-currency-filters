@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop Multi-Currency from overriding the currency selected by a third-party currency switcher while it has nothing to switch, and keep the module inert when the feature is disabled

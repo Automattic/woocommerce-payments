@@ -1,6 +1,6 @@
 # Stripe Capital Flow — Reference
 
-**Last updated:** 2026-04-15
+**Last updated:** 2026-08-21
 
 This documents how Stripe Capital loan offers reach a WooPayments merchant, how they are accepted, and how the Capital Loans admin page becomes available. Read this when working on anything under `includes/core/server/request/class-get-account-capital-link.php`, `includes/admin/class-wc-rest-payments-capital-controller.php`, `client/capital/`, or the `wcpay-loan-offer` query param.
 
@@ -8,7 +8,7 @@ This documents how Stripe Capital loan offers reach a WooPayments merchant, how 
 
 WooPayments does **not** render its own "accept offer" screen. Acceptance happens entirely on a **Stripe-hosted dashboard page**. The plugin only:
 
-1. Generates the hosted link (via a transact endpoint)
+1. Generates the hosted link (via a Transact endpoint)
 2. Redirects the merchant there
 3. Displays the loan *after* it has been disbursed
 
@@ -18,7 +18,7 @@ This is why searching the React codebase for an "accept offer" component turns u
 
 ### 1. Inbox "loan offer" note (production path)
 
-When Stripe makes an offer available, transact triggers an admin inbox note that links back to `/wp-admin/admin.php?page=wc-admin&wcpay-loan-offer`.
+When Stripe makes an offer available, Transact triggers an admin inbox note that links back to `/wp-admin/admin.php?page=wc-admin&wcpay-loan-offer`.
 
 ### 2. `?wcpay-loan-offer` query param (also used for testing)
 
@@ -40,7 +40,7 @@ includes/class-wc-payments-redirect-service.php:84 redirect_to_capital_view_offe
         ->set_return_url( overview page )
         ->set_refresh_url( wcpay-loan-offer URL )
         ->send()
-    → transact: POST /wcpay/accounts/capital_links
+    → Transact: POST /wcpay/accounts/capital_links
     → Stripe hosted URL
     → redirect_to( $capital_link['url'] )
 ```
@@ -88,9 +88,9 @@ Because the menu is not registered when `has_previous_loans` is false, visiting 
 
 ## Account Data Cache Is Authoritative and Sticky
 
-The capital flags come from the `wcpay_account_data` transient, populated from transact → Stripe. The cache does **not** refresh automatically after a Stripe-side state change (accept, disburse, repay). Until it is invalidated, the UI keeps showing the pre-change state.
+The capital flags come from the `wcpay_account_data` transient, populated from Transact → Stripe. The cache does **not** refresh automatically after a Stripe-side state change (accept, disburse, repay). Until it is invalidated, the UI keeps showing the pre-change state.
 
-TTL is set in `includes/class-database-cache.php:394-407`: **2 hours** for admin requests (or 2 minutes if the last fetch errored), **24 hours** for non-admin requests. So without manual invalidation, a Stripe state change can take up to 2 hours to surface in the admin UI.
+TTL is set in `Database_Cache::get_ttl()` (`includes/class-database-cache.php`): **2 hours** for admin requests, **24 hours** for non-admin requests; after a failed fetch the admin TTL backs off progressively (2/5/10/15 minutes). So without manual invalidation, a Stripe state change can take up to 2 hours to surface in the admin UI.
 
 Invalidate:
 
@@ -133,7 +133,7 @@ To exercise the full flow in a local dev environment:
 4. **Clear the cache** (see above). This is mandatory.
 5. Reload wp-admin. The **Payments → Capital Loans** menu item now appears, and `/payments/loans` renders the active loan summary and history.
 
-Alternative: call the transact endpoint directly to get the Stripe-hosted URL without the WP redirect step (endpoint added in transact-platform-server PR #1382). Only useful when debugging the link generation itself:
+Alternative: call the Transact endpoint directly to get the Stripe-hosted URL without the WP redirect step (endpoint added in transact-platform-server PR #1382). Only useful when debugging the link generation itself:
 
 ```bash
 curl -X POST http://localhost:<TRANSACT_PORT>/wp-json/wpcom/v2/sites/<BLOG_ID>/wcpay/accounts/capital_links \
@@ -149,4 +149,4 @@ Get the blog ID with `wp option get wpcom_blog_id` inside the WordPress containe
 |---------|-------|-----|
 | "Sorry, you are not allowed to access this page" at `/payments/loans` | Capital menu not registered because `has_previous_loans` is false in cached account data | Clear `wcpay_account_data` transient and reload |
 | `has_active_loan` stays false after clicking Accept | Stripe acceptance is two-step; funds not disbursed yet | Disburse funds on the Stripe hosted page |
-| Redirect to `/payments/overview` with `wcpay-loan-offer-error=1` | `Get_Account_Capital_Link` request threw an exception (see `redirect_to_capital_view_offer_page()`) | Check transact logs for the `accounts/capital_links` call |
+| Redirect to `/payments/overview` with `wcpay-loan-offer-error=1` | `Get_Account_Capital_Link` request threw an exception (see `redirect_to_capital_view_offer_page()`) | Check Transact logs for the `accounts/capital_links` call |

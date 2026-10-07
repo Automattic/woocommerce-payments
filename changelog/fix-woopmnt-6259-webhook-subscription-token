@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Attach WooPayments subscription tokens when webhook payment completion runs without checkout AJAX finalization.

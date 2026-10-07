@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: "Get current version"
         id: current-version
@@ -126,12 +126,12 @@ jobs:
           
           #### Option 1. Jetpack Beta
           
-          - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
+          - Install and activate [Jetpack Beta](https://jetpack.com/beta/#download-and-install).
           - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments          
           
           #### Option 2. Jurassic Ninja - available for logged-in A12s
          
-          :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&woocommerce-payments-dev-tools&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
+          :rocket: [Launch a JN site with this branch and sample products](https://jurassic.ninja/create/?jetpack-beta&nojetpack&woocommerce&woocommerce-import-sample-data&woocommerce-payments-dev-tools&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
           :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
           

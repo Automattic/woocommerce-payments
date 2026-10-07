@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove the unused inbox last-read tracking on the Payments Overview screen, which could break the inbox panel.

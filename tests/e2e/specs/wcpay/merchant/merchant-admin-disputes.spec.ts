@@ -23,7 +23,7 @@ test.describe( 'Merchant disputes', () => {
 		).toHaveCount( 0 );
 
 		// .nth( 1 ) defines the second instance of the Disputes heading, which is in the table.
-		expect(
+		await expect(
 			page.getByRole( 'heading', { name: 'Disputes' } ).nth( 1 )
 		).toBeVisible();
 	} );

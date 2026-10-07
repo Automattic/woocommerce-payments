@@ -13,6 +13,8 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
 use WCPay\Constants\Refund_Failure_Reason;
+use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Core\Server\Request\Get_Intention;
 
 /**
  * WC_Payments_Order_Service unit tests.
@@ -1098,7 +1100,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'blocked</strong> by one or more risk filters', $notes[0]->content );
-		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -1107,6 +1109,100 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_order_blocked_for_fraud( $this->order, 'pi_mock', Intent_Status::CANCELED );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 1, $notes_2 );
+	}
+
+	/**
+	 * Tests that a rule engine block, which fires before an intent exists, links the note to the order.
+	 */
+	public function test_mark_order_blocked_for_fraud_without_intent_links_to_order() {
+		// Act: Block the order with no intent id, as happens for rule engine blocks.
+		$this->order_service->mark_order_blocked_for_fraud( $this->order, '', Intent_Status::CANCELED );
+
+		// Assert: With no intent to link to, the note falls back to the order id.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=' . $this->order->get_id() . '&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+	}
+
+	/**
+	 * Tests that the blocked note names the risk filters that fired when ruleset results are available.
+	 */
+	public function test_mark_order_blocked_for_fraud_with_ruleset_results() {
+		// Act: Attempt to mark the payment/order blocked, with the rule engine results.
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_mock',
+			Intent_Status::CANCELED,
+			[
+				'international_ip_address' => 'block',
+				'some_unknown_rule'        => 'block',
+			]
+		);
+
+		// Assert: Check that the note lists the fired risk filters, with a humanized fallback for the unknown rule key.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'blocked</strong> by the following risk filters', $notes[0]->content );
+		$this->assertStringContainsString( 'Block if the country resolved from customer IP is not listed in your selling countries', $notes[0]->content );
+		$this->assertStringContainsString( 'Some unknown rule', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&status_is=block&type_is=order_note" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+
+		// Assert: Check that the ruleset results were persisted on the order.
+		$this->assertSame(
+			[
+				'international_ip_address' => 'block',
+				'some_unknown_rule'        => 'block',
+			],
+			$this->order_service->get_fraud_ruleset_results_for_order( $this->order )
+		);
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_order_blocked_for_fraud(
+			$this->order,
+			'pi_mock',
+			Intent_Status::CANCELED,
+			[
+				'international_ip_address' => 'block',
+				'some_unknown_rule'        => 'block',
+			]
+		);
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 1, $notes_2 );
+	}
+
+	/**
+	 * Tests that the held for review note names the risk filters that fired when the intent
+	 * metadata carries the ruleset results.
+	 */
+	public function test_mark_order_held_for_review_for_fraud_with_ruleset_results() {
+		// Arrange: Create intention with the fraud outcome and ruleset results in the metadata.
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'fraud_outcome'         => Rule::FRAUD_OUTCOME_REVIEW,
+					'fraud_ruleset_results' => wp_json_encode( [ 'order_items_threshold' => 'review' ] ),
+				],
+			]
+		);
+
+		// Act: Attempt to mark the payment held for review.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: Check that the note lists the fired risk filter.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'held for review</strong> by the following risk filters', $notes[0]->content );
+		$this->assertStringContainsString( 'Place in review if the items count is not in your defined range', $notes[0]->content );
+
+		// Assert: Check that the ruleset results were persisted on the order.
+		$this->assertSame( [ 'order_items_threshold' => 'review' ], $this->order_service->get_fraud_ruleset_results_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status and meta box type were set correctly.
+		$this->assertEquals( 'review', $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( 'review', $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
 	}
 
 	/**
@@ -1335,6 +1431,377 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a non-lost close leaves an already fully refunded order refunded instead of
+	 * promoting it back to completed. The motivating case is a charge whose sibling dispute was
+	 * lost and refunded in full first.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_won_leaves_fully_refunded_order_unchanged() {
+		// Arrange: Put the order on hold as a dispute would, then refund it in full, which WooCommerce core moves to refunded.
+		$charge_id = 'ch_123';
+		$status    = 'won';
+		$this->order->update_status( Order_Status::ON_HOLD );
+		wc_create_refund(
+			[
+				'amount'   => $this->order->get_total(),
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$order = wc_get_order( $this->order->get_id() );
+
+		// Act: Attempt to mark payment dispute closed.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order was left in refunded status.
+		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
+
+		// Assert: Check that both the skipped completion note and the dispute closed note were added.
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+		$this->assertStringContainsString( 'On hold to Refunded', $contents );
+		$this->assertCount( 4, $notes );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertCount( 4, $notes_2 );
+	}
+
+	/**
+	 * Tests that an inquiry closing on an already fully refunded order leaves the order refunded.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_warning_closed_leaves_fully_refunded_order_unchanged() {
+		// Arrange: Put the order on hold as an inquiry would, then refund it in full.
+		$charge_id = 'ch_123';
+		$status    = 'warning_closed';
+		$this->order->update_status( Order_Status::ON_HOLD );
+		wc_create_refund(
+			[
+				'amount'   => $this->order->get_total(),
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$order = wc_get_order( $this->order->get_id() );
+
+		// Act: Attempt to mark payment dispute closed.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order was left in refunded status.
+		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
+
+		// Assert: Check that both the skipped completion note and the inquiry closed note were added.
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'inquiry', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+		$this->assertCount( 4, $notes );
+	}
+
+	/**
+	 * Tests the webhook ordering where the refund lands before the dispute: the order is fully
+	 * refunded, a dispute then puts it back on hold, and the close has to resolve that hold
+	 * rather than leaving the order stranded on hold with no further webhook to move it.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_won_refunds_fully_refunded_order_on_hold() {
+		// Arrange: Refund the order in full, then put it back on hold as a later dispute would.
+		$charge_id = 'ch_123';
+		$status    = 'won';
+		wc_create_refund(
+			[
+				'amount'   => $this->order->get_total(),
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$order = wc_get_order( $this->order->get_id() );
+		$order->update_status( Order_Status::ON_HOLD );
+
+		// Act: Attempt to mark payment dispute closed.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order was moved back to refunded rather than left on hold.
+		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
+
+		// Assert: Check that both the skipped completion note and the dispute closed note were added.
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+		$this->assertStringContainsString( 'On hold to Refunded', $contents );
+	}
+
+	/**
+	 * Tests that an inquiry closing on a fully refunded order that is on hold also resolves the hold.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_warning_closed_refunds_fully_refunded_order_on_hold() {
+		// Arrange: Refund the order in full, then put it back on hold as a later inquiry would.
+		$charge_id = 'ch_123';
+		$status    = 'warning_closed';
+		wc_create_refund(
+			[
+				'amount'   => $this->order->get_total(),
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$order = wc_get_order( $this->order->get_id() );
+		$order->update_status( Order_Status::ON_HOLD );
+
+		// Act: Attempt to mark payment dispute closed.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order was moved back to refunded rather than left on hold.
+		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
+
+		// Assert: Check that both the skipped completion note and the inquiry closed note were added.
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'inquiry', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+	}
+
+	/**
+	 * Tests that the guard is deliberately limited to full refunds: a partially refunded order
+	 * still moves to completed, exactly as it did before.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_won_completes_partially_refunded_order() {
+		// Arrange: Put the order on hold as a dispute would, then refund half of it.
+		$charge_id = 'ch_123';
+		$status    = 'won';
+		$this->order->update_status( Order_Status::ON_HOLD );
+		wc_create_refund(
+			[
+				'amount'   => (float) $this->order->get_total() / 2,
+				'order_id' => $this->order->get_id(),
+			]
+		);
+		$order = wc_get_order( $this->order->get_id() );
+
+		// Act: Attempt to mark payment dispute closed.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order status was updated to completed status.
+		$this->assertTrue( $order->has_status( [ 'completed' ] ) );
+
+		// Assert: Check that the notes were updated, and no skip note was added.
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'On hold to Completed', $contents );
+		$this->assertCount( 3, $notes );
+	}
+
+	/**
+	 * Tests that a zero total order, whose remaining refund amount is trivially zero, is not
+	 * mistaken for a fully refunded one.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_won_completes_zero_total_order() {
+		// Arrange: Create a zero total order and put it on hold as a dispute would.
+		$charge_id = 'ch_123';
+		$status    = 'won';
+		$order     = WC_Helper_Order::create_order( 1, 0 );
+		$order->update_status( Order_Status::ON_HOLD );
+
+		// Act: Attempt to mark payment dispute closed.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order status was updated to completed status.
+		$this->assertTrue( $order->has_status( [ 'completed' ] ) );
+
+		// Assert: Check that the notes were updated, and no skip note was added.
+		$notes    = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$contents = $this->order_note_contents( $order );
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'On hold to Completed', $contents );
+		$this->assertCount( 3, $notes );
+	}
+
+	/**
+	 * Tests that the zero total clamp does not override an explicitly refunded status: a zero total
+	 * order already marked refunded must not be promoted to completed.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_won_leaves_refunded_zero_total_order_unchanged() {
+		// Arrange: Create a zero total order that has already been marked refunded.
+		$charge_id = 'ch_123';
+		$status    = 'won';
+		$order     = WC_Helper_Order::create_order( 1, 0 );
+		$order->update_status( Order_Status::REFUNDED );
+
+		// Act: Attempt to mark payment dispute closed.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order was left in refunded status.
+		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
+
+		// Assert: Check that both the skipped completion note and the dispute closed note were added.
+		$contents = $this->order_note_contents( $order );
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+	}
+
+	/**
+	 * Tests that closing one of a charge's disputes does not lift the hold that a sibling
+	 * dispute still needs. The motivating case is an AmEx or Klarna charge disputed once per
+	 * separately shipped item: winning the first must not present the order as settled while
+	 * the second is still counting down its evidence deadline.
+	 */
+	public function test_mark_payment_dispute_closed_leaves_order_on_hold_while_sibling_dispute_open() {
+		// Arrange: Two disputes on the same charge, both open, so the order sits on hold.
+		$charge_id = 'ch_123';
+		$this->create_dispute( $charge_id, 'dp_first' );
+		$this->create_dispute( $charge_id, 'dp_second' );
+
+		// Act: Close only the first dispute.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_first' );
+
+		// Assert: Check that the order was left on hold for the dispute that is still open.
+		$this->assertTrue( $this->order->has_status( [ 'on-hold' ] ) );
+
+		// Assert: Check that the close was recorded and the reason for staying on hold explained.
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $contents );
+		$this->assertStringContainsString( '(Dispute ID: dp_first)', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because 1 other dispute on this payment is still open.', $contents );
+		$this->assertStringNotContainsString( 'On hold to Completed', $contents );
+	}
+
+	/**
+	 * Tests that the hold is lifted once the charge's last open dispute closes, so the guard
+	 * against a sibling dispute does not strand the order on hold.
+	 */
+	public function test_mark_payment_dispute_closed_completes_order_once_last_dispute_closes() {
+		// Arrange: Two disputes on the same charge, the first of which has already closed.
+		$charge_id = 'ch_123';
+		$this->create_dispute( $charge_id, 'dp_first' );
+		$this->create_dispute( $charge_id, 'dp_second' );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_first' );
+
+		// Act: Close the remaining dispute.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_second' );
+
+		// Assert: Check that the order status was updated to completed status.
+		$this->assertTrue( $this->order->has_status( [ 'completed' ] ) );
+
+		// Assert: Check that each dispute produced its own close note rather than being de-duplicated.
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( '(Dispute ID: dp_first)', $contents );
+		$this->assertStringContainsString( '(Dispute ID: dp_second)', $contents );
+		$this->assertStringContainsString( 'On hold to Completed', $contents );
+	}
+
+	/**
+	 * Tests the combined failure: the first dispute is lost and refunds the order in full, then
+	 * the sibling is won. The order must stay refunded rather than being promoted to completed,
+	 * which would have WooCommerce Analytics count the payment as revenue a second time.
+	 */
+	public function test_mark_payment_dispute_closed_leaves_order_refunded_after_sibling_dispute_lost() {
+		// Arrange: Two disputes on the same charge, the first of which was lost and refunded in full.
+		$charge_id = 'ch_123';
+		$this->create_dispute( $charge_id, 'dp_first' );
+		$this->create_dispute( $charge_id, 'dp_second' );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'lost', [], 'dp_first' );
+		$order = wc_get_order( $this->order->get_id() );
+
+		// Act: Close the surviving dispute in the merchant's favour.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, 'won', [], 'dp_second' );
+
+		// Assert: Check that the order was left in refunded status.
+		$this->assertTrue( $order->has_status( [ 'refunded' ] ) );
+
+		// Assert: Check that the refund from the lost dispute was not joined by a second one.
+		$this->assertCount( 1, $order->get_refunds() );
+
+		// Assert: Check that the reason for skipping completion was recorded.
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'The order was not marked as completed because it has already been fully refunded.', $contents );
+		$this->assertStringNotContainsString( 'On hold to Completed', $contents );
+	}
+
+	/**
+	 * Tests that a charge carrying more than two disputes reports every one that is still open.
+	 */
+	public function test_mark_payment_dispute_closed_counts_every_open_sibling_dispute() {
+		// Arrange: Three disputes on the same charge, all open.
+		$charge_id = 'ch_123';
+		$this->create_dispute( $charge_id, 'dp_first' );
+		$this->create_dispute( $charge_id, 'dp_second' );
+		$this->create_dispute( $charge_id, 'dp_third' );
+
+		// Act: Close one of them.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_first' );
+
+		// Assert: Check that the note counted both remaining disputes.
+		$this->assertStringContainsString(
+			'The order was not marked as completed because 2 other disputes on this payment are still open.',
+			$this->order_note_contents()
+		);
+	}
+
+	/**
+	 * Tests that an inquiry closing while a dispute is still open also leaves the hold in place.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_warning_closed_leaves_order_on_hold_while_sibling_open() {
+		// Arrange: An inquiry and a dispute on the same charge, both open.
+		$charge_id = 'ch_123';
+		$this->create_dispute( $charge_id, 'dp_inquiry', 'warning_needs_response' );
+		$this->create_dispute( $charge_id, 'dp_dispute' );
+
+		// Act: Close the inquiry.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'warning_closed', [], 'dp_inquiry' );
+
+		// Assert: Check that the order was left on hold for the dispute that is still open.
+		$this->assertTrue( $this->order->has_status( [ 'on-hold' ] ) );
+
+		// Assert: Check that the inquiry close was recorded and the hold explained.
+		$contents = $this->order_note_contents();
+		$this->assertStringContainsString( 'inquiry', $contents );
+		$this->assertStringContainsString( '(Dispute ID: dp_inquiry)', $contents );
+		$this->assertStringContainsString( 'The order was not marked as completed because 1 other dispute on this payment is still open.', $contents );
+	}
+
+	/**
+	 * Tests that a re-delivered close webhook is still de-duplicated now that the note carries a
+	 * dispute ID, and that the replay does not resurrect the dispute as open.
+	 */
+	public function test_mark_payment_dispute_closed_is_idempotent_per_dispute_id() {
+		// Arrange: Two disputes on the same charge, both open.
+		$charge_id = 'ch_123';
+		$this->create_dispute( $charge_id, 'dp_first' );
+		$this->create_dispute( $charge_id, 'dp_second' );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_first' );
+
+		// Assert: The status change, the two dispute notes, the sibling note and the close note.
+		$this->assertCount( 5, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+
+		// Act: Replay the same close.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_first' );
+
+		// Assert: Check that the replay added no notes and left the order on hold.
+		$this->assertCount( 5, wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] ) );
+		$this->assertTrue( $this->order->has_status( [ 'on-hold' ] ) );
+
+		// Assert: Check that closing the sibling still completes the order.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_second' );
+		$this->assertTrue( $this->order->has_status( [ 'completed' ] ) );
+	}
+
+	/**
+	 * Tests that an order whose dispute was recorded before this bookkeeping existed keeps the
+	 * behaviour it had: with no open disputes on record, a win completes the order.
+	 */
+	public function test_mark_payment_dispute_closed_completes_order_without_recorded_disputes() {
+		// Arrange: Put the order on hold as a dispute would, without recording the dispute ID.
+		$charge_id = 'ch_123';
+		$this->order->update_status( Order_Status::ON_HOLD );
+
+		// Act: Close a dispute the order has no record of.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, 'won', [], 'dp_unknown' );
+
+		// Assert: Check that the order status was updated to completed status.
+		$this->assertTrue( $this->order->has_status( [ 'completed' ] ) );
+
+		// Assert: Check that no open sibling was claimed.
+		$this->assertStringNotContainsString( 'still open', $this->order_note_contents() );
+	}
+
+	/**
 	 * Tests to make sure mark_payment_dispute_closed exits if the order is invalid.
 	 */
 	public function test_mark_payment_dispute_closed_exits_if_order_invalid() {
@@ -1353,6 +1820,422 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Confirm the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertEquals( $expected_notes, $updated_notes );
+	}
+
+	/**
+	 * Tests that an actionable early fraud warning stores meta and adds a note once.
+	 */
+	public function test_mark_payment_early_fraud_warning_actionable() {
+		// Act: Mark the early fraud warning on the order.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+
+		// Assert: Check that the early fraud warning meta was persisted (read back from the database).
+		$this->assertSame(
+			[
+				'efw_id'         => 'issfr_123',
+				'efw_actionable' => true,
+				'efw_type'       => 'made_with_stolen_card',
+				'created'        => 1719800000,
+			],
+			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
+		);
+		$this->assertSame(
+			'1719800000',
+			(string) wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning_actionable', true )
+		);
+
+		// Assert: Check that the note was added with the reason and a link to the payment details.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 1, $notes );
+		$this->assertStringContainsString( 'Payment has received an early fraud warning with reason', $notes[0]->content );
+		$this->assertStringContainsString( 'Made with stolen card', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" class="wcpay-efw-refund-link" target="_blank" rel="noopener noreferrer">Refunding the payment now</a> can prevent a dispute', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">payment details', $notes[0]->content );
+
+		// Assert: Applying the same data multiple times does not cause duplicate notes.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 1, $notes_2 );
+	}
+
+	/**
+	 * Tests that a resolved early fraud warning overwrites the meta and adds a resolved note.
+	 */
+	public function test_mark_payment_early_fraud_warning_resolved() {
+		// Arrange: Store an actionable early fraud warning first.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Mark the same early fraud warning as no longer actionable.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', false, 'made_with_stolen_card', 1719800000 );
+
+		// Assert: Check that the persisted early fraud warning meta was overwritten with the latest state.
+		$this->assertSame(
+			[
+				'efw_id'         => 'issfr_123',
+				'efw_actionable' => false,
+				'efw_type'       => 'made_with_stolen_card',
+				'created'        => 1719800000,
+			],
+			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning', true )
+		);
+		$this->assertSame(
+			'',
+			wc_get_order( $this->order->get_id() )->get_meta( '_wcpay_early_fraud_warning_actionable', true )
+		);
+
+		// Assert: Check that a resolved note was added on top of the actionable one.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertStringContainsString( 'The early fraud warning received for this payment is no longer actionable', $notes[0]->content );
+		$this->assertStringContainsString( 'Payment has received an early fraud warning', $notes[1]->content );
+	}
+
+	/**
+	 * Tests that an unknown fraud type produces a note without a reason.
+	 */
+	public function test_mark_payment_early_fraud_warning_with_unknown_fraud_type() {
+		// Act: Mark an early fraud warning with a fraud type we have no label for.
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_123', 'issfr_123', true, 'some_future_fraud_type', 1719800000 );
+
+		// Assert: Check that the note was added without the reason clause.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'Payment has received an early fraud warning. <a', $notes[0]->content );
+		$this->assertStringContainsString( '>Refunding the payment now</a> can prevent a dispute', $notes[0]->content );
+		$this->assertStringNotContainsString( 'with reason', $notes[0]->content );
+	}
+
+	/**
+	 * Tests to make sure mark_payment_early_fraud_warning exits if the order is invalid.
+	 */
+	public function test_mark_payment_early_fraud_warning_exits_if_order_invalid() {
+		// Arrange: Get current notes.
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		// Act: Attempt to mark the early fraud warning on an invalid order.
+		$this->order_service->mark_payment_early_fraud_warning( 'fake_order', 'ch_123', 'issfr_123', true, 'made_with_stolen_card', 1719800000 );
+
+		// Assert: Confirm no meta was stored and the notes were not updated.
+		$this->assertSame( '', $this->order->get_meta( '_wcpay_early_fraud_warning', true ) );
+		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( $expected_notes, $updated_notes );
+	}
+
+	/**
+	 * Tests that only orders with an actionable early fraud warning are returned.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_filters_resolved_and_unaffected() {
+		// Arrange: One actionable, one resolved, and one unaffected order ($this->order).
+		$actionable_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Fetch the orders with an actionable warning.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: Only the actionable order is returned, with the number merchants see.
+		$this->assertSame(
+			[
+				[
+					'order_id'     => $actionable_order->get_id(),
+					'order_number' => $actionable_order->get_order_number(),
+					'charge_id'    => 'ch_actionable',
+					'created'      => 1719800000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
+	 * Tests that the payload uses the display order number, not the post ID.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_includes_display_order_number() {
+		// Arrange: An actionable warning on an order whose number is customized.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $order, 'ch_numbered' );
+		$this->order_service->mark_payment_early_fraud_warning( $order, 'ch_numbered', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$order_number_filter = function ( $order_number, $filtered_order ) use ( $order ) {
+			return $filtered_order->get_id() === $order->get_id() ? 'INV-42' : $order_number;
+		};
+		add_filter( 'woocommerce_order_number', $order_number_filter, 10, 2 );
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		remove_filter( 'woocommerce_order_number', $order_number_filter );
+
+		// Assert: The customized number is what the Overview task will show.
+		$this->assertSame( 'INV-42', $result[0]['order_number'] );
+	}
+
+	/**
+	 * Tests that the warning query inspects at most $limit warnings, newest first.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_respects_limit() {
+		// Arrange: Two actionable orders; the older order carries the newer warning.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->set_charge_id_for_order( $older_order, 'ch_older' );
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older', 'issfr_1', true, 'made_with_stolen_card', 1719900000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act: Fetch with a limit of one.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: Only the newest warning is inspected, even though its order is older.
+		$this->assertSame(
+			[
+				[
+					'order_id'     => $older_order->get_id(),
+					'order_number' => $older_order->get_order_number(),
+					'charge_id'    => 'ch_older',
+					'created'      => 1719900000,
+				],
+			],
+			$result
+		);
+	}
+
+	/**
+	 * The query window is bounded, and the warning meta is never removed once written,
+	 * so resolved warnings would otherwise hold window slots forever and hide older
+	 * still-actionable ones. A limit of one makes that crowding-out exact.
+	 */
+	public function test_resolved_warnings_do_not_consume_the_query_window() {
+		// Arrange: An older actionable warning, and a newer resolved one.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$resolved_order = WC_Helper_Order::create_order();
+		$resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Inspect a single order.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: The newer resolved order did not squeeze out the actionable one.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
+	 * Resolving a warning must free its slot in the bounded window, not just stop it
+	 * being reported. A warning that was actionable and later resolved is the common
+	 * case, so the index has to be removed as well as written.
+	 */
+	public function test_resolving_a_warning_frees_its_slot_in_the_query_window() {
+		// Arrange: An older actionable warning, and a newer one that is later resolved.
+		$actionable_order = WC_Helper_Order::create_order();
+		$actionable_order->set_date_created( '2026-07-01 00:00:00' );
+		$actionable_order->save();
+		$this->order_service->set_charge_id_for_order( $actionable_order, 'ch_actionable' );
+		$this->order_service->mark_payment_early_fraud_warning( $actionable_order, 'ch_actionable', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$later_resolved_order = WC_Helper_Order::create_order();
+		$later_resolved_order->set_date_created( '2026-07-15 00:00:00' );
+		$later_resolved_order->save();
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Resolve the newer warning, then inspect a single order.
+		$this->order_service->mark_payment_early_fraud_warning( $later_resolved_order, 'ch_resolved', 'issfr_2', false, 'made_with_stolen_card', 1719900000 );
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders( 1 );
+			}
+		);
+
+		// Assert: The slot went back to the still-actionable order.
+		$this->assertSame( [ $actionable_order->get_id() ], array_column( $result, 'order_id' ) );
+	}
+
+	/**
+	 * Tests that warnings stored against the other mode's orders are ignored.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_test_mode_orders_when_live() {
+		// Arrange: A live order (no mode meta, as orders predating it are live) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is live.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The test-mode order is left out.
+		$this->assertSame( [ 'ch_live' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that test mode surfaces the test order rather than the live one.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_live_orders_when_in_test_mode() {
+		// Arrange: A live order (no mode meta) and a test-mode order.
+		$live_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $live_order, 'ch_live' );
+		$this->order_service->mark_payment_early_fraud_warning( $live_order, 'ch_live', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+
+		$test_order = WC_Helper_Order::create_order();
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, 'test' );
+		$test_order->save();
+		$this->order_service->set_charge_id_for_order( $test_order, 'ch_test' );
+		$this->order_service->mark_payment_early_fraud_warning( $test_order, 'ch_test', 'issfr_2', true, 'made_with_stolen_card', 1719900000 );
+
+		// Act: Fetch the warnings while the gateway is in test mode.
+		$result = $this->with_payments_mode(
+			true,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: Only the test-mode order surfaces.
+		$this->assertSame( [ 'ch_test' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that refunding the order resolves the warning without waiting for the webhook.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_excludes_fully_refunded_orders() {
+		// Arrange: An actionable warning on an order the merchant has since refunded in full.
+		$refunded_order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $refunded_order, 'ch_refunded' );
+		$this->order_service->mark_payment_early_fraud_warning( $refunded_order, 'ch_refunded', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $refunded_order->get_total(),
+				'order_id' => $refunded_order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The refund resolves the warning.
+		$this->assertSame( [], $result );
+	}
+
+	/**
+	 * Tests that a partial refund leaves the warning actionable.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_keeps_partially_refunded_orders() {
+		// Arrange: An actionable warning on an order refunded for less than its total.
+		$order = WC_Helper_Order::create_order();
+		$this->order_service->set_charge_id_for_order( $order, 'ch_partial' );
+		$this->order_service->mark_payment_early_fraud_warning( $order, 'ch_partial', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		wc_create_refund(
+			[
+				'amount'   => $order->get_total() / 2,
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: A partial refund does not clear the dispute risk.
+		$this->assertSame( [ 'ch_partial' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Tests that results are ordered by when the warning arrived, not when the order was placed.
+	 */
+	public function test_get_actionable_early_fraud_warning_orders_sorts_by_warning_date_descending() {
+		// Arrange: The older order carries the newer warning, so the two orderings disagree.
+		$older_order = WC_Helper_Order::create_order();
+		$older_order->set_date_created( '2026-07-01 00:00:00' );
+		$older_order->save();
+		$this->order_service->set_charge_id_for_order( $older_order, 'ch_older_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $older_order, 'ch_older_order', 'issfr_1', true, 'made_with_stolen_card', 1719900000 );
+
+		$newer_order = WC_Helper_Order::create_order();
+		$newer_order->set_date_created( '2026-07-15 00:00:00' );
+		$newer_order->save();
+		$this->order_service->set_charge_id_for_order( $newer_order, 'ch_newer_order' );
+		$this->order_service->mark_payment_early_fraud_warning( $newer_order, 'ch_newer_order', 'issfr_2', true, 'made_with_stolen_card', 1719800000 );
+
+		// Act.
+		$result = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+
+		// Assert: The newest warning leads, even though its order is the older one.
+		$this->assertSame( [ 'ch_older_order', 'ch_newer_order' ], array_column( $result, 'charge_id' ) );
+	}
+
+	/**
+	 * Runs a callback with WooPayments forced into the given mode, restoring it afterwards.
+	 *
+	 * @param bool     $test_mode Whether to run the callback in test mode.
+	 * @param callable $callback  The callback to run.
+	 *
+	 * @return mixed The callback's return value.
+	 */
+	private function with_payments_mode( bool $test_mode, callable $callback ) {
+		$was_test_mode = WC_Payments::mode()->is_test();
+
+		$test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+
+		try {
+			return $callback();
+		} finally {
+			$was_test_mode ? WC_Payments::mode()->test() : WC_Payments::mode()->live();
+		}
 	}
 
 	/**
@@ -1599,6 +2482,136 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order->save_meta_data();
 		$fraud_meta_box_type_from_service = $this->order_service->get_fraud_meta_box_type_for_order( $this->order->get_id() );
 		$this->assertEquals( $fraud_meta_box_type_from_service, $fraud_meta_box_type );
+	}
+
+	public function test_set_early_fraud_warning_for_order() {
+		$early_fraud_warning = [
+			'efw_id'         => 'issfr_123',
+			'efw_actionable' => true,
+			'efw_type'       => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+		$this->order_service->set_early_fraud_warning_for_order( $this->order, $early_fraud_warning );
+		$this->assertSame( $this->order->get_meta( '_wcpay_early_fraud_warning', true ), $early_fraud_warning );
+	}
+
+	public function test_get_early_fraud_warning_for_order() {
+		$early_fraud_warning = [
+			'efw_id'         => 'issfr_123',
+			'efw_actionable' => true,
+			'efw_type'       => 'made_with_stolen_card',
+			'created'        => 1719800000,
+		];
+		$this->order->update_meta_data( '_wcpay_early_fraud_warning', $early_fraud_warning );
+		$this->order->save_meta_data();
+		$early_fraud_warning_from_service = $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() );
+		$this->assertSame( $early_fraud_warning_from_service, $early_fraud_warning );
+	}
+
+	public function test_get_early_fraud_warning_for_order_returns_null_when_not_set() {
+		$this->assertNull( $this->order_service->get_early_fraud_warning_for_order( $this->order->get_id() ) );
+	}
+
+	/**
+	 * Refunding a flagged order in full must drop the cached warning list, so the
+	 * refunded-order guard in get_actionable_early_fraud_warning_orders() actually
+	 * runs instead of being skipped by a warm cache.
+	 */
+	public function test_full_refund_of_flagged_order_clears_early_fraud_warning_caches() {
+		// Arrange: A flagged order, and a warm cache holding it.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund the order in full.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => $this->order->get_total(),
+			]
+		);
+
+		// Assert: Both cached lists are gone.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * A store can take many refunds that have nothing to do with a fraud warning.
+	 * Those must not drop the cache, or every refund forces the bounded meta query
+	 * to run again on the next Overview render.
+	 */
+	public function test_refund_of_unflagged_order_leaves_early_fraud_warning_caches() {
+		// Arrange: A warm cache, and an order carrying no early fraud warning.
+		$this->order_service->init_hooks();
+		$this->warm_early_fraud_warning_caches();
+		$unflagged_order = WC_Helper_Order::create_order();
+
+		// Act: Refund the unflagged order in full.
+		wc_create_refund(
+			[
+				'order_id' => $unflagged_order->get_id(),
+				'amount'   => $unflagged_order->get_total(),
+			]
+		);
+
+		// Assert: The cached lists survive.
+		$this->assertNotFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$this->assertNotFalse( get_option( 'wcpay_test_early_fraud_warning_orders_cache' ) );
+	}
+
+	/**
+	 * The callback deliberately does not decide what counts as resolved: it drops the
+	 * cache and lets get_actionable_early_fraud_warning_orders() apply the rule. Moving
+	 * a "fully refunded" check into the callback would fail this test.
+	 */
+	public function test_partial_refund_of_flagged_order_clears_cache_but_keeps_it_actionable() {
+		// Arrange: A flagged order and a warm cache.
+		$this->order_service->init_hooks();
+		$this->order_service->set_charge_id_for_order( $this->order, 'ch_flagged' );
+		$this->order_service->mark_payment_early_fraud_warning( $this->order, 'ch_flagged', 'issfr_1', true, 'made_with_stolen_card', 1719800000 );
+		$this->warm_early_fraud_warning_caches();
+
+		// Act: Refund a fraction of the order.
+		wc_create_refund(
+			[
+				'order_id' => $this->order->get_id(),
+				'amount'   => 1,
+			]
+		);
+
+		// Assert: The cache was dropped, and the rebuilt list still carries the order.
+		$this->assertFalse( get_option( 'wcpay_early_fraud_warning_orders_cache' ) );
+		$actionable = $this->with_payments_mode(
+			false,
+			function () {
+				return $this->order_service->get_actionable_early_fraud_warning_orders();
+			}
+		);
+		$this->assertSame( [ $this->order->get_id() ], array_column( $actionable, 'order_id' ) );
+	}
+
+	/**
+	 * Seeds both early fraud warning cache keys with a non-empty list.
+	 */
+	private function warm_early_fraud_warning_caches() {
+		foreach ( [ 'wcpay_early_fraud_warning_orders_cache', 'wcpay_test_early_fraud_warning_orders_cache' ] as $key ) {
+			update_option(
+				$key,
+				[
+					'data'    => [
+						[
+							'order_id'  => $this->order->get_id(),
+							'charge_id' => 'ch_flagged',
+							'created'   => 1719800000,
+						],
+					],
+					'fetched' => time(),
+					'errored' => false,
+				]
+			);
+		}
 	}
 
 	public function test_set_payment_transaction_id_for_order() {
@@ -2387,34 +3400,34 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_record_first_live_sale_short_circuits_when_option_already_set(): void {
 		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
-		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		$writes  = 0;
+		$counter = function ( $value ) use ( &$writes ) {
+			++$writes;
+			return $value;
+		};
+		add_filter( 'pre_update_option_' . WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, $counter );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
 		$this->order->save();
 
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
-		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
+		remove_filter( 'pre_update_option_' . WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, $counter );
+		$this->assertSame( 0, $writes );
 
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_short_circuits_when_order_id_invalid(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->order_service->maybe_record_first_live_sale( 99999999 );
 
 		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
-
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_skips_test_mode_order(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
 		$this->order->save();
@@ -2422,9 +3435,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
 		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertSame( '1', get_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE ) );
-
-		delete_transient( WC_Payments_Post_Kyc_Activation_Notice::TRANSIENT_ELIGIBLE );
 	}
 
 	public function test_maybe_record_first_live_sale_records_for_production_order(): void {
@@ -2500,5 +3510,194 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->order_service->has_live_sale() );
 
 		$order->delete( true );
+	}
+
+	/**
+	 * A cached intention status of `succeeded` or `canceled` is a terminal Stripe state that can never
+	 * transition back to `requires_capture`, so the order is provably not capturable without asking
+	 * the server. `capture_authorization_on_order_status_change` should short-circuit on that cached
+	 * meta rather than paying for a `Get_Intention` round trip on every order marked completed.
+	 *
+	 * @dataProvider provider_capture_authorization_skips_terminal_intention_status
+	 *
+	 * @param string $intention_status The cached, terminal `_intention_status` meta value.
+	 */
+	public function test_capture_authorization_on_order_status_change_skips_get_intention_for_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is already terminal and non-capturable.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$notes_before = $this->order_note_contents();
+
+		// Assert: the intent must never be fetched from the server.
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+
+		// Act.
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		// Assert: nothing about the order changed as a result of the (skipped) attempt.
+		$this->assertSame( $intention_status, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	public function provider_capture_authorization_skips_terminal_intention_status(): array {
+		return [
+			'Succeeded intent' => [ Intent_Status::SUCCEEDED ],
+			'Canceled intent'  => [ Intent_Status::CANCELED ],
+		];
+	}
+
+	/**
+	 * Any cached intention status that isn't one of the proven-terminal statuses must fall back to
+	 * the regular flow and fetch the live intent - including `requires_capture` itself (the actual
+	 * capturable case) and a never-cached/empty status, since neither can be assumed non-capturable.
+	 *
+	 * @dataProvider provider_capture_authorization_falls_back_to_regular_flow_for_non_terminal_status
+	 *
+	 * @param string $intention_status The cached, non-terminal `_intention_status` meta value.
+	 */
+	public function test_capture_authorization_on_order_status_change_falls_back_to_regular_flow_for_non_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is not one of the proven-terminal statuses.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+
+		// Assert: the regular flow fetches the live intent exactly once.
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		// Act.
+		$this->order_service->capture_authorization_on_order_status_change( $this->order->get_id() );
+
+		// Assert: the cached status was refreshed from the live response, proving the fallback ran.
+		$this->assertSame( Intent_Status::SUCCEEDED, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	public function provider_capture_authorization_falls_back_to_regular_flow_for_non_terminal_status(): array {
+		return [
+			'Requires capture (the normal, capturable case)' => [ Intent_Status::REQUIRES_CAPTURE ],
+			'Requires payment method' => [ Intent_Status::REQUIRES_PAYMENT_METHOD ],
+			'Requires confirmation'   => [ Intent_Status::REQUIRES_CONFIRMATION ],
+			'Requires action'         => [ Intent_Status::REQUIRES_ACTION ],
+			'Processing'              => [ Intent_Status::PROCESSING ],
+			'No cached status yet'    => [ '' ],
+		];
+	}
+
+	/**
+	 * A cached intention status of `succeeded` or `canceled` is a terminal Stripe state that can never
+	 * transition back to `requires_capture`, so there is provably no open authorization to cancel.
+	 * `cancel_authorizations_on_order_status_change` should short-circuit on that cached meta rather
+	 * than paying for a `Get_Intention` round trip on every order marked cancelled.
+	 *
+	 * @dataProvider provider_cancel_authorizations_skips_terminal_intention_status
+	 *
+	 * @param string $intention_status The cached, terminal `_intention_status` meta value.
+	 */
+	public function test_cancel_authorizations_on_order_status_change_skips_get_intention_for_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is already terminal.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$notes_before = $this->order_note_contents();
+
+		// Assert: the intent must never be fetched from, nor cancelled on, the server.
+		$this->mock_wcpay_request( Get_Intention::class, 0 );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		// Act.
+		$this->order_service->cancel_authorizations_on_order_status_change( $this->order->get_id() );
+
+		// Assert: nothing about the order changed as a result of the (skipped) attempt.
+		$this->assertSame( $intention_status, $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+		$this->assertSame( $notes_before, $this->order_note_contents() );
+	}
+
+	public function provider_cancel_authorizations_skips_terminal_intention_status(): array {
+		return [
+			'Succeeded intent' => [ Intent_Status::SUCCEEDED ],
+			'Canceled intent'  => [ Intent_Status::CANCELED ],
+		];
+	}
+
+	/**
+	 * Any cached intention status that isn't one of the proven-terminal statuses must fall back to
+	 * the regular flow and fetch the live intent - including `requires_capture` itself (the actual
+	 * cancellable case) and a never-cached/empty status, since neither can be assumed terminal.
+	 *
+	 * @dataProvider provider_cancel_authorizations_falls_back_to_regular_flow_for_non_terminal_status
+	 *
+	 * @param string $intention_status The cached, non-terminal `_intention_status` meta value.
+	 */
+	public function test_cancel_authorizations_on_order_status_change_falls_back_to_regular_flow_for_non_terminal_status( string $intention_status ) {
+		// Arrange: an order whose cached intention status is not one of the proven-terminal statuses.
+		$this->order_service->set_intent_id_for_order( $this->order, 'pi_mock' );
+		$this->order_service->set_intention_status_for_order( $this->order, $intention_status );
+
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::CANCELED ] );
+
+		// Assert: the regular flow fetches the live intent exactly once, and - since the live intent
+		// has no open authorization - does not attempt to cancel it.
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+		$this->mock_wcpay_request( Cancel_Intention::class, 0 );
+
+		// Act.
+		$this->order_service->cancel_authorizations_on_order_status_change( $this->order->get_id() );
+
+		// Assert: the cached status was refreshed from the live response, proving the fallback ran.
+		$this->assertSame( 'canceled', $this->order_service->get_intention_status_for_order( $this->order->get_id() ) );
+	}
+
+	public function provider_cancel_authorizations_falls_back_to_regular_flow_for_non_terminal_status(): array {
+		return [
+			'Requires capture (the normal, cancellable case)' => [ Intent_Status::REQUIRES_CAPTURE ],
+			'Requires payment method' => [ Intent_Status::REQUIRES_PAYMENT_METHOD ],
+			'Requires confirmation'   => [ Intent_Status::REQUIRES_CONFIRMATION ],
+			'Requires action'         => [ Intent_Status::REQUIRES_ACTION ],
+			'Processing'              => [ Intent_Status::PROCESSING ],
+			'No cached status yet'    => [ '' ],
+		];
+	}
+
+	/**
+	 * Raises a dispute on the test order the way the charge.dispute.created webhook would.
+	 *
+	 * @param string $charge_id  The ID of the disputed charge.
+	 * @param string $dispute_id The ID of the dispute being raised.
+	 * @param string $status     The status the dispute was raised with.
+	 *
+	 * @return void
+	 */
+	private function create_dispute( string $charge_id, string $dispute_id, string $status = 'needs_response' ) {
+		$this->order_service->mark_payment_dispute_created(
+			$this->order,
+			$charge_id,
+			'$123.45',
+			'product_not_received',
+			'June 7, 2023',
+			$status,
+			$dispute_id
+		);
+	}
+
+	/**
+	 * Collects every note on an order into one string, so assertions can look for a note
+	 * without depending on how many notes the surrounding status changes happened to add.
+	 *
+	 * @param WC_Order|null $order The order to read. Defaults to the shared test order.
+	 *
+	 * @return string
+	 */
+	private function order_note_contents( ?WC_Order $order = null ): string {
+		$order = $order ?? $this->order;
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+
+		return implode( "\n", wp_list_pluck( $notes, 'content' ) );
 	}
 }

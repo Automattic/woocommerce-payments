@@ -237,7 +237,7 @@ export const placeOrderWCB = async (
 	} );
 
 	await placeOrderButton.focus();
-	await waitForUiRefresh( page );
+	await expect( placeOrderButton ).toBeEnabled();
 
 	await placeOrderButton.click();
 
@@ -442,12 +442,27 @@ export const selectPaymentMethod = async (
 	// Wait for payment methods list to render.
 	await page.locator( '.wc_payment_methods' ).waitFor( { timeout: 10000 } );
 
-	// Click the label and let Playwright's auto-retry handle actionability.
-	const label = page
-		.locator( `label:has-text("${ paymentMethod }")` )
+	const option = page
+		.locator( '.wc_payment_methods > li' )
+		.filter( {
+			has: page.locator( `label:has-text("${ paymentMethod }")` ),
+		} )
 		.first();
-	await label.scrollIntoViewIfNeeded();
-	await label.click();
+
+	// A checkout refresh replaces the payment box. A click on a row the refresh
+	// is about to remove never registers, so the choice falls back to the first
+	// gateway and the order goes through on Card. Re-click until it sticks.
+	await expect( async () => {
+		await isUIUnblocked( page, 3000 );
+
+		const label = option.locator( 'label' ).first();
+		await label.scrollIntoViewIfNeeded();
+		await label.click( { timeout: 5000 } );
+
+		await expect(
+			option.locator( 'input[name="payment_method"]' )
+		).toBeChecked( { timeout: 2000 } );
+	} ).toPass( { timeout: 20000, intervals: [ 1000 ] } );
 };
 
 /**
@@ -680,7 +695,8 @@ export const addSavedCard = async (
 	// Wait for one of the expected outcomes:
 	//  - 3DS modal appears (Stripe iframe)
 	//  - Success notice
-	//  - Error notice (e.g., too soon after previous)
+	//  - Error notice (declined card, too soon after previous, generic failure)
+	//  - Card validation error inside the Stripe iframe (form never submits)
 	//  - Redirect back to Payment methods page
 	const threeDSFrame = page.locator(
 		'body > div > iframe[name^="__privateStripeFrame"]'
@@ -688,12 +704,11 @@ export const addSavedCard = async (
 	const successNotice = page.getByText(
 		'Payment method successfully added.'
 	);
-	const tooSoonNotice = page.getByText(
-		'You cannot add a new payment method so soon after the previous one.'
-	);
-	const genericError = page.getByText(
-		"We're not able to add this payment method. Please refresh the page and try again."
-	);
+	const errorNotice = page.getByRole( 'alert' ).first();
+	const inlineCardError = page
+		.frameLocator( 'iframe[title="Secure payment input frame"]' )
+		.getByRole( 'alert' )
+		.first();
 	const methodsHeading = page.getByRole( 'heading', {
 		name: 'Payment methods',
 	} );
@@ -701,11 +716,13 @@ export const addSavedCard = async (
 	await Promise.race( [
 		threeDSFrame.waitFor( { state: 'visible', timeout: 20000 } ),
 		successNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		tooSoonNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		genericError.waitFor( { state: 'visible', timeout: 20000 } ),
+		errorNotice.waitFor( { state: 'visible', timeout: 20000 } ),
+		inlineCardError.waitFor( { state: 'visible', timeout: 20000 } ),
 		methodsHeading.waitFor( { state: 'visible', timeout: 20000 } ),
 	] ).catch( () => {
-		/* ignore and let the caller continue; downstream assertions will catch real issues */
+		throw new Error(
+			'Adding a payment method produced none of the expected outcomes: no 3DS modal, success notice, error notice, inline card error, or redirect to the Payment methods page.'
+		);
 	} );
 };
 

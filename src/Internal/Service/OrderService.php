@@ -8,7 +8,6 @@
 namespace WCPay\Internal\Service;
 
 use WC_Order;
-use WC_Payments_Features;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -22,6 +21,15 @@ use WCPay\Internal\Proxy\LegacyProxy;
  * avoiding direct access to the `$order` object witnin `src` (except for this class).
  */
 class OrderService {
+	/**
+	 * Stripe Billing subscription service, loaded by an explicit include rather than autoloaded.
+	 *
+	 * Held as a name because `includes/subscriptions` is excluded from static analysis.
+	 *
+	 * @var string
+	 */
+	private const SUBSCRIPTION_SERVICE_CLASS = 'WC_Payments_Subscription_Service';
+
 	/**
 	 * Legacy proxy.
 	 *
@@ -98,11 +106,19 @@ class OrderService {
 			&& $this->legacy_proxy->call_function( 'function_exists', 'wcs_order_contains_subscription' )
 			&& $this->legacy_proxy->call_function( 'wcs_order_contains_subscription', $order, 'any' )
 		) {
-			$use_stripe_billing = $this->legacy_proxy->call_static( WC_Payments_Features::class, 'should_use_stripe_billing' );
-			$is_renewal         = $this->legacy_proxy->call_function( 'wcs_order_contains_renewal', $order );
+			$is_renewal = $this->legacy_proxy->call_function( 'wcs_order_contains_renewal', $order );
+
+			// The additional Stripe Billing fee follows this value, so a store-level feature check
+			// would surcharge on-site renewals that Stripe Billing never touched.
+			//
+			// Guarded because includes/subscriptions is not autoloaded; where it has not been included
+			// nothing on the store can be Stripe-billed, so false is correct. Named rather than ::class
+			// because that directory is excluded from static analysis.
+			$is_stripe_billed_subscription = $this->legacy_proxy->call_function( 'class_exists', self::SUBSCRIPTION_SERVICE_CLASS )
+				&& $this->legacy_proxy->call_static( self::SUBSCRIPTION_SERVICE_CLASS, 'is_wcpay_subscription_order', $order );
 
 			$metadata['subscription_payment'] = $is_renewal ? 'renewal' : 'initial';
-			$metadata['payment_context']      = $use_stripe_billing ? 'wcpay_subscription' : 'regular_subscription';
+			$metadata['payment_context']      = $is_stripe_billed_subscription ? 'wcpay_subscription' : 'regular_subscription';
 		}
 
 		/**

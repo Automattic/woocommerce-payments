@@ -294,6 +294,36 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
+	 * Determines whether any subscription related to an order is billed through Stripe Billing.
+	 *
+	 * Answers "is this payment actually billed by Stripe Billing?" rather than
+	 * "does this store have the Stripe Billing feature switched on?". The two diverge for any
+	 * subscription that predates the feature being enabled, was migrated off Stripe Billing, or
+	 * was never created there — all of which keep renewing on-site while the store-level flag
+	 * stays on. Only the former justifies the additional Stripe Billing fee.
+	 *
+	 * Returns true when *any* related subscription is Stripe-billed, matching
+	 * `is_wcpay_subscription_renewal_order()` in the subscriptions gateway trait.
+	 *
+	 * @param WC_Order $order Order to inspect. Any order type (parent, renewal, switch, resubscribe).
+	 *
+	 * @return bool
+	 */
+	public static function is_wcpay_subscription_order( WC_Order $order ): bool {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return false;
+		}
+
+		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] ) as $subscription ) {
+			if ( self::is_wcpay_subscription( $subscription ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Formats item data.
 	 *
 	 * @param string $currency          The item's currency.
@@ -705,7 +735,7 @@ class WC_Payments_Subscription_Service {
 			return $actions;
 		}
 
-		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
+		if ( wcs_is_subscription( $theorder ) && $theorder instanceof WC_Subscription && self::is_wcpay_subscription( $theorder ) ) {
 			unset(
 				$actions['wcs_create_pending_parent'],
 				$actions['wcs_create_pending_renewal'],
@@ -721,7 +751,7 @@ class WC_Payments_Subscription_Service {
 	 * @param WC_Order|WC_Subscription $order The order object.
 	 */
 	public function show_wcpay_subscription_id( WC_Order $order ) {
-		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
+		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $order ) || ! $order instanceof WC_Subscription || ! self::is_wcpay_subscription( $order ) ) {
 			return;
 		}
 

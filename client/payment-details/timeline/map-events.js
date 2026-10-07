@@ -7,6 +7,7 @@ import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { createInterpolateElement } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import SyncIcon from 'gridicons/dist/sync';
 import PlusIcon from 'gridicons/dist/plus';
@@ -28,7 +29,11 @@ import {
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
-import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+import {
+	earlyFraudWarningFraudTypeMapping,
+	fraudOutcomeRulesetMapping,
+	paymentFailureMapping,
+} from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
@@ -508,6 +513,8 @@ const getRefundFailureReason = ( event ) => {
 				'the card being lost or stolen.',
 				'woocommerce-payments'
 			);
+		default:
+			return __( 'an unknown reason.', 'woocommerce-payments' );
 	}
 };
 
@@ -770,13 +777,21 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 /**
  * Formats an event into one or more payment timeline items
  *
- * @param {Object}        event        An event data
- * @param {string | null} bankName     The name of the bank
- * @param {Object}        disputeOrder Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Object}        event             An event data
+ * @param {string | null} bankName          The name of the bank
+ * @param {Object}        disputeOrder      Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]        Opens the payment details refund modal; when omitted, refund CTAs render as plain text
+ * @param {Object}        klarnaLossReasons Klarna's loss reasons, keyed by dispute id
  *
  * @return {Array} Payment timeline items
  */
-const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
+const mapEventToTimelineItems = (
+	event,
+	bankName = null,
+	disputeOrder,
+	onRefund,
+	klarnaLossReasons
+) => {
 	const { type } = event;
 
 	// A charge can accrue more than one dispute, and their event groups are
@@ -1193,12 +1208,65 @@ const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
 					  ] )
 					: null;
 
+			// Only Klarna reports why it decided against the merchant. The event
+			// itself carries no reason, so it comes from the charge's disputes,
+			// matched by id — which every dispute event the server builds sets
+			// from the Stripe dispute. The id-less branch is defensive: it fires
+			// only when the charge has a single dispute for the event to belong
+			// to. The reason map is keyed by dispute but holds just the disputes
+			// that stated a reason, so its size can't stand in for the charge's
+			// dispute count — disputeOrder.total can.
+			const lossReasons = Object.values( klarnaLossReasons ?? {} );
+			let klarnaLossReason;
+			if ( event.dispute_id ) {
+				klarnaLossReason = klarnaLossReasons?.[ event.dispute_id ];
+			} else if (
+				lossReasons.length === 1 &&
+				( disputeOrder?.total ?? 1 ) === 1
+			) {
+				klarnaLossReason = lossReasons[ 0 ];
+			}
+			// An unstated reason is left to the dispute footer, which has the
+			// room to say Klarna gave none without reading as a missing value.
+			const statedLossReason =
+				klarnaLossReason?.type === 'stated'
+					? klarnaLossReason.display
+					: null;
+
 			let headlineText;
 			if ( event.reason === 'noncompliant' ) {
+				// Visa compliance disputes are card disputes, so they never
+				// carry a Klarna loss reason.
 				headlineText = __(
 					// eslint-disable-next-line max-len
 					"<strong>Dispute lost.</strong> Visa reviewed the evidence and decided in the customer's favor.",
 					'woocommerce-payments'
+				);
+			} else if ( bankName && statedLossReason ) {
+				// Only Klarna states a reason, so this branch is Klarna's: the
+				// reason replaces the generic outcome clause rather than
+				// trailing it as a separate line, and the provider is a
+				// "payment provider" rather than a bank. See WOOPMNT-6349 for
+				// the same rewording on every other dispute surface.
+				headlineText = sprintf(
+					/* translators: %1$s is the payment provider name, %2$s is the loss reason, eg "Shipping policy violated" */
+					__(
+						// eslint-disable-next-line max-len
+						'<strong>Dispute lost.</strong> The customer’s payment provider, %1$s, decided against you for the following reason: %2$s.',
+						'woocommerce-payments'
+					),
+					bankName,
+					statedLossReason
+				);
+			} else if ( statedLossReason ) {
+				headlineText = sprintf(
+					/* translators: %s is the reason given for the decision, eg "Shipping policy violated" */
+					__(
+						// eslint-disable-next-line max-len
+						'<strong>Dispute lost.</strong> The customer’s payment provider decided against you for the following reason: %s.',
+						'woocommerce-payments'
+					),
+					statedLossReason
 				);
 			} else {
 				headlineText = bankName
@@ -1293,6 +1361,88 @@ const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
 					]
 				),
 			];
+		case 'early_fraud_warning': {
+			const fraudTypeLabel =
+				earlyFraudWarningFraudTypeMapping[ event.efw_type ] ?? null;
+			const reportedReason = fraudTypeLabel
+				? sprintf(
+						/* translators: %s is the card network's reported fraud reason, e.g. "Made with stolen card" */
+						__( 'Reported reason: %s', 'woocommerce-payments' ),
+						fraudTypeLabel
+				  )
+				: null;
+
+			if ( ! event.efw_actionable ) {
+				return [
+					getStatusChangeTimelineItem(
+						event,
+						__(
+							'Early fraud warning resolved',
+							'woocommerce-payments'
+						)
+					),
+					getMainTimelineItem(
+						event,
+						__(
+							'This early fraud warning is no longer actionable.',
+							'woocommerce-payments'
+						),
+						<NoticeOutlineIcon />,
+						[
+							__(
+								'The payment was refunded or disputed, so no further action is needed to avoid a dispute.',
+								'woocommerce-payments'
+							),
+							reportedReason,
+						].filter( Boolean )
+					),
+				];
+			}
+
+			// The timeline renders on the payment details page itself, so a link
+			// back to that page would be a no-op. Instead the CTA asks the page
+			// (via the callback threaded from the payment details parent) to open
+			// the refund modal that already lives in the summary card.
+			const refundCta = onRefund
+				? createInterpolateElement(
+						__(
+							'Refunding this payment now can prevent a dispute. <link>Refund this payment</link>',
+							'woocommerce-payments'
+						),
+						{
+							link: (
+								<Button variant="link" onClick={ onRefund } />
+							),
+						}
+				  )
+				: __(
+						'Refunding this payment now can prevent a dispute.',
+						'woocommerce-payments'
+				  );
+
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Early fraud warning', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					__(
+						'Payment received an early fraud warning',
+						'woocommerce-payments'
+					),
+					<NoticeOutlineIcon className="is-warning" />,
+					[
+						__(
+							'The card issuer flagged this payment as likely fraudulent.',
+							'woocommerce-payments'
+						),
+						reportedReason,
+						refundCta,
+					].filter( Boolean )
+				),
+			];
+		}
 		case 'fraud_outcome_manual_approve':
 			return getManualFraudOutcomeTimelineItem( event, 'allow' );
 		case 'fraud_outcome_manual_block':
@@ -1309,18 +1459,32 @@ const mapEventToTimelineItems = ( event, bankName = null, disputeOrder ) => {
 /**
  * Maps the timeline events coming from the server to items that can be used in Timeline component
  *
- * @param {Array}         timelineEvents array of events
- * @param {string | null} bankName       The name of the bank
- * @param {Object}        disputeOrder   Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Array}         timelineEvents    array of events
+ * @param {string | null} bankName          The name of the bank
+ * @param {Object}        disputeOrder      Shared "Dispute N of M" numbering ({ orderById, total })
+ * @param {Function}      [onRefund]        Opens the payment details refund modal; when omitted, refund CTAs render as plain text
+ * @param {Object}        klarnaLossReasons Klarna's loss reasons, keyed by dispute id
  *
  * @return {Array} Array of view items
  */
-export default ( timelineEvents, bankName = null, disputeOrder ) => {
+export default (
+	timelineEvents,
+	bankName = null,
+	disputeOrder,
+	onRefund,
+	klarnaLossReasons
+) => {
 	if ( ! timelineEvents ) {
 		return [];
 	}
 
 	return flatMap( timelineEvents, ( event ) =>
-		mapEventToTimelineItems( event, bankName, disputeOrder )
+		mapEventToTimelineItems(
+			event,
+			bankName,
+			disputeOrder,
+			onRefund,
+			klarnaLossReasons
+		)
 	).filter( Boolean );
 };

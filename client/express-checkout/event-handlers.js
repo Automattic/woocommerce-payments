@@ -30,7 +30,7 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
-import { getSetupFutureUsageForCart } from './utils/subscriptions';
+import { resolveSetupFutureUsage } from './utils/subscriptions';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
@@ -81,7 +81,7 @@ const getElementsUpdateOptionsForCart = ( cartData ) => ( {
 		cartData
 	),
 	...( shouldUseConfirmationTokens()
-		? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+		? { setupFutureUsage: resolveSetupFutureUsage( cartData ) }
 		: {} ),
 } );
 

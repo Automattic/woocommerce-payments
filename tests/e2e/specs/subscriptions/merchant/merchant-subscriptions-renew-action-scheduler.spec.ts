@@ -68,15 +68,13 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 			// Go to Action Scheduler
 			await goToActionScheduler( merchantPage, 'pending' );
 
+			// Target WP's list-table search box by its element IDs: Action Scheduler
+			// rewords the label between releases, which silently breaks copy-based locators.
 			await merchantPage
-				.getByLabel( 'Search hook, args and claim' )
+				.locator( '#plugin-search-input' )
 				.fill( actionSchedulerHook );
 
-			await merchantPage
-				.getByRole( 'button', {
-					name: 'Search hook, args and claim ID',
-				} )
-				.click();
+			await merchantPage.locator( '#search-submit' ).click();
 
 			// Find the action row matching our subscription ID in the args column.
 			const actionRow = merchantPage

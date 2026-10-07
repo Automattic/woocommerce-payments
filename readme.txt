@@ -1,12 +1,12 @@
 === WooPayments: Integrated WooCommerce Payments ===
 Contributors: woocommerce, automattic
-Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
+Tags: woocommerce payments, apple pay, credit card, google pay, payment gateway
 Requires at least: 6.0
-Tested up to: 7.0
-Requires PHP: 7.3
-Stable tag: 10.9.0
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tested up to: 7.1
+Requires PHP: 7.4
+Stable tag: 11.1.0
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Securely accept credit and debit cards on your WooCommerce store. Manage payments without leaving your WordPress dashboard. Only with WooPayments.
 
@@ -25,6 +25,10 @@ Features previously only available on your payment provider’s website are now 
 - View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/woopayments/managing-money/).
 - View and respond to [disputes and chargebacks](https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/).
 - [Track payouts](https://woocommerce.com/document/woopayments/payouts/) into your bank account or debit card.
+
+**Sell in person**
+
+Take payments in person with [WooCommerce POS](https://woocommerce.com/woocommerce-pos/), built into the free WooCommerce mobile app. Use Tap to Pay on iPhone or Android, or a card reader, and see in-person and online payments together in your WooPayments dashboard. Read the [in-person payments documentation](https://woocommerce.com/document/woopayments/in-person-payments/) for supported countries and hardware.
 
 **Pay as you go**
 
@@ -58,6 +62,10 @@ If you are an individual or business based in [one of these countries](https://w
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooPayments launch next](https://woocommerce.com/payments/#request-invite).
 
+= Can I take payments in person? =
+
+Yes. WooCommerce POS in the free WooCommerce mobile app takes in-person payments through WooPayments with Tap to Pay or a card reader. Check the [requirements](https://woocommerce.com/document/woo-mobile-app-point-of-sale-mode/#requirements) for availability in your country, then learn more about [WooCommerce POS](https://woocommerce.com/woocommerce-pos/) and [in-person payments](https://woocommerce.com/document/woopayments/in-person-payments/).
+
 = Why is a WordPress.com account and connection required? =
 
 WooPayments uses the WordPress.com connection to securely communicate with our payments server. This is necessary for WooPayments to function correctly, so it's not possible to use WooPayments without connecting. Please see [this document](https://woocommerce.com/document/woopayments/our-policies/connection/) for more information.
@@ -86,6 +94,117 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 11.1.0 - 2026-09-02 =
+* Add - Show which risk filters fired when a payment is blocked or held for review, in the order note and the Fraud & Risk meta box.
+* Add - Surface Stripe Radar early fraud warnings in order notes and the Fraud & Risk order metabox.
+* Add - Surface Stripe Radar early fraud warnings in the transaction timeline.
+* Fix - Add an accessible label to the Multi-Currency switcher so screen readers announce it correctly
+* Fix - Avoid a PHP 8 "Undefined array key" warning when computing the cache TTL for a legacy cache entry stored before the errored field existed.
+* Fix - fix: inline notices rendering with a cut-off left border on WordPress 7.1
+* Fix - Fixed merchant-facing documentation links that landed on the wrong page or section, and relabelled two links to match their new destinations.
+* Fix - Fixed the payment details summary labelling a disputed amount as refunded: the withdrawn balance line now reads "Deducted" whenever a dispute moved the money, including when the dispute fee was zero or reversed.
+* Fix - Linked the payment method fee tooltip to the fee section for the WooPayments account's country rather than the store's base country, which differ for Puerto Rico stores and for any store that changes its base country after onboarding.
+* Fix - Link the "View more details" in a fraud-blocked order note to the specific payment intent that was blocked, so repeated blocks on the same order each point to their own transaction.
+* Fix - Prevent a second charge when payment is resubmitted for an order that has already been paid.
+* Fix - Prevent long refund reasons from interrupting refunds.
+* Fix - Re-run the sofort cleanup on stores where the payment method registry re-enabled it.
+* Fix - Recover onboarding within minutes instead of a week after a transient error, by backing off errored business-types and onboarding-fields cache entries instead of caching the failure for the full week.
+* Fix - Send a WooPayments user agent on ExPlat assignment requests so experiment assignments are not filtered out as bot traffic.
+* Fix - Show the evidence response deadline on the order screen when a charge has a dispute that still needs a response alongside one that is under review or lost.
+* Fix - Stop a closing dispute from marking an order completed when the charge still has another dispute open, or when the payment has already been fully refunded
+* Fix - Stop charging the additional Stripe Billing fee on subscription renewals that are not billed through Stripe Billing
+* Fix - Stop counting test-mode WooPayments usage - a test-drive account or test-mode orders - when determining WooPayments incentives eligibility, so trialing WooPayments no longer disqualifies a store from incentives. Stores already disqualified this way get their eligibility re-determined once.
+* Fix - Stopped the dispute details from naming a fee that was never charged: a zero or reversed dispute fee now drops the fee wording instead of showing a $0.00 amount or a dash.
+* Update - Clarify where the support phone number appears, mark the field as required, and use one plain validation message.
+* Dev - Add a payment method lifecycle reference doc covering Stripe capability state vs. checkout enablement
+* Dev - Bump WP tested up to version to 7.1 and WC tested up to version to 11.1.0
+* Dev - Fix E2E assertions that could not fail: missing awaits, an assertion-free filter test, and swallowed add-payment-method outcomes.
+* Dev - Fix react-hooks/immutability ESLint violations
+* Dev - Fix react-hooks/set-state-in-effect ESLint violations.
+* Dev - Fix the E2E Action Scheduler helper so it finds the Run link on WordPress 7.1.
+* Dev - Make the subscriptions manage-payments E2E test locate the "Change payment" action by its URL contract instead of its ARIA role.
+* Dev - Make the subscriptions renewal E2E test resilient to Action Scheduler search-box copy changes (fixes the 4.1.0 relabel).
+* Dev - Remove skipped tests for the capital loan notice that was removed from the deposits overview.
+* Dev - Run the PHP test suite against WordPress nightly in the compatibility workflow.
+* Dev - Use a named permission callback for the public multi-currency config REST endpoint.
+
+= 11.0.1 - 2026-08-20 =
+* Fix - Fix the currency switcher not rendering on WordPress 7.1 in Storefront breadcrumbs and the wc_get_currency_switcher_markup() template tag.
+
+
+= 11.0.0 - 2026-08-05 =
+* Add - Add A/B/C design variants to the in-app review prompt, assigned per-store via ExPlat (prompt remains disabled pending eligibility criteria)
+* Add - Multi-Currency: add the `wcpay_multi_currency_should_output_explicit_price` filter so merchants can force the currency code suffix on totals (e.g. "765 Kč CZK") on or off.
+* Add - Multi-Currency: auto-detect page caching to enable or recommend the cache-optimized rendering mode
+* Fix - Add direct file access protection to PHP files flagged by Plugin Check.
+* Fix - Attach WooPayments subscription tokens when webhook payment completion runs without checkout AJAX finalization.
+* Fix - Avoid a fatal when a dispute webhook references an unknown charge.
+* Fix - Avoid invalidating multi-currency rate cache for visitor-filtered currencies
+* Fix - Balance report: display amounts using the standard WooPayments currency formatting.
+* Fix - Balance report: export CSV amounts in major units instead of cents.
+* Fix - Balance report: export the Payouts CSV amount with the same negative sign shown on screen.
+* Fix - Display transaction detail timeline dates in the site timezone.
+* Fix - Fix "Create Account" failing with a nonce error on the order confirmation page after paying with a non-card method (e.g. Affirm).
+* Fix - fix: adding scope to checkout style extraction
+* Fix - fix: ensure file purpose cache key value is consistent
+* Fix - fix: ensure order note is recorded for multi-dispute refund
+* Fix - fix: record a dispute updated order note for every dispute on a charge
+* Fix - fix: redact the address autocomplete token from API response logs.
+* Fix - Fix Affirm BNPL name validation checking wrong field path, which caused billing address to be stripped on order-pay pages
+* Fix - Fix changelog formatter PCRE JIT stack exhaustion causing changelogger --amend to wipe all existing entries
+* Fix - Fix doubled spacing between express checkout buttons on the Cart block with WooCommerce 10.8+
+* Fix - Fixed broken payment intent link in test mode order notes.
+* Fix - Fixed Express Checkout (Apple Pay / Google Pay) buttons not appearing on pages that use the [product_page] shortcode with SKU, unquoted, single-quoted, or multi-attribute syntax.
+* Fix - Fixed the one-and-done and test-to-live notice eligibility checks running a slow, unbounded order query that could block admin order pages on large stores.
+* Fix - Fixed the WooPayments settings tabs background.
+* Fix - Fix ExPlat assignment for the in-app review prompt experiment, and stop re-requesting it on every page load
+* Fix - Fix inconsistent card brand SVG styling: add missing rounded corners to Mastercard, correct Discover rendered width from 61px to 64px, and add explicit white background fill to Discover.
+* Fix - Fix PHP 8.5 deprecation notice when selecting a currency before any currency is stored for the user or session
+* Fix - Fix redelivered payment webhooks re-attaching the original checkout card to subscriptions that have since been changed to a different payment method.
+* Fix - Fix REST API routes not being registered for internal REST requests made from admin pages
+* Fix - Fix subscription renewals failing with "Invalid IP address" when cron runs without an HTTP request
+* Fix - Fix the dispute notification "View and respond to dispute" link intermittently landing on an error or broken page by redirecting to the disputes list when the dispute's transaction details cannot be resolved.
+* Fix - Fix WooPay express checkout button showing an infinite spinner on classic variable product pages
+* Fix - Forward structured error details (error code, type, and HTTP status) in the test drive account init REST error response, so consumers can distinguish non-recoverable errors.
+* Fix - Hide optional business structure selection during onboarding
+* Fix - Hide WooPay and Apple Pay / Google Pay express checkout buttons on the product page when the product cannot be added to the cart
+* Fix - Match the Fees report default column order to the design, placing Transaction ID after Order ID
+* Fix - Preserve decimal product quantities when adding to cart via Express Checkout
+* Fix - Preserve the express checkouts a merchant enabled in a sandbox account (such as Link by Stripe) when transitioning to a live account, instead of resetting them, while keeping Link and WooPay mutually exclusive.
+* Fix - Record the correct failure reason and avoid a PHP warning when a refund fails because of insufficient account balance.
+* Fix - Redact data from GET request URL in API log context
+* Fix - Reflect all of a charge's disputes in order notes and the order dispute notice when a charge has more than one, and align the 'Dispute N of M' label on the transaction details page.
+* Fix - Remove giropay and sofort from payment method registry to prevent incompatible block checkout warnings
+* Fix - Reports: keep the page header background white.
+* Fix - Request unrequested payment method capabilities (e.g. BNPL) on settings save when the capability is absent from cached account data
+* Fix - Reuse the React root for the WooPay save-user section on Blocks checkout so its state is no longer reset on cart/checkout updates.
+* Fix - Show all disputes on a transaction that has more than one, instead of only the first
+* Fix - Soften and clarify the VAT registration warning in the tax details modal; link to documentation instead of stating region-specific legal requirements.
+* Fix - Stop a subscription renewal token repair from silently re-pointing the other subscriptions created by the same checkout at the original order's card.
+* Fix - Store the payment intent ID on orders when a payment fails, improving transaction traceability and webhook matching.
+* Fix - update: ECE to allow pay-for-order flow when customer billing email is missing
+* Update - Allow the Reports area to be enabled per account from the server.
+* Update - refactor: make the iti tel input lazy-loaded, so that bundles are more optimized for the majority of scenarios
+* Update - Updated the payment method card brand icons to the latest design-library artwork, with a consistent outline across the settings, checkout, and transactions screens.
+* Dev - Add job to open a release sync PR against develop at code freeze time
+* Dev - Bump eslint-plugin-react-hooks from 4.6.2 to 7.1.1
+* Dev - Fix flaky shopper-multi-currency-widget E2E test by verifying the currency switcher widget is assigned to the sidebar before the test runs
+* Dev - Fix multi-currency widget E2E test timing out on WP nightly by waiting for the block editor canvas to mount before inserting the currency switcher block.
+* Dev - Fix react-hooks/purity, use-memo, and static-components ESLint rule violations (WOOPMNT-6292)
+* Dev - Guard version drift of woocommerce-payments.php, package.json, and package-lock.json between trunk and develop
+* Dev - Look up webhook IDs in WooPay order status sync tests instead of hardcoding them, fixing order-dependent failures in full suite runs
+* Dev - Make the shopper free-trial subscription E2E tests (standard and QIT suites) resilient to WooCommerce Subscriptions price-string copy/layout changes (fixes the 9.0.0 "Free trial: 14 days" rendering).
+* Dev - Pass agent-pipeline workflow inputs through environment variables instead of interpolating them directly into shell steps.
+* Dev - Refactor: extract the admin notice lifecycle into an abstract base plus one concrete class per notice, under includes/admin/attach-rate/.
+* Dev - Remove trunk→develop auto-merge from post-release workflow; add a composite action and weekly scheduled job to detect changelog.txt and readme.txt drift between trunk and develop.
+* Dev - Resolve repeated Database_Cache::get_or_add() calls from memory within a request, skipping redundant validation of hot keys like account data
+* Dev - Restore $_SERVER['REQUEST_URI'] after WC_Payments_Utils tests so leaked wp-json URIs don't send later tests down REST-only WooCommerce code paths
+* Dev - Retry transient QIT E2E environment-provisioning failures (corrupt downloads, network blips) so CI flakes no longer fail the run
+* Dev - Skip express checkout button handler construction on cron and XML-RPC requests, where the handlers' hooks can never fire
+* Dev - Switch the package manager from npm to pnpm.
+* Dev - tweak: added a `should_convert_shipping_amount` filter to MCCY
+* Dev - Update Node support and WooCommerce package dependencies.
 
 = 10.9.0 - 2026-06-24 =
 * Add - Add a Balance reconciliation report to the WooPayments Reports area (behind a feature flag)

@@ -86,8 +86,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
-	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
-	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
@@ -100,6 +98,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
@@ -127,6 +126,19 @@ function _manually_load_plugin() {
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+
+/**
+ * Add WooCommerce roles and capabilities after WordPress installs the test database.
+ */
+function wcpay_install_woocommerce_roles() {
+	WC_Install::create_roles();
+
+	// Reload the role objects after adding capabilities. See WordPress Trac #28374.
+	$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	wp_roles();
+}
+
+tests_add_filter( 'setup_theme', 'wcpay_install_woocommerce_roles' );
 
 // Need those polyfills to run tests in CI.
 require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';

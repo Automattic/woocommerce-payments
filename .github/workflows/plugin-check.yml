@@ -1,0 +1,98 @@
+name: Plugin Check
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    # Required check: don't let a stuck run block PRs.
+    timeout-minutes: 30
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      # Scan what we ship, not the repo.
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      # The folder name becomes the plugin slug.
+      - name: "Unzip the plugin"
+        run: unzip -q "${{ steps.build_plugin.outputs.release-filename }}" -d "$RUNNER_TEMP/plugin-check"
+
+      # Pinned so a new release can't turn this check red on unrelated PRs.
+      - name: "Start WordPress"
+        working-directory: ${{ runner.temp }}/plugin-check
+        run: |
+          echo '{ "core": null, "mappings": { "wp-content/plugins/woocommerce-payments": "./woocommerce-payments" } }' > .wp-env.json
+          npm install -g --no-fund @wordpress/env@11.16.0
+          for attempt in 1 2 3; do wp-env start && break; [ "$attempt" = 3 ] && exit 1; sleep 10; done
+          wp-env run cli wp plugin install woocommerce --activate
+          wp-env run cli wp plugin install plugin-check --version=2.1.0 --activate
+          wp-env run cli wp plugin activate woocommerce-payments
+
+      - name: "Run Plugin Check"
+        working-directory: ${{ runner.temp }}/plugin-check
+        env:
+          # Excluded by path so the rules stay on elsewhere.
+          EXCLUDE_FILES: |
+            # Flagged as an updater; it only adds language packs.
+            src/Internal/PluginManagement/TranslationsLoader.php
+            # Loaded by Composer, so it can't exit without ABSPATH.
+            src/wcpay-get-container.php
+          # Codes that already fire. Each one also hides new hits, so add with care.
+          IGNORE_CODES: |
+            # Escaped where printed; escaping here would double it.
+            WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            # Table names come from code, values use prepare().
+            PluginCheck.Security.DirectDB.UnescapedDBParameter
+            # Custom tables and HPOS lookups.
+            WordPress.DB.DirectDatabaseQuery.DirectQuery
+            WordPress.DB.DirectDatabaseQuery.NoCaching
+            # Public names (renaming breaks callers) and template locals.
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+            WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedInterfaceFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedTraitFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+            # Handlers clean the data further down.
+            WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+            # WooPayments is Woo's own plugin.
+            trademarked_term
+            # The readme title is the listing name.
+            mismatched_plugin_name
+            # The zip ships vendor/ without composer.json.
+            missing_composer_json_file
+            # Full history is in changelog.txt.
+            readme_parser_warnings_trimmed_section_changelog
+        run: |
+          to_list() { grep -v '^\s*#' <<< "$1" | grep . | paste -sd, -; }
+          wp-env run cli wp plugin check woocommerce-payments \
+            --format=strict-json --fields=file,line,type,code,message \
+            --exclude-files="$(to_list "$EXCLUDE_FILES")" \
+            --ignore-codes="$(to_list "$IGNORE_CODES")" \
+            --require=./wp-content/plugins/plugin-check/cli.php > results.txt
+          cat results.txt
+          # The CLI exits 0 even when it finds problems, so fail on any result
+          # (warnings included) ourselves.
+          results=$(sed -n '/^\[/,$p' results.txt)
+          [ -z "$results" ] && exit 0
+          jq -r '.[] | "::\(if .type == "ERROR" then "error" else "warning" end) file=\(.file),line=\(.line)::\(.code): \(.message)"' <<< "$results"
+          [ "$(jq length <<< "$results")" = 0 ]

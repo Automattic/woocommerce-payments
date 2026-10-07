@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Pass agent-pipeline workflow inputs through environment variables instead of interpolating them directly into shell steps.

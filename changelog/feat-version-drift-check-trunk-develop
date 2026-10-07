@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Guard version drift of woocommerce-payments.php, package.json, and package-lock.json between trunk and develop

@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: fix: resolve the remaining WooCommerce.Commenting phpcs hook comment errors (production files added after the #8437 sweep) and remove the now-unneeded CommentHooks excludes from phpcs.xml.dist (not user-facing).
-
-
