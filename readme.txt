@@ -126,6 +126,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 * Fix - Show complete dispute counts, currency totals, and response deadlines in the Payments Overview task.
 * Fix - Skip the intention retrieval for completed orders if known intent status is final.
 * Fix - Stop Multi-Currency from overriding the currency selected by a third-party currency switcher while it has nothing to switch, and keep the module inert when the feature is disabled
+* Fix - Stop Multi-Currency from recording an exchange rate on orders placed in a third-party currency switcher's currency, which made Analytics convert those orders twice
 * Fix - Tell the customer when a new default payment method fails to save on the server, instead of failing the request.
 * Fix - Tighten validation of the checkout payment-authentication request.
 * Fix - Use server-side prices once the WooCommerce session exists, even when Multi-Currency was initialized before it in cache-optimized mode. In that mode, a repeated Multi-Currency initialization now re-registers the server-side price and currency hooks.
