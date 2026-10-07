@@ -95,6 +95,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 11.2.0-test-2 - unreleased =
+
+
 = 11.2.0 - 2026-10-07 =
 * Add - Add support for Onelink in Great Britain
 * Add - Flag payments with an active early fraud warning in the Payments Transactions list
