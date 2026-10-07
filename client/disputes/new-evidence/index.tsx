@@ -159,6 +159,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
+				const fetchedBankName = d.charge
+					? getBankName( d.charge )
+					: null;
 				const isFetchedDisputeVisaCompliance =
 					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
@@ -258,7 +261,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							disputeWithCurrentEvidence,
 							getBusinessDetails(),
 							settings,
-							bankName,
+							fetchedBankName,
 							refundStatus,
 							duplicateStatus,
 							suggestedProductType
@@ -280,7 +283,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						d,
 						getBusinessDetails(),
 						settings,
-						bankName,
+						fetchedBankName,
 						refundStatus,
 						duplicateStatus,
 						suggestedProductType
@@ -295,11 +298,11 @@ export default ( { query }: { query: { id: string } } ) => {
 			}
 		};
 		fetchDispute();
-		// We intentionally exclude duplicateStatus and refundStatus from dependencies to prevent
-		// re-fetching dispute data when status changes (which would reset the product type selection).
-		// Cover letter regeneration on status changes is handled by the evidence update effect.
+		// Load once per dispute: each run resets the form to the saved evidence, so re-running when
+		// settings or the status selections change would wipe what the merchant has typed. The
+		// evidence update effect regenerates the cover letter when those values change.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path, createErrorNotice, settings, bankName ] );
+	}, [ path ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
