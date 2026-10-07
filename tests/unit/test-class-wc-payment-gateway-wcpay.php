@@ -4857,6 +4857,42 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_form_fields_ask_for_no_translations() {
+		$requested_domains = [];
+		$spy               = function ( $translation, $text, $domain ) use ( &$requested_domains ) {
+			$requested_domains[] = $domain;
+			return $translation;
+		};
+		add_filter( 'gettext', $spy, 10, 3 );
+
+		$this->card_gateway->get_form_fields();
+
+		remove_filter( 'gettext', $spy, 10 );
+		$this->assertNotContains( 'woocommerce-payments', $requested_domains );
+	}
+
+	public function test_woopay_custom_message_default_is_translated_on_read() {
+		$translate = function ( $translation, $text, $domain ) {
+			if ( 'woocommerce-payments' === $domain && 'By placing this order, you agree to our [terms] and understand our [privacy_policy].' === $text ) {
+				return 'Al realizar este pedido, aceptas nuestros [terms] y entiendes nuestra [privacy_policy].';
+			}
+			return $translation;
+		};
+		add_filter( 'gettext', $translate, 10, 3 );
+
+		$message = $this->card_gateway->get_option( 'platform_checkout_custom_message' );
+
+		remove_filter( 'gettext', $translate, 10 );
+		$this->assertSame( 'Al realizar este pedido, aceptas nuestros [terms] y entiendes nuestra [privacy_policy].', $message );
+	}
+
+	public function test_woopay_custom_message_is_returned_as_saved_when_changed() {
+		$custom_message = 'Read our [terms].';
+		$this->card_gateway->update_option( 'platform_checkout_custom_message', $custom_message );
+
+		$this->assertSame( 'Read our [terms].', $this->card_gateway->get_option( 'platform_checkout_custom_message' ) );
+	}
+
 	public function test_is_woopay_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->card_gateway->update_option( 'platform_checkout', 'yes' );
