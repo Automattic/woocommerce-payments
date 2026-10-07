@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix Points & Rewards balances and card-testing checks on the WooPay signed fallback path, which has not been released yet.
+
+

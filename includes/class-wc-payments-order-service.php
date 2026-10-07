@@ -384,6 +384,8 @@ class WC_Payments_Order_Service {
 	 * required (it excludes completed test-mode orders), so live orders created before that
 	 * meta existed aren't detected.
 	 *
+	 * @deprecated 11.3.0 Its only callers were the retired activation notice and reminder emails.
+	 *
 	 * @return bool
 	 */
 	public function has_live_sale(): bool {

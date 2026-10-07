@@ -52,10 +52,6 @@ module.exports = {
 			success: './client/success/index.js',
 			'wc-payments-settings-spotlight':
 				'./client/wc-payments-settings-spotlight.js',
-			'wc-payments-test-to-live-notice':
-				'./client/entrypoints/attach-rate/test-to-live-notice/index.tsx',
-			'wc-payments-post-kyc-activation-notice':
-				'./client/entrypoints/attach-rate/post-kyc-activation-notice/index.tsx',
 			'wc-payments-one-and-done-notice':
 				'./client/entrypoints/attach-rate/one-and-done-notice/index.tsx',
 		},
