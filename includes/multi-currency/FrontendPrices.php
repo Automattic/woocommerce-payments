@@ -368,10 +368,16 @@ class FrontendPrices {
 			return;
 		}
 
-		// Multi-Currency can only have converted the order into a currency it has enabled. Any other
-		// currency comes from a third-party switcher, and a rate recorded for it would make Analytics
-		// convert the order on top of the switcher's own conversion.
-		if ( ! isset( $this->multi_currency->get_enabled_currencies()[ $order->get_currency() ] ) ) {
+		// A third-party currency switcher sets the order currency through the `woocommerce_currency`
+		// filter, in a currency Multi-Currency has not enabled. Multi-Currency did not convert that
+		// order, and a rate recorded for it would make Analytics convert the order on top of the
+		// switcher's own conversion. Orders given an explicit currency, such as through the REST API,
+		// are left as they were.
+		$order_currency = $order->get_currency();
+		if (
+			! isset( $this->multi_currency->get_enabled_currencies()[ $order_currency ] )
+			&& get_woocommerce_currency() === $order_currency
+		) {
 			return;
 		}
 
