@@ -3757,7 +3757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$error_code = $e->get_error_code() ?? null;
-		$error_type = $e->get_error_type() ?? null;
+		$error_type = $e->get_error_type();
 
 		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
 
