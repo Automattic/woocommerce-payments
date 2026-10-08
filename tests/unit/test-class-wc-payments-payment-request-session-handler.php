@@ -74,7 +74,8 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 	private function __create_fake_session_cookie( $customer_id ) {
 		$session_expiration = time() + HOUR_IN_SECONDS;
 
-		$to_hash     = $customer_id . $this->cookies_separator . $session_expiration;
+		// WooCommerce hashes with a single `|` in every version, even when the cookie separator is `||`.
+		$to_hash     = $customer_id . '|' . $session_expiration;
 		$cookie_hash = hash_hmac( 'md5', $to_hash, wp_hash( $to_hash ) );
 
 		$_COOKIE[ 'wp_woocommerce_session_' . COOKIEHASH ] = implode(
