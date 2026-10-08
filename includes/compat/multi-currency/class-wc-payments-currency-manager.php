@@ -144,7 +144,9 @@ class WC_Payments_Currency_Manager {
 	/**
 	 * Adds the `multiCurrencyPaymentMethodsMap` JS object to the multi-currency settings page.
 	 *
-	 * This object maps currencies to payment methods that require them, so the multi-currency settings page displays a notice in case of dependencies.
+	 * Maps each enabled payment method to its title and supported currencies, so the
+	 * currency removal dialog can tell which methods would lose checkout availability
+	 * versus which keep working in other enabled currencies.
 	 */
 	public function add_payment_method_currency_dependencies_script() {
 		$multi_currency = $this->get_multi_currency_instance();
@@ -158,19 +160,9 @@ class WC_Payments_Currency_Manager {
 			return;
 		}
 
-		$currency_methods_map = [];
-		foreach ( $payment_methods_needing_currency as $method => $data ) {
-			foreach ( $data['currencies'] as $currency ) {
-				if ( ! isset( $currency_methods_map[ $currency ] ) ) {
-					$currency_methods_map[ $currency ] = [];
-				}
-				$currency_methods_map[ $currency ][ $method ] = $data['title'];
-			}
-		}
-
 		?>
 			<script type='text/javascript'>
-				window.multiCurrencyPaymentMethodsMap = <?php echo wp_json_encode( $currency_methods_map ); ?>;
+				window.multiCurrencyPaymentMethodsMap = <?php echo wp_json_encode( $payment_methods_needing_currency ); ?>;
 			</script>
 		<?php
 	}
