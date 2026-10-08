@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Include JavaScript strings in the translation template when the plugin is built more than once.

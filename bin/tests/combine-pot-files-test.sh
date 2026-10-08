@@ -108,5 +108,16 @@ assert_eq "$EXIT" "1" "missing chunk-to-entry map exits with 1"
 assert_eq "$(echo "$OUT" | grep -c "Unable to load 'dist/i18n-chunk-entries.json'")" "1" "missing chunk-to-entry map explains the failure"
 rm -rf "$DIR"
 
+# Test: a missing client POT fails the build
+DIR=$(make_fixture)
+rm "$DIR/languages/woocommerce-payments-client.pot"
+set +e
+OUT=$(run_combine "$DIR")
+EXIT=$?
+set -e
+assert_eq "$EXIT" "1" "missing client POT exits with 1"
+assert_eq "$(echo "$OUT" | grep -c "File not found: languages/woocommerce-payments-client.pot")" "1" "missing client POT explains the failure"
+rm -rf "$DIR"
+
 echo "# passed $PASS/$((PASS + FAIL))"
 [ "$FAIL" -eq 0 ]
