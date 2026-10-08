@@ -77,6 +77,17 @@ const ExpressCheckoutContainer = ( props ) => {
 		[ hasButtonAttributes, buttonBorderRadius ]
 	);
 
+	// Lets extensions change the amount (e.g. trial subscriptions with a $0
+	// initial payment). Kept out of the memo so it fires on every render, since
+	// callbacks may read state the memo's dependencies don't track.
+	const amount = applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice( billing.cartTotal.value, {
+			currency_minor_unit: billing.currency.minorUnit ?? 0,
+		} ),
+		cartData
+	);
+
 	const options = useMemo(
 		() => ( {
 			mode: 'payment',
@@ -89,14 +100,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			...( useConfirmationToken
 				? { setupFutureUsage: resolveSetupFutureUsage( cartData ) }
 				: {} ),
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice( billing.cartTotal.value, {
-					currency_minor_unit: billing.currency.minorUnit ?? 0,
-				} ),
-				cartData
-			),
+			amount,
 			currency: rememberElementCurrency( elementCurrency ),
 			appearance,
 			locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
@@ -106,8 +110,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			isManualCaptureEnabled,
 			paymentMethodTypes,
 			cartData,
-			billing.cartTotal.value,
-			billing.currency.minorUnit,
+			amount,
 			elementCurrency,
 			appearance,
 		]
