@@ -38,12 +38,10 @@ describe( 'getUpdateBusinessDetailsTask', () => {
 		task.action();
 		task.action();
 
-		const container = document.querySelector(
-			'#wcpay-update-business-details-container'
-		);
+		const [ container ] = mockCreateRoot.mock.calls[ 0 ];
 
 		expect( mockCreateRoot ).toHaveBeenCalledTimes( 1 );
-		expect( mockCreateRoot ).toHaveBeenCalledWith( container );
+		expect( container.parentNode ).toBe( document.body );
 		expect( mockRootRender ).toHaveBeenCalledTimes( 2 );
 		expect( mockRootRender.mock.calls[ 0 ] ).toHaveLength( 1 );
 		expect( mockRootRender.mock.calls[ 1 ] ).toHaveLength( 1 );

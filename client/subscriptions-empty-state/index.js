@@ -2,9 +2,8 @@
  * External dependencies
  */
 import React from 'react';
-import { createRoot } from 'react-dom/client';
 import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement, useState } from '@wordpress/element';
+import { createInterpolateElement, render, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 
 import { recordEvent } from '../tracks';
@@ -114,7 +113,6 @@ if ( emptyStateContainer ) {
 	} );
 
 	if ( ! isConnected ) {
-		const root = createRoot( emptyStateContainer );
-		root.render( <EmptyState /> );
+		render( <EmptyState />, emptyStateContainer );
 	}
 }

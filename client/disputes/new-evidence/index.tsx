@@ -137,9 +137,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
 
 	// Refs for heading elements to focus on step navigation
-	const stepHeadingRefs = useRef< {
-		[ key: number ]: HTMLHeadingElement | null;
-	} >( {} );
+	const stepHeadingRef = useRef< HTMLHeadingElement >( null );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
 	const getDisputeTracksProperties = () => ( {
@@ -771,10 +769,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		// Use setTimeout to ensure the DOM has updated with the new step content
 		const timeoutId = setTimeout( () => {
-			const headingRef = stepHeadingRefs.current[ currentStep ];
-			if ( headingRef ) {
-				headingRef.focus();
-			}
+			stepHeadingRef.current?.focus();
 		}, 100 );
 
 		return () => clearTimeout( timeoutId );
@@ -1154,9 +1149,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => {
-							stepHeadingRefs.current[ 0 ] = el;
-						} }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 0 ].heading }
@@ -1205,9 +1198,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => {
-							stepHeadingRefs.current[ 1 ] = el;
-						} }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 1 ].heading }
@@ -1245,9 +1236,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => {
-							stepHeadingRefs.current[ reviewStep ] = el;
-						} }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 2 ].heading }
