@@ -7,7 +7,6 @@ import { ApiError } from '../../types/errors';
 import { PaymentIntent } from '../../types/payment-intents';
 import { State } from '../types';
 
-// Shared fallbacks so `useSelect` gets a stable reference while nothing is loaded.
 const emptyPaymentIntent = {} as PaymentIntent;
 const emptyError = {} as ApiError;
 

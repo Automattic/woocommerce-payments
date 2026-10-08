@@ -6,7 +6,6 @@
 import { PmPromotionsState, PmPromotionsData } from './types';
 import { ApiError } from '../../types/errors';
 
-// Shared fallback so `useSelect` gets a stable reference while nothing is loaded.
 const emptyPromotions: PmPromotionsData = [];
 
 // Type for the full Redux state with pmPromotions slice.

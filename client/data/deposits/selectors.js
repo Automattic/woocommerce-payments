@@ -5,8 +5,6 @@
  */
 import { getResourceId } from 'utils/data';
 
-// Selectors must return the same reference for the same state, or every
-// `useSelect` caller re-renders on each store update.
 const EMPTY_OBJECT = {};
 const EMPTY_ARRAY = [];
 const EMPTY_OVERVIEWS = { account: null, currencies: EMPTY_ARRAY };

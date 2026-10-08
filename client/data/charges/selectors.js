@@ -1,6 +1,5 @@
 /** @format */
 
-// Shared fallback so `useSelect` gets a stable reference while nothing is loaded.
 const EMPTY_OBJECT = {};
 
 export const getCharge = ( state, id ) => {
