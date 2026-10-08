@@ -3,7 +3,7 @@
  */
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 /**
  * Internal dependencies
  */
@@ -55,53 +55,38 @@ const ExpressCheckoutComponent = ( {
 		setExpressPaymentError,
 		paymentMethodTypes,
 	} );
-	const onShippingAddressChange = useCallback(
-		( event ) =>
-			shippingAddressChangeHandler(
-				event,
-				elements,
-				setExpressPaymentError
-			),
-		[ elements, setExpressPaymentError ]
-	);
+	const onShippingAddressChange = ( event ) =>
+		shippingAddressChangeHandler( event, elements, setExpressPaymentError );
 
-	const onShippingRateChange = useCallback(
-		( event ) =>
-			shippingRateChangeHandler(
-				event,
-				elements,
-				select( WC_STORE_CART )?.getCartData(),
-				setExpressPaymentError
-			),
-		[ elements, setExpressPaymentError ]
-	);
+	const onShippingRateChange = ( event ) =>
+		shippingRateChangeHandler(
+			event,
+			elements,
+			select( WC_STORE_CART )?.getCartData(),
+			setExpressPaymentError
+		);
 
-	const onElementsReady = useCallback(
-		( event ) => {
-			const paymentMethodContainer = document.getElementById(
-				`express-payment-method-${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ expressPaymentMethod }`
-			);
+	const onElementsReady = ( event ) => {
+		const paymentMethodContainer = document.getElementById(
+			`express-payment-method-${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ expressPaymentMethod }`
+		);
 
-			const availablePaymentMethods = event.availablePaymentMethods || {};
+		const availablePaymentMethods = event.availablePaymentMethods || {};
 
-			if (
-				paymentMethodContainer &&
-				! availablePaymentMethods[ expressPaymentMethod ]
-			) {
-				paymentMethodContainer.remove();
-			}
+		if (
+			paymentMethodContainer &&
+			! availablePaymentMethods[ expressPaymentMethod ]
+		) {
+			paymentMethodContainer.remove();
+		}
 
-			// Any actions that WooPayments needs to perform.
-			onReady( event );
-		},
-		[ expressPaymentMethod, onReady ]
-	);
+		// Any actions that WooPayments needs to perform.
+		onReady( event );
+	};
 
 	// The Cart & Checkout blocks provide unified styles across all buttons,
-	// which should override the extension specific settings. Keyed on the button
-	// height primitive (not the fresh `buttonAttributes` object) so the options
-	// keep a stable reference and only rebuild when the styling or the express
-	// method actually changes.
+	// which should override the extension specific settings. Blocks passes a
+	// new `buttonAttributes` object on every render, so key on its height.
 	const hasButtonAttributes = typeof buttonAttributes !== 'undefined';
 	const buttonHeight = buttonAttributes?.height;
 	const checkoutElementOptions = useMemo( () => {

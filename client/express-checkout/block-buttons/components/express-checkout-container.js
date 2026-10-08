@@ -63,9 +63,8 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const elementCurrency = billing.currency.code.toLowerCase();
 
-	// `buttonAttributes` arrives as a fresh object on every render; key the
-	// appearance on the one primitive it actually reads so its reference stays
-	// stable across renders that don't touch the button styling.
+	// Blocks passes a new `buttonAttributes` object on every render, so key on
+	// the border radius to keep `options` from rebuilding.
 	const hasButtonAttributes = typeof buttonAttributes !== 'undefined';
 	const buttonBorderRadius = buttonAttributes?.borderRadius;
 	const appearance = useMemo(
@@ -78,10 +77,6 @@ const ExpressCheckoutContainer = ( props ) => {
 		[ hasButtonAttributes, buttonBorderRadius ]
 	);
 
-	// Blocks re-renders this component on every cart tick with fresh prop refs.
-	// Memoise the options on the primitives Stripe actually consumes so a render
-	// that changes nothing relevant reuses the same options reference (and skips
-	// re-deriving the amount/setup-future-usage/appearance each time).
 	const options = useMemo(
 		() => ( {
 			mode: 'payment',

@@ -100,9 +100,8 @@ describe( 'ExpressCheckoutContainer', () => {
 		);
 		const firstOptions = mockElementsProps.options;
 
-		// A cart tick hands Blocks fresh `billing` and `buttonAttributes` objects
-		// with the same values. Keying the memo on the primitives Stripe consumes
-		// must keep the options reference stable across such a re-render.
+		// Blocks passes new `billing` and `buttonAttributes` objects on every
+		// render, even when their values don't change.
 		rerender(
 			<ExpressCheckoutContainer
 				{ ...props }

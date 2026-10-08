@@ -47,15 +47,15 @@ export const useExpressCheckout = ( {
 		[]
 	);
 
-	const onCancel = useCallback( () => {
+	const onCancel = () => {
 		onCancelHandler();
 		onClose();
-	}, [ onClose ] );
+	};
 
-	const completePayment = useCallback( ( redirectUrl ) => {
+	const completePayment = ( redirectUrl ) => {
 		onCompletePaymentHandler();
 		window.location = redirectUrl;
-	}, [] );
+	};
 
 	const abortPayment = useCallback(
 		( message ) => {
@@ -154,32 +154,22 @@ export const useExpressCheckout = ( {
 		]
 	);
 
-	const onConfirm = useCallback(
-		async ( event ) => {
-			onConfirmHandler(
-				api,
-				stripe,
-				elements,
-				completePayment,
-				abortPayment,
-				{
-					...event,
-					order_comments: wp?.data
-						?.select( 'wc/store/checkout' )
-						?.getOrderNotes(),
-				},
-				paymentMethodTypes
-			);
-		},
-		[
+	const onConfirm = async ( event ) => {
+		onConfirmHandler(
 			api,
 			stripe,
 			elements,
 			completePayment,
 			abortPayment,
-			paymentMethodTypes,
-		]
-	);
+			{
+				...event,
+				order_comments: wp?.data
+					?.select( 'wc/store/checkout' )
+					?.getOrderNotes(),
+			},
+			paymentMethodTypes
+		);
+	};
 
 	return {
 		buttonOptions,
