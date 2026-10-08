@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WooPay checkout appearance not applying on classic themes (e.g. Storefront)
