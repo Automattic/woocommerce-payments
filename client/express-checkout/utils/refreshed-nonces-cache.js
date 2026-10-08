@@ -8,12 +8,13 @@ import { isNil, omitBy } from 'lodash';
 // Kept at module level because the retry can go through a different cart API instance.
 let refreshedNonces = {};
 
+// Returns whether the headers carried refreshed nonces.
 export const rememberRefreshedNonces = ( headers ) => {
 	const tokenizedCartNonce = headers?.get(
 		'X-WooPayments-Tokenized-Cart-Nonce'
 	);
 	if ( ! tokenizedCartNonce ) {
-		return;
+		return false;
 	}
 
 	refreshedNonces = omitBy(
@@ -26,6 +27,8 @@ export const rememberRefreshedNonces = ( headers ) => {
 		},
 		isNil
 	);
+
+	return true;
 };
 
 export const getRefreshedNonces = () => refreshedNonces;

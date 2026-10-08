@@ -21,6 +21,14 @@ import {
 	getQuantity,
 } from 'wcpay/utils/wc-product-page-selectors';
 
+// The WooCommerce Blocks nonce middleware, when loaded, overwrites the `Nonce` header of every Store API request
+// with the value it stores. It has to learn about the refreshed one too, or the retry still sends the stale nonce.
+const handleRefreshedNonces = ( headers ) => {
+	if ( rememberRefreshedNonces( headers ) ) {
+		apiFetch.setNonce?.( headers );
+	}
+};
+
 export default class ExpressCheckoutCartApi {
 	// Used on product pages to interact with an anonymous cart.
 	// This anonymous cart is separate from the customer's cart, which might contain additional products.
@@ -78,7 +86,7 @@ export default class ExpressCheckoutCartApi {
 			),
 		} ).catch( ( error ) => {
 			// With `parse: false`, error responses are thrown as they are, and they can carry refreshed nonces too.
-			rememberRefreshedNonces( error?.headers );
+			handleRefreshedNonces( error?.headers );
 			const nonce = error?.headers?.get( 'Nonce' );
 			if ( nonce ) {
 				this.cartRequestHeaders = {
@@ -89,7 +97,7 @@ export default class ExpressCheckoutCartApi {
 			throw error;
 		} );
 
-		rememberRefreshedNonces( response.headers );
+		handleRefreshedNonces( response.headers );
 
 		// Only carry forward response headers we actually received. Reading
 		// an absent header returns `null`, and assigning that null over the

@@ -22,8 +22,7 @@ describe( 'refreshed-nonces-cache', () => {
 			'session'
 		);
 
-		rememberRefreshedNonces( headers );
-
+		expect( rememberRefreshedNonces( headers ) ).toBe( true );
 		expect( getRefreshedNonces() ).toEqual( {
 			store_api_nonce: 'store-api',
 			tokenized_cart_nonce: 'tokenized',
@@ -35,8 +34,7 @@ describe( 'refreshed-nonces-cache', () => {
 		const headers = new Headers();
 		headers.append( 'Nonce', 'store-api' );
 
-		rememberRefreshedNonces( headers );
-
+		expect( rememberRefreshedNonces( headers ) ).toBe( false );
 		expect( getRefreshedNonces() ).toEqual( {} );
 	} );
 

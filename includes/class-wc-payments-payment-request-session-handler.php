@@ -170,8 +170,8 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * @param int $old_session_key session ID before user logs in.
 	 */
 	public function save_data( $old_session_key = 0 ) {
-		// No token session yet: the parent is moving a guest session to a user who just logged in.
-		// That's the shopper's regular cart, so it belongs under their user ID, not under a token session.
+		// Before the token session loads, the parent can only be saving the cookie's session,
+		// e.g. moving a guest's regular cart to the user who just logged in. Keep it under the cookie's customer ID.
 		if ( null === $this->session_id ) {
 			parent::save_data( $old_session_key );
 			return;

@@ -306,9 +306,13 @@ describe( 'ExpressCheckoutCartApi', () => {
 		);
 		apiFetch.mockRejectedValueOnce( { headers } );
 
+		apiFetch.setNonce = jest.fn();
+
 		await expect(
 			new ExpressCheckoutCartApi().placeOrder( {} )
 		).rejects.toEqual( { headers } );
+
+		expect( apiFetch.setNonce ).toHaveBeenCalledWith( headers );
 
 		apiFetch.mockResolvedValue( {
 			headers: new Headers(),
