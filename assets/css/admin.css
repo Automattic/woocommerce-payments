@@ -79,9 +79,13 @@
 }
 
 .payment-method__brand--cartes_bancaires,
-.payment-method__brand--eftpos_au {
+.payment-method__brand--eftpos_au,
+.payment-method__brand--discover,
+.payment-method__brand--diners {
+	/* These brands opt out of the chip ring (their art carries its own frame),
+	   and `contain` keeps that frame intact in off-ratio boxes where `cover`
+	   would crop its edges (e.g. the 28×17 payment-details box). */
 	background-size: contain;
-	/* These brands opt out of the chip ring (their art carries its own frame). */
 	box-shadow: none;
 }
 
