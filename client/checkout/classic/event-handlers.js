@@ -20,6 +20,7 @@ import {
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
+	trackMountInProgress,
 	blockUI,
 	unblockUI,
 } from './payment-processing';
@@ -412,11 +413,15 @@ jQuery( function ( $ ) {
 		}
 	}
 
-	async function maybeMountStripePaymentElement( elementsLocation ) {
+	function maybeMountStripePaymentElement( elementsLocation ) {
 		const $upeForms = $( '.wcpay-upe-form' );
 		const $upeElements = $upeForms.find( '.wcpay-upe-element' );
 
-		if ( $upeElements.length && ! $upeElements.children().length ) {
+		if ( ! ( $upeElements.length && ! $upeElements.children().length ) ) {
+			return Promise.resolve();
+		}
+
+		const mountPromise = ( async () => {
 			for ( const upeElement of $upeElements.toArray() ) {
 				await mountStripePaymentElement(
 					api,
@@ -425,7 +430,13 @@ jQuery( function ( $ ) {
 				);
 				restrictPaymentMethodToLocation( upeElement );
 			}
-		}
+		} )();
+
+		// Register the (re)mount synchronously so a submission landing during
+		// an `updated_checkout` re-render waits for the fresh element.
+		trackMountInProgress( mountPromise );
+
+		return mountPromise;
 	}
 
 	function restrictPaymentMethodToLocation( upeElement ) {
