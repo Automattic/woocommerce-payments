@@ -2580,6 +2580,19 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					]
 				),
 			],
+			'Failed charge, intent out of sync'   => [
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => uniqid( 'pi_' ),
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [
+							'status'   => 'failed',
+							'id'       => uniqid( 'ch_' ),
+							'captured' => false,
+						],
+					]
+				),
+			],
 		];
 	}
 
@@ -4122,7 +4135,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' );
 
 		if ( $expected_exception ) {
-			$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0, null, null, null, null, true );
+			$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0 );
 			$this->expectException( $expected_exception );
 		} else {
 			$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );

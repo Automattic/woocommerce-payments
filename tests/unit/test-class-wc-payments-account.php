@@ -3370,6 +3370,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 * Test get_cached_account_data when we have already cached the "no account connected" response.
 	 */
 	public function test_get_cached_account_data_when_no_account_connected_and_result_cached() {
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
 		// Setup the cache with expired account information.
 		$this->cache_account_details( [] );
 
