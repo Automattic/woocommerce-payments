@@ -1136,7 +1136,15 @@ class MultiCurrency {
 			return;
 		}
 
-		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$order_exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+
+		// Without the order rate, Multi-Currency did not convert the order, so neither the order nor the
+		// refund is a Multi-Currency order. Copying empty values would still make Analytics treat the
+		// refund as one and convert it with the Stripe rate, while the order stays unconverted.
+		if ( ! $order_exchange_rate ) {
+			return;
+		}
+
 		$stripe_exchange_rate   = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
 		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
 
@@ -1519,6 +1527,7 @@ class MultiCurrency {
 			$this->get_file_version( $script_file ),
 			true
 		);
+		wp_set_script_translations( $handler, 'woocommerce-payments' );
 	}
 
 	/**

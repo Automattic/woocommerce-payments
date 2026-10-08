@@ -112,6 +112,10 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ] );
 
+		// Here rather than after each assertion, so a failing test cannot leave every later
+		// one authenticated by a signature.
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
 		WC_Payments::set_database_cache( new WCPay\Database_Cache() );
 
 		parent::tear_down();
@@ -1044,6 +1048,48 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// flow this route exists to serve.
 		$this->assertSame( $shopper->user_email, $request['email'] );
 		$this->assertNotEmpty( $request['adapted_extensions'] );
+	}
+
+	public function test_rest_route_returns_extension_data_for_the_email_a_signed_request_names() {
+		$this->set_forced_signed_requests();
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		// What WooPay sends a store the platform keeps on the signed path: a signed GET
+		// naming the shopper in the query string, with no envelope.
+		$woopay_request = $this->attested_request();
+		$_GET['email']  = $shopper->user_email;
+
+		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
+
+		// The signature is WooPay naming the address, as the envelope is on the unsigned
+		// path, so the shopper's balance and the nonce that unlocks it both come back.
+		$this->assertSame( $shopper->user_email, $request['email'] );
+		$this->assertArrayHasKey( 'adapted_extensions', $request );
+		$this->assertNotEmpty( $request['adapted_extensions'] );
+		$this->assertArrayHasKey( 'email_verified_session_nonce', $request );
+
+		unset( $_GET['email'] );
+	}
+
+	public function test_rest_route_withholds_extension_data_for_a_signature_off_the_signed_path() {
+		$this->set_forced_signed_requests( false );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$shopper = $this->setup_shopper_with_adapted_extension_balance();
+
+		$woopay_request = $this->attested_request();
+		$_GET['email']  = $shopper->user_email;
+
+		$request = WooPay_Session::get_init_session_request( null, null, null, $woopay_request );
+
+		// A store the platform moved off the signed path refuses a signature however well
+		// formed, so it names nobody, and the plain parameter is all that is left.
+		$this->assertArrayNotHasKey( 'adapted_extensions', $request );
+		$this->assertArrayNotHasKey( 'email_verified_session_nonce', $request );
+
+		unset( $_GET['email'] );
 	}
 
 	/**

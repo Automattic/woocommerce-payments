@@ -1,9 +1,9 @@
 === WooPayments: Integrated WooCommerce Payments ===
 Contributors: woocommerce, automattic
-Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
+Tags: woocommerce payments, apple pay, credit card, google pay, payment gateway
 Requires at least: 6.0
 Tested up to: 7.1
-Requires PHP: 7.3
+Requires PHP: 7.4
 Stable tag: 11.2.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -95,13 +95,14 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 11.2.0 - 2026-10-07 =
+= 11.2.0 - 2026-10-08 =
 * Add - Add support for Onelink in Great Britain
 * Add - Flag payments with an active early fraud warning in the Payments Transactions list
 * Add - Show Klarna's stated reason for a lost dispute on the transaction's dispute details and timeline.
 * Fix - Avoid deadlock when both Stripe Link and WooPay are enabled by keeping both checkboxes editable until one is turned off.
 * Fix - Decode currency and onboarding URL entities consistently across supported PHP versions.
 * Fix - Exclude failed and canceled refunds from transaction totals and refund status calculations.
+* Fix - fix: account tests failing with WP nightly
 * Fix - fix: check the order key before adding order details to the pay-for-order checkout config
 * Fix - fix: check the order key before preparing pay-for-order customer data
 * Fix - Fixed the test mode notice on payment, payout and dispute details pages, which wrongly said a live record was created in test mode.
@@ -123,9 +124,11 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 * Fix - Restore spacing in the dispute readiness checklist.
 * Fix - Retry subscription renewals that carry a deleted Stripe customer with the shopper's current customer, instead of creating an empty one.
 * Fix - Return a 400 instead of a fatal error when the fraud outcome transactions REST routes are called without a status.
+* Fix - Send shopper Tracks events from the browser on stores with WooPay disabled.
 * Fix - Show complete dispute counts, currency totals, and response deadlines in the Payments Overview task.
 * Fix - Skip the intention retrieval for completed orders if known intent status is final.
 * Fix - Stop Multi-Currency from overriding the currency selected by a third-party currency switcher while it has nothing to switch, and keep the module inert when the feature is disabled
+* Fix - Stop Multi-Currency from recording an exchange rate on orders placed in a third-party currency switcher's currency, which made Analytics convert those orders twice
 * Fix - Tell the customer when a new default payment method fails to save on the server, instead of failing the request.
 * Fix - Tighten validation of the checkout payment-authentication request.
 * Fix - Use server-side prices once the WooCommerce session exists, even when Multi-Currency was initialized before it in cache-optimized mode. In that mode, a repeated Multi-Currency initialization now re-registers the server-side price and currency hooks.

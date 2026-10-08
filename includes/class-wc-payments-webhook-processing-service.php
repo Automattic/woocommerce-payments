@@ -890,14 +890,22 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
+		$previous_warning = $this->order_service->get_early_fraud_warning_for_order( $order );
+
 		// An update to a warning the store never received (e.g. its creation was skipped
 		// because the charge was already disputed) would only add a confusing "resolved"
 		// note for a warning the merchant never saw — ignore it.
-		if ( 'radar.early_fraud_warning.updated' === $event_type && null === $this->order_service->get_early_fraud_warning_for_order( $order ) ) {
+		if ( 'radar.early_fraud_warning.updated' === $event_type && null === $previous_warning ) {
 			return;
 		}
 
 		$this->order_service->mark_payment_early_fraud_warning( $order, $charge_id, $efw_id, (bool) $actionable, (string) $fraud_type, (int) $created );
+
+		// The actionable flag is the only field the cached warning list is built from, so an
+		// update that leaves it alone does not need to force a rebuild of that list.
+		if ( ( $previous_warning['efw_actionable'] ?? null ) !== (bool) $actionable ) {
+			$this->database_cache->delete_early_fraud_warning_caches();
+		}
 	}
 
 	/**

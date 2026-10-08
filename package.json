@@ -40,7 +40,7 @@
 		"test:e2e-ci": "pnpm exec playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo",
 		"test:e2e-ui": "./tests/e2e/test-e2e-ui.sh",
 		"test:e2e-performance": "./tests/e2e/test-e2e-performance.sh",
-		"test:e2e-update-snapshots": "pnpm run test:e2e -- --update-snapshots",
+		"test:e2e-update-snapshots": "pnpm run test:e2e --update-snapshots",
 		"test:update-snapshots": "pnpm run test:js -- --updateSnapshot",
 		"test:php": "./bin/run-tests.sh",
 		"test:php-coverage": "./bin/check-test-coverage.sh",
@@ -110,8 +110,7 @@
 		"canvas-confetti": "1.9.4",
 		"decimal.js-light": "2.5.1",
 		"intl-tel-input": "17.0.15",
-		"lodash": "4.18.1",
-		"react-day-picker": "10.0.1"
+		"lodash": "4.18.1"
 	},
 	"devDependencies": {
 		"@automattic/color-studio": "4.1.0",
