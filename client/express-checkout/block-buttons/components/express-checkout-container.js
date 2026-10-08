@@ -77,9 +77,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		[ hasButtonAttributes, buttonBorderRadius ]
 	);
 
-	// Lets extensions change the amount (e.g. trial subscriptions with a $0
-	// initial payment). Kept out of the memo so it fires on every render, since
-	// callbacks may read state the memo's dependencies don't track.
+	// Outside the memo: callbacks may read state its deps don't track.
 	const amount = applyFilters(
 		'wcpay.express-checkout.total-amount',
 		transformPrice( billing.cartTotal.value, {
