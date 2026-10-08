@@ -6417,6 +6417,37 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_update_order_status_does_not_complete_zero_amount_order_with_setup_intent_for_another_order() {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'seti_for_another_order';
+		$order->set_total( 0 );
+		$order->save();
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'       => $intent_id,
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => [ 'order_id' => $order->get_id() + 1 ],
+					]
+				)
+			);
+
+		$this->call_update_order_status( $order, $intent_id );
+
+		$order = wc_get_order( $order->get_id() );
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertFalse( $order->is_paid() );
+		$this->assertNotEmpty(
+			preg_grep( '/seti_for_another_order.*does not match any payments for this order/', $notes )
+		);
+	}
+
 	public function test_update_order_status_completes_order_with_woopay_intent_for_its_order_number() {
 		$order     = WC_Helper_Order::create_order();
 		$intent_id = 'pi_paid_on_woopay';

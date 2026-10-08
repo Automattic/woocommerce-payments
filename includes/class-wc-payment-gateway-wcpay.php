@@ -4401,7 +4401,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// A card change only saves the card: completing the subscription would pay its last unpaid renewal.
 			if ( $is_subscription_payment_method_change ) {
-				// Renewals copy this status, and the cancel/capture handlers read a non-terminal one as an open authorization.
+				// The cancel/capture handlers read a non-terminal status as an open authorization.
 				$this->order_service->set_intention_status_for_order( $order, $status );
 			} else {
 				$this->order_service->update_order_status_from_intent( $order, $intent );

@@ -317,7 +317,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
 		} else {
 			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
-			add_filter( 'wc_subscriptions_subscription_data', [ $this, 'remove_single_payment_data' ] );
+			add_filter( 'wc_subscriptions_object_data', [ $this, 'remove_single_payment_data' ] );
 		}
 
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
@@ -1185,11 +1185,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 */
 	public function remove_data_renewal_order( $order_data ) {
 		unset( $order_data['_new_order_tracking_complete'] );
-		return $this->remove_single_payment_data( $order_data );
+		return $order_data;
 	}
 
 	/**
-	 * Keeps a single payment's details from being copied onto subscriptions and renewal orders.
+	 * Keeps a single payment's details out of anything Subscriptions copies from an order or subscription.
 	 *
 	 * A retried checkout would otherwise pass the earlier attempt's intent to every renewal.
 	 *
