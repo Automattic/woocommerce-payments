@@ -249,8 +249,11 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		wp_set_current_user( $new_customer_id );
 		$session_handler->init_session_cookie();
 
+		// Nothing has been saved since the migration, so the stored token session must be unchanged.
+		$this->assertSame( [ 'flat_rate:1' ], $session_handler->get_session( $token_session_id )['chosen_shipping_methods'] ?? null );
 		$this->assertSame( $token_session_id, $session_handler->session_id );
 		$this->assertSame( [ 'flat_rate:1' ], $session_handler->get( 'chosen_shipping_methods' ) );
+		$this->assertNull( $session_handler->get( 'test_key' ) );
 		$this->assertSame( [ 'email' => 'new-buyer@example.com' ], $session_handler->get( 'customer' ) );
 		$this->assertSame( (string) $new_customer_id, $session_handler->get( 'token_customer_id' ) );
 		$this->assertSame( (string) $new_customer_id, $session_handler->get_customer_id() );
@@ -276,6 +279,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$follow_up_session_handler->init();
 
 		$this->assertSame( $token_session_id, $follow_up_session_handler->session_id );
+		$this->assertSame( (string) $new_customer_id, $follow_up_session_handler->get( 'token_customer_id' ) );
 		$this->assertSame( [ 'flat_rate:1' ], $follow_up_session_handler->get( 'chosen_shipping_methods' ) );
 	}
 

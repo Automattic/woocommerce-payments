@@ -78,8 +78,8 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * Otherwise, this clears everything: https://github.com/woocommerce/woocommerce/blob/de4a8ffdd474ca1879d4aa16487d6c52472a861b/plugins/woocommerce/src/StoreApi/Routes/V1/Checkout.php#L556-L558
 	 */
 	public function init_session_cookie() {
-		// The Store API calls this again after creating the buyer's account. The parent then migrates
-		// WooCommerce's guest session over the token session, so keep a copy to put back.
+		// The Store API calls this again after creating the buyer's account. The parent then loads
+		// WooCommerce's guest session in place of the token session, so keep a copy to put back.
 		$customer_id_before_init = $this->_customer_id;
 		$token_session_data      = $this->_data;
 
@@ -166,9 +166,14 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	/**
 	 * Save data - copy of parent method with a few modifications.
 	 *
-	 * @param int $_unused_old_session_key session ID before user logs in.
+	 * @param string|int $old_session_key Session ID before user logs in.
 	 */
-	public function save_data( $_unused_old_session_key = 0 ) {
+	public function save_data( $old_session_key = 0 ) {
+		// WooCommerce passes the old key only when it migrates its guest session, which must not overwrite the token session.
+		if ( ! empty( $old_session_key ) ) {
+			return;
+		}
+
 		// Dirty if something changed - prevents saving nothing new.
 		if ( $this->_dirty ) {
 			global $wpdb;
