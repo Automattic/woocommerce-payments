@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Send shopper Tracks events from the browser on stores with WooPay disabled.
