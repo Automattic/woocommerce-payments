@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Declare uuid as a direct build dependency.
