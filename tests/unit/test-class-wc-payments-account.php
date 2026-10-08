@@ -3370,6 +3370,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 * Test get_cached_account_data when we have already cached the "no account connected" response.
 	 */
 	public function test_get_cached_account_data_when_no_account_connected_and_result_cached() {
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
 		// Setup the cache with expired account information.
 		$this->cache_account_details( [] );
 
@@ -3577,9 +3581,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 
@@ -3605,7 +3608,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( '$12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
@@ -3614,9 +3617,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
@@ -3641,7 +3643,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( 'CHF12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_get_tracking_info() {

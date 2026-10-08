@@ -147,7 +147,7 @@ class WC_Payments_Customer_Service {
 	 */
 	public function create_customer_for_user( ?WP_User $user, array $customer_data = [] ): string {
 		// Include the session ID for the user.
-		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
+		$customer_data['session_id'] = $this->session_service->get_sift_session_id();
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
