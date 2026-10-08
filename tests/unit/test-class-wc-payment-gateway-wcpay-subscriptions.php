@@ -1648,6 +1648,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			'_charge_id'                    => 'ch_previous_attempt',
 			'_wcpay_payment_transaction_id' => 'txn_previous_attempt',
 			'_wcpay_payment_method_details' => '{"type":"card"}',
+			'_wcpay_transaction_fee'        => '1.23',
+			'_wcpay_net'                    => '8.77',
 			'_payment_method_id'            => 'pm_reusable',
 			'_stripe_customer_id'           => 'cus_reusable',
 		];
@@ -1658,6 +1660,15 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 				'_stripe_customer_id' => 'cus_reusable',
 			],
 			$this->wcpay_gateway->remove_single_payment_data( $data )
+		);
+	}
+
+	public function test_update_renewal_meta_data_excludes_single_payment_meta() {
+		$query = $this->wcpay_gateway->update_renewal_meta_data( 'WHERE post_id = 1', null, null );
+
+		$this->assertSame(
+			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net')",
+			$query
 		);
 	}
 

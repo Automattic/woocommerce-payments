@@ -315,6 +315,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// Used to filter out unwanted metadata on new renewal orders.
 		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
 			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+			add_filter( 'wcs_subscription_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
 		} else {
 			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
 			add_filter( 'wc_subscriptions_object_data', [ $this, 'remove_single_payment_data' ] );
@@ -1221,6 +1222,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::CHARGE_ID_META_KEY,
 			WC_Payments_Order_Service::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY,
 			WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY,
+			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
+			'_wcpay_net',
 		];
 	}
 
