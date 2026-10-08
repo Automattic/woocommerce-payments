@@ -1189,11 +1189,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Keeps the details of a single payment from being copied onto another order or subscription.
+	 * Keeps a single payment's details from being copied onto subscriptions and renewal orders.
 	 *
-	 * A subscription created from an order that already has a payment attempt (e.g. a checkout
-	 * retried after failed authentication) would otherwise inherit that attempt's intent, and pass
-	 * it on to every renewal order. See WOOPMNT-5356.
+	 * A retried checkout would otherwise pass the earlier attempt's intent to every renewal.
 	 *
 	 * @param array $data The data Subscriptions is about to copy.
 	 *
@@ -1212,7 +1210,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Meta keys describing one payment, as opposed to the reusable payment method a subscription needs.
+	 * Meta keys tied to one payment, unlike the reusable payment method renewals need.
 	 *
 	 * @return string[]
 	 */

@@ -6367,9 +6367,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @param callable $build_metadata Builds the intent metadata for the order being paid.
 	 */
 	public function test_update_order_status_does_not_complete_order_with_intent_created_for_another_order( callable $build_metadata ) {
-		// Regression guard for WOOPMNT-5356: Subscriptions can copy a succeeded intent from one order onto
-		// another (parent order -> subscription -> renewal). The stored intent ID alone must not let that
-		// other order be marked paid.
 		$order     = WC_Helper_Order::create_order();
 		$intent_id = 'pi_paid_for_another_order';
 		$order->update_status( Order_Status::FAILED );
@@ -6447,7 +6444,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Calls update_order_status() the way the checkout does after the shopper authenticates.
+	 * Calls update_order_status() as the checkout does after authentication.
 	 *
 	 * @param WC_Order $order     The order to update.
 	 * @param string   $intent_id The intent ID the shopper authenticated.

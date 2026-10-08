@@ -4178,10 +4178,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Rejects an intent created for a different order.
 	 *
-	 * The order's stored intent ID is not proof on its own: subscription data copies can carry
-	 * an intent from one order onto another (e.g. parent order -> subscription -> renewal order),
-	 * and that intent may have already succeeded. Stripe's metadata records the order the intent
-	 * was created for, so trust that instead. See WOOPMNT-5356.
+	 * An order can end up storing another order's intent (e.g. copied by Subscriptions),
+	 * so the intent's own metadata decides which order it pays. See WOOPMNT-5356.
 	 *
 	 * @param WC_Payments_API_Abstract_Intention $intent The intent fetched for the order.
 	 * @param WC_Order                           $order  The order being updated.
@@ -4196,7 +4194,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// WooPay intents identify the store order by its number, as the duplicate payment check also assumes.
+		// WooPay intents identify the store order by its number.
 		$paid_on_woopay      = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
 		$intent_order_number = is_numeric( $metadata['order_number'] ?? '' ) ? (int) $metadata['order_number'] : 0;
 		if ( $paid_on_woopay && $order->get_id() === $intent_order_number ) {
