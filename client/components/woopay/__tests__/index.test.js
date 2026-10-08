@@ -10,33 +10,26 @@ import userEvent from '@testing-library/user-event';
  */
 import { woopayPaymentMethod } from '..';
 import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
+import { redirectTo } from 'wcpay/utils/navigation';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
+} ) );
+// jsdom marks `window.location` unforgeable, so the navigation is asserted
+// through the `redirectTo` helper the component calls.
+jest.mock( 'wcpay/utils/navigation', () => ( {
+	redirectTo: jest.fn(),
 } ) );
 jest.mock( 'wcpay/checkout/woopay/init-woopay', () => ( {
 	initWooPay: jest.fn(),
 } ) );
 
 describe( 'woopayPaymentMethod', () => {
-	let nativeWindowLocation;
-
 	const apiMock = { request: jest.fn() };
 
 	beforeEach( () => {
-		nativeWindowLocation = Object.getOwnPropertyDescriptor(
-			window,
-			'location'
-		);
-		Object.defineProperty( window, 'location', {
-			writable: true,
-			value: { href: '' },
-		} );
+		redirectTo.mockReset();
 		initWooPay.mockReset();
-	} );
-
-	afterEach( () => {
-		Object.defineProperty( window, 'location', nativeWindowLocation );
 	} );
 
 	test( 'creates expected payment method object', () => {
@@ -107,6 +100,6 @@ describe( 'woopayPaymentMethod', () => {
 			await initCheckoutPromise;
 		} );
 		expect( buyNowButton ).not.toBeDisabled();
-		expect( window.location.href ).toEqual( 'https://example.org/' );
+		expect( redirectTo ).toHaveBeenCalledWith( 'https://example.org/' );
 	} );
 } );

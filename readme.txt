@@ -4,9 +4,9 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.3
-Stable tag: 11.1.0
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Stable tag: 11.2.0
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Securely accept credit and debit cards on your WooCommerce store. Manage payments without leaving your WordPress dashboard. Only with WooPayments.
 
@@ -25,6 +25,10 @@ Features previously only available on your payment provider’s website are now 
 - View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/woopayments/managing-money/).
 - View and respond to [disputes and chargebacks](https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/).
 - [Track payouts](https://woocommerce.com/document/woopayments/payouts/) into your bank account or debit card.
+
+**Sell in person**
+
+Take payments in person with [WooCommerce POS](https://woocommerce.com/woocommerce-pos/), built into the free WooCommerce mobile app. Use Tap to Pay on iPhone or Android, or a card reader, and see in-person and online payments together in your WooPayments dashboard. Read the [in-person payments documentation](https://woocommerce.com/document/woopayments/in-person-payments/) for supported countries and hardware.
 
 **Pay as you go**
 
@@ -58,6 +62,10 @@ If you are an individual or business based in [one of these countries](https://w
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooPayments launch next](https://woocommerce.com/payments/#request-invite).
 
+= Can I take payments in person? =
+
+Yes. WooCommerce POS in the free WooCommerce mobile app takes in-person payments through WooPayments with Tap to Pay or a card reader. Check the [requirements](https://woocommerce.com/document/woo-mobile-app-point-of-sale-mode/#requirements) for availability in your country, then learn more about [WooCommerce POS](https://woocommerce.com/woocommerce-pos/) and [in-person payments](https://woocommerce.com/document/woopayments/in-person-payments/).
+
 = Why is a WordPress.com account and connection required? =
 
 WooPayments uses the WordPress.com connection to securely communicate with our payments server. This is necessary for WooPayments to function correctly, so it's not possible to use WooPayments without connecting. Please see [this document](https://woocommerce.com/document/woopayments/our-policies/connection/) for more information.
@@ -86,6 +94,69 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 11.2.0 - 2026-10-08 =
+* Add - Add support for Onelink in Great Britain
+* Add - Flag payments with an active early fraud warning in the Payments Transactions list
+* Add - Show Klarna's stated reason for a lost dispute on the transaction's dispute details and timeline.
+* Fix - Avoid deadlock when both Stripe Link and WooPay are enabled by keeping both checkboxes editable until one is turned off.
+* Fix - Decode currency and onboarding URL entities consistently across supported PHP versions.
+* Fix - Exclude failed and canceled refunds from transaction totals and refund status calculations.
+* Fix - fix: account tests failing with WP nightly
+* Fix - fix: check the order key before adding order details to the pay-for-order checkout config
+* Fix - fix: check the order key before preparing pay-for-order customer data
+* Fix - Fixed the test mode notice on payment, payout and dispute details pages, which wrongly said a live record was created in test mode.
+* Fix - Fix express checkout buttons opening or crashing on stale cart data while the cart is being refreshed on classic pages.
+* Fix - Fix express checkout payments failing when the payment method will be saved for a subscription the page cannot see, such as one from a subscriptions plugin other than WooCommerce Subscriptions, or a subscription order paid from the order-pay page
+* Fix - Fix guest 3-D Secure payments getting stuck on the "Verify email" form when paying an older order via a payment link, by loading the checkout scripts on the Pay for Order endpoint even when the pay-for-order form is not rendered.
+* Fix - Fix outdated admin page styles showing after a plugin update, such as misaligned icons on the Dispute readiness card.
+* Fix - Fix the Payments Overview page crashing when the settings request fails.
+* Fix - Fix the TypeError possible with the "Subscription-like" plugins.
+* Fix - Multi-Currency: in cache-optimized rendering mode, read the price-range screen-reader label of WooCommerce blocks in the customer's currency instead of the store currency.
+* Fix - Prevent a fatal error during checkout when the session points at a WooPay direct checkout draft order that no longer exists.
+* Fix - Prevented an admin fraud tracker warning when other plugins fire admin hooks on frontend pages.
+* Fix - Prevented canceled refunds from showing an undefined failure reason.
+* Fix - Proper default sort params for the `payments/deposits` and `payments/documents` REST API paths.
+* Fix - Record the shopper's own IP address on orders placed through WooPay, instead of the address of the server that proxied the checkout
+* Fix - Reduce ActionScheduler churn from wcpay_track_new_order / wcpay_track_update_order by keeping an already-pending action instead of canceling and re-creating it
+* Fix - Remove a deprecated inbox note during the plugin update process.
+* Fix - Remove the unused inbox last-read tracking on the Payments Overview screen, which could break the inbox panel.
+* Fix - Restore spacing in the dispute readiness checklist.
+* Fix - Retry subscription renewals that carry a deleted Stripe customer with the shopper's current customer, instead of creating an empty one.
+* Fix - Return a 400 instead of a fatal error when the fraud outcome transactions REST routes are called without a status.
+* Fix - Send shopper Tracks events from the browser on stores with WooPay disabled.
+* Fix - Show complete dispute counts, currency totals, and response deadlines in the Payments Overview task.
+* Fix - Skip the intention retrieval for completed orders if known intent status is final.
+* Fix - Stop Multi-Currency from overriding the currency selected by a third-party currency switcher while it has nothing to switch, and keep the module inert when the feature is disabled
+* Fix - Stop Multi-Currency from recording an exchange rate on orders placed in a third-party currency switcher's currency, which made Analytics convert those orders twice
+* Fix - Tell the customer when a new default payment method fails to save on the server, instead of failing the request.
+* Fix - Tighten validation of the checkout payment-authentication request.
+* Fix - Use server-side prices once the WooCommerce session exists, even when Multi-Currency was initialized before it in cache-optimized mode. In that mode, a repeated Multi-Currency initialization now re-registers the server-side price and currency hooks.
+* Fix - Validate saved exchange rates before converting Analytics totals and report figures.
+* Update - Authorize WooPay requests on the Cart-Token and a sealed attestation instead of a Jetpack blog token signature, and remove the `wcpay_woopay_is_signed_with_blog_token` and `wcpay_is_woopay_store_api_request` filters.
+* Update - Mention in-person payments and WooCommerce POS in the plugin readme.
+* Update - Remove the in-app review prompt from the Payments settings page.
+* Dev - Add release-package QIT checks and a workflow for deploying the plugin to WordPress.org with the Woo Product Deploy Action.
+* Dev - Bump react-day-picker from 9.14.0 to 10.0.1.
+* Dev - Bump ts-loader from 9.5.7 to 9.6.2.
+* Dev - Bump WC tested up to version to 11.2.0
+* Dev - Bump woocommerce/action-scheduler from 3.9.3 to 4.2.0.
+* Dev - Bump woocommerce/qit-cli from 1.3.1 to 1.3.2.
+* Dev - Clarify general agent guidance for implementation, verification, and documentation.
+* Dev - Declare uuid as a direct build dependency.
+* Dev - Disable Xdebug in PHP unit test jobs that do not collect coverage.
+* Dev - Document when a feature-only symbol may be removed without a deprecation shim.
+* Dev - Fail the release build when the client bundle fails, and fix the bundle-size CI comparison.
+* Dev - Make QIT and E2E order status assertions wait for the selected option.
+* Dev - Reuse Jest transform caches across CI test runs.
+* Dev - Shard the wcpay shopper E2E group in PR runs, add job timeouts, and cache the Basic-Auth test plugin zip.
+* Dev - Share the client build across pull request E2E jobs.
+* Dev - Stop shipping webpack source maps in the released plugin package.
+* Dev - Update the Jetpack packages: connection to 9.1.2, sync to 5.1.0, config to 4.0.0, autoloader to 6.0.0, constants to 4.0.0.
+* Dev - Update WooCommerce coding standards to 2.0.0.
+* Dev - Upgrade Jest to 30 and adapt the JS test suite to jsdom 26, which makes `window.location` unforgeable.
+* Dev - Use the editor toolbar inserter in the currency switcher E2E test.
+* Dev - Wait for Blocks checkout readiness instead of classic checkout AJAX in E2E tests.
 
 = 11.1.0 - 2026-09-02 =
 * Add - Show which risk filters fired when a payment is blocked or held for review, in the order note and the Fraud & Risk meta box.

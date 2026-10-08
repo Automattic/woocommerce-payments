@@ -265,6 +265,24 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders refund failure without deducting the failed refund', () => {
+		const charge = getBaseCharge();
+		charge.refunded = false;
+		charge.amount_refunded = 2000;
+		charge.refunds?.data.push( {
+			status: 'failed',
+			balance_transaction: {
+				amount: -charge.amount_refunded,
+				currency: 'usd',
+			},
+		} );
+
+		renderCharge( charge );
+
+		screen.getByText( 'Refund failure' );
+		expect( screen.queryByText( /Refunded:/i ) ).not.toBeInTheDocument();
+	} );
+
 	test( 'renders the Tap to Pay channel from metadata with ios COTS_DEVICE', () => {
 		const charge = getBaseCharge();
 		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );

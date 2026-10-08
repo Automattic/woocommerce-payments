@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`mapTimelineEvents 3-currency scenarios formats captured events with 3 currencies - different order, settlement, and base fee 1`] = `
 [

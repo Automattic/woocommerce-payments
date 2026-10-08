@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect, Page, errors } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
@@ -67,40 +67,23 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 		// Dismiss the Welcome Guide; its overlay blocks the block inserter.
 		await disableEditorWelcomeGuide( page );
 
-		// Wait for the iframed canvas before branching — `isVisible()` doesn't
-		// auto-wait, so an early check raced the mount and took the WC 7.7.0
-		// inline path on WP nightly.
-		const editorCanvas = page.locator( '[name="editor-canvas"]' );
-		const usesIframedCanvas = await editorCanvas
-			.waitFor( { state: 'visible', timeout: 15000 } )
-			.then( () => true )
-			.catch( ( error ) => {
-				// Only a timeout means the inline (non-iframed) WC 7.7.0 editor;
-				// surface anything else (page closed, navigation, bad selector).
-				if ( error instanceof errors.TimeoutError ) {
-					return false;
-				}
-				throw error;
-			} );
-
-		if ( usesIframedCanvas ) {
-			const editor = editorCanvas.contentFrame();
-			await editor.getByRole( 'button', { name: 'Add block' } ).click();
-		} else {
-			// Fallback for the inline (non-iframed) editor on WC 7.7.0.
-			await page.getByRole( 'button', { name: 'Add block' } ).click();
-		}
-
+		// The toolbar inserter works with both iframed and inline editors.
 		await page
-			.locator( 'input[placeholder="Search"]' )
-			.pressSequentially( 'switcher', { delay: 20 } );
-		await expect(
-			page.getByRole( 'option', { name: 'Currency Switcher Block' } )
-		).toBeVisible();
+			.getByLabel( 'Editor top bar' )
+			.getByRole( 'button', { name: 'Block Inserter', exact: true } )
+			.click();
 
-		// Insert the block.
-		await page
-			.getByRole( 'option', { name: 'Currency Switcher Block' } )
+		const blockLibrary = page.getByRole( 'region', {
+			name: 'Block Library',
+		} );
+		await blockLibrary
+			.getByLabel( 'Search', { exact: true } )
+			.fill( 'switcher' );
+		await blockLibrary
+			.getByRole( 'option', {
+				name: 'Currency Switcher Block',
+				exact: true,
+			} )
 			.click();
 
 		// Publish the post — click the top bar button to open the publish panel.

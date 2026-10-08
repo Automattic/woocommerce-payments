@@ -2858,7 +2858,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Checks if the account is eligible for the review prompt (Phase 0).
+	 * Checks if the account is eligible for the review prompt.
+	 *
+	 * @deprecated 11.2.0 The in-app review prompt was removed; nothing in the plugin reads this.
 	 *
 	 * @return bool
 	 */

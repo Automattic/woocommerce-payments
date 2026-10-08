@@ -3571,9 +3571,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 
@@ -3599,7 +3598,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( '$12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
@@ -3608,9 +3607,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
@@ -3635,7 +3633,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( 'CHF12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_get_tracking_info() {
@@ -4226,6 +4224,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test is_review_prompt_eligible method with various account data scenarios.
 	 *
+	 * @testdox The deprecated method still reports review prompt eligibility.
 	 * @dataProvider provider_is_review_prompt_eligible
 	 *
 	 * @param array $account_data The account data to cache.

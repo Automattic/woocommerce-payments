@@ -24,12 +24,16 @@ function wcpay_multi_currency_onboarding_check() {
 	return $is_setup_page;
 }
 
-if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() && ! wcpay_multi_currency_onboarding_check() ) {
-	return;
-}
-
 /**
  * Returns the MultiCurrency singleton.
+ *
+ * This function is declared unconditionally, on purpose: PHP hoists top-level function declarations
+ * at compile time, so the early `return` below never prevented it from existing, and callers across
+ * the plugin and in third-party code — including `MultiCurrency::instance()`, which delegates here —
+ * rely on it being available whether or not the feature is enabled. When the module is disabled
+ * (see `MultiCurrency::is_enabled()`), the instance is inert: it registers no hooks, and
+ * `MultiCurrency::init()` refuses to initialize, so its getters return empty collections and the
+ * store currency.
  *
  * @return WCPay\MultiCurrency\MultiCurrency
  */
@@ -44,10 +48,21 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 			WC_Payments::get_localization_service(),
 			WC_Payments::get_database_cache()
 		);
-		$instance->init_hooks();
+
+		if ( WCPay\MultiCurrency\MultiCurrency::is_enabled() ) {
+			$instance->init_hooks();
+		}
 	}
 
 	return $instance;
+}
+
+// Deliberately class-free: this file is included on every request of every store, and referencing
+// MultiCurrency here would autoload it even where the feature is off, fataling during an old/new file
+// mix while a manual update is in progress. This is the same predicate as MultiCurrency::is_enabled();
+// keep the two in sync.
+if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() && ! wcpay_multi_currency_onboarding_check() ) {
+	return;
 }
 
 add_action( 'plugins_loaded', 'WC_Payments_Multi_Currency', 12 );
