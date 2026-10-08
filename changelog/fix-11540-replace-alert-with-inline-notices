@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Replace browser alert() dialogs with inline WooCommerce notices for gift card email validation and product option errors in WooPay express checkout.
