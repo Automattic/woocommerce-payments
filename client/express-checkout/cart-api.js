@@ -13,6 +13,10 @@ import { getExpressCheckoutData } from './utils';
 import { getResolvedCurrency } from './utils/resolved-currency-cache';
 import { getElementCurrency } from './utils/element-currency-cache';
 import {
+	getRefreshedNonces,
+	rememberRefreshedNonces,
+} from './utils/refreshed-nonces-cache';
+import {
 	getProductId,
 	getQuantity,
 } from 'wcpay/utils/wc-product-page-selectors';
@@ -34,6 +38,10 @@ export default class ExpressCheckoutCartApi {
 		// Drop nullish values so we never serialize `undefined` / `null` to
 		// the literal strings "undefined" / "null" on the wire (which breaks
 		// server-side nonce verification).
+		const nonces = {
+			...getExpressCheckoutData( 'nonce' ),
+			...getRefreshedNonces(),
+		};
 		const response = await apiFetch( {
 			...options,
 			parse: false,
@@ -50,10 +58,10 @@ export default class ExpressCheckoutCartApi {
 			headers: omitBy(
 				{
 					// the Store API nonce, which could later be overwritten in subsequent requests.
-					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
+					Nonce: nonces.store_api_nonce,
 					// needed for validation of address data, etc.
 					'X-WooPayments-Tokenized-Cart-Nonce':
-						getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce,
+						nonces.tokenized_cart_nonce,
 					// The session nonce is only meaningful on PDP, where the
 					// custom session handler is intended to engage and create
 					// an isolated tokenized cart. Sending it on shortcode
@@ -61,15 +69,27 @@ export default class ExpressCheckoutCartApi {
 					// with an empty one.
 					'X-WooPayments-Tokenized-Cart-Session-Nonce':
 						getExpressCheckoutData( 'button_context' ) === 'product'
-							? getExpressCheckoutData( 'nonce' )
-									.tokenized_cart_session_nonce
+							? nonces.tokenized_cart_session_nonce
 							: undefined,
 					...this.cartRequestHeaders,
 					...options.headers,
 				},
 				isNil
 			),
+		} ).catch( ( error ) => {
+			// With `parse: false`, error responses are thrown as they are, and they can carry refreshed nonces too.
+			rememberRefreshedNonces( error?.headers );
+			const nonce = error?.headers?.get( 'Nonce' );
+			if ( nonce ) {
+				this.cartRequestHeaders = {
+					...this.cartRequestHeaders,
+					Nonce: nonce,
+				};
+			}
+			throw error;
 		} );
+
+		rememberRefreshedNonces( response.headers );
 
 		// Only carry forward response headers we actually received. Reading
 		// an absent header returns `null`, and assigning that null over the

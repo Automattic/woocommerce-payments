@@ -123,11 +123,12 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 
 	/**
 	 * Delete the session from the cache and database.
+	 * Before the token session loads, the parent can still act on the cookie's session (e.g. when it's invalid).
 	 *
-	 * @param int $_unused_customer_id Customer ID.
+	 * @param int $customer_id Customer ID.
 	 */
-	public function delete_session( $_unused_customer_id ) {
-		parent::delete_session( $this->session_id );
+	public function delete_session( $customer_id ) {
+		parent::delete_session( $this->session_id ?? $customer_id );
 	}
 
 	/**
@@ -137,7 +138,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * @param int    $timestamp Timestamp to expire the cookie.
 	 */
 	public function update_session_timestamp( $customer_id, $timestamp ) {
-		parent::update_session_timestamp( $this->session_id, $timestamp );
+		parent::update_session_timestamp( $this->session_id ?? $customer_id, $timestamp );
 	}
 
 	/**
@@ -166,9 +167,16 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	/**
 	 * Save data - copy of parent method with a few modifications.
 	 *
-	 * @param int $_unused_old_session_key session ID before user logs in.
+	 * @param int $old_session_key session ID before user logs in.
 	 */
-	public function save_data( $_unused_old_session_key = 0 ) {
+	public function save_data( $old_session_key = 0 ) {
+		// No token session yet: the parent is moving a guest session to a user who just logged in.
+		// That's the shopper's regular cart, so it belongs under their user ID, not under a token session.
+		if ( null === $this->session_id ) {
+			parent::save_data( $old_session_key );
+			return;
+		}
+
 		// Dirty if something changed - prevents saving nothing new.
 		if ( $this->_dirty ) {
 			global $wpdb;
