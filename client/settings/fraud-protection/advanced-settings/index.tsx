@@ -143,11 +143,18 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ protectionSettingsUI, setProtectionSettingsUI ] =
 		useState< ProtectionSettingsUI >( {} );
 
-	useEffect( () => {
+	// Reset the editable ruleset draft when the server-loaded value changes.
+	// Render-time state adjustment avoids a cascading render from a sync effect
+	// while preserving the original initial-empty-then-populated render order
+	// (a11y-speak announcement queue depends on this).
+	const prevAdvancedSettingsRef =
+		useRef< typeof advancedFraudProtectionSettings >();
+	if ( prevAdvancedSettingsRef.current !== advancedFraudProtectionSettings ) {
+		prevAdvancedSettingsRef.current = advancedFraudProtectionSettings;
 		setProtectionSettingsUI(
 			readRuleset( advancedFraudProtectionSettings )
 		);
-	}, [ advancedFraudProtectionSettings ] );
+	}
 
 	const validateSettings = (
 		fraudProtectionSettings: ProtectionSettingsUI

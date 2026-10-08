@@ -198,6 +198,10 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'charge.expired':
 				$this->process_webhook_expired_authorization( $event_body );
 				break;
+			case 'radar.early_fraud_warning.created':
+			case 'radar.early_fraud_warning.updated':
+				$this->process_webhook_early_fraud_warning( $event_body );
+				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
 				$this->token_service->clear_all_cached_payment_methods();
@@ -350,7 +354,7 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case Refund_Status::SUCCEEDED:
 				if ( $matched_wc_refund ) {
-					$this->order_service->add_note_and_metadata_for_created_refund( $order, $matched_wc_refund, $refund_id, $balance_transaction ?? null );
+					$this->order_service->add_note_and_metadata_for_created_refund( $order, $matched_wc_refund, $refund_id, $balance_transaction );
 				}
 				break;
 			default:
@@ -399,8 +403,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
 
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -412,8 +416,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function process_webhook_payment_intent_canceled( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -425,8 +429,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function process_webhook_payment_intent_amount_capturable_updated( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -592,8 +596,8 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -605,6 +609,13 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function ensure_order_payment_token_for_successful_recurring_intent( $order, $payment_intent, $payment_method_id ) {
 		if ( ! $payment_intent->is_authorized() || empty( $payment_method_id ) || ! $this->wcpay_gateway->is_payment_recurring( $order->get_id() ) ) {
+			return;
+		}
+
+		// A paid order already had its token saved at checkout, so this is a redelivered event.
+		// Saving again could re-point sibling subscriptions to a card the customer has since replaced.
+		if ( $order->is_paid() ) {
+			Logger::log( 'Skipping webhook token save for paid order #' . $order->get_id() . '.' );
 			return;
 		}
 
@@ -840,6 +851,61 @@ class WC_Payments_Webhook_Processing_Service {
 		// Clear dispute caches to trigger a fetch of new data. The dispute changed on
 		// Stripe's side even when its note is a duplicate of one already on the order.
 		$this->database_cache->delete_dispute_caches();
+	}
+
+	/**
+	 * Process webhook for an early fraud warning being created or updated.
+	 *
+	 * The platform only forwards `created` events for charges without a dispute, but always
+	 * forwards `updated` events so a previously stored warning can be resolved. An `updated`
+	 * event for a warning the store never saw is therefore ignored.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
+	 */
+	private function process_webhook_early_fraud_warning( $event_body ) {
+		$event_type   = $this->read_webhook_property( $event_body, 'type' );
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
+		$efw_id       = $this->read_webhook_property( $event_object, 'id' );
+		$actionable   = $this->read_webhook_property( $event_object, 'actionable' );
+		$created      = $this->read_webhook_property( $event_object, 'created' );
+
+		// Unlike the fields above, `fraud_type` only drives a descriptive label that already
+		// degrades to an empty reason when the value is unknown, so a missing key must not
+		// abort storing the warning — read it optionally and default to an empty string.
+		$fraud_type = $event_object['fraud_type'] ?? '';
+
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		if ( ! $order ) {
+			throw new Invalid_Webhook_Data_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		$previous_warning = $this->order_service->get_early_fraud_warning_for_order( $order );
+
+		// An update to a warning the store never received (e.g. its creation was skipped
+		// because the charge was already disputed) would only add a confusing "resolved"
+		// note for a warning the merchant never saw — ignore it.
+		if ( 'radar.early_fraud_warning.updated' === $event_type && null === $previous_warning ) {
+			return;
+		}
+
+		$this->order_service->mark_payment_early_fraud_warning( $order, $charge_id, $efw_id, (bool) $actionable, (string) $fraud_type, (int) $created );
+
+		// The actionable flag is the only field the cached warning list is built from, so an
+		// update that leaves it alone does not need to force a rebuild of that list.
+		if ( ( $previous_warning['efw_actionable'] ?? null ) !== (bool) $actionable ) {
+			$this->database_cache->delete_early_fraud_warning_caches();
+		}
 	}
 
 	/**

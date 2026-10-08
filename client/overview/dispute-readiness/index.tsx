@@ -30,6 +30,7 @@ import {
 } from 'wcpay/data/dispute-readiness';
 import { recordEvent } from 'wcpay/tracks';
 import { DisputeReadinessSignal } from 'wcpay/data/dispute-readiness/types';
+import { redirectTo } from 'wcpay/utils';
 import './style.scss';
 
 const learnMoreUrl =
@@ -118,7 +119,7 @@ const DisputeReadinessCard = () => {
 		}
 
 		if ( signal.actionUrl ) {
-			window.location.href = signal.actionUrl;
+			redirectTo( signal.actionUrl );
 		}
 	};
 

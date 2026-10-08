@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Upgrade the pinned pnpm to v11. Build tooling only, not user-facing

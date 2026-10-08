@@ -9,7 +9,7 @@ namespace WCPay\Tests\Internal\Service;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Order;
-use WC_Payments_Features;
+use WC_Payments_Subscription_Service;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
@@ -168,18 +168,19 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 	public function test_get_payment_metadata_with_subscription( bool $is_renewal, bool $wcpay_subscription ) {
 		$mock_order = $this->mock_get_order();
 
-		$this->mock_legacy_proxy->expects( $this->exactly( 3 ) )
+		$this->mock_legacy_proxy->expects( $this->exactly( 4 ) )
 			->method( 'call_function' )
 			->withConsecutive(
 				[ 'function_exists', 'wcs_order_contains_subscription' ],
 				[ 'wcs_order_contains_subscription', $mock_order, 'any' ],
-				[ 'wcs_order_contains_renewal', $mock_order ]
+				[ 'wcs_order_contains_renewal', $mock_order ],
+				[ 'class_exists', WC_Payments_Subscription_Service::class ]
 			)
-			->willReturnOnConsecutiveCalls( true, true, $is_renewal );
+			->willReturnOnConsecutiveCalls( true, true, $is_renewal, true );
 
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_static' )
-			->with( WC_Payments_Features::class, 'should_use_stripe_billing' )
+			->with( WC_Payments_Subscription_Service::class, 'is_wcpay_subscription_order', $mock_order )
 			->willReturn( $wcpay_subscription );
 
 		// Expect filters.
@@ -205,6 +206,78 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 			[ true, false ],
 			[ true, true ],
 		];
+	}
+
+	/**
+	 * The Stripe Billing integration classes are only loaded when the feature is in use
+	 * (see WC_Payments::should_load_stripe_billing_integration()). On a store running
+	 * WooCommerce Subscriptions without Stripe Billing the service is absent, so it must
+	 * not be called — and a subscription it never touched is not Stripe-billed.
+	 */
+	public function test_get_payment_metadata_marks_subscription_as_regular_when_stripe_billing_not_loaded() {
+		$mock_order = $this->mock_get_order();
+
+		$this->mock_legacy_proxy->expects( $this->exactly( 4 ) )
+			->method( 'call_function' )
+			->withConsecutive(
+				[ 'function_exists', 'wcs_order_contains_subscription' ],
+				[ 'wcs_order_contains_subscription', $mock_order, 'any' ],
+				[ 'wcs_order_contains_renewal', $mock_order ],
+				[ 'class_exists', WC_Payments_Subscription_Service::class ]
+			)
+			->willReturnOnConsecutiveCalls( true, true, true, false );
+
+		// The service is not loaded, so it must never be called.
+		$this->mock_legacy_proxy->expects( $this->never() )
+			->method( 'call_static' );
+
+		$this->mock_hooks_proxy->expects( $this->once() )
+			->method( 'apply_filters' )
+			->with( 'wcpay_metadata_from_order', $this->callback( 'is_array' ), $mock_order, Payment_Type::RECURRING() )
+			->willReturnArgument( 1 );
+
+		// Act.
+		$result = $this->sut->get_payment_metadata( $this->order_id, Payment_Type::RECURRING() );
+
+		// Assert.
+		$this->assertEquals( 'regular_subscription', $result['payment_context'] );
+	}
+
+	/**
+	 * The Stripe Billing surcharge must follow whether *this* order's subscription is
+	 * actually billed through Stripe Billing, not whether the store-level feature flag
+	 * happens to be enabled. A store can have the flag on while a subscription created
+	 * before the flag (or migrated off Stripe Billing) still renews on-site.
+	 */
+	public function test_get_payment_metadata_marks_non_stripe_billed_subscription_as_regular() {
+		$mock_order = $this->mock_get_order();
+
+		$this->mock_legacy_proxy->expects( $this->exactly( 4 ) )
+			->method( 'call_function' )
+			->withConsecutive(
+				[ 'function_exists', 'wcs_order_contains_subscription' ],
+				[ 'wcs_order_contains_subscription', $mock_order, 'any' ],
+				[ 'wcs_order_contains_renewal', $mock_order ],
+				[ 'class_exists', WC_Payments_Subscription_Service::class ]
+			)
+			->willReturnOnConsecutiveCalls( true, true, true, true );
+
+		// This subscription is not billed by Stripe Billing, regardless of the store flag.
+		$this->mock_legacy_proxy->expects( $this->once() )
+			->method( 'call_static' )
+			->with( WC_Payments_Subscription_Service::class, 'is_wcpay_subscription_order', $mock_order )
+			->willReturn( false );
+
+		$this->mock_hooks_proxy->expects( $this->once() )
+			->method( 'apply_filters' )
+			->with( 'wcpay_metadata_from_order', $this->callback( 'is_array' ), $mock_order, Payment_Type::RECURRING() )
+			->willReturnArgument( 1 );
+
+		// Act.
+		$result = $this->sut->get_payment_metadata( $this->order_id, Payment_Type::RECURRING() );
+
+		// Assert.
+		$this->assertEquals( 'regular_subscription', $result['payment_context'] );
 	}
 
 	public function provider_get_intent_id() {

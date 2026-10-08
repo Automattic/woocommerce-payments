@@ -243,24 +243,6 @@ declare global {
 		exitSurveyLastShown: string | null;
 	};
 
-	const wcpayReviewPromptSettings: {
-		version: string;
-		experiment: string;
-		variant: string;
-	};
-
-	const wcpayTestToLiveNoticeSettings: {
-		ctaUrl: string;
-		dismissUrl: string;
-		snoozeUrl: string;
-	};
-
-	const wcpayPostKycActivationNoticeSettings: {
-		stage: 7 | 14 | 30;
-		ctaUrl: string;
-		dismissUrl: string;
-	};
-
 	const wcpayOneAndDoneNoticeSettings: {
 		ctaUrl: string;
 		dismissUrl: string;
@@ -340,9 +322,6 @@ declare global {
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
-		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
-		wcpayTestToLiveNoticeSettings?: typeof wcpayTestToLiveNoticeSettings;
-		wcpayPostKycActivationNoticeSettings?: typeof wcpayPostKycActivationNoticeSettings;
 		wcpayOneAndDoneNoticeSettings?: typeof wcpayOneAndDoneNoticeSettings;
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		wcpay_upe_config?: typeof wcpay_upe_config;

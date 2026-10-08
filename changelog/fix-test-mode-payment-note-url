@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixed broken payment intent link in test mode order notes.

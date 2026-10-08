@@ -59,6 +59,20 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const AUTHORIZATION_SUMMARY_KEY_TEST_MODE = 'wcpay_test_authorization_summary_cache';
 
 	/**
+	 * Cache key for orders with an actionable early fraud warning.
+	 *
+	 * @var string
+	 */
+	const EARLY_FRAUD_WARNING_ORDERS_KEY = 'wcpay_early_fraud_warning_orders_cache';
+
+	/**
+	 * Cache key for orders with an actionable early fraud warning, in test mode.
+	 *
+	 * @var string
+	 */
+	const EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE = 'wcpay_test_early_fraud_warning_orders_cache';
+
+	/**
 	 * Cache key for eligible connect incentive data.
 	 */
 	const CONNECT_INCENTIVE_KEY = 'wcpay_connect_incentive';
@@ -87,6 +101,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		self::ACTIVE_DISPUTES_KEY,
 		self::AUTHORIZATION_SUMMARY_KEY,
 		self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+		self::EARLY_FRAUD_WARNING_ORDERS_KEY,
+		self::EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE,
 		self::CONNECT_INCENTIVE_KEY,
 		self::TRACKING_INFO_KEY,
 	];
@@ -276,6 +292,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
+	 * Delete the cached lists of orders with an actionable early fraud warning.
+	 * This ensures both live and test mode lists are refreshed.
+	 *
+	 * @return void
+	 */
+	public function delete_early_fraud_warning_caches() {
+		$this->delete( self::EARLY_FRAUD_WARNING_ORDERS_KEY );
+		$this->delete( self::EARLY_FRAUD_WARNING_ORDERS_KEY_TEST_MODE );
+	}
+
+	/**
 	 * Validates the cache contents and, given the passed params and the current application state, determines whether the cache should be refreshed.
 	 * See get_or_add.
 	 *
@@ -423,11 +450,16 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return integer The cache TTL.
 	 */
 	private function get_ttl( string $key, array $cache_contents ): int {
+		// Legacy cache entries written before the `errored` field existed do not carry the key,
+		// and get() reaches get_ttl() (via is_expired) without guaranteeing it. Default to false so
+		// the reads below cannot emit a PHP 8 "Undefined array key" warning.
+		$errored = $cache_contents['errored'] ?? false;
+
 		switch ( $key ) {
 			case self::ACCOUNT_KEY:
 				if ( is_admin() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
+					if ( $errored ) {
 						// Progressive backoff on repeated errors (2/5/10/15 min).
 						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
@@ -442,7 +474,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			case self::CURRENCIES_KEY:
 				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
-					if ( $cache_contents['errored'] ) {
+					if ( $errored ) {
 						// Progressive backoff on repeated errors (2/5/10/15 min).
 						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
@@ -456,8 +488,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 			case self::BUSINESS_TYPES_KEY:
 			case self::ONBOARDING_FIELDS_DATA_KEY:
-				// Cache these for a week.
-				$ttl = WEEK_IN_SECONDS;
+				// Cache successful data for a week, but back off quickly on errors so a
+				// single transient failure does not block onboarding for the full week.
+				$ttl = $errored
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: WEEK_IN_SECONDS;
 				break;
 			case self::CONNECT_INCENTIVE_KEY:
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
@@ -468,12 +503,12 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::TRACKING_INFO_KEY:
-				$ttl = $cache_contents['errored']
+				$ttl = $errored
 					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
 					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
-				if ( $cache_contents['errored'] ) {
+				if ( $errored ) {
 					// Retry quickly after a transient failure so address autocomplete recovers promptly.
 					$ttl = 2 * MINUTE_IN_SECONDS;
 				} else {

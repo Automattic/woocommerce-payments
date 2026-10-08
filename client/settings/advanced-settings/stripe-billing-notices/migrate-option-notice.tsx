@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
@@ -42,16 +42,7 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 	hasResolved,
 } ) => {
 	const context = useContext( StripeBillingMigrationNoticeContext );
-
-	/**
-	 * Whether the notice is eligible to be shown.
-	 *
-	 * Note: We use `useState` here to snapshot the setting value on load.
-	 * The option notice should only be shown if Stripe Billing is disabled on load and there are subscriptions to migrate.
-	 */
-	const [ isEligible, setIsEligible ] = useState(
-		! context.isStripeBillingEnabled
-	);
+	const { setIsMigrationInProgress } = context;
 
 	// The class name of the action which sends the request to migrate.
 	const noticeClassName = 'woopayments-migrate-stripe-billing-action';
@@ -71,38 +62,17 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 		}
 	}, [ isLoading ] );
 
-	// The notice is no longer eligible if the settings have been saved and Stripe Billing is enabled.
+	// Once the request is resolved, mark the migration as in progress. The parent
+	// derives `isMigrationOptionShown` from `hasResolved`, so no explicit hide is needed.
 	useEffect( () => {
-		if ( context.savedIsStripeBillingEnabled ) {
-			setIsEligible( false );
+		if ( hasResolved ) {
+			setIsMigrationInProgress( true );
 		}
-	}, [ context.savedIsStripeBillingEnabled ] );
+	}, [ hasResolved, setIsMigrationInProgress ] );
 
-	// Once the request is resolved, hide the notice and mark the migration as in progress.
-	if ( hasResolved ) {
-		context.isMigrationInProgress = true;
-		context.isMigrationOptionShown = false;
+	if ( ! context.isMigrationOptionShown ) {
 		return null;
 	}
-
-	if ( context.isMigrationInProgress ) {
-		return null;
-	}
-
-	if ( stripeBillingSubscriptionCount === 0 ) {
-		return null;
-	}
-
-	if ( ! isEligible ) {
-		return null;
-	}
-
-	if ( context.isStripeBillingEnabled ) {
-		return null;
-	}
-
-	// Update the context to note the Option Notice is being shown.
-	context.isMigrationOptionShown = true;
 
 	return (
 		<InlineNotice

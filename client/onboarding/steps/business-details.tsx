@@ -23,9 +23,11 @@ import strings from 'onboarding/strings';
  */
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
-	const countries = getAvailableCountries();
-	const businessTypes = getBusinessTypes();
-	const mccsFlatList = getMccsFlatList();
+
+	// These read from wcpaySettings, which the page localises once and never changes.
+	const countries = React.useMemo( () => getAvailableCountries(), [] );
+	const businessTypes = React.useMemo( () => getBusinessTypes(), [] );
+	const mccsFlatList = React.useMemo( () => getMccsFlatList(), [] );
 
 	const selectedCountry = businessTypes.find( ( country ) => {
 		// Special case for Puerto Rico as it's considered a separate country in Core, but the business country should be US.
@@ -37,10 +39,13 @@ const BusinessDetails: React.FC = () => {
 	} );
 
 	// Reorder the country business types so company is always first, if it exists.
-	const reorderedBusinessTypes = selectedCountry?.types.sort( ( a, b ) =>
-		// eslint-disable-next-line no-nested-ternary
-		a.key === 'company' ? -1 : b.key === 'company' ? 1 : 0
-	);
+	// Sort on a copy — the source list is built once and shared across renders.
+	const reorderedBusinessTypes = selectedCountry
+		? [ ...selectedCountry.types ].sort( ( a, b ) =>
+				// eslint-disable-next-line no-nested-ternary
+				a.key === 'company' ? -1 : b.key === 'company' ? 1 : 0
+		  )
+		: undefined;
 
 	const selectedBusinessType = reorderedBusinessTypes?.find(
 		( type ) => type.key === data.business_type
@@ -102,11 +107,11 @@ const BusinessDetails: React.FC = () => {
 					onChange={ handleTiedChange }
 				/>
 			</span>
-			{ selectedCountry && selectedCountry.types.length > 0 && (
+			{ reorderedBusinessTypes && reorderedBusinessTypes.length > 0 && (
 				<span data-testid="business-type-select">
 					<OnboardingSelectField
 						name="business_type"
-						options={ selectedCountry.types }
+						options={ reorderedBusinessTypes }
 						onChange={ handleTiedChange }
 					>
 						{ ( item: Item & BusinessType ) => (

@@ -234,4 +234,70 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::TRANSACTIONS_API, $request->get_api() );
 	}
+
+	public function test_format_response_adds_early_fraud_warning_from_order_meta() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_charge_id', 'ch_with_efw' );
+		$order->save();
+
+		// Store the warning through the writer, so a future rename of the meta keys fails here.
+		WC_Payments::get_order_service()->mark_payment_early_fraud_warning(
+			$order,
+			'ch_with_efw',
+			'issfr_mock',
+			true,
+			'made_with_stolen_card',
+			1752969600
+		);
+
+		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+
+		$result = $request->format_response(
+			[
+				'data' => [
+					[
+						'transaction_id' => 'txn_1',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_with_efw',
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'actionable' => true,
+				'fraud_type' => 'made_with_stolen_card',
+			],
+			$result['data'][0]['early_fraud_warning']
+		);
+	}
+
+	public function test_format_response_omits_early_fraud_warning_when_order_has_none() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_charge_id', 'ch_without_efw' );
+		$order->save();
+
+		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+
+		$result = $request->format_response(
+			[
+				'data' => [
+					[
+						'transaction_id' => 'txn_1',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_without_efw',
+					],
+					[
+						'transaction_id' => 'txn_2',
+						'type'           => 'charge',
+						'charge_id'      => 'ch_no_matching_order',
+					],
+				],
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'early_fraud_warning', $result['data'][0] );
+		$this->assertArrayNotHasKey( 'early_fraud_warning', $result['data'][1] );
+	}
 }

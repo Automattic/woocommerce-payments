@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: fix: enable VariableAnalysis UnusedVariable phpcs sniff on payment-method Configs (closes #8436)

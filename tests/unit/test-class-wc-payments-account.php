@@ -1298,6 +1298,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$gateway->update_option( 'enabled', '' );
 		$gateway->update_option( 'test_mode', '' );
 
+		// No retired reminder clock has started.
+		delete_option( 'wcpay_kyc_submitted_date' );
+
 		// Assert.
 		// We should redirect to the Overview page, not the Connect page.
 		$this->mock_redirect_service
@@ -1328,6 +1331,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// The state transient is deleted.
 		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT ) );
+
+		// The retired reminder clock is not started.
+		$this->assertFalse( get_option( 'wcpay_kyc_submitted_date' ) );
 	}
 
 	public function test_maybe_handle_onboarding_finalize_connection_via_non_connect_link_success_live_account() {
@@ -3364,6 +3370,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 * Test get_cached_account_data when we have already cached the "no account connected" response.
 	 */
 	public function test_get_cached_account_data_when_no_account_connected_and_result_cached() {
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
 		// Setup the cache with expired account information.
 		$this->cache_account_details( [] );
 
@@ -3571,9 +3581,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 
@@ -3599,7 +3608,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( '$12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
@@ -3608,9 +3617,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
-		$advance_amount           = 1234567;
-		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
-		$time                     = time();
+		$advance_amount = 1234567;
+		$time           = time();
 
 		$request = $this->mock_wcpay_request( Get_Request::class );
 		$request->expects( $this->once() )
@@ -3635,7 +3643,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
 		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
-		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+		$this->assertStringContainsString( 'CHF12,345.67', html_entity_decode( $note->get_content() ) );
 	}
 
 	public function test_get_tracking_info() {
@@ -4226,6 +4234,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test is_review_prompt_eligible method with various account data scenarios.
 	 *
+	 * @testdox The deprecated method still reports review prompt eligibility.
 	 * @dataProvider provider_is_review_prompt_eligible
 	 *
 	 * @param array $account_data The account data to cache.
@@ -4304,13 +4313,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->get_cached_account_data();
 	}
 
-	// -------------------------------------------------------------------------
-	// maybe_record_kyc_completion_date tests
-	// -------------------------------------------------------------------------
-
-	public function test_maybe_record_kyc_completion_date_uses_current_time_for_post_launch_merchant(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		update_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION, time() );
+	public function test_retired_kyc_recorder_does_not_start_a_new_timer(): void {
+		$this->setExpectedDeprecated( 'WC_Payments_Account::maybe_record_kyc_completion_date' );
+		delete_option( 'wcpay_kyc_completion_date' );
+		update_option( 'wcpay_kyc_submitted_date', time() );
 
 		$this->wcpay_account->maybe_record_kyc_completion_date(
 			[
@@ -4321,112 +4327,22 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$completion_date = (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		$this->assertGreaterThan( time() - 60, $completion_date );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+		$this->assertFalse( get_option( 'wcpay_kyc_completion_date' ) );
 	}
 
-	public function test_maybe_record_kyc_completion_date_falls_back_to_account_created_for_pre_existing_merchant(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
-
-		$account_created = time() - 90 * DAY_IN_SECONDS;
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-				'created'          => $account_created,
-			]
-		);
-
-		$this->assertSame( $account_created, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-	}
-
-	public function test_maybe_record_kyc_completion_date_bails_when_no_submitted_date_and_no_created(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+	public function test_retired_kyc_recorder_preserves_history(): void {
+		$this->setExpectedDeprecated( 'WC_Payments_Account::maybe_record_kyc_completion_date' );
+		update_option( 'wcpay_kyc_completion_date', 12345 );
+		update_option( 'wcpay_kyc_submitted_date', 12300 );
 
 		$this->wcpay_account->maybe_record_kyc_completion_date(
 			[
 				'payments_enabled' => true,
 				'is_live'          => true,
-				'is_test_drive'    => false,
 			]
 		);
 
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_preserves_existing_date(): void {
-		$original_date = time() - 10 * DAY_IN_SECONDS;
-		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, $original_date );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-				'created'          => time() - 90 * DAY_IN_SECONDS,
-			]
-		);
-
-		$this->assertSame( $original_date, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_empty_account(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date( [] );
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_test_drive_account(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => true,
-			]
-		);
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_when_payments_not_enabled(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => false,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-			]
-		);
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_skips_when_not_live(): void {
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => false,
-				'is_test_drive'    => false,
-			]
-		);
-
-		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+		$this->assertEquals( 12345, get_option( 'wcpay_kyc_completion_date' ) );
+		$this->assertEquals( 12300, get_option( 'wcpay_kyc_submitted_date' ) );
 	}
 }

@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Point CODEOWNERS at the PCI Guardians team (single trained reviewer group) for protected-branch reviews. CI/governance only, not user-facing. Refs WOOPMNT-6229.

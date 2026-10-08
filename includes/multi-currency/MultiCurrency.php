@@ -202,6 +202,22 @@ class MultiCurrency {
 	 */
 	protected $simulation_params = [];
 
+	/**
+	 * Whether init() has already run for this instance.
+	 *
+	 * Separate from the static $is_initialized, which reports whether Multi-Currency is running
+	 * and is shared by every instance in the process. This one guards re-entry per instance.
+	 *
+	 * @var bool
+	 */
+	private $init_ran = false;
+
+	/**
+	 * Whether initialization completed and frontend hooks can be refreshed.
+	 *
+	 * @var bool
+	 */
+	private $init_completed = false;
 
 	/**
 	 * Class constructor.
@@ -240,6 +256,25 @@ class MultiCurrency {
 		if ( function_exists( 'WC_Payments_Multi_Currency' ) ) {
 			return WC_Payments_Multi_Currency();
 		}
+	}
+
+	/**
+	 * Whether the Multi-Currency module may initialize on this request.
+	 *
+	 * True when the customer multi-currency feature is enabled, or when the merchant is going through the
+	 * Multi-Currency setup flow, which needs the module before the feature is switched on. Everything that
+	 * boots the module — the `plugins_loaded` bootstrap, the lazy-initializing getters, and direct callers of
+	 * `WC_Payments_Multi_Currency()` — must respect this, so a disabled module never registers hooks or
+	 * touches the currency, no matter who asks for it.
+	 *
+	 * @return bool
+	 */
+	public static function is_enabled(): bool {
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			return true;
+		}
+
+		return function_exists( 'wcpay_multi_currency_onboarding_check' ) && wcpay_multi_currency_onboarding_check();
 	}
 
 	/**
@@ -299,6 +334,31 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		// init() runs on the `init` action and lazily from the getters below. A caller that reaches
+		// a getter before `init` fires would otherwise initialize twice, leaving two sets of price
+		// and currency objects hooked at the same priority.
+		if ( $this->init_ran ) {
+			// In cache-optimized mode, a getter can trigger init() before the WooCommerce session
+			// exists, which selects async rendering. Once the session is available, switch to
+			// server-side prices so the visitor's selected currency is honoured for the rest of the
+			// request. Outside cache-optimized mode the first call already registered server-side
+			// hooks, so a repeated call leaves them alone.
+			if ( $this->init_completed && $this->is_cache_optimized_mode() && ! $this->should_use_async_rendering() ) {
+				$this->enable_server_price_hooks();
+			}
+			return;
+		}
+
+		$this->init_ran = true;
+
+		// The lazy-initializing getters call init() on demand, and any code path can reach them through
+		// WC_Payments_Multi_Currency() regardless of the feature flag. Refuse to initialize when the module
+		// is disabled, so a disabled module never registers the frontend currency and price hooks.
+		if ( ! static::is_enabled() ) {
+			$this->set_inert_state();
+			return;
+		}
+
 		// If the store currency is not in the list of available WooCommerce currencies
 		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
 		// Multi-Currency cannot function without a valid base currency.
@@ -311,10 +371,7 @@ class MultiCurrency {
 					$store_currency
 				)
 			);
-			// Initialize properties to safe defaults so lazy-init getters and
-			// later init-hook callbacks don't re-trigger init() or fatal.
-			$this->available_currencies = [];
-			$this->enabled_currencies   = [];
+			$this->set_inert_state();
 			return;
 		}
 
@@ -337,15 +394,15 @@ class MultiCurrency {
 
 		$admin_notices = new AdminNotices();
 		$user_settings = new UserSettings( $this );
-		new Analytics( $this, $this->settings_service );
+		$analytics     = new Analytics( $this, $this->settings_service );
 
-		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
-		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
-		$this->tracking            = new Tracking( $this );
+		$this->build_frontend_objects();
+		$this->tracking = new Tracking( $this );
 
 		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
+		$analytics->init_hooks();
 
 		// Use async (client-side) rendering only when should_use_async_rendering()
 		// is true: cache-optimized mode, no active session, and not a Store API
@@ -362,8 +419,7 @@ class MultiCurrency {
 		}
 
 		if ( ! $use_async_rendering || $has_pending_currency_switch ) {
-			$this->frontend_prices->init_hooks();
-			$this->frontend_currencies->init_hooks();
+			$this->enable_server_price_hooks();
 		}
 
 		$this->tracking->init_hooks();
@@ -384,6 +440,7 @@ class MultiCurrency {
 		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_update_customer_currencies_option' ] );
 
 		static::$is_initialized = true;
+		$this->init_completed   = true;
 	}
 
 	/**
@@ -494,7 +551,7 @@ class MultiCurrency {
 		// return any data we have cached (expired or not) or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
-			return $cached_data ?? null;
+			return $cached_data;
 		}
 
 		return $this->cache->get_or_add(
@@ -540,6 +597,10 @@ class MultiCurrency {
 	 * @return FrontendPrices
 	 */
 	public function get_frontend_prices(): FrontendPrices {
+		if ( null === $this->frontend_prices ) {
+			$this->init();
+		}
+
 		return $this->frontend_prices;
 	}
 
@@ -549,6 +610,10 @@ class MultiCurrency {
 	 * @return FrontendCurrencies
 	 */
 	public function get_frontend_currencies(): FrontendCurrencies {
+		if ( null === $this->frontend_currencies ) {
+			$this->init();
+		}
+
 		return $this->frontend_currencies;
 	}
 
@@ -570,12 +635,8 @@ class MultiCurrency {
 	 * @return string The widget markup.
 	 */
 	public function get_switcher_widget_markup( array $instance = [], array $args = [] ): string {
-		/**
-		 * The spl_object_hash function is used here due to we register the widget with an instance of the widget and
-		 * not the class name of the widget. WordPress core takes the instance and passes it through spl_object_hash
-		 * to get a hash and adds that as the widget's name in the $wp_widget_factory->widgets[] array. In order to
-		 * call the_widget, you need to have the name of the widget, so we get the instance and hash to use.
-		 */
+		global $wp_widget_factory;
+
 		ob_start();
 
 		$currency_switcher_widget = $this->get_currency_switcher_widget();
@@ -591,8 +652,14 @@ class MultiCurrency {
 			return ob_get_clean();
 		}
 
+		/*
+		 * WordPress changed instance widget keys from spl_object_hash() to spl_object_id() in 7.1.
+		 * Find the exact registered instance instead of reproducing WordPress's key generation.
+		 */
+		$widget_key = array_search( $currency_switcher_widget, $wp_widget_factory->widgets, true );
+
 		the_widget(
-			spl_object_hash( $currency_switcher_widget ),
+			$widget_key,
 			/**
 			 * Filters the instance settings passed to the currency switcher theme widget.
 			 *
@@ -793,19 +860,47 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Gets an explicit shopper or compatibility currency selection, if one exists.
+	 *
+	 * Unlike get_selected_currency(), this does not fall back to the store currency. Null means
+	 * Multi-Currency has nothing of its own to assert, so a third-party `woocommerce_currency`
+	 * filter should be left alone.
+	 *
+	 * A compatibility override always counts. A stored session or user-meta code only counts when
+	 * more than one currency is enabled: with a single currency nothing could have been selected,
+	 * so a stored code is stale state (an old `?currency=` link, meta from a time the store had more
+	 * currencies), not a choice to assert over other plugins' filters.
+	 *
+	 * @return Currency|null
+	 */
+	public function get_explicit_selected_currency(): ?Currency {
+		$enabled_currencies = $this->get_enabled_currencies();
+		$override_code      = $this->compatibility->override_selected_currency();
+
+		if ( $override_code ) {
+			return $enabled_currencies[ $override_code ] ?? null;
+		}
+
+		if ( count( $enabled_currencies ) < 2 ) {
+			return null;
+		}
+
+		$stored_code = $this->get_stored_currency_code();
+
+		if ( null === $stored_code || '' === $stored_code ) {
+			return null;
+		}
+
+		return $enabled_currencies[ $stored_code ] ?? null;
+	}
+
+	/**
 	 * Gets the user selected currency, or `$default_currency` if is not set.
 	 *
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$multi_currency_code = $this->compatibility->override_selected_currency();
-		$currency_code       = $multi_currency_code ? $multi_currency_code : $this->get_stored_currency_code();
-
-		if ( null === $currency_code ) {
-			return $this->get_default_currency();
-		}
-
-		return $this->get_enabled_currencies()[ $currency_code ] ?? $this->get_default_currency();
+		return $this->get_explicit_selected_currency() ?? $this->get_default_currency();
 	}
 
 	/**
@@ -1041,7 +1136,15 @@ class MultiCurrency {
 			return;
 		}
 
-		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$order_exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+
+		// Without the order rate, Multi-Currency did not convert the order, so neither the order nor the
+		// refund is a Multi-Currency order. Copying empty values would still make Analytics treat the
+		// refund as one and convert it with the Stripe rate, while the order stays unconverted.
+		if ( ! $order_exchange_rate ) {
+			return;
+		}
+
 		$stripe_exchange_rate   = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
 		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
 
@@ -1424,6 +1527,7 @@ class MultiCurrency {
 			$this->get_file_version( $script_file ),
 			true
 		);
+		wp_set_script_translations( $handler, 'woocommerce-payments' );
 	}
 
 	/**
@@ -1785,6 +1889,50 @@ class MultiCurrency {
 	private function set_default_currency() {
 		$available_currencies   = $this->get_available_currencies();
 		$this->default_currency = $available_currencies[ $this->get_store_currency_code() ] ?? null;
+	}
+
+	/**
+	 * Puts the module into its inert state: no currencies, no hooks, but every getter still
+	 * returns a usable value.
+	 *
+	 * Used when init() must not proceed, so lazy-initializing getters and later init-hook
+	 * callbacks neither re-trigger init() nor fatal. default_currency is assigned so
+	 * get_default_currency() short-circuits. The frontend price and currency objects are
+	 * constructed without their hooks, because get_frontend_prices() and
+	 * get_frontend_currencies() have non-nullable return types.
+	 *
+	 * @return void
+	 */
+	private function set_inert_state() {
+		$this->available_currencies = [];
+		$this->enabled_currencies   = [];
+		$this->default_currency     = new Currency( $this->localization_service, $this->get_store_currency_code() );
+		$this->build_frontend_objects();
+	}
+
+	/**
+	 * Switch to server price hooks without replacing their owning instances.
+	 *
+	 * @return void
+	 */
+	private function enable_server_price_hooks() {
+		$this->async_renderer->remove_hooks();
+		$this->frontend_currencies->selected_currency_changed();
+		$this->frontend_prices->init_hooks();
+		$this->frontend_currencies->init_hooks();
+	}
+
+	/**
+	 * Constructs the frontend price and currency objects, without registering their hooks.
+	 *
+	 * Shared by the full initialization and the inert state so the two cannot drift. Objects that
+	 * already exist are kept: callers may be holding a reference obtained through the getters.
+	 *
+	 * @return void
+	 */
+	private function build_frontend_objects() {
+		$this->frontend_prices     = $this->frontend_prices ?? new FrontendPrices( $this, $this->compatibility );
+		$this->frontend_currencies = $this->frontend_currencies ?? new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 	}
 
 	/**

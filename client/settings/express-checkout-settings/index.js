@@ -181,16 +181,17 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	}
 
 	// Only show the 'general' section of the WooPay method if the WooPay express checkout feature is enabled.
+	let { sections } = method;
 	if (
 		method.title === 'WooPay' &&
 		! wcpaySettings.featureFlags.woopayExpressCheckout
 	) {
-		method.sections = method.sections.filter( ( section ) => {
+		sections = sections.filter( ( section ) => {
 			return section.section !== 'general';
 		} );
 	}
 
-	const { sections, controls: Controls } = method;
+	const { controls: Controls } = method;
 
 	return (
 		<SettingsLayout>

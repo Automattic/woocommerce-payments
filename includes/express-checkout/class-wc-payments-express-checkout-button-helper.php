@@ -37,6 +37,30 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private $account;
 
 	/**
+	 * Whether the [product_page] shortcode context has been worked out for this request.
+	 *
+	 * Only ever set once the main query and its host post are available, so a caller that
+	 * asks before WordPress has parsed the request cannot pin a "no" for the whole request.
+	 *
+	 * @var bool
+	 */
+	private $shortcode_context_resolved = false;
+
+	/**
+	 * Whether the host post embeds a [product_page] shortcode, however it resolves.
+	 *
+	 * @var bool
+	 */
+	private $has_product_page_shortcode = false;
+
+	/**
+	 * The product that shortcode embeds, or null when it names one that no longer exists.
+	 *
+	 * @var WC_Product|null
+	 */
+	private $shortcode_product = null;
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
@@ -229,7 +253,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_product() {
-		return is_product() || wc_post_content_has_shortcode( 'product_page' );
+		$this->resolve_shortcode_context();
+
+		return is_product() || $this->has_product_page_shortcode;
 	}
 
 	/**
@@ -305,21 +331,126 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		if ( $this->is_checkout() || $this->is_cart() ) {
-			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
-				return true;
-			}
-			if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
-				return true;
-			}
-			if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
-				return true;
-			}
-			if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
-				return true;
-			}
+			return $this->cart_contains_subscription();
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether the cart holds a subscription of any shape: initial purchase, renewal,
+	 * resubscribe, or switch. Reads cart state only, so the Store API cart endpoint
+	 * can use it when `is_cart()` / `is_checkout()` are both false.
+	 *
+	 * @return boolean
+	 */
+	private function cart_contains_subscription() {
+		if ( ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return true;
+		}
+		if ( function_exists( 'wcs_cart_contains_renewal' ) && wcs_cart_contains_renewal() ) {
+			return true;
+		}
+		if ( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) {
+			return true;
+		}
+		if ( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether paying the current order-pay order will be a recurring payment.
+	 * Pay-for-order uses the order Store API, which does not carry the cart `wcpay`
+	 * extension, so this reads the order rather than the cart. Defers to the
+	 * gateway's `is_payment_recurring()` so the token matches the intent the
+	 * gateway will create after the wallet sheet closes.
+	 *
+	 * @return boolean
+	 */
+	private function is_order_payment_recurring() {
+		// Scripts enqueue on `wp_enqueue_scripts`, before core validates the key on `the_content`,
+		// so this cannot lean on core having already turned the request away.
+		$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
+
+		if ( ! $order ) {
+			return false;
+		}
+
+		return $this->gateway->is_payment_recurring( $order->get_id() );
+	}
+
+	/**
+	 * Returns the `setup_future_usage` that express checkout should mint its Stripe
+	 * ConfirmationToken with, for the current cart or product.
+	 *
+	 * Stripe fixes this value when the token is created — before the wallet sheet opens —
+	 * and rejects the confirmation if the PaymentIntent later asks for a different one.
+	 * The gateway asks for `off_session` whenever it saves the payment method. Only
+	 * WooCommerce Subscriptions is knowable this early, so the filter below is how
+	 * everything else declares itself.
+	 *
+	 * @param string|null $context Button context to evaluate for ('product', 'cart',
+	 *                             'checkout', 'pay_for_order'). Defaults to the current
+	 *                             page's context. 'cart', 'checkout' and 'pay_for_order'
+	 *                             resolve from cart or order state, so request handlers
+	 *                             with no page context can name one; 'product' needs the
+	 *                             queried product and falls back to page state.
+	 *
+	 * @return string|null 'off_session' when the payment method will be saved, null otherwise.
+	 */
+	public function get_setup_future_usage( ?string $context = null ) {
+		$context = $context ?? $this->get_button_context();
+
+		switch ( $context ) {
+			case 'pay_for_order':
+				$will_be_saved = $this->is_order_payment_recurring();
+				break;
+			case 'cart':
+			case 'checkout':
+				// Both read the same cart. Naming either works with no page state.
+				$will_be_saved = $this->cart_contains_subscription();
+				break;
+			default:
+				// 'product' included: it needs the queried product.
+				$will_be_saved = $this->has_subscription_product();
+				break;
+		}
+
+		/**
+		 * Filters the `setup_future_usage` express checkout mints its ConfirmationToken with.
+		 *
+		 * Return 'off_session' when the payment method will genuinely be saved for later —
+		 * a subscription plugin other than WooCommerce Subscriptions, or any integration that
+		 * sets `wc-woocommerce_payments-new-payment-method` while the order is processed.
+		 * Return null otherwise.
+		 *
+		 * Declare 'off_session' only when the payment method really will be saved. Stripe
+		 * inherits the token's value onto the PaymentIntent even when the intent itself omits
+		 * it, so over-declaring silently attaches the shopper's card to the Stripe customer on
+		 * an ordinary one-off purchase, with no WooPayments token recorded against it.
+		 *
+		 * @since 11.2.0
+		 *
+		 * @param string|null $setup_future_usage 'off_session' or null.
+		 * @param string      $context            Button context: 'product', 'cart', 'checkout',
+		 *                                        'pay_for_order', or '' when undetermined.
+		 */
+		$setup_future_usage = apply_filters(
+			'wcpay_express_checkout_setup_future_usage',
+			$will_be_saved ? 'off_session' : null,
+			$context
+		);
+
+		// Normalise to the two values Stripe and the Store API schema accept.
+		// Anything that is not an explicit 'off_session' resolves to null.
+		return 'off_session' === $setup_future_usage ? 'off_session' : null;
 	}
 
 	/**
@@ -468,19 +599,22 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function get_product() {
 		global $post;
 
+		// The button markup goes out on woocommerce_after_add_to_cart_form, which only fires
+		// from inside a single-product loop - the product template's and the [product_page]
+		// shortcode's alike. WooCommerce has already set up the global product by then, so
+		// take its answer rather than deriving a second one. Narrow to that hook: elsewhere
+		// the global can be left over from an archive, cross-sell or [products] loop.
+		if ( doing_action( 'woocommerce_after_add_to_cart_form' ) && isset( $GLOBALS['product'] ) && $GLOBALS['product'] instanceof WC_Product ) {
+			return $GLOBALS['product'];
+		}
+
 		if ( is_product() ) {
 			return wc_get_product( $post->ID );
 		}
 
-		if ( wc_post_content_has_shortcode( 'product_page' ) ) {
-			// Get id from product_page shortcode.
-			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
-			if ( isset( $shortcode_match['id'] ) ) {
-				return wc_get_product( $shortcode_match['id'] );
-			}
-		}
+		$this->resolve_shortcode_context();
 
-		return null;
+		return $this->shortcode_product;
 	}
 
 	/**
@@ -826,6 +960,74 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 * @param WC_Product $product The product object.
 		 */
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * Works out, once per request, whether the current page embeds a [product_page]
+	 * shortcode and which product it names.
+	 *
+	 * Reads the host post off the main query rather than the $post / $wp_query globals:
+	 * the shortcode renders in its own loop, so by the time the button markup goes out
+	 * those globals point at the embedded product instead of at the page.
+	 *
+	 * @return void
+	 */
+	private function resolve_shortcode_context() {
+		if ( $this->shortcode_context_resolved ) {
+			return;
+		}
+
+		// A caller can reach this before WordPress has parsed the request - is_product() is
+		// public, so anything on init can - and the answer would be a meaningless "no".
+		// Leave the context unresolved so the next caller works it out for real.
+		$main_query = $GLOBALS['wp_the_query'] ?? null;
+		if ( ! $main_query instanceof WP_Query || ! $main_query->is_singular() ) {
+			return;
+		}
+
+		$host = $main_query->get_queried_object();
+		if ( ! $host instanceof WP_Post ) {
+			return;
+		}
+
+		$this->shortcode_context_resolved = true;
+
+		// WordPress's own shortcode regex, narrowed to this one tag: it hands back the raw
+		// attributes in the same pass and marks escaped [[product_page]] tags, which
+		// do_shortcode() skips too.
+		if ( ! preg_match_all( '/' . get_shortcode_regex( [ 'product_page' ] ) . '/', $host->post_content, $matches, PREG_SET_ORDER ) ) {
+			return;
+		}
+
+		$atts = null;
+		foreach ( $matches as $match ) {
+			if ( '[' === $match[1] && ']' === $match[6] ) {
+				continue;
+			}
+
+			$atts = shortcode_parse_atts( $match[3] );
+			break;
+		}
+
+		if ( null === $atts ) {
+			return;
+		}
+
+		// Presence is recorded whatever the attributes point at: is_product() has always
+		// answered "does this page embed the shortcode", and a shortcode naming a product
+		// that no longer exists must not turn that into a "no".
+		$this->has_product_page_shortcode = true;
+
+		$product_id = 0;
+		if ( ! empty( $atts['id'] ) ) {
+			$product_id = absint( $atts['id'] );
+		} elseif ( ! empty( $atts['sku'] ) ) {
+			$product_id = wc_get_product_id_by_sku( $atts['sku'] );
+		}
+
+		$product = $product_id ? wc_get_product( $product_id ) : null;
+
+		$this->shortcode_product = $product instanceof WC_Product ? $product : null;
 	}
 
 	/**

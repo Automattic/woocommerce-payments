@@ -64,7 +64,7 @@ class RestController extends \WP_REST_Controller {
 				[
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => [ $this, 'get_public_config' ],
-					'permission_callback' => '__return_true',
+					'permission_callback' => [ $this, 'check_public_config_permission' ],
 				]
 			);
 		}
@@ -247,7 +247,7 @@ class RestController extends \WP_REST_Controller {
 		$exchange_rate_type = $request->get_param( 'exchange_rate_type' );
 		$price_rounding     = $request->get_param( 'price_rounding' );
 		$price_charm        = $request->get_param( 'price_charm' );
-		$manual_rate        = $request->get_param( 'manual_rate' ) ?? null;
+		$manual_rate        = $request->get_param( 'manual_rate' );
 
 		try {
 			$this->multi_currency->update_single_currency_settings( $currency_code, $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );
@@ -293,6 +293,17 @@ class RestController extends \WP_REST_Controller {
 		// browser caching avoids repeated requests during a single browsing session.
 		$response->header( 'Cache-Control', 'private, max-age=300' );
 		return $response;
+	}
+
+	/**
+	 * Verify access to the public config endpoint.
+	 *
+	 * Always allowed: the endpoint serves anonymous visitors by design.
+	 *
+	 * @return bool
+	 */
+	public function check_public_config_permission() {
+		return true;
 	}
 
 	/**

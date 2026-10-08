@@ -113,6 +113,66 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_transaction( $transaction_id );
 	}
 
+	/**
+	 * Test that a % in a site-specific path survives the HTTP client inserting the blog ID.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_site_specific_request_escapes_percent_in_path() {
+		$export_id = 'id%s%d';
+		$blog_id   = 123;
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( $blog_id ): bool {
+						$this->assertSame(
+							'https://public-api.wordpress.com/wpcom/v2/sites/123/wcpay/deposits/download/id%s%d?test_mode=0',
+							sprintf( $data['url'], $blog_id )
+						);
+						return true;
+					}
+				)
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'download_url' => 'https://example.com/export.csv' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$this->payments_api_client->get_payouts_export_url( $export_id );
+	}
+
+	/**
+	 * Test that a fraud rule block error surfaces the ruleset results shipped with the error body.
+	 */
+	public function test_fraud_rule_block_error_carries_ruleset_results() {
+		$this->set_http_mock_response(
+			403,
+			[
+				'code'    => 'wcpay_blocked_by_fraud_rule',
+				'message' => "There's a problem with this payment.",
+				'data'    => [
+					'status'          => 403,
+					'ruleset_results' => [ 'avs_verification' => 'block' ],
+				],
+			]
+		);
+
+		try {
+			$this->payments_api_client->get_transaction( 'txn_mock' );
+			$this->fail( 'Expected Blocked_By_Fraud_Rules_Exception to be thrown.' );
+		} catch ( \WCPay\Exceptions\Blocked_By_Fraud_Rules_Exception $e ) {
+			$this->assertSame( 'wcpay_blocked_by_fraud_rule', $e->get_error_code() );
+			$this->assertSame( [ 'avs_verification' => 'block' ], $e->get_ruleset_results() );
+		}
+	}
 
 	/**
 	 * Test creating a customer.

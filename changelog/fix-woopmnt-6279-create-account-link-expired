@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix "Create Account" failing with a nonce error on the order confirmation page after paying with a non-card method (e.g. Affirm).

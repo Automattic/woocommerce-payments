@@ -21,6 +21,8 @@ class Erase_Bnpl_Announcement_Meta_Test extends WCPAY_UnitTestCase {
 	private $migration;
 
 	public function set_up() {
+		parent::set_up();
+
 		$this->migration = new Erase_Bnpl_Announcement_Meta();
 		set_transient( 'wcpay_bnpl_april15_successful_purchases_count', '5', 10 * DAY_IN_SECONDS );
 		add_user_meta( 1, '__unrelated_meta', 'fake-value', true );

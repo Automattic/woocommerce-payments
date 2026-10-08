@@ -97,10 +97,10 @@
 		"react-hooks/static-components": "error",
 		"react-hooks/purity": "error",
 		"react-hooks/use-memo": "error",
-		/* BEGIN WOOPMNT-6292 — react-hooks v7 new rules, temporarily set to warn until violations are fixed */
+		"react-hooks/immutability": "error",
+		"react-hooks/set-state-in-effect": "error",
+		/* BEGIN WOOPMNT-6292 — react-hooks v7 remaining rule, temporarily set to warn until violations are fixed */
 		"react-hooks/refs": "warn",
-		"react-hooks/set-state-in-effect": "warn",
-		"react-hooks/immutability": "warn",
 		/* END WOOPMNT-6292 */
 		"jest/no-conditional-expect": "off",
 		"jest/valid-title": "off",
@@ -121,6 +121,30 @@
 		]
 	},
 	"overrides": [
+		// Jest reads its per-file configuration from the leading docblock, so
+		// test files carry `@jest-environment*` pragmas that are not JSDoc tags.
+		{
+			"files": [
+				"**/__tests__/**",
+				"**/test/**",
+				"*.test.js",
+				"*.test.ts",
+				"*.test.tsx"
+			],
+			"rules": {
+				"jsdoc/check-tag-names": [
+					"error",
+					{
+						"definedTags": [
+							"format",
+							"jest-environment",
+							"jest-environment-options"
+						]
+					}
+				],
+				"jsdoc/valid-types": "off"
+			}
+		},
 		{
 			"files": [ "*.js", "*.jsx" ],
 			"rules": {

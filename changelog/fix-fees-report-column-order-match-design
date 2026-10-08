@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Match the Fees report default column order to the design, placing Transaction ID after Order ID

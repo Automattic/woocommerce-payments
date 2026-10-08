@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix PHP 8.5 deprecation notice when selecting a currency before any currency is stored for the user or session

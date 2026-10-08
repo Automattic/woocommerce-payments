@@ -30,6 +30,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	];
 
 	public function set_up() {
+		parent::set_up();
+
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );

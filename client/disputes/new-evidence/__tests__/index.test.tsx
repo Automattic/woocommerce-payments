@@ -545,7 +545,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 
 			await waitFor( () => {
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					'Error: API error'
+					'API error'
 				);
 			} );
 		} );
@@ -558,7 +558,11 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				createInfoNotice: jest.fn(),
 			} );
 
-			const error = new Error( 'Save error' );
+			const error = {
+				code: 'lock_timeout',
+				message: 'Save error',
+				data: null,
+			};
 			mockApiFetch
 				.mockResolvedValueOnce( baseDispute )
 				.mockRejectedValueOnce( error );
@@ -572,7 +576,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				fireEvent.click( saveButton );
 
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					expect.stringContaining( 'Save error' )
+					'Failed to save evidence. (Save error)'
 				);
 			} );
 		} );
@@ -719,6 +723,41 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 				} )
 			);
 		} );
+	} );
+
+	it( 'keeps typed evidence when settings finish loading after the dispute', async () => {
+		const loadedSettings = {
+			account_country: 'US',
+			account_business_name: 'Test Store',
+		};
+		let settings = {};
+		mockUseGetSettings.mockImplementation( () => settings );
+
+		const { rerender } = render(
+			<NewEvidence query={ { id: 'dp_test_456' } } />
+		);
+
+		const description = await screen.findByLabelText(
+			'PRODUCT OR SERVICE DESCRIPTION'
+		);
+		fireEvent.change( description, {
+			target: { value: 'my product description' },
+		} );
+
+		settings = loadedSettings;
+		rerender( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByLabelText( 'PRODUCT OR SERVICE DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
+
+		expect(
+			mockApiFetch.mock.calls.filter(
+				( [ options ] ) => ! ( options as { method?: string } ).method
+			)
+		).toHaveLength( 1 );
 	} );
 
 	it( 'should regenerate cover letter when product type changes even if previously edited', async () => {

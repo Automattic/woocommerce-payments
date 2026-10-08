@@ -3,6 +3,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { speak } from '@wordpress/a11y';
+import { debounce } from 'lodash';
 import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
 
 /**
@@ -27,7 +29,10 @@ import {
 import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
 import { getResolvedCurrency } from '../utils/resolved-currency-cache';
 import { rememberElementCurrency } from '../utils/element-currency-cache';
-import { getSetupFutureUsageForCart } from '../utils/subscriptions';
+import {
+	resolveSetupFutureUsage,
+	getLocalizedSetupFutureUsage,
+} from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -55,6 +60,25 @@ import {
 } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
+// Forced refreshes are numbered so that a slower, superseded one never publishes
+// its cart data, remounts Elements, or lifts the overlay over a newer one.
+let latestForcedRefreshId = 0;
+
+// The overlay says nothing to screen-reader users, so a rejected tap is announced.
+// Leading-edge debounce: one announcement per burst of taps.
+const announceRefreshInProgress = debounce(
+	() =>
+		speak(
+			__(
+				'Updating payment details. Please try again in a moment.',
+				'woocommerce-payments'
+			),
+			'assertive'
+		),
+	1000,
+	{ leading: true, trailing: false }
+);
+
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
 		return await getCartApiHandler().getCart();
@@ -222,19 +246,21 @@ jQuery( ( $ ) => {
 		 * @param {Object} creationOptions ECE initialization options.
 		 */
 		startExpressCheckoutElement: async ( creationOptions ) => {
+			const { isSuperseded = () => false } = creationOptions;
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
+
+			if ( isSuperseded() ) {
+				return;
+			}
+
 			const useConfirmationToken =
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
 			const isManualCaptureEnabled =
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-			const hasSubscription =
-				getExpressCheckoutData( 'has_subscription' ) ?? false;
-			const {
-				setupFutureUsage = hasSubscription ? 'off_session' : null,
-			} = creationOptions;
+			const { setupFutureUsage } = creationOptions;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -285,6 +311,21 @@ jQuery( ( $ ) => {
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( getExpressCheckoutData( 'login_confirmation' ) ) {
 					displayLoginConfirmation( event.expressPaymentType );
+					return;
+				}
+
+				// The Element mounted before a refresh stays clickable throughout it.
+				// The overlay alone is not enough: an element-level blockUI block
+				// intercepts pointers, not keyboard or assistive-tech activation.
+				if ( expressCheckoutButtonUi.isBlocked() ) {
+					event.reject();
+					announceRefreshInProgress();
+					return;
+				}
+
+				const options = getOnClickOptions();
+				if ( ! options ) {
+					event.reject();
 					return;
 				}
 
@@ -345,7 +386,6 @@ jQuery( ( $ ) => {
 						} );
 				}
 
-				const options = getOnClickOptions();
 				const shippingOptionsWithFallback =
 					// server-side data on the product page initialization doesn't provide any shipping rates.
 					! options.shippingRates ||
@@ -463,7 +503,11 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: async () => {
+		init: async ( { refreshId = null } = {} ) => {
+			const isForcedRefresh = refreshId !== null;
+			const isSuperseded = () =>
+				isForcedRefresh && refreshId !== latestForcedRefreshId;
+
 			removeAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout'
@@ -502,13 +546,28 @@ jQuery( ( $ ) => {
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
 
 			if (
-				! cachedCartData &&
+				( isForcedRefresh || ! cachedCartData ) &&
 				( ! getExpressCheckoutData( 'product' ) ||
 					needsMethodsReevaluation )
 			) {
 				try {
-					cachedCartData = await fetchNewCartData();
-				} catch ( e ) {}
+					const freshCartData = await fetchNewCartData();
+
+					if ( isSuperseded() ) {
+						return;
+					}
+
+					cachedCartData = freshCartData;
+				} catch ( e ) {
+					if ( isSuperseded() ) {
+						return;
+					}
+
+					// Nothing trustworthy is left, so hide the button and reject
+					// clicks until a later refresh succeeds, rather than keep
+					// the pre-refresh snapshot.
+					cachedCartData = null;
+				}
 			}
 
 			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
@@ -572,8 +631,8 @@ jQuery( ( $ ) => {
 					total,
 					currency: cachedCartData.totals.currency_code.toLowerCase(),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage:
-						getSetupFutureUsageForCart( cachedCartData ),
+					setupFutureUsage: resolveSetupFutureUsage( cachedCartData ),
+					isSuperseded,
 				} );
 			} else if (
 				isProductContext &&
@@ -583,11 +642,8 @@ jQuery( ( $ ) => {
 					total,
 					currency: getResolvedCurrency( initialCurrency ),
 					enabledMethods: enabledMethodsOverride,
-					setupFutureUsage: getExpressCheckoutData(
-						'has_subscription'
-					)
-						? 'off_session'
-						: null,
+					setupFutureUsage: getLocalizedSetupFutureUsage(),
+					isSuperseded,
 				} );
 			} else {
 				expressCheckoutButtonUi.hideContainer();
@@ -598,6 +654,13 @@ jQuery( ( $ ) => {
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
 				async () => {
+					// Numbered off the same counter as the forced refreshes, so
+					// two variation or quantity changes in a row can't let the
+					// slower one publish over the newer one.
+					const refetchId = ++latestForcedRefreshId;
+					const isSupersededRefetch = () =>
+						refetchId !== latestForcedRefreshId;
+
 					// A blocked product (no variation selected, out of stock…) would
 					// fail the cart fetch, so skip the refresh.
 					if (
@@ -617,7 +680,13 @@ jQuery( ( $ ) => {
 
 						const prevTotal = getTotalAmount();
 
-						cachedCartData = await fetchNewCartData();
+						const freshCartData = await fetchNewCartData();
+
+						if ( isSupersededRefetch() ) {
+							return;
+						}
+
+						cachedCartData = freshCartData;
 
 						// We need to re init the payment request button to ensure the shipping options & taxes are re-fetched.
 						// The cachedCartData from the Store API will be used from now on,
@@ -636,7 +705,7 @@ jQuery( ( $ ) => {
 							...( useConfirmationToken
 								? {
 										setupFutureUsage:
-											getSetupFutureUsageForCart(
+											resolveSetupFutureUsage(
 												cachedCartData
 											),
 								  }
@@ -668,11 +737,36 @@ jQuery( ( $ ) => {
 							expressCheckoutButtonUi.getButtonSeparator().show();
 						}
 					} catch ( e ) {
+						if ( isSupersededRefetch() ) {
+							return;
+						}
+
+						// Nothing trustworthy is left, so hide the button and
+						// reject clicks until a later refetch succeeds, rather
+						// than keep the pre-refetch snapshot.
+						cachedCartData = null;
 						expressCheckoutButtonUi.hideContainer();
+						// A lingering block would make `blockButton()` a no-op
+						// for the rest of the page life.
+						expressCheckoutButtonUi.unblock();
 					}
 				}
 			);
 		},
+	};
+
+	const refreshExpressCheckoutElement = async () => {
+		const refreshId = ++latestForcedRefreshId;
+
+		expressCheckoutButtonUi.blockButton();
+
+		try {
+			await wcpayECE.init( { refreshId } );
+		} finally {
+			if ( refreshId === latestForcedRefreshId ) {
+				expressCheckoutButtonUi.unblock();
+			}
+		}
 	};
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
@@ -686,14 +780,12 @@ jQuery( ( $ ) => {
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
+		refreshExpressCheckoutElement();
 	} );
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		// we can't rely on the previous cart data, need to get fresh one.
-		cachedCartData = null;
-		wcpayECE.init();
+		refreshExpressCheckoutElement();
 	} );
 } );

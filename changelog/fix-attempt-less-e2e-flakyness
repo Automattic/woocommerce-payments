@@ -1,3 +1,0 @@
-Significance: patch
-Type: fix
-Comment: attempt to reduce E2E flakiness - retry the whole dev-tools toggle-and-save sequence on truncated renders, wait for React hydration in WooPayments settings navigation, poll for async dispute webhook before responding to disputes, harden the checkout place-order helper, and wait for checkout AJAX settle before selecting Bancontact

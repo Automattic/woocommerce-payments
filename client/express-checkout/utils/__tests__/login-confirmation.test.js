@@ -2,20 +2,24 @@
  * Internal dependencies
  */
 import { displayLoginConfirmation } from '../login-confirmation';
+import { redirectTo } from 'wcpay/utils/navigation';
+
+// jsdom marks `window.location` unforgeable, so the redirect is asserted
+// through the `redirectTo` helper instead of the location itself.
+jest.mock( 'wcpay/utils/navigation', () => ( {
+	redirectTo: jest.fn(),
+} ) );
 
 describe( 'displayLoginConfirmation', () => {
 	let confirmSpy;
-	const originalLocation = window.location;
 
 	beforeEach( () => {
 		confirmSpy = jest.spyOn( window, 'confirm' );
-		delete window.location;
-		window.location = { href: '' };
+		redirectTo.mockClear();
 	} );
 
 	afterEach( () => {
 		confirmSpy.mockRestore();
-		window.location = originalLocation;
 		delete window.wcpayExpressCheckoutParams;
 	} );
 
@@ -56,7 +60,7 @@ describe( 'displayLoginConfirmation', () => {
 		confirmSpy.mockReturnValue( true );
 		displayLoginConfirmation( 'apple_pay' );
 
-		expect( window.location.href ).toBe( '/my-account' );
+		expect( redirectTo ).toHaveBeenCalledWith( '/my-account' );
 	} );
 
 	test( 'does not redirect when user cancels', () => {
@@ -70,6 +74,6 @@ describe( 'displayLoginConfirmation', () => {
 		confirmSpy.mockReturnValue( false );
 		displayLoginConfirmation( 'apple_pay' );
 
-		expect( window.location.href ).toBe( '' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 	} );
 } );

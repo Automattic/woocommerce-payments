@@ -815,6 +815,73 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	/**
+	 * A legacy cache entry written before the `errored` field existed must resolve without a
+	 * PHP 8 "Undefined array key" warning. With convertWarningsToExceptions enabled, an unguarded
+	 * read of the missing key would throw here.
+	 */
+	public function test_get_ttl_handles_legacy_entry_without_errored_key() {
+		update_option(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[
+				'data'    => [ 'business_types' => [] ],
+				'fetched' => time(),
+			],
+			'no'
+		);
+
+		$this->assertSame(
+			[ 'business_types' => [] ],
+			$this->database_cache->get( Database_Cache::BUSINESS_TYPES_KEY )
+		);
+
+		delete_option( Database_Cache::BUSINESS_TYPES_KEY );
+	}
+
+	/**
+	 * @dataProvider provider_errored_ttl_ladder
+	 */
+	public function test_onboarding_fields_data_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
+			[ 'fields' => [] ],
+			true,
+			$expected_ttl,
+			$consecutive_errors
+		);
+	}
+
+	/**
+	 * @dataProvider provider_errored_ttl_ladder
+	 */
+	public function test_business_types_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[ 'business_types' => [] ],
+			true,
+			$expected_ttl,
+			$consecutive_errors
+		);
+	}
+
+	public function test_onboarding_fields_data_successful_entries_are_cached_for_a_week() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
+			[ 'fields' => [] ],
+			false,
+			WEEK_IN_SECONDS
+		);
+	}
+
+	public function test_business_types_successful_entries_are_cached_for_a_week() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			[ 'business_types' => [] ],
+			false,
+			WEEK_IN_SECONDS
+		);
+	}
+
 	public function test_errored_write_sets_consecutive_errors_to_one_on_first_failure() {
 		$refreshed = false;
 

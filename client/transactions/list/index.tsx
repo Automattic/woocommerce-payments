@@ -26,8 +26,9 @@ import {
 	useTransactions,
 	useTransactionsSummary,
 } from 'wcpay/data/transactions';
-import { Transaction } from 'wcpay/data/transactions/hooks';
+import { Transaction, TransactionType } from 'wcpay/data/transactions/hooks';
 import OrderLink from 'wcpay/components/order-link';
+import EarlyFraudWarningPill from 'wcpay/components/early-fraud-warning-pill';
 import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
 import ClickableCell from 'wcpay/components/clickable-cell';
 import { getDetailsURL } from 'wcpay/components/details-link';
@@ -62,6 +63,10 @@ import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTr
 interface TransactionsListProps {
 	depositId?: string;
 }
+
+// Rows that represent the payment itself. Its refund rows repeat the same charge
+// ID, so restricting to these keeps the fraud warning on one row per payment.
+const paymentTransactionTypes: TransactionType[] = [ 'charge', 'payment' ];
 
 interface Column extends TableCardColumn {
 	key:
@@ -467,7 +472,15 @@ export const TransactionsList = (
 			type: {
 				value: displayType[ dataType ],
 				display: clickable(
-					displayType[ dataType ] || formatStringValue( dataType )
+					<Fragment>
+						{ displayType[ dataType ] ||
+							formatStringValue( dataType ) }
+						{ paymentTransactionTypes.includes( txn.type ) && (
+							<EarlyFraudWarningPill
+								earlyFraudWarning={ txn.early_fraud_warning }
+							/>
+						) }
+					</Fragment>
 				),
 			},
 			source: {

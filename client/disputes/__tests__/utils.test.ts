@@ -1,8 +1,16 @@
 /**
  * Internal dependencies
  */
-import { isDueWithin, isInquiry, isVisaComplianceDispute } from '../utils';
+import {
+	getDisputeFeeAmount,
+	getKlarnaLossReason,
+	getKlarnaLossReasons,
+	isDueWithin,
+	isInquiry,
+	isVisaComplianceDispute,
+} from '../utils';
 import type { Dispute } from 'wcpay/types/disputes';
+import type { Charge } from 'wcpay/types/charges';
 
 describe( 'isDueWithin', () => {
 	// 2021-01-01T00:00:00.000Z
@@ -179,5 +187,200 @@ describe( 'isVisaComplianceDispute', () => {
 
 	test( 'returns false if dispute is undefined', () => {
 		expect( isVisaComplianceDispute( undefined as any ) ).toBe( false );
+	} );
+} );
+
+describe( 'getKlarnaLossReason', () => {
+	const disputeWithCode = ( code?: string | null ) =>
+		( {
+			payment_method_details: {
+				type: 'klarna',
+				klarna: { chargeback_loss_reason_code: code },
+			},
+		} as Pick< Dispute, 'payment_method_details' > );
+
+	test( 'returns the mapped display string for a known code', () => {
+		expect(
+			getKlarnaLossReason( disputeWithCode( 'shipping_policy_violated' ) )
+		).toEqual( {
+			type: 'stated',
+			display: 'Shipping policy violated',
+		} );
+	} );
+
+	test( 'humanizes an unmapped code rather than hiding it', () => {
+		expect(
+			getKlarnaLossReason( disputeWithCode( 'some_new_klarna_code' ) )
+		).toEqual( {
+			type: 'stated',
+			display: 'Some new klarna code',
+		} );
+	} );
+
+	test( 'normalizes codes that arrive in display form', () => {
+		expect(
+			getKlarnaLossReason(
+				disputeWithCode( 'Proof of delivery inadequate' )
+			)
+		).toEqual( {
+			type: 'stated',
+			display: 'Proof of delivery inadequate',
+		} );
+	} );
+
+	test( 'reports an unspecified reason separately from a missing one', () => {
+		expect(
+			getKlarnaLossReason( disputeWithCode( 'reason_unspecified' ) )
+		).toEqual( {
+			type: 'unspecified',
+		} );
+	} );
+
+	test( 'returns null when Klarna supplied no code', () => {
+		expect( getKlarnaLossReason( disputeWithCode( null ) ) ).toBeNull();
+		expect(
+			getKlarnaLossReason( disputeWithCode( undefined ) )
+		).toBeNull();
+		expect( getKlarnaLossReason( disputeWithCode( '' ) ) ).toBeNull();
+	} );
+
+	test( 'returns null for non-Klarna disputes', () => {
+		expect(
+			getKlarnaLossReason( {
+				payment_method_details: { type: 'card' },
+			} as Pick< Dispute, 'payment_method_details' > )
+		).toBeNull();
+		expect(
+			getKlarnaLossReason(
+				{} as Pick< Dispute, 'payment_method_details' >
+			)
+		).toBeNull();
+	} );
+} );
+
+describe( 'getKlarnaLossReasons', () => {
+	test( 'keys the reasons by dispute id, skipping disputes without one', () => {
+		const charge = {
+			disputes: [
+				{
+					id: 'dp_1',
+					payment_method_details: {
+						type: 'klarna',
+						klarna: {
+							chargeback_loss_reason_code:
+								'evidence_missing_customer_details',
+						},
+					},
+				},
+				{ id: 'dp_2', payment_method_details: { type: 'card' } },
+			],
+		} as unknown as Charge;
+
+		expect( getKlarnaLossReasons( charge ) ).toEqual( {
+			dp_1: {
+				type: 'stated',
+				display: 'Evidence missing customer details',
+			},
+		} );
+	} );
+
+	test( 'falls back to the charge’s singular dispute', () => {
+		const charge = {
+			dispute: {
+				id: 'dp_1',
+				payment_method_details: {
+					type: 'klarna',
+					klarna: {
+						chargeback_loss_reason_code: 'reason_unspecified',
+					},
+				},
+			},
+		} as unknown as Charge;
+
+		expect( getKlarnaLossReasons( charge ) ).toEqual( {
+			dp_1: { type: 'unspecified' },
+		} );
+	} );
+
+	test( 'returns an empty map for a charge without disputes', () => {
+		expect( getKlarnaLossReasons( {} as Charge ) ).toEqual( {} );
+	} );
+} );
+
+describe( 'getDisputeFeeAmount', () => {
+	const disputeFeeRow = {
+		amount: -5000,
+		currency: 'usd',
+		fee: 1500,
+		reporting_category: 'dispute',
+	};
+
+	describe( 'when the server annotates effective_fee', () => {
+		test( 'returns the annotated fee', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [],
+					effective_fee: { amount: 1500, currency: 'usd' },
+				} )
+			).toEqual( { amount: 1500, currency: 'usd' } );
+		} );
+
+		test( 'returns undefined when the fee was reversed', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [ disputeFeeRow ],
+					effective_fee: null,
+				} )
+			).toBeUndefined();
+		} );
+
+		test( 'returns undefined when the amount is malformed', () => {
+			// Would otherwise reach the currency formatter and render "$NaN".
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [],
+					effective_fee: {
+						currency: 'usd',
+					} as unknown as { amount: number; currency: string },
+				} )
+			).toBeUndefined();
+		} );
+
+		test( 'returns undefined when the fee is zero', () => {
+			// A $0.00 fee is no fee. Returning it would let callers render
+			// "the $0.00 fee has been deducted from your account".
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [],
+					effective_fee: { amount: 0, currency: 'usd' },
+				} )
+			).toBeUndefined();
+		} );
+	} );
+
+	describe( 'when falling back to balance_transactions', () => {
+		test( 'returns undefined when a reversal row is present', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [
+						disputeFeeRow,
+						{
+							amount: 5000,
+							currency: 'usd',
+							fee: -1500,
+							reporting_category: 'dispute_reversal',
+						},
+					],
+				} )
+			).toBeUndefined();
+		} );
+
+		test( 'returns undefined when the dispute row fee is zero', () => {
+			expect(
+				getDisputeFeeAmount( {
+					balance_transactions: [ { ...disputeFeeRow, fee: 0 } ],
+				} )
+			).toBeUndefined();
+		} );
 	} );
 } );

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Show all disputes on a transaction that has more than one, instead of only the first

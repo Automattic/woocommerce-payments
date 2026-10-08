@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Redact data from GET request URL in API log context
