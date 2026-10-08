@@ -9,7 +9,7 @@ on:
         description: 'Version to release (x.y.z)'
         required: true
       branch:
-        description: 'Branch to build and deploy: release/x.y.z to simulate before the merge, trunk to go live. Not the "Use workflow from" branch.'
+        description: 'Branch to deploy from (e.g. trunk or release/x.y.z)'
         required: true
         default: 'trunk'
       simulate:
