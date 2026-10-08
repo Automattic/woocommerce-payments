@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Apple Pay and Google Pay on product pages failing with a shipping option error when WooCommerce creates the buyer's account at checkout.

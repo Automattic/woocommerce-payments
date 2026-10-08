@@ -232,4 +232,97 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( '1', $session_handler->get( 'token_customer_id' ) );
 		$this->assertEquals( 1, $session_handler->get_customer_id() );
 	}
+
+	/**
+	 * Store API checkout calls `init_session_cookie()` again after creating the buyer's account.
+	 * The parent then migrates WooCommerce's guest session, which must not replace the token session.
+	 */
+	public function test_token_session_survives_account_creation_at_checkout() {
+		$token_session_id = $this->__set_up_guest_express_session();
+
+		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$session_handler->init();
+		// Changed earlier in the checkout request and not saved yet.
+		$session_handler->set( 'customer', [ 'email' => 'new-buyer@example.com' ] );
+
+		$new_customer_id = self::factory()->user->create();
+		wp_set_current_user( $new_customer_id );
+		$session_handler->init_session_cookie();
+
+		$this->assertSame( $token_session_id, $session_handler->session_id );
+		$this->assertSame( [ 'flat_rate:1' ], $session_handler->get( 'chosen_shipping_methods' ) );
+		$this->assertSame( [ 'email' => 'new-buyer@example.com' ], $session_handler->get( 'customer' ) );
+		$this->assertSame( (string) $new_customer_id, $session_handler->get( 'token_customer_id' ) );
+		$this->assertSame( (string) $new_customer_id, $session_handler->get_customer_id() );
+	}
+
+	/**
+	 * A retry after a failed payment sends the same token with WooCommerce's cookie for the new user.
+	 * The token session saved after account creation must pass the token/customer check.
+	 */
+	public function test_follow_up_request_after_account_creation_passes_token_check() {
+		$token_session_id = $this->__set_up_guest_express_session();
+
+		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$session_handler->init();
+		$new_customer_id = self::factory()->user->create();
+		wp_set_current_user( $new_customer_id );
+		$session_handler->init_session_cookie();
+		$session_handler->save_data();
+
+		// After migrating the guest session, WooCommerce points its session cookie at the new user.
+		$this->__create_fake_session_cookie( (string) $new_customer_id );
+		$follow_up_session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$follow_up_session_handler->init();
+
+		$this->assertSame( $token_session_id, $follow_up_session_handler->session_id );
+		$this->assertSame( [ 'flat_rate:1' ], $follow_up_session_handler->get( 'chosen_shipping_methods' ) );
+	}
+
+	/**
+	 * Sets up a guest's product-page express checkout session: the token session holding the shipping
+	 * choice and its header, plus WooCommerce's normal guest session and cookie.
+	 *
+	 * @return string The token session ID.
+	 */
+	private function __set_up_guest_express_session() {
+		global $wpdb;
+
+		$guest_customer_id = 't_' . substr( md5( uniqid( 'guest_session_', true ) ), 0, 30 );
+		$token_session_id  = 't_' . substr( md5( uniqid( 'token_session_', true ) ), 0, 30 );
+		$session_expiry    = time() + HOUR_IN_SECONDS;
+		$wpdb->insert(
+			$wpdb->prefix . 'woocommerce_sessions',
+			[
+				'session_key'    => $token_session_id,
+				'session_value'  => maybe_serialize(
+					[
+						'token_customer_id'       => $guest_customer_id,
+						'chosen_shipping_methods' => [ 'flat_rate:1' ],
+					]
+				),
+				'session_expiry' => $session_expiry,
+			]
+		);
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] = JsonWebToken::create(
+			[
+				'session_id' => $token_session_id,
+				'exp'        => $session_expiry,
+				'iss'        => 'woopayments/product-page',
+			],
+			'@' . wp_salt()
+		);
+		// WooCommerce's normal guest session, which never held the express checkout cart.
+		$wpdb->insert(
+			$wpdb->prefix . 'woocommerce_sessions',
+			[
+				'session_key'    => $guest_customer_id,
+				'session_value'  => maybe_serialize( [ 'test_key' => 'guest_session_value' ] ),
+				'session_expiry' => $session_expiry,
+			]
+		);
+		$this->__create_fake_session_cookie( $guest_customer_id );
+
+		return $token_session_id;
+	}
 }

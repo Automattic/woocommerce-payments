@@ -78,19 +78,23 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * Otherwise, this clears everything: https://github.com/woocommerce/woocommerce/blob/de4a8ffdd474ca1879d4aa16487d6c52472a861b/plugins/woocommerce/src/StoreApi/Routes/V1/Checkout.php#L556-L558
 	 */
 	public function init_session_cookie() {
-		// If an account has been created after the session has been initialized, update the session.
-		// This method is called directly by WC blocks when an account is created right before placing an order.
-		$previous_session_data = null;
+		// The Store API calls this again after creating the buyer's account. The parent then migrates
+		// WooCommerce's guest session over the token session, so keep a copy to put back.
+		$customer_id_before_init = $this->_customer_id;
+		$token_session_data      = $this->_data;
+
 		parent::init_session_cookie();
 
 		if ( is_user_logged_in() && strval( get_current_user_id() ) !== $this->_customer_id ) {
-			$previous_session_data = $this->_data;
-			$this->_customer_id    = strval( get_current_user_id() );
+			$this->_customer_id = strval( get_current_user_id() );
 		}
 
 		$this->init_session_from_token();
-		if ( ! empty( $previous_session_data ) ) {
-			$this->_data = $previous_session_data;
+
+		if ( null !== $customer_id_before_init && $customer_id_before_init !== $this->_customer_id ) {
+			$this->_data                      = $token_session_data;
+			$this->_data['token_customer_id'] = $this->_customer_id;
+			$this->_dirty                     = true;
 		}
 	}
 
