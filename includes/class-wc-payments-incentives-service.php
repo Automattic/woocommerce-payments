@@ -494,8 +494,6 @@ class WC_Payments_Incentives_Service {
 	 * not actual use of it. This mirrors how we decide whether an account belongs to
 	 * a genuine live merchant.
 	 *
-	 * @see WC_Payments_Account::maybe_record_kyc_completion_date()
-	 *
 	 * @return boolean
 	 */
 	private function has_wcpay_account_data(): bool {
