@@ -17,7 +17,7 @@ import { useGetAvailablePaymentMethodIds } from 'wcpay/data/settings';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import CardBody from 'wcpay/settings/card-body';
 
-const BuyNowPayLaterMethodsDescription = () => (
+export const BuyNowPayLaterMethodsDescription = () => (
 	<>
 		<h2>{ __( 'Buy now, pay later', 'woocommerce-payments' ) }</h2>
 		<p>
@@ -33,7 +33,7 @@ const BuyNowPayLaterMethodsDescription = () => (
 	</>
 );
 
-const BuyNowPayLaterSection = () => {
+export const BuyNowPayLaterControl = ( { children } ) => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	const availableBuyNowPayLaterMethodIds = availablePaymentMethodIds.filter(
@@ -47,21 +47,40 @@ const BuyNowPayLaterSection = () => {
 	}
 
 	return (
+		<>
+			{ children }
+			<LoadableSettingsSection numLines={ 30 }>
+				<ErrorBoundary>
+					<div className="payment-methods">
+						<PaymentMethodsList
+							methodIds={ availableBuyNowPayLaterMethodIds }
+						/>
+					</div>
+				</ErrorBoundary>
+			</LoadableSettingsSection>
+		</>
+	);
+};
+
+const BuyNowPayLaterSection = () => {
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+	if (
+		! availablePaymentMethodIds.some(
+			( id ) => methodsConfiguration[ id ]?.allows_pay_later
+		)
+	) {
+		return null;
+	}
+	return (
 		<SettingsSection
 			description={ BuyNowPayLaterMethodsDescription }
 			id="buy-now-pay-later-methods"
 		>
-			<LoadableSettingsSection numLines={ 30 }>
-				<ErrorBoundary>
-					<Card className="payment-methods">
-						<CardBody size={ null }>
-							<PaymentMethodsList
-								methodIds={ availableBuyNowPayLaterMethodIds }
-							/>
-						</CardBody>
-					</Card>
-				</ErrorBoundary>
-			</LoadableSettingsSection>
+			<Card className="payment-methods">
+				<CardBody size={ null }>
+					<BuyNowPayLaterControl />
+				</CardBody>
+			</Card>
 		</SettingsSection>
 	);
 };
