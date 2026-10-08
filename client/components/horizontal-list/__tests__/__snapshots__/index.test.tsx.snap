@@ -4,7 +4,6 @@ exports[`HorizontalList correctly renders a List element with horizontal class m
 <div>
   <ul
     class="woocommerce-list woocommerce-list--horizontal"
-    role="menu"
   >
     <li
       class="woocommerce-list__item"

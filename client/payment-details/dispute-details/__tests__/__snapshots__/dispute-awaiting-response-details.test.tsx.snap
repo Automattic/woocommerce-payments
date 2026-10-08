@@ -146,7 +146,6 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
       >
         <ul
           class="woocommerce-list woocommerce-list--horizontal"
-          role="menu"
         >
           <li
             class="woocommerce-list__item"

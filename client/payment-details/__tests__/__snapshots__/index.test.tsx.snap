@@ -952,7 +952,6 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
         >
           <ul
             class="woocommerce-list woocommerce-list--horizontal"
-            role="menu"
           >
             <li
               class="woocommerce-list__item"

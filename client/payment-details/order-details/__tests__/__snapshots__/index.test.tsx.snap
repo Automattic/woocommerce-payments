@@ -293,7 +293,6 @@ exports[`Order details page should match the snapshot - Charge without payment i
         >
           <ul
             class="woocommerce-list woocommerce-list--horizontal"
-            role="menu"
           >
             <li
               class="woocommerce-list__item"
