@@ -2580,6 +2580,19 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					]
 				),
 			],
+			'Failed charge, intent out of sync'   => [
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => uniqid( 'pi_' ),
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [
+							'status'   => 'failed',
+							'id'       => uniqid( 'ch_' ),
+							'captured' => false,
+						],
+					]
+				),
+			],
 		];
 	}
 
