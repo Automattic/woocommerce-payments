@@ -232,4 +232,65 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( '1', $session_handler->get( 'token_customer_id' ) );
 		$this->assertEquals( 1, $session_handler->get_customer_id() );
 	}
+
+	/**
+	 * A logged-in shopper without a session cookie gets their user ID, not a `t_` guest ID.
+	 */
+	public function test_logged_in_user_without_session_cookie_gets_user_id() {
+		wp_set_current_user( 1 );
+
+		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$session_handler->init();
+
+		$this->assertEquals( '1', $session_handler->get_customer_id() );
+		$this->assertEquals( '1', $session_handler->get( 'token_customer_id' ) );
+	}
+
+	/**
+	 * The Store API creates the account in the middle of checkout and calls `init_session_cookie()` again.
+	 * The token session must survive, or checkout fails with "Sorry, this order requires a shipping option".
+	 */
+	public function test_session_data_kept_when_account_is_created_during_checkout() {
+		global $wpdb;
+
+		$guest_customer_id       = 't_' . substr( md5( 'guest_' . time() ), 0, 30 );
+		$mock_header_session_id  = 't_' . substr( md5( 'test_session_' . time() ), 0, 30 );
+		$mock_header_session_exp = time() + HOUR_IN_SECONDS;
+		$wpdb->insert(
+			$wpdb->prefix . 'woocommerce_sessions',
+			[
+				'session_key'    => $mock_header_session_id,
+				'session_value'  => maybe_serialize(
+					[
+						'token_customer_id'       => $guest_customer_id,
+						'chosen_shipping_methods' => [ 'flat_rate:1' ],
+					]
+				),
+				'session_expiry' => $mock_header_session_exp,
+			]
+		);
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] = JsonWebToken::create(
+			[
+				'session_id' => $mock_header_session_id,
+				'exp'        => $mock_header_session_exp,
+				'iss'        => 'woopayments/product-page',
+			],
+			'@' . wp_salt()
+		);
+		$this->__create_fake_session_cookie( $guest_customer_id );
+
+		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$session_handler->init();
+		$session_handler->set( 'customer', [ 'email' => 'shopper@example.com' ] );
+
+		$new_customer_id = self::factory()->user->create();
+		wp_set_current_user( $new_customer_id );
+		$session_handler->init_session_cookie();
+
+		$this->assertEquals( $mock_header_session_id, $session_handler->session_id );
+		$this->assertEquals( (string) $new_customer_id, $session_handler->get_customer_id() );
+		$this->assertEquals( [ 'flat_rate:1' ], $session_handler->get( 'chosen_shipping_methods' ) );
+		$this->assertEquals( [ 'email' => 'shopper@example.com' ], $session_handler->get( 'customer' ) );
+		$this->assertEquals( (string) $new_customer_id, $session_handler->get( 'token_customer_id' ) );
+	}
 }
