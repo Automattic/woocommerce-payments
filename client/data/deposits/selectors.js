@@ -5,6 +5,14 @@
  */
 import { getResourceId } from 'utils/data';
 
+// Selectors must return the same reference for the same state, or every
+// `useSelect` caller re-renders on each store update.
+const EMPTY_OBJECT = {};
+const EMPTY_ARRAY = [];
+const EMPTY_OVERVIEWS = { account: null, currencies: EMPTY_ARRAY };
+const overviewsCache = new WeakMap();
+const depositsCache = new WeakMap();
+
 /**
  * Retrieves the deposits state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
@@ -43,18 +51,20 @@ export const getDeposit = ( state, id ) => {
  * @return {Object} A complex object, containing all neccessary overviews.
  */
 export const getAllDepositsOverviews = ( state ) => {
-	const DepositsOverview = getDepositsState( state ).overviews || {};
+	const { data } = getDepositsState( state ).overviews || {};
 
 	// Return an empty skeleton if data has not been loaded yet.
-	if ( ! DepositsOverview.data ) {
-		return {
-			account: null,
-			currencies: [],
-		};
+	if ( ! data ) {
+		return EMPTY_OVERVIEWS;
 	}
 
-	const { deposit, balance, account } = DepositsOverview.data;
+	if ( ! overviewsCache.has( data ) ) {
+		overviewsCache.set( data, buildDepositsOverviews( data ) );
+	}
+	return overviewsCache.get( data );
+};
 
+const buildDepositsOverviews = ( { deposit, balance, account } ) => {
 	const groups = {
 		lastPaid: deposit.last_paid,
 		pending: balance.pending,
@@ -62,10 +72,6 @@ export const getAllDepositsOverviews = ( state ) => {
 		instant: balance.instant,
 	};
 
-	/**
-	 * Note: The computations in this selector should be simple enough
-	 * not to require memorization, but it can be added if required.
-	 */
 	const currencies = {};
 	for ( const [ key, values ] of Object.entries( groups ) ) {
 		values?.forEach( ( value ) => {
@@ -123,8 +129,20 @@ const getDepositsForQuery = ( state, query ) => {
 };
 
 export const getDeposits = ( state, query ) => {
-	const ids = getDepositsForQuery( state, query ).data || [];
-	return ids.map( getDeposit.bind( this, state ) );
+	const ids = getDepositsForQuery( state, query ).data;
+	if ( ! ids ) {
+		return EMPTY_ARRAY;
+	}
+
+	const { byId } = getDepositsState( state );
+	const cached = depositsCache.get( ids );
+	if ( cached?.byId === byId ) {
+		return cached.deposits;
+	}
+
+	const deposits = ids.map( ( id ) => getDeposit( state, id ) );
+	depositsCache.set( ids, { byId, deposits } );
+	return deposits;
 };
 
 export const getDepositsCount = ( state ) => {
@@ -132,7 +150,7 @@ export const getDepositsCount = ( state ) => {
 };
 
 export const getDepositQueryError = ( state, query ) => {
-	return getDepositsForQuery( state, query ).error || {};
+	return getDepositsForQuery( state, query ).error || EMPTY_OBJECT;
 };
 
 /**
@@ -150,11 +168,11 @@ const getDepositsSummaryForQuery = ( state, query ) => {
 };
 
 export const getDepositsSummary = ( state, query ) => {
-	return getDepositsSummaryForQuery( state, query ).data || {};
+	return getDepositsSummaryForQuery( state, query ).data || EMPTY_OBJECT;
 };
 
 export const getDepositsSummaryError = ( state, query ) => {
-	return getDepositsSummaryForQuery( state, query ).error || {};
+	return getDepositsSummaryForQuery( state, query ).error || EMPTY_OBJECT;
 };
 
 export const getInstantDeposit = ( state ) => {

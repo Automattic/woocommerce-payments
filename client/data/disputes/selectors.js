@@ -5,6 +5,12 @@
  */
 import { getResourceId } from 'utils/data';
 
+// Selectors must return the same reference for the same state, or every
+// `useSelect` caller re-renders on each store update.
+const EMPTY_OBJECT = {};
+const EMPTY_ARRAY = [];
+const disputesCache = new WeakMap();
+
 /**
  * Retrieves the disputes state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
@@ -53,8 +59,20 @@ const getDisputesForQuery = ( state, query ) => {
 };
 
 export const getDisputes = ( state, query ) => {
-	const ids = getDisputesForQuery( state, query ).data || [];
-	return ids.map( getCachedDispute.bind( this, state ) );
+	const ids = getDisputesForQuery( state, query ).data;
+	if ( ! ids ) {
+		return EMPTY_ARRAY;
+	}
+
+	const { cached } = getDisputesState( state );
+	const previous = disputesCache.get( ids );
+	if ( previous?.cached === cached ) {
+		return previous.disputes;
+	}
+
+	const disputes = ids.map( ( id ) => getCachedDispute( state, id ) );
+	disputesCache.set( ids, { cached, disputes } );
+	return disputes;
 };
 
 /**
@@ -73,5 +91,5 @@ const getDisputesSummaryForQuery = ( state, query ) => {
 };
 
 export const getDisputesSummary = ( state, query ) => {
-	return getDisputesSummaryForQuery( state, query ).data || {};
+	return getDisputesSummaryForQuery( state, query ).data || EMPTY_OBJECT;
 };
