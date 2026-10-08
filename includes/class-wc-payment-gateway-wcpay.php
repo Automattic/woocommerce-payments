@@ -4176,6 +4176,40 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Rejects an intent created for a different order.
+	 *
+	 * The order's stored intent ID is not proof on its own: subscription data copies can carry
+	 * an intent from one order onto another (e.g. parent order -> subscription -> renewal order),
+	 * and that intent may have already succeeded. Stripe's metadata records the order the intent
+	 * was created for, so trust that instead. See WOOPMNT-5356.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent The intent fetched for the order.
+	 * @param WC_Order                           $order  The order being updated.
+	 *
+	 * @throws Intent_Authentication_Exception When the intent was created for another order.
+	 */
+	private function ensure_intent_belongs_to_order( $intent, WC_Order $order ): void {
+		$metadata = $intent->get_metadata();
+
+		$intent_order_id = is_numeric( $metadata['order_id'] ?? '' ) ? (int) $metadata['order_id'] : 0;
+		if ( $order->get_id() === $intent_order_id ) {
+			return;
+		}
+
+		// WooPay intents identify the store order by its number, as the duplicate payment check also assumes.
+		$paid_on_woopay      = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$intent_order_number = is_numeric( $metadata['order_number'] ?? '' ) ? (int) $metadata['order_number'] : 0;
+		if ( $paid_on_woopay && $order->get_id() === $intent_order_number ) {
+			return;
+		}
+
+		throw new Intent_Authentication_Exception(
+			__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+			'intent_id_mismatch'
+		);
+	}
+
+	/**
 	 * Handle AJAX request after authenticating payment at checkout.
 	 *
 	 * This function is used to update the order status after the user has
@@ -4250,6 +4284,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
 				$intent = $request->send();
+				$this->ensure_intent_belongs_to_order( $intent, $order );
 
 				$status    = $intent->get_status();
 				$charge    = $intent->get_charge();
@@ -4271,6 +4306,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
+				$this->ensure_intent_belongs_to_order( $intent, $order );
 				$status = $intent->get_status();
 
 				// For $0 orders (free trials), directly complete the order when SetupIntent succeeds.

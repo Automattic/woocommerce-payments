@@ -1641,6 +1641,40 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'Invalid user ID', $response['data']['message'] );
 	}
 
+	public function test_remove_single_payment_data_keeps_one_payment_off_subscriptions() {
+		$data = [
+			'_intent_id'                    => 'pi_previous_attempt',
+			'_intention_status'             => 'requires_action',
+			'_charge_id'                    => 'ch_previous_attempt',
+			'_wcpay_payment_transaction_id' => 'txn_previous_attempt',
+			'_wcpay_payment_method_details' => '{"type":"card"}',
+			'_payment_method_id'            => 'pm_reusable',
+			'_stripe_customer_id'           => 'cus_reusable',
+		];
+
+		$this->assertSame(
+			[
+				'_payment_method_id'  => 'pm_reusable',
+				'_stripe_customer_id' => 'cus_reusable',
+			],
+			$this->wcpay_gateway->remove_single_payment_data( $data )
+		);
+	}
+
+	public function test_remove_data_renewal_order_keeps_one_payment_off_renewals() {
+		$data = [
+			'_intent_id'                   => 'pi_previous_attempt',
+			'_intention_status'            => 'succeeded',
+			'_new_order_tracking_complete' => 'yes',
+			'_payment_method_id'           => 'pm_reusable',
+		];
+
+		$this->assertSame(
+			[ '_payment_method_id' => 'pm_reusable' ],
+			$this->wcpay_gateway->remove_data_renewal_order( $data )
+		);
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $_unused_order ) use ( $subscriptions ) {
