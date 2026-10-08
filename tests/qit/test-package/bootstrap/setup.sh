@@ -168,6 +168,22 @@ wp theme activate storefront
 echo "Enabling WooPayments settings..."
 wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 
+# Install the ECE test-proxy mu-plugin; it fakes the Apple/Google/Amazon Pay
+# wallet sheet that headless Playwright can't drive. WPMU_PLUGIN_DIR is a PHP
+# constant the shell can't resolve, so base64 the local files and let `wp eval`
+# write them where WP knows the path. WordPress only auto-loads
+# top-level mu-plugin PHP, so the loader sits at the root and reads its sibling
+# proxy/ dir. `tr -d '\n'` keeps each blob single-line so the shell var stays safe.
+echo "Installing ECE test-proxy mu-plugin..."
+PHP_B64=$(base64 < ./bootstrap/mu-plugins/wcpay-ece-test-proxy.php | tr -d '\n')
+JS_B64=$(base64 < ./bootstrap/mu-plugins/wcpay-ece-test-proxy/proxy.js | tr -d '\n')
+wp eval "
+\$mu = WPMU_PLUGIN_DIR;
+wp_mkdir_p( \$mu . '/wcpay-ece-test-proxy' );
+if ( false === file_put_contents( \$mu . '/wcpay-ece-test-proxy.php', base64_decode( '$PHP_B64' ) ) ) { WP_CLI::error( 'Failed to write ECE proxy loader to ' . \$mu ); }
+if ( false === file_put_contents( \$mu . '/wcpay-ece-test-proxy/proxy.js', base64_decode( '$JS_B64' ) ) ) { WP_CLI::error( 'Failed to write ECE proxy script to ' . \$mu ); }
+"
+
 # Check required environment variables for Jetpack authentication.
 if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
     echo "Configuring WooPayments with Jetpack authentication..."
