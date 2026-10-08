@@ -20,9 +20,8 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await merchant.activateMulticurrency(
-			merchantPage
-		);
+		wasMulticurrencyEnabled =
+			await merchant.activateMulticurrency( merchantPage );
 		await merchant.restoreCurrencies( merchantPage );
 		await merchant.addMulticurrencyWidget(
 			merchantPage,

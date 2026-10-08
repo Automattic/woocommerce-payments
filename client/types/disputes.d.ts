@@ -5,9 +5,7 @@ import { TableCardColumn } from '@woocommerce/components';
 
 interface Evidence {
 	[ key: string ]:
-		| string
-		| Record< string, boolean >
-		| Record< string, string >;
+		string | Record< string, boolean > | Record< string, string >;
 }
 
 interface EvidenceDetails {

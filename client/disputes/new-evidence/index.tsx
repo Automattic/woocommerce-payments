@@ -709,7 +709,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					? formatDateTimeFromTimestamp( dispute.created, {
 							separator: ', ',
 							includeTime: false,
-					  } )
+						} )
 					: '–',
 			},
 			{
@@ -1050,11 +1050,11 @@ export default ( { query }: { query: { id: string } } ) => {
 								'woocommerce-payments'
 							),
 							bankNameValue
-					  )
+						)
 					: __(
 							"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 							'woocommerce-payments'
-					  ),
+						),
 				{
 					strong: <strong />,
 				}

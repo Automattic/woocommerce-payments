@@ -81,11 +81,11 @@ const GeneralSettings = () => {
 										? __(
 												'Enable test mode (enabled by development mode)',
 												'woocommerce-payments'
-										  )
+											)
 										: __(
 												'Enable test mode',
 												'woocommerce-payments'
-										  )
+											)
 								}
 								help={
 									isDevModeEnabled
@@ -118,7 +118,7 @@ const GeneralSettings = () => {
 														/>
 													),
 												},
-										  } )
+											} )
 										: interpolateComponents( {
 												mixedString: __(
 													'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate ' +
@@ -145,7 +145,7 @@ const GeneralSettings = () => {
 														/>
 													),
 												},
-										  } )
+											} )
 								}
 								__nextHasNoMarginBottom
 							/>

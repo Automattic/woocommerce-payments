@@ -86,7 +86,7 @@ const ManualCaptureControl = (): JSX.Element => {
 											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},
-							  } )
+								} )
 							: '' }
 					</span>
 				}

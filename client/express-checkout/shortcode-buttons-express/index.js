@@ -344,7 +344,7 @@ jQuery( ( $ ) => {
 								: __(
 										'Please select your product options before proceeding.',
 										'woocommerce-payments'
-								  )
+									)
 						);
 						return;
 					}
@@ -401,7 +401,7 @@ jQuery( ( $ ) => {
 									),
 									amount: 0,
 								},
-						  ]
+							]
 						: options.shippingRates;
 
 				onClickHandler( event );
@@ -708,7 +708,7 @@ jQuery( ( $ ) => {
 											resolveSetupFutureUsage(
 												cachedCartData
 											),
-								  }
+									}
 								: {} ),
 							...( newTotal !== prevTotal && newTotal > 0
 								? { amount: newTotal }

@@ -31,7 +31,7 @@ const CurrencyPreview = ( {
 			parseFloat( currencyRate ? currencyRate : targetCurrency.rate );
 		const rounded = parseFloat( roundingValue )
 			? Math.ceil( converted / parseFloat( roundingValue ) ) *
-			  parseFloat( roundingValue )
+				parseFloat( roundingValue )
 			: converted;
 		const charmed = rounded + parseFloat( charmValue );
 		return isNaN( charmed )
@@ -43,7 +43,7 @@ const CurrencyPreview = ( {
 					targetCurrency.code,
 					null,
 					true
-			  );
+				);
 	}, [ baseValue, charmValue, currencyRate, roundingValue, targetCurrency ] );
 
 	return (

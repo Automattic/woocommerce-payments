@@ -56,7 +56,7 @@ const formatPaymentMethodDetails = ( charge ) => {
 					? network.toUpperCase()
 					: network.charAt( 0 ).toUpperCase() + network.slice( 1 ), // Brand
 				fundingTypes[ funding ]
-		  )
+			)
 		: undefined;
 
 	// Use the full country name.

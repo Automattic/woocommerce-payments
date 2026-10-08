@@ -26,7 +26,7 @@ const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
 						/** translators: %s dispute status, e.g. Won, Lost, Under review, etc. */
 						__( 'Disputed: %s', 'woocommerce-payments' ),
 						mapping.message
-				  ),
+					),
 		};
 		return statuses;
 	},

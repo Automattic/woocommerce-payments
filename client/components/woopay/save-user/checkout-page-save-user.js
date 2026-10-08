@@ -125,7 +125,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						woopay_user_phone_field: {
 							full: phoneNumber,
 						},
-				  };
+					};
 
 			request(
 				buildAjaxURL(

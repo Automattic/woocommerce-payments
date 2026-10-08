@@ -197,7 +197,7 @@ describe( 'getKlarnaLossReason', () => {
 				type: 'klarna',
 				klarna: { chargeback_loss_reason_code: code },
 			},
-		} as Pick< Dispute, 'payment_method_details' > );
+		} ) as Pick< Dispute, 'payment_method_details' >;
 
 	test( 'returns the mapped display string for a known code', () => {
 		expect(

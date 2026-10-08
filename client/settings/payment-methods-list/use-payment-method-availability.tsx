@@ -126,11 +126,11 @@ const usePaymentMethodAvailability = ( id: string ) => {
 								/>
 							),
 						},
-				  } )
+					} )
 				: __(
 						"This payment method is pending approval. It won't be available at checkout until it's approved.",
 						'woocommerce-payments'
-				  ),
+					),
 		};
 	}
 

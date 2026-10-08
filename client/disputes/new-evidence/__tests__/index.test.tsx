@@ -1024,13 +1024,11 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	afterEach( () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 	} );
 
 	it( 'remaps multiple → other when the feature flag is enabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 
@@ -1050,8 +1048,7 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	it( 'preserves multiple when the feature flag is disabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			false;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 

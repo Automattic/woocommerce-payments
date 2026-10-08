@@ -183,7 +183,7 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 							'woocommerce-payments'
 						),
 						diffDays
-				  );
+					);
 		return <Chip message={ message } type="alert" />;
 	}
 	return formatDateTimeFromString( dispute.due_by, {
@@ -197,9 +197,8 @@ export const DisputesList = (): JSX.Element => {
 
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
-		getQuery()
-	);
+	const { disputesSummary, isLoading: isSummaryLoading } =
+		useDisputesSummary( getQuery() );
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
 

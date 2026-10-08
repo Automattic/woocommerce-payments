@@ -296,8 +296,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( `Component doesn't render for new accounts with no pending funds`, () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
-			false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockUseDeposits.mockReturnValue( {
@@ -314,8 +313,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( `Component renders for new accounts with pending funds but no available funds`, () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
-			false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur', 5000, 0 ) ] );
 		mockDepositOverviews( [
 			createMockNewAccountOverview( 'eur', 5000, 0 ),
@@ -378,8 +376,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Confirm new account waiting period notice does not show if outside waiting period', () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
-			true;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
 			12300,
@@ -401,8 +398,7 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Confirm new account waiting period notice shows if within waiting period', () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
-			false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
 			12300,
