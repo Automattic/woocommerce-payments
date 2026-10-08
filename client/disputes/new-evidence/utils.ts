@@ -19,6 +19,15 @@ export const hasMeaningfulValue = ( value: unknown ): boolean => {
 };
 
 /**
+ * apiFetch rejects with the REST error body (`{ code, message, data }`), not an
+ * `Error`, so `String( err )` would render "[object Object]".
+ */
+export const getErrorMessage = ( err: unknown ): string => {
+	const message = ( err as { message?: unknown } | null )?.message;
+	return typeof message === 'string' ? message : String( err );
+};
+
+/**
  * Formats a file name with size, returning separate parts for CSS-based truncation.
  *
  * @param fileName - The original file name

@@ -37,6 +37,7 @@ import { useGetSettings } from 'wcpay/data/settings';
 // which now lives in the payment-intents store.
 import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
+import { getErrorMessage } from './utils';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
@@ -290,7 +291,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					setIsCoverLetterManuallyEdited( false );
 				}
 			} catch ( error ) {
-				createErrorNotice( String( error ) );
+				createErrorNotice( getErrorMessage( error ) );
 			} finally {
 				setIsInitialLoading( false );
 			}
@@ -538,12 +539,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		const message = submit
 			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
 			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-		createErrorNotice(
-			sprintf(
-				message,
-				err instanceof Error ? err.message : String( err )
-			)
-		);
+		createErrorNotice( sprintf( message, getErrorMessage( err ) ) );
 	};
 
 	const doSave = async ( submit: boolean, notify = true ) => {
@@ -948,14 +944,14 @@ export default ( { query }: { query: { id: string } } ) => {
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
 				...getDisputeTracksProperties(),
-				message: err instanceof Error ? err.message : String( err ),
+				message: getErrorMessage( err ),
 			} );
 
 			// Display error as WordPress admin notice
 			createErrorNotice(
 				sprintf(
 					__( 'Failed to upload file. (%s)', 'woocommerce-payments' ),
-					err instanceof Error ? err.message : String( err )
+					getErrorMessage( err )
 				)
 			);
 

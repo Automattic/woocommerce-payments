@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: check the order key before preparing pay-for-order customer data
