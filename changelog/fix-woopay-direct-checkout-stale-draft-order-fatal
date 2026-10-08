@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent a fatal error during checkout when the session points at a WooPay direct checkout draft order that no longer exists.

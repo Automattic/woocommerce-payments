@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevented canceled refunds from showing an undefined failure reason.
