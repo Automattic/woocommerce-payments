@@ -399,8 +399,6 @@
 * Dev - chore: rename ECE constants to `shipping-limits.js`
 * Dev - chore: update browserslist / caniuse-lite database from 1.0.30001718 to 1.0.30001780
 * Dev - chore: update `validator` dependency
-* Dev - Comment: Add git worktree safety rules to AGENTS.md
-* Dev - Comment: Update AI knowledge docs from appearance cache compound analysis
 * Dev - Convert async price renderer to TypeScript and add sessionStorage caching
 * Dev - dev: Clarify terminal payment failure notification logic and add tests
 * Dev - E2E tests for the repeated checkout attempt after the card decline.
@@ -479,8 +477,6 @@
 * Dev - Bump WC tested up to version to 10.6.0
 * Dev - chore: move ECE utilities into separate files
 * Dev - chore: rename option for dynamic place order button
-* Dev - Comment: Add agent pipeline review stage with compound reviewer and WCPay-specific review rules
-* Dev - Comment: Make AGENTS.md the primary agent guidelines file, CLAUDE.md references it via @AGENTS.md per fieldguide
 * Dev - Fix flaky disputes e2e test by retrying field fill against async overwrite
 * Dev - Fix lint-staged to only lint staged CSS/SCSS files instead of all files.
 * Dev - Remove server-side appearance caching in favor of client-side caching
@@ -546,7 +542,6 @@
 * Fix - Add order note when WooPay checkout fails.
 * Fix - Attempt to fix when items remain in the cart after successful checkout (Affirm).
 * Fix - Avoid race conditions while capturing payments.
-* Fix - Comment: Update links to the WooPayments fees documentation.
 * Fix - fix: ensuring that the Express Checkout Buttons show the correct amounts for currencies formatted in unusual ways (e.g.: USD with zero decimals)
 * Fix - fix: order attribution data on block-based checkout
 * Fix - fix: payment method definitions merge conflicts
@@ -598,7 +593,6 @@
 * Add - Allow non-reusable payment methods to be used for the manually renewed subscriptions.
 * Add - chore: add amazon pay feature flag.
 * Add - Handling of the Visa Compliance disputes with attention to a specific dispute fee.
-* Fix - Comment: Update links to the WooPayments fees documentation.
 * Fix - fix: ensuring that the Express Checkout Buttons show the correct amounts for currencies formatted in unusual ways (e.g.: USD with zero decimals)
 * Fix - fix: payment method logos compatibility with WooCommerce Blocks in WC>=10.4
 * Fix - fix: text color of payment method icons on checkout page when a dark background is used
@@ -614,7 +608,6 @@
 = 10.2.0 - 2025-11-06 =
 * Add - Add WooCommerce Tool to delete test orders.
 * Add - Sync store setup details with the Transact Platform.
-* Fix - Comment: fix JCB logo.
 * Fix - Fix - WCPay Subscriptions setting not persisting when unchecked
 * Fix - Fix missing payment method logos (JCB, CUP, CB) in checkout.
 * Fix - Fix payment method logos overflow in shortcode checkout after adding JCB and UnionPay logos.
@@ -642,7 +635,6 @@
 * Fix - Single use coupons issues on WooPay.
 * Fix - Use Woo custom cap `pay_for_order` for validating the owner of order
 * Update - Show message about bundled subscriptions until 10.2.0.
-* Dev - Comment: Skip SSL verification when running the PHP tests locally.
 * Dev - Removed clear_cache method from the mutli-currency interface
 
 = 10.0.0 - 2025-09-24 =
@@ -1794,7 +1786,6 @@
 * Dev - chore: remove unused gateway class methods
 * Dev - chore: remove unused isOrderPage return value from confirmIntent
 * Dev - chore: update colors on documentation pages
-* Dev - Comment: Bump qit-cli dependency to version 0.4.0.
 * Dev - E2E test - Merchant facing multi-currency on-boarding screen.
 * Dev - Fix for E2E shopper tests around 3DS and UPE settings
 * Dev - Refactoring the tracking logic
@@ -1814,7 +1805,6 @@
 * Fix - Allow zero-amount refunds for backwards compatibility with basic payment gateway and to allow re-stock of refunded orders.
 * Fix - Checking if wcpayPaymentRequestPayForOrderParams before using it in Pay for Order page
 * Fix - Checkout error when page URL is too long
-* Fix - Comment: Fix QIT security tests errors.
 * Fix - Fix incorrect test mode notice when left KYC early after going live from builder mode
 * Fix - Fix network error that occurs when viewing an test mode order with test mode disabled, and vice versa.
 * Fix - fix pay-for-order quirks and 3DS behavior
@@ -1898,7 +1888,6 @@
 * Dev - Cleanup the deprecated payment gateway processing - part IV
 * Dev - Cleanup the deprecated payment gateway processing - part V
 * Dev - Cleanup the deprecated payment gateway processing - part VI
-* Dev - Comment: Fix declined 3DS card E2E test.
 * Dev - Deprecate the WC_Subscriptions_Synchroniser::add_to_recurring_cart_key(). Use WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key() instead.
 * Dev - E2E test - Merchant facing: Multi-currency setup
 * Dev - Improve E2E checkout tests
@@ -2086,7 +2075,6 @@
 * Add - Show survey for merchants that disable WooPay.
 * Fix - Add Mix and Match Products support on WooPay.
 * Fix - Add multi-currency enablement check in WooPay session handling.
-* Fix - Comment: Behind a feature flag: Update documentation links (new/changed docs content) when notifying merchant that a dispute needs response.
 * Fix - Disable automatic currency switching and switcher widgets on pay_for_order page.
 * Fix - Ensure renewal orders paid via the Block Checkout are correctly linked to their subscription.
 * Fix - Ensure the order needs processing transient is deleted when a subscription order (eg renewal) is created. Fixes issues with renewal orders going straight to a completed status.
@@ -2197,8 +2185,6 @@
 * Update - When HPOS is disabled, fetch subscriptions by customer_id using the user's subscription cache to improve performance.
 * Dev - Adding factor flags to control when to enter the new payment process.
 * Dev - Adding issuer evidence to dispute details. Hidden behind a feature flag
-* Dev - Comment: Update GH workflows to use PHP version from plugin file.
-* Dev - Comment: Update occurence of all ubuntu versions to ubuntu-latest
 * Dev - Deprecated the 'woocommerce_subscriptions_not_found_label' filter.
 * Dev - Fix payment context and subscription payment metadata stored on subscription recurring transactions.
 * Dev - Fix Tracks conditions
@@ -2440,7 +2426,6 @@
 * Update - Update the design for UPE settings block.
 * Dev - Add support for Czech Republic, Hungary, and Sweden.
 * Dev - Bump minimum required version of WooCommerce to 7.8.0.
-* Dev - Comment: Add script to run QIT security tests locally.
 * Dev - Gracefully handle missing payment method constants.
 * Dev - minor refactor from js to tsx.
 * Dev - minor tsx refactor.
