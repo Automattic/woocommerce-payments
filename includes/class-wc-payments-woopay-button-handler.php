@@ -149,7 +149,7 @@ class WC_Payments_WooPay_Button_Handler {
 		$config['addToCartNonce']           = wp_create_nonce( 'wcpay-add-to-cart' );
 		$config['shouldShowWooPayButton']   = $this->should_show_woopay_button();
 		$config['woopaySessionEmail']       = WooPay_Session::get_user_email( $user );
-		$config['woopayIsCountryAvailable'] = $this->woopay_utilities->is_country_available( $this->gateway );
+		$config['woopayIsCountryAvailable'] = $this->woopay_utilities->is_country_available();
 		$config['woopayAppearance']         = $this->gateway->is_woopay_global_theme_support_enabled()
 			? WC_Payments_Styles_Cache::get_woopay_appearance()
 			: null;
@@ -260,7 +260,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Check if WooPay is available in the user country.
-		if ( ! $this->woopay_utilities->is_country_available( $this->gateway ) ) {
+		if ( ! $this->woopay_utilities->is_country_available() ) {
 			return false;
 		}
 
