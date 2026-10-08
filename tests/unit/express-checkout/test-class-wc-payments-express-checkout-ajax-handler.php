@@ -752,4 +752,47 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertSame( 'Meininger Strasse 58', $billing_address['address_1'] );
 		$this->assertSame( 'Apt 4B', $billing_address['address_2'] );
 	}
+
+	public function test_tokenized_cart_nonces_refreshed_when_shopper_logs_in_during_request() {
+		wp_set_current_user( 0 );
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) );
+		wp_set_current_user( self::factory()->user->create() );
+
+		$response = $this->ajax_handler->maybe_refresh_tokenized_cart_nonces( new WP_REST_Response(), null, $request );
+
+		$headers = $response->get_headers();
+		$this->assertSame( 1, wp_verify_nonce( $headers['X-WooPayments-Tokenized-Cart-Nonce'], 'woopayments_tokenized_cart_nonce' ) );
+		$this->assertSame( 1, wp_verify_nonce( $headers['X-WooPayments-Tokenized-Cart-Session-Nonce'], 'woopayments_tokenized_cart_session_nonce' ) );
+	}
+
+	public function test_tokenized_cart_nonces_not_refreshed_when_nonce_is_valid() {
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) );
+
+		$response = $this->ajax_handler->maybe_refresh_tokenized_cart_nonces( new WP_REST_Response(), null, $request );
+
+		$this->assertSame( [], $response->get_headers() );
+	}
+
+	public function test_tokenized_cart_nonces_not_refreshed_without_tokenized_cart_header() {
+		$request = new WP_REST_Request( 'POST', '/wc/store/v1/checkout' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', 'stale' );
+
+		$response = $this->ajax_handler->maybe_refresh_tokenized_cart_nonces( new WP_REST_Response(), null, $request );
+
+		$this->assertSame( [], $response->get_headers() );
+	}
+
+	public function test_tokenized_cart_nonces_not_refreshed_outside_store_api() {
+		$request = new WP_REST_Request( 'POST', '/wp/v2/posts' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', 'stale' );
+
+		$response = $this->ajax_handler->maybe_refresh_tokenized_cart_nonces( new WP_REST_Response(), null, $request );
+
+		$this->assertSame( [], $response->get_headers() );
+	}
 }

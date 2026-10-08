@@ -11,6 +11,7 @@ import {
 	rememberElementCurrency,
 	__resetElementCurrencyForTests,
 } from '../utils/element-currency-cache';
+import { __resetRefreshedNoncesForTests } from '../utils/refreshed-nonces-cache';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -29,6 +30,7 @@ describe( 'ExpressCheckoutCartApi', () => {
 	afterEach( () => {
 		jest.resetAllMocks();
 		__resetElementCurrencyForTests();
+		__resetRefreshedNoncesForTests();
 	} );
 
 	it( 'should allow to create an anonymous cart for a specific class instance, without affecting other instances', async () => {
@@ -289,5 +291,74 @@ describe( 'ExpressCheckoutCartApi', () => {
 		expect(
 			callArgs.headers[ 'X-WooPayments-Tokenized-Cart-Session-Nonce' ]
 		).toBe( 'global_tokenized_cart_session_nonce' );
+	} );
+	it( 'should use the nonces refreshed by a failed request on every instance', async () => {
+		global.wcpayExpressCheckoutParams.button_context = 'product';
+		const headers = new Headers();
+		headers.append( 'Nonce', 'fresh_store_api_nonce' );
+		headers.append(
+			'X-WooPayments-Tokenized-Cart-Nonce',
+			'fresh_tokenized_cart_nonce'
+		);
+		headers.append(
+			'X-WooPayments-Tokenized-Cart-Session-Nonce',
+			'fresh_tokenized_cart_session_nonce'
+		);
+		apiFetch.mockRejectedValueOnce( { headers } );
+
+		apiFetch.setNonce = jest.fn();
+
+		await expect(
+			new ExpressCheckoutCartApi().placeOrder( {} )
+		).rejects.toEqual( { headers } );
+
+		expect( apiFetch.setNonce ).toHaveBeenCalledWith( headers );
+
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => Promise.resolve( {} ),
+		} );
+		const retryApi = new ExpressCheckoutCartApi();
+		retryApi.useSeparateCart();
+		await retryApi.getCart();
+
+		expect( apiFetch ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				headers: expect.objectContaining( {
+					Nonce: 'fresh_store_api_nonce',
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						'fresh_tokenized_cart_nonce',
+					'X-WooPayments-Tokenized-Cart-Session-Nonce':
+						'fresh_tokenized_cart_session_nonce',
+				} ),
+			} )
+		);
+	} );
+
+	it( 'should keep the Store API nonce from an error response on the same instance', async () => {
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
+		const staleHeaders = new Headers();
+		staleHeaders.append( 'Nonce', 'stale_store_api_nonce' );
+		apiFetch.mockResolvedValueOnce( {
+			headers: staleHeaders,
+			json: () => Promise.resolve( {} ),
+		} );
+		const api = new ExpressCheckoutCartApi();
+		await api.getCart();
+
+		const errorHeaders = new Headers();
+		errorHeaders.append( 'Nonce', 'fresh_store_api_nonce' );
+		apiFetch.mockRejectedValueOnce( { headers: errorHeaders } );
+		await expect( api.placeOrder( {} ) ).rejects.toBeDefined();
+
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => Promise.resolve( {} ),
+		} );
+		await api.getCart();
+
+		expect( apiFetch.mock.calls[ 2 ][ 0 ].headers.Nonce ).toBe(
+			'fresh_store_api_nonce'
+		);
 	} );
 } );

@@ -50,6 +50,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		add_filter( 'rest_post_dispatch', [ $this, 'maybe_refresh_tokenized_cart_nonces' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
 
@@ -197,6 +198,37 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			}
 			$request->set_param( 'billing_address', $billing_address );
 		}
+
+		return $response;
+	}
+
+	/**
+	 * Sends fresh nonces when the ones on the page no longer verify.
+	 * This happens when the Store API logs the shopper in mid-request (by creating their account) and the payment then fails:
+	 * the page's nonces still belong to the logged-out shopper, so retrying the payment would fail without new ones.
+	 *
+	 * @param mixed            $response The response.
+	 * @param \WP_REST_Server  $server Server instance.
+	 * @param \WP_REST_Request $request Request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function maybe_refresh_tokenized_cart_nonces( $response, $server, $request ) {
+		if ( ! $response instanceof WP_REST_Response || 0 !== strpos( $request->get_route(), '/wc/store/' ) ) {
+			return $response;
+		}
+
+		if ( 'true' !== $request->get_header( 'X-WooPayments-Tokenized-Cart' ) ) {
+			return $response;
+		}
+
+		$nonce = (string) $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
+		if ( wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
+			return $response;
+		}
+
+		$response->header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) );
+		$response->header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ) );
 
 		return $response;
 	}

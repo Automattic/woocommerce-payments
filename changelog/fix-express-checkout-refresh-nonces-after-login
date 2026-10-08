@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Let shoppers retry Apple Pay or Google Pay on product pages after their new account was created but the payment failed.
