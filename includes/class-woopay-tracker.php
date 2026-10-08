@@ -654,22 +654,27 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Add tracking configuration to payment fields JS config.
 	 *
+	 * The flag covers store-level conditions only, so it skips the WooPay check.
+	 * Events that need WooPay are still filtered per event in tracks_record_event().
+	 *
 	 * @param array $config The payment fields JS config.
 	 * @return array The modified config.
 	 */
 	public function add_tracking_config_to_payment_fields( $config ) {
-		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, false );
+		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, true );
 		return $config;
 	}
 
 	/**
 	 * Add tracking configuration to express checkout JS params.
 	 *
+	 * @see WooPay_Tracker::add_tracking_config_to_payment_fields() for why the WooPay check is skipped.
+	 *
 	 * @param array $params The express checkout JS params.
 	 * @return array The modified params.
 	 */
 	public function add_tracking_config_to_express_checkout( $params ) {
-		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, false );
+		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, true );
 		return $params;
 	}
 
