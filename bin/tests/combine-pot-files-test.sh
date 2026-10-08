@@ -119,5 +119,13 @@ assert_eq "$EXIT" "1" "missing client POT exits with 1"
 assert_eq "$(echo "$OUT" | grep -c "File not found: languages/woocommerce-payments-client.pot")" "1" "missing client POT explains the failure"
 rm -rf "$DIR"
 
+# Test: a missing argument fails with usage
+set +e
+OUT=$(php "$COMBINE" languages/woocommerce-payments-client.pot)
+EXIT=$?
+set -e
+assert_eq "$EXIT" "1" "missing argument exits with 1"
+assert_eq "$(echo "$OUT" | grep -c "^Usage:")" "1" "missing argument prints usage"
+
 echo "# passed $PASS/$((PASS + FAIL))"
 [ "$FAIL" -eq 0 ]

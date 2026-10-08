@@ -1,4 +1,3 @@
 Significance: patch
-Type: fix
-
-Include JavaScript strings in the translation template when the plugin is built more than once.
+Type: dev
+Comment: Stop repeat production builds from dropping JS strings from the translation template.
