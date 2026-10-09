@@ -1,15 +1,10 @@
 name: Check documentation links
 
 on:
+    push:
+        branches:
+            - 'release/**'
     pull_request:
-        paths:
-            - '.github/scripts/check-doc-links.js'
-            - '.github/scripts/tests/**'
-            - '.github/workflows/check-doc-links.yml'
-            - 'package.json'
-            - 'pnpm-lock.yaml'
-            - 'pnpm-workspace.yaml'
-            - '.nvmrc'
     merge_group:
     workflow_dispatch:
         inputs:
@@ -22,11 +17,12 @@ permissions:
     contents: read
 
 concurrency:
-    group: documentation-links-${{ inputs.ref || github.ref }}
+    group: documentation-links-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || inputs.ref || github.ref_name }}
     cancel-in-progress: true
 
 jobs:
     test:
+        if: github.event_name != 'push' || !github.event.deleted
         name: Test documentation link checker
         runs-on: ubuntu-latest
         timeout-minutes: 10
@@ -44,14 +40,22 @@ jobs:
             - run: pnpm install --frozen-lockfile --ignore-scripts
 
             - name: Lint checker
-              run: pnpm exec eslint --no-ignore .github/scripts/check-doc-links.js .github/scripts/tests/test-check-doc-links.js
+              run: pnpm exec eslint --no-ignore .github/scripts/*doc-links.js .github/scripts/tests/test-*doc-links.js
 
             - name: Run offline tests
-              run: node --test .github/scripts/tests/test-check-doc-links.js
+              run: node --test .github/scripts/tests/test-*doc-links.js
 
     check:
-        if: github.event_name == 'workflow_dispatch'
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            (github.event_name == 'push' && !github.event.deleted) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository &&
+             startsWith(github.head_ref, 'release/') && github.base_ref == 'trunk')
         needs: test
+        permissions:
+            contents: read
+            pull-requests: write
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -71,11 +75,23 @@ jobs:
             - name: Checkout plugin source
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
-                  ref: ${{ inputs.ref || github.sha }}
+                  ref: ${{ inputs.ref || github.event.pull_request.head.sha || github.sha }}
                   path: source
                   persist-credentials: false
 
             - name: Check documentation URLs and anchors
+              id: check
               env:
                   DOC_LINK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-              run: node .github/scripts/check-doc-links.js --root source --report "$RUNNER_TEMP/documentation-links.md"
+              run: |
+                  echo "sha=$(git -C source rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+                  node .github/scripts/check-doc-links.js --root source --report "$RUNNER_TEMP/documentation-links.md"
+
+            - name: Update release PR comment
+              if: ${{ !cancelled() && steps.check.outputs.sha != '' }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  DOC_LINK_SHA: ${{ steps.check.outputs.sha }}
+                  DOC_LINK_REPORT: ${{ runner.temp }}/documentation-links.md
+                  DOC_LINK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: node .github/scripts/comment-doc-links.js
