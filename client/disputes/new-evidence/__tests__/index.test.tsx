@@ -272,17 +272,16 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 		it( 'should not render the stepper for Visa Compliance disputes', async () => {
 			render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
 
-			await waitFor( () => {
-				expect(
-					screen.queryByText( "Let's gather the basics" )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Add your shipping details' )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Review your cover letter' )
-				).not.toBeInTheDocument();
-			} );
+			await screen.findByText( 'Tell us about the dispute' );
+			expect(
+				screen.queryByText( "Let's gather the basics" )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Add your shipping details' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Review your cover letter' )
+			).not.toBeInTheDocument();
 		} );
 
 		it( 'should render Visa Compliance specific buttons', async () => {
@@ -387,17 +386,16 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 		it( 'should not show regular dispute documents for Visa Compliance', async () => {
 			render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
 
-			await waitFor( () => {
-				expect(
-					screen.queryByText( 'Order receipt' )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Customer communication' )
-				).not.toBeInTheDocument();
-				expect(
-					screen.queryByText( 'Store refund policy' )
-				).not.toBeInTheDocument();
-			} );
+			await screen.findByText( 'Other documents' );
+			expect(
+				screen.queryByText( 'Order receipt' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Customer communication' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Store refund policy' )
+			).not.toBeInTheDocument();
 		} );
 	} );
 
@@ -662,14 +660,13 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 	it( 'should not render Visa Compliance specific elements', async () => {
 		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
 
-		await waitFor( () => {
-			expect(
-				screen.queryByText( 'Tell us about the dispute' )
-			).not.toBeInTheDocument();
-			expect(
-				screen.queryByText( 'This is a compliance case' )
-			).not.toBeInTheDocument();
-		} );
+		await screen.findByText( "Let's gather the basics" );
+		expect(
+			screen.queryByText( 'Tell us about the dispute' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /This is a compliance case/ )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'should include empty document fields when saving to clear them on the server', async () => {

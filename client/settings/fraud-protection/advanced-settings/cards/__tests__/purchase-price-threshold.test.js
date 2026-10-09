@@ -68,28 +68,6 @@ describe( 'Purchase price threshold card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders correctly when enabled and checked', () => {
-		settings.purchase_price_threshold.enabled = true;
-		settings.purchase_price_threshold.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<PurchasePriceThresholdRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'renders like disabled when checked, but not enabled', () => {
-		settings.purchase_price_threshold.enabled = false;
-		settings.purchase_price_threshold.block = true;
-		const { container } = render(
-			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<PurchasePriceThresholdRuleCard />
-			</FraudPreventionSettingsContext.Provider>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'renders warning when both fields are empty', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = true;

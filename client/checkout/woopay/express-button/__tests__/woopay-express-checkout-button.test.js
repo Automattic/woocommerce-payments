@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { screen, render, waitFor } from '@testing-library/react';
+import { act, screen, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -83,6 +83,12 @@ jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
 global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
 
+const runPendingTimersAndPromises = async () => {
+	await act( async () => {
+		jest.runAllTimers();
+	} );
+};
+
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
 		type: 'default',
@@ -104,6 +110,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 	afterEach( () => {
 		jest.clearAllMocks();
+		jest.useRealTimers();
 	} );
 
 	test( 'renders as a link when first-party auth is enabled', () => {
@@ -203,6 +210,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	} );
 
 	test( 'does not prefetch session data by default', async () => {
+		jest.useFakeTimers();
 		getConfig.mockImplementation( ( v ) => {
 			switch ( v ) {
 				case 'wcAjaxUrl':
@@ -229,10 +237,9 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
-			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
-		} );
+		await runPendingTimersAndPromises();
+		expect( request ).not.toHaveBeenCalled();
+		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 	} );
 
 	test( 'should request session data on button click', async () => {
@@ -308,6 +315,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	} );
 
 	test( 'should not call `expressCheckoutIframe` or request session data on button click when `isPreview` is true', async () => {
+		jest.useFakeTimers();
 		render(
 			<WoopayExpressCheckoutButton
 				isPreview={ true }
@@ -323,10 +331,9 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 		await userEvent.click( expressButton );
 
-		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
-			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
-		} );
+		await runPendingTimersAndPromises();
+		expect( request ).not.toHaveBeenCalled();
+		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 	} );
 
 	describe( 'Preferred Card Display', () => {
@@ -483,6 +490,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 	describe( 'Product Page', () => {
 		test( 'does not prefetch session data by default', async () => {
+			jest.useFakeTimers();
 			render(
 				<WoopayExpressCheckoutButton
 					isPreview={ false }
@@ -493,9 +501,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			await waitFor( () => {
-				expect( request ).not.toHaveBeenCalled();
-			} );
+			await runPendingTimersAndPromises();
+			expect( request ).not.toHaveBeenCalled();
 		} );
 
 		test( 'should show an alert when clicking the button when add to cart button is disabled', async () => {
@@ -572,6 +579,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 
 		test( 'do not call `addToCart` on express button click on product page when validation fails', async () => {
+			jest.useFakeTimers();
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
@@ -597,9 +605,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 			expect( mockAddToCart ).not.toHaveBeenCalled();
 
-			await waitFor( () => {
-				expect( expressCheckoutIframe ).not.toHaveBeenCalled();
-			} );
+			await runPendingTimersAndPromises();
+			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
 } );
