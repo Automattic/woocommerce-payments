@@ -69,7 +69,7 @@ export default defineConfig( {
 				[ 'json', { outputFile: 'results.json' } ],
 				[ 'html' ],
 				[ './reporters/slack-reporter.ts' ],
-		  ]
+			]
 		: [ [ 'html', { open: 'never' } ] ],
 	outputDir: './test-results',
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

@@ -130,9 +130,8 @@ test.describe( 'Multi-currency on-boarding', { tag: '@critical' }, () => {
 				page.getByTestId( 'recommended-currency' ).first()
 			).toBeVisible();
 			await expect(
-				(
-					await page.getByTestId( 'recommended-currency' ).all()
-				 ).length
+				( await page.getByTestId( 'recommended-currency' ).all() )
+					.length
 			).toBeGreaterThan( 0 );
 		} );
 

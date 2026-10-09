@@ -25,10 +25,10 @@ const getPaymentTokens = ( isBlocksCheckout ) => {
 	return isBlocksCheckout
 		? document.querySelectorAll(
 				'[type=radio][name="radio-control-wc-payment-method-saved-tokens"]'
-		  )
+			)
 		: document.querySelectorAll(
 				'[type=radio][name="wc-woocommerce_payments-payment-token"]'
-		  );
+			);
 };
 
 // hook for checking if WCPay is selected.

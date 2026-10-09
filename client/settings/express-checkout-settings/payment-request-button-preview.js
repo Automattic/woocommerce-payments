@@ -122,7 +122,7 @@ const PaymentRequestButtonPreview = () => {
 					}
 					radius={ radius }
 				/>
-		  ) ) || <PreviewRequirementsNotice />
+			) ) || <PreviewRequirementsNotice />
 		: null;
 
 	if ( woopayPreview || expressCheckoutButtonPreview ) {

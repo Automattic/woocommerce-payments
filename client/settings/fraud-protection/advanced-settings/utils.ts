@@ -166,12 +166,12 @@ const buildRuleset = (
 								key: Checks.CHECK_ITEM_COUNT,
 								operator: CheckOperators.OPERATOR_LT,
 								value: parseInt( minItems, 10 ) ?? null,
-						  }
+							}
 						: {
 								key: Checks.CHECK_ITEM_COUNT,
 								operator: CheckOperators.OPERATOR_GT,
 								value: parseInt( maxItems, 10 ) ?? null,
-						  };
+							};
 				}
 			}
 			break;
@@ -205,12 +205,12 @@ const buildRuleset = (
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_LT,
 								value: buildFormattedRulePrice( minAmount ),
-						  }
+							}
 						: {
 								key: Checks.CHECK_ORDER_TOTAL,
 								operator: CheckOperators.OPERATOR_GT,
 								value: buildFormattedRulePrice( maxAmount ),
-						  };
+							};
 				}
 			}
 

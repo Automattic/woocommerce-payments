@@ -858,7 +858,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 				? Promise.resolve( {
 						json: () => Promise.resolve( cartWithItemsMock ),
 						headers: new Map(),
-				  } )
+					} )
 				: Promise.reject( new Error( 'Store API is unavailable' ) );
 		} );
 

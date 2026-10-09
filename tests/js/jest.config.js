@@ -23,9 +23,7 @@ module.exports = {
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [
-		require.resolve(
-			'@wordpress/jest-preset-default/scripts/setup-globals.js'
-		),
+		require.resolve( '@wordpress/jest-preset-default/scripts/setup-globals.js' ),
 		'<rootDir>/tests/js/jest-test-file-setup.js',
 	],
 	setupFilesAfterEnv: [

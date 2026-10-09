@@ -71,7 +71,7 @@ export const useSelectedCurrencyOverview = (): SelectedCurrencyOverview => {
 	const overview = isSelectedCurrencyValid
 		? currencies.find(
 				( currency ) => currency.currency === selectedCurrency
-		  )
+			)
 		: currencies[ 0 ];
 
 	return {

@@ -107,17 +107,17 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 								? formatExportAmount(
 										reader.fee.amount,
 										reader.fee.currency
-								  )
+									)
 								: 0,
 							display: reader.fee
 								? formatExplicitCurrency(
 										reader.fee.amount,
 										reader.fee.currency
-								  )
+									)
 								: 0,
 						},
 					];
-			  } )
+				} )
 			: [];
 
 	const onDownload = () => {

@@ -11,7 +11,7 @@ export type StripeBillingMigrationState = [
 	number,
 	() => void,
 	boolean,
-	boolean
+	boolean,
 ];
 
 export type SettingsState = {
@@ -45,7 +45,7 @@ export interface FraudProtectionSettingsMultipleChecks {
 
 export type AdvancedFraudPreventionSettingsState = [
 	FraudProtectionRule[] | string,
-	( settings: FraudProtectionRule[] ) => void
+	( settings: FraudProtectionRule[] ) => void,
 ];
 
 export interface SavingError {

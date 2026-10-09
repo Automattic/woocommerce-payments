@@ -116,8 +116,7 @@ export const isVisaComplianceDispute = (
  *   fact worth telling the merchant, so it stays distinct from "we don't know".
  */
 export type KlarnaLossReason =
-	| { type: 'stated'; display: string }
-	| { type: 'unspecified' };
+	{ type: 'stated'; display: string } | { type: 'unspecified' };
 
 /**
  * Returns Klarna's stated reason for ruling against the merchant, if there is one.

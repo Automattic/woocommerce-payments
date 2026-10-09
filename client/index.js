@@ -22,74 +22,84 @@ import ErrorBoundary from 'components/error-boundary';
 import { getTasks } from 'overview/task-list/tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
 
-const withSuspense = ( LazyComponent ) => ( props ) =>
-	(
-		<ErrorBoundary>
-			<Suspense
-				fallback={
-					<div className="wcpay-route-loading">
-						<Spinner />
-					</div>
-				}
-			>
-				<LazyComponent { ...props } />
-			</Suspense>
-		</ErrorBoundary>
-	);
+const withSuspense = ( LazyComponent ) => ( props ) => (
+	<ErrorBoundary>
+		<Suspense
+			fallback={
+				<div className="wcpay-route-loading">
+					<Spinner />
+				</div>
+			}
+		>
+			<LazyComponent { ...props } />
+		</Suspense>
+	</ErrorBoundary>
+);
 
 // Payouts: list → details is a linear drill-down; load together.
 const DepositsPage = withSuspense(
 	lazy( () => import( /* webpackChunkName: "wcpay-payouts" */ 'deposits' ) )
 );
 const DepositDetailsPage = withSuspense(
-	lazy( () =>
-		import( /* webpackChunkName: "wcpay-payouts" */ 'deposits/details' )
+	lazy(
+		() =>
+			import( /* webpackChunkName: "wcpay-payouts" */ 'deposits/details' )
 	)
 );
 
 // Money movement: transactions, payment details, and disputes form a tight
 // navigation triangle (list → details → challenge → back), so they share a chunk.
 const TransactionsPage = withSuspense(
-	lazy( () =>
-		import( /* webpackChunkName: "wcpay-money-movement" */ 'transactions' )
+	lazy(
+		() =>
+			import(
+				/* webpackChunkName: "wcpay-money-movement" */ 'transactions'
+			)
 	)
 );
 const PaymentDetailsPage = withSuspense(
-	lazy( () =>
-		import(
-			/* webpackChunkName: "wcpay-money-movement" */ 'payment-details'
-		)
+	lazy(
+		() =>
+			import(
+				/* webpackChunkName: "wcpay-money-movement" */ 'payment-details'
+			)
 	)
 );
 const DisputesPage = withSuspense(
-	lazy( () =>
-		import( /* webpackChunkName: "wcpay-money-movement" */ 'disputes' )
+	lazy(
+		() =>
+			import( /* webpackChunkName: "wcpay-money-movement" */ 'disputes' )
 	)
 );
 const RedirectToTransactionDetails = withSuspense(
-	lazy( () =>
-		import(
-			/* webpackChunkName: "wcpay-money-movement" */ 'disputes/redirect-to-transaction-details'
-		)
+	lazy(
+		() =>
+			import(
+				/* webpackChunkName: "wcpay-money-movement" */ 'disputes/redirect-to-transaction-details'
+			)
 	)
 );
 const DisputeNewEvidencePage = withSuspense(
-	lazy( () =>
-		import(
-			/* webpackChunkName: "wcpay-money-movement" */ 'wcpay/disputes/new-evidence'
-		)
+	lazy(
+		() =>
+			import(
+				/* webpackChunkName: "wcpay-money-movement" */ 'wcpay/disputes/new-evidence'
+			)
 	)
 );
 
 // Onboarding: the main flow and KYC step are always navigated sequentially.
 const OnboardingPage = withSuspense(
-	lazy( () =>
-		import( /* webpackChunkName: "wcpay-onboarding" */ 'onboarding' )
+	lazy(
+		() => import( /* webpackChunkName: "wcpay-onboarding" */ 'onboarding' )
 	)
 );
 const OnboardingKycPage = withSuspense(
-	lazy( () =>
-		import( /* webpackChunkName: "wcpay-onboarding" */ 'onboarding/kyc' )
+	lazy(
+		() =>
+			import(
+				/* webpackChunkName: "wcpay-onboarding" */ 'onboarding/kyc'
+			)
 	)
 );
 
@@ -105,26 +115,30 @@ const MultiCurrencySetupPage = withSuspense(
 	)
 );
 const CardReadersPage = withSuspense(
-	lazy( () =>
-		import( /* webpackChunkName: "wcpay-card-readers" */ 'card-readers' )
+	lazy(
+		() =>
+			import(
+				/* webpackChunkName: "wcpay-card-readers" */ 'card-readers'
+			)
 	)
 );
 const CapitalPage = withSuspense(
 	lazy( () => import( /* webpackChunkName: "wcpay-capital" */ 'capital' ) )
 );
 const DocumentsPage = withSuspense(
-	lazy( () =>
-		import( /* webpackChunkName: "wcpay-documents" */ 'documents' )
+	lazy(
+		() => import( /* webpackChunkName: "wcpay-documents" */ 'documents' )
 	)
 );
 const ReportsPage = withSuspense(
 	lazy( () => import( /* webpackChunkName: "wcpay-reports" */ 'reports' ) )
 );
 const FraudProtectionAdvancedSettingsPage = withSuspense(
-	lazy( () =>
-		import(
-			/* webpackChunkName: "wcpay-fraud-protection" */ './settings/fraud-protection/advanced-settings'
-		)
+	lazy(
+		() =>
+			import(
+				/* webpackChunkName: "wcpay-fraud-protection" */ './settings/fraud-protection/advanced-settings'
+			)
 	)
 );
 

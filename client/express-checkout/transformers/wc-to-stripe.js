@@ -65,7 +65,7 @@ export const transformCartDataForDisplayItems = ( rawCartData ) => {
 				: parseInt(
 						item.totals?.line_subtotal || item.prices.price,
 						10
-				  ),
+					),
 			item.totals || item.prices
 		),
 		name: [

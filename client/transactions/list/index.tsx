@@ -337,7 +337,7 @@ export const TransactionsList = (
 						<ClickableCell href={ detailsURL }>
 							{ children }
 						</ClickableCell>
-				  )
+					)
 				: ( children: React.ReactNode ) => children;
 
 		const orderUrl = txn.order ? (
@@ -357,7 +357,7 @@ export const TransactionsList = (
 				? orderSubscriptions.map( ( subscription, i, all ) => [
 						<OrderLink key={ i } order={ subscription } />,
 						i !== all.length - 1 && ', ',
-				  ] )
+					] )
 				: [];
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
@@ -594,11 +594,11 @@ export const TransactionsList = (
 		? __(
 				'Search by order number, subscription number, customer name, or billing email',
 				'woocommerce-payments'
-		  )
+			)
 		: __(
 				'Search by order number, customer name, or billing email',
 				'woocommerce-payments'
-		  );
+			);
 
 	const title = __( 'Transactions', 'woocommerce-payments' );
 

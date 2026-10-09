@@ -96,8 +96,9 @@ export const OnboardingTextField: React.FC<
 	);
 };
 
-interface OnboardingSelectFieldProps< ItemType >
-	extends Partial< Omit< SelectFieldProps< ItemType >, 'onChange' > > {
+interface OnboardingSelectFieldProps< ItemType > extends Partial<
+	Omit< SelectFieldProps< ItemType >, 'onChange' >
+> {
 	name: keyof OnboardingFields;
 	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
@@ -135,14 +136,15 @@ export const OnboardingSelectField = < ItemType extends SelectItem >( {
 	);
 };
 
-interface OnboardingGroupedSelectFieldProps< ItemType >
-	extends Partial< Omit< GroupedSelectFieldProps< ItemType >, 'onChange' > > {
+interface OnboardingGroupedSelectFieldProps< ItemType > extends Partial<
+	Omit< GroupedSelectFieldProps< ItemType >, 'onChange' >
+> {
 	name: keyof OnboardingFields;
 	onChange?: ( name: keyof OnboardingFields, item?: ItemType | null ) => void;
 }
 
 export const OnboardingGroupedSelectField = <
-	ListItemType extends GroupedSelectItem
+	ListItemType extends GroupedSelectItem,
 >( {
 	onChange,
 	...rest
