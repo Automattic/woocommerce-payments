@@ -1459,7 +1459,7 @@ class WC_Payments_Admin {
 	 */
 	private function get_uncaptured_transactions_count() {
 		$test_mode = WC_Payments::mode()->is_test();
-		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
+		$cache_key = $test_mode ? Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : Database_Cache::AUTHORIZATION_SUMMARY_KEY;
 
 		$send_callback         = function () {
 			$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );

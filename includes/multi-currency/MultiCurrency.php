@@ -551,7 +551,7 @@ class MultiCurrency {
 		// return any data we have cached (expired or not) or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
-			return $cached_data ?? null;
+			return $cached_data;
 		}
 
 		return $this->cache->get_or_add(
@@ -2165,7 +2165,7 @@ class MultiCurrency {
 	 */
 	private function add_simulation_params_to_preview_urls() {
 		$params = $this->simulation_params;
-		add_filter(
+		add_action(
 			'wp_footer',
 			function () use ( $params ) {
 				?>

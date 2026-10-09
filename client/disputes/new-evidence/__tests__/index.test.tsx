@@ -545,7 +545,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 
 			await waitFor( () => {
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					'Error: API error'
+					'API error'
 				);
 			} );
 		} );
@@ -558,7 +558,11 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				createInfoNotice: jest.fn(),
 			} );
 
-			const error = new Error( 'Save error' );
+			const error = {
+				code: 'lock_timeout',
+				message: 'Save error',
+				data: null,
+			};
 			mockApiFetch
 				.mockResolvedValueOnce( baseDispute )
 				.mockRejectedValueOnce( error );
@@ -572,7 +576,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				fireEvent.click( saveButton );
 
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					expect.stringContaining( 'Save error' )
+					'Failed to save evidence. (Save error)'
 				);
 			} );
 		} );
