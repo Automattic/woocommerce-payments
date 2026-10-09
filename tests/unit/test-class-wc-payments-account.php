@@ -4313,6 +4313,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->get_cached_account_data();
 	}
 
+	public function test_get_cached_account_data_does_not_force_refresh_by_default() {
+		$this->mock_jetpack_connection();
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->with(
+				Database_Cache::ACCOUNT_KEY,
+				$this->isType( 'callable' ),
+				$this->isType( 'callable' ),
+				false
+			);
+
+		$this->wcpay_account->get_cached_account_data();
+	}
+
 	public function test_retired_kyc_recorder_does_not_start_a_new_timer(): void {
 		$this->setExpectedDeprecated( 'WC_Payments_Account::maybe_record_kyc_completion_date' );
 		delete_option( 'wcpay_kyc_completion_date' );
