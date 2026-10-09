@@ -1641,6 +1641,84 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'Invalid user ID', $response['data']['message'] );
 	}
 
+	public function test_remove_single_payment_data_keeps_one_payment_off_subscriptions() {
+		$data = [
+			'_intent_id'                    => 'pi_previous_attempt',
+			'_intention_status'             => 'requires_action',
+			'_charge_id'                    => 'ch_previous_attempt',
+			'_wcpay_payment_transaction_id' => 'txn_previous_attempt',
+			'_wcpay_payment_method_details' => '{"type":"card"}',
+			'_wcpay_transaction_fee'        => '1.23',
+			'_wcpay_net'                    => '8.77',
+			'_payment_method_id'            => 'pm_reusable',
+			'_stripe_customer_id'           => 'cus_reusable',
+		];
+
+		$this->assertSame(
+			[
+				'_payment_method_id'  => 'pm_reusable',
+				'_stripe_customer_id' => 'cus_reusable',
+			],
+			$this->wcpay_gateway->remove_single_payment_data( $data )
+		);
+	}
+
+	public function test_update_renewal_meta_data_excludes_single_payment_meta() {
+		$query = $this->wcpay_gateway->update_renewal_meta_data( 'WHERE post_id = 1', null, null );
+
+		$this->assertSame(
+			"WHERE post_id = 1 AND `meta_key` NOT IN ('_new_order_tracking_complete', '_intent_id', '_intention_status', '_charge_id', '_wcpay_payment_transaction_id', '_wcpay_payment_method_details', '_wcpay_transaction_fee', '_wcpay_net')",
+			$query
+		);
+	}
+
+	public function test_init_hooks_registers_single_payment_meta_filters() {
+		$legacy_gateway = $this->create_gateway_with_fresh_hooks();
+
+		$this->assertSame( 10, has_filter( 'wcs_renewal_order_meta_query', [ $legacy_gateway, 'update_renewal_meta_data' ] ) );
+		$this->assertSame( 10, has_filter( 'wcs_subscription_meta_query', [ $legacy_gateway, 'update_renewal_meta_data' ] ) );
+
+		// The test environment doesn't ship Subscriptions, so a stub stands in for versions with the data copier.
+		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
+			eval( 'class WC_Subscriptions_Data_Copier {}' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
+		}
+		$copier_gateway = $this->create_gateway_with_fresh_hooks();
+
+		$this->assertSame( 10, has_filter( 'wc_subscriptions_renewal_order_data', [ $copier_gateway, 'remove_data_renewal_order' ] ) );
+		$this->assertSame( 10, has_filter( 'wc_subscriptions_object_data', [ $copier_gateway, 'remove_single_payment_data' ] ) );
+	}
+
+	private function create_gateway_with_fresh_hooks() {
+		$payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, CardDefinition::class ] )
+			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
+			->getMock();
+
+		$gateway = new \WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$payment_method,
+			[ 'card' => $payment_method ],
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
+			$this->mock_session_rate_limiter
+		);
+
+		$ref = new ReflectionProperty( $gateway, 'has_attached_integration_hooks' );
+		$ref->setAccessible( true );
+		$ref->setValue( null, false );
+
+		$gateway->init_hooks();
+
+		return $gateway;
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $_unused_order ) use ( $subscriptions ) {
