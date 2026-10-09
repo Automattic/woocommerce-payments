@@ -189,95 +189,9 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test add SEPA token to user with deferred intent creation UPE.
-	 */
-	public function test_add_token_to_user_for_sepa_deferred_intent_creation_upe() {
-		$mock_payment_method = [
-			'id'         => 'pm_mock',
-			'sepa_debit' => [
-				'last4' => '3000',
-			],
-			'type'       => Payment_Method::SEPA,
-		];
-
-		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
-
-		$this->assertEquals( 'woocommerce_payments_sepa_debit', $token->get_gateway_id() );
-		$this->assertEquals( 1, $token->get_user_id() );
-		$this->assertEquals( 'pm_mock', $token->get_token() );
-		$this->assertEquals( '3000', $token->get_last4() );
-		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-	}
-
-	/**
-	 * Test add SEPA token to user with deferred intent UPE.
-	 */
-	public function test_add_token_to_user_for_sepa_deferred_upe() {
-		$mock_payment_method = [
-			'id'         => 'pm_mock',
-			'sepa_debit' => [
-				'last4' => '3000',
-			],
-			'type'       => Payment_Method::SEPA,
-		];
-
-		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
-
-		$this->assertEquals( 'woocommerce_payments_sepa_debit', $token->get_gateway_id() );
-		$this->assertEquals( 1, $token->get_user_id() );
-		$this->assertEquals( 'pm_mock', $token->get_token() );
-		$this->assertEquals( '3000', $token->get_last4() );
-		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-	}
-
-	/**
 	 * Test add Link token to user.
 	 */
 	public function test_add_token_to_user_for_link() {
-		$mock_payment_method = [
-			'id'   => 'pm_mock',
-			'link' => [
-				'email' => 'test@test.com',
-			],
-			'type' => Payment_Method::LINK,
-		];
-
-		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
-
-		$this->assertSame( 'woocommerce_payments', $token->get_gateway_id() );
-		$this->assertSame( 1, $token->get_user_id() );
-		$this->assertSame( 'pm_mock', $token->get_token() );
-		$this->assertSame( 'test@test.com', $token->get_email() );
-		$this->assertSame( '***test@test.com', $token->get_redacted_email() );
-		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
-	}
-
-	/**
-	 * Test add Link token to user with split UPE.
-	 */
-	public function test_add_token_to_user_for_link_split_upe() {
-		$mock_payment_method = [
-			'id'   => 'pm_mock',
-			'link' => [
-				'email' => 'test@test.com',
-			],
-			'type' => Payment_Method::LINK,
-		];
-
-		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
-
-		$this->assertSame( 'woocommerce_payments', $token->get_gateway_id() );
-		$this->assertSame( 1, $token->get_user_id() );
-		$this->assertSame( 'pm_mock', $token->get_token() );
-		$this->assertSame( 'test@test.com', $token->get_email() );
-		$this->assertSame( '***test@test.com', $token->get_redacted_email() );
-		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
-	}
-
-	/**
-	 * Test add Link token to user with deferred intent UPE.
-	 */
-	public function test_add_token_to_user_for_link_deferred_upe() {
 		$mock_payment_method = [
 			'id'   => 'pm_mock',
 			'link' => [
@@ -1084,8 +998,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * @param int|null $user_id The user ID.
 	 */
 	public function test_clearing_with_network_saved_cards_enabled( ?int $user_id = null ) {
-		$user_id     = 1;
-		$cached_data = [
+		$cached_user_id = 1;
+		$cached_data    = [
 			'customer_id'         => 'cus_12345',
 			'payment_method_card' => [
 				$this->generate_card_pm_response( 'pm_test1' ),
@@ -1093,12 +1007,12 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		];
 
 		// Add cached data to user meta.
-		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
+		update_user_meta( $cached_user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
 
 		// Mock network saved cards enabled using the filter.
 		add_filter( 'wcpay_force_network_saved_cards', '__return_true' );
 
-		if ( $user_id > 0 ) {
+		if ( null !== $user_id ) {
 			// Clear cached payment methods for user.
 			$this->token_service->clear_cached_payment_methods_for_user( $user_id );
 		} else {
@@ -1107,7 +1021,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		}
 
 		// Verify cached data still exists (should not be cleared when network saved cards is enabled).
-		$this->assertEquals( $cached_data, get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
+		$this->assertEquals( $cached_data, get_user_meta( $cached_user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
 
 		// Clean up the filter.
 		remove_filter( 'wcpay_force_network_saved_cards', '__return_true' );

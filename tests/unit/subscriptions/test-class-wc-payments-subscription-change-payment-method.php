@@ -123,8 +123,8 @@ class WC_Payments_Subscription_Change_Payment_Method_Test extends WCPAY_UnitTest
 		$this->assertContainsOnly( 'array', $result );
 		$this->assertSame( count( $test_actions ), count( $result ) );
 
-		$this->assertArrayHasKey( 'cancel', $test_actions );
-		$this->assertArrayHasKey( 'pay', $test_actions );
+		$this->assertArrayHasKey( 'cancel', $result );
+		$this->assertArrayHasKey( 'pay', $result );
 
 		// Confirm the pay url has been updated to include the change payment method flag.
 		$this->assertMatchesRegularExpression( '/order-pay=/', $result['pay']['url'] );

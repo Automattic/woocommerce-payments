@@ -963,31 +963,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
 
-		/**
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with(
-				$this->anything(),
-				$this->anything(),
-				self::PAYMENT_METHOD_ID,
-				self::CUSTOMER_ID,
-				$this->anything(),
-				false,
-				false,
-				$this->anything(),
-				$this->anything(),
-				true,
-				$this->equalTo(
-					[
-						'mandate'                    => 'mandate_id',
-						'is_platform_payment_method' => false,
-					]
-				)
-			)
-			->willReturn( WC_Helper_Intention::create_intention() )
-
-		 */
+		$request->expects( $this->once() )
+			->method( 'set_mandate' )
+			->with( 'mandate_id' );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 	}
