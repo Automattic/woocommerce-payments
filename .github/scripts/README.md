@@ -4,20 +4,23 @@ This directory contains scripts used by GitHub Actions workflows for documentati
 
 ## Scripts
 
-### `check-doc-links.py`
+### `check-doc-links.js`
 
 Checks WooCommerce documentation links in Git-tracked `readme.txt` and `.php`, `.js`, `.jsx`, `.ts` and `.tsx` source files. Source scope covers root files and `assets/`, `client/`, `includes/` (including the multi-currency client), `src/` and `templates/`. Tests, snapshots, dependencies and generated/minified bundles are excluded; source comments are included.
 
 To scan a release, open **Actions → Check documentation links → Run workflow** after the workflow reaches the default branch. Use the workflow from `develop` and set `ref` to a release branch, tag or commit, or leave it empty to scan the selected workflow commit. Results appear in the job log and summary. The workflow has only `contents: read` permission and never executes the target checkout's code.
 
-Local commands (Python 3.10+ and Git; no third-party Python packages):
+Local commands (the repository's Node.js/pnpm versions and Git):
 
 ```bash
-python3 -B .github/scripts/check-doc-links.py --report /tmp/documentation-links.md
-python3 -B -m unittest discover -s .github/scripts/tests -p 'test_check_doc_links.py' -v
+pnpm install --frozen-lockfile --ignore-scripts
+node .github/scripts/check-doc-links.js --report /tmp/documentation-links.md
+node --test .github/scripts/tests/test-check-doc-links.js
 ```
 
-Offline tests run automatically on PRs that change the checker, its tests or its workflow, and on merge-queue runs. They use a local HTTP server without contacting WooCommerce.com. Live URL checks run only on manual dispatch, after the tests pass.
+The checker uses Node's built-in HTTP client and test runner, plus `parse5` to parse HTML and decode entities. CI installs locked dependencies from the checker checkout with lifecycle scripts disabled.
+
+Offline tests run automatically on PRs that change the checker, its tests, workflow or dependency configuration, and on merge-queue runs. They use a local HTTP server without contacting WooCommerce.com. Live URL checks run only on manual dispatch, after the tests pass.
 
 The checker:
 
