@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from 'react';
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
 /**
@@ -11,10 +12,7 @@ import {
 	shippingRateChangeHandler,
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
-import {
-	PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-	WC_STORE_CART,
-} from 'wcpay/checkout/constants';
+import { WC_STORE_CART } from 'wcpay/checkout/constants';
 import {
 	getPaymentMethodsOverride,
 	adjustButtonHeights,
@@ -54,6 +52,8 @@ const ExpressCheckoutComponent = ( {
 		setExpressPaymentError,
 		paymentMethodTypes,
 	} );
+	const [ isUnavailable, setIsUnavailable ] = useState( false );
+
 	const onShippingAddressChange = ( event ) =>
 		shippingAddressChangeHandler( event, elements, setExpressPaymentError );
 
@@ -66,18 +66,11 @@ const ExpressCheckoutComponent = ( {
 		);
 
 	const onElementsReady = ( event ) => {
-		const paymentMethodContainer = document.getElementById(
-			`express-payment-method-${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ expressPaymentMethod }`
+		// Hide our own element rather than removing the block's slot: the block
+		// keeps it mounted across cart updates, so a removed slot never returns.
+		setIsUnavailable(
+			! event.availablePaymentMethods?.[ expressPaymentMethod ]
 		);
-
-		const availablePaymentMethods = event.availablePaymentMethods || {};
-
-		if (
-			paymentMethodContainer &&
-			! availablePaymentMethods[ expressPaymentMethod ]
-		) {
-			paymentMethodContainer.remove();
-		}
 
 		// Any actions that WooPayments needs to perform.
 		onReady( event );
@@ -103,15 +96,17 @@ const ExpressCheckoutComponent = ( {
 	};
 
 	return (
-		<ExpressCheckoutElement
-			options={ checkoutElementOptions }
-			onClick={ onButtonClick }
-			onConfirm={ onConfirm }
-			onReady={ onElementsReady }
-			onCancel={ onCancel }
-			onShippingAddressChange={ onShippingAddressChange }
-			onShippingRateChange={ onShippingRateChange }
-		/>
+		<div className="wcpay-ece-slot" hidden={ isUnavailable }>
+			<ExpressCheckoutElement
+				options={ checkoutElementOptions }
+				onClick={ onButtonClick }
+				onConfirm={ onConfirm }
+				onReady={ onElementsReady }
+				onCancel={ onCancel }
+				onShippingAddressChange={ onShippingAddressChange }
+				onShippingRateChange={ onShippingRateChange }
+			/>
+		</div>
 	);
 };
 
