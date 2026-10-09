@@ -6,21 +6,28 @@ This directory contains scripts used by GitHub Actions workflows for documentati
 
 ### `check-doc-links.py`
 
-Checks complete WooCommerce documentation URL literals in Git-tracked `.php`, `.js`, `.jsx`, `.ts` and `.tsx` source files. The scan covers root source files and `assets/`, `client/`, `includes/` (including the multi-currency client), `src/` and `templates/`. Tests, snapshots, dependencies and generated/minified bundles are excluded. URLs in source comments are included.
+Checks WooCommerce documentation links in Git-tracked `readme.txt` and `.php`, `.js`, `.jsx`, `.ts` and `.tsx` source files. Source scope covers root files and `assets/`, `client/`, `includes/` (including the multi-currency client), `src/` and `templates/`. Tests, snapshots, dependencies and generated/minified bundles are excluded; source comments are included.
+
+To scan a release, open **Actions → Check documentation links → Run workflow** after the workflow reaches the default branch. Use the workflow from `develop` and set `ref` to a release branch, tag or commit, or leave it empty to scan the selected workflow commit. Results appear in the job log and summary. The workflow has only `contents: read` permission and never executes the target checkout's code.
+
+Local commands (Python 3.10+ and Git; no third-party Python packages):
 
 ```bash
 python3 -B .github/scripts/check-doc-links.py --report /tmp/documentation-links.md
 python3 -B -m unittest discover -s .github/scripts/tests -p 'test_check_doc_links.py' -v
 ```
 
-Requires Python 3.10+ and Git, with no third-party Python packages. The tests use a local HTTP server and do not contact WooCommerce.com. The checker:
+Offline tests run automatically on PRs that change the checker, its tests or its workflow, and on merge-queue runs. They use a local HTTP server without contacting WooCommerce.com. Live URL checks run only on manual dispatch, after the tests pass.
+
+The checker:
 
 - Finds `woocommerce.com/document/`, `/documentation/`, `/docs/`, their `www` equivalents, and legacy `docs.woocommerce.com` URLs.
 - Follows HTTP redirects within the official WooCommerce documentation hosts, including `developer.woocommerce.com`.
 - Fetches each unique URL without its fragment once, using four workers, a 20-second request timeout and up to three attempts for transient failures.
 - Requires successful HTML responses and matches percent-decoded fragments against exact HTML `id` values. It does not check legacy `<a name>` attributes or execute page JavaScript.
-- Logs every URL and source location, writes a Markdown report, and appends that report to the Actions job summary. Missing IDs, HTTP/network errors and an empty scan return a failing exit status. Access blocks and timeouts mean verification failed; they do not establish that a URL is broken.
-- Checks complete URL literals and generated destinations listed in source comments. Runtime expressions are not evaluated. Detected interpolations inside URL literals are reported for manual review.
+- Logs every URL and source location, writes a Markdown report, and appends it to the Actions job summary. Missing IDs, HTTP/network errors and an empty scan fail the job. Access blocks and timeouts mean verification failed; they do not establish that a URL is broken.
+
+It cannot tell whether a working page or anchor covers the topic promised by the link text. Topic relevance still needs manual review. Runtime expressions and server-supplied URLs are not evaluated; detected interpolations inside URL literals are reported for manual review.
 
 For a generated documentation link, list every possible complete URL near the code that builds it, with one `@wcpay-doc-url` annotation per line:
 
@@ -30,16 +37,7 @@ For a generated documentation link, list every possible complete URL near the co
 const feeDocsUrl = `${ countryFeeDocsBaseLink }#${ countrySlug }`;
 ```
 
-The same comment convention works in PHP, JS, JSX, TS and TSX, including block comments. It documents why the URLs are present; the existing source-comment scan discovers them without a separate parser or configuration file. Each listed URL gets the same page/ID checks and source-line reporting as an ordinary literal, and duplicate URLs are fetched once. Annotations add checks; they do not suppress failures for other URLs in the file.
-
-Keep the list in sync when generated destinations change. The country fee map in `client/utils/account-fees.tsx` uses an inline annotation beside each of its 38 slugs. URLs supplied only by the server cannot be inferred from the plugin checkout and need an explicit list if they are to be covered here.
-
-The **Check documentation links** workflow is manual-only. After the workflow reaches the default branch, select **Actions → Check documentation links → Run workflow**. Run the workflow from `develop` and either:
-
-- Set `ref` to a release branch, tag or commit (for example, `release/11.2.0`). Leave both inputs empty to scan the selected workflow commit. These runs report in the logs and job summary.
-- Set `pr_number` to scan that PR's current head commit and create or update one report comment. Leave `ref` empty. The PR number is resolved through GitHub so the comment always describes the revision that was scanned.
-
-The source checkout is read as data; its code and dependencies are never executed. No automatic release-PR trigger is enabled yet. When adding one, filter on the PR's **head** branch (`release/`), since `pull_request.branches` filters the base branch, and use a trusted checker revision with appropriate comment permissions. The existing report step already accepts a PR event number.
+This convention works in line, inline and block comments in all scanned source languages. Keep the list synchronized with generated destinations; the country fee map in `client/utils/account-fees.tsx` shows inline examples. The existing comment scan checks each listed URL and reports its source line. Annotations add checks without suppressing failures elsewhere.
 
 ### `generate-wc-matrix.sh`
 

@@ -26,6 +26,25 @@ DOC_URL = "https://woocommerce.com/document/example/"
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_readme_links_are_scanned_with_source_locations(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", directory], check=True)
+            (root / "readme.txt").write_text("\n".join([
+                "=== WooPayments ===",
+                "[Fees](https://woocommerce.com/document/woopayments/fees/).",
+                "[Countries](https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries)",
+                "[Product](https://woocommerce.com/payments/)",
+            ]))
+            (root / "README.md").write_text(DOC_URL + "#developer-readme")
+            (root / "client").mkdir()
+            (root / "client/readme.txt").write_text(DOC_URL + "#nested-readme")
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            self.assertEqual(checker.discover_links(root), {
+                "https://woocommerce.com/document/woopayments/fees/": ["readme.txt:2"],
+                "https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries": ["readme.txt:3"],
+            })
+
     def test_generated_url_annotations_across_php_and_client_sources(self):
         source = "\n".join([
             "// Generated destinations:",
@@ -251,14 +270,14 @@ class ReportTests(unittest.TestCase):
         fetcher.assert_not_called()
         self.assertEqual(list(results.values()), ["Dynamic URL literal needs manual review"])
 
-    def test_report_is_bounded_and_escapes_source_text(self):
+    def test_report_keeps_all_failures_and_escapes_source_text(self):
         links = {DOC_URL + str(number): ["client/<script>|`file`.tsx:1"] for number in range(1000)}
         results = {url: "Missing anchor" for url in links}
         report = checker.make_report(links, results, "abc123")
-        self.assertLess(len(report), 60000)
-        self.assertIn("Report truncated", report)
+        self.assertEqual(report.count("Missing anchor"), 1000)
+        self.assertIn("https://woocommerce.com/document/example/999", report)
         self.assertIn("&lt;script&gt;&#124;&#96;file&#96;", report)
-        self.assertTrue(report.startswith("<!-- woopayments-documentation-links -->"))
+        self.assertTrue(report.startswith("## WooPayments documentation links"))
 
 
 if __name__ == "__main__":

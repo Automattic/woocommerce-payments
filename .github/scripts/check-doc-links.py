@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check WooCommerce documentation URL literals and source-comment annotations."""
+"""Check WooCommerce documentation links in plugin source and readme.txt."""
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -26,7 +26,6 @@ URL_PATTERN = re.compile(
     r"|docs\.woocommerce\.com/)[^\s\"'`<>\\]*",
     re.IGNORECASE,
 )
-COMMENT_MARKER = "<!-- woopayments-documentation-links -->"
 MAX_HTML_BYTES = 10 * 1024 * 1024
 
 
@@ -75,6 +74,8 @@ class DocumentationRedirects(HTTPRedirectHandler):
 
 
 def is_source(path):
+    if path == Path("readme.txt"):
+        return True
     return (
         path.suffix in SOURCE_EXTENSIONS
         and (path.parts[0] in SOURCE_DIRECTORIES or len(path.parts) == 1)
@@ -84,7 +85,7 @@ def is_source(path):
 
 
 def discover_links(root):
-    """Find literals and @wcpay-doc-url comments in Git-tracked plugin files."""
+    """Find literals and @wcpay-doc-url comments in tracked source and readme.txt."""
     tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode()
     links = {}
     for filename in sorted(filter(None, tracked.split("\0"))):
@@ -175,16 +176,17 @@ def code(value):
 
 def make_report(links, results, revision, run_url=""):
     failures = {url: error for url, error in results.items() if error}
-    lines = [COMMENT_MARKER, "## WooPayments documentation links", "", f"Checked commit: {code(revision)}", ""]
+    lines = ["## WooPayments documentation links", "", f"Checked commit: {code(revision)}", ""]
     if run_url:
         lines += [f"[Workflow run and full logs]({run_url})", ""]
     lines += [f"**{len(results)} unique URLs checked; {len(failures)} failed.**", ""]
     if not links:
         lines += ["**Failed: no documentation URLs were found. Check the scan scope.**", ""]
     lines += [
-        "Scope: tracked PHP, JS, JSX, TS and TSX plugin source; tests, dependencies and generated bundles excluded.",
+        "Scope: readme.txt and tracked PHP, JS, JSX, TS and TSX plugin source; tests, dependencies and generated bundles excluded.",
         "Checks complete URL literals, including @wcpay-doc-url source comments for generated links.",
         "Runtime expressions are not evaluated; generated destinations must be listed in source comments.",
+        "A successful response and an existing ID do not establish that the destination covers the correct topic.",
         "Request errors (including access blocks or timeouts) are failures to verify, not proof of a broken link.",
         "",
     ]
@@ -192,10 +194,6 @@ def make_report(links, results, revision, run_url=""):
         lines += ["| URL | Problem | Source |", "| --- | --- | --- |"]
         for url, error in sorted(failures.items()):
             row = f"| {code(url)} | {code(error)} | {'<br>'.join(code(loc) for loc in links[url])} |"
-            # GitHub issue comments are limited to 65,536 characters.
-            if sum(len(line) + 1 for line in lines) + len(row) > 58000:
-                lines += ["", "Report truncated; all results and source locations are in the job log."]
-                break
             lines.append(row)
     elif links:
         lines.append("All discovered documentation URLs and anchors passed.")
