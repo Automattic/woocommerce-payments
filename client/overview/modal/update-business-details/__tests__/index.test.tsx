@@ -38,7 +38,12 @@ describe( 'Overview: update business details modal', () => {
 			/>
 		);
 
-		expect( modalContent() ).toMatchSnapshot();
+		expect( modalContent() ).toHaveTextContent(
+			'Payments and payouts are disabled for this account until missing information is updated.'
+		);
+		mockErrorMessages.forEach( ( message ) =>
+			expect( modalContent() ).toHaveTextContent( message )
+		);
 	} );
 
 	test( 'renders correctly when opened for restricted soon account with current deadline', () => {
@@ -51,7 +56,12 @@ describe( 'Overview: update business details modal', () => {
 			/>
 		);
 
-		expect( modalContent() ).toMatchSnapshot();
+		expect( modalContent() ).toHaveTextContent(
+			'Additional information is required to verify your business. Update by 7pm Dec 31, 2021 to avoid a disruption in payouts.'
+		);
+		mockErrorMessages.forEach( ( message ) =>
+			expect( modalContent() ).toHaveTextContent( message )
+		);
 	} );
 
 	test( 'renders correctly when opened for restricted soon account without current deadline', () => {
@@ -63,6 +73,8 @@ describe( 'Overview: update business details modal', () => {
 			/>
 		);
 
-		expect( modalContent() ).toMatchSnapshot();
+		expect( modalContent() ).toHaveTextContent(
+			'Payments and payouts are disabled for this account until missing information is updated.'
+		);
 	} );
 } );

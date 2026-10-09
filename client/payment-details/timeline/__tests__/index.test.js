@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
@@ -94,10 +94,15 @@ describe( 'PaymentDetailsTimeline', () => {
 			<PaymentDetailsTimeline chargeId="ch_test" />
 		);
 
-		expect( container ).toMatchSnapshot();
+		expect(
+			screen.getByText( 'Error while loading timeline' )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '.woocommerce-timeline' )
+		).not.toBeInTheDocument();
 	} );
 
-	test( 'renders correctly (with a mocked Timeline component)', () => {
+	test( 'renders a timeline item for each mapped event', () => {
 		// Mock all the possible events.
 		useTimeline.mockReturnValue( {
 			timeline: [
@@ -210,7 +215,12 @@ describe( 'PaymentDetailsTimeline', () => {
 			<PaymentDetailsTimeline chargeId="ch_test" />
 		);
 
-		expect( container ).toMatchSnapshot();
+		expect(
+			container.querySelectorAll( '.woocommerce-timeline-item' )
+		).toHaveLength( 27 );
+		expect(
+			screen.queryByText( 'Error while loading timeline' )
+		).not.toBeInTheDocument();
 	} );
 
 	test( 'renders subscription fee correctly', () => {
@@ -268,10 +278,13 @@ describe( 'PaymentDetailsTimeline', () => {
 			isLoading: false,
 		} );
 
-		const { container } = render(
-			<PaymentDetailsTimeline chargeId="ch_test" />
-		);
+		render( <PaymentDetailsTimeline chargeId="ch_test" /> );
 
-		expect( container ).toMatchSnapshot();
+		expect(
+			screen.getByText( 'Fee (3.9% + $0.30): -$0.34' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Subscription transaction fee: 1%' )
+		).toBeInTheDocument();
 	} );
 } );

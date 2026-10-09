@@ -11,6 +11,7 @@ import {
 } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import { List } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -119,6 +120,13 @@ Object.defineProperty( window, 'scrollTo', {
 
 // Mock window.confirm
 global.confirm = jest.fn() as jest.MockedFunction< typeof confirm >;
+
+// `List` warns about its deprecated `items` prop only once per process, so the
+// first test to render it would fail on the warning, depending on test order.
+beforeAll( () => {
+	render( <List items={ [] } /> ).unmount();
+	expect( console ).toHaveWarned();
+} );
 
 describe( 'NewEvidence - Visa Compliance Flow', () => {
 	const baseDispute = {
@@ -494,9 +502,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				},
 				{ timeout: 3000 }
 			);
-
-			// The WooCommerce List component shows a deprecation warning
-			expect( console ).toHaveWarned();
 		} );
 
 		it( 'should handle enhanced_eligibility_types Visa Compliance disputes', async () => {

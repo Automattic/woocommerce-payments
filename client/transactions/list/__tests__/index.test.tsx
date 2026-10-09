@@ -208,6 +208,12 @@ const getMockTransactions: () => Transaction[] = () => [
 	},
 ];
 
+const getSummaryLabels = ( container: Element ) =>
+	Array.from(
+		container.querySelectorAll( '.woocommerce-table__summary-label' ),
+		( label ) => label.textContent
+	);
+
 describe( 'Transactions list', () => {
 	beforeAll( () => {
 		jest.spyOn( console, 'error' ).mockImplementation( () => null );
@@ -257,7 +263,7 @@ describe( 'Transactions list', () => {
 		window.wcpaySettings.timeFormat = 'g:iA';
 	} );
 
-	test( 'renders correctly when filtered by payout', () => {
+	test( 'hides the filters and payout columns when filtered by payout', () => {
 		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
 				( txn: Transaction ) => txn.deposit_id === 'po_mock'
@@ -281,8 +287,13 @@ describe( 'Transactions list', () => {
 		const { container, getByRole } = render(
 			<TransactionsList depositId="po_mock" />
 		);
-		expect( container ).toMatchSnapshot();
 		getByRole( 'heading', { name: 'Transactions' } );
+		expect(
+			container.querySelector( '.woocommerce-filters-transactions' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'columnheader', { name: 'Payout date' } )
+		).not.toBeInTheDocument();
 		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 
@@ -425,7 +436,12 @@ describe( 'Transactions list', () => {
 			);
 
 			expect( tableSummary ).toHaveLength( 1 );
-			expect( container ).toMatchSnapshot();
+			expect( getSummaryLabels( container ) ).toEqual( [
+				'transaction',
+				'total',
+				'fees',
+				'net',
+			] );
 		} );
 
 		test( 'renders table with a TTP source device', () => {
@@ -468,13 +484,18 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const { container } = render( <TransactionsList /> );
+		render( <TransactionsList /> );
 
-		expect( container ).toMatchSnapshot();
+		expect(
+			screen.getByRole( 'columnheader', { name: 'Subscription number' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: 'custom-246' } )
+		).toHaveAttribute( 'href', 'https://example.com/subscription/246' );
 	} );
 
 	// Several settlement currencies are available -> render the currency filter.
-	test( 'renders correctly when can filter by several currencies', () => {
+	test( 'renders the currency filter and only the count when there are several currencies', () => {
 		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions(),
 			isLoading: false,
@@ -494,11 +515,12 @@ describe( 'Transactions list', () => {
 		} );
 
 		const { container } = render( <TransactionsList /> );
-		expect( container ).toMatchSnapshot();
+
+		expect( screen.getByText( /Deposit currency/ ) ).toBeInTheDocument();
+		expect( getSummaryLabels( container ) ).toEqual( [ 'transactions' ] );
 	} );
 
-	// The currency filter has been applied, render the filter even for a single settlement currency case.
-	test( 'renders correctly when filtered by currency', () => {
+	test( 'renders the summary totals when filtered by one of several currencies', () => {
 		updateQueryString( { store_currency_is: 'usd' }, '/', {} );
 
 		mockUseTransactions.mockReturnValue( {
@@ -513,7 +535,7 @@ describe( 'Transactions list', () => {
 			transactionsSummary: {
 				count: 10,
 				currency: 'usd',
-				store_currencies: [ 'usd' ],
+				store_currencies: [ 'eur', 'usd' ],
 				fees: 100,
 				total: 1000,
 				net: 900,
@@ -522,7 +544,13 @@ describe( 'Transactions list', () => {
 		} );
 
 		const { container } = render( <TransactionsList /> );
-		expect( container ).toMatchSnapshot();
+
+		expect( getSummaryLabels( container ) ).toEqual( [
+			'transactions',
+			'total',
+			'fees',
+			'net',
+		] );
 	} );
 
 	test( 'renders columns hidden as per user preferences', () => {

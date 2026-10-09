@@ -7,6 +7,7 @@ import { fireEvent, render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
+import { List } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -169,6 +170,14 @@ const expandAccordion = ( title ) => {
 	fireEvent.click( accordionTitle );
 };
 
+// `List` warns about its deprecated `items` prop only once per process, so the
+// first test to render it would fail on the warning, depending on test order.
+beforeAll( () => {
+	// eslint-disable-next-line testing-library/no-render-in-setup
+	render( <List items={ [] } /> ).unmount();
+	expect( console ).toHaveWarned();
+} );
+
 describe( 'PaymentDetailsSummary', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -221,12 +230,6 @@ describe( 'PaymentDetailsSummary', () => {
 
 	test( 'correctly renders a charge', () => {
 		expect( renderCharge( getBaseCharge() ) ).toMatchSnapshot();
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		expect( console ).toHaveWarnedWith(
-			// eslint-disable-next-line max-len
-			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
-		);
 	} );
 
 	test( 'correctly renders when payment intent is missing', () => {
@@ -287,7 +290,11 @@ describe( 'PaymentDetailsSummary', () => {
 		const charge = getBaseCharge();
 		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
 
-		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+		renderCharge( charge, metadata );
+
+		expect(
+			screen.getByText( 'Tap to Pay on iPhone' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'renders the Tap to Pay channel from metadata with android TAP_TO_PAY_DEVICE', () => {
@@ -297,7 +304,11 @@ describe( 'PaymentDetailsSummary', () => {
 			'android'
 		);
 
-		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+		renderCharge( charge, metadata );
+
+		expect(
+			screen.getByText( 'Tap to Pay on Android' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'renders a charge with subscriptions', () => {
@@ -1404,7 +1415,7 @@ describe( 'PaymentDetailsSummary', () => {
 		test( 'does not render notice if order present', () => {
 			const charge = getBaseCharge();
 
-			const container = renderCharge( charge );
+			renderCharge( charge );
 
 			expect(
 				screen.queryByRole( 'button', { name: /Refund/i } )
@@ -1415,8 +1426,6 @@ describe( 'PaymentDetailsSummary', () => {
 					/This transaction is not connected to order. Investigate this purchase and refund the transaction as needed./
 				)
 			).not.toBeInTheDocument();
-
-			expect( container ).toMatchSnapshot();
 		} );
 	} );
 

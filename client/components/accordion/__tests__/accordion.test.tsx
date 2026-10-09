@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -10,7 +10,7 @@ import { render } from '@testing-library/react';
 import { Accordion, AccordionBody, AccordionRow } from '../';
 
 describe( 'Accordion', () => {
-	test( 'renders with default props', () => {
+	test( 'renders its bodies collapsed by default', () => {
 		const { container } = render(
 			<Accordion>
 				<AccordionBody title="Test Title">
@@ -18,7 +18,13 @@ describe( 'Accordion', () => {
 				</AccordionBody>
 			</Accordion>
 		);
-		expect( container ).toMatchSnapshot();
+
+		expect( container.firstChild ).toHaveClass( 'wcpay-accordion' );
+		expect( container.firstChild ).not.toHaveClass( 'is-high-density' );
+		expect(
+			screen.getByRole( 'button', { name: 'Test Title' } )
+		).toBeInTheDocument();
+		expect( screen.queryByText( 'Test Content' ) ).not.toBeInTheDocument();
 	} );
 
 	test( 'renders with high density', () => {
@@ -29,18 +35,20 @@ describe( 'Accordion', () => {
 				</AccordionBody>
 			</Accordion>
 		);
-		expect( container ).toMatchSnapshot();
+
+		expect( container.firstChild ).toHaveClass( 'is-high-density' );
 	} );
 
 	test( 'renders with default expanded', () => {
-		const { container } = render(
+		render(
 			<Accordion defaultExpanded>
 				<AccordionBody title="Test Title">
 					<AccordionRow>Test Content</AccordionRow>
 				</AccordionBody>
 			</Accordion>
 		);
-		expect( container ).toMatchSnapshot();
+
+		expect( screen.getByText( 'Test Content' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders with custom className', () => {
@@ -51,6 +59,10 @@ describe( 'Accordion', () => {
 				</AccordionBody>
 			</Accordion>
 		);
-		expect( container ).toMatchSnapshot();
+
+		expect( container.firstChild ).toHaveClass(
+			'wcpay-accordion',
+			'custom-class'
+		);
 	} );
 } );
