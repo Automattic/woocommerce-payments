@@ -6,40 +6,27 @@ This directory contains scripts used by GitHub Actions workflows for documentati
 
 ### `check-doc-links.js`
 
-Checks WooCommerce documentation links in Git-tracked `readme.txt` and `.php`, `.js`, `.jsx`, `.ts` and `.tsx` source files. Source scope covers root files and `assets/`, `client/`, `includes/` (including the multi-currency client), `src/` and `templates/`. Tests, snapshots, dependencies and generated/minified bundles are excluded; source comments are included.
+Checks WooCommerce documentation URLs for HTTP errors and missing HTML `id` anchors. Results appear in the job log and summary; failures produce a non-zero exit code.
 
-The GitHub CLI can dispatch the workflow from a PR branch once GitHub has registered it through a PR test run:
+Scans Git-tracked `readme.txt` and PHP/JS/JSX/TS/TSX files at the root and in `assets/`, `client/`, `includes/`, `src/` and `templates/`, including source comments. Tests, dependencies and generated/minified bundles are excluded.
+
+Run manually with the GitHub CLI:
 
 ```bash
 gh workflow run check-doc-links.yml --repo Automattic/woocommerce-payments \
   --ref WORKFLOW_BRANCH -f ref=SOURCE_REF
 ```
 
-`--ref` selects the branch containing the workflow; `-f ref` selects the branch, tag or commit to scan. To test the initial PR, use its branch for both. Omit `-f ref` to scan the selected workflow commit. After merge, use `develop` for `--ref`, or open **Actions → Check documentation links → Run workflow** and enter the source ref there.
+`--ref` selects the workflow branch; `-f ref` selects the branch, tag or commit to scan. Omit the input to scan the workflow commit. A PR branch can supply the workflow once GitHub has registered it through a PR test run. The source checkout is only read, never executed.
 
-Results appear in the job log and summary. The workflow has only `contents: read` permission and never executes the target checkout's code.
-
-Local commands (the repository's Node.js/pnpm versions and Git):
+Local use, after installing the repository's dependencies:
 
 ```bash
-pnpm install --frozen-lockfile --ignore-scripts
 node .github/scripts/check-doc-links.js --report /tmp/documentation-links.md
 node --test .github/scripts/tests/test-check-doc-links.js
 ```
 
-The checker uses Node's built-in HTTP client and test runner, plus `parse5` to parse HTML and decode entities. CI installs locked dependencies from the checker checkout with lifecycle scripts disabled.
-
-Offline tests run automatically on PRs that change the checker, its tests, workflow or dependency configuration, and on merge-queue runs. They use a local HTTP server without contacting WooCommerce.com. Live URL checks run only on manual dispatch, after the tests pass.
-
-The checker:
-
-- Finds `woocommerce.com/document/`, `/documentation/`, `/docs/`, their `www` equivalents, and legacy `docs.woocommerce.com` URLs.
-- Follows HTTP redirects within the official WooCommerce documentation hosts, including `developer.woocommerce.com`.
-- Fetches each unique URL without its fragment once, using four workers, a 20-second request timeout and up to three attempts for transient failures.
-- Requires successful HTML responses and matches percent-decoded fragments against exact HTML `id` values. It does not check legacy `<a name>` attributes or execute page JavaScript.
-- Logs every URL and source location, writes a Markdown report, and appends it to the Actions job summary. Missing IDs, HTTP/network errors and an empty scan fail the job. Access blocks and timeouts mean verification failed; they do not establish that a URL is broken.
-
-It cannot tell whether a working page or anchor covers the topic promised by the link text. Topic relevance still needs manual review. Runtime expressions and server-supplied URLs are not evaluated; detected interpolations inside URL literals are reported for manual review.
+The checker uses Node.js and `parse5`. Offline tests run on relevant PRs and merge-queue runs; live checks are manual. It follows redirects within WooCommerce documentation hosts and checks exact, decoded IDs. It does not evaluate runtime expressions, execute page JavaScript, check `<a name>`, or detect links to the wrong topic. Access blocks and timeouts mean verification failed, not necessarily that the link is broken.
 
 ### `generate-wc-matrix.sh`
 

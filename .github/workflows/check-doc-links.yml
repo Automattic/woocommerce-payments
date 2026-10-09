@@ -14,7 +14,7 @@ on:
     workflow_dispatch:
         inputs:
             ref:
-                description: 'Branch, tag or SHA to scan (e.g. release/11.2.0); defaults to the selected workflow ref'
+                description: 'Branch, tag or SHA to scan; defaults to the selected workflow ref'
                 type: string
                 required: false
 
