@@ -198,7 +198,7 @@ test.describe( 'Order > Partial refund', { tag: '@merchant' }, () => {
 				adminPage
 					.getByRole( 'row', { name: 'Refunded' } )
 					.locator( 'bdi' )
-			).toHaveText( `$${ refundTotalString } USD` );
+			).toHaveText( `-$${ refundTotalString } USD` );
 
 			// Check that the net payment line item is correct.
 			await expect(
