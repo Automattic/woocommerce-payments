@@ -1672,6 +1672,53 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_init_hooks_registers_single_payment_meta_filters() {
+		$legacy_gateway = $this->create_gateway_with_fresh_hooks();
+
+		$this->assertSame( 10, has_filter( 'wcs_renewal_order_meta_query', [ $legacy_gateway, 'update_renewal_meta_data' ] ) );
+		$this->assertSame( 10, has_filter( 'wcs_subscription_meta_query', [ $legacy_gateway, 'update_renewal_meta_data' ] ) );
+
+		// The test environment doesn't ship Subscriptions, so a stub stands in for versions with the data copier.
+		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
+			eval( 'class WC_Subscriptions_Data_Copier {}' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged
+		}
+		$copier_gateway = $this->create_gateway_with_fresh_hooks();
+
+		$this->assertSame( 10, has_filter( 'wc_subscriptions_renewal_order_data', [ $copier_gateway, 'remove_data_renewal_order' ] ) );
+		$this->assertSame( 10, has_filter( 'wc_subscriptions_object_data', [ $copier_gateway, 'remove_single_payment_data' ] ) );
+	}
+
+	private function create_gateway_with_fresh_hooks() {
+		$payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, CardDefinition::class ] )
+			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
+			->getMock();
+
+		$gateway = new \WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$payment_method,
+			[ 'card' => $payment_method ],
+			$this->order_service,
+			$this->mock_dpps,
+			$this->mock_localization_service,
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
+			$this->mock_session_rate_limiter
+		);
+
+		$ref = new ReflectionProperty( $gateway, 'has_attached_integration_hooks' );
+		$ref->setAccessible( true );
+		$ref->setValue( null, false );
+
+		$gateway->init_hooks();
+
+		return $gateway;
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $_unused_order ) use ( $subscriptions ) {
