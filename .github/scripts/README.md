@@ -8,7 +8,16 @@ This directory contains scripts used by GitHub Actions workflows for documentati
 
 Checks WooCommerce documentation links in Git-tracked `readme.txt` and `.php`, `.js`, `.jsx`, `.ts` and `.tsx` source files. Source scope covers root files and `assets/`, `client/`, `includes/` (including the multi-currency client), `src/` and `templates/`. Tests, snapshots, dependencies and generated/minified bundles are excluded; source comments are included.
 
-To scan a release, open **Actions → Check documentation links → Run workflow** after the workflow reaches the default branch. Use the workflow from `develop` and set `ref` to a release branch, tag or commit, or leave it empty to scan the selected workflow commit. Results appear in the job log and summary. The workflow has only `contents: read` permission and never executes the target checkout's code.
+The GitHub CLI can dispatch the workflow from a PR branch once GitHub has registered it through a PR test run:
+
+```bash
+gh workflow run check-doc-links.yml --repo Automattic/woocommerce-payments \
+  --ref WORKFLOW_BRANCH -f ref=SOURCE_REF
+```
+
+`--ref` selects the branch containing the workflow; `-f ref` selects the branch, tag or commit to scan. To test the initial PR, use its branch for both. Omit `-f ref` to scan the selected workflow commit. After merge, use `develop` for `--ref`, or open **Actions → Check documentation links → Run workflow** and enter the source ref there.
+
+Results appear in the job log and summary. The workflow has only `contents: read` permission and never executes the target checkout's code.
 
 Local commands (the repository's Node.js/pnpm versions and Git):
 
