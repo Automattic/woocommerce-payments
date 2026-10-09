@@ -20,7 +20,19 @@ Requires Python 3.10+ and Git, with no third-party Python packages. The tests us
 - Fetches each unique URL without its fragment once, using four workers, a 20-second request timeout and up to three attempts for transient failures.
 - Requires successful HTML responses and matches percent-decoded fragments against exact HTML `id` values. It does not check legacy `<a name>` attributes or execute page JavaScript.
 - Logs every URL and source location, writes a Markdown report, and appends that report to the Actions job summary. Missing IDs, HTTP/network errors and an empty scan return a failing exit status. Access blocks and timeouts mean verification failed; they do not establish that a URL is broken.
-- Checks complete literals only. Runtime-assembled links, including the country-specific fee anchors in `client/utils/account-fees.tsx`, are outside this first version's scope. Detected interpolations inside URL literals are reported for manual review.
+- Checks complete URL literals and generated destinations listed in source comments. Runtime expressions are not evaluated. Detected interpolations inside URL literals are reported for manual review.
+
+For a generated documentation link, list every possible complete URL near the code that builds it, with one `@wcpay-doc-url` annotation per line:
+
+```js
+// @wcpay-doc-url https://woocommerce.com/document/woopayments/fees/#united-states
+// @wcpay-doc-url https://woocommerce.com/document/woopayments/fees/#united-kingdom
+const feeDocsUrl = `${ countryFeeDocsBaseLink }#${ countrySlug }`;
+```
+
+The same comment convention works in PHP, JS, JSX, TS and TSX, including block comments. It documents why the URLs are present; the existing source-comment scan discovers them without a separate parser or configuration file. Each listed URL gets the same page/ID checks and source-line reporting as an ordinary literal, and duplicate URLs are fetched once. Annotations add checks; they do not suppress failures for other URLs in the file.
+
+Keep the list in sync when generated destinations change. The country fee map in `client/utils/account-fees.tsx` uses an inline annotation beside each of its 38 slugs. URLs supplied only by the server cannot be inferred from the plugin checkout and need an explicit list if they are to be covered here.
 
 The **Check documentation links** workflow is manual-only. After the workflow reaches the default branch, select **Actions → Check documentation links → Run workflow**. Run the workflow from `develop` and either:
 

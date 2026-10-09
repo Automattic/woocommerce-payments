@@ -26,6 +26,36 @@ DOC_URL = "https://woocommerce.com/document/example/"
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_generated_url_annotations_across_php_and_client_sources(self):
+        source = "\n".join([
+            "// Generated destinations:",
+            "// @wcpay-doc-url https://woocommerce.com/document/example/#first",
+            "/*",
+            " * @wcpay-doc-url https://woocommerce.com/document/example/#second",
+            " */",
+            "const slug = 'first'; // @wcpay-doc-url https://woocommerce.com/document/example/#first",
+            "const link = `${base}#${slug}`;",
+        ])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", directory], check=True)
+            for extension in ["php", "js", "jsx", "ts", "tsx"]:
+                (root / f"example.{extension}").write_text(source)
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            links = checker.discover_links(root)
+            self.assertEqual(set(links), {
+                "https://woocommerce.com/document/example/#first",
+                "https://woocommerce.com/document/example/#second",
+            })
+            self.assertEqual(sorted(links[DOC_URL + "#first"]), [
+                "example.js:2", "example.js:6", "example.jsx:2", "example.jsx:6",
+                "example.php:2", "example.php:6", "example.ts:2", "example.ts:6",
+                "example.tsx:2", "example.tsx:6",
+            ])
+            self.assertEqual(sorted(links[DOC_URL + "#second"]), [
+                "example.js:4", "example.jsx:4", "example.php:4", "example.ts:4", "example.tsx:4",
+            ])
+
     def test_tracked_source_extensions_locations_and_exclusions(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

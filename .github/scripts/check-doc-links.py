@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check literal WooCommerce documentation links without executing plugin code."""
+"""Check WooCommerce documentation URL literals and source-comment annotations."""
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -84,7 +84,7 @@ def is_source(path):
 
 
 def discover_links(root):
-    """Return unique URLs and every source location from Git-tracked plugin files."""
+    """Find literals and @wcpay-doc-url comments in Git-tracked plugin files."""
     tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode()
     links = {}
     for filename in sorted(filter(None, tracked.split("\0"))):
@@ -183,7 +183,8 @@ def make_report(links, results, revision, run_url=""):
         lines += ["**Failed: no documentation URLs were found. Check the scan scope.**", ""]
     lines += [
         "Scope: tracked PHP, JS, JSX, TS and TSX plugin source; tests, dependencies and generated bundles excluded.",
-        "Checks complete URL literals, including source comments. Runtime-assembled URLs are not evaluated.",
+        "Checks complete URL literals, including @wcpay-doc-url source comments for generated links.",
+        "Runtime expressions are not evaluated; generated destinations must be listed in source comments.",
         "Request errors (including access blocks or timeouts) are failures to verify, not proof of a broken link.",
         "",
     ]
