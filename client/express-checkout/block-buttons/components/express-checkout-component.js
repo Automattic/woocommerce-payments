@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { useState } from 'react';
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
 /**
@@ -35,6 +34,7 @@ const ExpressCheckoutComponent = ( {
 	expressPaymentMethod = '',
 	buttonAttributes,
 	paymentMethodTypes = [],
+	onAvailabilityChange,
 } ) => {
 	const {
 		buttonOptions,
@@ -52,7 +52,6 @@ const ExpressCheckoutComponent = ( {
 		setExpressPaymentError,
 		paymentMethodTypes,
 	} );
-	const [ isUnavailable, setIsUnavailable ] = useState( false );
 
 	const onShippingAddressChange = ( event ) =>
 		shippingAddressChangeHandler( event, elements, setExpressPaymentError );
@@ -66,10 +65,10 @@ const ExpressCheckoutComponent = ( {
 		);
 
 	const onElementsReady = ( event ) => {
-		// Hide our own element rather than removing the block's slot: the block
-		// keeps it mounted across cart updates, so a removed slot never returns.
-		setIsUnavailable(
-			! event.availablePaymentMethods?.[ expressPaymentMethod ]
+		// Let the container hide itself rather than removing the block's slot: the
+		// block keeps it mounted across cart updates, so a removed slot never returns.
+		onAvailabilityChange(
+			!! event.availablePaymentMethods?.[ expressPaymentMethod ]
 		);
 
 		// Any actions that WooPayments needs to perform.
@@ -96,17 +95,15 @@ const ExpressCheckoutComponent = ( {
 	};
 
 	return (
-		<div className="wcpay-ece-slot" hidden={ isUnavailable }>
-			<ExpressCheckoutElement
-				options={ checkoutElementOptions }
-				onClick={ onButtonClick }
-				onConfirm={ onConfirm }
-				onReady={ onElementsReady }
-				onCancel={ onCancel }
-				onShippingAddressChange={ onShippingAddressChange }
-				onShippingRateChange={ onShippingRateChange }
-			/>
-		</div>
+		<ExpressCheckoutElement
+			options={ checkoutElementOptions }
+			onClick={ onButtonClick }
+			onConfirm={ onConfirm }
+			onReady={ onElementsReady }
+			onCancel={ onCancel }
+			onShippingAddressChange={ onShippingAddressChange }
+			onShippingRateChange={ onShippingRateChange }
+		/>
 	);
 };
 

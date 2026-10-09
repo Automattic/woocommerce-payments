@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { act, render } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -13,7 +13,7 @@ let mockElementProps;
 jest.mock( '@stripe/react-stripe-js', () => ( {
 	ExpressCheckoutElement: ( props ) => {
 		mockElementProps = props;
-		return <div data-testid="express-checkout-element" />;
+		return <div />;
 	},
 } ) );
 
@@ -28,7 +28,7 @@ jest.mock( '../../hooks/use-express-checkout', () => ( {
 	} ),
 } ) );
 
-const renderInBlockSlot = () => {
+const renderInBlockSlot = ( onAvailabilityChange ) => {
 	const list = document.createElement( 'ul' );
 	const slot = document.createElement( 'li' );
 	slot.id =
@@ -36,20 +36,17 @@ const renderInBlockSlot = () => {
 	list.appendChild( slot );
 	document.body.appendChild( list );
 
-	const { getByTestId } = render(
+	render(
 		<ExpressCheckoutComponent
 			billing={ {} }
 			shippingData={ {} }
 			expressPaymentMethod="applePay"
+			onAvailabilityChange={ onAvailabilityChange }
 		/>,
 		{ container: slot }
 	);
 
-	return {
-		slot,
-		list,
-		wrapper: getByTestId( 'express-checkout-element' ).parentElement,
-	};
+	return { slot, list };
 };
 
 describe( 'ExpressCheckoutComponent', () => {
@@ -57,33 +54,26 @@ describe( 'ExpressCheckoutComponent', () => {
 		document.body.innerHTML = '';
 	} );
 
-	it( 'hides itself without removing the block slot when the wallet is unavailable', () => {
-		const { slot, list, wrapper } = renderInBlockSlot();
+	it( 'reports an unavailable wallet without removing the block slot', () => {
+		const onAvailabilityChange = jest.fn();
+		const { slot, list } = renderInBlockSlot( onAvailabilityChange );
 
-		act( () => {
-			mockElementProps.onReady( {
-				availablePaymentMethods: { applePay: false },
-			} );
+		mockElementProps.onReady( {
+			availablePaymentMethods: { applePay: false },
 		} );
 
-		expect( wrapper.hidden ).toBe( true );
+		expect( onAvailabilityChange ).toHaveBeenLastCalledWith( false );
 		expect( list.contains( slot ) ).toBe( true );
 	} );
 
-	it( 'shows itself again when the wallet becomes available', () => {
-		const { wrapper } = renderInBlockSlot();
+	it( 'reports an available wallet', () => {
+		const onAvailabilityChange = jest.fn();
+		renderInBlockSlot( onAvailabilityChange );
 
-		act( () => {
-			mockElementProps.onReady( {
-				availablePaymentMethods: { applePay: false },
-			} );
-		} );
-		act( () => {
-			mockElementProps.onReady( {
-				availablePaymentMethods: { applePay: true },
-			} );
+		mockElementProps.onReady( {
+			availablePaymentMethods: { applePay: true },
 		} );
 
-		expect( wrapper.hidden ).toBe( false );
+		expect( onAvailabilityChange ).toHaveBeenLastCalledWith( true );
 	} );
 } );
