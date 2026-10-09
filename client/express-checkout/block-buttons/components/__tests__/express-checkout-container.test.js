@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -25,9 +25,19 @@ jest.mock( '@wordpress/data', () => ( {
 		} ) ),
 } ) );
 
-jest.mock( '../express-checkout-component', () => () => (
-	<div data-testid="express-checkout-component" />
-) );
+let mockComponentMounts;
+let mockComponentProps;
+
+jest.mock( '../express-checkout-component', () => {
+	const { useEffect } = jest.requireActual( 'react' );
+	return ( props ) => {
+		mockComponentProps = props;
+		useEffect( () => {
+			mockComponentMounts++;
+		}, [] );
+		return <div data-testid="express-checkout-component" />;
+	};
+} );
 
 const getBaseProps = () => ( {
 	api: {
@@ -48,6 +58,7 @@ const getBaseProps = () => ( {
 describe( 'ExpressCheckoutContainer', () => {
 	beforeEach( () => {
 		mockElementsProps = undefined;
+		mockComponentMounts = 0;
 		mockCartData = {
 			items: [],
 			extensions: {},
@@ -91,5 +102,80 @@ describe( 'ExpressCheckoutContainer', () => {
 				setupFutureUsage: 'off_session',
 			} )
 		);
+	} );
+
+	it( 'keeps the same Elements group when only the amount changes', () => {
+		const props = getBaseProps();
+		const { rerender } = render(
+			<ExpressCheckoutContainer { ...props } />
+		);
+
+		rerender(
+			<ExpressCheckoutContainer
+				{ ...props }
+				billing={ { ...props.billing, cartTotal: { value: 4599 } } }
+			/>
+		);
+
+		expect( mockComponentMounts ).toBe( 1 );
+		expect( mockElementsProps.options.amount ).toBe( 4599 );
+	} );
+
+	it( 'starts a new Elements group when the currency changes', () => {
+		const props = getBaseProps();
+		const { rerender } = render(
+			<ExpressCheckoutContainer { ...props } />
+		);
+
+		rerender(
+			<ExpressCheckoutContainer
+				{ ...props }
+				billing={ {
+					...props.billing,
+					currency: { code: 'EUR', minorUnit: 2 },
+				} }
+			/>
+		);
+
+		expect( mockComponentMounts ).toBe( 2 );
+		expect( mockElementsProps.options.currency ).toBe( 'eur' );
+	} );
+
+	const reportAvailability = ( isAvailable ) =>
+		act( () => {
+			mockComponentProps.onAvailabilityChange( isAvailable );
+		} );
+
+	it( 'hides the slot when the wallet is unavailable, and shows it again when it becomes available', () => {
+		const { container } = render(
+			<ExpressCheckoutContainer { ...getBaseProps() } />
+		);
+
+		reportAvailability( false );
+		expect( container.firstChild.hidden ).toBe( true );
+
+		reportAvailability( true );
+		expect( container.firstChild.hidden ).toBe( false );
+	} );
+
+	it( 'keeps an unavailable wallet hidden while the new group loads after a currency change', () => {
+		const props = getBaseProps();
+		const { container, rerender } = render(
+			<ExpressCheckoutContainer { ...props } />
+		);
+
+		reportAvailability( false );
+		rerender(
+			<ExpressCheckoutContainer
+				{ ...props }
+				billing={ {
+					...props.billing,
+					currency: { code: 'EUR', minorUnit: 2 },
+				} }
+			/>
+		);
+
+		expect( mockComponentMounts ).toBe( 2 );
+		expect( container.firstChild.hidden ).toBe( true );
 	} );
 } );

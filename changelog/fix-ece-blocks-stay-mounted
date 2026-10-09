@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep express checkout buttons on the Cart and Checkout blocks working when the block stops rebuilding them on every cart update.
