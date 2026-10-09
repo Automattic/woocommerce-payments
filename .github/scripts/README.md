@@ -1,8 +1,33 @@
 # GitHub Actions Scripts
 
-This directory contains scripts used by GitHub Actions workflows for dynamic version management and matrix generation.
+This directory contains scripts used by GitHub Actions workflows for documentation checks, dynamic version management and matrix generation.
 
 ## Scripts
+
+### `check-doc-links.py`
+
+Checks complete WooCommerce documentation URL literals in Git-tracked `.php`, `.js`, `.jsx`, `.ts` and `.tsx` source files. The scan covers root source files and `assets/`, `client/`, `includes/` (including the multi-currency client), `src/` and `templates/`. Tests, snapshots, dependencies and generated/minified bundles are excluded. URLs in source comments are included.
+
+```bash
+python3 -B .github/scripts/check-doc-links.py --report /tmp/documentation-links.md
+python3 -B -m unittest discover -s .github/scripts/tests -p 'test_check_doc_links.py' -v
+```
+
+Requires Python 3.10+ and Git, with no third-party Python packages. The tests use a local HTTP server and do not contact WooCommerce.com. The checker:
+
+- Finds `woocommerce.com/document/`, `/documentation/`, `/docs/`, their `www` equivalents, and legacy `docs.woocommerce.com` URLs.
+- Follows HTTP redirects within the official WooCommerce documentation hosts, including `developer.woocommerce.com`.
+- Fetches each unique URL without its fragment once, using four workers, a 20-second request timeout and up to three attempts for transient failures.
+- Requires successful HTML responses and matches percent-decoded fragments against exact HTML `id` values. It does not check legacy `<a name>` attributes or execute page JavaScript.
+- Logs every URL and source location, writes a Markdown report, and appends that report to the Actions job summary. Missing IDs, HTTP/network errors and an empty scan return a failing exit status. Access blocks and timeouts mean verification failed; they do not establish that a URL is broken.
+- Checks complete literals only. Runtime-assembled links, including the country-specific fee anchors in `client/utils/account-fees.tsx`, are outside this first version's scope. Detected interpolations inside URL literals are reported for manual review.
+
+The **Check documentation links** workflow is manual-only. After the workflow reaches the default branch, select **Actions → Check documentation links → Run workflow**. Run the workflow from `develop` and either:
+
+- Set `ref` to a release branch, tag or commit (for example, `release/11.2.0`). Leave both inputs empty to scan the selected workflow commit. These runs report in the logs and job summary.
+- Set `pr_number` to scan that PR's current head commit and create or update one report comment. Leave `ref` empty. The PR number is resolved through GitHub so the comment always describes the revision that was scanned.
+
+The source checkout is read as data; its code and dependencies are never executed. No automatic release-PR trigger is enabled yet. When adding one, filter on the PR's **head** branch (`release/`), since `pull_request.branches` filters the base branch, and use a trusted checker revision with appropriate comment permissions. The existing report step already accepts a PR event number.
 
 ### `generate-wc-matrix.sh`
 

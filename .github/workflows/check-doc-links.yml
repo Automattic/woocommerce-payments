@@ -1,0 +1,100 @@
+name: Check documentation links
+
+# Automatic release PR triggers will be added after the manual workflow is trialled.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag or SHA to scan (e.g. release/11.2.0); defaults to the selected workflow ref'
+        type: string
+        required: false
+      pr_number:
+        description: 'PR number to scan and comment on (use instead of ref)'
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-links-${{ inputs.pr_number || inputs.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout checker
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: checker
+          persist-credentials: false
+
+      - name: Resolve source revision
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_REF: ${{ inputs.ref }}
+          PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+          DEFAULT_REF: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$TARGET_REF" == *$'\n'* || "$TARGET_REF" == *$'\r'* ]]; then
+            echo 'The ref must be a single line.' >&2
+            exit 1
+          fi
+          if [[ -n "$PR_NUMBER" ]]; then
+            if [[ ! "$PR_NUMBER" =~ ^[1-9][0-9]*$ || -n "$TARGET_REF" ]]; then
+              echo 'Provide a positive PR number or a ref, not both.' >&2
+              exit 1
+            fi
+            TARGET_REF=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')
+          fi
+          printf 'ref=%s\n' "${TARGET_REF:-$DEFAULT_REF}" >> "$GITHUB_OUTPUT"
+          printf 'pr_number=%s\n' "$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      # The target checkout is data only: never run its scripts or install its dependencies.
+      - name: Checkout plugin source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.source.outputs.ref }}
+          path: source
+          persist-credentials: false
+
+      - name: Test checker
+        run: python3 -B -m unittest discover -s checker/.github/scripts/tests -p 'test_check_doc_links.py' -v
+
+      - name: Check documentation URLs and anchors
+        env:
+          DOC_LINK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python3 -B checker/.github/scripts/check-doc-links.py --root source --report "$RUNNER_TEMP/documentation-links.md"
+
+      - name: Update PR report
+        if: ${{ !cancelled() && steps.source.outputs.pr_number != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.source.outputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPORT="$RUNNER_TEMP/documentation-links.md"
+          if [[ ! -f "$REPORT" ]]; then
+            echo 'The checker did not produce a report; see the preceding step logs.' >&2
+            exit 1
+          fi
+          COMMENT_ID=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- woopayments-documentation-links -->"))) | .id' \
+            | sed -n '1p')
+          jq -n --rawfile body "$REPORT" '{body: $body}' > "$RUNNER_TEMP/documentation-links-comment.json"
+          if [[ -n "$COMMENT_ID" ]]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" \
+              --input "$RUNNER_TEMP/documentation-links-comment.json" --silent
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+              --input "$RUNNER_TEMP/documentation-links-comment.json" --silent
+          fi
