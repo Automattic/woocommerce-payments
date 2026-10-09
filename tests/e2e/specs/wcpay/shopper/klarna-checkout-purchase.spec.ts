@@ -30,8 +30,6 @@ test.describe( 'Klarna Checkout', () => {
 	} );
 
 	test.afterAll( async () => {
-		// eslint-disable-next-line no-console
-		console.log( `[klarna-nav] ${ Date.now() } afterAll start` );
 		await shopper.emptyCart( shopperPage );
 
 		await merchant.disablePaymentMethods( merchantPage, [ 'klarna' ] );
@@ -76,29 +74,12 @@ test.describe( 'Klarna Checkout', () => {
 
 			await shopper.selectPaymentMethod( shopperPage, 'Klarna' );
 
-			// TEMP: log main-frame navigations to see whether Klarna keeps
-			// redirecting after its page loads.
-			shopperPage.on( 'framenavigated', ( frame ) => {
-				if ( frame === shopperPage.mainFrame() ) {
-					// eslint-disable-next-line no-console
-					console.log(
-						`[klarna-nav] ${ Date.now() } ${ frame.url() }`
-					);
-				}
-			} );
-			shopperPage.on( 'load', () => {
-				// eslint-disable-next-line no-console
-				console.log(
-					`[klarna-nav] ${ Date.now() } load ${ shopperPage.url() }`
-				);
-			} );
-
 			await shopper.placeOrder( shopperPage );
 
 			// Since we don't have control over the html in the Klarna playground page,
 			// verifying the redirect is all we can do consistently without introducing a
-			// flaky test. Waiting for the page to load stops the cleanup's navigation
-			// from colliding with Klarna's.
+			// flaky test. Wait for the page to load, though: navigating away while it is
+			// still loading aborts the cleanup's navigation to the cart.
 			await shopperPage.waitForURL( /.*klarna\.com/, {
 				waitUntil: 'load',
 			} );
