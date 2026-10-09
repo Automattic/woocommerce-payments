@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Wait for the Klarna page to load in the Klarna E2E spec so its cleanup no longer fails on Atomic.
