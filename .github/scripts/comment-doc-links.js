@@ -30,16 +30,6 @@ function githubApi(
 	return paginate ? result.flat() : result;
 }
 
-function isCurrentReleasePr( pr, repository, revision ) {
-	return (
-		pr.state === 'open' &&
-		pr.base.ref === 'trunk' &&
-		pr.head.ref.startsWith( 'release/' ) &&
-		pr.head.repo?.full_name === repository &&
-		pr.head.sha === revision
-	);
-}
-
 function formatComment( report, revision, runUrl ) {
 	const text =
 		report ||
@@ -59,45 +49,35 @@ function formatComment( report, revision, runUrl ) {
 
 function postReport( {
 	repository,
+	pullRequestNumber,
 	revision,
 	report,
 	runUrl,
 	api = githubApi,
 } ) {
 	const prefix = `repos/${ repository }`;
-	const pullRequests = api( `${ prefix }/commits/${ revision }/pulls`, {
-		paginate: true,
-	} );
+	const comments = api(
+		`${ prefix }/issues/${ pullRequestNumber }/comments`,
+		{
+			paginate: true,
+		}
+	);
+	const comment = comments.find(
+		( entry ) =>
+			entry.user?.login === 'github-actions[bot]' &&
+			entry.body?.startsWith( COMMENT_MARKER )
+	);
 	const body = formatComment( report, revision, runUrl );
-	for ( const candidate of pullRequests ) {
-		if ( ! isCurrentReleasePr( candidate, repository, revision ) ) {
-			continue;
-		}
-		const comments = api(
-			`${ prefix }/issues/${ candidate.number }/comments`,
-			{ paginate: true }
-		);
-		const comment = comments.find(
-			( entry ) =>
-				entry.user?.login === 'github-actions[bot]' &&
-				entry.body?.startsWith( COMMENT_MARKER )
-		);
-		// Recheck after listing comments: a newer push or PR closure makes this report obsolete.
-		const current = api( `${ prefix }/pulls/${ candidate.number }` );
-		if ( ! isCurrentReleasePr( current, repository, revision ) ) {
-			continue;
-		}
-		if ( comment ) {
-			api( `${ prefix }/issues/comments/${ comment.id }`, {
-				method: 'PATCH',
-				body: { body },
-			} );
-		} else {
-			api( `${ prefix }/issues/${ candidate.number }/comments`, {
-				method: 'POST',
-				body: { body },
-			} );
-		}
+	if ( comment ) {
+		api( `${ prefix }/issues/comments/${ comment.id }`, {
+			method: 'PATCH',
+			body: { body },
+		} );
+	} else {
+		api( `${ prefix }/issues/${ pullRequestNumber }/comments`, {
+			method: 'POST',
+			body: { body },
+		} );
 	}
 }
 
@@ -113,6 +93,7 @@ if ( require.main === module ) {
 		}
 		postReport( {
 			repository: process.env.GITHUB_REPOSITORY,
+			pullRequestNumber: process.env.DOC_LINK_PR_NUMBER,
 			revision: process.env.DOC_LINK_SHA,
 			report,
 			runUrl: process.env.DOC_LINK_RUN_URL,

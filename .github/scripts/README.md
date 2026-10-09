@@ -6,9 +6,9 @@ This directory contains scripts used by GitHub Actions workflows for documentati
 
 ### `check-doc-links.js`
 
-Checks WooCommerce documentation URLs for HTTP errors and missing HTML `id` anchors. Runs on pushes to `release/**` and on same-repository release PRs targeting `trunk`. Results appear in the job log and summary; failures produce a non-zero exit code.
+Checks WooCommerce documentation URLs for HTTP errors and missing HTML `id` anchors. Runs when same-repository `release/**` PRs targeting `trunk` are opened, updated or reopened. Results appear in the job log and summary; failures produce a non-zero exit code.
 
-`github-actions[bot]` posts the report on the matching open release PR, updating the same comment on subsequent runs. It only comments while that PR's head matches the scanned commit. Runs without a matching release PR keep their results in the job log and summary.
+`github-actions[bot]` posts the report on the triggering release PR, updating the same comment on subsequent runs. Manual runs report only in the job log and summary.
 
 Scans Git-tracked `readme.txt` and PHP/JS/JSX/TS/TSX files at the root and in `assets/`, `client/`, `includes/`, `src/` and `templates/`, including source comments. Tests, dependencies and generated/minified bundles are excluded.
 
@@ -19,7 +19,7 @@ gh workflow run check-doc-links.yml --repo Automattic/woocommerce-payments \
   --ref WORKFLOW_BRANCH -f ref=SOURCE_REF
 ```
 
-`--ref` selects the workflow branch; `-f ref` selects the branch, tag or commit to scan. Omit the input to scan the workflow commit. A PR branch can supply the workflow once GitHub has registered it through a PR test run. The source checkout is only read, never executed.
+`--ref` selects the workflow branch; `-f ref` selects the branch, tag or commit to scan. Omit the input to scan the workflow commit. The source checkout is only read, never executed.
 
 Local use, after installing the repository's dependencies:
 
@@ -28,7 +28,7 @@ node .github/scripts/check-doc-links.js --report /tmp/documentation-links.md
 node --test .github/scripts/tests/test-*doc-links.js
 ```
 
-The checker uses Node.js and `parse5`. Offline tests run on PRs, merge-queue runs and before live scans. It follows redirects within WooCommerce documentation hosts and checks exact, decoded IDs. It does not evaluate runtime expressions, execute page JavaScript, check `<a name>`, or detect links to the wrong topic. Access blocks and timeouts mean verification failed, not necessarily that the link is broken.
+The checker uses Node.js and `parse5`. A separate `test-doc-links.yml` workflow runs offline tests on PRs changing the checker, its tests, workflows or dependencies. It follows redirects within WooCommerce documentation hosts and checks exact, decoded IDs. It does not evaluate runtime expressions, execute page JavaScript, check `<a name>`, or detect links to the wrong topic. Access blocks and timeouts mean verification failed, not necessarily that the link is broken.
 
 ### `generate-wc-matrix.sh`
 

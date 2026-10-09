@@ -23,45 +23,26 @@ const REVISION = '1234567890123456789012345678901234567890';
 const RUN_URL =
 	'https://github.com/Automattic/woocommerce-payments/actions/runs/123';
 const MARKER = '<!-- wcpay-documentation-link-check -->';
-const RELEASE_PR = {
-	number: 42,
-	state: 'open',
-	base: { ref: 'trunk' },
-	head: {
-		ref: 'release/11.3.0',
-		sha: REVISION,
-		repo: { full_name: REPOSITORY },
-	},
-};
+const PR_NUMBER = 42;
 
-function fixture( {
-	pullRequests = [ RELEASE_PR ],
-	current = RELEASE_PR,
-	comments = [],
-} = {} ) {
+function fixture( { comments = [] } = {} ) {
 	const calls = [];
 	const api = ( endpoint, options = {} ) => {
 		calls.push( { endpoint, ...options } );
 		if ( options.method === 'POST' || options.method === 'PATCH' ) {
 			return {};
 		}
-		if ( endpoint.endsWith( '/pulls' ) ) {
-			assert.equal( options.paginate, true );
-			return pullRequests;
-		}
-		if ( endpoint.endsWith( '/comments' ) ) {
-			assert.equal( options.paginate, true );
-			return comments;
-		}
 		assert.equal(
 			endpoint,
-			'repos/Automattic/woocommerce-payments/pulls/42'
+			'repos/Automattic/woocommerce-payments/issues/42/comments'
 		);
-		return current;
+		assert.equal( options.paginate, true );
+		return comments;
 	};
 	const publish = ( report ) =>
 		postReport( {
 			repository: REPOSITORY,
+			pullRequestNumber: PR_NUMBER,
 			revision: REVISION,
 			report,
 			runUrl: RUN_URL,
@@ -69,7 +50,7 @@ function fixture( {
 		} );
 	const writes = () =>
 		calls.filter( ( call ) => [ 'POST', 'PATCH' ].includes( call.method ) );
-	return { calls, publish, writes };
+	return { publish, writes };
 }
 
 test( 'creates a release PR comment containing the failure report', () => {
@@ -140,46 +121,6 @@ test( 'does not overwrite human or unrelated bot comments', () => {
 	assert.equal( writes()[ 0 ].method, 'POST' );
 } );
 
-test( 'skips closed, non-release, wrong-base, fork, missing-repository and outdated PRs', () => {
-	const pullRequests = [
-		{ ...RELEASE_PR, state: 'closed' },
-		{ ...RELEASE_PR, base: { ref: 'develop' } },
-		{ ...RELEASE_PR, head: { ...RELEASE_PR.head, ref: 'codex/example' } },
-		{
-			...RELEASE_PR,
-			head: {
-				...RELEASE_PR.head,
-				repo: { full_name: 'contributor/woocommerce-payments' },
-			},
-		},
-		{ ...RELEASE_PR, head: { ...RELEASE_PR.head, repo: null } },
-		{ ...RELEASE_PR, head: { ...RELEASE_PR.head, sha: 'newer-commit' } },
-	];
-	const { publish, writes, calls } = fixture( { pullRequests } );
-	publish( 'Result' );
-	assert.deepEqual( writes(), [] );
-	assert.equal( calls.length, 1 );
-} );
-
-test( 'does nothing when the scanned commit has no matching PR', () => {
-	const { publish, writes, calls } = fixture( { pullRequests: [] } );
-	publish( 'Result' );
-	assert.deepEqual( writes(), [] );
-	assert.equal( calls.length, 1 );
-} );
-
-test( 'rechecks the head and PR state before publishing', () => {
-	for ( const current of [
-		{ ...RELEASE_PR, head: { ...RELEASE_PR.head, sha: 'newer-commit' } },
-		{ ...RELEASE_PR, state: 'closed' },
-	] ) {
-		const { publish, writes, calls } = fixture( { current } );
-		publish( 'Outdated result' );
-		assert.deepEqual( writes(), [] );
-		assert.equal( calls.length, 3 );
-	}
-} );
-
 test( 'reports a checker failure when no report was produced', () => {
 	const { publish, writes } = fixture();
 	publish( undefined );
@@ -225,6 +166,7 @@ test( 'propagates GitHub API errors instead of silently losing the comment', () 
 		() =>
 			postReport( {
 				repository: REPOSITORY,
+				pullRequestNumber: PR_NUMBER,
 				revision: REVISION,
 				report: 'Result',
 				runUrl: RUN_URL,
@@ -250,16 +192,12 @@ const fs = require('node:fs');
 const args = process.argv.slice(2);
 const endpoint = args[1];
 const method = args[args.indexOf('--method') + 1];
-const pr = ${ JSON.stringify( RELEASE_PR ) };
-if (endpoint.endsWith('/pulls')) {
+if (method === 'GET') {
+  if (endpoint !== 'repos/Automattic/woocommerce-payments/issues/42/comments') process.exit(4);
   if (!args.includes('--paginate') || !args.includes('--slurp')) process.exit(2);
-  process.stdout.write(JSON.stringify([[], [pr]]));
-} else if (method === 'GET' && endpoint.endsWith('/comments')) {
   process.stdout.write(JSON.stringify([[], [{id: 9, user: {login: 'github-actions[bot]'}, body: ${ JSON.stringify(
 		MARKER
   ) }}]]));
-} else if (method === 'GET') {
-  process.stdout.write(JSON.stringify(pr));
 } else {
   if (args[args.indexOf('--input') + 1] !== '-') process.exit(3);
   fs.writeFileSync(process.env.TEST_POSTED_COMMENT, JSON.stringify({endpoint, method, payload: JSON.parse(fs.readFileSync(0, 'utf8'))}));
@@ -275,6 +213,7 @@ if (endpoint.endsWith('/pulls')) {
 				...process.env,
 				PATH: `${ root }:${ process.env.PATH }`,
 				GITHUB_REPOSITORY: REPOSITORY,
+				DOC_LINK_PR_NUMBER: String( PR_NUMBER ),
 				DOC_LINK_SHA: REVISION,
 				DOC_LINK_REPORT: reportPath,
 				DOC_LINK_RUN_URL: RUN_URL,
