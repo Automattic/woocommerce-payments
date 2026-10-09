@@ -92,29 +92,20 @@ const GeneralSettings = () => {
 										? interpolateComponents( {
 												/* eslint-disable max-len */
 												mixedString: __(
-													'Test mode is active because your store is running in a development or staging environment. ' +
-														'To disable it, switch to a production {{wpEnvLink}}WordPress environment{{/wpEnvLink}} or remove the WCPAY_DEV_MODE constant. ' +
+													'Test mode is on because development mode is on. ' +
+														'Development mode is on for staging and development sites. To accept real payments, use your live store. ' +
 														'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 													'woocommerce-payments'
 												),
 												/* eslint-enable max-len */
 												components: {
-													wpEnvLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<a
-															target="_blank"
-															rel="noreferrer"
-															/* eslint-disable-next-line max-len */
-															href="https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/"
-														/>
-													),
 													learnMoreLink: (
 														// eslint-disable-next-line jsx-a11y/anchor-has-content
 														<a
 															target="_blank"
 															rel="noreferrer"
 															/* eslint-disable-next-line max-len */
-															href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
+															href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes"
 														/>
 													),
 												},
