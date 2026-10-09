@@ -1,0 +1,70 @@
+name: Check documentation links
+
+on:
+    pull_request:
+        branches:
+            - trunk
+    workflow_dispatch:
+        inputs:
+            ref:
+                description: 'Branch, tag or SHA to scan; defaults to the selected workflow ref'
+                type: string
+                required: false
+
+permissions:
+    contents: read
+
+concurrency:
+    group: documentation-links-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.ref || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    check:
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository &&
+             startsWith(github.head_ref, 'release/'))
+        permissions:
+            contents: read
+            pull-requests: write
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout checker
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - run: corepack enable
+            - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: 'pnpm'
+            - run: pnpm install --frozen-lockfile --ignore-scripts
+
+            # The target checkout is data only: never run its scripts or install its dependencies.
+            - name: Checkout plugin source
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  ref: ${{ inputs.ref || github.event.pull_request.head.sha || github.sha }}
+                  path: source
+                  persist-credentials: false
+
+            - name: Check documentation URLs and anchors
+              id: check
+              env:
+                  DOC_LINK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  echo "sha=$(git -C source rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+                  node .github/scripts/check-doc-links.js --root source --report "$RUNNER_TEMP/documentation-links.md"
+
+            - name: Update release PR comment
+              if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.check.outputs.sha != '' }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  DOC_LINK_PR_NUMBER: ${{ github.event.pull_request.number }}
+                  DOC_LINK_SHA: ${{ steps.check.outputs.sha }}
+                  DOC_LINK_REPORT: ${{ runner.temp }}/documentation-links.md
+                  DOC_LINK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: node .github/scripts/comment-doc-links.js

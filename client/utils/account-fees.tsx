@@ -23,47 +23,46 @@ const countryFeeDocsBaseLink =
 	'https://woocommerce.com/document/woopayments/fees/';
 
 // Keyed on the Stripe account country — the same account the fees in this
-// tooltip come from. Values are the fees page's URL fragment slugs, not
-// section numbers.
-const countryFeeDocsSectionSlugs: Record< string, string > = {
-	AE: 'united-arab-emirates',
-	AU: 'australia',
-	AT: 'austria',
-	BE: 'belgium',
-	BG: 'bulgaria',
-	CA: 'canada',
-	CY: 'cyprus',
-	CZ: 'czech-republic',
-	FR: 'france',
-	LU: 'luxembourg',
-	DE: 'germany',
-	DK: 'denmark',
-	EE: 'estonia',
-	FI: 'finland',
-	GR: 'greece',
-	HK: 'hong-kong',
-	HR: 'croatia',
-	HU: 'hungary',
-	IE: 'ireland',
-	IT: 'italy',
-	JP: 'japan',
-	LT: 'lithuania',
-	LV: 'latvia',
-	MT: 'malta',
-	NL: 'netherlands',
-	NO: 'norway',
-	NZ: 'new-zealand',
-	PL: 'poland',
-	PT: 'portugal',
-	SG: 'singapore',
-	SI: 'slovenia',
-	SK: 'slovakia',
-	SE: 'sweden',
-	ES: 'spain',
-	CH: 'switzerland',
-	GB: 'united-kingdom',
-	US: 'united-states',
-	RO: 'romania',
+// tooltip come from. Full URL literals let CI check the actual destinations.
+const countryFeeDocsUrls: Record< string, string > = {
+	AE: 'https://woocommerce.com/document/woopayments/fees/#united-arab-emirates',
+	AU: 'https://woocommerce.com/document/woopayments/fees/#australia',
+	AT: 'https://woocommerce.com/document/woopayments/fees/#austria',
+	BE: 'https://woocommerce.com/document/woopayments/fees/#belgium',
+	BG: 'https://woocommerce.com/document/woopayments/fees/#bulgaria',
+	CA: 'https://woocommerce.com/document/woopayments/fees/#canada',
+	CY: 'https://woocommerce.com/document/woopayments/fees/#cyprus',
+	CZ: 'https://woocommerce.com/document/woopayments/fees/#czech-republic',
+	FR: 'https://woocommerce.com/document/woopayments/fees/#france',
+	LU: 'https://woocommerce.com/document/woopayments/fees/#luxembourg',
+	DE: 'https://woocommerce.com/document/woopayments/fees/#germany',
+	DK: 'https://woocommerce.com/document/woopayments/fees/#denmark',
+	EE: 'https://woocommerce.com/document/woopayments/fees/#estonia',
+	FI: 'https://woocommerce.com/document/woopayments/fees/#finland',
+	GR: 'https://woocommerce.com/document/woopayments/fees/#greece',
+	HK: 'https://woocommerce.com/document/woopayments/fees/#hong-kong',
+	HR: 'https://woocommerce.com/document/woopayments/fees/#croatia',
+	HU: 'https://woocommerce.com/document/woopayments/fees/#hungary',
+	IE: 'https://woocommerce.com/document/woopayments/fees/#ireland',
+	IT: 'https://woocommerce.com/document/woopayments/fees/#italy',
+	JP: 'https://woocommerce.com/document/woopayments/fees/#japan',
+	LT: 'https://woocommerce.com/document/woopayments/fees/#lithuania',
+	LV: 'https://woocommerce.com/document/woopayments/fees/#latvia',
+	MT: 'https://woocommerce.com/document/woopayments/fees/#malta',
+	NL: 'https://woocommerce.com/document/woopayments/fees/#netherlands',
+	NO: 'https://woocommerce.com/document/woopayments/fees/#norway',
+	NZ: 'https://woocommerce.com/document/woopayments/fees/#new-zealand',
+	PL: 'https://woocommerce.com/document/woopayments/fees/#poland',
+	PT: 'https://woocommerce.com/document/woopayments/fees/#portugal',
+	SG: 'https://woocommerce.com/document/woopayments/fees/#singapore',
+	SI: 'https://woocommerce.com/document/woopayments/fees/#slovenia',
+	SK: 'https://woocommerce.com/document/woopayments/fees/#slovakia',
+	SE: 'https://woocommerce.com/document/woopayments/fees/#sweden',
+	ES: 'https://woocommerce.com/document/woopayments/fees/#spain',
+	CH: 'https://woocommerce.com/document/woopayments/fees/#switzerland',
+	GB: 'https://woocommerce.com/document/woopayments/fees/#united-kingdom',
+	US: 'https://woocommerce.com/document/woopayments/fees/#united-states',
+	RO: 'https://woocommerce.com/document/woopayments/fees/#romania',
 	// PR (Puerto Rico) needs no entry. It is a supported *store* country but
 	// is not selectable during Stripe account signup, so a Puerto Rico store's
 	// account is created as US and this lookup resolves to 'united-states' —
@@ -74,16 +73,15 @@ const countryFeeDocsSectionSlugs: Record< string, string > = {
 };
 
 /**
- * The fees page's fragment slug for an account's country, if the page has a
- * section for it.
+ * The fees page URL for an account's country, if it has a documented section.
  *
  * `hasOwnProperty` rather than a bare lookup: a bare lookup walks the
  * prototype chain, so a country of `constructor` or `toString` would resolve
  * to a function and read as a mapped country.
  */
-const getCountryFeeDocsSlug = ( country: string ): string | undefined =>
-	Object.prototype.hasOwnProperty.call( countryFeeDocsSectionSlugs, country )
-		? countryFeeDocsSectionSlugs[ country ]
+const getCountryFeeDocsUrl = ( country: string ): string | undefined =>
+	Object.prototype.hasOwnProperty.call( countryFeeDocsUrls, country )
+		? countryFeeDocsUrls[ country ]
 		: undefined;
 
 const getFeeDescriptionString = (
@@ -157,12 +155,11 @@ export const formatMethodFeesTooltip = (
 	// where the store address is the only country signal available because no
 	// account exists yet.
 	const country = wcpaySettings?.accountStatus?.country;
-	// Un-anchored fees page for a country the page has no section for, rather
-	// than a "#undefined" fragment.
-	const feeDocsSlug = country ? getCountryFeeDocsSlug( country ) : undefined;
-	const feeDocsUrl = feeDocsSlug
-		? `${ countryFeeDocsBaseLink }#${ feeDocsSlug }`
-		: countryFeeDocsBaseLink;
+	const countryFeeDocsUrl = country
+		? getCountryFeeDocsUrl( country )
+		: undefined;
+	// Use the un-anchored fees page when the country has no documented section.
+	const feeDocsUrl = countryFeeDocsUrl || countryFeeDocsBaseLink;
 
 	return (
 		<div className={ 'wcpay-fees-tooltip' }>
@@ -220,7 +217,7 @@ export const formatMethodFeesTooltip = (
 			<div className="wcpay-fees-tooltip__hint-text">
 				<span>
 					{ interpolateComponents( {
-						mixedString: feeDocsSlug
+						mixedString: countryFeeDocsUrl
 							? sprintf(
 									/* translators: %s: WooPayments */
 									__(
