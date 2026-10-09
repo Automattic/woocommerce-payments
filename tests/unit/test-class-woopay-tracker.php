@@ -36,6 +36,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	 */
 	private $cache;
 
+	/**
+	 * @var string
+	 */
+	private $platform_checkout_setting;
+
 	public function setUp(): void {
 		parent::setUp();
 
@@ -50,6 +55,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
 		WC_Payments::get_gateway()->enable();
+		$this->platform_checkout_setting = WC_Payments::get_gateway()->get_option( 'platform_checkout' );
 
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
 		update_option( 'woocommerce_allow_tracking', 'yes' );
@@ -57,6 +63,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 
 	public function tearDown(): void {
 		WC_Payments::set_database_cache( $this->cache );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', $this->platform_checkout_setting );
 		parent::tearDown();
 	}
 
@@ -80,13 +87,14 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_woopay_eligible   = true;
 		$is_account_connected = true;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
 		global $wp_roles;
-		$all_roles = array_diff( $wp_roles->get_names(), [ 'administrator' ] );
+		$all_roles = array_diff( array_keys( $wp_roles->get_names() ), [ 'administrator' ] );
 
 		foreach ( $all_roles as $role ) {
-			wp_get_current_user()->set_role( $role );
-			$this->assertTrue( $this->tracker->should_enable_tracking() );
+			wp_set_current_user( self::factory()->user->create( [ 'role' => $role ] ) );
+			$this->assertTrue( $this->tracker->should_enable_tracking(), "Tracking should be enabled for the $role role." );
 		}
 	}
 
