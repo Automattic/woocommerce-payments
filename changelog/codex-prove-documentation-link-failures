@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add intentionally broken documentation links to demonstrate checker failures; do not merge this validation PR.

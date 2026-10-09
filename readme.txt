@@ -86,6 +86,13 @@ WooPayments is built in partnership with Stripe [Stripe](https://stripe.com/). W
 
 You can read our Terms of Service and other policies [here](https://woocommerce.com/document/woopayments/our-policies/).
 
+== Documentation link checker verification — DO NOT MERGE ==
+
+These intentionally broken links demonstrate the checks in PR #12214:
+
+* [Intentional HTTP 404](https://woocommerce.com/document/woopayments/wcpay-link-checker-missing-page-12214/).
+* [Intentional missing anchor](https://woocommerce.com/document/woopayments/fees/#wcpay-link-checker-missing-anchor-12214).
+
 == Screenshots ==
 
 1. View Transactions
