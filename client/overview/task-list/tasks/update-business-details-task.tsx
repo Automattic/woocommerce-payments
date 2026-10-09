@@ -31,7 +31,7 @@ export const getUpdateBusinessDetailsTask = (
 		? addQueryArgs( accountLink, {
 				from: 'WCPAY_OVERVIEW',
 				source: 'wcpay-update-business-details-task',
-		  } )
+			} )
 		: '';
 
 	let accountDetailsTaskDescription: React.ReactElement | string = '',
@@ -153,12 +153,12 @@ export const getUpdateBusinessDetailsTask = (
 					/* translators: %s: WooPayments */
 					__( 'Finish setting up %s', 'woocommerce-payments' ),
 					'WooPayments'
-			  )
+				)
 			: sprintf(
 					/* translators: %s: WooPayments */
 					__( 'Update %s business details', 'woocommerce-payments' ),
 					'WooPayments'
-			  ),
+				),
 		content: accountDetailsTaskDescription,
 		completed: status === 'complete' || status === 'enabled',
 		onClick: handleClick,

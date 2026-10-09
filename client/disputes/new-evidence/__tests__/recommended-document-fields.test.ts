@@ -166,8 +166,7 @@ describe( 'Recommended Documents', () => {
 		} );
 
 		it( 'should return matrix fields for duplicate + booking_reservation + is_duplicate', () => {
-			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-				true;
+			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 			const fields = getRecommendedDocumentFields(
 				'duplicate',
@@ -193,8 +192,7 @@ describe( 'Recommended Documents', () => {
 		} );
 
 		it( 'should return matrix fields for duplicate + booking_reservation + is_not_duplicate', () => {
-			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-				true;
+			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 			const fields = getRecommendedDocumentFields(
 				'duplicate',
@@ -267,8 +265,7 @@ describe( 'Recommended Documents', () => {
 
 		describe( 'evidence matrix with feature flag', () => {
 			it( 'should return matrix fields for fraudulent + booking_reservation when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'fraudulent',
@@ -291,8 +288,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return default fraudulent fields when feature flag is disabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					false;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 
 				const result = getRecommendedDocumentFields(
 					'fraudulent',
@@ -311,8 +307,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for fraudulent + physical_product when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'fraudulent',
@@ -339,8 +334,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return default fields for fraudulent when no product type is provided', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields( 'fraudulent' );
 
@@ -350,8 +344,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for subscription_canceled + multiple when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'subscription_canceled',
@@ -376,8 +369,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for subscription_canceled + other when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'subscription_canceled',
@@ -398,8 +390,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for duplicate + physical_product + is_duplicate when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'duplicate',
@@ -431,8 +422,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for subscription_canceled + physical_product when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'subscription_canceled',
@@ -457,8 +447,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for subscription_canceled + digital_product_or_service when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'subscription_canceled',
@@ -483,8 +472,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for subscription_canceled + booking_reservation when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'subscription_canceled',
@@ -507,8 +495,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for product_unacceptable + booking_reservation when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'product_unacceptable',
@@ -536,8 +523,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for product_unacceptable + physical_product when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'product_unacceptable',
@@ -558,8 +544,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for product_not_received + booking_reservation when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'product_not_received',
@@ -593,8 +578,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for product_not_received + physical_product when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'product_not_received',
@@ -620,8 +604,7 @@ describe( 'Recommended Documents', () => {
 
 		describe( 'credit_not_processed matrix with feature flag', () => {
 			it( 'should return matrix fields for credit_not_processed + booking_reservation + refund_was_not_owed when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'credit_not_processed',
@@ -644,8 +627,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for credit_not_processed + booking_reservation + refund_has_been_issued when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'credit_not_processed',
@@ -671,8 +653,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for credit_not_processed + physical_product + refund_was_not_owed when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'credit_not_processed',
@@ -694,8 +675,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return matrix fields for credit_not_processed + physical_product + refund_has_been_issued when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
 					'credit_not_processed',
@@ -728,8 +708,7 @@ describe( 'Recommended Documents', () => {
 		describe( 'Visa Compliance (noncompliant) reason', () => {
 			it( 'should return only customer communication and uncategorized file for noncompliant reason', () => {
 				// Enable the feature flag for Visa Compliance documents
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 				const result = getRecommendedDocumentFields( 'noncompliant' );
 				expect( result ).toHaveLength( 2 );
 				expect( result[ 0 ].key ).toBe( 'customer_communication' );
@@ -745,8 +724,7 @@ describe( 'Recommended Documents', () => {
 			} );
 
 			it( 'should return Visa Compliance fields when enhanced_eligibility_types includes visa_compliance', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-					true;
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 				const result = getRecommendedDocumentFields(
 					'fraudulent',
 					undefined,

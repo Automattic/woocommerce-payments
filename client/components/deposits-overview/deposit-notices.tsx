@@ -184,7 +184,7 @@ export const DepositFailureNotice: React.FC< {
 		? addQueryArgs( updateAccountLink, {
 				from: 'WCPAY_PAYOUTS',
 				source: 'wcpay-payout-failure-notice',
-		  } )
+			} )
 		: '';
 
 	return updateAccountLink !== '' ? (

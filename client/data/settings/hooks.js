@@ -430,7 +430,7 @@ const makeExpressCheckoutLocationHook = ( methodId ) => () => {
 				? [ ...methodsListMap[ location ], methodId ]
 				: methodsListMap[ location ].filter(
 						( method ) => method !== methodId
-				  )
+					)
 		);
 	};
 

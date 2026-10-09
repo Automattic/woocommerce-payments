@@ -137,9 +137,9 @@ const PaymentMethodDetails = ( { payment }: PaymentMethodDetailsProps ) => {
 	const brand = shouldDisplayNetworkOverBrand( paymentMethod?.network )
 		? paymentMethod.network
 		: paymentMethod?.brand ||
-		  paymentMethod?.network ||
-		  fundingCardBrand ||
-		  payment?.type;
+			paymentMethod?.network ||
+			fundingCardBrand ||
+			payment?.type;
 
 	// When the wallet icon already identifies the payment method (Amazon Pay
 	// paid with a non-card instrument), the brand sprite would just duplicate it.

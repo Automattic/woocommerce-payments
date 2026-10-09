@@ -103,7 +103,7 @@ const DepositFailureNotice: React.FC = () => {
 		? addQueryArgs( wcpaySettings.accountStatus.accountLink, {
 				from: 'WCPAY_PAYOUTS',
 				source: 'wcpay-payout-failure-notice',
-		  } )
+			} )
 		: '';
 
 	return hasErroredExternalAccount && accountLink !== '' ? (

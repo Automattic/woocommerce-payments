@@ -49,7 +49,7 @@ test.describe( 'Order > Partial refund', () => {
 			{
 				lineItems: Array< [ string, number ] >;
 				refundInputs: { refundQty: number; refundAmount: number }[];
-			}
+			},
 		]
 	> = [
 		[

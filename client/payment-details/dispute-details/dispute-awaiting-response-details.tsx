@@ -147,12 +147,12 @@ function getAcceptDisputeProps( {
 									'woocommerce-payments'
 								),
 								disputeFeeFormatted
-						  )
+							)
 						: /* translators: <em>: emphasis HTML element. */
-						  __(
+							__(
 								'Accepting the dispute marks it as <em>Lost</em>. The disputed amount will not be returned to you.',
 								'woocommerce-payments'
-						  ),
+							),
 					{
 						em: <em />,
 					}
@@ -388,7 +388,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												page: 'wc-admin',
 												path: '/payments/disputes/challenge',
 												id: dispute.id,
-										  } )
+											} )
 								}
 							>
 								<Button
@@ -411,7 +411,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										? __(
 												'Continue with challenge',
 												'woocommerce-payments'
-										  )
+											)
 										: challengeButtonDefaultText }
 								</Button>
 							</Link>

@@ -12,7 +12,7 @@ import { expectPresetButtonBefore } from '../../test-helpers';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
-const mockGetQuery = jest.fn( () => ( {} as Record< string, unknown > ) );
+const mockGetQuery = jest.fn( () => ( {} ) as Record< string, unknown > );
 const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
 const mockSpeak = jest.fn();

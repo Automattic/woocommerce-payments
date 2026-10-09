@@ -20,9 +20,8 @@ test.describe( 'Klarna Checkout', () => {
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await merchant.isMulticurrencyEnabled(
-			merchantPage
-		);
+		wasMulticurrencyEnabled =
+			await merchant.isMulticurrencyEnabled( merchantPage );
 		if ( wasMulticurrencyEnabled ) {
 			await merchant.deactivateMulticurrency( merchantPage );
 		}

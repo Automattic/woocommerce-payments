@@ -38,8 +38,7 @@ interface EmbeddedAccountOnboardingProps extends EmbeddedComponentProps {
 	collectPayoutRequirements?: boolean;
 }
 
-interface EmbeddedAccountNotificationBannerProps
-	extends EmbeddedComponentProps {
+interface EmbeddedAccountNotificationBannerProps extends EmbeddedComponentProps {
 	onNotificationsChange: ( {
 		total,
 		actionRequired,
@@ -111,7 +110,7 @@ const useInitializeStripe = (
 						: __(
 								'Unable to start onboarding. If this problem persists, please contact support.',
 								'woocommerce-payments'
-						  )
+							)
 				);
 			} finally {
 				setLoading( false );

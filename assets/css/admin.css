@@ -2,7 +2,8 @@
 @font-face {
 	font-family: 'WCPay';
 	src: url( '../fonts/WCPay.eot' );
-	src: url( '../fonts/WCPay.eot?#iefix' ) format( 'embedded-opentype' ),
+	src:
+		url( '../fonts/WCPay.eot?#iefix' ) format( 'embedded-opentype' ),
 		url( '../fonts/WCPay.woff' ) format( 'woff' ),
 		url( '../fonts/WCPay.ttf' ) format( 'truetype' ),
 		url( '../fonts/WCPay.svg#WCPay' ) format( 'svg' );

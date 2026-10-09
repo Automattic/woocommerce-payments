@@ -14,8 +14,8 @@ import { __ } from '@wordpress/i18n';
 // component's JS chunk arrives — only the heavy `intl-tel-input` JS is deferred.
 import './style.scss';
 
-const PhoneNumberInput = lazy( () =>
-	import( /* webpackChunkName: "wcpay-phone-input" */ './' )
+const PhoneNumberInput = lazy(
+	() => import( /* webpackChunkName: "wcpay-phone-input" */ './' )
 );
 
 // Degraded validity check for the fallback field: a digit-bearing number passes;

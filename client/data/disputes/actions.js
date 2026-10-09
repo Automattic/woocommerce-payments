@@ -85,7 +85,7 @@ export function* acceptDispute( dispute ) {
 						'woocommerce-payments'
 					),
 					updatedDispute.order.number
-			  )
+				)
 			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
 		yield controls.dispatch(
 			'core/notices',

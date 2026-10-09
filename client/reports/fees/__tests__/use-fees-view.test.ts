@@ -66,7 +66,7 @@ const buildFilter = (
 		field,
 		operator,
 		value,
-	} as Filter );
+	} ) as Filter;
 
 const buildPaymentMethodFilter = ( value = 'card' ): Filter =>
 	buildFilter( 'payment_method', value );

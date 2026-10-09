@@ -63,10 +63,7 @@ const readyForReviewStep = {
 	},
 	meta: {
 		name: 'review-blocked-transactions',
-		heading: __(
-			'Review blocked transactions 📥️',
-			'woocommerce-payments'
-		),
+		heading: __( 'Review blocked transactions 📥️', 'woocommerce-payments' ),
 		descriptions: {
 			desktop: interpolateComponents( {
 				mixedString: __(

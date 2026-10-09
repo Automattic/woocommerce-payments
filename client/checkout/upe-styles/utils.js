@@ -245,12 +245,10 @@ export const handleAppearanceForFloatingLabel = (
 				appearance.rules[ '.Label--floating' ].lineHeight
 			);
 			const newLineHeight = Math.floor( lineHeight * scale );
-			appearance.rules[
-				'.Label--floating'
-			].lineHeight = `${ newLineHeight }px`;
-			appearance.rules[
-				'.Label--floating'
-			].fontSize = `${ newLineHeight }px`;
+			appearance.rules[ '.Label--floating' ].lineHeight =
+				`${ newLineHeight }px`;
+			appearance.rules[ '.Label--floating' ].fontSize =
+				`${ newLineHeight }px`;
 		}
 		delete appearance.rules[ '.Label--floating' ].transform;
 	}
@@ -264,7 +262,8 @@ export const handleAppearanceForFloatingLabel = (
 		appearance.rules[
 			'.Input'
 			// eslint-disable-next-line max-len
-		].paddingTop = `calc(${ appearance.rules[ '.Input' ].paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
+		].paddingTop =
+			`calc(${ appearance.rules[ '.Input' ].paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
 	}
 	if ( appearance.rules[ '.Input' ].paddingBottom ) {
 		const originalPaddingBottom = parseFloat(

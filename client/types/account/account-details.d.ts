@@ -1,9 +1,5 @@
 export type StatusBackgroundColor =
-	| 'green'
-	| 'yellow'
-	| 'red'
-	| 'blue'
-	| 'gray';
+	'green' | 'yellow' | 'red' | 'blue' | 'gray';
 
 export type BannerBackgroundColor = 'yellow' | 'red' | 'green' | 'blue';
 

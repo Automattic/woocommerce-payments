@@ -11,8 +11,10 @@ import React, { ReactNode, ComponentProps } from 'react';
  */
 import './style.scss';
 
-interface ClickableCellProps
-	extends Omit< ComponentProps< typeof Link >, 'href' > {
+interface ClickableCellProps extends Omit<
+	ComponentProps< typeof Link >,
+	'href'
+> {
 	href?: string;
 	children: ReactNode;
 }

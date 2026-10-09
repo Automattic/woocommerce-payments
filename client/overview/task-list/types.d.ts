@@ -3,11 +3,10 @@
  */
 import { TaskItem } from '@woocommerce/experimental';
 
-export interface TaskItemProps
-	extends Omit<
-		React.ComponentProps< typeof TaskItem >,
-		'inProgress' | 'inProgressLabel' | 'content'
-	> {
+export interface TaskItemProps extends Omit<
+	React.ComponentProps< typeof TaskItem >,
+	'inProgress' | 'inProgressLabel' | 'content'
+> {
 	/**
 	 * Unique key for the task.
 	 */

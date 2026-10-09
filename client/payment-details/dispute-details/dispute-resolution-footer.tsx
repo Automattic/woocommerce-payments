@@ -46,7 +46,7 @@ const DisputeUnderReviewFooter: React.FC< {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
 		? formatDateTimeFromTimestamp(
 				parseInt( dispute.metadata.__evidence_submitted_at, 10 )
-		  )
+			)
 		: '-';
 
 	return (
@@ -66,7 +66,7 @@ const DisputeUnderReviewFooter: React.FC< {
 								{
 									strong: <strong />,
 								}
-						  )
+							)
 						: createInterpolateElement(
 								bankName
 									? sprintf(
@@ -77,7 +77,7 @@ const DisputeUnderReviewFooter: React.FC< {
 											),
 											bankName,
 											submissionDateFormatted
-									  )
+										)
 									: sprintf(
 											/* Translators: %s - formatted date */
 											__(
@@ -85,11 +85,11 @@ const DisputeUnderReviewFooter: React.FC< {
 												'woocommerce-payments'
 											),
 											submissionDateFormatted
-									  ),
+										),
 								{
 									strong: <strong />,
 								}
-						  ) }{ ' ' }
+							) }{ ' ' }
 					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#monitor-status">
 						{ __(
 							'Learn more about monitoring dispute status.',
@@ -136,7 +136,7 @@ const DisputeWonFooter: React.FC< {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? formatDateTimeFromTimestamp(
 				parseInt( dispute.metadata.__dispute_closed_at, 10 )
-		  )
+			)
 		: '-';
 
 	return (
@@ -156,7 +156,7 @@ const DisputeWonFooter: React.FC< {
 								{
 									strong: <strong />,
 								}
-						  )
+							)
 						: createInterpolateElement(
 								bankName
 									? sprintf(
@@ -167,7 +167,7 @@ const DisputeWonFooter: React.FC< {
 											),
 											bankName,
 											closedDateFormatted
-									  )
+										)
 									: sprintf(
 											/* Translators: %s - formatted date */
 											__(
@@ -175,11 +175,11 @@ const DisputeWonFooter: React.FC< {
 												'woocommerce-payments'
 											),
 											closedDateFormatted
-									  ),
+										),
 								{
 									strong: <strong />,
 								}
-						  ) }{ ' ' }
+							) }{ ' ' }
 					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
 						{ __(
 							'Learn more about preventing disputes.',
@@ -236,7 +236,7 @@ const DisputeLostFooter: React.FC< {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? formatDateTimeFromTimestamp(
 				parseInt( dispute.metadata.__dispute_closed_at, 10 )
-		  )
+			)
 		: '-';
 
 	let messagePrefix = sprintf(
@@ -357,7 +357,7 @@ const DisputeLostFooter: React.FC< {
 			? __(
 					'Klarna did not share a reason for this decision.',
 					'woocommerce-payments'
-			  )
+				)
 			: '';
 
 	return (
@@ -439,7 +439,7 @@ const InquiryUnderReviewFooter: React.FC< {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
 		? formatDateTimeFromTimestamp(
 				parseInt( dispute.metadata.__evidence_submitted_at, 10 )
-		  )
+			)
 		: '-';
 
 	return (
@@ -456,7 +456,7 @@ const InquiryUnderReviewFooter: React.FC< {
 									),
 									submissionDateFormatted,
 									bankName
-							  )
+								)
 							: sprintf(
 									/* Translators: %s - formatted date */
 									__(
@@ -464,7 +464,7 @@ const InquiryUnderReviewFooter: React.FC< {
 										'woocommerce-payments'
 									),
 									submissionDateFormatted
-							  ),
+								),
 						{
 							strong: <strong />,
 						}
@@ -509,7 +509,7 @@ const InquiryClosedFooter: React.FC< {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
 		? formatDateTimeFromTimestamp(
 				parseInt( dispute.metadata.__dispute_closed_at, 10 )
-		  )
+			)
 		: '-';
 
 	return (

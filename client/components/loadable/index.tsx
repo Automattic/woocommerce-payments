@@ -10,11 +10,10 @@ import React from 'react';
  */
 import './style.scss';
 
-interface LoadableProps
-	extends Omit<
-		React.HTMLAttributes< HTMLSpanElement >,
-		'className' | 'style' | 'children'
-	> {
+interface LoadableProps extends Omit<
+	React.HTMLAttributes< HTMLSpanElement >,
+	'className' | 'style' | 'children'
+> {
 	isLoading: boolean;
 	display?: string;
 	placeholder?: JSX.Element | string;
