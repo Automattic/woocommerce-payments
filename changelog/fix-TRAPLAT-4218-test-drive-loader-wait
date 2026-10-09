@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Wait up to two and a half minutes for a new test account outside the US to finish verification before leaving the setup screen.
