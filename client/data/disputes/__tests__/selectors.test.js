@@ -78,6 +78,29 @@ describe( 'Disputes selectors', () => {
 			expected
 		);
 	} );
+
+	test( 'Returns the same disputes list until the disputes change', () => {
+		const first = getDisputes( filledSuccessState, mockQuery );
+
+		expect( getDisputes( filledSuccessState, mockQuery ) ).toBe( first );
+		expect( getDisputes( emptyState, mockQuery ) ).toBe(
+			getDisputes( emptyState, mockQuery )
+		);
+
+		const updatedState = {
+			disputes: {
+				...filledSuccessState.disputes,
+				cached: {
+					...filledSuccessState.disputes.cached,
+					dp_mock1: { id: 'dp_mock1', reason: 'duplicate' },
+				},
+			},
+		};
+		const updated = getDisputes( updatedState, mockQuery );
+
+		expect( updated ).not.toBe( first );
+		expect( updated[ 0 ].reason ).toBe( 'duplicate' );
+	} );
 } );
 
 describe( 'Disputes summary selector', () => {
