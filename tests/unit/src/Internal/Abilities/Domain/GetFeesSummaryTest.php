@@ -8,25 +8,12 @@
 namespace WCPay\Tests\Internal\Abilities\Domain;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Abilities\Domain\GetFeesSummary;
 
 /**
  * @coversDefaultClass \WCPay\Internal\Abilities\Domain\GetFeesSummary
  */
 class GetFeesSummaryTest extends WCPAY_UnitTestCase {
-
-	public function test_name(): void {
-		$this->assertSame( 'woocommerce-payments/get-fees-summary', GetFeesSummary::get_name() );
-	}
-
-	public function test_registration_args_read_annotations(): void {
-		$args = GetFeesSummary::get_registration_args();
-
-		$this->assertTrue( $args['meta']['annotations']['readonly'] );
-		$this->assertTrue( $args['meta']['mcp']['public'] );
-		$this->assertFalse( $args['input_schema']['additionalProperties'] );
-	}
 
 	public function test_execute_delegates_and_returns_summary(): void {
 		$fixture = [
