@@ -29,16 +29,6 @@ The checker:
 
 It cannot tell whether a working page or anchor covers the topic promised by the link text. Topic relevance still needs manual review. Runtime expressions and server-supplied URLs are not evaluated; detected interpolations inside URL literals are reported for manual review.
 
-For a generated documentation link, list every possible complete URL near the code that builds it, with one `@wcpay-doc-url` annotation per line:
-
-```js
-// @wcpay-doc-url https://woocommerce.com/document/woopayments/fees/#united-states
-// @wcpay-doc-url https://woocommerce.com/document/woopayments/fees/#united-kingdom
-const feeDocsUrl = `${ countryFeeDocsBaseLink }#${ countrySlug }`;
-```
-
-This convention works in line, inline and block comments in all scanned source languages. Keep the list synchronized with generated destinations; the country fee map in `client/utils/account-fees.tsx` shows inline examples. The existing comment scan checks each listed URL and reports its source line. Annotations add checks without suppressing failures elsewhere.
-
 ### `generate-wc-matrix.sh`
 
 Generates the WooCommerce version matrix for E2E tests with dynamic version resolution and optimized PHP version strategy.

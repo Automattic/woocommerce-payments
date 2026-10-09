@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Add a manual CI workflow to check WooCommerce documentation URLs and anchors in plugin source and readme.txt, including annotated destinations of generated links.
+Add a manual CI workflow to check WooCommerce documentation URLs and anchors in plugin source and readme.txt.

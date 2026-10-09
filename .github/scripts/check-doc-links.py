@@ -85,7 +85,7 @@ def is_source(path):
 
 
 def discover_links(root):
-    """Find literals and @wcpay-doc-url comments in tracked source and readme.txt."""
+    """Find complete URL literals in tracked source and readme.txt."""
     tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode()
     links = {}
     for filename in sorted(filter(None, tracked.split("\0"))):
@@ -184,8 +184,7 @@ def make_report(links, results, revision, run_url=""):
         lines += ["**Failed: no documentation URLs were found. Check the scan scope.**", ""]
     lines += [
         "Scope: readme.txt and tracked PHP, JS, JSX, TS and TSX plugin source; tests, dependencies and generated bundles excluded.",
-        "Checks complete URL literals, including @wcpay-doc-url source comments for generated links.",
-        "Runtime expressions are not evaluated; generated destinations must be listed in source comments.",
+        "Checks complete URL literals, including source comments. Runtime expressions are not evaluated.",
         "A successful response and an existing ID do not establish that the destination covers the correct topic.",
         "Request errors (including access blocks or timeouts) are failures to verify, not proof of a broken link.",
         "",
