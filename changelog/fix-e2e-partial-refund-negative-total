@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
+Comment: Accept the refunded total with or without a minus sign in the partial refund E2E tests, since newer WooCommerce versions include it.
 
-Accept the refunded total with or without a minus sign in the partial refund E2E tests, since newer WooCommerce versions include it.
