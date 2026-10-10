@@ -43,9 +43,13 @@ const ExpressCheckoutContainer = ( props ) => {
 				?.express_checkout_methods,
 		[]
 	);
-	const enabledMethods = Array.isArray( enabledMethodsFromCart )
-		? filterCartMethodsByLocation( enabledMethodsFromCart )
-		: getExpressCheckoutData( 'enabled_methods' );
+	const enabledMethods = useMemo(
+		() =>
+			Array.isArray( enabledMethodsFromCart )
+				? filterCartMethodsByLocation( enabledMethodsFromCart )
+				: getExpressCheckoutData( 'enabled_methods' ),
+		[ enabledMethodsFromCart ]
+	);
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.
 	const paymentMethodTypes = useMemo( () => {
@@ -59,29 +63,56 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const elementCurrency = billing.currency.code.toLowerCase();
 
-	const options = {
-		mode: 'payment',
-		...( useConfirmationToken
-			? { paymentMethodTypes }
-			: { paymentMethodCreation: 'manual' } ),
-		...( useConfirmationToken && isManualCaptureEnabled
-			? { captureMethod: 'manual' }
-			: {} ),
-		...( useConfirmationToken
-			? { setupFutureUsage: resolveSetupFutureUsage( cartData ) }
-			: {} ),
-		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-		amount: applyFilters(
-			'wcpay.express-checkout.total-amount',
-			transformPrice( billing.cartTotal.value, {
-				currency_minor_unit: billing.currency.minorUnit ?? 0,
-			} ),
-			cartData
-		),
-		currency: rememberElementCurrency( elementCurrency ),
-		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
-		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
-	};
+	// Blocks passes a new `buttonAttributes` object on every render, so key on
+	// the border radius to keep `options` from rebuilding.
+	const hasButtonAttributes = typeof buttonAttributes !== 'undefined';
+	const buttonBorderRadius = buttonAttributes?.borderRadius;
+	const appearance = useMemo(
+		() =>
+			getExpressCheckoutButtonAppearance(
+				hasButtonAttributes
+					? { borderRadius: buttonBorderRadius }
+					: undefined
+			),
+		[ hasButtonAttributes, buttonBorderRadius ]
+	);
+
+	// Outside the memo: callbacks may read state its deps don't track.
+	const amount = applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice( billing.cartTotal.value, {
+			currency_minor_unit: billing.currency.minorUnit ?? 0,
+		} ),
+		cartData
+	);
+
+	const options = useMemo(
+		() => ( {
+			mode: 'payment',
+			...( useConfirmationToken
+				? { paymentMethodTypes }
+				: { paymentMethodCreation: 'manual' } ),
+			...( useConfirmationToken && isManualCaptureEnabled
+				? { captureMethod: 'manual' }
+				: {} ),
+			...( useConfirmationToken
+				? { setupFutureUsage: resolveSetupFutureUsage( cartData ) }
+				: {} ),
+			amount,
+			currency: rememberElementCurrency( elementCurrency ),
+			appearance,
+			locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
+		} ),
+		[
+			useConfirmationToken,
+			isManualCaptureEnabled,
+			paymentMethodTypes,
+			cartData,
+			amount,
+			elementCurrency,
+			appearance,
+		]
+	);
 
 	return (
 		<div style={ { minHeight: '40px' } }>

@@ -92,4 +92,48 @@ describe( 'ExpressCheckoutContainer', () => {
 			} )
 		);
 	} );
+
+	it( 'keeps the same options reference across an unrelated re-render', () => {
+		const props = getBaseProps();
+		const { rerender } = render(
+			<ExpressCheckoutContainer { ...props } />
+		);
+		const firstOptions = mockElementsProps.options;
+
+		// Blocks passes new `billing` and `buttonAttributes` objects on every
+		// render, even when their values don't change.
+		rerender(
+			<ExpressCheckoutContainer
+				{ ...props }
+				billing={ {
+					cartTotal: { value: 2399 },
+					currency: { code: 'USD', minorUnit: 2 },
+				} }
+				buttonAttributes={ {} }
+			/>
+		);
+
+		expect( mockElementsProps.options ).toBe( firstOptions );
+	} );
+
+	it( 'regenerates the options when the currency changes', () => {
+		const props = getBaseProps();
+		const { rerender } = render(
+			<ExpressCheckoutContainer { ...props } />
+		);
+		const firstOptions = mockElementsProps.options;
+
+		rerender(
+			<ExpressCheckoutContainer
+				{ ...props }
+				billing={ {
+					cartTotal: { value: 2399 },
+					currency: { code: 'EUR', minorUnit: 2 },
+				} }
+			/>
+		);
+
+		expect( mockElementsProps.options ).not.toBe( firstOptions );
+		expect( mockElementsProps.options.currency ).toBe( 'eur' );
+	} );
 } );
