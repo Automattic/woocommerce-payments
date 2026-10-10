@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Stop showing the future payments terms, and stop storing the card, on checkout for subscriptions that renew manually

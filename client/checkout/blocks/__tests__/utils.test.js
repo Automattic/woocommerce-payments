@@ -112,6 +112,32 @@ describe( 'Blocks checkout utils', () => {
 			} );
 		} );
 
+		test( 'should return options with "never" terms when the cart contains a subscription that requires manual renewal', () => {
+			const shouldSavePayment = false;
+			const paymentMethodsConfig = {
+				card: {
+					isReusable: true,
+				},
+			};
+
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'cartContainsSubscription' ) {
+					return true;
+				}
+
+				if ( argument === 'subscriptionRequiresManualRenewal' ) {
+					return true;
+				}
+			} );
+
+			const options = getStripeElementOptions(
+				shouldSavePayment,
+				paymentMethodsConfig
+			);
+
+			expect( options.terms ).toEqual( { card: 'never' } );
+		} );
+
 		test( 'should return options with "never" for terms when shouldSavePayment is false and no subscription in cart', () => {
 			const shouldSavePayment = false;
 			const paymentMethodsConfig = {
