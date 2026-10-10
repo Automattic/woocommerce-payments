@@ -39,8 +39,6 @@ module.exports = {
 			'multi-currency-async-renderer':
 				'./includes/multi-currency/client/async-renderer/index.ts',
 			order: './client/order/index.js',
-			'subscriptions-empty-state':
-				'./client/subscriptions-empty-state/index.js',
 			'subscription-product-onboarding-modal':
 				'./client/subscription-product-onboarding/modal.js',
 			'subscription-product-onboarding-toast':
