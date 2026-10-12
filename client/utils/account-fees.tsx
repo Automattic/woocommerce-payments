@@ -26,7 +26,7 @@ const countryFeeDocsBaseLink =
 // tooltip come from. Full URL literals let CI check the actual destinations.
 const countryFeeDocsUrls: Record< string, string > = {
 	AE: 'https://woocommerce.com/document/woopayments/fees/#united-arab-emirates',
-	AU: 'https://woocommerce.com/document/woopayments/fees/#nope-doc-link-test',
+	AU: 'https://woocommerce.com/document/woopayments/fees/#australia',
 	AT: 'https://woocommerce.com/document/woopayments/fees/#austria',
 	BE: 'https://woocommerce.com/document/woopayments/fees/#belgium',
 	BG: 'https://woocommerce.com/document/woopayments/fees/#bulgaria',
