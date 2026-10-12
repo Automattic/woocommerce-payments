@@ -45,7 +45,7 @@ export const getDisputeResolutionTask = (
 						currency !== '' &&
 						typeof amount === 'number' &&
 						Number.isFinite( amount )
-			  )
+				)
 			: [];
 
 	const canOpenSingleDispute =
@@ -124,17 +124,17 @@ export const getDisputeResolutionTask = (
 						'woocommerce-payments'
 					),
 					amountFormatted
-			  )
+				)
 			: sprintf(
 					__( 'Respond to a dispute for %s', 'woocommerce-payments' ),
 					amountFormatted
-			  );
+				);
 	} else if ( activeDisputeCount === 1 ) {
 		disputeTask.title = isDueToday
 			? __(
 					'Respond to an active dispute – Last day',
 					'woocommerce-payments'
-			  )
+				)
 			: __( 'Respond to an active dispute', 'woocommerce-payments' );
 	} else if ( amountEntries.length === 1 ) {
 		const [ currency, amount ] = amountEntries[ 0 ];

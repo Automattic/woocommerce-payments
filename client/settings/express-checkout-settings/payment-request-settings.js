@@ -73,12 +73,12 @@ const PaymentRequestSettings = ( { section } ) => {
 												'Apple Pay, Google Pay, and Amazon Pay will appear as options ' +
 													'in the payment methods list instead of as separate express checkout buttons.',
 												'woocommerce-payments'
-										  )
+											)
 										: __(
 												'Apple Pay and Google Pay will appear as options in the payment methods list ' +
 													'instead of as separate express checkout buttons.',
 												'woocommerce-payments'
-										  )
+											)
 								}
 								__nextHasNoMarginBottom
 							/>
@@ -99,9 +99,9 @@ const PaymentRequestSettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? false
 												: isPaymentRequestEnabled &&
-												  paymentRequestLocations.includes(
+													paymentRequestLocations.includes(
 														'product'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'product'
@@ -123,9 +123,9 @@ const PaymentRequestSettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? false
 												: isPaymentRequestEnabled &&
-												  paymentRequestLocations.includes(
+													paymentRequestLocations.includes(
 														'cart'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'cart'
@@ -147,9 +147,9 @@ const PaymentRequestSettings = ( { section } ) => {
 											isExpressCheckoutInPaymentMethodsEnabled
 												? true
 												: isPaymentRequestEnabled &&
-												  paymentRequestLocations.includes(
+													paymentRequestLocations.includes(
 														'checkout'
-												  )
+													)
 										}
 										onChange={ makeLocationChangeHandler(
 											'checkout'

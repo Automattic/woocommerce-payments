@@ -248,7 +248,7 @@ export const useBalanceDateFilter = (
 	// in-progress range selection after the first calendar click.
 	const value = localValue
 		? localValue.value
-		: readUrlValue() ?? getLastFullCalendarMonthDateFilter( stableNow );
+		: ( readUrlValue() ?? getLastFullCalendarMonthDateFilter( stableNow ) );
 	const period = getPeriodForDateFilter( value, stableNow );
 	const hasDateFilterValue = value !== undefined;
 

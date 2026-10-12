@@ -3,10 +3,13 @@
 
 includes:
     - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - phpstan-baseline.neon
 
 parameters:
     level: 5
     phpVersion: 70400 # PHP 7.4
+    reportUnmatchedIgnoredErrors: true
+    reportIgnoresWithoutComments: true
     dynamicConstantNames:
         - 'WC_VERSION'
         - 'WCPAY_VERSION_NUMBER'
@@ -22,138 +25,16 @@ parameters:
 
     # Files and directories to exclude
     excludePaths:
-        - includes/in-person-payments/templates
-        - includes/subscriptions
-        - includes/compat/subscriptions
-
-    # Bootstrap files
-    bootstrapFiles:
-        - psalm-loader.php
+        analyse:
+            - includes/in-person-payments/templates
+            - includes/subscriptions
+            - includes/compat/subscriptions
 
     scanFiles:
-        - dev/phpstan-wordpress-constants.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
         - dev/phpstan-wcpay-constants.php
         - dev/phpstan-abilities-stubs.php
 
     scanDirectories:
         - vendor/woocommerce/subscriptions-core
-
-    # Handle undefined constants gracefully
-    reportUnmatchedIgnoredErrors: false
-
-    # Ignore common WordPress patterns that cause false positives
-    ignoreErrors:
-        - '#Call to function (is_admin|is_user_logged_in|current_user_can|__|_e|esc_attr|esc_html|wp_kses|get_option|update_option|do_action|apply_filters|add_action|add_filter|wp_enqueue_script|wp_enqueue_style|wp_localize_script|wp_redirect|wp_safe_redirect|wp_die|wp_mail|get_transient|set_transient|plugin_dir_path|plugin_dir_url|get_plugin_data)#'
-        # The list below is defined during the migration and is to be reduced over time
-        - { identifier: arguments.count }
-        - { identifier: argument.type }
-        - { identifier: argument.vsprintf }
-        - { identifier: assign.propertyType }
-        - { identifier: binaryOp.invalid }
-        - { identifier: booleanAnd.alwaysFalse }
-        - { identifier: booleanAnd.alwaysTrue }
-        - { identifier: booleanAnd.leftAlwaysTrue }
-        - { identifier: booleanAnd.rightAlwaysFalse }
-        - { identifier: booleanAnd.rightAlwaysTrue }
-        - { identifier: booleanNot.alwaysFalse }
-        - { identifier: booleanNot.alwaysTrue }
-        - { identifier: booleanOr.alwaysFalse }
-        - { identifier: booleanOr.alwaysTrue }
-        - { identifier: catch.neverThrown }
-        - { identifier: class.noParent }
-        - {
-            identifier: class.notFound
-            message: '#Automatewoo\\#'
-        }
-        - {
-            identifier: class.notFound
-            message: '#Automattic\\Jetpack#'
-        }
-        - {
-            identifier: class.notFound
-            message: '#Automattic\\WooCommerce\\(Utilities|StoreApi)#'
-        }
-        - {
-            identifier: class.notFound
-            message: '#MailPoet\\#'
-        }
-        - {
-            identifier: class.notFound
-            message: '#WC_Payments_Subscriptions_(Event_Handler|Migrator)#'
-        }
-        - {
-            identifier: class.notFound
-            message: '#WC_Product_Booking#'
-        }
-        - { identifier: deadCode.unreachable }
-        - { identifier: empty.property }
-        - { identifier: empty.variable }
-        - { identifier: function.alreadyNarrowedType }
-        - { identifier: function.impossibleType }
-        - { identifier: identical.alwaysFalse }
-        - { identifier: if.alwaysFalse }
-        - { identifier: if.alwaysTrue }
-        - { identifier: instanceof.alwaysFalse }
-        - { identifier: instanceof.alwaysTrue }
-        - { identifier: isset.offset }
-        - { identifier: isset.property }
-        - { identifier: isset.variable }
-        - {
-            identifier: method.notFound
-            message: '#(WC_Session|WC_Payment_Token|WC_Data_Store)#'
-        }
-        - { identifier: method.unused }
-        - { identifier: method.resultUnused }
-        - { identifier: method.childParameterType }
-        - { identifier: missingType.iterableValue }
-        - { identifier: missingType.voidReturn }
-        - { identifier: notIdentical.alwaysFalse }
-        - { identifier: notIdentical.alwaysTrue }
-        - { identifier: nullCoalesce.expr }
-        - { identifier: nullCoalesce.offset }
-        - { identifier: nullCoalesce.property }
-        - { identifier: nullCoalesce.variable }
-        - { identifier: offsetAccess.notFound }
-        - { identifier: property.nonObject }
-        - { identifier: property.notFound }
-        - { identifier: property.onlyWritten }
-        - { identifier: property.protected }
-        - { identifier: property.unused }
-        - { identifier: return.empty }
-        - { identifier: return.missing }
-        - { identifier: return.type }
-        - { identifier: return.unusedType }
-        - { identifier: smaller.invalid }
-        - { identifier: staticMethod.notFound }
-        - { identifier: ternary.alwaysTrue }
-        - { identifier: variable.undefined }
-        - { identifier: varTag.differentVariable }
-
-        # Added with the PHPStan 1.x -> 2.x upgrade. Like the list above, to be reduced over time.
-        #
-        # The `*.internal*` family below is newly enforced in 2.x: it reports any use of a
-        # symbol annotated `@internal` from outside its declaring root namespace. Every hit is
-        # a call into WordPress/WooCommerce internals we have no public alternative for
-        # (`wc_admin_record_tracks_event()`, `_wp_array_get()`, `StoreApi::container()`,
-        # Blocks' `DraftOrders`) or into our own `WCPay\Onboarding_Experiment`.
-        - { identifier: classConstant.internalClass }
-        - { identifier: function.internal }
-        - { identifier: method.internalClass }
-        - { identifier: new.internalClass }
-        - { identifier: parameter.internalClass }
-        - { identifier: property.internalClass }
-        - { identifier: return.internalClass }
-        - { identifier: staticMethod.internal }
-
-        # New in 2.x. PHPStan now infers exact literal types out of the
-        # Express_Checkout_Element_States::STATES constant and so proves offsets 0 and 1 are
-        # always set and non-falsy, making those empty() guards redundant. They are kept
-        # deliberately: STATES is hand-maintained data and the guards keep a future entry with
-        # a missing code or name from throwing.
-        - { identifier: empty.offset }
-
-        # New in 2.x. Base_Constant::__callStatic() uses `new static()`, which would fatal if
-        # called directly on the abstract base rather than a concrete subclass. The rule is
-        # structural, so no runtime guard satisfies it -- fixing it properly means moving
-        # __callStatic() into a trait so it is analysed in concrete context (14 subclasses).
-        - { identifier: new.staticInAbstractClassStaticMethod }

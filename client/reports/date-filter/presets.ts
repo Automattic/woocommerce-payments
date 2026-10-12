@@ -15,16 +15,10 @@ import type {
 } from './types';
 
 export type SingleDatePreset =
-	| 'today'
-	| 'yesterday'
-	| 'past_week'
-	| 'past_month';
+	'today' | 'yesterday' | 'past_week' | 'past_month';
 
 export type RangePreset =
-	| 'last_month'
-	| 'month_to_date'
-	| 'last_year'
-	| 'year_to_date';
+	'last_month' | 'month_to_date' | 'last_year' | 'year_to_date';
 
 export type CustomPreset = 'custom';
 
