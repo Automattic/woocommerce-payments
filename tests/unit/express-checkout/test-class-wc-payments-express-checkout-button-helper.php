@@ -1307,6 +1307,119 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Payments::mode()->live();
 	}
 
+	/**
+	 * @dataProvider provider_block_page_content
+	 */
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart( string $post_content ) {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( $post_content );
+		WC()->cart->empty_cart();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			// The empty cart's 0 total hides the buttons, but the block's `canMakePayment()`
+			// needs the params once the first product is added without a reload.
+			$this->assertFalse( $helper->should_show_express_checkout_button() );
+			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	/**
+	 * Makes a post with the given content the current one, which `has_block()` reads.
+	 *
+	 * @param string $post_content The post content.
+	 */
+	private function set_current_post_content( string $post_content ) {
+		$GLOBALS['post'] = $this->factory->post->create_and_get( [ 'post_content' => $post_content ] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	}
+
+	public function provider_block_page_content(): array {
+		return [
+			'cart block'     => [ '<!-- wp:woocommerce/cart /-->' ],
+			'checkout block' => [ '<!-- wp:woocommerce/checkout /-->' ],
+		];
+	}
+
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_respects_page_requirements() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( false );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_respects_location_settings() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [] );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+
+		try {
+			$this->assertFalse( $this->system_under_test->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_load_express_checkout_scripts_on_classic_cart_with_empty_cart() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		add_filter( 'woocommerce_is_cart', '__return_true' );
+		WC()->cart->empty_cart();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			remove_filter( 'woocommerce_is_cart', '__return_true' );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_load_express_checkout_scripts_when_buttons_are_shown() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		add_filter( 'woocommerce_is_cart', '__return_true' );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			$this->assertTrue( $helper->should_show_express_checkout_button() );
+			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			remove_filter( 'woocommerce_is_cart', '__return_true' );
+			WC_Payments::mode()->live();
+		}
+	}
+
 	public function test_is_express_checkout_method_enabled_at_maps_pay_for_order_to_checkout() {
 		// Set up checkout methods only - pay_for_order should use these.
 		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request', 'amazon_pay' ] );

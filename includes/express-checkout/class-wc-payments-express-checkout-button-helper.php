@@ -679,11 +679,34 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks whether Express Checkout Element Button should be available on this page.
+	 * Checks whether the Express Checkout scripts and params should be loaded on this page.
+	 *
+	 * Block cart and checkout pages add the first product through the Store API without a reload,
+	 * and the block payment methods re-run `canMakePayment()` against the live cart. An empty cart
+	 * fails the cart-dependent checks (its total is 0), so only the page-level checks apply to it;
+	 * the buttons stay hidden until the cart has something to pay for.
 	 *
 	 * @return bool
 	 */
-	public function should_show_express_checkout_button() {
+	public function should_load_express_checkout_scripts() {
+		if ( $this->should_show_express_checkout_button() ) {
+			return true;
+		}
+
+		$is_block_page = has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' );
+
+		return $is_block_page
+			&& isset( WC()->cart )
+			&& WC()->cart->is_empty()
+			&& $this->meets_page_requirements();
+	}
+
+	/**
+	 * Checks the requirements that don't depend on the cart or product contents.
+	 *
+	 * @return bool
+	 */
+	private function meets_page_requirements() {
 		// When express checkout methods are displayed in the payment methods list,
 		// don't show them as separate express buttons.
 		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
@@ -709,7 +732,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// No express checkout methods are actually enabled for the current page context
 		// (checks both location settings and feature flags/availability).
-		if ( empty( $this->get_enabled_express_checkout_methods_for_context() ) ) {
+		return ! empty( $this->get_enabled_express_checkout_methods_for_context() );
+	}
+
+	/**
+	 * Checks whether Express Checkout Element Button should be available on this page.
+	 *
+	 * @return bool
+	 */
+	public function should_show_express_checkout_button() {
+		if ( ! $this->meets_page_requirements() ) {
 			return false;
 		}
 
