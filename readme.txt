@@ -22,7 +22,7 @@ See payments, track cash flow into your bank account, manage refunds, and stay o
 
 Features previously only available on your payment provider’s website are now part of your store’s **integrated payments dashboard**. This enables you to:
 
-- View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/woopayments/managing-money/).
+- View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/woopayments/no-such-page-doc-link-test/ https://woocommerce.com/document/woopayments/managing-money/).
 - View and respond to [disputes and chargebacks](https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/).
 - [Track payouts](https://woocommerce.com/document/woopayments/payouts/) into your bank account or debit card.
 
