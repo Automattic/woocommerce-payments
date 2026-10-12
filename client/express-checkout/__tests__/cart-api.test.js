@@ -293,6 +293,7 @@ describe( 'ExpressCheckoutCartApi', () => {
 			callArgs.headers[ 'X-WooPayments-Tokenized-Cart-Session-Nonce' ]
 		).toBe( 'global_tokenized_cart_session_nonce' );
 	} );
+
 	it( 'should use the nonces refreshed by a failed request on every instance', async () => {
 		global.wcpayExpressCheckoutParams.button_context = 'product';
 		const headers = new Headers();

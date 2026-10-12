@@ -19,7 +19,7 @@ import {
 
 // Every Store API response carries fresh nonces for the current shopper, and they can differ from the page's:
 // the shopper may log in mid-checkout (their account gets created), or a full-page cache may serve expired ones.
-// Kept at module level because product pages create a new cart API instance for each cart fetch.
+// Kept at module level because product pages use more than one cart API instance.
 let refreshedNonces = {};
 
 const rememberNonces = ( headers ) => {

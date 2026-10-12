@@ -167,9 +167,9 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	/**
 	 * Save data - copy of parent method with a few modifications.
 	 *
-	 * @param int $old_session_key session ID before user logs in.
+	 * @param string $old_session_key session ID before user logs in.
 	 */
-	public function save_data( $old_session_key = 0 ) {
+	public function save_data( $old_session_key = '' ) {
 		// Before the token session loads, the parent can only be saving the cookie's session,
 		// e.g. moving a guest's regular cart to the user who just logged in. Keep it under the cookie's customer ID.
 		if ( null === $this->session_id ) {

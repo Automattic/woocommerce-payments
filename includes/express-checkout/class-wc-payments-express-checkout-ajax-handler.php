@@ -207,14 +207,14 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * The page's nonces can stop working mid-flow: the Store API logs the shopper in when it creates their account,
 	 * and full-page caches can serve the page after its nonces expired.
 	 *
-	 * @param mixed            $response The response.
-	 * @param \WP_REST_Server  $server Server instance.
-	 * @param \WP_REST_Request $request Request used to generate the response.
+	 * @param \WP_REST_Response $response The response.
+	 * @param \WP_REST_Server   $server Server instance.
+	 * @param \WP_REST_Request  $request Request used to generate the response.
 	 *
-	 * @return mixed
+	 * @return \WP_REST_Response
 	 */
 	public function add_tokenized_cart_nonce_headers( $response, $server, $request ) {
-		if ( ! $response instanceof WP_REST_Response || 0 !== strpos( $request->get_route(), '/wc/store/' ) ) {
+		if ( 0 !== strpos( $request->get_route(), '/wc/store/' ) ) {
 			return $response;
 		}
 
@@ -223,7 +223,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		$response->header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) );
-		$response->header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ) );
+		$response->header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( WC_Payments_Payment_Request_Session::TOKENIZED_CART_SESSION_NONCE_ACTION ) );
 
 		return $response;
 	}
