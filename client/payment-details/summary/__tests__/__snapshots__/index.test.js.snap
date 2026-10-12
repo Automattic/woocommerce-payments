@@ -243,24 +243,24 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -268,21 +268,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -292,21 +292,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -319,21 +319,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -346,21 +346,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -386,21 +386,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -737,24 +737,24 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -762,21 +762,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -786,21 +786,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -813,21 +813,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -840,21 +840,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -880,21 +880,21 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -1194,24 +1194,24 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -1219,21 +1219,21 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -1243,21 +1243,21 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -1270,21 +1270,21 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -1297,21 +1297,21 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -1337,21 +1337,21 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -1591,24 +1591,24 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -1616,21 +1616,21 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -1640,21 +1640,21 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -1667,21 +1667,21 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -1694,21 +1694,21 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -1734,21 +1734,21 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -2002,24 +2002,24 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -2027,21 +2027,21 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -2051,21 +2051,21 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -2078,21 +2078,21 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -2105,21 +2105,21 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -2145,21 +2145,21 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -2454,24 +2454,24 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -2479,21 +2479,21 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -2503,21 +2503,21 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -2530,21 +2530,21 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     –
@@ -2554,21 +2554,21 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -2594,21 +2594,21 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -2888,24 +2888,24 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -2913,21 +2913,21 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -2937,21 +2937,21 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -2964,21 +2964,21 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -2991,21 +2991,21 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Subscription
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -3018,21 +3018,21 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -3058,21 +3058,21 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -3304,24 +3304,24 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -3329,21 +3329,21 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -3353,21 +3353,21 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -3380,21 +3380,21 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -3407,21 +3407,21 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -3447,21 +3447,21 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -3657,24 +3657,24 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   –
                 </span>
@@ -3682,21 +3682,21 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -3706,21 +3706,21 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   –
                 </span>
@@ -3728,21 +3728,21 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     –
@@ -3752,21 +3752,21 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     –
@@ -3776,21 +3776,21 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   –
                 </span>
@@ -4048,24 +4048,24 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -4073,21 +4073,21 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Online store
@@ -4097,21 +4097,21 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -4124,21 +4124,21 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -4151,21 +4151,21 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -4191,21 +4191,21 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -4459,24 +4459,24 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -4484,21 +4484,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Tap to Pay on Android
@@ -4508,21 +4508,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -4535,21 +4535,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -4562,21 +4562,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -4602,21 +4602,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -4870,24 +4870,24 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Sep 19, 2019, 5:24pm
                 </span>
@@ -4895,21 +4895,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Sales channel
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span>
                     Tap to Pay on iPhone
@@ -4919,21 +4919,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -4946,21 +4946,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -4973,21 +4973,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -5013,21 +5013,21 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>
@@ -5353,24 +5353,24 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
         data-wp-component="CardBody"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Date
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   September 19, 2019 5:24 PM
                 </span>
@@ -5378,21 +5378,21 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Customer
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="wc-admin"
@@ -5405,21 +5405,21 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Order
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <a
                     data-link-type="external"
@@ -5432,21 +5432,21 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Payment method
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="payment-method-details"
@@ -5472,21 +5472,21 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Risk evaluation
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Normal
                 </span>

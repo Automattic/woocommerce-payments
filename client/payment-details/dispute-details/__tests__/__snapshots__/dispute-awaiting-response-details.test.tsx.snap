@@ -145,24 +145,24 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
         class="dispute-summary-row"
       >
         <ul
-          class="woocommerce-list woocommerce-list--horizontal"
+          class="wcpay-horizontal-list"
         >
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Dispute Amount
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   $50.00
                 </span>
@@ -170,21 +170,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Disputed On
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   000000830f36830
                 </span>
@@ -192,21 +192,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Reason
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   Non-compliant
                   <button
@@ -242,21 +242,21 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
             </div>
           </li>
           <li
-            class="woocommerce-list__item"
+            class="wcpay-horizontal-list__item"
           >
             <div
-              class="woocommerce-list__item-inner"
+              class="wcpay-horizontal-list__item-inner"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="wcpay-horizontal-list__item-text"
               >
                 <span
-                  class="woocommerce-list__item-title"
+                  class="wcpay-horizontal-list__item-title"
                 >
                   Respond By
                 </span>
                 <span
-                  class="woocommerce-list__item-content"
+                  class="wcpay-horizontal-list__item-content"
                 >
                   <span
                     class="dispute-steps__steps__response-date"

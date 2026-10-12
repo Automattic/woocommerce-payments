@@ -292,24 +292,24 @@ exports[`Order details page should match the snapshot - Charge without payment i
           data-wp-component="CardBody"
         >
           <ul
-            class="woocommerce-list woocommerce-list--horizontal"
+            class="wcpay-horizontal-list"
           >
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Date
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     Mar 27, 2023, 9:09am
                   </span>
@@ -317,21 +317,21 @@ exports[`Order details page should match the snapshot - Charge without payment i
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Sales channel
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <span>
                       Online store
@@ -341,21 +341,21 @@ exports[`Order details page should match the snapshot - Charge without payment i
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Customer
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <a
                       data-link-type="wc-admin"
@@ -368,21 +368,21 @@ exports[`Order details page should match the snapshot - Charge without payment i
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Order
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <a
                       data-link-type="external"
@@ -395,21 +395,21 @@ exports[`Order details page should match the snapshot - Charge without payment i
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Payment method
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     <span
                       class="payment-method-details"
@@ -434,21 +434,21 @@ exports[`Order details page should match the snapshot - Charge without payment i
               </div>
             </li>
             <li
-              class="woocommerce-list__item"
+              class="wcpay-horizontal-list__item"
             >
               <div
-                class="woocommerce-list__item-inner"
+                class="wcpay-horizontal-list__item-inner"
               >
                 <div
-                  class="woocommerce-list__item-text"
+                  class="wcpay-horizontal-list__item-text"
                 >
                   <span
-                    class="woocommerce-list__item-title"
+                    class="wcpay-horizontal-list__item-title"
                   >
                     Risk evaluation
                   </span>
                   <span
-                    class="woocommerce-list__item-content"
+                    class="wcpay-horizontal-list__item-content"
                   >
                     –
                   </span>

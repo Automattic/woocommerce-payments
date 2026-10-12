@@ -32,16 +32,16 @@ export const HorizontalList: React.FunctionComponent< Props > = ( {
 	items,
 } ) => {
 	return (
-		<ul className="woocommerce-list woocommerce-list--horizontal">
+		<ul className="wcpay-horizontal-list">
 			{ items.map( ( { title, content }, index ) => (
-				<li key={ index } className="woocommerce-list__item">
-					<div className="woocommerce-list__item-inner">
-						<div className="woocommerce-list__item-text">
-							<span className="woocommerce-list__item-title">
+				<li key={ index } className="wcpay-horizontal-list__item">
+					<div className="wcpay-horizontal-list__item-inner">
+						<div className="wcpay-horizontal-list__item-text">
+							<span className="wcpay-horizontal-list__item-title">
 								{ title }
 							</span>
 							{ content && (
-								<span className="woocommerce-list__item-content">
+								<span className="wcpay-horizontal-list__item-content">
 									{ content }
 								</span>
 							) }
