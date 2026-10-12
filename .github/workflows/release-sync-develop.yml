@@ -48,18 +48,30 @@ jobs:
           token: ${{ secrets.BOTWOO_TOKEN }}
 
       - name: "Rebuild the sync branch from develop"
+        id: rebuild
         run: |
           git fetch origin "release/$RELEASE_VERSION"
           git checkout -B "$SYNC_BRANCH" origin/develop
           ./bin/sync-develop-from-release.sh "$RELEASE_VERSION" "origin/release/$RELEASE_VERSION"
           git add -A
+          # Nothing staged means develop already has the release, e.g. the sync PR was merged.
+          if git diff --cached --quiet; then
+            echo "develop is already in sync with release/$RELEASE_VERSION." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Sync develop with release/$RELEASE_VERSION: version bump + changelog"
-          git push --force origin "$SYNC_BRANCH"
+          if git fetch origin "$SYNC_BRANCH" 2> /dev/null && git diff --quiet FETCH_HEAD HEAD; then
+            echo "$SYNC_BRANCH is already up to date." >> "$GITHUB_STEP_SUMMARY"
+          else
+            git push --force origin "$SYNC_BRANCH"
+          fi
+          echo "CHANGED=1" >> "$GITHUB_OUTPUT"
 
       - name: "Open the PR against develop"
         id: open-pr
+        if: ${{ steps.rebuild.outputs.CHANGED }}
         env:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
         run: |
@@ -72,6 +84,9 @@ jobs:
               --body "$PR_BODY" \
               --base develop \
               --head "$SYNC_BRANCH")
+            if [ -n "$RELEASE_PR_ID" ]; then
+              gh pr comment "$RELEASE_PR_ID" --body "Related develop sync PR: $DEVELOP_PR_URL"
+            fi
           fi
           echo "Develop sync PR: $DEVELOP_PR_URL" >> "$GITHUB_STEP_SUMMARY"
           echo "DEVELOP_PR_URL=$DEVELOP_PR_URL" >> "$GITHUB_OUTPUT"

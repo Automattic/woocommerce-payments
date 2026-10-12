@@ -9,9 +9,10 @@
 # stays correct after cherry-picks, release date changes, and develop moving on.
 #
 #   - Sets the version in woocommerce-payments.php, package.json and readme.txt.
-#   - Replaces (or inserts) the release's block in changelog.txt and readme.txt
-#     with the one from the release branch. Only that block is copied, so the
-#     rest of develop's files stay as they are.
+#   - Copies changelog.txt from the release branch. develop only changes it
+#     through these syncs, so the release branch has the full shipped history.
+#   - Replaces (or inserts) the release's changelog block in readme.txt. Only
+#     that block is copied, because develop edits the rest of the readme.
 #   - Deletes the changelog entry files the release branch used up, so they
 #     don't show up again in the next release.
 #
@@ -41,58 +42,48 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-# Prints the `= <version> - <date> =` block that follows the first line
-# matching <anchor>, up to (not including) the next version header. readme.txt
-# needs the anchor because its FAQ also uses `= ... =` headings.
-extract_block() {
-	awk -v v="$VERSION" -v anchor="$1" '
-		!in_section && $0 ~ anchor { in_section = 1; next }
-		in_section && !found && index($0, "= " v " - ") == 1 { found = 1; print; next }
-		found && /^= [0-9]/ { found = 0; stop = 1 }
-		found && !stop { print }
-	'
-}
-
-# Replaces the <version> block after <anchor> in <file> with <block-file>, or
-# inserts it above the newest version when develop doesn't have it yet.
-replace_block() {
-	local file="$1" anchor="$2" block_file="$3"
-	awk -v v="$VERSION" -v anchor="$anchor" -v block_file="$block_file" '
-		function emit(  line) {
-			while ((getline line < block_file) > 0) print line
-			done = 1
-		}
-		!in_section && $0 ~ anchor { in_section = 1; print; next }
-		skipping && /^= [0-9]/ { skipping = 0 }
-		skipping { next }
-		in_section && !done && /^= [0-9]/ {
-			emit()
-			if (index($0, "= " v " - ") == 1) { skipping = 1; next }
-		}
-		{ print }
-		END { if (!done) emit() }
-	' "$file" > "$TMP/out"
-	mv "$TMP/out" "$file"
-}
-
-sync_changelog_block() {
-	local file="$1" anchor="$2"
-	git show "$RELEASE_REF:$file" | extract_block "$anchor" > "$TMP/block"
-	if [ ! -s "$TMP/block" ]; then
-		echo "error: no $VERSION block in $RELEASE_REF:$file" >&2
-		exit 1
-	fi
-	replace_block "$file" "$anchor" "$TMP/block"
-}
-
 "$SCRIPT_DIR/bump-version.sh" "$VERSION"
 
-sync_changelog_block changelog.txt '^\*\*\* '
-sync_changelog_block readme.txt '^== Changelog ==$'
+git show "$RELEASE_REF:changelog.txt" > changelog.txt
 
+# The FAQ above `== Changelog ==` also uses `= ... =` headings, so only look
+# for version blocks below it.
+git show "$RELEASE_REF:readme.txt" | awk -v v="$VERSION" '
+	/^== Changelog ==$/ { in_section = 1; next }
+	in_section && !found && index($0, "= " v " - ") == 1 { found = 1; print; next }
+	found && /^= [0-9]/ { found = 0; stop = 1 }
+	found && !stop { print }
+' > "$TMP/block"
+if [ ! -s "$TMP/block" ]; then
+	echo "error: no $VERSION block in $RELEASE_REF:readme.txt" >&2
+	exit 1
+fi
+awk -v v="$VERSION" -v block_file="$TMP/block" '
+	function emit(  line) {
+		while ((getline line < block_file) > 0) print line
+		done = 1
+	}
+	/^== Changelog ==$/ { in_section = 1; print; next }
+	skipping && /^= [0-9]/ { skipping = 0 }
+	skipping { next }
+	in_section && !done && /^= [0-9]/ {
+		emit()
+		if (index($0, "= " v " - ") == 1) { skipping = 1; next }
+	}
+	{ print }
+	END { if (!done) emit() }
+' readme.txt > "$TMP/readme.txt"
+mv "$TMP/readme.txt" readme.txt
+
+# Walk the history rather than diffing against the branch point: cherry-picked
+# fixes add their entry files after the code freeze, so the branch point never
+# had them. Files still on the release tip were put back (e.g. a reverted
+# changelog commit) and haven't shipped.
 git log "HEAD..$RELEASE_REF" --diff-filter=D --name-only --format= -- changelog/ \
 	| sort -u \
 	| awk '!/\/\.gitkeep$/' \
 	| while read -r entry; do
-		rm -f "$entry"
+		if ! git cat-file -e "$RELEASE_REF:$entry" 2> /dev/null; then
+			rm -f "$entry"
+		fi
 	done

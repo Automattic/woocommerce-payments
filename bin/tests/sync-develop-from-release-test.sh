@@ -76,19 +76,31 @@ assert_eq "$(grep -c '^= 1.1.0 - 2026-02-04 =$' "$DIR/readme.txt")" "1" "inserts
 assert_eq "$(grep -c '^= 1.1.0 - looks like a version =$' "$DIR/readme.txt")" "1" "leaves readme.txt FAQ headings alone"
 assert_eq "$(cd "$DIR" && ls changelog | tr '\n' ' ')" "fix-c " "deletes released entries and keeps unreleased ones"
 
-# The release moves a day and picks up a cherry-picked fix.
+# The release moves a day and picks up two cherry-picked fixes, D and E. The
+# changelog amend for E gets reverted, so E's entry is still unreleased.
 (
 	cd "$DIR"
 	git add -A && git commit -q -m "Sync develop"
+	echo "Significance: patch" > changelog/fix-d
+	echo "Significance: patch" > changelog/fix-e
+	git add . && git commit -q -m "Fixes D and E"
 	git checkout -q release/1.1.0
-	write_files 1.1.0 $'= 1.1.0 - 2026-02-05 =\n* Fix - A\n* Fix - B\n* Fix - D\n\n'
+	git checkout -q develop -- changelog/fix-d changelog/fix-e
+	git commit -q -m "Cherry-pick D and E"
+	git rm -q changelog/fix-d changelog/fix-e
+	write_files 1.1.0 $'= 1.1.0 - 2026-02-05 =\n* Fix - A\n* Fix - B\n* Fix - D\n* Fix - E\n\n'
 	git commit -qam "Amend changelog"
+	git revert --no-edit HEAD > /dev/null
+	git rm -q changelog/fix-d
+	write_files 1.1.0 $'= 1.1.0 - 2026-02-05 =\n* Fix - A\n* Fix - B\n* Fix - D\n\n'
+	git commit -qam "Amend changelog without E"
 	git checkout -q develop
 	./bin/sync-develop-from-release.sh 1.1.0 release/1.1.0 > /dev/null 2>&1
 )
 assert_eq "$(block_of "$DIR/changelog.txt")" $'= 1.1.0 - 2026-02-05 =\n* Fix - A\n* Fix - B\n* Fix - D' "replaces the changelog.txt block after an amend"
 assert_eq "$(grep -c '^= 1.1.0 - 2026' "$DIR/readme.txt")" "1" "replaces the readme.txt block instead of adding a second one"
 assert_eq "$(grep -c '^= 1.0.0 - ' "$DIR/changelog.txt")" "1" "keeps the previous release"
+assert_eq "$(cd "$DIR" && ls changelog | tr '\n' ' ')" "fix-c fix-e " "deletes cherry-picked entries and keeps ones the release put back"
 rm -rf "$DIR"
 
 echo "# passed $PASS/$((PASS + FAIL))"
