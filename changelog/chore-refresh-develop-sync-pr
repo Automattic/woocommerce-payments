@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
+Comment: Keep the develop sync PR up to date with the release branch after every changelog amend.
 
-Keep the develop sync PR up to date with the release branch after every changelog amend.
