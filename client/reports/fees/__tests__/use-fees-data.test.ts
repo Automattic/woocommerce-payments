@@ -24,7 +24,7 @@ const baseView = ( overrides: Partial< View > = {} ): View =>
 		filters: [],
 		fields: [],
 		...overrides,
-	} as View );
+	} ) as View;
 
 describe( 'buildFeesQuery', () => {
 	it( 'maps pagination and sort', () => {

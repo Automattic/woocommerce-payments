@@ -672,6 +672,38 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	it( 'focuses the step heading when navigating forward and back', async () => {
+		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Next' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: 'Review your cover letter',
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Back' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+	} );
+
 	it( 'should include empty document fields when saving to clear them on the server', async () => {
 		// This test verifies that when a user removes a document,
 		// the empty value is sent to the server so it can be cleared.
@@ -1028,13 +1060,11 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	afterEach( () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 	} );
 
 	it( 'remaps multiple → other when the feature flag is enabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 
@@ -1054,8 +1084,7 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	it( 'preserves multiple when the feature flag is disabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			false;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 
