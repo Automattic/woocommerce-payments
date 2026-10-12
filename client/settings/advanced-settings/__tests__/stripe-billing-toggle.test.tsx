@@ -52,7 +52,7 @@ describe( 'StripeBillingToggle', () => {
 				screen.getByRole( 'link', { name: /Learn more about fees/ } )
 			).toHaveAttribute(
 				'href',
-				'https://woocommerce.com/document/woopayments/fees/'
+				'https://woocommerce.com/document/woopayments/fees/#united-states'
 			);
 		}
 	);
