@@ -50,7 +50,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-		add_filter( 'rest_post_dispatch', [ $this, 'maybe_refresh_tokenized_cart_nonces' ], 10, 3 );
+		add_filter( 'rest_post_dispatch', [ $this, 'add_tokenized_cart_nonce_headers' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
 
@@ -203,9 +203,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Sends fresh nonces when the ones on the page no longer verify.
-	 * This happens when the Store API logs the shopper in mid-request (by creating their account) and the payment then fails:
-	 * the page's nonces still belong to the logged-out shopper, so retrying the payment would fail without new ones.
+	 * Sends the express checkout nonces with every response, the way the Store API sends its own `Nonce`.
+	 * The page's nonces can stop working mid-flow: the Store API logs the shopper in when it creates their account,
+	 * and full-page caches can serve the page after its nonces expired.
 	 *
 	 * @param mixed            $response The response.
 	 * @param \WP_REST_Server  $server Server instance.
@@ -213,17 +213,12 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 *
 	 * @return mixed
 	 */
-	public function maybe_refresh_tokenized_cart_nonces( $response, $server, $request ) {
+	public function add_tokenized_cart_nonce_headers( $response, $server, $request ) {
 		if ( ! $response instanceof WP_REST_Response || 0 !== strpos( $request->get_route(), '/wc/store/' ) ) {
 			return $response;
 		}
 
-		if ( 'true' !== $request->get_header( 'X-WooPayments-Tokenized-Cart' ) ) {
-			return $response;
-		}
-
-		$nonce = (string) $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
-		if ( wp_verify_nonce( $nonce, WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) ) {
+		if ( ! $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' ) ) {
 			return $response;
 		}
 

@@ -13,20 +13,43 @@ import { getExpressCheckoutData } from './utils';
 import { getResolvedCurrency } from './utils/resolved-currency-cache';
 import { getElementCurrency } from './utils/element-currency-cache';
 import {
-	getRefreshedNonces,
-	rememberRefreshedNonces,
-} from './utils/refreshed-nonces-cache';
-import {
 	getProductId,
 	getQuantity,
 } from 'wcpay/utils/wc-product-page-selectors';
 
-// The WooCommerce Blocks nonce middleware, when loaded, overwrites the `Nonce` header of every Store API request
-// with the value it stores. It has to learn about the refreshed one too, or the retry still sends the stale nonce.
-const handleRefreshedNonces = ( headers ) => {
-	if ( rememberRefreshedNonces( headers ) ) {
-		apiFetch.setNonce?.( headers );
+// Every Store API response carries fresh nonces for the current shopper, and they can differ from the page's:
+// the shopper may log in mid-checkout (their account gets created), or a full-page cache may serve expired ones.
+// Kept at module level because product pages create a new cart API instance for each cart fetch.
+let refreshedNonces = {};
+
+const rememberNonces = ( headers ) => {
+	if ( ! headers?.get( 'Nonce' ) ) {
+		return;
 	}
+
+	refreshedNonces = {
+		...refreshedNonces,
+		...omitBy(
+			{
+				store_api_nonce: headers.get( 'Nonce' ),
+				tokenized_cart_nonce: headers.get(
+					'X-WooPayments-Tokenized-Cart-Nonce'
+				),
+				tokenized_cart_session_nonce: headers.get(
+					'X-WooPayments-Tokenized-Cart-Session-Nonce'
+				),
+			},
+			isNil
+		),
+	};
+
+	// The WooCommerce Blocks nonce middleware, when loaded, overwrites the `Nonce` header of every Store API request
+	// with the value it stores, so it has to learn about the fresh one too.
+	apiFetch.setNonce?.( headers );
+};
+
+export const __resetRefreshedNoncesForTests = () => {
+	refreshedNonces = {};
 };
 
 const isInvalidNonceError = async ( error ) => {
@@ -60,17 +83,12 @@ export default class ExpressCheckoutCartApi {
 		try {
 			return await this._sendRequest( options );
 		} catch ( error ) {
-			// Full-page caches can serve the product page after its nonces expired.
-			// The rejection carries fresh ones, so one retry is enough.
-			const nonce = error?.headers?.get( 'Nonce' );
-			if ( ! nonce || ! ( await isInvalidNonceError( error ) ) ) {
+			// The rejection already gave us fresh nonces, so one retry is enough.
+			if ( ! ( await isInvalidNonceError( error ) ) ) {
 				throw error;
 			}
 
-			return this._sendRequest( {
-				...options,
-				headers: { ...options.headers, Nonce: nonce },
-			} );
+			return this._sendRequest( options );
 		}
 	}
 
@@ -81,13 +99,13 @@ export default class ExpressCheckoutCartApi {
 	 * @return {Promise} Result from `apiFetch`.
 	 */
 	async _sendRequest( options ) {
+		const nonces = {
+			...getExpressCheckoutData( 'nonce' ),
+			...refreshedNonces,
+		};
 		// Drop nullish values so we never serialize `undefined` / `null` to
 		// the literal strings "undefined" / "null" on the wire (which breaks
 		// server-side nonce verification).
-		const nonces = {
-			...getExpressCheckoutData( 'nonce' ),
-			...getRefreshedNonces(),
-		};
 		const response = await apiFetch( {
 			...options,
 			parse: false,
@@ -103,7 +121,6 @@ export default class ExpressCheckoutCartApi {
 			} ),
 			headers: omitBy(
 				{
-					// the Store API nonce, which could later be overwritten in subsequent requests.
 					Nonce: nonces.store_api_nonce,
 					// needed for validation of address data, etc.
 					'X-WooPayments-Tokenized-Cart-Nonce':
@@ -123,28 +140,16 @@ export default class ExpressCheckoutCartApi {
 				isNil
 			),
 		} ).catch( ( error ) => {
-			// With `parse: false`, error responses are thrown as they are, and they can carry refreshed nonces too.
-			handleRefreshedNonces( error?.headers );
-			const nonce = error?.headers?.get( 'Nonce' );
-			if ( nonce ) {
-				this.cartRequestHeaders = {
-					...this.cartRequestHeaders,
-					Nonce: nonce,
-				};
-			}
+			// With `parse: false`, error responses are thrown as they are, and they carry fresh nonces too.
+			rememberNonces( error?.headers );
 			throw error;
 		} );
 
-		handleRefreshedNonces( response.headers );
+		rememberNonces( response.headers );
 
-		// Only carry forward response headers we actually received. Reading
-		// an absent header returns `null`, and assigning that null over the
-		// `Nonce` default on the next request would serialize as "null" and
-		// trigger `woocommerce_rest_missing_nonce`.
+		// Only carry forward the cart token if we actually received one: reading an absent header returns `null`.
 		this.cartRequestHeaders = omitBy(
 			{
-				// used as a reference on shortcode cart/checkout pages, where the Nonce might not be automatically added to the request.
-				Nonce: response.headers.get( 'Nonce' ),
 				// saving the received value as a cart reference for future usage. This value could be updated multiple times.
 				'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
 					'X-WooPayments-Tokenized-Cart-Session'
