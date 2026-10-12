@@ -696,7 +696,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$is_block_page = has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' );
 
 		return $is_block_page
-			&& isset( WC()->cart )
 			&& WC()->cart->is_empty()
 			&& $this->meets_page_requirements();
 	}
