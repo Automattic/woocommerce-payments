@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Tell the release lead to merge the develop sync PR on release day, not at code freeze
