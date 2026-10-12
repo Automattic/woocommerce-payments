@@ -225,7 +225,7 @@ export const formatMethodFeesTooltip = (
 										'woocommerce-payments'
 									),
 									'WooPayments'
-							  )
+								)
 							: sprintf(
 									/* translators: %s: WooPayments */
 									__(
@@ -233,7 +233,7 @@ export const formatMethodFeesTooltip = (
 										'woocommerce-payments'
 									),
 									'WooPayments'
-							  ),
+								),
 						components: {
 							linkToStripePage: (
 								// @ts-expect-error: children is provided when interpolating the component

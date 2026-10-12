@@ -257,7 +257,7 @@ declare global {
 	const wcSettingsModule: {
 		getSetting: <
 			K extends keyof WcSettings,
-			T extends WcSettings[ K ] | undefined
+			T extends WcSettings[ K ] | undefined,
 		>(
 			setting: K,
 			fallback?: T

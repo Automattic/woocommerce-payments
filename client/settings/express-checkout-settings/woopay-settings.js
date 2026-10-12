@@ -107,7 +107,7 @@ const WooPaySettings = ( { section } ) => {
 									? __(
 											'When enabled, customers will be able to checkout using WooPay.',
 											'woocommerce-payments'
-									  )
+										)
 									: interpolateComponents( {
 											mixedString: __(
 												/* eslint-disable-next-line max-len */
@@ -149,7 +149,7 @@ const WooPaySettings = ( { section } ) => {
 													/>
 												),
 											},
-									  } )
+										} )
 								/* eslint-enable jsx-a11y/anchor-has-content */
 							}
 							__nextHasNoMarginBottom

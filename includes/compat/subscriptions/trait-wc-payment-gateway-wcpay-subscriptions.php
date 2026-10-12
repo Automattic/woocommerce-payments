@@ -315,8 +315,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// Used to filter out unwanted metadata on new renewal orders.
 		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
 			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+			add_filter( 'wcs_subscription_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
 		} else {
 			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
+			add_filter( 'wc_subscriptions_object_data', [ $this, 'remove_single_payment_data' ] );
 		}
 
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
@@ -1169,7 +1171,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return string
 	 */
 	public function update_renewal_meta_data( $order_meta_query, $_unused_to_order, $_unused_from_order ) {
-		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
+		$excluded_keys     = array_merge( [ '_new_order_tracking_complete' ], $this->get_single_payment_meta_keys() );
+		$order_meta_query .= " AND `meta_key` NOT IN ('" . implode( "', '", $excluded_keys ) . "')";
 
 		return $order_meta_query;
 	}
@@ -1184,6 +1187,44 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function remove_data_renewal_order( $order_data ) {
 		unset( $order_data['_new_order_tracking_complete'] );
 		return $order_data;
+	}
+
+	/**
+	 * Keeps a single payment's details out of anything Subscriptions copies from an order or subscription.
+	 *
+	 * A retried checkout would otherwise pass the earlier attempt's intent to every renewal.
+	 *
+	 * @param array $data The data Subscriptions is about to copy.
+	 *
+	 * @return array
+	 */
+	public function remove_single_payment_data( $data ) {
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+
+		foreach ( $this->get_single_payment_meta_keys() as $meta_key ) {
+			unset( $data[ $meta_key ] );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Meta keys tied to one payment, unlike the reusable payment method renewals need.
+	 *
+	 * @return string[]
+	 */
+	private function get_single_payment_meta_keys(): array {
+		return [
+			WC_Payments_Order_Service::INTENT_ID_META_KEY,
+			WC_Payments_Order_Service::INTENTION_STATUS_META_KEY,
+			WC_Payments_Order_Service::CHARGE_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY,
+			WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY,
+			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
+			'_wcpay_net',
+		];
 	}
 
 	/**

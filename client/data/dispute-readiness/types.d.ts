@@ -81,5 +81,4 @@ export interface ErrorDisputeReadinessAction {
 }
 
 export type DisputeReadinessAction =
-	| UpdateDisputeReadinessAction
-	| ErrorDisputeReadinessAction;
+	UpdateDisputeReadinessAction | ErrorDisputeReadinessAction;

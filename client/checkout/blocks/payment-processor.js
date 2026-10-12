@@ -170,9 +170,8 @@ const PaymentProcessor = ( {
 						};
 					}
 
-					const stripeForUPE = await api.getStripeForUPE(
-						paymentMethodId
-					);
+					const stripeForUPE =
+						await api.getStripeForUPE( paymentMethodId );
 
 					const result = await stripeForUPE.createPaymentMethod( {
 						elements,
