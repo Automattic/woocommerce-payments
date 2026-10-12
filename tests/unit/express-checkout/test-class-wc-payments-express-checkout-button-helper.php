@@ -1385,18 +1385,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	public function test_should_not_load_express_checkout_scripts_on_classic_cart_with_empty_cart() {
 		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
 		WC_Payments::mode()->dev();
-		add_filter( 'woocommerce_is_cart', '__return_true' );
 		WC()->cart->empty_cart();
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
-			->getMock();
-		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+		$helper = $this->get_classic_cart_helper();
 
 		try {
 			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
 		} finally {
-			remove_filter( 'woocommerce_is_cart', '__return_true' );
 			WC_Payments::mode()->live();
 		}
 	}
@@ -1404,20 +1398,32 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	public function test_should_load_express_checkout_scripts_when_buttons_are_shown() {
 		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
 		WC_Payments::mode()->dev();
-		add_filter( 'woocommerce_is_cart', '__return_true' );
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
-			->getMock();
-		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+		$helper = $this->get_classic_cart_helper();
 
 		try {
 			$this->assertTrue( $helper->should_show_express_checkout_button() );
 			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
 		} finally {
-			remove_filter( 'woocommerce_is_cart', '__return_true' );
 			WC_Payments::mode()->live();
 		}
+	}
+
+	/**
+	 * Stubs the page context rather than using the `woocommerce_is_cart` filter, which `is_cart()` lacks in older supported WooCommerce versions (e.g. 7.6).
+	 *
+	 * @return WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private function get_classic_cart_helper() {
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		return $helper;
 	}
 
 	public function test_is_express_checkout_method_enabled_at_maps_pay_for_order_to_checkout() {
