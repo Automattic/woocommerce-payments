@@ -125,9 +125,6 @@ const renderWithContext = ( component: React.ReactElement ) => {
 };
 
 describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
-	// eslint-disable-next-line
-	const originalWarn = console.warn;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 
@@ -137,25 +134,6 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				country: 'US',
 			},
 		};
-
-		// Suppress the List component deprecation warning
-		// eslint-disable-next-line
-		console.warn = ( ...args ) => {
-			const warningMessage = args[ 0 ];
-			if (
-				typeof warningMessage === 'string' &&
-				warningMessage.includes( 'List with items prop is deprecated' )
-			) {
-				return; // Suppress this specific warning
-			}
-			originalWarn( ...args ); // Pass through other warnings
-		};
-	} );
-
-	afterEach( () => {
-		// Restore original console.warn after each test
-		// eslint-disable-next-line
-		console.warn = originalWarn;
 	} );
 
 	test( 'renders Visa compliance dispute with NonCompliantDisputeSteps', () => {
@@ -585,9 +563,6 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 } );
 
 describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
-	// eslint-disable-next-line
-	const originalWarn = console.warn;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 
@@ -597,24 +572,6 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				country: 'US',
 			},
 		};
-
-		// Suppress the List component deprecation warning
-		// eslint-disable-next-line
-		console.warn = ( ...args ) => {
-			const warningMessage = args[ 0 ];
-			if (
-				typeof warningMessage === 'string' &&
-				warningMessage.includes( 'List with items prop is deprecated' )
-			) {
-				return;
-			}
-			originalWarn( ...args );
-		};
-	} );
-
-	afterEach( () => {
-		// eslint-disable-next-line
-		console.warn = originalWarn;
 	} );
 
 	test( 'renders disabled Challenge dispute button with tooltip for Klarna inquiry', () => {
