@@ -361,4 +361,87 @@ describe( 'ExpressCheckoutCartApi', () => {
 			'fresh_store_api_nonce'
 		);
 	} );
+
+	describe( 'when the page nonces expired', () => {
+		const invalidNonceError = (
+			code = 'woocommerce_rest_invalid_nonce'
+		) => {
+			const headers = new Headers();
+			headers.append( 'Nonce', 'fresh_store_api_nonce' );
+			headers.append(
+				'X-WooPayments-Tokenized-Cart-Nonce',
+				'fresh_tokenized_cart_nonce'
+			);
+			headers.append(
+				'X-WooPayments-Tokenized-Cart-Session-Nonce',
+				'fresh_tokenized_cart_session_nonce'
+			);
+			const error = {
+				status: 403,
+				headers,
+				json: () => Promise.resolve( { code } ),
+			};
+			error.clone = () => error;
+
+			return error;
+		};
+
+		it( 'should retry once with the fresh nonces from the rejection', async () => {
+			global.wcpayExpressCheckoutParams.button_context = 'product';
+			apiFetch.mockRejectedValueOnce( invalidNonceError() );
+			apiFetch.mockResolvedValueOnce( {
+				headers: new Headers(),
+				json: () => Promise.resolve( { items: [] } ),
+			} );
+
+			const api = new ExpressCheckoutCartApi();
+			api.useSeparateCart();
+
+			await expect( api.addProductToCart() ).resolves.toEqual( {
+				items: [],
+			} );
+
+			expect( apiFetch ).toHaveBeenCalledTimes( 2 );
+			expect( apiFetch ).toHaveBeenLastCalledWith(
+				expect.objectContaining( {
+					path: expect.stringContaining(
+						'/wc/store/v1/cart/add-item'
+					),
+					headers: expect.objectContaining( {
+						Nonce: 'fresh_store_api_nonce',
+						'X-WooPayments-Tokenized-Cart-Nonce':
+							'fresh_tokenized_cart_nonce',
+						'X-WooPayments-Tokenized-Cart-Session-Nonce':
+							'fresh_tokenized_cart_session_nonce',
+						'X-WooPayments-Tokenized-Cart-Session': '',
+					} ),
+				} )
+			);
+		} );
+
+		it( 'should not retry more than once', async () => {
+			global.wcpayExpressCheckoutParams.button_context = 'product';
+			const secondError = invalidNonceError();
+			apiFetch.mockRejectedValueOnce( invalidNonceError() );
+			apiFetch.mockRejectedValueOnce( secondError );
+
+			await expect(
+				new ExpressCheckoutCartApi().addProductToCart()
+			).rejects.toBe( secondError );
+
+			expect( apiFetch ).toHaveBeenCalledTimes( 2 );
+		} );
+
+		it( 'should not retry other errors', async () => {
+			global.wcpayExpressCheckoutParams.button_context = 'product';
+			const error = invalidNonceError( 'woocommerce_rest_cart_error' );
+			apiFetch.mockRejectedValueOnce( error );
+
+			await expect(
+				new ExpressCheckoutCartApi().addProductToCart()
+			).rejects.toBe( error );
+
+			expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+		} );
+	} );
 } );

@@ -29,6 +29,20 @@ const handleRefreshedNonces = ( headers ) => {
 	}
 };
 
+const isInvalidNonceError = async ( error ) => {
+	if ( error?.status !== 403 || typeof error.clone !== 'function' ) {
+		return false;
+	}
+
+	try {
+		// Cloned, so callers can still read the body when there's no retry.
+		const body = await error.clone().json();
+		return body?.code === 'woocommerce_rest_invalid_nonce';
+	} catch ( e ) {
+		return false;
+	}
+};
+
 export default class ExpressCheckoutCartApi {
 	// Used on product pages to interact with an anonymous cart.
 	// This anonymous cart is separate from the customer's cart, which might contain additional products.
@@ -37,12 +51,36 @@ export default class ExpressCheckoutCartApi {
 	cartRequestHeaders = {};
 
 	/**
-	 * Makes a request to the API.
+	 * Makes a request to the API, retrying once if the page's nonces expired.
 	 *
 	 * @param {Object} options The options to pass to `apiFetch`.
 	 * @return {Promise} Result from `apiFetch`.
 	 */
 	async _request( options ) {
+		try {
+			return await this._sendRequest( options );
+		} catch ( error ) {
+			// Full-page caches can serve the product page after its nonces expired.
+			// The rejection carries fresh ones, so one retry is enough.
+			const nonce = error?.headers?.get( 'Nonce' );
+			if ( ! nonce || ! ( await isInvalidNonceError( error ) ) ) {
+				throw error;
+			}
+
+			return this._sendRequest( {
+				...options,
+				headers: { ...options.headers, Nonce: nonce },
+			} );
+		}
+	}
+
+	/**
+	 * Sends a single request to the API.
+	 *
+	 * @param {Object} options The options to pass to `apiFetch`.
+	 * @return {Promise} Result from `apiFetch`.
+	 */
+	async _sendRequest( options ) {
 		// Drop nullish values so we never serialize `undefined` / `null` to
 		// the literal strings "undefined" / "null" on the wire (which breaks
 		// server-side nonce verification).
