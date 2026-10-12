@@ -757,12 +757,6 @@ parameters:
 			path: includes/class-wc-payments-payment-method-messaging-element.php
 
 		-
-			rawMessage: 'Parameter #1 $_unused_customer_id (int) of method WC_Payments_Payment_Request_Session_Handler::delete_session() should be compatible with parameter $customer_id (string) of method WC_Session_Handler::delete_session()'
-			identifier: method.childParameterType
-			count: 1
-			path: includes/class-wc-payments-payment-request-session-handler.php
-
-		-
 			rawMessage: Access to an undefined property WC_Session::$session_id.
 			identifier: property.notFound
 			count: 1

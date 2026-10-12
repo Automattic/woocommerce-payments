@@ -21,9 +21,9 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	protected $token;
 
 	/**
-	 * The session id to reference in the sessions table.
+	 * The session id to reference in the sessions table. Null until the token session loads.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $session_id;
 
@@ -125,7 +125,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * Delete the session from the cache and database.
 	 * Before the token session loads, the parent can still act on the cookie's session (e.g. when it's invalid).
 	 *
-	 * @param int $customer_id Customer ID.
+	 * @param string $customer_id Customer ID.
 	 */
 	public function delete_session( $customer_id ) {
 		parent::delete_session( $this->session_id ?? $customer_id );
