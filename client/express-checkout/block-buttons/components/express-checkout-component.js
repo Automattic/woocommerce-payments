@@ -35,7 +35,6 @@ const ExpressCheckoutComponent = ( {
 	expressPaymentMethod = '',
 	buttonAttributes,
 	paymentMethodTypes = [],
-	onAvailabilityChange,
 } ) => {
 	const {
 		buttonOptions,
@@ -53,7 +52,6 @@ const ExpressCheckoutComponent = ( {
 		setExpressPaymentError,
 		paymentMethodTypes,
 	} );
-
 	const onShippingAddressChange = ( event ) =>
 		shippingAddressChangeHandler( event, elements, setExpressPaymentError );
 
@@ -64,17 +62,6 @@ const ExpressCheckoutComponent = ( {
 			select( WC_STORE_CART )?.getCartData(),
 			setExpressPaymentError
 		);
-
-	const onElementsReady = ( event ) => {
-		// Let the container hide itself rather than removing the block's slot: the
-		// block keeps it mounted across cart updates, so a removed slot never returns.
-		onAvailabilityChange(
-			!! event.availablePaymentMethods?.[ expressPaymentMethod ]
-		);
-
-		// Any actions that WooPayments needs to perform.
-		onReady( event );
-	};
 
 	// The Cart & Checkout blocks provide unified styles across all buttons,
 	// which should override the extension specific settings. Blocks passes a
@@ -105,7 +92,7 @@ const ExpressCheckoutComponent = ( {
 			options={ checkoutElementOptions }
 			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
-			onReady={ onElementsReady }
+			onReady={ onReady }
 			onCancel={ onCancel }
 			onShippingAddressChange={ onShippingAddressChange }
 			onShippingRateChange={ onShippingRateChange }

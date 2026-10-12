@@ -25,11 +25,6 @@
 		> li {
 			overflow: visible !important;
 		}
-
-		// Collapse the block's slot when the wallet isn't available, so it leaves no gap.
-		> :has( .wcpay-ece-slot[hidden] ) {
-			display: none;
-		}
 	}
 }
 
@@ -37,8 +32,8 @@
 @supports not ( -webkit-appearance: -apple-pay-button ) {
 	/* stylelint-disable selector-id-pattern, selector-pseudo-class-parentheses-space-inside */
 	#express-payment-method-woocommerce_payments_express_checkout_applePay:has(
-			#express-checkout-button-preview-applePay
-		) {
+		#express-checkout-button-preview-applePay
+	) {
 		display: none;
 	}
 	/* stylelint-enable selector-id-pattern, selector-pseudo-class-parentheses-space-inside */

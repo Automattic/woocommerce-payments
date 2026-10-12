@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { useSelect } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
@@ -62,7 +62,6 @@ const ExpressCheckoutContainer = ( props ) => {
 	}, [ enabledMethods ] );
 
 	const elementCurrency = billing.currency.code.toLowerCase();
-	const [ isAvailable, setIsAvailable ] = useState( true );
 
 	// Blocks passes a new `buttonAttributes` object on every render, so key on
 	// the border radius to keep `options` from rebuilding.
@@ -116,11 +115,7 @@ const ExpressCheckoutContainer = ( props ) => {
 	);
 
 	return (
-		<div
-			className="wcpay-ece-slot"
-			style={ { minHeight: '40px' } }
-			hidden={ ! isAvailable }
-		>
+		<div style={ { minHeight: '40px' } }>
 			{ /*
 			 * Stripe accepts a new currency through elements.update() but doesn't
 			 * re-check which wallets support it, so start over with a fresh group.
@@ -133,7 +128,6 @@ const ExpressCheckoutContainer = ( props ) => {
 				<ExpressCheckoutComponent
 					{ ...props }
 					paymentMethodTypes={ paymentMethodTypes }
-					onAvailabilityChange={ setIsAvailable }
 				/>
 			</Elements>
 		</div>
