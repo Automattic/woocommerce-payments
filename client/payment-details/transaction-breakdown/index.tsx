@@ -75,7 +75,7 @@ const PaymentTransactionBreakdown: React.FC<
 	const paymentExchangeRate =
 		captureEvent.transaction_details.store_amount > 0
 			? captureEvent.transaction_details.customer_amount /
-			  captureEvent.transaction_details.store_amount
+				captureEvent.transaction_details.store_amount
 			: 0;
 
 	const conversionRate = ( () => {

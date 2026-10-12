@@ -14,7 +14,7 @@ const rectangle =
 	typeof Path2D === 'function' && typeof DOMMatrix === 'function'
 		? confetti.shapeFromPath( {
 				path: 'M0,0 L2,0 L2,1 L0,1 Z',
-		  } )
+			} )
 		: 'square';
 
 // Adjust particle amount based on screen size.

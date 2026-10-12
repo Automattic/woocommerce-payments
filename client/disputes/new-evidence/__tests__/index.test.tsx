@@ -494,9 +494,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				},
 				{ timeout: 3000 }
 			);
-
-			// The WooCommerce List component shows a deprecation warning
-			expect( console ).toHaveWarned();
 		} );
 
 		it( 'should handle enhanced_eligibility_types Visa Compliance disputes', async () => {
@@ -669,6 +666,38 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			expect(
 				screen.queryByText( 'This is a compliance case' )
 			).not.toBeInTheDocument();
+		} );
+	} );
+
+	it( 'focuses the step heading when navigating forward and back', async () => {
+		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Next' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: 'Review your cover letter',
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Back' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
 		} );
 	} );
 
@@ -1028,13 +1057,11 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	afterEach( () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 	} );
 
 	it( 'remaps multiple → other when the feature flag is enabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 
@@ -1054,8 +1081,7 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	it( 'preserves multiple when the feature flag is disabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			false;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 

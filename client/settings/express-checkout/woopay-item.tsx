@@ -74,7 +74,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 										'Boost conversion and customer loyalty by' +
 											' offering a single click, secure way to pay.',
 										'woocommerce-payments'
-								  )
+									)
 								: interpolateComponents( {
 										mixedString: __(
 											/* eslint-disable-next-line max-len */
@@ -118,7 +118,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 												/>
 											),
 										},
-								  } )
+									} )
 							/* eslint-enable jsx-a11y/anchor-has-content */
 						}
 					</PaymentMethodItem.Subgroup>

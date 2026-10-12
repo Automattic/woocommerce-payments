@@ -47,11 +47,7 @@ export type PaymentMethodDetails = {
 }[ PAYMENT_METHOD_IDS ];
 
 export type OutcomeRiskLevel =
-	| 'normal'
-	| 'elevated'
-	| 'highest'
-	| 'not_assessed'
-	| 'unknown';
+	'normal' | 'elevated' | 'highest' | 'not_assessed' | 'unknown';
 
 export interface ChargeDispute extends Omit< Dispute, 'charge' > {
 	charge: string;

@@ -15,20 +15,23 @@ import { getExpressCheckoutData, filterCartMethodsByLocation } from '../utils';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
 
-const LazyApplePayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/apple-pay-preview'
-	)
+const LazyApplePayPreview = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "express-checkout-previews" */ './components/apple-pay-preview'
+		)
 );
-const LazyGooglePayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/google-pay-preview'
-	)
+const LazyGooglePayPreview = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "express-checkout-previews" */ './components/google-pay-preview'
+		)
 );
-const LazyAmazonPayPreview = lazy( () =>
-	import(
-		/* webpackChunkName: "express-checkout-previews" */ './components/amazon-pay-preview'
-	)
+const LazyAmazonPayPreview = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "express-checkout-previews" */ './components/amazon-pay-preview'
+		)
 );
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;

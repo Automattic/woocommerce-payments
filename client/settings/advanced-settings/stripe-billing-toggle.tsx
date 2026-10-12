@@ -44,13 +44,13 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 									' may lack support for key subscription features.' +
 									' {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'By enabling this setting, future %s subscription purchases will utilize Stripe Billing for payment' +
 									' processing. Note: This feature supports card payments only and may lack support for key' +
 									' subscription features. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
-						  ),
+							),
 					'WooPayments'
 				),
 				components: {
