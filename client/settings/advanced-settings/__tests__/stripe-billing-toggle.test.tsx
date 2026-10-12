@@ -39,13 +39,13 @@ describe( 'StripeBillingToggle', () => {
 		[ 'default', {} ],
 		[ 'migration option', { isMigrationOptionShown: true } ],
 	] )(
-		'discloses the Stripe Billing fee in the %s copy',
+		'shows the Stripe Billing fee in the %s state',
 		( variant, context ) => {
 			renderToggle( context );
 
 			expect(
 				screen.getByText(
-					/Stripe Billing, which charges a 1% fee on the full total of any order containing a subscription\./
+					/^Future WooPayments subscriptions will use Stripe Billing, which charges a 1% fee on the full total of any order containing a subscription\./
 				)
 			).toBeInTheDocument();
 			expect(
