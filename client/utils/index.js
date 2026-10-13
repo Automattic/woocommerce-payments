@@ -197,8 +197,8 @@ export const getPaymentMethodSettingsUrl = ( method ) => {
 	// On the new settings screen, the customisation pages are sub-pages, which WooCommerce opens in place.
 	if ( window.wcpaySettingsScreen && settingsScreenSubPages[ method ] ) {
 		return getAdminUrl( {
-			page: 'wc-payment-settings-wp-admin',
-			p: `/settings/woopayments/${ settingsScreenSubPages[ method ] }`,
+			page: 'wc-settings-screens-wp-admin',
+			p: `/settings/payments/woopayments/${ settingsScreenSubPages[ method ] }`,
 		} );
 	}
 	return getAdminUrl( {
