@@ -96,10 +96,8 @@ const StripeBillingSection: React.FC = () => {
 		}
 	}, [ savedIsStripeBillingEnabled ] );
 
-	// Derive `isMigrationOptionShown` synchronously so all children (the toggle and sibling
-	// notices) read the same value in the first render — otherwise the toggle's help text
-	// flickers because <Notices /> renders before <StripeBillingToggle /> and can't update
-	// the context until after its first commit.
+	// Derive `isMigrationOptionShown` synchronously so the sibling notices all read the
+	// same value in the first render.
 	const isMigrationInProgressCombined =
 		isMigrationInProgress || isMigrationInProgressLocal;
 	const isMigrationOptionShown =
