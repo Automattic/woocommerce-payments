@@ -77,8 +77,11 @@ test.describe( 'Klarna Checkout', () => {
 
 			// Since we don't have control over the html in the Klarna playground page,
 			// verifying the redirect is all we can do consistently without introducing a
-			// flaky test.
-			await expect( shopperPage ).toHaveURL( /.*klarna\.com/ );
+			// flaky test. Wait for the page to load, though: navigating away while it is
+			// still loading aborts the cleanup's navigation to the cart.
+			await shopperPage.waitForURL( /.*klarna\.com/, {
+				waitUntil: 'load',
+			} );
 		}
 	);
 } );
