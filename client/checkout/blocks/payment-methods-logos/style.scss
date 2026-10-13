@@ -60,6 +60,11 @@
 		// Round the ring to the badges' baked corners so it doesn't leave
 		// white at a corner (3/64, 3/40).
 		border-radius: 4.6875% / 7.5%;
+
+		// Art carries its own brand frame (Discover, Diners) — no UI ring on top.
+		&.has-brand-frame {
+			box-shadow: none;
+		}
 	}
 }
 
