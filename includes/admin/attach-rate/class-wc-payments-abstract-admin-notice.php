@@ -306,7 +306,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 
 	/**
 	 * Whether this notice exposes a snooze flow. Override to return false for
-	 * notices that only support dismiss (e.g. the post-KYC notice).
+	 * notices that only support dismiss.
 	 *
 	 * @return bool
 	 */
@@ -317,8 +317,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	/**
 	 * Extra query args appended to every action URL (cta/dismiss/snooze) and
 	 * stripped from the redirect URL after the handler fires. Used by
-	 * subclasses that need per-request context (e.g. the Post-KYC notice's
-	 * `wcpay_stage`).
+	 * subclasses that need per-request context.
 	 *
 	 * @return array<string, scalar>
 	 */
@@ -349,7 +348,7 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 
 	/**
 	 * User meta key marking the impression Tracks event has fired. Stays a
-	 * method because the post-KYC notice suffixes it per stage.
+	 * method so a subclass can vary it per variant.
 	 *
 	 * @return string
 	 */
@@ -424,19 +423,10 @@ abstract class WC_Payments_Abstract_Admin_Notice {
 	}
 
 	/**
-	 * Default cache invalidator wired to external signals.
-	 *
-	 * @return void
-	 */
-	public function invalidate_cache(): void {
-		$this->delete_eligibility_cache();
-	}
-
-	/**
 	 * Standard terminal-CTA flow: record the cta_clicked event, mark the
 	 * notice as dismissed for this user, then redirect to the destination.
-	 * Subclasses with non-terminal CTAs (test-to-live's "flip mode" variant)
-	 * should not call this — they record their own event and redirect directly.
+	 * Subclasses with non-terminal CTAs should not call this; they record
+	 * their own event and redirect directly.
 	 *
 	 * @param string $destination_url Where to send the user after the CTA.
 	 * @param array  $tracks_props    Properties attached to the cta_clicked event.

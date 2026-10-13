@@ -35,7 +35,7 @@ const FeesBreakdown: React.FC< {
 		? find(
 				event.fee_rates.history,
 				( fee: TimelineFeeRate ) => fee.type === 'discount'
-		  )
+			)
 		: undefined;
 
 	let remainingPercentageDiscount = Math.abs(

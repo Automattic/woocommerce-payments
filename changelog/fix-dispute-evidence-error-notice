@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show the real error message when saving or submitting dispute evidence fails.

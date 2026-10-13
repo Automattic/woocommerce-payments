@@ -37,6 +37,7 @@ import { useGetSettings } from 'wcpay/data/settings';
 // which now lives in the payment-intents store.
 import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
+import { getErrorMessage } from './utils';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
@@ -137,9 +138,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
 
 	// Refs for heading elements to focus on step navigation
-	const stepHeadingRefs = useRef< {
-		[ key: number ]: HTMLHeadingElement | null;
-	} >( {} );
+	const stepHeadingRef = useRef< HTMLHeadingElement >( null );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
 	const getDisputeTracksProperties = () => ( {
@@ -159,6 +158,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
+				const fetchedBankName = d.charge
+					? getBankName( d.charge )
+					: null;
 				const isFetchedDisputeVisaCompliance =
 					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
@@ -258,7 +260,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							disputeWithCurrentEvidence,
 							getBusinessDetails(),
 							settings,
-							bankName,
+							fetchedBankName,
 							refundStatus,
 							duplicateStatus,
 							suggestedProductType
@@ -280,7 +282,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						d,
 						getBusinessDetails(),
 						settings,
-						bankName,
+						fetchedBankName,
 						refundStatus,
 						duplicateStatus,
 						suggestedProductType
@@ -289,17 +291,17 @@ export default ( { query }: { query: { id: string } } ) => {
 					setIsCoverLetterManuallyEdited( false );
 				}
 			} catch ( error ) {
-				createErrorNotice( String( error ) );
+				createErrorNotice( getErrorMessage( error ) );
 			} finally {
 				setIsInitialLoading( false );
 			}
 		};
 		fetchDispute();
-		// We intentionally exclude duplicateStatus and refundStatus from dependencies to prevent
-		// re-fetching dispute data when status changes (which would reset the product type selection).
-		// Cover letter regeneration on status changes is handled by the evidence update effect.
+		// Load once per dispute: each run resets the form to the saved evidence, so re-running when
+		// settings or the status selections change would wipe what the merchant has typed. The
+		// evidence update effect regenerates the cover letter when those values change.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path, createErrorNotice, settings, bankName ] );
+	}, [ path ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -537,12 +539,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		const message = submit
 			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
 			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-		createErrorNotice(
-			sprintf(
-				message,
-				err instanceof Error ? err.message : String( err )
-			)
-		);
+		createErrorNotice( sprintf( message, getErrorMessage( err ) ) );
 	};
 
 	const doSave = async ( submit: boolean, notify = true ) => {
@@ -706,7 +703,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					? formatDateTimeFromTimestamp( dispute.created, {
 							separator: ', ',
 							includeTime: false,
-					  } )
+						} )
 					: '–',
 			},
 			{
@@ -768,10 +765,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		// Use setTimeout to ensure the DOM has updated with the new step content
 		const timeoutId = setTimeout( () => {
-			const headingRef = stepHeadingRefs.current[ currentStep ];
-			if ( headingRef ) {
-				headingRef.focus();
-			}
+			stepHeadingRef.current?.focus();
 		}, 100 );
 
 		return () => clearTimeout( timeoutId );
@@ -950,14 +944,14 @@ export default ( { query }: { query: { id: string } } ) => {
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
 				...getDisputeTracksProperties(),
-				message: err instanceof Error ? err.message : String( err ),
+				message: getErrorMessage( err ),
 			} );
 
 			// Display error as WordPress admin notice
 			createErrorNotice(
 				sprintf(
 					__( 'Failed to upload file. (%s)', 'woocommerce-payments' ),
-					err instanceof Error ? err.message : String( err )
+					getErrorMessage( err )
 				)
 			);
 
@@ -1047,11 +1041,11 @@ export default ( { query }: { query: { id: string } } ) => {
 								'woocommerce-payments'
 							),
 							bankNameValue
-					  )
+						)
 					: __(
 							"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 							'woocommerce-payments'
-					  ),
+						),
 				{
 					strong: <strong />,
 				}
@@ -1151,7 +1145,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 0 ] = el ) }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 0 ].heading }
@@ -1200,7 +1194,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 1 ] = el ) }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 1 ].heading }
@@ -1238,9 +1232,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) =>
-							( stepHeadingRefs.current[ reviewStep ] = el )
-						}
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 2 ].heading }

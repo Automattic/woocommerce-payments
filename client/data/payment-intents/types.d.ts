@@ -28,5 +28,4 @@ export interface PaymentIntentsState {
 }
 
 export type PaymentIntentsActions =
-	| UpdatePaymentIntentAction
-	| UpdateErrorForPaymentIntentAction;
+	UpdatePaymentIntentAction | UpdateErrorForPaymentIntentAction;

@@ -406,6 +406,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$subscriptions = [ new WC_Subscription() ];
 		$subscriptions[0]->set_parent( $order );
 
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 
 		$request->expects( $this->once() )
@@ -593,7 +596,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		// A card change only saves the card: the SetupIntent must not mark the order paid.
+		$this->assertSame( 'pending', $result_order->get_status() );
+		foreach ( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) as $note ) {
+			$this->assertStringNotContainsString( 'si_mock', $note->content );
+		}
 		$this->assertEquals( 'success', $result['result'] );
 		// Expect add token to order to be called, so it can be reused in renewals.
 		// This is an integration test, different scenarios for add_token_to_order method

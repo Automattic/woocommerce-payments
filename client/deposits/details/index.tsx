@@ -166,7 +166,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 							? __(
 									'Withdrawal overview',
 									'woocommerce-payments'
-							  )
+								)
 							: __( 'Payout overview', 'woocommerce-payments' )
 					}
 				>
@@ -179,11 +179,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
@@ -212,11 +212,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Net withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Net payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount,

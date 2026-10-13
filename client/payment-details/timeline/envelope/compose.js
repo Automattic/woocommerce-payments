@@ -290,13 +290,13 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 					feeLineLabel,
 					totalRateTextWithSuffix,
 					feeAmountText
-			  )
+				)
 			: sprintf(
 					/* translators: 1: fee label (e.g. "Fee" or "Processing fee") 2: monetary amount */
 					__( '%1$s: %2$s', 'woocommerce-payments' ),
 					feeLineLabel,
 					feeAmountText
-			  )
+				)
 	);
 
 	const feeRows = breakdown.rows.filter( ( row ) => row.kind !== 'tax' );

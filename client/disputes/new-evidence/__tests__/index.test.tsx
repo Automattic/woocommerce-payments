@@ -494,9 +494,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				},
 				{ timeout: 3000 }
 			);
-
-			// The WooCommerce List component shows a deprecation warning
-			expect( console ).toHaveWarned();
 		} );
 
 		it( 'should handle enhanced_eligibility_types Visa Compliance disputes', async () => {
@@ -545,7 +542,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 
 			await waitFor( () => {
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					'Error: API error'
+					'API error'
 				);
 			} );
 		} );
@@ -558,7 +555,11 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				createInfoNotice: jest.fn(),
 			} );
 
-			const error = new Error( 'Save error' );
+			const error = {
+				code: 'lock_timeout',
+				message: 'Save error',
+				data: null,
+			};
 			mockApiFetch
 				.mockResolvedValueOnce( baseDispute )
 				.mockRejectedValueOnce( error );
@@ -572,7 +573,7 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 				fireEvent.click( saveButton );
 
 				expect( mockCreateErrorNotice ).toHaveBeenCalledWith(
-					expect.stringContaining( 'Save error' )
+					'Failed to save evidence. (Save error)'
 				);
 			} );
 		} );
@@ -668,6 +669,38 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 		} );
 	} );
 
+	it( 'focuses the step heading when navigating forward and back', async () => {
+		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Next' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: 'Review your cover letter',
+				} )
+			).toHaveFocus();
+		} );
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Back' } ) );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'heading', {
+					name: "Let's gather the basics",
+				} )
+			).toHaveFocus();
+		} );
+	} );
+
 	it( 'should include empty document fields when saving to clear them on the server', async () => {
 		// This test verifies that when a user removes a document,
 		// the empty value is sent to the server so it can be cleared.
@@ -719,6 +752,41 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 				} )
 			);
 		} );
+	} );
+
+	it( 'keeps typed evidence when settings finish loading after the dispute', async () => {
+		const loadedSettings = {
+			account_country: 'US',
+			account_business_name: 'Test Store',
+		};
+		let settings = {};
+		mockUseGetSettings.mockImplementation( () => settings );
+
+		const { rerender } = render(
+			<NewEvidence query={ { id: 'dp_test_456' } } />
+		);
+
+		const description = await screen.findByLabelText(
+			'PRODUCT OR SERVICE DESCRIPTION'
+		);
+		fireEvent.change( description, {
+			target: { value: 'my product description' },
+		} );
+
+		settings = loadedSettings;
+		rerender( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		await waitFor( () => {
+			expect(
+				screen.getByLabelText( 'PRODUCT OR SERVICE DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
+
+		expect(
+			mockApiFetch.mock.calls.filter(
+				( [ options ] ) => ! ( options as { method?: string } ).method
+			)
+		).toHaveLength( 1 );
 	} );
 
 	it( 'should regenerate cover letter when product type changes even if previously edited', async () => {
@@ -989,13 +1057,11 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	afterEach( () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 	} );
 
 	it( 'remaps multiple → other when the feature flag is enabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			true;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 
@@ -1015,8 +1081,7 @@ describe( 'NewEvidence - multiple → other product type mapping', () => {
 	} );
 
 	it( 'preserves multiple when the feature flag is disabled', async () => {
-		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled =
-			false;
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 
 		render( <NewEvidence query={ { id: 'dp_test_multiple' } } /> );
 

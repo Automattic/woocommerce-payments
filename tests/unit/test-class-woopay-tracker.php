@@ -97,6 +97,31 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->tracker->should_enable_tracking() );
 	}
 
+	public function test_shopper_tracking_config_is_enabled_when_woopay_is_not_eligible(): void {
+		$is_woopay_eligible   = false;
+		$is_account_connected = true;
+		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+
+		$config = $this->tracker->add_tracking_config_to_payment_fields( [] );
+		$params = $this->tracker->add_tracking_config_to_express_checkout( [] );
+
+		$this->assertTrue( $config['isShopperTrackingEnabled'] );
+		$this->assertTrue( $params['is_shopper_tracking_enabled'] );
+	}
+
+	public function test_shopper_tracking_config_is_disabled_when_store_opts_out(): void {
+		$is_woopay_eligible   = true;
+		$is_account_connected = true;
+		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+		update_option( 'woocommerce_allow_tracking', 'no' );
+
+		$config = $this->tracker->add_tracking_config_to_payment_fields( [] );
+		$params = $this->tracker->add_tracking_config_to_express_checkout( [] );
+
+		$this->assertFalse( $config['isShopperTrackingEnabled'] );
+		$this->assertFalse( $params['is_shopper_tracking_enabled'] );
+	}
+
 	public function test_tracks_build_event_obj_for_admin_events(): void {
 		$this->set_account_connected( true );
 		$event_name = 'wcadmin_test_event';

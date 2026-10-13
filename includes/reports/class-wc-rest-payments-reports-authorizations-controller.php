@@ -84,7 +84,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		}
 		$wcpay_request->set_filters( $filters );
 
-		$response = $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
+		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
@@ -107,7 +107,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		$wcpay_request->set_filters( [ 'charge_id_is' => $request->get_param( 'id' ) ] );
 		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
 
-		$response = $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
+		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}

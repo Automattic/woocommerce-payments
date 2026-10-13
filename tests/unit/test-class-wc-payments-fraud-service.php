@@ -427,9 +427,11 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$logger_ref = new ReflectionProperty( 'WCPay\Internal\Logger', 'wc_logger' );
+		$internal_logger = wcpay_get_container()->get( InternalLogger::class );
+		$logger_ref      = new ReflectionProperty( 'WCPay\Internal\Logger', 'wc_logger' );
 		$logger_ref->setAccessible( true );
-		$logger_ref->setValue( wcpay_get_container()->get( InternalLogger::class ), $mock_logger );
+		$wc_logger = $logger_ref->getValue( $internal_logger );
+		$logger_ref->setValue( $internal_logger, $mock_logger );
 
 		// Make sure the gateway is set because the logger will not log otherwise.
 		$gateway                = WC_Payments::get_gateway();
@@ -445,10 +447,13 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'log' )
 			->with( $this->anything(), $this->stringStartsWith( '[Tracking] Error when linking session with user' ) );
 
-		$this->fraud_service->link_session_if_user_just_logged_in();
-
-		// Put the previous gateway back.
-		WC_Payments::set_gateway( $gateway );
+		try {
+			$this->fraud_service->link_session_if_user_just_logged_in();
+		} finally {
+			// Put the previous gateway and logger back, even if a mock expectation fails above.
+			WC_Payments::set_gateway( $gateway );
+			$logger_ref->setValue( $internal_logger, $wc_logger );
+		}
 	}
 
 	private function mock_in_admin() {

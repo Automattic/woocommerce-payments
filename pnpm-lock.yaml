@@ -30,6 +30,8 @@ overrides:
   d3-scale: ^4.0.2
   d3-scale-chromatic: ^3.1.0
 
+packageExtensionsChecksum: sha256-ojLmCWK6cbRQiL2MnMfszGzabYDQDNqVZaHtpMod6wk=
+
 pnpmfileChecksum: sha256-U+gZPrmrFy5zRdE8K7tIgZTqnM8+wLR/R7S3IkpwhQo=
 
 importers:
@@ -62,7 +64,7 @@ importers:
         version: 2.6.0
       '@woocommerce/onboarding':
         specifier: 4.0.0
-        version: 4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)
+        version: 4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)
       '@wordpress/dataviews':
         specifier: 14.3.0
         version: 14.3.0(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(stylelint@13.11.0)
@@ -78,9 +80,6 @@ importers:
       lodash:
         specifier: 4.18.1
         version: 4.18.1
-      react-day-picker:
-        specifier: 10.0.1
-        version: 10.0.1(@types/react@18.3.28)(react@18.3.1)
     devDependencies:
       '@automattic/color-studio':
         specifier: 4.1.0
@@ -153,7 +152,7 @@ importers:
         version: 5.62.0(eslint@8.57.1)(typescript@5.9.3)
       '@woocommerce/components':
         specifier: 14.1.0
-        version: 14.1.0(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)
+        version: 14.1.0(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)
       '@woocommerce/csv-export':
         specifier: 1.11.0
         version: 1.11.0
@@ -171,7 +170,7 @@ importers:
         version: 3.0.0(@babel/core@7.29.7)(eslint-import-resolver-typescript@2.4.0)(eslint@8.57.1)(jest@30.5.1(@types/node@20.9.0)(babel-plugin-macros@3.1.0)(esbuild-register@3.6.0(esbuild@0.25.12)))(typescript@5.9.3)
       '@woocommerce/experimental':
         specifier: 4.0.0
-        version: 4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)
+        version: 4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)
       '@woocommerce/navigation':
         specifier: 9.0.0
         version: 9.0.0(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(lodash@4.18.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -263,8 +262,8 @@ importers:
         specifier: 1.16.0
         version: 1.16.0
       babel-loader:
-        specifier: 8.2.2
-        version: 8.2.2(@babel/core@7.29.7)(webpack@5.106.2)
+        specifier: 10.1.1
+        version: 10.1.1(@babel/core@7.29.7)(webpack@5.106.2)
       chalk:
         specifier: 4.1.2
         version: 4.1.2
@@ -308,8 +307,8 @@ importers:
         specifier: 6.10.2
         version: 6.10.2(eslint@8.57.1)
       eslint-plugin-prettier:
-        specifier: 3.4.1
-        version: 3.4.1(eslint-config-prettier@7.2.0(eslint@8.57.1))(eslint@8.57.1)(wp-prettier@2.8.5)
+        specifier: 5.5.6
+        version: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@7.2.0(eslint@8.57.1))(eslint@8.57.1)(wp-prettier@3.9.6)
       eslint-plugin-react:
         specifier: 7.37.5
         version: 7.37.5(eslint@8.57.1)
@@ -368,8 +367,8 @@ importers:
         specifier: 8.3.5
         version: 8.3.5
       prettier:
-        specifier: npm:wp-prettier@2.8.5
-        version: wp-prettier@2.8.5
+        specifier: npm:wp-prettier@3.9.6
+        version: wp-prettier@3.9.6
       process:
         specifier: 0.11.10
         version: 0.11.10
@@ -5206,12 +5205,18 @@ packages:
     peerDependencies:
       '@babel/core': ^7.11.0 || ^8.0.0-0
 
-  babel-loader@8.2.2:
-    resolution: {integrity: sha512-JvTd0/D889PQBtUXJ2PXaKU/pjZDMtHA9V2ecm+eNRmmBCMR09a+fmpGTNwnJtFmFl5Ei7Vy47LjBb+L0wQ99g==}
-    engines: {node: '>= 8.9'}
+  babel-loader@10.1.1:
+    resolution: {integrity: sha512-JwKSzk2kjIe7mgPK+/lyZ2QAaJcpahNAdM+hgR2HI8D0OJVkdj8Rl6J3kaLYki9pwF7P2iWnD8qVv80Lq1ABtg==}
+    engines: {node: ^18.20.0 || ^20.10.0 || >=22.0.0}
     peerDependencies:
-      '@babel/core': ^7.0.0
-      webpack: '>=2'
+      '@babel/core': ^7.12.0 || ^8.0.0-beta.1
+      '@rspack/core': ^1.0.0 || ^2.0.0-0
+      webpack: '>=5.61.0'
+    peerDependenciesMeta:
+      '@rspack/core':
+        optional: true
+      webpack:
+        optional: true
 
   babel-loader@9.2.1:
     resolution: {integrity: sha512-fqe8naHt46e0yIdkjUZYqddSXfej3AHajX+CSO5X7oy0EmPc6o5Xh+RClNoHjnieWz9AW4kZxW9yyFMhVB1QLA==}
@@ -5736,9 +5741,6 @@ packages:
 
   common-path-prefix@3.0.0:
     resolution: {integrity: sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==}
-
-  commondir@1.0.1:
-    resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
 
   compress-commons@6.0.2:
     resolution: {integrity: sha512-6FqVXeETqWPoGcfzrXb37E50NP0LXT8kAMu5ooZayhWWdgEY4lBEEcbQNXtkuKQsGduxiIcI4gOTsxTmuq/bSg==}
@@ -6571,6 +6573,20 @@ packages:
       eslint-config-prettier:
         optional: true
 
+  eslint-plugin-prettier@5.5.6:
+    resolution: {integrity: sha512-ifetmTcxWfz+4qRW3pH/ujdTq2jQIj59AxJMIN26K5avYgU8dxycUETQonWiW+wPrYXA0j3Try0l1CnwVQtDqQ==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    peerDependencies:
+      '@types/eslint': '>=8.0.0'
+      eslint: '>=8.0.0'
+      eslint-config-prettier: '>= 7.0.0 <10.0.0 || >=10.1.0'
+      prettier: '>=3.0.0'
+    peerDependenciesMeta:
+      '@types/eslint':
+        optional: true
+      eslint-config-prettier:
+        optional: true
+
   eslint-plugin-react-hooks@4.6.2:
     resolution: {integrity: sha512-QzliNJq4GinDBcD8gPB5v0wh6g8q3SUi6EFF0x8N/BL9PoVs0atuGc47ozMRyOWAKdwaZ5OnbOEa3WR+dSGKuQ==}
     engines: {node: '>=10'}
@@ -6804,10 +6820,6 @@ packages:
   finalhandler@1.3.2:
     resolution: {integrity: sha512-aA4RyPcd3badbdABGDuTXCMTtOneUCAYH/gxoYRTZlIJdF0YPWuGqiAsIrhNnnqdXGswYk6dGujem4w80UJFhg==}
     engines: {node: '>= 0.8'}
-
-  find-cache-dir@3.3.2:
-    resolution: {integrity: sha512-wXZV5emFEjrridIgED11OoUKLxiYjAcqot/NJdAkOhlJ+vGzwhOAfcG5OX1jP+S0PcjEn8bdMJv+g2jwQ3Onig==}
-    engines: {node: '>=8'}
 
   find-cache-dir@4.0.0:
     resolution: {integrity: sha512-9ZonPT4ZAK4a+1pUPVPZJapbi7O5qbbJPdYw/NOQWZZbVLdDTYM3A4R9z/DpAM08IDaFGsvPgiGZ82WEwUDWjg==}
@@ -8265,10 +8277,6 @@ packages:
     resolution: {integrity: sha512-DFEqQ3ihfS9blba08cLfYf1NRAIEm+dDjic073DRDc3/JspI/8wYmtDsHwd3+4hwvdxSK7PGaElfTmm0awWJ4w==}
     engines: {node: '>=6.11.5'}
 
-  loader-utils@1.4.2:
-    resolution: {integrity: sha512-I5d00Pd/jwMD2QCduo657+YM/6L3KZu++pmX9VFncxaxvHcru9jx1lBaFft+r4Mt2jK0Yhp41XlRAihzPxHNCg==}
-    engines: {node: '>=4.0.0'}
-
   loader-utils@2.0.4:
     resolution: {integrity: sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw==}
     engines: {node: '>=8.9.0'}
@@ -8403,10 +8411,6 @@ packages:
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
-
-  make-dir@3.1.0:
-    resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
-    engines: {node: '>=8'}
 
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
@@ -9611,16 +9615,6 @@ packages:
       react-dom: ^0.14 || ^15.5.4 || ^16.1.1
       react-with-direction: ^1.3.1
 
-  react-day-picker@10.0.1:
-    resolution: {integrity: sha512-eNh6BlwcYInWaJtRv18mXQ06Ys/H6rdTZAnTaSdOYJuTpwP1JMCHNd1FDRadA+gbeinq+psdULN5Xnowy9mV8w==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@types/react': '>=16.8.0'
-      react: '>=16.8.0'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-
   react-day-picker@9.14.0:
     resolution: {integrity: sha512-tBaoDWjPwe0M5pGrum4H0SR6Lyk+BO9oHnp9JbKpGKW2mlraNPgP9BMfsg5pWpwrssARmeqk7YBl2oXutZTaHA==}
     engines: {node: '>=18'}
@@ -10131,10 +10125,6 @@ packages:
 
   scheduler@0.23.2:
     resolution: {integrity: sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==}
-
-  schema-utils@2.7.1:
-    resolution: {integrity: sha512-SHiNtMOUGWBQJwzISiVYKu82GiV4QYGePp3odlY1tuKO7gPtphAT5R/py0fA6xtbgLL/RvtJZnU9b8s0F1q0Xg==}
-    engines: {node: '>= 8.9.0'}
 
   schema-utils@3.3.0:
     resolution: {integrity: sha512-pN/yOAvcC+5rQ5nERGuwrjLlYvLTbCibnZ1I7B1LaiAz9BRBlE9GMgE/eqV30P7aJQUf7Ddimy/RsbYO/GrVGg==}
@@ -11397,6 +11387,11 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
+  wp-prettier@3.9.6:
+    resolution: {integrity: sha512-rKjrWazF+8QexwTG4Y1Xmnnnp9SDNvaakDtXTRDHxhyudrelGQ5tqoviFtGUuE4fvMs4ck3pmgrZ2Ap202GTIQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+
   wrap-ansi@5.1.0:
     resolution: {integrity: sha512-QC1/iN/2/RPVJ5jYK8BGttj5z83LmSKmvbvrXPNCLZSEb32KKVDJDl/MOt2N01qU2H/FkzEa9PKto1BqDjtd7Q==}
     engines: {node: '>=6'}
@@ -11659,7 +11654,7 @@ snapshots:
 
   '@automattic/color-studio@4.1.0': {}
 
-  '@automattic/components@2.3.0(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.18(wp-prettier@2.8.5))':
+  '@automattic/components@2.3.0(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.18(wp-prettier@3.9.6))':
     dependencies:
       '@automattic/calypso-color-schemes': 4.0.0
       '@automattic/calypso-url': 1.1.0
@@ -11673,7 +11668,7 @@ snapshots:
       '@emotion/css': 11.13.5
       '@emotion/react': 11.14.0(@types/react@18.3.28)(react@18.3.1)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1)
-      '@storybook/addon-actions': 8.6.18(storybook@8.6.18(wp-prettier@2.8.5))
+      '@storybook/addon-actions': 8.6.18(storybook@8.6.18(wp-prettier@3.9.6))
       '@wordpress/base-styles': 5.23.0
       '@wordpress/components': 29.12.0(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@wordpress/compose': 7.22.0(@types/react@18.3.28)(react@18.3.1)
@@ -11757,9 +11752,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@automattic/tour-kit@1.1.3(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))':
+  '@automattic/tour-kit@1.1.3(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))':
     dependencies:
-      '@automattic/components': 2.3.0(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.18(wp-prettier@2.8.5))
+      '@automattic/components': 2.3.0(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.18(wp-prettier@3.9.6))
       '@automattic/viewport': 1.1.1(react@18.3.1)
       '@automattic/viewport-react': 1.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@popperjs/core': 2.11.8
@@ -15149,18 +15144,18 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@storybook/addon-actions@8.6.18(storybook@8.6.18(wp-prettier@2.8.5))':
+  '@storybook/addon-actions@8.6.18(storybook@8.6.18(wp-prettier@3.9.6))':
     dependencies:
       '@storybook/global': 5.0.0
       '@types/uuid': 9.0.8
       dequal: 2.0.3
       polished: 4.3.1
-      storybook: 8.6.18(wp-prettier@2.8.5)
+      storybook: 8.6.18(wp-prettier@3.9.6)
       uuid: 9.0.1
 
-  '@storybook/core@8.6.18(storybook@8.6.18(wp-prettier@2.8.5))(wp-prettier@2.8.5)':
+  '@storybook/core@8.6.18(storybook@8.6.18(wp-prettier@3.9.6))(wp-prettier@3.9.6)':
     dependencies:
-      '@storybook/theming': 8.6.18(storybook@8.6.18(wp-prettier@2.8.5))
+      '@storybook/theming': 8.6.18(storybook@8.6.18(wp-prettier@3.9.6))
       better-opn: 3.0.2
       browser-assert: 1.2.1
       esbuild: 0.25.12
@@ -15172,7 +15167,7 @@ snapshots:
       util: 0.12.5
       ws: 8.21.1
     optionalDependencies:
-      prettier: wp-prettier@2.8.5
+      prettier: wp-prettier@3.9.6
     transitivePeerDependencies:
       - bufferutil
       - storybook
@@ -15181,9 +15176,9 @@ snapshots:
 
   '@storybook/global@5.0.0': {}
 
-  '@storybook/theming@8.6.18(storybook@8.6.18(wp-prettier@2.8.5))':
+  '@storybook/theming@8.6.18(storybook@8.6.18(wp-prettier@3.9.6))':
     dependencies:
-      storybook: 8.6.18(wp-prettier@2.8.5)
+      storybook: 8.6.18(wp-prettier@3.9.6)
 
   '@stripe/connect-js@3.4.3': {}
 
@@ -16026,11 +16021,11 @@ snapshots:
     optionalDependencies:
       webpack-dev-server: 4.15.2(webpack-cli@5.1.4)(webpack@5.106.2)
 
-  '@woocommerce/components@14.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)':
+  '@woocommerce/components@14.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)':
     dependencies:
       '@automattic/calypso-color-schemes': 2.1.1
       '@automattic/interpolate-components': 1.2.1(@types/react@18.3.28)(react@18.3.1)
-      '@automattic/tour-kit': 1.1.3(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))
+      '@automattic/tour-kit': 1.1.3(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))
       '@types/react': 18.3.28
       '@types/react-dom': 18.3.7(@types/react@18.3.28)
       '@types/react-window': 1.8.8
@@ -16108,11 +16103,11 @@ snapshots:
       - webpack
       - webpack-virtual-modules
 
-  '@woocommerce/components@14.1.0(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)':
+  '@woocommerce/components@14.1.0(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)':
     dependencies:
       '@automattic/calypso-color-schemes': 2.1.1
       '@automattic/interpolate-components': 1.2.1(@types/react@18.3.28)(react@18.3.1)
-      '@automattic/tour-kit': 1.1.3(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))
+      '@automattic/tour-kit': 1.1.3(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(@wordpress/data@10.50.0(@types/react@18.3.28)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))
       '@types/react': 18.3.28
       '@types/react-dom': 18.3.7(@types/react@18.3.28)
       '@types/react-window': 1.8.8
@@ -16315,9 +16310,9 @@ snapshots:
       - supports-color
       - typescript
 
-  '@woocommerce/experimental@4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)':
+  '@woocommerce/experimental@4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)':
     dependencies:
-      '@woocommerce/components': 14.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)
+      '@woocommerce/components': 14.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)
       '@woocommerce/sanitize': 1.0.0(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@wordpress/components': 29.5.4(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@wordpress/element': 6.19.1
@@ -16386,10 +16381,10 @@ snapshots:
     dependencies:
       locutus: 3.0.36
 
-  '@woocommerce/onboarding@4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)':
+  '@woocommerce/onboarding@4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)':
     dependencies:
-      '@woocommerce/components': 14.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)
-      '@woocommerce/experimental': 4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@2.8.5))(stylelint@13.11.0)(webpack@5.106.2)
+      '@woocommerce/components': 14.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)
+      '@woocommerce/experimental': 4.0.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@date-fns/tz@1.5.0)(@emotion/is-prop-valid@1.4.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(date-fns@4.4.0)(esbuild@0.25.12)(lodash@4.18.1)(postcss@8.3.5)(react-dom@18.3.1(react@18.3.1))(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(redux@4.2.1)(storybook@8.6.18(wp-prettier@3.9.6))(stylelint@13.11.0)(webpack@5.106.2)
       '@woocommerce/explat': 3.0.0
       '@woocommerce/tracks': 1.5.1
       '@wordpress/components': 29.5.4(@emotion/is-prop-valid@1.4.0)(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -17995,6 +17990,7 @@ snapshots:
       deepmerge: 4.3.1
       fast-deep-equal: 3.1.3
       react: 18.3.1
+      react-day-picker: 9.14.0(react@18.3.1)
       react-dom: 18.3.1(react@18.3.1)
       remove-accents: 0.5.0
     transitivePeerDependencies:
@@ -19826,13 +19822,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-loader@8.2.2(@babel/core@7.29.7)(webpack@5.106.2):
+  babel-loader@10.1.1(@babel/core@7.29.7)(webpack@5.106.2):
     dependencies:
       '@babel/core': 7.29.7
-      find-cache-dir: 3.3.2
-      loader-utils: 1.4.2
-      make-dir: 3.1.0
-      schema-utils: 2.7.1
+      find-up: 5.0.0
+    optionalDependencies:
       webpack: 5.106.2(esbuild@0.25.12)(postcss@8.3.5)(webpack-cli@7.0.2)
 
   babel-loader@9.2.1(@babel/core@7.25.7)(webpack@5.106.2):
@@ -20474,8 +20468,6 @@ snapshots:
   comment-parser@1.4.1: {}
 
   common-path-prefix@3.0.0: {}
-
-  commondir@1.0.1: {}
 
   compress-commons@6.0.2:
     dependencies:
@@ -21465,14 +21457,6 @@ snapshots:
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-prettier@3.4.1(eslint-config-prettier@7.2.0(eslint@8.57.1))(eslint@8.57.1)(wp-prettier@2.8.5):
-    dependencies:
-      eslint: 8.57.1
-      prettier: wp-prettier@2.8.5
-      prettier-linter-helpers: 1.0.1
-    optionalDependencies:
-      eslint-config-prettier: 7.2.0(eslint@8.57.1)
-
   eslint-plugin-prettier@3.4.1(eslint-config-prettier@8.10.2(eslint@8.57.1))(eslint@8.57.1)(wp-prettier@2.8.5):
     dependencies:
       eslint: 8.57.1
@@ -21488,6 +21472,16 @@ snapshots:
       prettier-linter-helpers: 1.0.1
     optionalDependencies:
       eslint-config-prettier: 8.10.2(eslint@8.57.1)
+
+  eslint-plugin-prettier@5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@7.2.0(eslint@8.57.1))(eslint@8.57.1)(wp-prettier@3.9.6):
+    dependencies:
+      eslint: 8.57.1
+      prettier: wp-prettier@3.9.6
+      prettier-linter-helpers: 1.0.1
+      synckit: 0.11.13
+    optionalDependencies:
+      '@types/eslint': 9.6.1
+      eslint-config-prettier: 7.2.0(eslint@8.57.1)
 
   eslint-plugin-react-hooks@4.6.2(eslint@8.57.1):
     dependencies:
@@ -21822,12 +21816,6 @@ snapshots:
       unpipe: 1.0.0
     transitivePeerDependencies:
       - supports-color
-
-  find-cache-dir@3.3.2:
-    dependencies:
-      commondir: 1.0.1
-      make-dir: 3.1.0
-      pkg-dir: 4.2.0
 
   find-cache-dir@4.0.0:
     dependencies:
@@ -23753,12 +23741,6 @@ snapshots:
 
   loader-runner@4.3.2: {}
 
-  loader-utils@1.4.2:
-    dependencies:
-      big.js: 5.2.2
-      emojis-list: 3.0.0
-      json5: 1.0.2
-
   loader-utils@2.0.4:
     dependencies:
       big.js: 5.2.2
@@ -23893,10 +23875,6 @@ snapshots:
       inherits: 2.0.4
 
   lz-string@1.5.0: {}
-
-  make-dir@3.1.0:
-    dependencies:
-      semver: 6.3.1
 
   make-dir@4.0.0:
     dependencies:
@@ -25176,14 +25154,6 @@ snapshots:
       react-with-styles: 4.2.0(@babel/runtime@7.29.7)(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       react-with-styles-interface-css: 6.0.0(@babel/runtime@7.29.7)(react-with-styles@4.2.0(@babel/runtime@7.29.7)(react-with-direction@1.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1))
 
-  react-day-picker@10.0.1(@types/react@18.3.28)(react@18.3.1):
-    dependencies:
-      '@date-fns/tz': 1.5.0
-      date-fns: 4.4.0
-      react: 18.3.1
-    optionalDependencies:
-      '@types/react': 18.3.28
-
   react-day-picker@9.14.0(react@18.3.1):
     dependencies:
       '@date-fns/tz': 1.5.0
@@ -25722,12 +25692,6 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  schema-utils@2.7.1:
-    dependencies:
-      '@types/json-schema': 7.0.15
-      ajv: 6.15.0
-      ajv-keywords: 3.5.2(ajv@6.15.0)
-
   schema-utils@3.3.0:
     dependencies:
       '@types/json-schema': 7.0.15
@@ -26061,11 +26025,11 @@ snapshots:
       es-errors: 1.3.0
       internal-slot: 1.1.0
 
-  storybook@8.6.18(wp-prettier@2.8.5):
+  storybook@8.6.18(wp-prettier@3.9.6):
     dependencies:
-      '@storybook/core': 8.6.18(storybook@8.6.18(wp-prettier@2.8.5))(wp-prettier@2.8.5)
+      '@storybook/core': 8.6.18(storybook@8.6.18(wp-prettier@3.9.6))(wp-prettier@3.9.6)
     optionalDependencies:
-      prettier: wp-prettier@2.8.5
+      prettier: wp-prettier@3.9.6
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -27340,6 +27304,8 @@ snapshots:
   wp-prettier@2.8.5: {}
 
   wp-prettier@3.0.3: {}
+
+  wp-prettier@3.9.6: {}
 
   wrap-ansi@5.1.0:
     dependencies:

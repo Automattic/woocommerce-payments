@@ -69,7 +69,7 @@ jobs:
         with:
           repository: woocommerce/woo-product-deploy
           # Keep this ref aligned with product-deploy.yml to run the same release suite.
-          ref: c36d132b80747d6a96569712d69937177d7a0274
+          ref: 0ef871021cdf6c4183a6b0470ee6a7be844d748a
           path: .github/actions/woo-product-deploy
           token: ${{ secrets.WOO_DEPLOY_SECRET }}
           persist-credentials: false

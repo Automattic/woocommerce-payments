@@ -68,7 +68,7 @@ const sortDateBetween = (
 	Array.isArray( dateBetween )
 		? [ ...dateBetween ].sort(
 				( a, b ) => new Date( a ).getTime() - new Date( b ).getTime()
-		  )
+			)
 		: dateBetween;
 
 const buildFeesSummaryStoreQuery = (
