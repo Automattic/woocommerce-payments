@@ -96,8 +96,6 @@ const StripeBillingSection: React.FC = () => {
 		}
 	}, [ savedIsStripeBillingEnabled ] );
 
-	// Derive `isMigrationOptionShown` synchronously so the sibling notices all read the
-	// same value in the first render.
 	const isMigrationInProgressCombined =
 		isMigrationInProgress || isMigrationInProgressLocal;
 	const isMigrationOptionShown =
