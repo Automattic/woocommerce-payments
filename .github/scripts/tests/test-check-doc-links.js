@@ -128,10 +128,12 @@ test( 'recognizes supported URL forms and exact domain boundaries', ( context ) 
 			'<a href="https://www.woocommerce.com/documentation/products/foo/?a=1&amp;b=2#hello%20world" />',
 			"'http://docs.woocommerce.com/document/old/#section'",
 			'`https://woocommerce.com/docs/example/#section`',
+			"'https://developer.woocommerce.com/docs/extensions/#section'",
 			String.raw`"https:\/\/woocommerce.com\/document\/escaped\/#section"`,
 			'// https://woocommerce.com/document/comment/.',
 			"'https://woocommerce.com/products/example/'",
 			"'https://woocommerce.com/documentary/'",
+			"'https://developer.woocommerce.com/2026/10/01/release-post/'",
 			"'https://woocommerce.com.evil.example/document/example/'",
 		].join( '\n' ),
 	} );
@@ -141,6 +143,7 @@ test( 'recognizes supported URL forms and exact domain boundaries', ( context ) 
 			'https://www.woocommerce.com/documentation/products/foo/?a=1&b=2#hello%20world',
 			'http://docs.woocommerce.com/document/old/#section',
 			'https://woocommerce.com/docs/example/#section',
+			'https://developer.woocommerce.com/docs/extensions/#section',
 			'https://woocommerce.com/document/escaped/#section',
 			'https://woocommerce.com/document/comment/',
 		].sort()

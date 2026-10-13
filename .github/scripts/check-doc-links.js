@@ -39,8 +39,14 @@ const DOC_HOSTS = new Set( [
 	'docs.woocommerce.com',
 	'developer.woocommerce.com',
 ] );
-const URL_PATTERN =
-	/https?:\/\/(?:(?:www\.)?woocommerce\.com\/(?:document(?:ation)?|docs)(?=[/?#]|$)|docs\.woocommerce\.com\/)[^\s"'`<>\\]*/gi;
+const URL_PATTERN = new RegExp(
+	String.raw`https?://(?:` +
+		String.raw`(?:www\.)?woocommerce\.com/(?:document(?:ation)?|docs)(?=[/?#]|$)` +
+		String.raw`|docs\.woocommerce\.com/` +
+		String.raw`|developer\.woocommerce\.com/docs(?=[/?#]|$)` +
+		')[^\\s"\'`<>\\\\]*',
+	'gi'
+);
 const MAX_HTML_BYTES = 10 * 1024 * 1024;
 const REDIRECT_STATUSES = new Set( [ 301, 302, 303, 307, 308 ] );
 
