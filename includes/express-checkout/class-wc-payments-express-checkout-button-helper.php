@@ -37,6 +37,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private $account;
 
 	/**
+	 * Whether this class's `should_show_express_checkout_button()` last rejected only because the cart was empty.
+	 *
+	 * Lets `should_load_express_checkout_scripts()` relax that rejection alone, so a `false` from an
+	 * override (see `WC_Payments::set_express_checkout_helper()`) still prevents loading.
+	 *
+	 * @var bool
+	 */
+	private $rejected_for_empty_cart = false;
+
+	/**
 	 * Whether the [product_page] shortcode context has been worked out for this request.
 	 *
 	 * Only ever set once the main query and its host post are available, so a caller that
@@ -682,30 +692,31 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * Checks whether the Express Checkout scripts and params should be loaded on this page.
 	 *
 	 * Block cart and checkout pages add the first product through the Store API without a reload,
-	 * and the block payment methods re-run `canMakePayment()` against the live cart. An empty cart
-	 * fails the cart-dependent checks (its total is 0), so only the page-level checks apply to it;
-	 * the buttons stay hidden until the cart has something to pay for.
+	 * and the block payment methods re-run `canMakePayment()` against the live cart. So on those
+	 * pages, a rejection caused only by the cart being empty still loads them; the buttons stay
+	 * hidden until the cart has something to pay for.
 	 *
 	 * @return bool
 	 */
 	public function should_load_express_checkout_scripts() {
+		$this->rejected_for_empty_cart = false;
+
 		if ( $this->should_show_express_checkout_button() ) {
 			return true;
 		}
 
-		$is_block_page = has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' );
-
-		return $is_block_page
-			&& WC()->cart->is_empty()
-			&& $this->meets_page_requirements();
+		return $this->rejected_for_empty_cart
+			&& ( has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ) );
 	}
 
 	/**
-	 * Checks the requirements that don't depend on the cart or product contents.
+	 * Checks whether Express Checkout Element Button should be available on this page.
+	 *
+	 * @phpstan-impure It records an empty-cart rejection for `should_load_express_checkout_scripts()`.
 	 *
 	 * @return bool
 	 */
-	private function meets_page_requirements() {
+	public function should_show_express_checkout_button() {
 		// When express checkout methods are displayed in the payment methods list,
 		// don't show them as separate express buttons.
 		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
@@ -731,16 +742,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// No express checkout methods are actually enabled for the current page context
 		// (checks both location settings and feature flags/availability).
-		return ! empty( $this->get_enabled_express_checkout_methods_for_context() );
-	}
-
-	/**
-	 * Checks whether Express Checkout Element Button should be available on this page.
-	 *
-	 * @return bool
-	 */
-	public function should_show_express_checkout_button() {
-		if ( ! $this->meets_page_requirements() ) {
+		if ( empty( $this->get_enabled_express_checkout_methods_for_context() ) ) {
 			return false;
 		}
 
@@ -783,6 +785,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
 			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
 		) {
+			// An empty cart doesn't need shipping either.
+			$this->rejected_for_empty_cart = ! $this->is_product() && WC()->cart->is_empty();
 			return false;
 		}
 
@@ -793,6 +797,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			|| ( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 		) {
 			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
+			$this->rejected_for_empty_cart = ! $this->is_product() && WC()->cart->is_empty();
 			return false;
 		}
 

@@ -1367,6 +1367,83 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		}
 	}
 
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_when_tax_is_based_on_billing() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		update_option( 'woocommerce_tax_based_on', 'billing' );
+		update_option( 'woocommerce_prices_include_tax', 'no' );
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			// The empty cart fails the non-shipping tax check before it reaches the 0 total check.
+			$this->assertFalse( $helper->should_show_express_checkout_button() );
+			$this->assertTrue( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_not_load_express_checkout_scripts_on_block_page_with_non_empty_zero_total_cart() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		$free_product = WC_Helper_Product::create_simple_product();
+		$free_product->set_props(
+			[
+				'regular_price' => 0,
+				'price'         => 0,
+				'virtual'       => true,
+			]
+		);
+		$free_product->save();
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $free_product->get_id(), 1 );
+		WC()->cart->calculate_totals();
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
+	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_respects_should_show_override() {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		WC_Payments::mode()->dev();
+		$this->set_current_post_content( '<!-- wp:woocommerce/cart /-->' );
+		WC()->cart->empty_cart();
+		$helper = new class( $this->mock_wcpay_gateway, $this->mock_wcpay_account ) extends WC_Payments_Express_Checkout_Button_Helper {
+			public function should_show_express_checkout_button() {
+				return false;
+			}
+
+			public function get_enabled_express_checkout_methods_for_context() {
+				return [ 'payment_request' ];
+			}
+		};
+
+		try {
+			$this->assertFalse( $helper->should_load_express_checkout_scripts() );
+		} finally {
+			unset( $GLOBALS['post'] );
+			WC_Payments::mode()->live();
+		}
+	}
+
 	public function test_should_load_express_checkout_scripts_on_block_page_with_empty_cart_respects_location_settings() {
 		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
 		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [] );
