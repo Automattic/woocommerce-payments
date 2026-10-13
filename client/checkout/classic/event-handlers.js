@@ -27,7 +27,6 @@ import enqueueFraudScripts from 'fraud-scripts';
 import { showAuthenticationModalIfRequired } from './3ds-flow-handling';
 import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
-import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { maybePersistAdminWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist-admin';
 import { recordUserEvent } from 'tracks';
@@ -162,12 +161,17 @@ jQuery( function ( $ ) {
 		return processPaymentIfNotUsingSavedMethod( $payForOrderForm );
 	} );
 
+	// Preload and initialize WooPay email input if enabled
 	if (
 		getUPEConfig( 'isWooPayEnabled' ) &&
 		getUPEConfig( 'isWooPayEmailInputEnabled' ) &&
 		! isPreviewing()
 	) {
-		handleWooPayEmailInput( '#billing_email', api );
+		import(
+			/* webpackChunkName: "woopay-email-input" */ 'wcpay/checkout/woopay/email-input-iframe'
+		).then( ( { handleWooPayEmailInput } ) => {
+			handleWooPayEmailInput( '#billing_email', api );
+		} );
 	}
 
 	// In the Customizer preview, capture the live appearance and persist it.
