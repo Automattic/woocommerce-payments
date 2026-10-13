@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+Comment: Backfills the early fraud warning index for the unreleased Payments Overview task, which its 11.3.0 changelog entry already covers.
+

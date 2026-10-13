@@ -747,6 +747,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
 		require_once __DIR__ . '/migrations/class-retire-post-kyc-activation-emails.php';
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
+		require_once __DIR__ . '/migrations/class-backfill-early-fraud-warning-actionable-index.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -772,6 +773,9 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails(), 'maybe_migrate' ] );
+		$early_fraud_warning_index_backfill = new \WCPay\Migrations\Backfill_Early_Fraud_Warning_Actionable_Index( self::$order_service, self::$action_scheduler_service, self::$database_cache );
+		$early_fraud_warning_index_backfill->init();
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $early_fraud_warning_index_backfill, 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
