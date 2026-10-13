@@ -384,7 +384,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the settings screen built on WooCommerce's experimental payment settings screen is enabled.
+	 * Checks whether the settings screen built on WooCommerce's experimental settings screens is enabled.
 	 *
 	 * @return bool
 	 */

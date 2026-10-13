@@ -13,7 +13,7 @@ import { createSettingsRegistry } from '../settings-registry';
 import { SETTINGS_STORE_NAME } from '../../data/store-names';
 import AppleGooglePayExpressCheckoutItem from '../../settings/express-checkout/apple-google-pay-item';
 
-const entity = [ 'woo_settings', 'woopayments', undefined ];
+const entity = [ 'woo_settings_payments', 'woopayments', undefined ];
 const saved = {
 	enabled_payment_method_ids: [ 'card', 'ideal', 'klarna' ],
 	is_payment_request_enabled: true,

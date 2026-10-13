@@ -15,7 +15,7 @@ use WP_REST_Response;
 use WP_Error;
 
 /**
- * Registers the WooPayments settings on WooCommerce's experimental payment settings screen.
+ * Registers the WooPayments settings on WooCommerce's experimental settings screens.
  *
  * WooCommerce provides the screen, the save flow and the redirect from the classic settings page.
  * This class supplies the settings entity, its fields and its layout.
@@ -25,6 +25,16 @@ class SettingsScreenService {
 	 * Screen ID. Also the entity name.
 	 */
 	const SCREEN_ID = 'woopayments';
+
+	/**
+	 * Settings area the screen belongs to.
+	 */
+	const AREA = 'payments';
+
+	/**
+	 * Entity kind of the area's settings screens.
+	 */
+	const ENTITY_KIND = 'woo_settings_payments';
 
 	/**
 	 * REST route of the settings entity, under `wc/v3`.
@@ -63,10 +73,10 @@ class SettingsScreenService {
 			return;
 		}
 
-		add_filter( 'woocommerce_experimental_payment_settings_screens', [ $this, 'register_screen' ] );
+		add_filter( '__experimental_woocommerce_settings_screens', [ $this, 'register_screen' ] );
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
-		add_action( 'fields_api_init', [ $this, 'register_fields' ] );
-		add_filter( 'get_entity_view_config_woo_settings_' . self::SCREEN_ID, [ $this, 'get_view_config' ] );
+		add_action( 'wp_fields_api_init', [ $this, 'register_fields' ] );
+		add_filter( 'get_entity_view_config_' . self::ENTITY_KIND . '_' . self::SCREEN_ID, [ $this, 'get_view_config' ] );
 		add_action( 'init', [ $this, 'register_fields_module' ] );
 		// WooCommerce enqueues the screen's scripts at the default priority, so they're registered first.
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_scripts' ], 9 );
@@ -83,7 +93,10 @@ class SettingsScreenService {
 			return $screens;
 		}
 
-		$screens[ self::SCREEN_ID ] = [
+		if ( ! isset( $screens[ self::AREA ] ) || ! is_array( $screens[ self::AREA ] ) ) {
+			$screens[ self::AREA ] = [];
+		}
+		$screens[ self::AREA ][ self::SCREEN_ID ] = [
 			'title'           => __( 'WooPayments', 'woocommerce-payments' ),
 			'rest_path'       => '/wc/v3' . self::REST_ROUTE,
 			'scripts'         => [ self::SCRIPT_HANDLE ],
@@ -164,7 +177,7 @@ class SettingsScreenService {
 			return;
 		}
 
-		$registry->register( 'woocommerce-payments', 'woo_settings', self::SCREEN_ID, $this->get_fields(), self::FIELDS_MODULE_ID );
+		$registry->register( 'woocommerce-payments', self::ENTITY_KIND, self::SCREEN_ID, $this->get_fields(), self::FIELDS_MODULE_ID );
 	}
 
 	/**
@@ -416,7 +429,7 @@ class SettingsScreenService {
 	 */
 	public function register_scripts(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which page is loading.
-		if ( ! isset( $_GET['page'] ) || 'wc-payment-settings-wp-admin' !== $_GET['page'] || ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! isset( $_GET['page'] ) || 'wc-settings-screens-wp-admin' !== $_GET['page'] || ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
 

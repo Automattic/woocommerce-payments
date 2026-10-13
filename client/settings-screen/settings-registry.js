@@ -17,7 +17,7 @@ import {
 } from '../data/settings/actions';
 import reducer from '../data/settings/reducer';
 
-const entity = [ 'woo_settings', 'woopayments', undefined ];
+const entity = [ 'woo_settings_payments', 'woopayments', undefined ];
 
 /** Adapt the existing hooks without copying settings into a second store. */
 export function createSettingsRegistry( parent ) {

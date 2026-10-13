@@ -84,12 +84,12 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_registers_screen_for_classic_section(): void {
-		$screens = $this->sut->register_screen( [ 'other' => [ 'title' => 'Other' ] ] );
+		$screens = $this->sut->register_screen( [ 'payments' => [ 'other' => [ 'title' => 'Other' ] ] ] );
 
-		$this->assertArrayHasKey( 'other', $screens, 'Other screens should be kept' );
-		$this->assertSame( '/wc/v3/payments/settings-dataform', $screens['woopayments']['rest_path'] );
-		$this->assertSame( 'woocommerce_payments', $screens['woopayments']['classic_section'] );
-		$this->assertSame( [ 'wcpay-settings-screen' ], $screens['woopayments']['scripts'] );
+		$this->assertArrayHasKey( 'other', $screens['payments'], 'Other screens should be kept' );
+		$this->assertSame( '/wc/v3/payments/settings-dataform', $screens['payments']['woopayments']['rest_path'] );
+		$this->assertSame( 'woocommerce_payments', $screens['payments']['woopayments']['classic_section'] );
+		$this->assertSame( [ 'wcpay-settings-screen' ], $screens['payments']['woopayments']['scripts'] );
 	}
 
 	public function test_save_returns_saved_record(): void {
