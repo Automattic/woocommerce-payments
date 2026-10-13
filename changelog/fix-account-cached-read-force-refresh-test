@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Check that ordinary account reads use the cache instead of forcing a refresh.
