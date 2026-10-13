@@ -1,0 +1,44 @@
+name: Test documentation link checker
+
+on:
+    pull_request:
+        paths:
+            - '.github/scripts/*doc-links.js'
+            - '.github/scripts/tests/**'
+            - '.github/workflows/check-doc-links.yml'
+            - '.github/workflows/test-doc-links.yml'
+            - 'package.json'
+            - 'pnpm-lock.yaml'
+            - 'pnpm-workspace.yaml'
+            - '.nvmrc'
+
+permissions:
+    contents: read
+
+concurrency:
+    group: documentation-link-tests-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    test:
+        name: Test documentation link checker
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout checker
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - run: corepack enable
+            - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: 'pnpm'
+            - run: pnpm install --frozen-lockfile --ignore-scripts
+
+            - name: Lint checker
+              run: pnpm exec eslint --no-ignore .github/scripts/*doc-links.js .github/scripts/tests/test-*doc-links.js
+
+            - name: Run offline tests
+              run: node --test .github/scripts/tests/test-*doc-links.js
