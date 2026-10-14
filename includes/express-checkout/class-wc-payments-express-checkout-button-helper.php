@@ -37,6 +37,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	private $account;
 
 	/**
+	 * Whether this class's `should_show_express_checkout_button()` last rejected only because the cart was empty.
+	 *
+	 * Lets `should_load_express_checkout_scripts()` relax that rejection alone, so a `false` from an
+	 * override (see `WC_Payments::set_express_checkout_helper()`) still prevents loading.
+	 *
+	 * @var bool
+	 */
+	private $rejected_for_empty_cart = false;
+
+	/**
 	 * Whether the [product_page] shortcode context has been worked out for this request.
 	 *
 	 * Only ever set once the main query and its host post are available, so a caller that
@@ -679,7 +689,30 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Checks whether the Express Checkout scripts and params should be loaded on this page.
+	 *
+	 * Block cart and checkout pages add the first product through the Store API without a reload,
+	 * and the block payment methods re-run `canMakePayment()` against the live cart. So on those
+	 * pages, a rejection caused only by the cart being empty still loads them; the buttons stay
+	 * hidden until the cart has something to pay for.
+	 *
+	 * @return bool
+	 */
+	public function should_load_express_checkout_scripts() {
+		$this->rejected_for_empty_cart = false;
+
+		if ( $this->should_show_express_checkout_button() ) {
+			return true;
+		}
+
+		return $this->rejected_for_empty_cart
+			&& ( has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ) );
+	}
+
+	/**
 	 * Checks whether Express Checkout Element Button should be available on this page.
+	 *
+	 * @phpstan-impure It records an empty-cart rejection for `should_load_express_checkout_scripts()`.
 	 *
 	 * @return bool
 	 */
@@ -752,6 +785,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
 			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
 		) {
+			// An empty cart doesn't need shipping either.
+			$this->rejected_for_empty_cart = ! $this->is_product() && WC()->cart->is_empty();
 			return false;
 		}
 
@@ -762,6 +797,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			|| ( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 		) {
 			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
+			$this->rejected_for_empty_cart = ! $this->is_product() && WC()->cart->is_empty();
 			return false;
 		}
 

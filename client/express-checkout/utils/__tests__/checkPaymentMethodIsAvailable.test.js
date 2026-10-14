@@ -104,6 +104,32 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		expect( result ).toBe( false );
 	} );
 
+	it( 're-probes instead of reusing a false result when an empty cart gets its first product', async () => {
+		mockEceButton.mount.mockImplementationOnce( () => {
+			Promise.resolve().then( () =>
+				eventHandlers.ready( { availablePaymentMethods: undefined } )
+			);
+		} );
+
+		const emptyCartResult = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '0', 'EUR' ),
+			mockApi
+		);
+		const filledCartResult = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '28000', 'EUR' ),
+			mockApi
+		);
+
+		expect( emptyCartResult ).toBe( false );
+		expect( filledCartResult ).toBe( true );
+		expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+		expect( mockStripe.elements ).toHaveBeenLastCalledWith(
+			expect.objectContaining( { amount: 28000, currency: 'eur' } )
+		);
+	} );
+
 	it( 'returns false immediately when currency code is empty', async () => {
 		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
