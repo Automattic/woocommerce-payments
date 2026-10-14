@@ -37,6 +37,21 @@ export const isLinkEnabled = ( paymentMethodsConfig ) => {
 };
 
 /**
+ * Returns the trimmed email when it looks valid enough to pass to Stripe Link.
+ * Passing any default value disables Stripe's own prefill, so an empty or
+ * half-typed email would do more harm than good.
+ *
+ * @param {string} email The email entered at checkout.
+ * @return {string|undefined} The trimmed email, or undefined when it doesn't look valid.
+ */
+export const getLinkEmail = ( email ) => {
+	const trimmedEmail = typeof email === 'string' ? email.trim() : '';
+	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( trimmedEmail )
+		? trimmedEmail
+		: undefined;
+};
+
+/**
  * Get array of payment method types to use with intent.
  *
  * @param {string} paymentMethodType Payment method type Stripe ID.

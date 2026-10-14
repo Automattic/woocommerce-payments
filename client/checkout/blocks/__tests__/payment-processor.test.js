@@ -307,4 +307,83 @@ describe( 'PaymentProcessor', () => {
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 	} );
+
+	describe( 'Link email', () => {
+		const { useCustomerData, getStripeElementOptions } =
+			jest.requireMock( '../utils' );
+
+		const buildProcessor = ( paymentMethodId = 'card' ) => (
+			<PaymentProcessor
+				activePaymentMethod="woocommerce_payments"
+				api={ mockApi }
+				paymentMethodId={ paymentMethodId }
+				emitResponse={ {} }
+				eventRegistration={ { onPaymentSetup: () => undefined } }
+				fingerprint=""
+				shouldSavePayment={ false }
+				upeMethods={ {
+					[ paymentMethodId ]: { gatewayId: 'woocommerce_payments' },
+				} }
+			/>
+		);
+
+		const getLastLinkEmail = () =>
+			getStripeElementOptions.mock.calls.at( -1 )[ 2 ];
+
+		beforeEach( () => {
+			jest.useFakeTimers();
+			getStripeElementOptions.mockClear();
+		} );
+
+		afterEach( () => {
+			jest.useRealTimers();
+			useCustomerData.mockReturnValue( {} );
+		} );
+
+		it( 'should pass the email on the first render', () => {
+			useCustomerData.mockReturnValue( {
+				email: 'shopper@example.com',
+			} );
+
+			render( buildProcessor() );
+
+			expect( getStripeElementOptions ).toHaveBeenCalledWith(
+				false,
+				{},
+				'shopper@example.com'
+			);
+		} );
+
+		it( 'should pass a new email only once the shopper stops typing', () => {
+			useCustomerData.mockReturnValue( {} );
+			const { rerender } = render( buildProcessor() );
+
+			useCustomerData.mockReturnValue( {
+				email: 'shopper@example.com',
+			} );
+			rerender( buildProcessor() );
+
+			expect( getLastLinkEmail() ).toBeUndefined();
+
+			act( () => {
+				jest.advanceTimersByTime( 1000 );
+			} );
+
+			expect( getLastLinkEmail() ).toBe( 'shopper@example.com' );
+		} );
+
+		it( 'should not pass the email for non-card payment methods', () => {
+			useCustomerData.mockReturnValue( {
+				email: 'shopper@example.com',
+			} );
+
+			render( buildProcessor( 'bancontact' ) );
+
+			act( () => {
+				jest.advanceTimersByTime( 1000 );
+			} );
+
+			expect( getLastLinkEmail() ).toBeUndefined();
+		} );
+	} );
 } );
