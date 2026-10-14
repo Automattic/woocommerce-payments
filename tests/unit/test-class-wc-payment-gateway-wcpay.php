@@ -937,10 +937,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		];
 
 		return [
-			'GB, Link charge'        => [ 'GB', $link_charge, 'Onelink' ],
-			'GB, Link card wallet'   => [ 'GB', $link_wallet_charge, 'Onelink' ],
-			'US, Link charge'        => [ 'US', $link_charge, 'Link' ],
-			'US, Link card wallet'   => [ 'US', $link_wallet_charge, 'Link' ],
+			'GB, Link charge'      => [ 'GB', $link_charge, 'Onelink' ],
+			'GB, Link card wallet' => [ 'GB', $link_wallet_charge, 'Onelink' ],
+			'US, Link charge'      => [ 'US', $link_charge, 'Link' ],
+			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Link' ],
 		];
 	}
 
