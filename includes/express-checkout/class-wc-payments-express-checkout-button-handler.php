@@ -285,7 +285,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 */
 	public function scripts() {
 		// Don't load scripts if page is not supported.
-		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
+		if ( ! $this->express_checkout_helper->should_load_express_checkout_scripts() ) {
 			return;
 		}
 
