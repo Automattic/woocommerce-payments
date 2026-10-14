@@ -48,13 +48,21 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	 * @return string
 	 */
 	public function get_display_name( $_unused_deprecated = '' ) {
-		$display = sprintf(
+		$account_country = WC_Payments::get_gateway()->get_account_country();
+
+		if ( \WCPay\Constants\Country_Code::UNITED_KINGDOM === $account_country ) {
+			return sprintf(
+				/* translators: customer email */
+				__( 'Onelink email ending in %s', 'woocommerce-payments' ),
+				$this->get_redacted_email()
+			);
+		}
+
+		return sprintf(
 			/* translators: customer email */
 			__( 'Stripe Link email ending in %s', 'woocommerce-payments' ),
 			$this->get_redacted_email()
 		);
-
-		return $display;
 	}
 
 	/**

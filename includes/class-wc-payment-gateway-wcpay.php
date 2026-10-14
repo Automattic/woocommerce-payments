@@ -1739,10 +1739,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_token = $payment_information->get_payment_token();
 
 				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
+					$link_change_note_template = Country_Code::UNITED_KINGDOM === $this->get_account_country()
+						/* translators: %1$s: redacted email address for Onelink payment method */
+						? __( 'Payment method is changed to: <strong>Onelink ending in %1$s</strong>.', 'woocommerce-payments' )
+						/* translators: %1$s: redacted email address for Link payment method */
+						: __( 'Payment method is changed to: <strong>Link ending in %1$s</strong>.', 'woocommerce-payments' );
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1$s: redacted email address for Link payment method */
-							__( 'Payment method is changed to: <strong>Link ending in %1$s</strong>.', 'woocommerce-payments' ),
+							$link_change_note_template,
 							[
 								'strong' => '<strong>',
 							]

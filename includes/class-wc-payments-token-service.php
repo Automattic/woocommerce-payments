@@ -485,8 +485,11 @@ class WC_Payments_Token_Service {
 	 */
 	public function get_account_saved_payment_methods_list_item_link( $item, $payment_token ) {
 		if ( WC_Payment_Token_WCPay_Link::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$account_country         = WC_Payments::get_gateway()->get_account_country();
 			$item['method']['last4'] = $payment_token->get_redacted_email();
-			$item['method']['brand'] = esc_html__( 'Stripe Link email', 'woocommerce-payments' );
+			$item['method']['brand'] = \WCPay\Constants\Country_Code::UNITED_KINGDOM === $account_country
+				? esc_html__( 'Onelink email', 'woocommerce-payments' )
+				: esc_html__( 'Stripe Link email', 'woocommerce-payments' );
 		}
 		return $item;
 	}
@@ -564,6 +567,10 @@ class WC_Payments_Token_Service {
 	public function normalize_stripe_link_label( $label ) {
 		if ( 'stripe link email' === strtolower( $label ) ) {
 			return 'Stripe Link email';
+		}
+
+		if ( 'onelink email' === strtolower( $label ) ) {
+			return 'Onelink email';
 		}
 
 		return $label;

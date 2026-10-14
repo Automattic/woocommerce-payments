@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
+use WCPay\Constants\Country_Code;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
@@ -69,8 +70,14 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 
 		$note = new Note();
 
+		$is_gb_account = Country_Code::UNITED_KINGDOM === self::$gateway->get_account_country();
+
 		$note->set_title( __( 'Increase conversion at checkout', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details, so they can check out in just six seconds with the Link optimized experience.', 'woocommerce-payments' ) );
+		$note->set_content(
+			$is_gb_account
+				? __( 'Reduce cart abandonment and create a frictionless checkout experience with Onelink. Onelink autofills your customer’s payment and shipping details, so they can check out in just six seconds with the Onelink optimized experience.', 'woocommerce-payments' )
+				: __( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details, so they can check out in just six seconds with the Link optimized experience.', 'woocommerce-payments' )
+		);
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );

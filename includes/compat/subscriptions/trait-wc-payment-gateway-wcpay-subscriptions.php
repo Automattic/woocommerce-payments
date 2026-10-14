@@ -182,9 +182,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$email = $token->get_redacted_email();
 			// Avoid duplication if the title already contains the email.
 			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
-				// Link uses the card gateway, so $default_title is "Card". Use "Stripe Link" instead.
-				// translators: 1: payment method (Stripe Link), 2: redacted customer email.
-				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $email );
+				// Link uses the card gateway, so $default_title is "Card". Use the Link brand name instead,
+				// which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
+				$link_brand = \WCPay\Constants\Country_Code::UNITED_KINGDOM === $this->get_account_country()
+					? __( 'Onelink', 'woocommerce-payments' )
+					: __( 'Stripe Link', 'woocommerce-payments' );
+				// translators: 1: payment method (Stripe Link or Onelink), 2: redacted customer email.
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $link_brand, $email );
 			}
 		}
 
@@ -1086,9 +1090,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['amazon_pay']['email'] );
 				}
 				if ( ! empty( $payment_method['link']['email'] ) ) {
-					// Link uses the card gateway, so $new_payment_method_title is "Card". Use "Stripe Link" instead.
-					// translators: 1: payment method (Stripe Link), 2: customer email.
-					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $payment_method['link']['email'] );
+					// Link uses the card gateway, so $new_payment_method_title is "Card". Use the Link brand name
+					// instead, which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
+					$link_brand = \WCPay\Constants\Country_Code::UNITED_KINGDOM === $this->get_account_country()
+						? __( 'Onelink', 'woocommerce-payments' )
+						: __( 'Stripe Link', 'woocommerce-payments' );
+					// translators: 1: payment method (Stripe Link or Onelink), 2: customer email.
+					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $link_brand, $payment_method['link']['email'] );
 				}
 			} catch ( Exception $e ) {
 				Logger::error( $e );

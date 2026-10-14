@@ -1545,4 +1545,72 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$wp->query_vars['set-default-payment-method'] = '1';
 	}
+
+	public function test_get_account_saved_payment_methods_list_item_link_uses_stripe_link_for_us_account() {
+		$this->set_mock_gateway_account_country( \WCPay\Constants\Country_Code::UNITED_STATES );
+
+		$token = WC_Helper_Token::create_link_token( 'pm_link_1', 1, 'buyer@link.com' );
+
+		$result = $this->token_service->get_account_saved_payment_methods_list_item_link(
+			[
+				'method' => [
+					'last4' => '',
+					'brand' => '',
+				],
+			],
+			$token
+		);
+
+		$this->assertSame( 'Stripe Link email', $result['method']['brand'] );
+		$this->assertSame( '***uyer@link.com', $result['method']['last4'] );
+	}
+
+	public function test_get_account_saved_payment_methods_list_item_link_uses_onelink_for_gb_account() {
+		$this->set_mock_gateway_account_country( \WCPay\Constants\Country_Code::UNITED_KINGDOM );
+
+		$token = WC_Helper_Token::create_link_token( 'pm_link_1', 1, 'buyer@link.com' );
+
+		$result = $this->token_service->get_account_saved_payment_methods_list_item_link(
+			[
+				'method' => [
+					'last4' => '',
+					'brand' => '',
+				],
+			],
+			$token
+		);
+
+		$this->assertSame( 'Onelink email', $result['method']['brand'] );
+	}
+
+	public function test_link_token_display_name_uses_stripe_link_for_us_account() {
+		$this->set_mock_gateway_account_country( \WCPay\Constants\Country_Code::UNITED_STATES );
+
+		$token = WC_Helper_Token::create_link_token( 'pm_link_1', 1, 'buyer@link.com' );
+
+		$this->assertSame( 'Stripe Link email ending in ***uyer@link.com', $token->get_display_name() );
+	}
+
+	public function test_link_token_display_name_uses_onelink_for_gb_account() {
+		$this->set_mock_gateway_account_country( \WCPay\Constants\Country_Code::UNITED_KINGDOM );
+
+		$token = WC_Helper_Token::create_link_token( 'pm_link_1', 1, 'buyer@link.com' );
+
+		$this->assertSame( 'Onelink email ending in ***uyer@link.com', $token->get_display_name() );
+	}
+
+	public function test_normalize_stripe_link_label_handles_onelink() {
+		$this->assertSame( 'Onelink email', $this->token_service->normalize_stripe_link_label( 'onelink email' ) );
+		$this->assertSame( 'Stripe Link email', $this->token_service->normalize_stripe_link_label( 'stripe link email' ) );
+		$this->assertSame( 'anything else', $this->token_service->normalize_stripe_link_label( 'anything else' ) );
+	}
+
+	/**
+	 * Replaces WC_Payments::get_gateway() with a mock that returns the given account country.
+	 */
+	private function set_mock_gateway_account_country( string $country ): void {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_account_country' )->willReturn( $country );
+		WC_Payments::set_gateway( $mock_gateway );
+	}
 }

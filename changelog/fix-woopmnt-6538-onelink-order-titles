@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Show Onelink consistently as the payment method title for Link orders on UK accounts, and drop the "(WooPayments)" suffix from Link order titles.
+Show Onelink consistently as the Link payment method name on UK accounts.

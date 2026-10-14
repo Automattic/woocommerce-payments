@@ -27,9 +27,13 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 				[
 					'get_upe_available_payment_methods',
 					'get_payment_method_ids_enabled_at_checkout_filtered_by_fees',
+					'get_account_country',
 				]
 			)
 			->getMock();
+		$this->mock_wcpay_gateway
+			->method( 'get_account_country' )
+			->willReturn( \WCPay\Constants\Country_Code::UNITED_STATES );
 	}
 
 	public function test_stripelink_setup_get_note() {
@@ -47,6 +51,29 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wc-payments-notes-set-up-stripe-link', $set_up_action->name );
 		$this->assertSame( 'Set up now', $set_up_action->label );
 		$this->assertStringStartsWith( 'https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/', $set_up_action->query );
+	}
+
+	public function test_stripelink_setup_note_uses_onelink_content_for_gb_account() {
+		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
+			->disableOriginalConstructor()
+			->setMethods(
+				[
+					'get_upe_available_payment_methods',
+					'get_payment_method_ids_enabled_at_checkout_filtered_by_fees',
+					'get_account_country',
+				]
+			)
+			->getMock();
+		$this->mock_wcpay_gateway
+			->method( 'get_account_country' )
+			->willReturn( \WCPay\Constants\Country_Code::UNITED_KINGDOM );
+
+		$this->mock_gateway_data( '1', [ 'card', 'link' ], [ 'card' ] );
+
+		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
+
+		$this->assertStringContainsString( 'Onelink', $note->get_content() );
+		$this->assertStringNotContainsString( 'Link by Stripe', $note->get_content() );
 	}
 
 	public function test_stripelink_setup_note_null_when_link_not_available() {
