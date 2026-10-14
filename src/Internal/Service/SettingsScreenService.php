@@ -238,7 +238,7 @@ class SettingsScreenService {
 				'label'    => __( 'Description', 'woocommerce-payments' ),
 				'readOnly' => true,
 			],
-			[ ...array_values( self::CARD_DESCRIPTIONS ), 'payout_bank_account', 'test_account_notice' ]
+			[ ...array_values( self::CARD_DESCRIPTIONS ), 'payout_bank_account', 'test_account_notice', 'fraud_rules_link' ]
 		);
 
 		return array_merge(
@@ -355,10 +355,17 @@ class SettingsScreenService {
 				'labelPosition' => 'none',
 			],
 		];
+		$fraud_rules_link    = [
+			'id'     => 'fraud_rules_link',
+			'layout' => [
+				'type'          => 'regular',
+				'labelPosition' => 'none',
+			],
+		];
 
 		$cards = [
 			'test-mode'               => [ __( 'Test mode', 'woocommerce-payments' ), [ 'is_test_mode_enabled', $test_account_notice ] ],
-			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level' ] ],
+			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level', $fraud_rules_link ] ],
 			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ $payout_schedule, $payout_bank_account ] ],
 			'payment-methods'         => [ __( 'Payment methods', 'woocommerce-payments' ), [ $payment_methods ] ],
 			'transactions'            => [ __( 'Transaction preferences', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled', 'is_multi_currency_enabled', 'is_stripe_billing_enabled' ] ],

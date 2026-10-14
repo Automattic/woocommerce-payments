@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { ExternalLink } from '@wordpress/components';
+import { Button, ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -261,13 +261,20 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 				),
 			},
 		],
-		description: (
-			<a href={ wcpaySettingsScreenConfig.fraudRulesUrl }>
-				{ __( 'Configure advanced rules', 'woocommerce-payments' ) }
-			</a>
-		),
 		isDisabled: ( { item } ) =>
 			item.advanced_fraud_protection_settings === 'error',
+	},
+	fraud_rules_link: {
+		render: () => (
+			<Button
+				variant="secondary"
+				className="wcpay-settings-screen__fraud-rules-link"
+				href={ wcpaySettingsScreenConfig.fraudRulesUrl }
+			>
+				{ __( 'Configure', 'woocommerce-payments' ) }
+			</Button>
+		),
+		isVisible: ( item ) => item.current_protection_level === 'advanced',
 	},
 	enabled_payment_method_ids: {
 		Edit: PaymentMethods,

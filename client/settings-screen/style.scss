@@ -10,6 +10,11 @@
 	color: $gray-700;
 }
 
+// Sits under the Advanced option, in line with its label.
+.components-button.wcpay-settings-screen__fraud-rules-link {
+	margin-inline-start: 24px;
+}
+
 .wcpay-settings-screen__bank-account {
 	margin-block-start: 8px;
 }
