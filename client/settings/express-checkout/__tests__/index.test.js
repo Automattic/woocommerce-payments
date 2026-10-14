@@ -410,4 +410,124 @@ describe( 'ExpressCheckout', () => {
 		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
 		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
 	} );
+
+	describe( 'for UK accounts', () => {
+		const UK_COUNTRY = 'GB';
+		const originalSettings = global.wcpaySettings;
+		const context = { accountStatus: {}, featureFlags: { woopay: true } };
+
+		beforeEach( () => {
+			global.wcpaySettings = {
+				...originalSettings,
+				accountStatus: { country: UK_COUNTRY },
+			};
+			useGetAvailablePaymentMethodIds.mockReturnValue( [
+				'link',
+				'card',
+			] );
+		} );
+
+		afterEach( () => {
+			global.wcpaySettings = originalSettings;
+		} );
+
+		const renderExpressCheckout = () =>
+			render(
+				<WCPaySettingsContext.Provider value={ context }>
+					<ExpressCheckout />
+				</WCPaySettingsContext.Provider>
+			);
+
+		it( 'names Onelink in the terms when Link is not enabled', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			const termsLink = screen.getByRole( 'link', {
+				name: 'Onelink terms',
+			} );
+			expect( termsLink ).toHaveAttribute(
+				'href',
+				'https://link.com/terms'
+			);
+			expect(
+				screen.queryByRole( 'link', { name: 'Link by Stripe terms' } )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink when WooPay blocks enabling it', () => {
+			useWooPayEnabledSettings.mockReturnValue(
+				getMockWooPayEnabledSettings( true, jest.fn() )
+			);
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			expect(
+				screen.getByText(
+					'To enable Onelink, you must first disable WooPay.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					'To enable Link by Stripe, you must first disable WooPay.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink when it blocks enabling WooPay', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			expect(
+				screen.getByText(
+					'To enable WooPay, you must first disable Onelink.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					'To enable WooPay, you must first disable Link by Stripe.',
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink in the conflict notice', () => {
+			useWooPayEnabledSettings.mockReturnValue(
+				getMockWooPayEnabledSettings( true, jest.fn() )
+			);
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+
+			renderExpressCheckout();
+
+			expect(
+				screen.getAllByText(
+					"Onelink and WooPay can't be enabled at the same time. Disable one of them.",
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toHaveLength( 2 );
+			expect(
+				screen.queryByText(
+					"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
+					{ ignore: '.a11y-speak-region' }
+				)
+			).not.toBeInTheDocument();
+		} );
+	} );
 } );

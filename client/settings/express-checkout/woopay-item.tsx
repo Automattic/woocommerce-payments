@@ -24,6 +24,7 @@ import {
 import { WooIcon } from 'wcpay/payment-methods-icons';
 import InlineNotice from 'wcpay/components/inline-notice';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
+import { isOnelinkAccount } from 'wcpay/utils/onelink';
 
 const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -135,10 +136,15 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 			{ isConflicting && <LinkWooPayConflictNotice /> }
 			{ isStripeLinkEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
-					{ __(
-						'To enable WooPay, you must first disable Link by Stripe.',
-						'woocommerce-payments'
-					) }
+					{ isOnelinkAccount()
+						? __(
+								'To enable WooPay, you must first disable Onelink.',
+								'woocommerce-payments'
+							)
+						: __(
+								'To enable WooPay, you must first disable Link by Stripe.',
+								'woocommerce-payments'
+							) }
 				</InlineNotice>
 			) }
 			{ showIncompatibilityNotice && <WooPayIncompatibilityNotice /> }

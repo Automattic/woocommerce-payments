@@ -302,4 +302,58 @@ describe( 'WooPaySettings', () => {
 			container.querySelector( '.wcpay-inline-notice' )
 		).not.toBeInTheDocument();
 	} );
+
+	describe( 'for UK accounts', () => {
+		const UK_COUNTRY = 'GB';
+
+		beforeEach( () => {
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				accountStatus: { country: UK_COUNTRY },
+			};
+		} );
+
+		it( 'names Onelink when it blocks enabling WooPay', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+			useWooPayEnabledSettings.mockReturnValue(
+				getMockWooPayEnabledSettings( false, jest.fn() )
+			);
+
+			render( <WooPaySettings section="enable" /> );
+
+			expect(
+				screen.getAllByText(
+					'To enable WooPay, you must first disable Onelink.'
+				)[ 0 ]
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					'To enable WooPay, you must first disable Link by Stripe.'
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'names Onelink in the conflict notice', () => {
+			useEnabledPaymentMethodIds.mockReturnValue( [
+				[ 'card', 'link' ],
+				jest.fn(),
+			] );
+
+			render( <WooPaySettings section="enable" /> );
+
+			expect(
+				screen.getAllByText(
+					"Onelink and WooPay can't be enabled at the same time. Disable one of them."
+				)[ 0 ]
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them."
+				)
+			).not.toBeInTheDocument();
+		} );
+	} );
 } );

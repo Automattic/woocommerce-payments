@@ -18,6 +18,7 @@ import InlineNotice from 'wcpay/components/inline-notice';
 import { LinkWooPayConflictNotice } from '../settings-warnings/incompatibility-notice';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
+import { isOnelinkAccount } from 'wcpay/utils/onelink';
 
 const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
@@ -75,12 +76,19 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 							/* eslint-disable jsx-a11y/anchor-has-content */
 							! isStripeLinkEnabled &&
 								interpolateComponents( {
-									mixedString: __(
-										'By enabling this feature, you agree to the ' +
-											'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
-											'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-										'woocommerce-payments'
-									),
+									mixedString: isOnelinkAccount()
+										? __(
+												'By enabling this feature, you agree to the ' +
+													'{{stripeLinkTerms}}Onelink terms{{/stripeLinkTerms}}, ' +
+													'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
+												'woocommerce-payments'
+											)
+										: __(
+												'By enabling this feature, you agree to the ' +
+													'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
+													'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
+												'woocommerce-payments'
+											),
 									components: {
 										stripeLinkTerms: (
 											<a
@@ -117,10 +125,15 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 			{ isConflicting && <LinkWooPayConflictNotice /> }
 			{ isWooPayEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
-					{ __(
-						'To enable Link by Stripe, you must first disable WooPay.',
-						'woocommerce-payments'
-					) }
+					{ isOnelinkAccount()
+						? __(
+								'To enable Onelink, you must first disable WooPay.',
+								'woocommerce-payments'
+							)
+						: __(
+								'To enable Link by Stripe, you must first disable WooPay.',
+								'woocommerce-payments'
+							) }
 				</InlineNotice>
 			) }
 		</PaymentMethodItem>

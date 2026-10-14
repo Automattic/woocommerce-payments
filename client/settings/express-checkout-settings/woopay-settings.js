@@ -31,6 +31,7 @@ import {
 	useWooPayGlobalThemeSupportEnabledSettings,
 } from 'wcpay/data/settings';
 import InlineNotice from 'wcpay/components/inline-notice';
+import { isOnelinkAccount } from 'wcpay/utils/onelink';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import {
 	LinkWooPayConflictNotice,
@@ -83,10 +84,15 @@ const WooPaySettings = ( { section } ) => {
 					{ isConflicting && <LinkWooPayConflictNotice /> }
 					{ isStripeLinkEnabled && ! isConflicting && (
 						<InlineNotice status="warning" isDismissible={ false }>
-							{ __(
-								'To enable WooPay, you must first disable Link by Stripe.',
-								'woocommerce-payments'
-							) }
+							{ isOnelinkAccount()
+								? __(
+										'To enable WooPay, you must first disable Onelink.',
+										'woocommerce-payments'
+									)
+								: __(
+										'To enable WooPay, you must first disable Link by Stripe.',
+										'woocommerce-payments'
+									) }
 						</InlineNotice>
 					) }
 					<div className="wcpay-woopay-settings__enable">
