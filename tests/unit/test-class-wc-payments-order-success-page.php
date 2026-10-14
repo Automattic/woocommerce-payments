@@ -226,6 +226,22 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'data-dark-src="/ideal-dark.svg"', $result );
 	}
 
+	public function test_show_lpm_payment_method_name_uses_account_country_for_title() {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_account_country' )->willReturn( 'GB' );
+
+		$payment_method = $this->createMock( UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturnMap( [ [ 'GB', false, 'Onelink' ] ] );
+		$payment_method->method( 'get_id' )->willReturn( 'link' );
+		$payment_method->method( 'get_icon' )->willReturn( 'https://example.com/onelink.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'https://example.com/onelink.svg' );
+
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
+
+		$this->assertStringContainsString( 'alt="Onelink"', $result );
+		$this->assertStringContainsString( 'title="Onelink"', $result );
+	}
+
 	public function test_show_lpm_payment_method_name_icon_not_found() {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
