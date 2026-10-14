@@ -62,7 +62,6 @@ class SettingsScreenService {
 		'transactions'            => 'transactions_description',
 		'account-notifications'   => 'account_notifications_description',
 		'customer-facing-details' => 'customer_facing_details_description',
-		'advanced'                => 'advanced_description',
 	];
 
 	/**
@@ -362,10 +361,9 @@ class SettingsScreenService {
 			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level' ] ],
 			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ $payout_schedule, $payout_bank_account ] ],
 			'payment-methods'         => [ __( 'Payment methods', 'woocommerce-payments' ), [ $payment_methods ] ],
-			'transactions'            => [ __( 'Transaction preferences', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled' ] ],
+			'transactions'            => [ __( 'Transaction preferences', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled', 'is_multi_currency_enabled', 'is_stripe_billing_enabled' ] ],
 			'account-notifications'   => [ __( 'Account notifications', 'woocommerce-payments' ), [ 'account_communications_email' ] ],
 			'customer-facing-details' => [ __( 'Customer-facing details', 'woocommerce-payments' ), [ 'account_statement_descriptor', 'account_statement_descriptor_kanji', 'account_statement_descriptor_kana', 'account_business_support_email', 'account_business_support_phone' ] ],
-			'advanced'                => [ __( 'Advanced settings', 'woocommerce-payments' ), [ 'is_multi_currency_enabled', 'is_stripe_billing_enabled' ] ],
 			'debug'                   => [ __( 'Debug mode', 'woocommerce-payments' ), [ 'is_debug_log_enabled' ] ],
 		];
 

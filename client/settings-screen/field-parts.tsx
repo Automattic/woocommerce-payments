@@ -225,23 +225,6 @@ const getCardDescriptions = (): Record< string, FieldParts > => ( {
 			/>
 		),
 	},
-	advanced_description: {
-		render: () => (
-			<CardDescription
-				text={ __(
-					'More options for specific payment needs.',
-					'woocommerce-payments'
-				) }
-				link={ {
-					href: 'https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings',
-					label: __(
-						'View our documentation',
-						'woocommerce-payments'
-					),
-				} }
-			/>
-		),
-	},
 } );
 
 export const getFieldParts = (): Record< string, FieldParts > => ( {
