@@ -362,10 +362,12 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->add_meta_data( 'last4', '4242' );
 		$order->save();
 
+		$icon_url = 'https://example.com/onelink.svg';
+
 		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
 		$payment_method->method( 'get_title' )->willReturnMap( [ [ 'GB', false, 'Onelink' ] ] );
-		$payment_method->method( 'get_icon' )->willReturnMap( [ [ 'GB', 'onelink.svg' ] ] );
-		$payment_method->method( 'get_dark_icon' )->willReturnMap( [ [ 'GB', 'onelink.svg' ] ] );
+		$payment_method->method( 'get_icon' )->willReturnMap( [ [ 'GB', $icon_url ] ] );
+		$payment_method->method( 'get_dark_icon' )->willReturnMap( [ [ 'GB', $icon_url ] ] );
 
 		$original_map = $this->get_payment_method_map();
 		$this->set_payment_method_map( array_merge( $original_map, [ 'link' => $payment_method ] ) );
@@ -374,7 +376,7 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 
 		$this->set_payment_method_map( $original_map );
 
-		$this->assertStringContainsString( 'img alt="Onelink" src="onelink.svg"', $result );
+		$this->assertStringContainsString( 'img alt="Onelink" src="' . $icon_url . '"', $result );
 	}
 
 	public function test_show_card_payment_method_name_without_card_brand_uses_account_country() {
