@@ -2744,7 +2744,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// above is still stored, as the order-received page uses it to render the logo. WOOPMNT-6538.
 		if ( $express_checkout_type && Payment_Method::LINK !== $express_checkout_type ) {
 			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
-			$title          = $express_method ? $express_method->get_title( $this->get_account_country() ) : 'Payment Request';
+			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
 			/**
 			 * Filters the suffix appended to the express checkout payment method title.
 			 *
