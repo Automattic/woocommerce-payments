@@ -609,6 +609,7 @@ class WC_Payments {
 		self::$customer_service->init_hooks();
 		self::$token_service->init_hooks();
 		self::$fee_remediation->init();
+		wcpay_get_container()->get( \WCPay\Internal\Service\SettingsScreenService::class )->init_hooks();
 
 		$payment_methods = [];
 

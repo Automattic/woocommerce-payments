@@ -18,6 +18,7 @@ module.exports = {
 		{
 			index: './client/index.js',
 			settings: './client/settings/index.js',
+			'settings-screen': './client/settings-screen/index.tsx',
 			'blocks-checkout': './client/checkout/blocks/index.js',
 			woopay: './client/checkout/woopay/index.js',
 			'woopay-express-button':

@@ -193,6 +193,8 @@ export const getPaymentMethodSettingsUrl = ( method ) => {
 		tab: 'checkout',
 		section: 'woocommerce_payments',
 		method,
+		// On the new settings screen, the customisation pages stay on the classic settings page.
+		...( window.wcpaySettingsScreen && { wc_classic_settings: '1' } ),
 	} );
 };
 
