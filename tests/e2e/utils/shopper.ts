@@ -238,6 +238,11 @@ export const placeOrderWCB = async (
 
 	await placeOrderButton.focus();
 	await expect( placeOrderButton ).toBeEnabled();
+	// Payment methods without fields (e.g. Alipay) give the test nothing to
+	// wait on, so it can click before Stripe's Payment Element is ready.
+	await expect(
+		page.locator( '.wcpay-payment-element-skeleton:not(.is-hidden)' )
+	).toHaveCount( 0 );
 
 	await placeOrderButton.click();
 
