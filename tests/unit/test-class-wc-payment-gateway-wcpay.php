@@ -6111,6 +6111,69 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
 	}
 
+	public function test_update_order_status_does_not_brand_title_or_card_meta_when_charge_is_declined() {
+		// After 3DS passes, the issuer can still decline: the intent goes back to requires_payment_method
+		// but keeps the failed charge, and the browser still calls update_order_status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method_title( 'Card' );
+		$order->save();
+
+		$intent_id = 'pi_mock_3ds_declined';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'false',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'metadata' => [ 'order_id' => $order->get_id() ],
+						'status'   => Intent_Status::REQUIRES_PAYMENT_METHOD,
+						'charge'   => [
+							'status'                 => 'failed',
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'brand'   => 'visa',
+									'last4'   => '0002',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( 'Card', $saved->get_payment_method_title() );
+		$this->assertEmpty( $saved->get_meta( 'last4' ) );
+		$this->assertEmpty( $saved->get_meta( '_card_brand' ) );
+	}
+
 	/**
 	 * @dataProvider provider_link_charge_payment_method_details
 	 */

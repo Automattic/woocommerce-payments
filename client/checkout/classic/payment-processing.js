@@ -283,8 +283,9 @@ async function createStripePaymentElement(
 	const stripe = await api.getStripeForUPE( paymentMethodType );
 
 	const elements = stripe.elements( options );
+	const upeSettings = getUpeSettings( paymentMethodType );
 	const createdStripePaymentElement = elements.create( 'payment', {
-		...getUpeSettings( paymentMethodType ),
+		...upeSettings,
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
@@ -299,6 +300,8 @@ async function createStripePaymentElement(
 	gatewayUPEComponents[ paymentMethodType ].elements = elements;
 	gatewayUPEComponents[ paymentMethodType ].upeElement =
 		createdStripePaymentElement;
+	gatewayUPEComponents[ paymentMethodType ].linkEmail =
+		upeSettings.defaultValues?.billingDetails?.email;
 	return createdStripePaymentElement;
 }
 

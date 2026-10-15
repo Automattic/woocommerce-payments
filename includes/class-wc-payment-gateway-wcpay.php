@@ -4390,15 +4390,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Set the branded payment method title + card meta from the charge details BEFORE the status
 			// update. update_order_status_from_intent() -> payment_complete() fires the customer order/renewal
 			// email synchronously, and that email renders get_payment_method_title(); the title must already
-			// reflect the real card or the email falls back to a generic "Card". $token is non-null only when
-			// the intent is authorized and the payment method was saved (see the token-attach guard above).
-			// See WOOPMNT-2882.
-			if ( ! empty( $token ) ) {
-				$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
-				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
-			} elseif ( $payment_method_details ) {
-				$payment_method_type = $this->get_payment_method_type_from_payment_details( $payment_method_details );
+			// reflect the real card or the email falls back to a generic "Card". Unauthorized intents are
+			// skipped: after a decline, the charge details belong to the card that failed. See WOOPMNT-2882.
+			if ( $intent->is_authorized() && ( ! empty( $token ) || $payment_method_details ) ) {
+				$payment_method_type = ! empty( $token )
+					? $this->get_payment_method_type_for_setup_intent( $intent, $token )
+					: $this->get_payment_method_type_from_payment_details( $payment_method_details );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 			}

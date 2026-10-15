@@ -30,7 +30,10 @@ import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 jest.mock( '../../upe-styles' );
 jest.mock( 'wcpay/utils/appearance-cache' );
 
-jest.mock( '../upe-utils' );
+jest.mock( '../upe-utils', () => ( {
+	...jest.createMockFromModule( '../upe-utils' ),
+	getUpeSettings: jest.fn( () => ( {} ) ),
+} ) );
 
 jest.mock( 'wcpay/checkout/utils/upe' );
 
@@ -359,7 +362,7 @@ describe( 'Stripe Payment Element mounting', () => {
 		afterEach( () => {
 			isLinkEnabled.mockReset();
 			getLinkEmail.mockReset();
-			getUpeSettings.mockReset();
+			getUpeSettings.mockImplementation( () => ( {} ) );
 			document.getElementById( 'billing_email' )?.remove();
 		} );
 
@@ -390,6 +393,21 @@ describe( 'Stripe Payment Element mounting', () => {
 			await updateLinkEmail( setCheckoutEmail( 'second@example.com' ) );
 
 			expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'does not update the element for the email it was created with', async () => {
+			__resetGatewayUPEComponentsElement( 'card' );
+			setCheckoutEmail( 'prefilled@example.com' );
+			await mountStripePaymentElement(
+				apiMock,
+				mockDomElement,
+				'shortcode_checkout'
+			);
+			mockUpdateFunction.mockClear();
+
+			await updateLinkEmail( 'prefilled@example.com' );
+
+			expect( mockUpdateFunction ).not.toHaveBeenCalled();
 		} );
 
 		test( 'does not update the element when Link is disabled', async () => {
