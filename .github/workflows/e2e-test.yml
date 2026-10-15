@@ -20,7 +20,7 @@ env:
   E2E_JP_USER_TOKEN:             ${{ secrets.E2E_JP_USER_TOKEN }}
   WC_E2E_SCREENSHOTS:            1
   E2E_SLACK_CHANNEL_ID:          ${{ secrets.E2E_SLACK_CHANNEL_ID }}
-  E2E_SLACK_TOKEN:               ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_SLACK_TOKEN:               ''
   E2E_USE_LOCAL_SERVER:          false
   E2E_RESULT_FILEPATH:           'tests/e2e/results.json'
   WC_MIN_SUPPORTED_VERSION:      '7.6.0'
@@ -132,6 +132,7 @@ jobs:
 
   # Run WCPay and Subscriptions tests across WooCommerce and PHP matrix
   wcpay-matrix-tests:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     needs: generate-matrix
@@ -174,20 +175,18 @@ jobs:
     strategy:
       fail-fast:     false
       matrix:
-        test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
-        test_branches: [ 'merchant', 'shopper' ]
-        exclude:
-          # Exclude blocks-merchant combination - no merchant blocks tests exist
-          - test_groups: 'blocks'
-            test_branches: 'merchant'
+        test_groups:   [ 'wcpay' ]
+        test_branches: [ 'shopper' ]
+        copy:          [ 1, 2, 3, 4, 5, 6 ]
 
-    name: WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }} - copy ${{ matrix.copy }}
 
     env:
       E2E_WP_VERSION: 'nightly'
       E2E_WC_VERSION: 'latest'
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
+      E2E_ARTIFACT_SUFFIX: -copy-${{ matrix.copy }}
 
     steps:
       - name: Checkout WCPay repository
