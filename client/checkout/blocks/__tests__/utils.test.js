@@ -202,5 +202,49 @@ describe( 'Blocks checkout utils', () => {
 				},
 			} );
 		} );
+
+		describe( 'Link email', () => {
+			beforeEach( () => {
+				getUPEConfig.mockReturnValue( false );
+			} );
+
+			it( 'should pass the email as default value when Link is enabled', () => {
+				const options = getStripeElementOptions(
+					false,
+					{ card: { isReusable: true }, link: { isReusable: false } },
+					'shopper@example.com'
+				);
+
+				expect( options.defaultValues ).toEqual( {
+					billingDetails: { email: 'shopper@example.com' },
+				} );
+			} );
+
+			it( 'should not pass the email when Link is disabled', () => {
+				const options = getStripeElementOptions(
+					false,
+					{ card: { isReusable: true } },
+					'shopper@example.com'
+				);
+
+				expect( options.defaultValues ).toBeUndefined();
+			} );
+
+			it.each( [ undefined, '', 'shopper@' ] )(
+				'should not pass an invalid email (%s)',
+				( email ) => {
+					const options = getStripeElementOptions(
+						false,
+						{
+							card: { isReusable: true },
+							link: { isReusable: false },
+						},
+						email
+					);
+
+					expect( options.defaultValues ).toBeUndefined();
+				}
+			);
+		} );
 	} );
 } );
