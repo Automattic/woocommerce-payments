@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Retry subscription renewals that carry a deleted Stripe customer with the shopper's current customer, instead of creating an empty one.

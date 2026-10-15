@@ -316,6 +316,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
 
+		// Some tests stand in for a request WooPay signed.
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
 		// Restore the gateway in the main class.
 		WC_Payments::set_gateway( $this->_gateway );
 
@@ -2577,6 +2580,19 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					]
 				),
 			],
+			'Failed charge, intent out of sync'   => [
+				WC_Helper_Intention::create_intention(
+					[
+						'id'     => uniqid( 'pi_' ),
+						'status' => Intent_Status::REQUIRES_CAPTURE,
+						'charge' => [
+							'status'   => 'failed',
+							'id'       => uniqid( 'ch_' ),
+							'captured' => false,
+						],
+					]
+				),
+			],
 		];
 	}
 
@@ -4119,7 +4135,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' );
 
 		if ( $expected_exception ) {
-			$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0, null, null, null, null, true );
+			$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0 );
 			$this->expectException( $expected_exception );
 		} else {
 			$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
@@ -4745,6 +4761,54 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway->process_payment( $order->get_id() );
 
 		unset( $_SERVER[ WooPay_Session::VOUCH_HEADER ], $_SERVER['HTTP_CART_TOKEN'] );
+	}
+
+	public function test_process_payment_continues_if_missing_fraud_prevention_token_but_request_is_signed_on_the_signed_path() {
+		$order = WC_Helper_Order::create_order();
+
+		// A store the platform keeps on the signed path, where WooPay signs the checkout
+		// instead of sending a vouch envelope.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => true ] );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_still_checks_fraud_for_a_signature_off_the_signed_path() {
+		$order = WC_Helper_Order::create_order();
+
+		// A store the platform moved off the signed path refuses a signature however well
+		// formed, so it is no reason to skip card-testing protection there.
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_woopay_force_signed_requests' => false ] );
+		add_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->card_gateway->process_payment( $order->get_id() );
 	}
 
 	/**
@@ -5743,6 +5807,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'             => $intent_id,
+						'metadata'       => [ 'order_id' => $order->get_id() ],
 						'status'         => Intent_Status::SUCCEEDED,
 						'payment_method' => 'pm_mock',
 					]
@@ -5807,6 +5872,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						// Declare the charge explicitly so the asserted title is traceable to its inputs
@@ -5869,6 +5935,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						'charge'                 => [
@@ -5934,6 +6001,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						'charge'                 => [
@@ -6011,6 +6079,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_intention(
 					[
 						'id'                     => $intent_id,
+						'metadata'               => [ 'order_id' => $order->get_id() ],
 						'status'                 => Intent_Status::SUCCEEDED,
 						'payment_method_options' => [ 'card' => [] ],
 						'charge'                 => [
@@ -6099,6 +6168,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'                => $intent_id,
+						'metadata'          => [ 'order_id' => $order->get_id() ],
 						'status'            => Intent_Status::SUCCEEDED,
 						'payment_method_id' => 'pm_mock',
 					]
@@ -6175,6 +6245,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				WC_Helper_Intention::create_setup_intention(
 					[
 						'id'                => $intent_id,
+						'metadata'          => [ 'order_id' => $order->get_id() ],
 						'status'            => Intent_Status::SUCCEEDED,
 						'payment_method_id' => 'pm_mock',
 					]
@@ -6301,6 +6372,148 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$found,
 			'A nonce bound to the same order must still allow the intent-mismatch diagnostic note.'
 		);
+	}
+
+	/**
+	 * @dataProvider provider_intent_metadata_not_matching_order
+	 *
+	 * @param callable $build_metadata Builds the intent metadata for the order being paid.
+	 */
+	public function test_update_order_status_does_not_complete_order_with_intent_created_for_another_order( callable $build_metadata ) {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'pi_paid_for_another_order';
+		$order->update_status( Order_Status::FAILED );
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => $build_metadata( $order ),
+					]
+				)
+			);
+
+		$this->call_update_order_status( $order, $intent_id );
+
+		$order = wc_get_order( $order->get_id() );
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertSame( 'failed', $order->get_status() );
+		$this->assertFalse( $order->is_paid() );
+		$this->assertNotEmpty(
+			preg_grep( '/pi_paid_for_another_order.*does not match any payments for this order/', $notes )
+		);
+	}
+
+	public function provider_intent_metadata_not_matching_order(): array {
+		return [
+			'intent for another order'         => [
+				function ( WC_Order $order ) {
+					return [ 'order_id' => $order->get_id() + 1 ];
+				},
+			],
+			'intent without an order'          => [
+				function () {
+					return [];
+				},
+			],
+			'order number without WooPay flag' => [
+				function ( WC_Order $order ) {
+					return [ 'order_number' => $order->get_id() ];
+				},
+			],
+		];
+	}
+
+	public function test_update_order_status_does_not_complete_zero_amount_order_with_setup_intent_for_another_order() {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'seti_for_another_order';
+		$order->set_total( 0 );
+		$order->save();
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'       => $intent_id,
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => [ 'order_id' => $order->get_id() + 1 ],
+					]
+				)
+			);
+
+		$this->call_update_order_status( $order, $intent_id );
+
+		$order = wc_get_order( $order->get_id() );
+		$notes = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertFalse( $order->is_paid() );
+		$this->assertNotEmpty(
+			preg_grep( '/seti_for_another_order.*does not match any payments for this order/', $notes )
+		);
+	}
+
+	public function test_update_order_status_completes_order_with_woopay_intent_for_its_order_number() {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'pi_paid_on_woopay';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'status'   => Intent_Status::SUCCEEDED,
+						'metadata' => [
+							'paid_on_woopay' => 'true',
+							'order_number'   => $order->get_id(),
+						],
+					]
+				)
+			);
+
+		$this->call_update_order_status( $order, $intent_id );
+
+		$this->assertTrue( wc_get_order( $order->get_id() )->is_paid() );
+	}
+
+	/**
+	 * Calls update_order_status() as the checkout does after authentication.
+	 *
+	 * @param WC_Order $order     The order to update.
+	 * @param string   $intent_id The intent ID the shopper authenticated.
+	 */
+	private function call_update_order_status( WC_Order $order, string $intent_id ) {
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'    => 'update_order_status',
+			'order_id'  => $order->get_id(),
+			'intent_id' => $intent_id,
+			'_wpnonce'  => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+		} finally {
+			ob_end_clean();
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
 	}
 
 	public function return_ajax_wp_die_handler() {

@@ -354,7 +354,7 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case Refund_Status::SUCCEEDED:
 				if ( $matched_wc_refund ) {
-					$this->order_service->add_note_and_metadata_for_created_refund( $order, $matched_wc_refund, $refund_id, $balance_transaction ?? null );
+					$this->order_service->add_note_and_metadata_for_created_refund( $order, $matched_wc_refund, $refund_id, $balance_transaction );
 				}
 				break;
 			default:
@@ -403,8 +403,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
 
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -416,8 +416,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function process_webhook_payment_intent_canceled( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -429,8 +429,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function process_webhook_payment_intent_amount_capturable_updated( $_unused_event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -596,8 +596,8 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// Clear the authorization summary cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( Database_Cache::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**

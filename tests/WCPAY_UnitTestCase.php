@@ -218,26 +218,27 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * If the given request class does not have a specific `format_response` method, you can provide
 	 * the expexted response here. If there is a `format_response` method, mock it manually.
 	 *
+	 * With `$total_api_calls = 0`, the test fails if that request is sent. This is a mock expectation,
+	 * so it still fails when production code catches the exception.
+	 *
 	 * @param  string                 $request_class                The class of the mocked request.
 	 * @param  int                    $total_api_calls              Number of same api calls that will be executed. Used when you want to send multiple request, using the same instance of class, i.e. retry mechanism.
 	 * @param  string|null            $request_class_constructor_id Used when constructor class gets ID (like intent id or charge id) and passes it as a constructor dependency in mocked request class.
 	 * @param  mixed                  $response                     The expected response.
 	 * @param  WC_Payments_API_Client $api_client_mock              Specific API client mock if necessary.
 	 * @param  WC_Payments_Http       $http_mock                    Specific HTTP mock if necessary.
-	 * @param  bool                   $force_request_mock           When true, a request will be mocked even if $total_api_calls is 0.
 	 *
-	 * @return Request|MockObject                                   The mocked request.
+	 * @return Request|MockObject|null                              The mocked request, or null when no calls are expected.
 	 */
-	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null, $force_request_mock = false ) {
+	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null ) {
+		if ( 1 > $total_api_calls ) {
+			$this->expect_no_wcpay_request( $request_class, $api_client_mock, $http_mock );
+			return null;
+		}
+
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
 		$api_client_mock = $api_client_mock ? $api_client_mock : $this->createMock( WC_Payments_API_Client::class );
 
-		if ( 1 > $total_api_calls && ! $force_request_mock ) {
-			$api_client_mock->expects( $this->never() )->method( 'send_request' );
-
-			// No expectation for calls, return here.
-			return;
-		}
 		// Since setMethodsExcept is deprecated, this is the only alternative I came upon.
 		$methods_to_mock = array_diff( get_class_methods( $request_class ), [ 'set_hook_args', 'assign_hook', 'get_hook' ] );
 
@@ -282,6 +283,36 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		add_filter( 'wcpay_create_request', $fn, 10, 2 );
 
 		return $request;
+	}
+
+	/**
+	 * Plugs in a request mock whose API client fails the test if the request is sent.
+	 *
+	 * The mock is built when production creates the request, so it gets the real ID.
+	 *
+	 * @param string                 $request_class   The request class that must not be sent.
+	 * @param WC_Payments_API_Client $api_client_mock Specific API client mock if necessary.
+	 * @param WC_Payments_Http       $http_mock       Specific HTTP mock if necessary.
+	 */
+	private function expect_no_wcpay_request( string $request_class, $api_client_mock = null, $http_mock = null ) {
+		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
+		$api_client_mock = $api_client_mock ? $api_client_mock : $this->createMock( WC_Payments_API_Client::class );
+		$api_client_mock->expects( $this->never() )->method( 'send_request' );
+
+		add_filter(
+			'wcpay_create_request',
+			function ( $existing_request, $class_name, $id ) use ( $request_class, $api_client_mock, $http_mock ) {
+				if ( null !== $existing_request || ! is_a( $class_name, $request_class, true ) ) {
+					return $existing_request;
+				}
+				return $this->getMockBuilder( $request_class )
+					->setConstructorArgs( [ $api_client_mock, $http_mock, $id ] )
+					->onlyMethods( array_diff( get_class_methods( $request_class ), [ 'set_hook_args', 'assign_hook', 'get_hook' ] ) )
+					->getMock();
+			},
+			10,
+			3
+		);
 	}
 
 	/**

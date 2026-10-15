@@ -42,3 +42,9 @@ overrides:
   'd3-interpolate': '^3.0.1'
   'd3-scale': '^4.0.2'
   'd3-scale-chromatic': '^3.1.0'
+
+packageExtensions:
+  # dataviews' `wp` build bundles @wordpress/components' date pickers, which import react-day-picker, but dataviews doesn't declare it.
+  '@wordpress/dataviews@14':
+    dependencies:
+      react-day-picker: '^9.7.0'

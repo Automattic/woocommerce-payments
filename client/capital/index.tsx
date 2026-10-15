@@ -82,7 +82,7 @@ const getLoanStatusText = ( loan: CapitalLoan ) => {
 				/* translators: %s: date when the loan was paid off */
 				__( 'Paid off: %s', 'woocommerce-payments' ),
 				formatDateTimeFromString( loan.fully_paid_at )
-		  )
+			)
 		: __( 'Active', 'woocommerce-payments' );
 };
 

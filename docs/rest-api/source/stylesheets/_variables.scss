@@ -66,9 +66,9 @@ $phone-width: $tablet-width - $nav-width !default; // min width before reverting
 // FONTS
 ////////////////////
 %default-font {
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-		Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-		'Segoe UI Symbol';
+	font-family:
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+		sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 	font-size: 14px;
 }
 
@@ -78,9 +78,10 @@ $phone-width: $tablet-width - $nav-width !default; // min width before reverting
 }
 
 %code-font {
-	font-family: Consolas, Menlo, Monaco, 'Lucida Console', 'Liberation Mono',
-		'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace,
-		serif;
+	font-family:
+		Consolas, Menlo, Monaco, 'Lucida Console', 'Liberation Mono',
+		'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New',
+		monospace, serif;
 	font-size: 12px;
 	line-height: 1.5;
 }

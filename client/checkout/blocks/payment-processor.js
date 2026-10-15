@@ -46,6 +46,14 @@ const getFraudPreventionToken = () => {
 
 const noop = () => null;
 
+const STRIPE_READY_TIMEOUT_MS = 10000;
+
+const createDeferred = () => {
+	let resolve;
+	const promise = new Promise( ( r ) => ( resolve = r ) );
+	return { promise, resolve };
+};
+
 const PaymentProcessor = ( {
 	api,
 	activePaymentMethod,
@@ -63,6 +71,14 @@ const PaymentProcessor = ( {
 } ) => {
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
+	// Settles once the Payment Element is ready or has failed to load.
+	// `elements.submit()` never settles if it's called before that, which
+	// leaves the checkout spinning forever when a shopper clicks
+	// "Place Order" while a payment method without fields is still loading.
+	const elementSettledRef = useRef( null );
+	if ( elementSettledRef.current == null ) {
+		elementSettledRef.current = createDeferred();
+	}
 
 	const [ isStripeReady, setIsStripeReady ] = useState( false );
 	const [ showSkeleton, setShowSkeleton ] = useState( true );
@@ -114,6 +130,7 @@ const PaymentProcessor = ( {
 
 	const handleStripeReady = useCallback( () => {
 		setIsStripeReady( true );
+		elementSettledRef.current.resolve();
 	}, [] );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
@@ -128,6 +145,28 @@ const PaymentProcessor = ( {
 				async function handlePaymentProcessing() {
 					if ( gatewayId !== activePaymentMethod ) {
 						return;
+					}
+
+					let timeoutId;
+					const isElementSettled = await Promise.race( [
+						elementSettledRef.current.promise.then( () => true ),
+						new Promise( ( resolve ) => {
+							timeoutId = setTimeout(
+								() => resolve( false ),
+								STRIPE_READY_TIMEOUT_MS
+							);
+						} ),
+					] );
+					clearTimeout( timeoutId );
+
+					if ( ! isElementSettled ) {
+						return {
+							type: 'error',
+							message: __(
+								'The payment details are still loading. Please try again in a moment.',
+								'woocommerce-payments'
+							),
+						};
 					}
 
 					if ( hasLoadErrorRef.current ) {
@@ -170,9 +209,8 @@ const PaymentProcessor = ( {
 						};
 					}
 
-					const stripeForUPE = await api.getStripeForUPE(
-						paymentMethodId
-					);
+					const stripeForUPE =
+						await api.getStripeForUPE( paymentMethodId );
 
 					const result = await stripeForUPE.createPaymentMethod( {
 						elements,
@@ -249,6 +287,7 @@ const PaymentProcessor = ( {
 
 	const setHasLoadError = ( event ) => {
 		hasLoadErrorRef.current = true;
+		elementSettledRef.current.resolve();
 		onLoadError( event );
 	};
 

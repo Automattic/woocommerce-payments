@@ -666,7 +666,7 @@ export const getAppearance = (
 	scope = document
 ) => {
 	const selectorLocation = forWooPay
-		? woopayLocationMap[ elementsLocation ] ?? elementsLocation
+		? ( woopayLocationMap[ elementsLocation ] ?? elementsLocation )
 		: elementsLocation;
 	const selectors = appearanceSelectors.getSelectors(
 		selectorLocation,

@@ -354,7 +354,7 @@ export const isBillingInformationMissing = () => {
 	)
 		? document.querySelector(
 				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }`
-		  )?.value
+			)?.value
 		: null;
 
 	// We need to just find one field with missing information. If even only one is missing, just return early.

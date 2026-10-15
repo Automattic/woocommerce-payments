@@ -559,11 +559,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
-			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
+			add_filter( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 			add_action( 'woocommerce_order_status_cancelled', [ $this->order_service, 'cancel_authorizations_on_order_status_change' ] );
-			add_action( 'woocommerce_order_status_completed', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 3 );
+			add_action( 'woocommerce_order_status_completed', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 1 );
 
 			add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
@@ -1215,8 +1215,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// This asks for proof that WooPay composed the request. A Cart-Token or the
 			// User-Agent is not that: any visitor can send both for their own cart, and turning
 			// card-testing protection off is not something a shopper should be able to ask for
-			// by sending a header.
-			if ( WC()->session && ! WooPay_Session::is_request_vouched_by_woopay() ) {
+			// by sending a header. WooPay seals that proof in the vouch envelope or, for a store
+			// the platform keeps on the signed path, signs the request instead of sending one.
+			if (
+				WC()->session &&
+				! WooPay_Session::is_request_vouched_by_woopay() &&
+				! WooPay_Session::is_authenticated_by_blog_token_signature()
+			) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				$fraud_token              = isset( $_POST['wcpay-fraud-prevention-token'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fraud-prevention-token'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $fraud_token ) ) {
@@ -3752,7 +3757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$error_code = $e->get_error_code() ?? null;
-		$error_type = $e->get_error_type() ?? null;
+		$error_type = $e->get_error_type();
 
 		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
 
@@ -4171,6 +4176,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Rejects an intent created for a different order.
+	 *
+	 * An order can end up storing another order's intent (e.g. copied by Subscriptions),
+	 * so the intent's own metadata decides which order it pays. See WOOPMNT-5356.
+	 *
+	 * @param WC_Payments_API_Abstract_Intention $intent The intent fetched for the order.
+	 * @param WC_Order                           $order  The order being updated.
+	 *
+	 * @throws Intent_Authentication_Exception When the intent was created for another order.
+	 */
+	private function ensure_intent_belongs_to_order( $intent, WC_Order $order ): void {
+		$metadata = $intent->get_metadata();
+
+		$intent_order_id = is_numeric( $metadata['order_id'] ?? '' ) ? (int) $metadata['order_id'] : 0;
+		if ( $order->get_id() === $intent_order_id ) {
+			return;
+		}
+
+		// WooPay intents identify the store order by its number.
+		$paid_on_woopay      = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$intent_order_number = is_numeric( $metadata['order_number'] ?? '' ) ? (int) $metadata['order_number'] : 0;
+		if ( $paid_on_woopay && $order->get_id() === $intent_order_number ) {
+			return;
+		}
+
+		throw new Intent_Authentication_Exception(
+			__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+			'intent_id_mismatch'
+		);
+	}
+
+	/**
 	 * Handle AJAX request after authenticating payment at checkout.
 	 *
 	 * This function is used to update the order status after the user has
@@ -4245,6 +4282,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
 				$intent = $request->send();
+				$this->ensure_intent_belongs_to_order( $intent, $order );
 
 				$status    = $intent->get_status();
 				$charge    = $intent->get_charge();
@@ -4266,6 +4304,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
 				$intent = $setup_intent_request->send();
+				$this->ensure_intent_belongs_to_order( $intent, $order );
 				$status = $intent->get_status();
 
 				// For $0 orders (free trials), directly complete the order when SetupIntent succeeds.
@@ -4362,7 +4401,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// A card change only saves the card: completing the subscription would pay its last unpaid renewal.
 			if ( $is_subscription_payment_method_change ) {
-				// Renewals copy this status, and the cancel/capture handlers read a non-terminal one as an open authorization.
+				// The cancel/capture handlers read a non-terminal status as an open authorization.
 				$this->order_service->set_intention_status_for_order( $order, $status );
 			} else {
 				$this->order_service->update_order_status_from_intent( $order, $intent );

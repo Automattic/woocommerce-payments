@@ -551,7 +551,7 @@ class MultiCurrency {
 		// return any data we have cached (expired or not) or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
-			return $cached_data ?? null;
+			return $cached_data;
 		}
 
 		return $this->cache->get_or_add(
@@ -1136,7 +1136,15 @@ class MultiCurrency {
 			return;
 		}
 
-		$order_exchange_rate    = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+		$order_exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
+
+		// Without the order rate, Multi-Currency did not convert the order, so neither the order nor the
+		// refund is a Multi-Currency order. Copying empty values would still make Analytics treat the
+		// refund as one and convert it with the Stripe rate, while the order stays unconverted.
+		if ( ! $order_exchange_rate ) {
+			return;
+		}
+
 		$stripe_exchange_rate   = $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate', true );
 		$order_default_currency = $order->get_meta( '_wcpay_multi_currency_order_default_currency', true );
 
@@ -2157,7 +2165,7 @@ class MultiCurrency {
 	 */
 	private function add_simulation_params_to_preview_urls() {
 		$params = $this->simulation_params;
-		add_filter(
+		add_action(
 			'wp_footer',
 			function () use ( $params ) {
 				?>

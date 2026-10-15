@@ -86,10 +86,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
-		add_action( 'wcpay_payment_fields_js_config', [ $this, 'payment_fields_js_config' ] );
+		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'payment_fields_js_config' ] );
 		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
-		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
-		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 1 );
+		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 1 );
 		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
@@ -208,13 +208,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
 		}
 
-		// If automatically generate username/password are disabled, the Express Checkout API
-		// can't include any of those fields, so account creation is not possible.
-		return (
-			$is_signup_from_checkout_allowed &&
-			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
-			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
-		);
+		// The username/password generation settings don't matter here: the Store API
+		// generates both when it creates the account, and wallets never send them.
+		return $is_signup_from_checkout_allowed;
 	}
 
 	/**
@@ -242,7 +238,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
 						// needed to communicate via the Store API.
 						'tokenized_cart_nonce'         => wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ),
-						'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+						'tokenized_cart_session_nonce' => wp_create_nonce( WC_Payments_Payment_Request_Session::TOKENIZED_CART_SESSION_NONCE_ACTION ),
 						'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
 					],
 					'checkout'                    => [
@@ -289,7 +285,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 */
 	public function scripts() {
 		// Don't load scripts if page is not supported.
-		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
+		if ( ! $this->express_checkout_helper->should_load_express_checkout_scripts() ) {
 			return;
 		}
 

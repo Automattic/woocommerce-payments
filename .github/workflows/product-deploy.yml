@@ -39,12 +39,36 @@ jobs:
             exit 1
           fi
 
+      # Build here and hand the zip to the action, so QIT tests the file that ships.
+      # Left to itself, the action builds twice in a target-repo folder, which also
+      # ends up as the plugin slug in the POT header.
+      - name: Checkout branch to deploy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.branch }}
+          persist-credentials: false
+
+      - name: Set up repository
+        uses: ./.github/actions/setup-repo
+
+      - name: Build the plugin
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: Upload the zip file as an artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          path: ${{ steps.build_plugin.outputs.release-filename }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
+
       # woo-product-deploy is a private repo, so it needs a token to check out
       - name: Checkout woo-product-deploy action
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: woocommerce/woo-product-deploy
-          ref: c36d132b80747d6a96569712d69937177d7a0274 # reuse tested checkout and pin nested actions
+          ref: 0ef871021cdf6c4183a6b0470ee6a7be844d748a # reuse tested checkout and pin nested actions
           path: ./.github/actions/woo-product-deploy
           token: ${{ secrets.WOO_DEPLOY_SECRET }}
           persist-credentials: false
@@ -55,6 +79,7 @@ jobs:
           repo_url: ${{ github.server_url }}/${{ github.repository }}
           branch: ${{ inputs.branch }}
           version: ${{ inputs.version }}
+          zip: ${{ steps.build_plugin.outputs.release-filename }}
           node_version: '24'
           npm_version: '11'
           simulate: ${{ inputs.simulate }}

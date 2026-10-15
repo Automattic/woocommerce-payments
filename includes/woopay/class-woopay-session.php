@@ -706,13 +706,15 @@ class WooPay_Session {
 			 * owns the address, and the REST route hands its array straight back to the
 			 * caller. So on that route the address selecting it has to be one WooPay named,
 			 * not one the caller did — otherwise naming someone's address is enough to read
-			 * their balance. The other two callers encrypt the payload or POST it to WooPay
+			 * their balance. WooPay names it in the attestation envelope or, for a store the
+			 * platform keeps on the signed path, in a request it signed, which carries no
+			 * envelope. The other two callers encrypt the payload or POST it to WooPay
 			 * server-side, never return it to the shopper, and keep the address they were
 			 * given.
 			 */
-			$extensions_email = null !== $woopay_request
-				? ( self::get_woopay_attested_account_email( $woopay_request ) ?? '' )
-				: $email;
+			$extensions_email = null === $woopay_request || self::is_authenticated_by_blog_token_signature()
+				? $email
+				: ( self::get_woopay_attested_account_email( $woopay_request ) ?? '' );
 
 			if ( empty( $extensions_email ) ) {
 				return $request;
@@ -725,7 +727,7 @@ class WooPay_Session {
 			// back to the caller in plaintext. The other two callers either encrypt the
 			// payload or POST it to WooPay server-side, so the nonce is never disclosed to
 			// whoever triggered them and no attestation is needed.
-			// Belt and braces since `$extensions_email` is already attestation-only on that
+			// Belt and braces since `$extensions_email` is already one WooPay named on that
 			// route: this cannot currently be reached with an address WooPay did not name. It
 			// stays because it states the property directly — no nonce is minted for an account
 			// WooPay did not vouch for — whatever a later change makes that variable mean.

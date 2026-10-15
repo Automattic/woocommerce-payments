@@ -44,7 +44,7 @@ const BusinessDetails: React.FC = () => {
 		? [ ...selectedCountry.types ].sort( ( a, b ) =>
 				// eslint-disable-next-line no-nested-ternary
 				a.key === 'company' ? -1 : b.key === 'company' ? 1 : 0
-		  )
+			)
 		: undefined;
 
 	const selectedBusinessType = reorderedBusinessTypes?.find(

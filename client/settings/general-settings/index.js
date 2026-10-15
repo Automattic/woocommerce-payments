@@ -82,11 +82,11 @@ const GeneralSettings = () => {
 										? __(
 												'Enable test mode (enabled by development mode)',
 												'woocommerce-payments'
-										  )
+											)
 										: __(
 												'Enable test mode',
 												'woocommerce-payments'
-										  )
+											)
 								}
 								help={
 									isDevModeEnabled ? (

@@ -71,7 +71,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 		? __(
 				'Email addresses do not match. Please re-enter your email address.',
 				'woocommerce-payments'
-		  )
+			)
 		: null;
 
 	// Treat empty as valid client-side; the server enforces the required rule

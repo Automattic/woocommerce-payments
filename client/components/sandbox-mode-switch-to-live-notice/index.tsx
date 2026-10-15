@@ -121,8 +121,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																	{
 																		account_type:
 																			'test',
-																		is_dev_mode:
-																			false,
+																		is_dev_mode: false,
 																	}
 																)
 															}
@@ -206,8 +205,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																	{
 																		account_type:
 																			'sandbox',
-																		is_dev_mode:
-																			false,
+																		is_dev_mode: false,
 																	}
 																)
 															}

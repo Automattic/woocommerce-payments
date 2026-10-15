@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevented an admin fraud tracker warning when other plugins fire admin hooks on frontend pages.

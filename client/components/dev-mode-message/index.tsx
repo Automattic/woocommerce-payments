@@ -44,11 +44,11 @@ const DevModeMessage: React.FC< Props > = ( {
 					? __(
 							'To set up a live account, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
-					  )
+						)
 					: __(
 							'To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
-					  ),
+						),
 				components: {
 					learnMoreLink: (
 						// @ts-expect-error: children is provided when interpolating the component

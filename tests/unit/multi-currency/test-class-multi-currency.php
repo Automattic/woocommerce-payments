@@ -1206,6 +1206,30 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_stripe_exchange_rate' ) );
 	}
 
+	public function test_add_order_meta_on_refund_skips_order_without_multi_currency_rate() {
+		// An order Multi-Currency did not convert, such as one placed through a third-party currency
+		// switcher, can still carry the Stripe rate from its charge.
+		$order = wc_create_order();
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', '1.11718' );
+		$order->save_meta_data();
+
+		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$refund->set_currency( 'EUR' );
+		$refund->save();
+
+		$this->multi_currency->add_order_meta_on_refund( $order->get_id(), $refund->get_id() );
+
+		// Get the order from the database.
+		$refund = wc_get_order( $refund->get_id() );
+
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+		$this->assertFalse( $refund->meta_exists( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
 	public function test_add_order_meta_on_refund() {
 		$order = wc_create_order();
 		$order->set_currency( 'GBP' );
