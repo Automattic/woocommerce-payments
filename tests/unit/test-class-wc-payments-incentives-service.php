@@ -214,10 +214,24 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_connect_incentive_cached_error() {
 		// Arrange.
-		$this->mock_cache_with();
+		set_transient( $this->transient_incentives_cache_key, new WP_Error( 'http_request_failed' ), HOUR_IN_SECONDS );
+		$requests = 0;
+		add_filter(
+			'pre_http_request',
+			function ( $value, $parsed_args, $url ) use ( &$requests ) {
+				if ( str_starts_with( $url, 'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives' ) ) {
+					++$requests;
+				}
+
+				return $value;
+			},
+			10,
+			3
+		);
 
 		// Act and assert.
 		$this->assertNull( $this->incentives_service->get_connect_incentive() );
+		$this->assertSame( 0, $requests, 'A cached API error should not be retried.' );
 	}
 
 	public function test_get_cached_connect_incentive_from_cache() {
@@ -290,6 +304,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 		// Act and assert.
 		$this->assertNull( $this->incentives_service->get_connect_incentive() );
+		$this->assertInstanceOf( WP_Error::class, get_transient( $this->transient_incentives_cache_key ) );
 	}
 
 	public function test_get_connect_incentive_without_incentive_no_cache_for() {

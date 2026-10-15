@@ -480,12 +480,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		// Arrange: Set the currencies to change to.
 		$currencies = [ 'USD', 'EUR', 'GBP', 'banana' ];
 
-		// Arrange/Assert: Set expected exception and message.
-		$this->expectException( InvalidCurrencyException::class );
-		$this->expectExceptionMessage( 'Invalid currency passed to set_enabled_currencies: banana' );
-
-		// Act: Set the currencies.
-		$this->multi_currency->set_enabled_currencies( $currencies );
+		try {
+			// Act: Set the currencies.
+			$this->multi_currency->set_enabled_currencies( $currencies );
+			$this->fail( 'Expected an InvalidCurrencyException.' );
+		} catch ( InvalidCurrencyException $e ) {
+			$this->assertSame( 'Invalid currency passed to set_enabled_currencies: banana', $e->getMessage() );
+		}
 
 		// Assert: Confirm the currencies have not been updated from the default currencies.
 		$this->assertSame( $this->mock_enabled_currencies, get_option( self::ENABLED_CURRENCIES_OPTION ) );
