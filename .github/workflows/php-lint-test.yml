@@ -46,8 +46,17 @@ jobs:
         env:
           GUTENBERG_FOR_PHP_MIN: ${{ steps.vc.outputs.gutenberg_for_php_min }}
         run: |
-          # PHP 7.4+ can use latest Gutenberg
-          echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"$GUTENBERG_FOR_PHP_MIN\"}]}" >> $GITHUB_OUTPUT
+          matrix=$(jq -cn \
+            --arg php_min "$PHP_MIN_SUPPORTED_VERSION" \
+            --arg wc_min "$WC_MIN_SUPPORTED_VERSION" \
+            --arg gutenberg_min "$GUTENBERG_FOR_PHP_MIN" \
+            '{include: [
+              {php: $php_min, woocommerce: $wc_min, gutenberg: "latest"},
+              {php: $php_min, woocommerce: $wc_min, gutenberg: $gutenberg_min},
+              {php: "8.3", woocommerce: "latest", gutenberg: "latest"},
+              {php: "8.4", woocommerce: "latest", gutenberg: "latest"}
+            ]}')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   test:
     name: PHP testing
@@ -73,5 +82,5 @@ jobs:
       # run CI checks
       - run: bash bin/run-ci-tests.bash
         env:
-          WC_VERSION: ${{ env.WC_MIN_SUPPORTED_VERSION }}
+          WC_VERSION: ${{ matrix.woocommerce }}
           GUTENBERG_VERSION: ${{ matrix.gutenberg }}
