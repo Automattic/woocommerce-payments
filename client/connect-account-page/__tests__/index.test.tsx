@@ -70,24 +70,41 @@ describe( 'ConnectAccountPage', () => {
 	test( 'should render correctly', () => {
 		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
+		expect( screen.queryByAltText( 'woopay' ) ).not.toBeInTheDocument();
 	} );
 
-	test( 'should render correctly when on-boarding disabled', () => {
+	test( 'should show the paused notice instead of the welcome when on-boarding disabled', () => {
 		global.wcpaySettings.onBoardingDisabled = true;
-		const { container: page } = render( <ConnectAccountPage /> );
-		expect( page ).toMatchSnapshot();
+		render( <ConnectAccountPage /> );
+
+		expect(
+			screen.getByText( /temporarily paused new account creation/ )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'heading', {
+				name: 'Hi, Welcome to WooPayments!',
+			} )
+		).not.toBeInTheDocument();
 	} );
 
-	test( 'should render correctly with WooPay eligible', () => {
+	test( 'should list WooPay when the store country is eligible', () => {
 		global.wcpaySettings.isWooPayStoreCountryAvailable = true;
-		const { container: page } = render( <ConnectAccountPage /> );
-		expect( page ).toMatchSnapshot();
+		render( <ConnectAccountPage /> );
+
+		expect( screen.getByAltText( 'woopay' ) ).toBeInTheDocument();
 	} );
 
-	test( 'should render correctly with an incentive', () => {
+	test( 'should render the incentive with its terms link', () => {
 		global.wcpaySettings.connectIncentive = mockedIcentive;
-		const { container: page } = render( <ConnectAccountPage /> );
-		expect( page ).toMatchSnapshot();
+		render( <ConnectAccountPage /> );
+
+		expect( screen.getByText( 'Limited time offer' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'heading', { name: 'incentive-description*' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: 'Terms and Conditions' } )
+		).toHaveAttribute( 'href', 'incentive-tc-url' );
 	} );
 
 	test( 'should request promo activation with an incentive', async () => {
