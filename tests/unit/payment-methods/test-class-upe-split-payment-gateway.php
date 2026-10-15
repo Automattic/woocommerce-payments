@@ -595,10 +595,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
 	}
 
-	public function is_proper_intent_used_with_order_returns_false() {
-		$this->assertFalse( $this->mock_upe_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
-	}
-
 	public function test_process_redirect_setup_intent_succeded() {
 
 		$order            = WC_Helper_Order::create_order();
