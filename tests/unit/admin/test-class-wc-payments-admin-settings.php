@@ -256,10 +256,9 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		// Assert.
-		$this->assertStringContainsStringIgnoringCase( 'WooPayments is in test mode', $result );
-		$this->assertStringContainsString( 'WooPayments is in test mode — all transactions are simulated.', $result );
-		$this->assertStringContainsString( 'Test mode is on because development mode is on.', $result );
-		$this->assertStringContainsString( 'use your live store.', $result );
+		$this->assertStringContainsString( '<b>Your store is in development mode.</b> WooPayments only works in test mode here, so all payments are simulated. To accept real payments, use your live store.', $result );
+		$this->assertStringContainsString( 'test-accounts/#developer-notes', $result );
+		$this->assertStringNotContainsString( 'WooPayments is in test mode', $result );
 		$this->assertStringNotContainsString( 'test card numbers', $result );
 	}
 
@@ -434,11 +433,45 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		// Assert.
-		$this->assertStringContainsString( 'in development mode and using a test account.', $result );
-		$this->assertStringContainsString( 'be activated while development mode is on.', $result );
-		$this->assertStringContainsString( 'use your live store.', $result );
+		$this->assertStringContainsString( '<b>Your store is in development mode.</b> WooPayments only works in test mode here, so all payments are simulated. To accept real payments, use your live store.', $result );
 		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 		$this->assertStringNotContainsString( 'wcpay-activate-payments-button', $result );
+	}
+
+	public function test_it_names_the_dev_mode_trigger_in_the_test_account_notice() {
+		// Arrange.
+		$mode_property = new ReflectionProperty( WC_Payments::class, 'mode' );
+		$mode_property->setAccessible( true );
+		$original_mode = $mode_property->getValue();
+		$mock_mode     = $this->getMockBuilder( \WCPay\Core\Mode::class )
+			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'wp_get_development_mode' ] )
+			->getMock();
+		$mock_mode->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
+		$mock_mode->method( 'get_wp_environment_type' )->willReturn( 'staging' );
+		$mock_mode->method( 'wp_get_development_mode' )->willReturn( '' );
+
+		$this->mock_gateway->method( 'is_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'get_is_live' )->willReturn( false );
+		$this->mock_account->method( 'get_account_status_data' )->willReturn(
+			[
+				'isLive'    => false,
+				'testDrive' => true,
+			]
+		);
+
+		// Act.
+		$mode_property->setValue( null, $mock_mode );
+		try {
+			ob_start();
+			$this->payments_admin_settings->maybe_show_test_account_notice();
+			$result = ob_get_clean();
+		} finally {
+			$mode_property->setValue( null, $original_mode );
+		}
+
+		// Assert.
+		$this->assertStringContainsString( 'WooPayments only works in test mode here, so all payments are simulated. Development mode is on because this site is set up as a staging site. To accept real payments, use your live store.', $result );
 	}
 
 	public function test_it_does_not_show_sandbox_account_notice_when_not_connected() {
@@ -612,9 +645,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		// Assert.
-		$this->assertStringContainsString( 'in development mode and using a test account.', $result );
-		$this->assertStringContainsString( 'be activated while development mode is on.', $result );
-		$this->assertStringContainsString( 'use your live store.', $result );
+		$this->assertStringContainsString( '<b>Your store is in development mode.</b> WooPayments only works in test mode here, so all payments are simulated. To accept real payments, use your live store.', $result );
 		$this->assertStringNotContainsString( 'You are using a sandbox test account.', $result );
 		$this->assertStringNotContainsString( 'reset your account', $result );
 	}
