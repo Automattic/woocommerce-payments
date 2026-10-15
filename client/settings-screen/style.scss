@@ -69,8 +69,33 @@
 		color: $gray-700;
 	}
 
+	// A payment method's description runs under its fees, as far as the logo.
+	.payment-method__list-item {
+		.payment-method-item__label-container {
+			display: contents;
+		}
+
+		.payment-method-item__label {
+			grid-column: 2;
+			grid-row: 1;
+			margin: 0;
+		}
+
+		.payment-method-item__description {
+			grid-column: 2 / 4;
+			margin: 0;
+			padding: 0;
+		}
+
+		.payment-method-item__icon {
+			grid-row: 1 / span 2;
+		}
+	}
+
 	.payment-method-item__icon {
 		grid-column: 4;
+		box-sizing: border-box;
+		border: 1px solid $gray-200;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -89,15 +114,23 @@
 
 	.payment-method__fees {
 		grid-column: 3;
+		grid-row: 1;
 		align-self: start;
 		margin: 0;
 
 		.woocommerce-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
 			padding: 0;
 			border: 0;
 			background: none;
 			color: $gray-700;
 			font-size: 13px;
+
+			svg {
+				fill: currentColor;
+			}
 		}
 	}
 

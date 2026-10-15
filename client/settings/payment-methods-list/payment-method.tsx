@@ -4,6 +4,7 @@
  */
 import clsx from 'clsx';
 import React, { useContext } from 'react';
+import { Icon as WPIcon, info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -39,7 +40,9 @@ import usePaymentMethodAvailability from './use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { usePmPromotions } from 'wcpay/data/pm-promotions';
 import { useEnabledPaymentMethodIds } from 'wcpay/data/settings';
-import PaymentMethodItem from 'wcpay/components/payment-method-item';
+import PaymentMethodItem, {
+	PaymentMethodItemToggleContext,
+} from 'wcpay/components/payment-method-item';
 
 interface PaymentMethodProps {
 	id: string;
@@ -95,11 +98,12 @@ const PaymentMethodLabel = ( {
 	};
 
 	const badgeContent = getBadgeContent();
+	const isSettingsScreen = useContext( PaymentMethodItemToggleContext );
 
 	return (
 		<>
 			{ label }
-			{ PAYMENT_METHOD_IDS.CARD === id && (
+			{ PAYMENT_METHOD_IDS.CARD === id && ! isSettingsScreen && (
 				<span className="payment-method__required-label">
 					{ '(' + __( 'Required', 'woocommerce-payments' ) + ')' }
 				</span>
@@ -148,6 +152,7 @@ const PaymentMethod = ( {
 		noticeType = 'warning' as const,
 	} = usePaymentMethodAvailability( id );
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
+	const isSettingsScreen = useContext( PaymentMethodItemToggleContext );
 
 	const { accountFees }: { accountFees?: Record< string, FeeStructure > } =
 		useContext( WCPaySettingsContext );
@@ -200,7 +205,7 @@ const PaymentMethod = ( {
 					}
 				>
 					{ description }
-					{ id === PAYMENT_METHOD_IDS.CARD && (
+					{ id === PAYMENT_METHOD_IDS.CARD && ! isSettingsScreen && (
 						<div className="payment-method__supported-cards">
 							<PaymentMethodsLogos
 								paymentMethods={ cardBrands }
@@ -237,6 +242,9 @@ const PaymentMethod = ( {
 										accountFees[ id ]
 									) }
 								</span>
+								{ isSettingsScreen && (
+									<WPIcon icon={ info } size={ 20 } />
+								) }
 							</Pill>
 						</HoverTooltip>
 					</PaymentMethodItem.Action>

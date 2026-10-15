@@ -3,7 +3,10 @@
  */
 import { createContext } from 'react';
 
-/** Shows each item's checkbox as a toggle, as the payment settings screen does. */
+/**
+ * Shows the items as the payment settings screen designs them: a toggle instead of a checkbox,
+ * an info icon by the fees, and no "(Required)" label or card brand logos on cards.
+ */
 const PaymentMethodItemToggleContext = createContext( false );
 
 export default PaymentMethodItemToggleContext;
