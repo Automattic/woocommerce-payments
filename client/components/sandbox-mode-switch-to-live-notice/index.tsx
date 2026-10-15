@@ -15,6 +15,7 @@ import { Link } from '@woocommerce/components';
 import { recordEvent } from 'wcpay/tracks';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import ErrorBoundary from 'wcpay/components/error-boundary';
+import DevModeMessage from 'wcpay/components/dev-mode-message';
 import SetupLivePaymentsModal from './modal';
 import './style.scss';
 import { hasSandboxAccount, hasTestAccount, isInDevMode } from 'wcpay/utils';
@@ -52,6 +53,13 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 		! hasLiveAccountInDevMode
 	) {
 		return null;
+	}
+
+	let devModeAccountType = 'live';
+	if ( hasTestAccount() ) {
+		devModeAccountType = 'test';
+	} else if ( hasSandboxAccount() ) {
+		devModeAccountType = 'sandbox';
 	}
 
 	return (
@@ -135,65 +143,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							),
 						},
 					} ) }
-				{ hasTestAccount() &&
-					isInDevMode() &&
-					interpolateComponents( {
-						mixedString: __(
-							// eslint-disable-next-line max-len
-							"{{div}}{{strong}}You're in development mode and using a test account.{{/strong}} Live payments can't be activated while development mode is on.{{/div}}{{learnMoreIcon/}}",
-							'woocommerce-payments'
-						),
-						components: {
-							div: <div />,
-							strong: <strong />,
-							learnMoreIcon: (
-								<ClickTooltip
-									buttonIcon={ <HelpOutlineIcon /> }
-									buttonLabel={ __(
-										'Learn more about development mode',
-										'woocommerce-payments'
-									) }
-									maxWidth={ '250px' }
-									content={
-										<>
-											{ interpolateComponents( {
-												mixedString: __(
-													// eslint-disable-next-line max-len
-													'Development mode is on for staging and development sites. To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-													'woocommerce-payments'
-												),
-												components: {
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<Link
-															href={
-																// eslint-disable-next-line max-len
-																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
-															}
-															target="_blank"
-															rel="noreferrer"
-															type="external"
-															onClick={ () =>
-																recordEvent(
-																	'wcpay_overview_sandbox_mode_learn_more_clicked',
-																	{
-																		account_type:
-																			'test',
-																		is_dev_mode:
-																			true,
-																	}
-																)
-															}
-														/>
-													),
-												},
-											} ) }
-										</>
-									}
-								/>
-							),
-						},
-					} ) }
 				{ hasSandboxAccount() &&
 					! isInDevMode() &&
 					interpolateComponents( {
@@ -272,127 +221,21 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							),
 						},
 					} ) }
-				{ hasSandboxAccount() &&
-					isInDevMode() &&
-					interpolateComponents( {
-						mixedString: __(
-							// eslint-disable-next-line max-len
-							"{{div}}{{strong}}You're in development mode and using a test account.{{/strong}} Live payments can't be activated while development mode is on.{{/div}}{{learnMoreIcon/}}",
-							'woocommerce-payments'
-						),
-						components: {
-							div: <div />,
-							strong: <strong />,
-							learnMoreIcon: (
-								<ClickTooltip
-									buttonIcon={ <HelpOutlineIcon /> }
-									buttonLabel={ __(
-										'Learn more about development mode',
-										'woocommerce-payments'
-									) }
-									maxWidth={ '250px' }
-									content={
-										<>
-											{ interpolateComponents( {
-												mixedString: __(
-													// eslint-disable-next-line max-len
-													'Development mode is on for staging and development sites. To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-													'woocommerce-payments'
-												),
-												components: {
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<Link
-															href={
-																// eslint-disable-next-line max-len
-																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
-															}
-															target="_blank"
-															rel="noreferrer"
-															type="external"
-															onClick={ () =>
-																recordEvent(
-																	'wcpay_overview_sandbox_mode_learn_more_clicked',
-																	{
-																		account_type:
-																			'sandbox',
-																		is_dev_mode:
-																			true,
-																	}
-																)
-															}
-														/>
-													),
-												},
-											} ) }
-										</>
+				{ isInDevMode() && (
+					<div>
+						<DevModeMessage
+							onLearnMoreClick={ () =>
+								recordEvent(
+									'wcpay_overview_sandbox_mode_learn_more_clicked',
+									{
+										account_type: devModeAccountType,
+										is_dev_mode: true,
 									}
-								/>
-							),
-						},
-					} ) }
-				{ hasLiveAccountInDevMode &&
-					interpolateComponents( {
-						mixedString: sprintf(
-							/* translators: %1$s: WooPayments */
-							__(
-								// eslint-disable-next-line max-len
-								'{{div}}{{strong}}%1$s is in test mode — all transactions are simulated.{{/strong}} Test mode is on because development mode is on.{{/div}}{{learnMoreIcon/}}',
-								'woocommerce-payments'
-							),
-							'WooPayments'
-						),
-						components: {
-							div: <div />,
-							strong: <strong />,
-							learnMoreIcon: (
-								<ClickTooltip
-									buttonIcon={ <HelpOutlineIcon /> }
-									buttonLabel={ __(
-										'Learn more about development mode',
-										'woocommerce-payments'
-									) }
-									maxWidth={ '250px' }
-									content={
-										<>
-											{ interpolateComponents( {
-												mixedString: __(
-													// eslint-disable-next-line max-len
-													'Development mode is on for staging and development sites. To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-													'woocommerce-payments'
-												),
-												components: {
-													learnMoreLink: (
-														// eslint-disable-next-line jsx-a11y/anchor-has-content
-														<Link
-															href={
-																// eslint-disable-next-line max-len
-																'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
-															}
-															target="_blank"
-															rel="noreferrer"
-															type="external"
-															onClick={ () =>
-																recordEvent(
-																	'wcpay_overview_sandbox_mode_learn_more_clicked',
-																	{
-																		account_type:
-																			'live',
-																		is_dev_mode:
-																			true,
-																	}
-																)
-															}
-														/>
-													),
-												},
-											} ) }
-										</>
-									}
-								/>
-							),
-						},
-					} ) }
+								)
+							}
+						/>
+					</div>
+				) }
 			</BannerNotice>
 			{ livePaymentsModalVisible && (
 				<ErrorBoundary>

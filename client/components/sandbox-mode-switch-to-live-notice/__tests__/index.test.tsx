@@ -19,12 +19,16 @@ declare const global: {
 	wcpaySettings: {
 		isAccountConnected: boolean;
 		devMode: boolean;
+		devModeReason: string;
 		accountStatus: {
 			isLive: boolean;
 			testDrive: boolean;
 		};
 	};
 };
+
+const devModeReason =
+	'Development mode is on because the WCPAY_DEV_MODE constant is set.';
 
 const setAccount = ( {
 	isLive,
@@ -38,6 +42,7 @@ const setAccount = ( {
 	global.wcpaySettings = {
 		isAccountConnected: true,
 		devMode,
+		devModeReason,
 		accountStatus: { isLive, testDrive },
 	};
 };
@@ -51,74 +56,52 @@ const renderNotice = () =>
 	);
 
 describe( 'SandboxModeSwitchToLiveNotice in development mode', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
 	it.each`
-		label                       | testDrive
-		${ 'test [drive] account' } | ${ true }
-		${ 'sandbox account' }      | ${ false }
+		label                       | isLive     | testDrive  | accountType
+		${ 'test [drive] account' } | ${ false } | ${ true }  | ${ 'test' }
+		${ 'sandbox account' }      | ${ false } | ${ false } | ${ 'sandbox' }
+		${ 'live account' }         | ${ true }  | ${ false } | ${ 'live' }
 	`(
-		'explains development mode for a $label',
-		async ( { testDrive }: { testDrive: boolean } ) => {
-			setAccount( { isLive: false, testDrive, devMode: true } );
+		'shows the development mode message and tracks Learn more for a $label',
+		async ( {
+			isLive,
+			testDrive,
+			accountType,
+		}: {
+			isLive: boolean;
+			testDrive: boolean;
+			accountType: string;
+		} ) => {
+			setAccount( { isLive, testDrive, devMode: true } );
 
 			const { container } = renderNotice();
 
 			expect(
 				container.querySelector( '.sandbox-mode-notice' )
 			).toHaveTextContent(
-				"You're in development mode and using a test account. Live payments can't be activated while development mode is on."
+				'Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ' +
+					'Development mode is on because the WCPAY_DEV_MODE constant is set. To accept real payments, use your live store. Learn more'
 			);
 
-			await user.click(
-				screen.getByRole( 'button', {
-					name: 'Learn more about development mode',
-				} )
-			);
-
-			expect(
-				screen.getByText(
-					'Development mode is on for staging and development sites. To accept real payments, use your live store.',
-					{ exact: false }
-				)
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole( 'link', { name: /Learn more/ } )
-			).toHaveAttribute(
+			const learnMoreLink = screen.getByRole( 'link', {
+				name: /Learn more/,
+			} );
+			expect( learnMoreLink ).toHaveAttribute(
 				'href',
 				'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
 			);
+
+			await user.click( learnMoreLink );
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_overview_sandbox_mode_learn_more_clicked',
+				{ account_type: accountType, is_dev_mode: true }
+			);
 		}
 	);
-
-	it( 'explains test mode and tracks Learn more for a live account', async () => {
-		setAccount( { isLive: true, testDrive: false, devMode: true } );
-
-		const { container } = renderNotice();
-
-		expect(
-			container.querySelector( '.sandbox-mode-notice' )
-		).toHaveTextContent(
-			'WooPayments is in test mode — all transactions are simulated. Test mode is on because development mode is on.'
-		);
-
-		await user.click(
-			screen.getByRole( 'button', {
-				name: 'Learn more about development mode',
-			} )
-		);
-		const learnMoreLink = screen.getByRole( 'link', {
-			name: 'Learn more',
-		} );
-		expect( learnMoreLink ).toHaveAttribute(
-			'href',
-			'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
-		);
-
-		await user.click( learnMoreLink );
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_overview_sandbox_mode_learn_more_clicked',
-			{ account_type: 'live', is_dev_mode: true }
-		);
-	} );
 
 	it( 'renders nothing for a live account outside development mode', () => {
 		setAccount( { isLive: true, testDrive: false, devMode: false } );

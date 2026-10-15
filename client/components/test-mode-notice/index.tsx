@@ -12,6 +12,7 @@ import BannerNotice from '../banner-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 import { ExternalLink } from '@wordpress/components';
 import { recordEvent } from 'wcpay/tracks';
+import DevModeMessage from '../dev-mode-message';
 
 type CurrentPage =
 	| 'overview'
@@ -69,36 +70,13 @@ const getNoticeContent = (
 			}
 			if ( isDevMode ) {
 				return (
-					<>
-						{ interpolateComponents( {
-							mixedString: sprintf(
-								/* translators: %1$s: WooPayments */
-								__(
-									'{{strong}}%1$s is in test mode — all transactions are simulated.{{/strong}} Development mode is on. ' +
-										'To accept real payments, use your live store. ' +
-										'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								'WooPayments'
-							),
-							components: {
-								strong: <strong />,
-								learnMoreLink: (
-									// @ts-expect-error: children is provided when interpolating the component
-									<ExternalLink
-										href={
-											'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes'
-										}
-										onClick={ () =>
-											recordEvent(
-												'wcpay_overview_test_mode_learn_more_clicked'
-											)
-										}
-									/>
-								),
-							},
-						} ) }
-					</>
+					<DevModeMessage
+						onLearnMoreClick={ () =>
+							recordEvent(
+								'wcpay_overview_test_mode_learn_more_clicked'
+							)
+						}
+					/>
 				);
 			}
 			return (
@@ -141,29 +119,12 @@ const getNoticeContent = (
 			if ( isDevMode ) {
 				return (
 					<>
-						{ interpolateComponents( {
-							mixedString: sprintf(
-								/* translators: %1$s: resource name (e.g. "transactions") */
-								__(
-									'Viewing test %1$s. Test mode is active because your store is in a development or staging environment. ' +
-										'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								currentPage === 'deposits'
-									? 'payouts'
-									: currentPage
-							),
-							components: {
-								learnMoreLink: (
-									// @ts-expect-error: children is provided when interpolating the component
-									<ExternalLink
-										href={
-											'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/'
-										}
-									/>
-								),
-							},
-						} ) }
+						{ sprintf(
+							/* translators: %1$s: plural record type, e.g. "transactions" */
+							__( 'Viewing test %1$s.', 'woocommerce-payments' ),
+							pluralNounToUse[ currentPage ]
+						) }{ ' ' }
+						<DevModeMessage />
 					</>
 				);
 			}
