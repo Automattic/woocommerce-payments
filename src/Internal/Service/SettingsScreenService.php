@@ -62,6 +62,11 @@ class SettingsScreenService {
 	];
 
 	/**
+	 * Path of the advanced fraud protection sub-page, the screen `woopayments/fraud-protection`.
+	 */
+	const FRAUD_PROTECTION_SUBPAGE = 'fraud-protection';
+
+	/**
 	 * Cards with a description. DataForm card descriptions can only be text, so each description is a
 	 * read-only field, rendered with its links by the screen's script and placed first in its card.
 	 */
@@ -93,6 +98,7 @@ class SettingsScreenService {
 				fn( $config ) => $this->get_subpage_view_config( $config, $method )
 			);
 		}
+		add_filter( 'get_entity_view_config_' . self::ENTITY_KIND . '_' . self::SCREEN_ID . '/' . self::FRAUD_PROTECTION_SUBPAGE, [ $this, 'get_fraud_protection_view_config' ] );
 		add_action( 'init', [ $this, 'register_fields_module' ] );
 		// WooCommerce enqueues the screen's scripts at the default priority, so they're registered first.
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_scripts' ], 9 );
@@ -125,6 +131,11 @@ class SettingsScreenService {
 				'scripts'   => [ self::SCRIPT_HANDLE ],
 			];
 		}
+		$screens[ self::AREA ][ self::SCREEN_ID . '/' . self::FRAUD_PROTECTION_SUBPAGE ] = [
+			'title'     => __( 'Advanced fraud protection', 'woocommerce-payments' ),
+			'rest_path' => '/wc/v3' . self::REST_ROUTE,
+			'scripts'   => [ self::SCRIPT_HANDLE ],
+		];
 		return $screens;
 	}
 
@@ -228,6 +239,7 @@ class SettingsScreenService {
 		foreach ( self::EXPRESS_SUBPAGES as $method => $path ) {
 			$registry->register( 'woocommerce-payments', self::ENTITY_KIND, self::SCREEN_ID . '/' . $path, $this->get_subpage_fields( $method ), self::FIELDS_MODULE_ID );
 		}
+		$registry->register( 'woocommerce-payments', self::ENTITY_KIND, self::SCREEN_ID . '/' . self::FRAUD_PROTECTION_SUBPAGE, $this->get_fraud_protection_fields(), self::FIELDS_MODULE_ID );
 	}
 
 	/**
@@ -650,6 +662,47 @@ class SettingsScreenService {
 						'labelPosition' => 'top',
 					],
 					'fields' => $cards,
+				],
+			],
+			1
+		);
+	}
+
+	/**
+	 * Gets the fields of the advanced fraud protection sub-page.
+	 *
+	 * The rules are one field: the script module renders the existing rule cards, which edit the ruleset together.
+	 *
+	 * @return array[]
+	 */
+	public function get_fraud_protection_fields(): array {
+		return [
+			[
+				'id'    => 'advanced_fraud_protection_settings',
+				'label' => __( 'Advanced fraud protection', 'woocommerce-payments' ),
+			],
+		];
+	}
+
+	/**
+	 * Lays out the advanced fraud protection sub-page. The rule cards are the field's own cards.
+	 *
+	 * @param mixed $config The View Config container.
+	 * @return mixed
+	 */
+	public function get_fraud_protection_view_config( $config ) {
+		if ( ! is_object( $config ) || ! is_callable( [ $config, 'merge' ] ) ) {
+			return $config;
+		}
+
+		return $config->merge(
+			[
+				'form' => [
+					'layout' => [
+						'type'          => 'regular',
+						'labelPosition' => 'none',
+					],
+					'fields' => [ 'advanced_fraud_protection_settings' ],
 				],
 			],
 			1

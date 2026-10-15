@@ -19,6 +19,7 @@ import {
 	WooPayCheckoutPreview,
 } from './express-checkout-controls';
 import TestAccountNotice from './test-account-notice';
+import { FraudRules, getRulesError } from './fraud-rules';
 
 export type Settings = Record< string, unknown >;
 
@@ -34,6 +35,7 @@ export type FieldParts = {
 	Edit?: React.ComponentType< EditProps >;
 	isVisible?: ( item: Settings ) => boolean;
 	isDisabled?: ( args: { item: Settings } ) => boolean;
+	isValid?: { custom?: ( item: Settings ) => string | null };
 	render?: React.ComponentType< { item: Settings } >;
 	getValue?: ( args: { item: Settings } ) => unknown;
 	setValue?: ( args: { item: Settings; value: unknown } ) => Settings;
@@ -447,6 +449,10 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 			</Button>
 		),
 		isVisible: ( item ) => item.current_protection_level === 'advanced',
+	},
+	advanced_fraud_protection_settings: {
+		Edit: FraudRules,
+		isValid: { custom: getRulesError },
 	},
 	enabled_payment_method_ids: {
 		Edit: PaymentMethods,

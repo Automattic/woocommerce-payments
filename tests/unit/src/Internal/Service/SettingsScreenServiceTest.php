@@ -108,6 +108,14 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'wcpay-settings-screen' ], $screens['payments'][ $id ]['scripts'] );
 	}
 
+	public function test_registers_fraud_protection_sub_page(): void {
+		$screens = $this->sut->register_screen( [] );
+
+		$this->assertSame( 'Advanced fraud protection', $screens['payments']['woopayments/fraud-protection']['title'] );
+		$this->assertSame( '/wc/v3/payments/settings-dataform', $screens['payments']['woopayments/fraud-protection']['rest_path'] );
+		$this->assertSame( [ 'wcpay-settings-screen' ], $screens['payments']['woopayments/fraud-protection']['scripts'] );
+	}
+
 	/**
 	 * @testWith ["woopay", "woopay"]
 	 *           ["payment_request", "apple-pay-google-pay"]
@@ -268,6 +276,14 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 		sort( $in_cards );
 		sort( $field_ids );
 		$this->assertSame( $field_ids, $in_cards );
+	}
+
+	public function test_fraud_protection_view_config_places_every_field(): void {
+		$in_form   = $this->get_fields_in_cards( $this->sut->get_fraud_protection_view_config( $this->create_config() ) );
+		$field_ids = array_column( $this->sut->get_fraud_protection_fields(), 'id' );
+		sort( $in_form );
+		sort( $field_ids );
+		$this->assertSame( $field_ids, $in_form );
 	}
 
 	/**
