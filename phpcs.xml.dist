@@ -56,7 +56,9 @@
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
-			<property name="text_domain" type="array" value="woocommerce-payments" />
+			<property name="text_domain" type="array">
+				<element value="woocommerce-payments" />
+			</property>
 		</properties>
 	</rule>
 
@@ -81,7 +83,10 @@
 
 	<rule ref="WordPress.Security.EscapeOutput">
 		<properties>
-			<property name="customEscapingFunctions" type="array" value="WC_Payments_Utils,esc_interpolated_html" />
+			<property name="customEscapingFunctions" type="array">
+				<element value="WC_Payments_Utils" />
+				<element value="esc_interpolated_html" />
+			</property>
 		</properties>
 	</rule>
 
