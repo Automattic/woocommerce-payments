@@ -562,7 +562,7 @@ class WC_Payments_Token_Service {
 	 * Normalizes the Stripe Link label on My Account page.
 	 *
 	 * @param string $label Token label.
-	 * @return string $label Capitalized SEPA IBAN label.
+	 * @return string $label Capitalized  Link/Onelink label.
 	 */
 	public function normalize_stripe_link_label( $label ) {
 		if ( 'stripe link email' === strtolower( $label ) ) {
