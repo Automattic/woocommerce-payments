@@ -68,10 +68,11 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 	 * This function is meant to mock the value expected by `WC_Session_Handler->get_session_cookie()`.
 	 *
 	 * @param string $customer_id A fake customer id;
+	 * @param int    $session_expiring When WooCommerce should extend the session.
 	 *
 	 * @return void
 	 */
-	private function __create_fake_session_cookie( $customer_id ) {
+	private function __create_fake_session_cookie( $customer_id, $session_expiring = null ) {
 		$session_expiration = time() + HOUR_IN_SECONDS;
 
 		// WooCommerce hashes with a single `|` in every version, even when the cookie separator is `||`.
@@ -83,7 +84,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 			[
 				$customer_id,
 				$session_expiration,
-				time() + HOUR_IN_SECONDS,
+				$session_expiring ?? time() + HOUR_IN_SECONDS,
 				$cookie_hash,
 			]
 		);
@@ -293,5 +294,72 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( [ 'flat_rate:1' ], $session_handler->get( 'chosen_shipping_methods' ) );
 		$this->assertEquals( [ 'email' => 'shopper@example.com' ], $session_handler->get( 'customer' ) );
 		$this->assertEquals( (string) $new_customer_id, $session_handler->get( 'token_customer_id' ) );
+	}
+
+	/**
+	 * A shopper who just logged in still has a guest cookie, and their regular cart lives in that guest session.
+	 * Before the token session loads, it must move to their user ID, the same way WooCommerce does on login.
+	 */
+	public function test_guest_session_moved_to_user_before_token_session_loads() {
+		global $wpdb;
+
+		$guest_customer_id = 't_' . substr( md5( 'guest_' . time() ), 0, 30 );
+		$wpdb->insert(
+			$wpdb->prefix . 'woocommerce_sessions',
+			[
+				'session_key'    => $guest_customer_id,
+				'session_value'  => maybe_serialize( [ 'cart' => 'regular_cart' ] ),
+				'session_expiry' => time() + HOUR_IN_SECONDS,
+			]
+		);
+		$this->__create_fake_session_cookie( $guest_customer_id );
+		$user_id = self::factory()->user->create();
+		wp_set_current_user( $user_id );
+
+		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$session_handler->init();
+
+		$sessions = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT session_key, session_value FROM {$wpdb->prefix}woocommerce_sessions WHERE session_key IN ( %s, %s, '' )",
+				$guest_customer_id,
+				(string) $user_id
+			),
+			OBJECT_K
+		);
+		$this->assertSame( [ $user_id ], array_keys( $sessions ) );
+		$this->assertSame( 'regular_cart', maybe_unserialize( $sessions[ $user_id ]->session_value )['cart'] );
+		$this->assertStringStartsWith( 't_', $session_handler->session_id );
+		$this->assertEquals( (string) $user_id, $session_handler->get( 'token_customer_id' ) );
+	}
+
+	/**
+	 * Before the token session loads, WooCommerce extends a cookie session that is close to expiring.
+	 * The new expiry must land on the cookie's row.
+	 */
+	public function test_expiring_cookie_session_extended_before_token_session_loads() {
+		global $wpdb;
+
+		$guest_customer_id = 't_' . substr( md5( 'guest_' . time() ), 0, 30 );
+		$wpdb->insert(
+			$wpdb->prefix . 'woocommerce_sessions',
+			[
+				'session_key'    => $guest_customer_id,
+				'session_value'  => maybe_serialize( [ 'cart' => 'regular_cart' ] ),
+				'session_expiry' => time() + HOUR_IN_SECONDS,
+			]
+		);
+		$this->__create_fake_session_cookie( $guest_customer_id, time() - 1 );
+
+		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
+		$session_handler->init();
+
+		$session_expiry = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT session_expiry FROM {$wpdb->prefix}woocommerce_sessions WHERE session_key = %s",
+				$guest_customer_id
+			)
+		);
+		$this->assertGreaterThan( time() + DAY_IN_SECONDS, (int) $session_expiry );
 	}
 }

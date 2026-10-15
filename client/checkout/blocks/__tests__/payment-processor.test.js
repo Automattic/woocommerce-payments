@@ -38,7 +38,13 @@ describe( 'PaymentProcessor', () => {
 	let mockCreatePaymentMethod;
 	beforeEach( () => {
 		global.wcpay_upe_config = { paymentMethodsConfig: {} };
-		PaymentElement.mockImplementation( () => null );
+		PaymentElement.mockImplementation( ( { onReady } ) => {
+			useEffect( () => {
+				onReady();
+			}, [ onReady ] );
+
+			return null;
+		} );
 		mockCreatePaymentMethod = jest
 			.fn()
 			.mockResolvedValue( { paymentMethod: {} } );
@@ -263,6 +269,71 @@ describe( 'PaymentProcessor', () => {
 				} ),
 			} )
 		);
+	} );
+
+	describe( 'when the Payment Element is not ready yet', () => {
+		let triggerReady;
+		let onPaymentSetupCallback;
+
+		beforeEach( () => {
+			PaymentElement.mockImplementation( ( { onReady } ) => {
+				triggerReady = onReady;
+				return null;
+			} );
+			mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
+				paymentMethod: { id: 'paymentMethodId' },
+			} );
+
+			render(
+				<PaymentProcessor
+					activePaymentMethod="woocommerce_payments"
+					api={ mockApi }
+					paymentMethodId="alipay"
+					emitResponse={ {} }
+					eventRegistration={ {
+						onPaymentSetup: ( callback ) =>
+							( onPaymentSetupCallback = callback ),
+					} }
+					fingerprint=""
+					shouldSavePayment={ false }
+					upeMethods={ {
+						alipay: { gatewayId: 'woocommerce_payments' },
+					} }
+				/>
+			);
+		} );
+
+		afterEach( () => {
+			jest.useRealTimers();
+		} );
+
+		it( 'waits for it before creating the payment method', async () => {
+			const result = onPaymentSetupCallback();
+			await act( async () => {} );
+
+			expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+
+			act( () => triggerReady() );
+
+			expect( await result ).toEqual(
+				expect.objectContaining( { type: 'success' } )
+			);
+			expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+		} );
+
+		it( 'returns an error if it does not get ready in time', async () => {
+			jest.useFakeTimers();
+
+			const result = onPaymentSetupCallback();
+			jest.advanceTimersByTime( 10000 );
+
+			expect( await result ).toEqual( {
+				type: 'error',
+				message:
+					'The payment details are still loading. Please try again in a moment.',
+			} );
+			expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+		} );
 	} );
 
 	it( 'should return success when there are no failures', async () => {
