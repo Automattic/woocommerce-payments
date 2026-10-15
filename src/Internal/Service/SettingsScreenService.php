@@ -506,7 +506,7 @@ class SettingsScreenService {
 			self::SCRIPT_HANDLE,
 			'wcpaySettingsScreenConfig',
 			[
-				'fraudRulesUrl' => admin_url( 'admin.php?page=wc-admin&path=/payments/fraud-protection' ),
+				'fraudRulesUrl' => admin_url( 'admin.php?page=wc-settings-screens-wp-admin&p=/settings/payments/' . self::SCREEN_ID . '/' . self::FRAUD_PROTECTION_SUBPAGE ),
 			]
 		);
 		wp_set_script_translations( self::SCRIPT_HANDLE, 'woocommerce-payments' );
