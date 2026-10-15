@@ -27,9 +27,9 @@ jest.mock( '@stripe/react-connect-js', () => ( {
 	}: {
 		children: React.ReactNode;
 	} ) => <>{ children }</>,
-	ConnectAccountOnboarding: () => (
+	ConnectAccountOnboarding: jest.fn( () => (
 		<div data-testid="connect-account-onboarding">Stripe Onboarding</div>
-	),
+	) ),
 	ConnectNotificationBanner: () => (
 		<div data-testid="connect-notification-banner">Stripe Notification</div>
 	),
@@ -89,11 +89,21 @@ describe( 'EmbeddedAccountOnboarding', () => {
 			/>
 		);
 
-		expect(
-			await screen.findByTestId( 'connect-account-onboarding' )
-		).toBeInTheDocument();
-		expect( mockOnExit ).not.toHaveBeenCalled();
-		expect( mockOnStepChange ).not.toHaveBeenCalled();
+		await screen.findByTestId( 'connect-account-onboarding' );
+		const { ConnectAccountOnboarding } = jest.requireMock(
+			'@stripe/react-connect-js'
+		);
+		const props = ConnectAccountOnboarding.mock.lastCall[ 0 ];
+		expect( props.collectionOptions ).toEqual( {
+			fields: 'eventually_due',
+			futureRequirements: 'omit',
+		} );
+		expect( props.onExit ).toBe( mockOnExit );
+
+		props.onStepChange( { step: 'stripe_user_authentication' } );
+		expect( mockOnStepChange ).toHaveBeenCalledWith(
+			'stripe_user_authentication'
+		);
 	} );
 } );
 

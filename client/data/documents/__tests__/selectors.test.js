@@ -48,7 +48,7 @@ describe( 'Documents selectors', () => {
 	const emptySummaryErrorState = {
 		documents: {
 			summary: {
-				[ getResourceId( mockQuery ) ]: {
+				[ getResourceId( mockSummaryQuery ) ]: {
 					error: {},
 				},
 			},

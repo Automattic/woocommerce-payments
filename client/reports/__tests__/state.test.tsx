@@ -42,21 +42,13 @@ describe( 'Reports tab states', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders the Balance report when the Balance tab is selected regardless of status', async () => {
+	it( 'renders the Balance report without wrapping it in a group', async () => {
 		render( <ReportsTabPanel tab="balance" onReload={ jest.fn() } /> );
 
 		expect(
 			await screen.findByText( 'Balance summary table' )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'group' ) ).not.toBeInTheDocument();
-	} );
-
-	it( 'renders the Fees report when the Fees tab is selected (regardless of status)', async () => {
-		render( <ReportsTabPanel tab="fees" onReload={ jest.fn() } /> );
-
-		expect(
-			await screen.findByText( 'Fees ledger table' )
-		).toBeInTheDocument();
 	} );
 
 	it( 'lets FeesReport surface its own state UI', async () => {
