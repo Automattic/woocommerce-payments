@@ -5,7 +5,7 @@ language_tabs:
     - shell: cURL
 
 toc_footers:
-    - <a href="https://woocommerce.github.io/woocommerce-rest-api-docs/">WooCommerce REST API Docs</a>
+    - <a href="https://developer.woocommerce.com/docs/apis/rest-api/">WooCommerce REST API Docs</a>
     - <a href="https://github.com/Automattic/woocommerce-payments">WooCommerce Payments</a>
     - <a href="https://github.com/tripit/slate">Documentation Powered by Slate</a>
 
