@@ -52,6 +52,16 @@ class SettingsScreenService {
 	const FIELDS_MODULE_ID = 'woocommerce-payments/settings-screen-fields';
 
 	/**
+	 * Express checkout methods with their own customisation sub-page, keyed by the classic `method` argument.
+	 * Each sub-page is a screen with the ID `woopayments/{path}`.
+	 */
+	const EXPRESS_SUBPAGES = [
+		'woopay'          => 'woopay',
+		'payment_request' => 'apple-pay-google-pay',
+		'amazon_pay'      => 'amazon-pay',
+	];
+
+	/**
 	 * Cards with a description. DataForm card descriptions can only be text, so each description is a
 	 * read-only field, rendered with its links by the screen's script and placed first in its card.
 	 */
@@ -73,9 +83,16 @@ class SettingsScreenService {
 		}
 
 		add_filter( '__experimental_woocommerce_settings_screens', [ $this, 'register_screen' ] );
+		add_filter( 'woocommerce_experimental_payment_settings_classic_location', [ $this, 'get_classic_location' ], 10, 2 );
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
 		add_action( 'wp_fields_api_init', [ $this, 'register_fields' ] );
 		add_filter( 'get_entity_view_config_' . self::ENTITY_KIND . '_' . self::SCREEN_ID, [ $this, 'get_view_config' ] );
+		foreach ( self::EXPRESS_SUBPAGES as $method => $path ) {
+			add_filter(
+				'get_entity_view_config_' . self::ENTITY_KIND . '_' . self::SCREEN_ID . '/' . $path,
+				fn( $config ) => $this->get_subpage_view_config( $config, $method )
+			);
+		}
 		add_action( 'init', [ $this, 'register_fields_module' ] );
 		// WooCommerce enqueues the screen's scripts at the default priority, so they're registered first.
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_scripts' ], 9 );
@@ -96,12 +113,37 @@ class SettingsScreenService {
 			$screens[ self::AREA ] = [];
 		}
 		$screens[ self::AREA ][ self::SCREEN_ID ] = [
-			'title'           => __( 'WooPayments', 'woocommerce-payments' ),
+			'title'           => __( 'WooPayments settings', 'woocommerce-payments' ),
 			'rest_path'       => '/wc/v3' . self::REST_ROUTE,
 			'scripts'         => [ self::SCRIPT_HANDLE ],
 			'classic_section' => 'woocommerce_payments',
 		];
+		foreach ( $this->get_subpage_titles() as $method => $title ) {
+			$screens[ self::AREA ][ self::SCREEN_ID . '/' . self::EXPRESS_SUBPAGES[ $method ] ] = [
+				'title'     => $title,
+				'rest_path' => '/wc/v3' . self::REST_ROUTE,
+				'scripts'   => [ self::SCRIPT_HANDLE ],
+			];
+		}
 		return $screens;
+	}
+
+	/**
+	 * Opens old links to an express checkout's customisation page (such as `method=woopay`) on its sub-page.
+	 *
+	 * @param mixed  $location  The location, with `path` and `args`.
+	 * @param string $screen_id The screen ID.
+	 * @return mixed
+	 */
+	public function get_classic_location( $location, $screen_id ) {
+		$method = is_array( $location ) ? ( $location['args']['method'] ?? null ) : null;
+		if ( self::SCREEN_ID !== $screen_id || ! is_string( $method ) || ! isset( self::EXPRESS_SUBPAGES[ $method ] ) ) {
+			return $location;
+		}
+
+		unset( $location['args']['method'] );
+		$location['path'] = self::EXPRESS_SUBPAGES[ $method ];
+		return $location;
 	}
 
 	/**
@@ -177,6 +219,9 @@ class SettingsScreenService {
 		}
 
 		$registry->register( 'woocommerce-payments', self::ENTITY_KIND, self::SCREEN_ID, $this->get_fields(), self::FIELDS_MODULE_ID );
+		foreach ( self::EXPRESS_SUBPAGES as $method => $path ) {
+			$registry->register( 'woocommerce-payments', self::ENTITY_KIND, self::SCREEN_ID . '/' . $path, $this->get_subpage_fields( $method ), self::FIELDS_MODULE_ID );
+		}
 	}
 
 	/**
@@ -464,6 +509,170 @@ class SettingsScreenService {
 		 * @param string $handle The screen's script handle.
 		 */
 		do_action( 'wcpay_settings_screen_register_scripts', self::SCRIPT_HANDLE );
+	}
+
+	/**
+	 * Gets the fields of an express checkout's customisation sub-page.
+	 *
+	 * Each method's placement is stored as the method's ID in the express checkout location lists, so the
+	 * script module maps the `{method}_on_{location}` toggles to those lists. The button style is shared by
+	 * all express checkout buttons, as on the classic page.
+	 *
+	 * @param string $method The express checkout method, a key of `EXPRESS_SUBPAGES`.
+	 * @return array[]
+	 */
+	public function get_subpage_fields( string $method ): array {
+		$read_only = static fn( string $id ): array => [
+			'id'       => $id,
+			'type'     => 'text',
+			'label'    => __( 'Description', 'woocommerce-payments' ),
+			'readOnly' => true,
+		];
+		$select    = function ( string $id, string $label, string $edit ): array {
+			$options = $this->get_form_field_options( $id );
+			return [
+				'id'       => $id,
+				'type'     => 'text',
+				'label'    => $label,
+				'Edit'     => $edit,
+				'elements' => array_map(
+					static fn( $value, $option_label ) => [
+						'value' => $value,
+						'label' => $option_label,
+					],
+					array_keys( $options ),
+					$options
+				),
+			];
+		};
+
+		$fields = [ $read_only( "{$method}_placement_description" ) ];
+		foreach ( [
+			'product'  => __( 'Show on product page', 'woocommerce-payments' ),
+			'cart'     => __( 'Show on cart page', 'woocommerce-payments' ),
+			'checkout' => __( 'Show on checkout page', 'woocommerce-payments' ),
+		] as $location => $label ) {
+			$fields[] = [
+				'id'    => "{$method}_on_{$location}",
+				'type'  => 'boolean',
+				'label' => $label,
+				'Edit'  => 'toggle',
+			];
+		}
+
+		if ( 'woopay' === $method ) {
+			$fields[] = [
+				'id'    => 'woopay_store_logo',
+				'type'  => 'text',
+				'label' => __( 'Checkout logo', 'woocommerce-payments' ),
+			];
+			$fields[] = [
+				'id'    => 'is_woopay_global_theme_support_enabled',
+				'type'  => 'boolean',
+				'label' => __( 'Enable global theme support', 'woocommerce-payments' ),
+				'Edit'  => 'checkbox',
+			];
+			$fields[] = [
+				'id'    => 'woopay_custom_message',
+				'type'  => 'text',
+				'label' => __( 'Checkout policies', 'woocommerce-payments' ),
+				'Edit'  => 'textarea',
+			];
+			$fields[] = $read_only( 'woopay_checkout_preview' );
+		}
+
+		if ( 'amazon_pay' !== $method ) {
+			$fields[] = $read_only( 'button_style_description' );
+			$fields[] = $select( 'payment_request_button_type', __( 'Button label', 'woocommerce-payments' ), 'select' );
+			$fields[] = $select( 'payment_request_button_size', __( 'Button size', 'woocommerce-payments' ), 'radio' );
+			$fields[] = $select( 'payment_request_button_theme', __( 'Theme', 'woocommerce-payments' ), 'radio' );
+			$fields[] = [
+				'id'    => 'payment_request_button_border_radius',
+				'type'  => 'integer',
+				'label' => __( 'Corner radius', 'woocommerce-payments' ),
+			];
+			$fields[] = $read_only( 'button_preview' );
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Lays out an express checkout's customisation sub-page as cards, in the order of the designs.
+	 *
+	 * @param mixed  $config The View Config container.
+	 * @param string $method The express checkout method, a key of `EXPRESS_SUBPAGES`.
+	 * @return mixed
+	 */
+	public function get_subpage_view_config( $config, string $method ) {
+		if ( ! is_object( $config ) || ! is_callable( [ $config, 'merge' ] ) ) {
+			return $config;
+		}
+
+		$card       = static fn( string $id, string $label, array $children ): array => [
+			'id'       => $id,
+			'label'    => $label,
+			'layout'   => [
+				'type'          => 'card',
+				'isCollapsible' => false,
+			],
+			'children' => $children,
+		];
+		$unlabelled = static fn( string $id ): array => [
+			'id'     => $id,
+			'layout' => [
+				'type'          => 'regular',
+				'labelPosition' => 'none',
+			],
+		];
+
+		$cards = [
+			$card( 'placement', __( 'Button placement', 'woocommerce-payments' ), [ $unlabelled( "{$method}_placement_description" ), "{$method}_on_product", "{$method}_on_cart", "{$method}_on_checkout" ] ),
+		];
+		if ( 'woopay' === $method ) {
+			$cards[] = $card( 'appearance', __( 'Checkout appearance', 'woocommerce-payments' ), [ 'woopay_store_logo', 'is_woopay_global_theme_support_enabled', 'woopay_custom_message', $unlabelled( 'woopay_checkout_preview' ) ] );
+		}
+		if ( 'amazon_pay' !== $method ) {
+			$cards[] = $card( 'button-style', __( 'Button style', 'woocommerce-payments' ), [ $unlabelled( 'button_style_description' ), 'payment_request_button_type', 'payment_request_button_size', 'payment_request_button_theme', 'payment_request_button_border_radius', $unlabelled( 'button_preview' ) ] );
+		}
+
+		return $config->merge(
+			[
+				'form' => [
+					'layout' => [
+						'type'          => 'regular',
+						'labelPosition' => 'top',
+					],
+					'fields' => $cards,
+				],
+			],
+			1
+		);
+	}
+
+	/**
+	 * Gets the titles of the express checkout sub-pages, keyed by method.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_subpage_titles(): array {
+		return [
+			'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+			'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+			'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+		];
+	}
+
+	/**
+	 * Gets the options of one of the gateway's form fields, such as the express checkout button types.
+	 *
+	 * @param string $key The form field key.
+	 * @return array<string, string>
+	 */
+	private function get_form_field_options( string $key ): array {
+		$gateway = WC_Payments::get_gateway();
+		$options = $gateway ? ( $gateway->form_fields[ $key ]['options'] ?? [] ) : [];
+		return is_array( $options ) ? $options : [];
 	}
 
 	/**

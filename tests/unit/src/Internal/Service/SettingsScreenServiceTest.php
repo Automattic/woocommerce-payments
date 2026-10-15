@@ -92,6 +92,73 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'wcpay-settings-screen' ], $screens['payments']['woopayments']['scripts'] );
 	}
 
+	/**
+	 * @testWith ["woopayments/woopay", "WooPay"]
+	 *           ["woopayments/apple-pay-google-pay", "Apple Pay / Google Pay"]
+	 *           ["woopayments/amazon-pay", "Amazon Pay"]
+	 *
+	 * @param string $id    The sub-page's screen ID.
+	 * @param string $title The sub-page's title.
+	 */
+	public function test_registers_express_checkout_sub_pages( string $id, string $title ): void {
+		$screens = $this->sut->register_screen( [] );
+
+		$this->assertSame( $title, $screens['payments'][ $id ]['title'] );
+		$this->assertSame( '/wc/v3/payments/settings-dataform', $screens['payments'][ $id ]['rest_path'] );
+		$this->assertSame( [ 'wcpay-settings-screen' ], $screens['payments'][ $id ]['scripts'] );
+	}
+
+	/**
+	 * @testWith ["woopay", "woopay"]
+	 *           ["payment_request", "apple-pay-google-pay"]
+	 *           ["amazon_pay", "amazon-pay"]
+	 *
+	 * @param string $method The classic `method` argument.
+	 * @param string $path   The sub-page path.
+	 */
+	public function test_opens_classic_customisation_links_on_their_sub_page( string $method, string $path ): void {
+		$location = $this->sut->get_classic_location(
+			[
+				'path' => '',
+				'args' => [
+					'method' => $method,
+					'other'  => 'kept',
+				],
+			],
+			'woopayments'
+		);
+
+		$this->assertSame(
+			[
+				'path' => $path,
+				'args' => [ 'other' => 'kept' ],
+			],
+			$location
+		);
+	}
+
+	public function test_leaves_other_classic_links_unchanged(): void {
+		$location = [
+			'path' => '',
+			'args' => [ 'method' => 'card' ],
+		];
+
+		$this->assertSame( $location, $this->sut->get_classic_location( $location, 'woopayments' ) );
+		$this->assertSame(
+			[
+				'path' => '',
+				'args' => [ 'method' => 'woopay' ],
+			],
+			$this->sut->get_classic_location(
+				[
+					'path' => '',
+					'args' => [ 'method' => 'woopay' ],
+				],
+				'other'
+			)
+		);
+	}
+
 	public function test_save_returns_saved_record(): void {
 		update_option( 'wcpay_settings_screen_test', true );
 		$request = new WP_REST_Request( 'PUT', '/wc/v3/payments/settings-dataform' );
@@ -152,7 +219,37 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_view_config_places_every_field_in_a_card(): void {
-		$config = new class() {
+		$in_cards = $this->get_fields_in_cards( $this->sut->get_view_config( $this->create_config() ) );
+		// The payment methods control shows the express checkouts in its own tabs.
+		$in_cards[] = 'is_payment_request_enabled';
+		$field_ids  = array_column( $this->sut->get_fields(), 'id' );
+		sort( $in_cards );
+		sort( $field_ids );
+		$this->assertSame( $field_ids, $in_cards );
+	}
+
+	/**
+	 * @testWith ["woopay"]
+	 *           ["payment_request"]
+	 *           ["amazon_pay"]
+	 *
+	 * @param string $method The express checkout method.
+	 */
+	public function test_sub_page_view_config_places_every_field_in_a_card( string $method ): void {
+		$in_cards  = $this->get_fields_in_cards( $this->sut->get_subpage_view_config( $this->create_config(), $method ) );
+		$field_ids = array_column( $this->sut->get_subpage_fields( $method ), 'id' );
+		sort( $in_cards );
+		sort( $field_ids );
+		$this->assertSame( $field_ids, $in_cards );
+	}
+
+	/**
+	 * Creates a View Config container that records what's merged into it.
+	 *
+	 * @return object
+	 */
+	private function create_config() {
+		return new class() {
 			/**
 			 * The merged config.
 			 *
@@ -170,27 +267,26 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 				return $this;
 			}
 		};
+	}
 
-		$this->sut->get_view_config( $config );
-
-		// Collect the fields in the cards, including those inside groups such as the payout schedule row.
-		$collect  = static function ( array $children ) use ( &$collect ): array {
+	/**
+	 * Collects the IDs of the fields in a config's cards, including those inside groups such as the payout schedule row.
+	 *
+	 * @param object $config The View Config container.
+	 * @return string[]
+	 */
+	private function get_fields_in_cards( $config ): array {
+		$collect = static function ( array $entries ) use ( &$collect ): array {
 			$ids = [];
-			foreach ( $children as $child ) {
-				if ( is_array( $child ) && isset( $child['children'] ) ) {
-					$ids = array_merge( $ids, $collect( $child['children'] ) );
+			foreach ( $entries as $entry ) {
+				if ( is_array( $entry ) && isset( $entry['children'] ) ) {
+					$ids = array_merge( $ids, $collect( $entry['children'] ) );
 				} else {
-					$ids[] = is_array( $child ) ? $child['id'] : $child;
+					$ids[] = is_array( $entry ) ? $entry['id'] : $entry;
 				}
 			}
 			return $ids;
 		};
-		$in_cards = $collect( array_merge( ...array_column( $config->merged['form']['fields'], 'children' ) ) );
-		// The payment methods control shows the express checkouts in its own tabs.
-		$in_cards[] = 'is_payment_request_enabled';
-		$field_ids  = array_column( $this->sut->get_fields(), 'id' );
-		sort( $in_cards );
-		sort( $field_ids );
-		$this->assertSame( $field_ids, $in_cards );
+		return $collect( $config->merged['form']['fields'] );
 	}
 }
