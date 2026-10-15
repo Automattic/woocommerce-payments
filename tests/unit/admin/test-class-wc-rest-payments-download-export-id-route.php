@@ -24,6 +24,7 @@ class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase 
 	private const DOWNLOAD_ROUTE_BASES = [
 		'/wc/v3/payments/transactions',
 		'/wc/v3/payments/disputes',
+		'/wc/v3/payments/deposits',
 	];
 
 	/**
