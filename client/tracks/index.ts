@@ -59,10 +59,76 @@ export const recordEvent = (
 	} );
 };
 
+// Each `platform_tracks` request loads WordPress on the merchant's server, so shopper events
+// are queued and sent together. The delay covers the page view and the express checkout
+// button loads, which arrive a second or two apart.
+export const shopperEventsFlushDelay = 2000;
+export const shopperEventsMaxWait = 5000;
+// Keep in sync with `WooPay_Tracker::MAX_BATCHED_EVENTS`.
+export const maxBatchedShopperEvents = 20;
+
+interface ShopperEventsQueue {
+	events: { name: ShopperEvent; properties: Record< string, unknown > }[];
+	flushTimer?: ReturnType< typeof setTimeout >;
+	firstQueuedAt?: number;
+	hasPageHideListeners?: boolean;
+}
+
+// Kept on `window` because several WooPayments bundles on the same page include this module.
+const getShopperEventsQueue = (): ShopperEventsQueue => {
+	const globalWindow = window as typeof window & {
+		wcpayShopperEventsQueue?: ShopperEventsQueue;
+	};
+	if ( ! globalWindow.wcpayShopperEventsQueue ) {
+		globalWindow.wcpayShopperEventsQueue = { events: [] };
+	}
+	return globalWindow.wcpayShopperEventsQueue;
+};
+
+/**
+ * Sends all queued shopper events in a single request.
+ *
+ * @param {boolean} isPageHiding Whether the page is being hidden or unloaded.
+ */
+export const flushShopperEvents = ( isPageHiding = false ): void => {
+	const queue = getShopperEventsQueue();
+	clearTimeout( queue.flushTimer );
+	queue.flushTimer = undefined;
+	queue.firstQueuedAt = undefined;
+
+	if ( queue.events.length === 0 ) {
+		return;
+	}
+
+	const events = queue.events.splice( 0, queue.events.length );
+	const nonce =
+		getConfig( 'platformTrackerNonce' ) ??
+		getExpressCheckoutConfig( 'nonce' )?.platform_tracker;
+	const ajaxUrl =
+		getConfig( 'ajaxUrl' ) ?? getExpressCheckoutConfig( 'ajax_url' );
+	const body = new FormData();
+
+	body.append( 'tracksNonce', nonce );
+	body.append( 'action', 'platform_tracks' );
+	body.append( 'tracksEvents', JSON.stringify( events ) );
+
+	// `fetch` can be cancelled when the page unloads, so use a beacon instead.
+	if ( isPageHiding && navigator.sendBeacon?.( ajaxUrl, body ) ) {
+		return;
+	}
+
+	fetch( ajaxUrl, {
+		method: 'post',
+		body,
+		keepalive: true,
+	} ).catch( () => undefined );
+};
+
 /**
  * Records events from buyers (aka shoppers).
  *
- * Event names will be prefixed with 'wcpay_' when recorded.
+ * Event names will be prefixed with 'wcpay_' when recorded. Events are queued and sent
+ * together, see `flushShopperEvents()`.
  *
  * @param {string} eventName         Name of the event – don't include the 'wcpay_' prefix, which will be added when recorded.
  * @param {Object} [eventProperties] Event properties (optional).
@@ -79,21 +145,36 @@ export const recordUserEvent = (
 		return;
 	}
 
-	const nonce =
-		getConfig( 'platformTrackerNonce' ) ??
-		getExpressCheckoutConfig( 'nonce' )?.platform_tracker;
-	const ajaxUrl =
-		getConfig( 'ajaxUrl' ) ?? getExpressCheckoutConfig( 'ajax_url' );
-	const body = new FormData();
+	const queue = getShopperEventsQueue();
+	queue.events.push( { name: eventName, properties: eventProperties } );
 
-	body.append( 'tracksNonce', nonce );
-	body.append( 'action', 'platform_tracks' );
-	body.append( 'tracksEventName', eventName );
-	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
-	fetch( ajaxUrl, {
-		method: 'post',
-		body,
-	} ).then( ( response ) => response.json() );
+	if ( ! queue.hasPageHideListeners ) {
+		queue.hasPageHideListeners = true;
+		window.addEventListener( 'pagehide', () => flushShopperEvents( true ) );
+		document.addEventListener( 'visibilitychange', () => {
+			if ( document.visibilityState === 'hidden' ) {
+				flushShopperEvents( true );
+			}
+		} );
+	}
+
+	if ( queue.events.length >= maxBatchedShopperEvents ) {
+		flushShopperEvents();
+		return;
+	}
+
+	const now = Date.now();
+	if ( queue.firstQueuedAt === undefined ) {
+		queue.firstQueuedAt = now;
+	}
+	clearTimeout( queue.flushTimer );
+	queue.flushTimer = setTimeout(
+		flushShopperEvents,
+		Math.min(
+			shopperEventsFlushDelay,
+			queue.firstQueuedAt + shopperEventsMaxWait - now
+		)
+	);
 };
 
 /**
