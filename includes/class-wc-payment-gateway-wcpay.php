@@ -4397,6 +4397,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
+			} elseif ( $payment_method_details ) {
+				$payment_method_type = $this->get_payment_method_type_from_payment_details( $payment_method_details );
+				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->store_card_details_meta_for_order( $order, $payment_method_type, $payment_method_details );
 			}
 
 			// A card change only saves the card: completing the subscription would pay its last unpaid renewal.
