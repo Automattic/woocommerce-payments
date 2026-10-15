@@ -35,6 +35,10 @@ runs:
           fi
 
           if [[ ${FAILED_SPECS_COUNT} -gt 0 ]]; then
+            # The re-run below clears test-results and rewrites the results file,
+            # so keep this run's screenshots, traces and results for the artifact.
+            cp -r tests/e2e/test-results tests/e2e/test-results-first-run 2>/dev/null || true
+            cp "$RESULTS_JSON" tests/e2e/results-first-run.json
             echo "::notice::${FAILED_SPECS_COUNT} spec file(s) failed in the first run. We will re-run only the failed specs."
             exit 0
           fi
@@ -94,6 +98,8 @@ runs:
           path: |
             playwright-report/
             tests/e2e/test-results
+            tests/e2e/test-results-first-run
+            tests/e2e/results-first-run.json
             ${{ env.E2E_RESULT_FILEPATH }}
             ${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}
           if-no-files-found: ignore
