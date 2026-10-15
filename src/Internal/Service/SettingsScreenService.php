@@ -187,13 +187,19 @@ class SettingsScreenService {
 		$params = $request->get_json_params();
 		$params = is_array( $params ) ? $params : $request->get_body_params();
 
-		// The existing route needs the advanced rules with the protection level, but core-data only sends changed values.
-		if ( isset( $params['current_protection_level'] ) && ! array_key_exists( 'advanced_fraud_protection_settings', $params ) ) {
+		// The existing route saves the advanced rules and the protection level only together, but core-data only sends changed values.
+		$has_level = isset( $params['current_protection_level'] );
+		$has_rules = array_key_exists( 'advanced_fraud_protection_settings', $params );
+		if ( $has_level !== $has_rules ) {
 			$current = $this->get_settings();
 			if ( is_wp_error( $current ) ) {
 				return $current;
 			}
-			$params['advanced_fraud_protection_settings'] = $current->get_data()['advanced_fraud_protection_settings'] ?? [];
+			if ( $has_level ) {
+				$params['advanced_fraud_protection_settings'] = $current->get_data()['advanced_fraud_protection_settings'] ?? [];
+			} else {
+				$params['current_protection_level'] = $current->get_data()['current_protection_level'] ?? '';
+			}
 		}
 
 		$save = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );

@@ -218,6 +218,33 @@ class SettingsScreenServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [ [ 'key' => 'existing-rule' ] ], $payload['advanced_fraud_protection_settings'] );
 	}
 
+	public function test_save_keeps_protection_level_when_only_fraud_rules_change(): void {
+		$payload = null;
+		register_rest_route(
+			'wc/v3',
+			'/payments/settings',
+			[
+				'methods'             => [ 'GET', 'POST' ],
+				'permission_callback' => '__return_true',
+				'callback'            => function ( $request ) use ( &$payload ) {
+					if ( 'POST' === $request->get_method() ) {
+						$payload = $request->get_params();
+					}
+					return new WP_REST_Response( [ 'current_protection_level' => 'advanced' ] );
+				},
+			],
+			true
+		);
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings-dataform' );
+		$request->set_body_params( [ 'advanced_fraud_protection_settings' => [ [ 'key' => 'new-rule' ] ] ] );
+
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'advanced', $payload['current_protection_level'] );
+		$this->assertSame( [ [ 'key' => 'new-rule' ] ], $payload['advanced_fraud_protection_settings'] );
+	}
+
 	public function test_view_config_places_every_field_in_a_card(): void {
 		$in_cards = $this->get_fields_in_cards( $this->sut->get_view_config( $this->create_config() ) );
 		// The payment methods control shows the express checkouts in its own tabs.
