@@ -1,4 +1,4 @@
 Significance: patch
 Type: update
 
-Clarify the development mode notices on the Payments Overview, Connect, Settings, and onboarding pages, and stop showing an empty notice on Overview for live accounts in development mode.
+Show one development mode notice that names what turned development mode on across the Payments Overview, Settings, onboarding, transactions, payouts, disputes, documents and loans pages, and stop showing an empty notice on Overview for live accounts in development mode.
