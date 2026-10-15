@@ -18,27 +18,33 @@ import AmazonPayExpressCheckoutItem from './amazon-pay-item';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import { useGetAvailablePaymentMethodIds } from 'wcpay/data/settings';
 
-const ExpressCheckout = () => {
+export const ExpressCheckoutControl = () => {
 	const {
 		featureFlags: { amazonPay: isAmazonPayEligible },
 	} = useContext( WCPaySettingsContext );
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	return (
-		<Card className="express-checkouts">
-			<CardBody size={ 0 }>
-				<ul className="express-checkouts-list">
-					<WooPayExpressCheckoutItem />
-					<AppleGooglePayExpressCheckoutItem />
-					<LinkExpressCheckoutItem />
-					{ isAmazonPayEligible &&
-						availablePaymentMethodIds.includes( 'amazon_pay' ) && (
-							<AmazonPayExpressCheckoutItem />
-						) }
-				</ul>
-			</CardBody>
-		</Card>
+		<div className="express-checkouts">
+			<ul className="express-checkouts-list">
+				<WooPayExpressCheckoutItem />
+				<AppleGooglePayExpressCheckoutItem />
+				<LinkExpressCheckoutItem />
+				{ isAmazonPayEligible &&
+					availablePaymentMethodIds.includes( 'amazon_pay' ) && (
+						<AmazonPayExpressCheckoutItem />
+					) }
+			</ul>
+		</div>
 	);
 };
+
+const ExpressCheckout = () => (
+	<Card className="express-checkouts">
+		<CardBody size={ 0 }>
+			<ExpressCheckoutControl />
+		</CardBody>
+	</Card>
+);
 
 export default ExpressCheckout;
