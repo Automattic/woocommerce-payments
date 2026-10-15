@@ -45,6 +45,7 @@ declare global {
 		testMode: boolean;
 		testModeOnboarding: boolean;
 		devMode: boolean;
+		devModeReason?: string;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
