@@ -99,11 +99,81 @@ test.describe( 'Alipay Checkout', () => {
 				await alipayRadio.click();
 				await expect( alipayRadio ).toBeChecked();
 
-				await shopper.placeOrderWCB( shopperPage, false );
+				// TEMP diagnostics for the WP nightly flake. Do not merge.
+				const t0 = Date.now();
+				const diag: string[] = [];
+				const log = ( s: string ) =>
+					diag.push( `+${ Date.now() - t0 }ms ${ s }` );
+				const relevant = ( u: string ) =>
+					/store\/v1\/checkout|stripe|alipay|wc-ajax|admin-ajax|order-received|wcpay/i.test(
+						u
+					);
+				shopperPage.on( 'request', ( r ) => {
+					if ( relevant( r.url() ) ) {
+						log( `REQ ${ r.method() } ${ r.url() }` );
+					}
+				} );
+				shopperPage.on( 'response', async ( r ) => {
+					if ( ! relevant( r.url() ) ) return;
+					let body = '';
+					if ( /store\/v1\/checkout/.test( r.url() ) ) {
+						body = ( await r.text().catch( () => '' ) ).slice(
+							0,
+							1500
+						);
+					}
+					log( `RES ${ r.status() } ${ r.url() } ${ body }` );
+				} );
+				shopperPage.on( 'requestfailed', ( r ) =>
+					log( `FAILED ${ r.url() } ${ r.failure()?.errorText }` )
+				);
+				shopperPage.on( 'framenavigated', ( f ) => {
+					if ( f === shopperPage.mainFrame() ) {
+						log( `NAV ${ f.url() }` );
+					}
+				} );
+				shopperPage.on( 'console', ( m ) =>
+					log( `CONSOLE ${ m.type() } ${ m.text().slice( 0, 500 ) }` )
+				);
+				shopperPage.on( 'pageerror', ( e ) =>
+					log( `PAGEERROR ${ e.message }` )
+				);
+				await shopperPage
+					.context()
+					.tracing.start( { screenshots: true, snapshots: true } );
 
-				await expect(
-					shopperPage.getByText( /Alipay test payment page/ )
-				).toBeVisible();
+				try {
+					await shopper.placeOrderWCB( shopperPage, false );
+					log( 'clicked Place Order' );
+
+					await expect(
+						shopperPage.getByText( /Alipay test payment page/ )
+					).toBeVisible();
+				} catch ( e ) {
+					log( `expect failed, url=${ shopperPage.url() }` );
+					await shopperPage
+						.waitForURL( /stripe|alipay|order-received/, {
+							timeout: 45000,
+						} )
+						.then( () =>
+							log( `late NAV ok ${ shopperPage.url() }` )
+						)
+						.catch( () =>
+							log(
+								`still stuck after 45s, url=${ shopperPage.url() }`
+							)
+						);
+					throw e;
+				} finally {
+					await shopperPage.context().tracing.stop( {
+						path: test.info().outputPath( 'shopper-trace.zip' ),
+					} );
+					console.log( `ALIPAY-DIAG\n${ diag.join( '\n' ) }` );
+					await test.info().attach( 'alipay-diag', {
+						body: diag.join( '\n' ),
+						contentType: 'text/plain',
+					} );
+				}
 
 				await shopperPage.getByText( 'Authorize Test Payment' ).click();
 
