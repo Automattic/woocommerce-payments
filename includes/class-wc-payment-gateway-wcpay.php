@@ -1739,18 +1739,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_token = $payment_information->get_payment_token();
 
 				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
-					$link_change_note_template = Country_Code::UNITED_KINGDOM === $this->get_account_country()
-						/* translators: %1$s: redacted email address for Onelink payment method */
-						? __( 'Payment method is changed to: <strong>Onelink ending in %1$s</strong>.', 'woocommerce-payments' )
-						/* translators: %1$s: redacted email address for Link payment method */
-						: __( 'Payment method is changed to: <strong>Link ending in %1$s</strong>.', 'woocommerce-payments' );
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							$link_change_note_template,
+							/* translators: %1$s: Link brand name (Stripe Link or Onelink), %2$s: redacted email address for the Link payment method */
+							__( 'Payment method is changed to: <strong>%1$s ending in %2$s</strong>.', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
 							]
 						),
+						LinkDefinition::get_title( $this->get_account_country() ),
 						$payment_token->get_redacted_email()
 					);
 				} else {

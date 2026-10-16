@@ -19,6 +19,7 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
 /**
  * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
@@ -184,11 +185,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			if ( ! empty( $email ) && false === strpos( $default_title, $email ) ) {
 				// Link uses the card gateway, so $default_title is "Card". Use the Link brand name instead,
 				// which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
-				$link_brand = \WCPay\Constants\Country_Code::UNITED_KINGDOM === $this->get_account_country()
-					? __( 'Onelink', 'woocommerce-payments' )
-					: __( 'Stripe Link', 'woocommerce-payments' );
 				// translators: 1: payment method (Stripe Link or Onelink), 2: redacted customer email.
-				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $link_brand, $email );
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $email );
 			}
 		}
 
@@ -1092,11 +1090,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				if ( ! empty( $payment_method['link']['email'] ) ) {
 					// Link uses the card gateway, so $new_payment_method_title is "Card". Use the Link brand name
 					// instead, which is country-aware ("Onelink" for GB, "Stripe Link" elsewhere).
-					$link_brand = \WCPay\Constants\Country_Code::UNITED_KINGDOM === $this->get_account_country()
-						? __( 'Onelink', 'woocommerce-payments' )
-						: __( 'Stripe Link', 'woocommerce-payments' );
 					// translators: 1: payment method (Stripe Link or Onelink), 2: customer email.
-					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $link_brand, $payment_method['link']['email'] );
+					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), LinkDefinition::get_title( $this->get_account_country() ), $payment_method['link']['email'] );
 				}
 			} catch ( Exception $e ) {
 				Logger::error( $e );

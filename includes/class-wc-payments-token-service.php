@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 
 /**
  * Handles and process WC payment tokens API.
@@ -487,9 +488,11 @@ class WC_Payments_Token_Service {
 		if ( WC_Payment_Token_WCPay_Link::TYPE === strtolower( $payment_token->get_type() ) ) {
 			$account_country         = WC_Payments::get_gateway()->get_account_country();
 			$item['method']['last4'] = $payment_token->get_redacted_email();
-			$item['method']['brand'] = \WCPay\Constants\Country_Code::UNITED_KINGDOM === $account_country
-				? esc_html__( 'Onelink email', 'woocommerce-payments' )
-				: esc_html__( 'Stripe Link email', 'woocommerce-payments' );
+			$item['method']['brand'] = sprintf(
+				/* translators: %s: Link brand name (Stripe Link or Onelink). */
+				esc_html__( '%s email', 'woocommerce-payments' ),
+				LinkDefinition::get_title( $account_country )
+			);
 		}
 		return $item;
 	}

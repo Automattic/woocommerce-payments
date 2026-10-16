@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Show Onelink consistently as the Link payment method name on UK accounts.
+Show Onelink consistently as the Link payment method name on UK accounts, and use Stripe Link elsewhere.

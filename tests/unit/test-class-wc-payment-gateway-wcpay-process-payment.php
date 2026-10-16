@@ -1594,7 +1594,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function zero_amount_saved_link_title_provider() {
 		return [
 			'GB account' => [ 'GB', 'Onelink' ],
-			'US account' => [ 'US', 'Link' ],
+			'US account' => [ 'US', 'Stripe Link' ],
 		];
 	}
 
