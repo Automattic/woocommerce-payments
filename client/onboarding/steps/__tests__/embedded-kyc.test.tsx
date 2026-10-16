@@ -42,7 +42,7 @@ declare const global: {
 };
 
 const devModeReason =
-	'Development mode is on because a plugin or custom code turned it on.';
+	'A plugin or custom code turned it on using the wcpay_dev_mode filter.';
 
 const mockOnboardingContext = () => {
 	( useOnboardingContext as jest.Mock ).mockReturnValue( {
@@ -85,8 +85,8 @@ describe( 'EmbeddedKyc Component', () => {
 		const { container } = render( <EmbeddedKyc /> );
 
 		expect( container ).toHaveTextContent(
-			'Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ' +
-				'Development mode is on because a plugin or custom code turned it on. To set up a live account, use your live store. Learn more'
+			'Your store is in development mode, so payments are simulated. ' +
+				'A plugin or custom code turned it on using the wcpay_dev_mode filter. Live accounts can only be set up on your live store. Learn more'
 		);
 	} );
 
@@ -97,8 +97,8 @@ describe( 'EmbeddedKyc Component', () => {
 		const { container } = render( <EmbeddedKyc /> );
 
 		expect( container ).toHaveTextContent(
-			'Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ' +
-				'To set up a live account, use your live store. Learn more'
+			'Your store is in development mode, so payments are simulated. ' +
+				'Live accounts can only be set up on your live store. Learn more'
 		);
 	} );
 
@@ -109,7 +109,7 @@ describe( 'EmbeddedKyc Component', () => {
 		const { container } = render( <EmbeddedKyc /> );
 
 		expect( container.textContent ).not.toContain(
-			'Your store is in development mode.'
+			'Your store is in development mode'
 		);
 	} );
 } );

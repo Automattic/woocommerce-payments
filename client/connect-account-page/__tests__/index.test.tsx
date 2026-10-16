@@ -81,15 +81,15 @@ describe( 'ConnectAccountPage', () => {
 		global.wcpaySettings.testModeOnboarding = true;
 		global.wcpaySettings.devMode = true;
 		global.wcpaySettings.devModeReason =
-			'Development mode is on because the WCPAY_DEV_MODE constant is set.';
+			'The WCPAY_DEV_MODE constant is set.';
 
 		const { container } = render( <ConnectAccountPage /> );
 
 		expect(
 			container.querySelector( '.wcpay-banner-notice__content' )
 		).toHaveTextContent(
-			'Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ' +
-				'Development mode is on because the WCPAY_DEV_MODE constant is set. To set up a live account, use your live store. Learn more'
+			'Your store is in development mode, so payments are simulated. ' +
+				'The WCPAY_DEV_MODE constant is set. Live accounts can only be set up on your live store. Learn more'
 		);
 		expect( container ).not.toHaveTextContent( 'please disable it' );
 	} );
@@ -107,7 +107,7 @@ describe( 'ConnectAccountPage', () => {
 			'Test mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it.'
 		);
 		expect( container ).not.toHaveTextContent(
-			'Your store is in development mode.'
+			'Your store is in development mode'
 		);
 	} );
 

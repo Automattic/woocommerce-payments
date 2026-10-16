@@ -20,8 +20,7 @@ declare const global: {
 	};
 };
 
-const devModeReason =
-	'Development mode is on because this site is set up as a staging site.';
+const devModeReason = 'This site is set up as a staging site.';
 
 jest.mock( 'utils', () => ( {
 	isInDevMode: jest.fn(),
@@ -96,8 +95,8 @@ describe( 'Test mode notification', () => {
 		);
 
 		expect( container ).toHaveTextContent(
-			'Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ' +
-				'Development mode is on because this site is set up as a staging site. To accept real payments, use your live store. Learn more'
+			'Your store is in development mode, so payments are simulated. ' +
+				'This site is set up as a staging site. Real payments only work on your live store. Learn more'
 		);
 		expect(
 			screen.getByRole( 'link', { name: /Learn more/ } )
@@ -126,8 +125,8 @@ describe( 'Test mode notification', () => {
 			);
 
 			expect( container ).toHaveTextContent(
-				`Viewing test ${ plural }. Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ` +
-					'Development mode is on because this site is set up as a staging site. To accept real payments, use your live store. Learn more'
+				`Viewing test ${ plural }. Your store is in development mode, so payments are simulated. ` +
+					'This site is set up as a staging site. Real payments only work on your live store. Learn more'
 			);
 			expect(
 				screen.getByRole( 'link', { name: /Learn more/ } )
@@ -186,7 +185,7 @@ describe( 'Test mode notification', () => {
 			);
 
 			expect( container.textContent ).toContain(
-				'Viewing test transactions. Your store is in development mode.'
+				'Viewing test transactions. Your store is in development mode, so payments are simulated.'
 			);
 		} );
 	} );

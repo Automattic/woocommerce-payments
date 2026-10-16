@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -25,28 +25,21 @@ const DevModeMessage: React.FC< Props > = ( {
 
 	return (
 		<>
-			{ interpolateComponents( {
-				mixedString: sprintf(
-					/* translators: %1$s: WooPayments */
-					__(
-						'{{strong}}Your store is in development mode.{{/strong}} %1$s only works in test mode here, so all payments are simulated.',
-						'woocommerce-payments'
-					),
-					'WooPayments'
-				),
-				components: {
-					strong: <strong />,
-				},
-			} ) }{ ' ' }
+			<strong>
+				{ __(
+					'Your store is in development mode, so payments are simulated.',
+					'woocommerce-payments'
+				) }
+			</strong>{ ' ' }
 			{ reason ? `${ reason } ` : null }
 			{ interpolateComponents( {
 				mixedString: isOnboarding
 					? __(
-							'To set up a live account, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+							'Live accounts can only be set up on your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						)
 					: __(
-							'To accept real payments, use your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+							'Real payments only work on your live store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
 				components: {

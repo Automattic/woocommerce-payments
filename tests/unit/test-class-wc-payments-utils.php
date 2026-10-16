@@ -1521,27 +1521,27 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		return [
 			'WCPAY_DEV_MODE constant'      => [
 				[ 'WCPAY_DEV_MODE' ],
-				'Development mode is on because the WCPAY_DEV_MODE constant is set.',
+				'The WCPAY_DEV_MODE constant is set.',
 			],
 			'staging environment'          => [
 				[ 'WP_ENVIRONMENT_TYPE=staging' ],
-				'Development mode is on because this site is set up as a staging site.',
+				'This site is set up as a staging site.',
 			],
 			'development environment'      => [
 				[ 'WP_ENVIRONMENT_TYPE=development' ],
-				'Development mode is on because this site is set up as a development site.',
+				'This site is set up as a development site.',
 			],
 			'WP_DEVELOPMENT_MODE constant' => [
 				[ 'WP_DEVELOPMENT_MODE=plugin' ],
-				'Development mode is on because the WP_DEVELOPMENT_MODE constant is set.',
+				'The WP_DEVELOPMENT_MODE constant is set.',
 			],
 			'wcpay_dev_mode filter'        => [
 				[ 'wcpay_dev_mode filter' ],
-				'Development mode is on because a plugin or custom code turned it on.',
+				'A plugin or custom code turned it on using the wcpay_dev_mode filter.',
 			],
 			'first of several triggers'    => [
 				[ 'WCPAY_DEV_MODE', 'WP_ENVIRONMENT_TYPE=staging' ],
-				'Development mode is on because the WCPAY_DEV_MODE constant is set.',
+				'The WCPAY_DEV_MODE constant is set.',
 			],
 			'mode switched on in code'     => [
 				[ 'manual' ],

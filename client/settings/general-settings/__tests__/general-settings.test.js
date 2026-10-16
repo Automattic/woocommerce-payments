@@ -186,8 +186,7 @@ describe( 'GeneralSettings', () => {
 	} );
 
 	it( 'shows dev mode help text when dev mode is enabled', () => {
-		const devModeReason =
-			'Development mode is on because the WP_DEVELOPMENT_MODE constant is set.';
+		const devModeReason = 'The WP_DEVELOPMENT_MODE constant is set.';
 		global.wcpaySettings.devModeReason = devModeReason;
 		useDevMode.mockReturnValue( true );
 		useTestMode.mockReturnValue( [ false, jest.fn() ] );
@@ -195,9 +194,9 @@ describe( 'GeneralSettings', () => {
 		delete global.wcpaySettings.devModeReason;
 
 		expect( container ).toHaveTextContent(
-			'Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ' +
-				'Development mode is on because the WP_DEVELOPMENT_MODE constant is set. ' +
-				'To accept real payments, use your live store. Learn more'
+			'Your store is in development mode, so payments are simulated. ' +
+				'The WP_DEVELOPMENT_MODE constant is set. ' +
+				'Real payments only work on your live store. Learn more'
 		);
 	} );
 

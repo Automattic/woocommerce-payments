@@ -85,19 +85,19 @@ class WC_Payments_Utils {
 		$trigger = (string) ( $triggers[0] ?? '' );
 
 		if ( 'WCPAY_DEV_MODE' === $trigger ) {
-			return __( 'Development mode is on because the WCPAY_DEV_MODE constant is set.', 'woocommerce-payments' );
+			return __( 'The WCPAY_DEV_MODE constant is set.', 'woocommerce-payments' );
 		}
 		if ( 'WP_ENVIRONMENT_TYPE=staging' === $trigger ) {
-			return __( 'Development mode is on because this site is set up as a staging site.', 'woocommerce-payments' );
+			return __( 'This site is set up as a staging site.', 'woocommerce-payments' );
 		}
 		if ( 'WP_ENVIRONMENT_TYPE=development' === $trigger ) {
-			return __( 'Development mode is on because this site is set up as a development site.', 'woocommerce-payments' );
+			return __( 'This site is set up as a development site.', 'woocommerce-payments' );
 		}
 		if ( 0 === strpos( $trigger, 'WP_DEVELOPMENT_MODE=' ) ) {
-			return __( 'Development mode is on because the WP_DEVELOPMENT_MODE constant is set.', 'woocommerce-payments' );
+			return __( 'The WP_DEVELOPMENT_MODE constant is set.', 'woocommerce-payments' );
 		}
 		if ( 'wcpay_dev_mode filter' === $trigger ) {
-			return __( 'Development mode is on because a plugin or custom code turned it on.', 'woocommerce-payments' );
+			return __( 'A plugin or custom code turned it on using the wcpay_dev_mode filter.', 'woocommerce-payments' );
 		}
 
 		return '';

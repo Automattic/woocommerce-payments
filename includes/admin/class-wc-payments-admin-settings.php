@@ -244,19 +244,14 @@ class WC_Payments_Admin_Settings {
 	 * The same message is used on the other WooPayments pages, so keep it in sync with the `DevModeMessage` component.
 	 */
 	private function print_dev_mode_notice_text() {
-		echo '<b>' . esc_html__( 'Your store is in development mode.', 'woocommerce-payments' ) . '</b> ';
-		printf(
-			/* translators: %s: WooPayments */
-			esc_html__( '%s only works in test mode here, so all payments are simulated.', 'woocommerce-payments' ) . ' ',
-			'WooPayments'
-		);
+		echo '<b>' . esc_html__( 'Your store is in development mode, so payments are simulated.', 'woocommerce-payments' ) . '</b> ';
 		$reason = WC_Payments_Utils::get_dev_mode_reason( WC_Payments::mode()->get_dev_mode_triggers() );
 		if ( '' !== $reason ) {
 			echo esc_html( $reason ) . ' ';
 		}
 		printf(
 			/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
-			esc_html__( 'To accept real payments, use your live store. %1$sLearn more%2$s', 'woocommerce-payments' ),
+			esc_html__( 'Real payments only work on your live store. %1$sLearn more%2$s', 'woocommerce-payments' ),
 			'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes' ) . '" target="_blank" rel="noreferrer noopener">',
 			'</a>'
 		);

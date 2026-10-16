@@ -256,7 +256,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		// Assert.
-		$this->assertStringContainsString( '<b>Your store is in development mode.</b> WooPayments only works in test mode here, so all payments are simulated. To accept real payments, use your live store.', $result );
+		$this->assertStringContainsString( '<b>Your store is in development mode, so payments are simulated.</b> Real payments only work on your live store.', $result );
 		$this->assertStringContainsString( 'test-accounts/#developer-notes', $result );
 		$this->assertStringNotContainsString( 'WooPayments is in test mode', $result );
 		$this->assertStringNotContainsString( 'test card numbers', $result );
@@ -433,7 +433,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		// Assert.
-		$this->assertStringContainsString( '<b>Your store is in development mode.</b> WooPayments only works in test mode here, so all payments are simulated. To accept real payments, use your live store.', $result );
+		$this->assertStringContainsString( '<b>Your store is in development mode, so payments are simulated.</b> Real payments only work on your live store.', $result );
 		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 		$this->assertStringNotContainsString( 'wcpay-activate-payments-button', $result );
 	}
@@ -471,7 +471,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		}
 
 		// Assert.
-		$this->assertStringContainsString( 'WooPayments only works in test mode here, so all payments are simulated. Development mode is on because this site is set up as a staging site. To accept real payments, use your live store.', $result );
+		$this->assertStringContainsString( 'payments are simulated.</b> This site is set up as a staging site. Real payments only work on your live store.', $result );
 	}
 
 	public function test_it_does_not_show_sandbox_account_notice_when_not_connected() {
@@ -645,7 +645,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		// Assert.
-		$this->assertStringContainsString( '<b>Your store is in development mode.</b> WooPayments only works in test mode here, so all payments are simulated. To accept real payments, use your live store.', $result );
+		$this->assertStringContainsString( '<b>Your store is in development mode, so payments are simulated.</b> Real payments only work on your live store.', $result );
 		$this->assertStringNotContainsString( 'You are using a sandbox test account.', $result );
 		$this->assertStringNotContainsString( 'reset your account', $result );
 	}

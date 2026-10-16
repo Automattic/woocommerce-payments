@@ -27,8 +27,7 @@ declare const global: {
 	};
 };
 
-const devModeReason =
-	'Development mode is on because the WCPAY_DEV_MODE constant is set.';
+const devModeReason = 'The WCPAY_DEV_MODE constant is set.';
 
 const setAccount = ( {
 	isLive,
@@ -83,8 +82,8 @@ describe( 'SandboxModeSwitchToLiveNotice in development mode', () => {
 			expect(
 				container.querySelector( '.sandbox-mode-notice' )
 			).toHaveTextContent(
-				'Your store is in development mode. WooPayments only works in test mode here, so all payments are simulated. ' +
-					'Development mode is on because the WCPAY_DEV_MODE constant is set. To accept real payments, use your live store. Learn more'
+				'Your store is in development mode, so payments are simulated. ' +
+					'The WCPAY_DEV_MODE constant is set. Real payments only work on your live store. Learn more'
 			);
 
 			const learnMoreLink = screen.getByRole( 'link', {
