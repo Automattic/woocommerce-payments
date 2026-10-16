@@ -103,7 +103,6 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 	 * Simple update.
 	 */
 	public function update( &$entity ) {
-		global $wpdb;
 		$content_id = $entity->get_id();
 
 		if ( 'user' === $this->meta_type ) {
@@ -126,7 +125,7 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 	/**
 	 * Simple delete.
 	 */
-	public function delete( &$entity, $args = [] ) {
+	public function delete( &$entity, $_unused_args = [] ) {
 		if ( 'user' === $this->meta_type ) {
 			wp_delete_user( $entity->get_id() );
 		} else {

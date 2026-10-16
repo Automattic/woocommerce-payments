@@ -44,10 +44,10 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	/**
 	 * Get payment method type to display to user.
 	 *
-	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
+	 * @param  string $_unused_deprecated Deprecated since WooCommerce 3.0.
 	 * @return string
 	 */
-	public function get_display_name( $deprecated = '' ) {
+	public function get_display_name( $_unused_deprecated = '' ) {
 		$email = $this->get_email();
 		if ( ! empty( $email ) ) {
 			return sprintf(
@@ -93,10 +93,10 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	/**
 	 * Returns the type of this payment token.
 	 *
-	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
+	 * @param  string $_unused_deprecated Deprecated since WooCommerce 3.0.
 	 * @return string Payment Token Type.
 	 */
-	public function get_type( $deprecated = '' ) {
+	public function get_type( $_unused_deprecated = '' ) {
 		return self::TYPE;
 	}
 

@@ -376,6 +376,47 @@ class Fraud_Risk_Tools_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_it_gets_ruleset_result_labels_for_known_rules() {
+		$labels = Fraud_Risk_Tools::get_ruleset_result_labels(
+			[
+				'avs_verification'         => 'block',
+				'order_items_threshold'    => 'review',
+				'international_ip_address' => 'allow',
+			]
+		);
+
+		$this->assertSame(
+			[
+				'Block if the AVS verification fails',
+				'Place in review if the items count is not in your defined range',
+			],
+			$labels
+		);
+	}
+
+	public function test_it_falls_back_to_humanized_labels_for_unknown_ruleset_results() {
+		$labels = Fraud_Risk_Tools::get_ruleset_result_labels(
+			[
+				'some_new_rule'    => 'block',
+				'avs_verification' => 'some_new_outcome',
+			]
+		);
+
+		$this->assertSame(
+			[
+				'Some new rule',
+				'Avs verification',
+			],
+			$labels
+		);
+	}
+
+	public function test_it_gets_no_ruleset_result_labels_for_empty_or_invalid_results() {
+		$this->assertSame( [], Fraud_Risk_Tools::get_ruleset_result_labels( [] ) );
+
+		$this->assertSame( [], Fraud_Risk_Tools::get_ruleset_result_labels( [ 'avs_verification' => [ 'unexpected' => 'shape' ] ] ) );
+	}
+
 	private function fix_outcomes( $ruleset ) {
 		$review_feature_enabled = WC_Payments_Features::is_frt_review_feature_active();
 		foreach ( $ruleset as &$rule ) {

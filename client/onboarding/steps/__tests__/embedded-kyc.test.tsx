@@ -9,7 +9,7 @@ import { isInDevMode } from 'wcpay/utils';
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 jest.mock( 'wcpay/embedded-components', () => {
@@ -57,9 +57,7 @@ describe( 'EmbeddedKyc Component', () => {
 	it( 'renders the EmbeddedAccountOnboarding component when not finalizing', async () => {
 		mockOnboardingContext();
 
-		await act( async () => {
-			render( <EmbeddedKyc /> );
-		} );
+		render( <EmbeddedKyc /> );
 
 		await waitFor( async () => {
 			expect(
@@ -72,16 +70,12 @@ describe( 'EmbeddedKyc Component', () => {
 		mockOnboardingContext();
 		mockIsInDevMode.mockReturnValue( true );
 
-		let container: HTMLElement;
-		await act( async () => {
-			const result = render( <EmbeddedKyc /> );
-			container = result.container;
-		} );
+		const { container } = render( <EmbeddedKyc /> );
 
-		expect( container!.textContent ).toContain(
+		expect( container.textContent ).toContain(
 			'Your store is in development mode.'
 		);
-		expect( container!.textContent ).toContain(
+		expect( container.textContent ).toContain(
 			'can only create test accounts'
 		);
 	} );
@@ -90,13 +84,9 @@ describe( 'EmbeddedKyc Component', () => {
 		mockOnboardingContext();
 		mockIsInDevMode.mockReturnValue( false );
 
-		let container: HTMLElement;
-		await act( async () => {
-			const result = render( <EmbeddedKyc /> );
-			container = result.container;
-		} );
+		const { container } = render( <EmbeddedKyc /> );
 
-		expect( container!.textContent ).not.toContain(
+		expect( container.textContent ).not.toContain(
 			'Your store is in development mode.'
 		);
 	} );

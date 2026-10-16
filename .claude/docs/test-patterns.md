@@ -111,10 +111,10 @@ Located in `tests/unit/helpers/`:
 ### Running PHP Tests
 
 ```bash
-npm run test:php                              # All tests in Docker
-npm run test:php -- --filter=ClassName        # Specific test class
-npm run test:php -- --filter=test_method_name # Specific test method
-npm run test:php-watch                        # Watch mode
+pnpm run test:php                              # All tests in Docker
+pnpm run test:php -- --filter=ClassName        # Specific test class
+pnpm run test:php -- --filter=test_method_name # Specific test method
+pnpm run test:php-watch                        # Watch mode
 ```
 
 ## JavaScript Tests
@@ -203,10 +203,10 @@ beforeEach( () => {
 ### Running JS Tests
 
 ```bash
-npm run test:js                     # All tests
-npm run test:watch                  # Watch mode
-npm run test:js -- --testPathPattern=settings  # Tests matching pattern
-npm run test:update-snapshots       # Update snapshots
+pnpm run test:js                     # All tests
+pnpm run test:watch                  # Watch mode
+pnpm run test:js -- --testPathPattern=settings  # Tests matching pattern
+pnpm run test:update-snapshots       # Update snapshots
 ```
 
 ## Vanilla JS (Non-React) Storefront Tests
@@ -278,10 +278,10 @@ test.describe( 'Feature Name', { tag: '@critical' }, () => {
 ### Running E2E Tests
 
 ```bash
-npm run test:e2e                    # Run all
-npm run test:e2e-ui                 # Playwright UI mode
-npm run test:e2e-up                 # Set up test environment
-npm run test:e2e-down               # Tear down
+pnpm run test:e2e                    # Run all
+pnpm run test:e2e-ui                 # Playwright UI mode
+pnpm run test:e2e-up                 # Set up test environment
+pnpm run test:e2e-down               # Tear down
 ```
 
 ## Test Fixtures

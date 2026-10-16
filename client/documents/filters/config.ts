@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
  */
+import { getSetting } from 'wcpay/utils/wc-settings';
 import { displayType } from 'documents/strings';
 
 interface DocumentsFilterEntryType {
@@ -62,11 +62,11 @@ export const advancedFilters = {
 			? __(
 					'Documents match {{select /}} filters',
 					'woocommerce-payments'
-			  )
+				)
 			: __(
 					'Documents match <select /> filters',
 					'woocommerce-payments'
-			  ),
+				),
 	filters: {
 		date: {
 			labels: {
@@ -85,11 +85,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a document date', 'woocommerce-payments' ),
 			},
 			rules: [
@@ -127,11 +127,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Type</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a document type', 'woocommerce-payments' ),
 			},
 			rules: [

@@ -26,14 +26,13 @@ const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
 						/** translators: %s dispute status, e.g. Won, Lost, Under review, etc. */
 						__( 'Disputed: %s', 'woocommerce-payments' ),
 						mapping.message
-				  ),
+					),
 		};
 		return statuses;
 	},
 	{}
 );
 
-/* TODO: implement other payment statuses (SCA and authorizations) */
 const paymentStatusMappings: Record< string, StatusMapping > = {
 	refunded_partial: {
 		type: 'light',

@@ -11,10 +11,10 @@ import os from 'os';
  * Internal dependencies
  */
 import PaymentCardReaderChargeDetails from '../';
-import { useCardReaderStats } from 'wcpay/data';
+import { useCardReaderStats } from 'wcpay/data/card-readers';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/card-readers', () => ( {
 	useCardReaderStats: jest.fn(),
 } ) );
 

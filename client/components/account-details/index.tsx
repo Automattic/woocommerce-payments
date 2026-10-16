@@ -60,7 +60,7 @@ const AccountDetailsContent: React.FC< {
 		? addQueryArgs( accountLink, {
 				from: 'WCPAY_ACCOUNT_DETAILS',
 				source: 'wcpay-account-details',
-		  } )
+			} )
 		: null;
 
 	const cardTitle = (
@@ -93,7 +93,7 @@ const AccountDetails: React.FC< AccountDetailsProps > = ( {
 	accountFees = [],
 	accountLink,
 } ) => {
-	return null === accountDetails ? (
+	return accountDetails === null ? (
 		<AccountDetailsError />
 	) : (
 		<AccountDetailsContent

@@ -15,9 +15,9 @@ interface ProtectionLevelModalNoticeProps {
 	level: string;
 }
 
-const ProtectionLevelModalNotice: React.FC< ProtectionLevelModalNoticeProps > = ( {
-	level,
-} ) => {
+const ProtectionLevelModalNotice: React.FC<
+	ProtectionLevelModalNoticeProps
+> = ( { level } ) => {
 	const modalTexts = {
 		[ ProtectionLevel.BASIC ]: __(
 			'Provides basic anti-fraud protection only.',

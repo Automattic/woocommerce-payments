@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Overview: update business details modal renders correctly when opened for restricted account 1`] = `
 .emotion-0 {

@@ -12,9 +12,18 @@ import React from 'react';
  */
 import PaymentOrderDetails from '..';
 import { chargeMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
-import { STORE_NAME } from 'wcpay/data/constants';
-import { useAuthorization, useChargeFromOrder, useTimeline } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
+import { useChargeFromOrder } from 'wcpay/data/charges';
+import { useTimeline } from 'wcpay/data/timeline';
 import { ApiError } from 'wcpay/types/errors';
+import { redirectTo } from 'wcpay/utils';
+
+// jsdom marks `window.location` unforgeable, so navigation is asserted through
+// the `redirectTo` helper the component calls instead of the location itself.
+jest.mock( 'wcpay/utils', () => ( {
+	...jest.requireActual( 'wcpay/utils' ),
+	redirectTo: jest.fn(),
+} ) );
 
 // Suppress React 18 deprecation warnings from external @woocommerce/components
 // eslint-disable-next-line no-console
@@ -113,15 +122,26 @@ const chargeFromOrderMock = {
 	status: 'pending',
 };
 
-jest.mock( 'data/index', () => ( {
-	useChargeFromOrder: jest.fn(),
+jest.mock( 'wcpay/data/authorizations', () => ( {
 	useAuthorization: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/charges', () => ( {
+	// Keep the real module (notably `getChargeData`, used by the
+	// payment-intents charge-fallback hook exercised via shared fixtures) and
+	// only stub the hook this suite drives.
+	...jest.requireActual( 'wcpay/data/charges' ),
+	useChargeFromOrder: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/timeline', () => ( {
 	useTimeline: jest.fn(),
 } ) );
 
 // Workaround for mocking @wordpress/data.
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
+	// Slice stores self-register on import; stub the registration APIs.
+	createReduxStore: jest.fn(),
+	register: jest.fn(),
 	createRegistryControl: jest.fn(),
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
@@ -134,13 +154,6 @@ jest.mock( '@wordpress/data', () => ( {
 	withDispatch: jest.fn( () => jest.fn() ),
 	withSelect: jest.fn( () => jest.fn() ),
 	useSelect: jest.fn(),
-} ) );
-
-jest.mock( '@woocommerce/data', () => ( {
-	useUserPreferences: jest.fn( () => ( {
-		updateUserPreferences: jest.fn(),
-		wc_payments_wporg_review_2025_prompt_dismissed: false,
-	} ) ),
 } ) );
 
 const mockUseChargeFromOrder = useChargeFromOrder as jest.MockedFunction<
@@ -156,8 +169,6 @@ const mockUseTimeline = useTimeline as jest.MockedFunction<
 >;
 
 describe( 'Order details page', () => {
-	const { location } = window;
-
 	const orderId = '42';
 
 	const redirectUrl =
@@ -168,6 +179,10 @@ describe( 'Order details page', () => {
 	beforeAll( () => {
 		jest.spyOn( console, 'error' ).mockImplementation( () => null );
 		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+		// Freeze time so moment().fromNow() produces stable relative dates.
+		jest.useFakeTimers( {
+			now: new Date( '2022-09-28T12:00:00Z' ),
+		} );
 	} );
 
 	beforeEach( () => {
@@ -190,17 +205,14 @@ describe( 'Order details page', () => {
 			dateFormat: 'M j, Y',
 		};
 
-		const selectMock = jest.fn( ( storeName ) =>
-			STORE_NAME === storeName ? selectors : {}
-		);
+		// The charge-fallback hook reads from the charges and payment-intents
+		// stores (passed as descriptors); return the test's selectors regardless
+		// of which store is selected.
+		const selectMock = jest.fn( () => selectors );
 
 		( useSelect as jest.Mock ).mockImplementation(
 			( cb: ( callback: any ) => jest.Mock ) => cb( selectMock )
 		);
-
-		Object.defineProperty( window, 'location', {
-			value: { href: 'http://example.com' },
-		} );
 
 		mockUseAuthorization.mockReturnValue( {
 			authorization: {
@@ -214,10 +226,11 @@ describe( 'Order details page', () => {
 	} );
 
 	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: location,
-		} );
+		jest.useRealTimers();
+	} );
+
+	beforeEach( () => {
+		( redirectTo as jest.Mock ).mockClear();
 	} );
 
 	it( 'should match the snapshot - Charge without payment intent', () => {
@@ -235,15 +248,9 @@ describe( 'Order details page', () => {
 
 		const { container } = render( <PaymentOrderDetails id={ orderId } /> );
 
-		expect( window.location.href ).toEqual( 'http://example.com' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 
 		expect( container ).toMatchSnapshot();
-
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		expect( console ).toHaveWarnedWith(
-			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
-		);
 	} );
 
 	it( 'should match the snapshot - Charge with payment intent', () => {
@@ -261,6 +268,6 @@ describe( 'Order details page', () => {
 
 		render( <PaymentOrderDetails id={ orderId } /> );
 
-		expect( window.location.href ).toEqual( redirectUrl );
+		expect( redirectTo ).toHaveBeenCalledWith( redirectUrl );
 	} );
 } );

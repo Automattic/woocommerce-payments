@@ -34,9 +34,8 @@ class WoopayConnect {
 	 */
 	attachMessageListener() {
 		const messageListener = ( event ) => {
-			const isFromWoopayHost = getConfig( 'woopayHost' ).startsWith(
-				event.origin
-			);
+			const woopayOrigin = new URL( getConfig( 'woopayHost' ) ).origin;
+			const isFromWoopayHost = event.origin === woopayOrigin;
 
 			// If the message is not from WooPay, ignore it.
 			if ( ! isFromWoopayHost ) {
@@ -105,6 +104,7 @@ class WoopayConnect {
 		document.body.appendChild( hiddenDiv );
 
 		// self is used to maintain this context in the promise.
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 		this.iframePostMessage = new Promise( ( resolve ) => {
 			self.listeners.getIframePostMessageCallback = resolve;
@@ -163,7 +163,7 @@ class WoopayConnect {
 	/**
 	 * Sends a message to the WooPayConnectIframe and configures the listener.
 	 *
-	 * @param {Object} messageObj The message to send to the WooPayConnectIframe.
+	 * @param {Object} messageObj       The message to send to the WooPayConnectIframe.
 	 * @param {string} listenerCallback The name of the listener callback to use to resolve the promise.
 	 * @return {Promise<*>} Resolves to the response from the WooPayConnectIframe.
 	 */

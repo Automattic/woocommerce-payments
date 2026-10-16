@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Currency_Code;
+
 /**
  * WCPay\MultiCurrency\FrontendPrices unit tests.
  */
@@ -38,6 +40,13 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	private $localization_service;
 
 	/**
+	 * A `woocommerce_currency` filter standing in for the currency WooCommerce reports.
+	 *
+	 * @var callable|null
+	 */
+	private $reported_currency_filter;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -54,6 +63,9 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		remove_all_filters( 'wc_tax_enabled' );
 		remove_all_filters( 'woocommerce_find_rates' );
+		if ( $this->reported_currency_filter ) {
+			remove_filter( 'woocommerce_currency', $this->reported_currency_filter, 5 );
+		}
 		WC()->session->cleanup_sessions();
 
 		parent::tear_down();
@@ -210,6 +222,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_convert_shipping_method_rate_cost_for_string_cost() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturn( true );
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'get_price' )
@@ -254,6 +267,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_convert_shipping_method_rate_cost_for_array_cost() {
+		$this->mock_compatibility->method( 'should_convert_shipping_amount' )->willReturn( true );
 		$matcher = $this->exactly( 2 );
 		$this->mock_multi_currency
 			->expects( $matcher )
@@ -307,6 +321,19 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		// Cost gets converted and taxes properly calculated based on it.
 		$this->assertSame( '11.00', $shipping_rate->cost );
 		$this->assertSame( 1.1, $shipping_rate->taxes[1] );
+	}
+
+	public function test_convert_shipping_method_rate_cost_skips_conversion_on_compatibility() {
+		$shipping_method = new \WC_Shipping_Flat_Rate();
+		$this->mock_compatibility
+			->method( 'should_convert_shipping_amount' )
+			->with( $shipping_method )
+			->willReturn( false );
+		$this->mock_multi_currency->expects( $this->never() )->method( 'get_price' );
+
+		$args = $this->frontend_prices->convert_shipping_method_rate_cost( [ 'cost' => '10' ], $shipping_method );
+
+		$this->assertSame( '10', $args['cost'] );
 	}
 
 	public function test_get_coupon_amount_returns_empty_amount() {
@@ -368,9 +395,109 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
 	}
 
-	public function test_add_order_meta() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+	public function test_add_order_meta_skips_order_in_third_party_switcher_currency() {
+		// An idle Multi-Currency module leaves the selection on the store currency, while a third-party
+		// currency switcher filters the WooCommerce currency and the order is created in it.
+		$default_currency = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 1.0 );
+		$this->report_woocommerce_currency( Currency_Code::EURO );
+
+		$order = wc_create_order();
+		$order->set_currency( Currency_Code::EURO );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	public function test_add_order_meta_skips_switcher_order_in_currency_also_enabled_in_multi_currency() {
+		// Multi-Currency has the currency enabled, but the shopper never selected it there: the
+		// third-party switcher set it, and Multi-Currency did not convert the order.
+		$default_currency = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+			[
+				Currency_Code::UNITED_STATES_DOLLAR => $default_currency,
+				Currency_Code::EURO                 => new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::EURO ),
+			]
+		);
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 1.0 );
+		$this->report_woocommerce_currency( Currency_Code::EURO );
+
+		$order = wc_create_order();
+		$order->set_currency( Currency_Code::EURO );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	public function test_add_order_meta_skips_switcher_order_overriding_multi_currency_selection() {
+		// The shopper selected GBP in Multi-Currency, but a switcher hooked after it reports EUR,
+		// which Multi-Currency also has enabled.
+		$default_currency  = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR );
+		$selected_currency = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::POUND_STERLING );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_enabled_currencies' )->willReturn(
+			[
+				Currency_Code::UNITED_STATES_DOLLAR => $default_currency,
+				Currency_Code::POUND_STERLING       => $selected_currency,
+				Currency_Code::EURO                 => new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::EURO ),
+			]
+		);
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $selected_currency );
 		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
+		$this->report_woocommerce_currency( Currency_Code::EURO );
+
+		$order = wc_create_order();
+		$order->set_currency( Currency_Code::EURO );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	public function test_add_order_meta_keeps_explicit_order_currency() {
+		// An order created through the REST API or code with an explicit currency, while WooCommerce
+		// itself still reports the store currency.
+		$default_currency = new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::UNITED_STATES_DOLLAR );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $default_currency );
+		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 1.0 );
+
+		$order = wc_create_order();
+		$order->set_currency( Currency_Code::EURO );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( '1', $order->get_meta( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertSame( 'USD', $order->get_meta( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	public function test_add_order_meta() {
+		// The shopper selected GBP in Multi-Currency, which reports it as the WooCommerce currency.
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, Currency_Code::POUND_STERLING ) );
+		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
+		$this->report_woocommerce_currency( Currency_Code::POUND_STERLING );
 
 		$order = wc_create_order();
 		$order->set_currency( 'GBP' );
@@ -586,7 +713,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency
 			->method( 'get_raw_conversion' )
 			->willReturnCallback(
-				function ( $price, $from_currency, $to_currency ) {
+				function ( $price, $_unused_from_currency, $_unused_to_currency ) {
 					return (float) $price * 0.75;
 				}
 			);
@@ -626,5 +753,17 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( '7', $modified_query['meta_query'][0]['value'] );
 		$this->assertSame( '75', $modified_query['meta_query'][1]['value'] );
 		$this->assertSame( '74', $modified_query['meta_query'][2]['value'] );
+	}
+
+	/**
+	 * Makes WooCommerce report the given currency, as a currency switcher's filter would.
+	 *
+	 * @param string $currency_code The currency code to report.
+	 */
+	private function report_woocommerce_currency( string $currency_code ) {
+		$this->reported_currency_filter = static function () use ( $currency_code ) {
+			return $currency_code;
+		};
+		add_filter( 'woocommerce_currency', $this->reported_currency_filter, 5 );
 	}
 }

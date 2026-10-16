@@ -56,8 +56,46 @@ class WC_REST_Payments_Refunds_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'set_amount' )
 			->with( 5000 );
 		$refund_request->expects( $this->once() )
-			->method( 'set_reason' )
+			->method( 'set_full_reason' )
 			->with( 'duplicate' );
+		$refund_response = [
+			'id' => 're_test',
+		];
+		$refund_request->expects( $this->once() )
+			->method( 'format_response' )
+			->with()
+			->willReturn( $refund_response );
+
+		$response = $this->controller->process_refund( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( $refund_response, $response->get_data() );
+	}
+
+	public function test_process_refund_without_order_id_or_reason(): void {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'  => null,
+				'charge_id' => 'ch_test',
+				'amount'    => 5000,
+				'reason'    => null,
+			]
+		);
+
+		$refund_request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$refund_request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( 'ch_test' );
+		$refund_request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( 5000 );
+
+		// The gating lives in Refund_Charge::set_full_reason(); the controller just delegates.
+		$refund_request->expects( $this->once() )
+			->method( 'set_full_reason' )
+			->with( null );
+
 		$refund_response = [
 			'id' => 're_test',
 		];

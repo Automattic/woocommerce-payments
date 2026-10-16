@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep text typed into the dispute challenge form from being replaced by saved values while the page finishes loading.

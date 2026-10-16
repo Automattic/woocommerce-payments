@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, _n } from '@wordpress/i18n';
-import { useEffect, useState, useRef } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { EmptyContent, Section } from '@woocommerce/components';
 import { NOTES_STORE_NAME, QUERY_DEFAULTS } from '@woocommerce/data';
 import { useSelect, useDispatch } from '@wordpress/data';
@@ -17,7 +17,6 @@ import {
  * Internal dependencies
  */
 import { recordEvent } from 'tracks';
-import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
 import './index.scss';
 
 const INBOX_QUERY = {
@@ -50,7 +49,7 @@ const renderEmptyCard = () => (
 		{ __(
 			'As things begin to happen in your store your inbox will start to fill up. ' +
 				"You'll see things like achievements, new feature announcements, extension recommendations and more!",
-			'woocommerce-admin'
+			'woocommerce-payments'
 		) }
 	</section>
 );
@@ -73,7 +72,6 @@ const onBodyLinkClick = ( note, innerLink ) => {
 const renderNotes = ( {
 	hasNotes,
 	batchUpdating,
-	lastRead,
 	notes,
 	onDismiss,
 	onNoteActionClick,
@@ -113,7 +111,6 @@ const renderNotes = ( {
 						<InboxNoteCard
 							key={ noteId }
 							note={ note }
-							lastRead={ lastRead }
 							onDismiss={ onDismiss }
 							onNoteActionClick={ onNoteActionClick }
 							onBodyLinkClick={ onBodyLinkClick }
@@ -128,63 +125,31 @@ const renderNotes = ( {
 
 const InboxPanel = () => {
 	const { createNotice } = useDispatch( 'core/notices' );
-	const {
-		batchUpdateNotes,
-		removeNote,
-		updateNote,
-		triggerNoteAction,
-	} = useDispatch( NOTES_STORE_NAME );
-	const {
-		isError,
-		resolving,
-		batchUpdating,
-		notes,
-		overviewInboxLastRead,
-	} = useSelect( ( select ) => {
-		const {
-			getNotes,
-			getNotesError,
-			isResolving,
-			isNotesRequesting,
-		} = select( NOTES_STORE_NAME );
-		const { getCurrentUser } = select( 'core' );
-		const currentUser = getCurrentUser();
-		const woocommerceMeta = currentUser ? currentUser.woocommerce_meta : {};
+	const { batchUpdateNotes, removeNote, updateNote, triggerNoteAction } =
+		useDispatch( NOTES_STORE_NAME );
+	const { isError, resolving, batchUpdating, notes } = useSelect(
+		( select ) => {
+			const { getNotes, getNotesError, isResolving, isNotesRequesting } =
+				select( NOTES_STORE_NAME );
 
-		return {
-			notes: getNotes( INBOX_QUERY ),
-			isError: Boolean( getNotesError( 'getNotes', [ INBOX_QUERY ] ) ),
-			resolving: isResolving( 'getNotes', [ INBOX_QUERY ] ),
-			batchUpdating: isNotesRequesting( 'batchUpdateNotes' ),
-			overviewInboxLastRead: woocommerceMeta.wc_payments_overview_inbox_last_read
-				? JSON.parse(
-						woocommerceMeta.wc_payments_overview_inbox_last_read
-				  )
-				: undefined,
-		};
-	} );
+			return {
+				notes: getNotes( INBOX_QUERY ),
+				isError: Boolean(
+					getNotesError( 'getNotes', [ INBOX_QUERY ] )
+				),
+				resolving: isResolving( 'getNotes', [ INBOX_QUERY ] ),
+				batchUpdating: isNotesRequesting( 'batchUpdateNotes' ),
+			};
+		}
+	);
 	const [ dismiss, setDismiss ] = useState();
-	// Make sure we only set lastRead at component mount.
-	const lastRead = useRef( overviewInboxLastRead );
-	if ( ! lastRead.current && overviewInboxLastRead ) {
-		lastRead.current = overviewInboxLastRead;
-	}
-
-	useEffect( () => {
-		const mountTime = Date.now();
-
-		const userDataFields = {
-			wc_payments_overview_inbox_last_read: mountTime,
-		};
-		updateWoocommerceUserMeta( userDataFields );
-	}, [] );
 
 	if ( isError ) {
 		const title = __(
 			'There was an error getting your inbox. Please try again.',
-			'woocommerce-admin'
+			'woocommerce-payments'
 		);
-		const actionLabel = __( 'Reload', 'woocommerce-admin' );
+		const actionLabel = __( 'Reload', 'woocommerce-payments' );
 		const actionCallback = () => {
 			// @todo Add tracking for how often an error is displayed, and the reload action is clicked.
 			window.location.reload();
@@ -235,12 +200,12 @@ const InboxPanel = () => {
 				createNotice(
 					'success',
 					notesRemoved.length > 1
-						? __( 'All messages dismissed', 'woocommerce-admin' )
-						: __( 'Message dismissed', 'woocommerce-admin' ),
+						? __( 'All messages dismissed', 'woocommerce-payments' )
+						: __( 'Message dismissed', 'woocommerce-payments' ),
 					{
 						actions: [
 							{
-								label: __( 'Undo', 'woocommerce-admin' ),
+								label: __( 'Undo', 'woocommerce-payments' ),
 								onClick: () => {
 									if ( notesRemoved.length > 1 ) {
 										batchUpdateNotes(
@@ -269,7 +234,7 @@ const InboxPanel = () => {
 						'Message could not be dismissed',
 						'Messages could not be dismissed',
 						numberOfNotes,
-						'woocommerce-admin'
+						'woocommerce-payments'
 					)
 				);
 				setDismiss( undefined );
@@ -299,7 +264,6 @@ const InboxPanel = () => {
 						renderNotes( {
 							hasNotes,
 							batchUpdating,
-							lastRead: lastRead.current,
 							notes,
 							onDismiss,
 							onNoteActionClick,

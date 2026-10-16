@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
  */
+import { getSetting } from 'wcpay/utils/wc-settings';
 import { displayStatus } from 'disputes/strings';
 
 interface DisputesFilterEntryType {
@@ -109,7 +109,7 @@ export const advancedFilters = {
 			? __(
 					'Disputes match {{select /}} filters',
 					'woocommerce-payments'
-			  )
+				)
 			: __( 'Disputes match <select /> filters', 'woocommerce-payments' ),
 	filters: {
 		date: {
@@ -129,11 +129,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a dispute date', 'woocommerce-payments' ),
 			},
 			rules: [
@@ -171,11 +171,11 @@ export const advancedFilters = {
 						? __(
 								'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'<title>Status</title> <rule /> <filter />',
 								'woocommerce-payments'
-						  ),
+							),
 				filter: __( 'Select a dispute status', 'woocommerce-payments' ),
 			},
 			rules: [

@@ -17,8 +17,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		// Get the parent's background color, accounting for transparency
 		const getEffectiveBackgroundColor = ( element ) => {
 			let currentElement = element;
-			let backgroundColor = window.getComputedStyle( currentElement )
-				.backgroundColor;
+			let backgroundColor =
+				window.getComputedStyle( currentElement ).backgroundColor;
 
 			// Keep going up the DOM tree until we find a non-transparent background
 			while ( currentElement ) {
@@ -31,8 +31,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				if ( ! currentElement ) {
 					return 'rgb(255, 255, 255)'; // Default to white if we reach the root
 				}
-				backgroundColor = window.getComputedStyle( currentElement )
-					.backgroundColor;
+				backgroundColor =
+					window.getComputedStyle( currentElement ).backgroundColor;
 			}
 			return 'rgb(255, 255, 255)'; // Default to white as fallback
 		};
@@ -67,9 +67,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		);
 
 		// Add click handlers for copy buttons
-		const copyButtons = multibancoInstructionsContainer.querySelectorAll(
-			'.copy-btn'
-		);
+		const copyButtons =
+			multibancoInstructionsContainer.querySelectorAll( '.copy-btn' );
 		copyButtons.forEach( ( button ) => {
 			button.addEventListener( 'click', () => {
 				const textToCopy = button.dataset.copyValue;
@@ -94,9 +93,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		} );
 
 		// Add click handler for print button
-		const printButton = multibancoInstructionsContainer.querySelector(
-			'.print-btn'
-		);
+		const printButton =
+			multibancoInstructionsContainer.querySelector( '.print-btn' );
 		if ( printButton ) {
 			printButton.addEventListener( 'click', () => {
 				window.print();

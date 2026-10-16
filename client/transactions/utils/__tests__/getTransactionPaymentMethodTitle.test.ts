@@ -56,6 +56,12 @@ describe( 'getTransactionPaymentMethodTitle', () => {
 		);
 	} );
 
+	it( 'should return the EFTPOS title', () => {
+		expect( getTransactionPaymentMethodTitle( 'eftpos_au', {} ) ).toBe(
+			TRANSACTION_PAYMENT_METHOD_TITLES.eftpos_au
+		);
+	} );
+
 	it( 'should prefer config title over TRANSACTION_PAYMENT_METHOD_TITLES', () => {
 		expect( getTransactionPaymentMethodTitle( 'visa', mockConfig ) ).toBe(
 			'Custom Visa Title'

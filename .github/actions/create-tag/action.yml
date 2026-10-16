@@ -45,6 +45,21 @@ runs:
         
         git config user.name "${{ github.actor }}"
         git config user.email "${{ github.actor }}@users.noreply.github.com"
-        git tag -a -m "$TAG_MESSAGE" $VERSION
-        git push origin $VERSION
+
+        if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+          echo ":information_source: Tag $VERSION already exists locally; skipping creation." >> $GITHUB_STEP_SUMMARY
+        elif git ls-remote --tags --exit-code origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+          # Pre-existing remote tag (re-run after partial failure). We emit
+          # TAG_MESSAGE below to keep downstream steps (GH release notes/title)
+          # working; the message used here may differ from the annotated-tag
+          # message on the original remote tag. That is acceptable because the
+          # release body/title get overwritten by post-release-updates.yml's
+          # 'gh release edit ... --clobber' path on the same re-run.
+          echo ":information_source: Tag $VERSION already exists on origin; fetching instead of creating." >> $GITHUB_STEP_SUMMARY
+          git fetch origin "refs/tags/$VERSION:refs/tags/$VERSION"
+        else
+          git tag -a -m "$TAG_MESSAGE" "$VERSION"
+          git push origin "$VERSION"
+        fi
+
         echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_OUTPUT

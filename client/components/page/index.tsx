@@ -34,7 +34,7 @@ const Page = ( {
 
 	useEffect( () => {
 		const fraudScriptsConfig =
-			'undefined' !== typeof wcpaySettings
+			typeof wcpaySettings !== 'undefined'
 				? wcpaySettings.fraudServices
 				: [];
 		enqueueFraudScripts( fraudScriptsConfig );

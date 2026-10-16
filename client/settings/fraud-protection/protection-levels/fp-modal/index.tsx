@@ -17,10 +17,9 @@ interface BasicFraudProtectionModalProps {
 	setBasicModalOpen: ( isOpen: boolean ) => void;
 }
 
-const BasicFraudProtectionModal: React.FC< BasicFraudProtectionModalProps > = ( {
-	level,
-	setBasicModalOpen,
-} ) => {
+const BasicFraudProtectionModal: React.FC<
+	BasicFraudProtectionModalProps
+> = ( { level, setBasicModalOpen } ) => {
 	const { declineOnAVSFailure, declineOnCVCFailure } = wcpaySettings
 		?.accountStatus?.fraudProtection ?? {
 		declineOnAVSFailure: true,

@@ -39,6 +39,11 @@ function disableWooOrderRefundButton( disputeStatus ) {
 			'Refunds and order editing have been disabled as a result of a lost dispute.',
 			'woocommerce-payments'
 		);
+	} else if ( disputeStatus === 'charge_refunded' ) {
+		tooltipText = __(
+			'Refunds and order editing have been disabled because the payment was refunded to resolve a dispute.',
+			'woocommerce-payments'
+		);
 	}
 
 	jQuery( refundButton )
@@ -85,6 +90,26 @@ jQuery( function ( $ ) {
 			}
 		}
 	);
+
+	// The Fraud & Risk metabox "Refund this payment" CTA: the refund is
+	// managed on this very screen, so open WooCommerce's inline refund panel
+	// instead of leaving the page. When the panel is unavailable (e.g. refunds
+	// disabled during a dispute), fall back to the payment details link.
+	$( document ).on( 'click', '.wcpay-efw-refund-link', function ( event ) {
+		const refundButton = document.querySelector( 'button.refund-items' );
+		if ( ! refundButton || refundButton.disabled ) {
+			return;
+		}
+		event.preventDefault();
+		$( refundButton ).trigger( 'click' );
+		const refundPanel =
+			document.querySelector( '.wc-order-refund-items' ) ||
+			document.querySelector( '#woocommerce-order-items' );
+		refundPanel?.scrollIntoView( {
+			behavior: 'smooth',
+			block: 'center',
+		} );
+	} );
 
 	$( 'select#order_status' ).on( 'change', function () {
 		//get the original status of the order from post or order data.

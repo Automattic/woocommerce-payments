@@ -18,7 +18,7 @@ test.describe( 'Merchant deposits', () => {
 			.locator( '.woocommerce-table__table.is-loading' )
 			.waitFor( { state: 'hidden' } );
 
-		expect(
+		await expect(
 			page.getByRole( 'heading', {
 				name: 'Payout history',
 			} )
@@ -54,9 +54,12 @@ test.describe( 'Merchant deposits', () => {
 		await page.evaluate( () => {
 			window.scrollTo( 0, 0 );
 		} );
-		// TODO: This visual regression test is not flaky, but we should revisit the approach.
-		// await expect(
-		// 	page.locator( '.woocommerce-filters' ).last()
-		// ).toHaveScreenshot();
+
+		// Apply the filter and confirm it drives the filtered list via the URL query.
+		await page.getByRole( 'link', { name: 'Filter', exact: true } ).click();
+		await expect( page ).toHaveURL( /status_is=/ );
+		await expect(
+			page.locator( '.woocommerce-table__table.is-loading' )
+		).toHaveCount( 0 );
 	} );
 } );

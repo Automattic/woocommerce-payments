@@ -1,4 +1,33 @@
 /**
+ * True when a value is non-empty (and, for objects, has a meaningful leaf).
+ * Shared by recommendations.ts and evidence-field-status.ts so "provided vs
+ * missing" stays consistent.
+ */
+export const hasMeaningfulValue = ( value: unknown ): boolean => {
+	if ( value === undefined || value === null ) {
+		return false;
+	}
+	if ( typeof value === 'string' ) {
+		return value.trim().length > 0;
+	}
+	if ( typeof value === 'object' ) {
+		return Object.values( value as Record< string, unknown > ).some(
+			hasMeaningfulValue
+		);
+	}
+	return Boolean( value );
+};
+
+/**
+ * apiFetch rejects with the REST error body (`{ code, message, data }`), not an
+ * `Error`, so `String( err )` would render "[object Object]".
+ */
+export const getErrorMessage = ( err: unknown ): string => {
+	const message = ( err as { message?: unknown } | null )?.message;
+	return typeof message === 'string' ? message : String( err );
+};
+
+/**
  * Formats a file name with size, returning separate parts for CSS-based truncation.
  *
  * @param fileName - The original file name

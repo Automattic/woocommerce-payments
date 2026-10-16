@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
 import { __, sprintf } from '@wordpress/i18n';
-import { render } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -15,6 +15,8 @@ import { recordEvent } from 'wcpay/tracks';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getAdminUrl } from 'utils';
 
+let modalRoot: Root | undefined;
+
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
 	status: string,
@@ -23,15 +25,15 @@ export const getUpdateBusinessDetailsTask = (
 	pastDue: boolean,
 	detailsSubmitted: boolean
 ): TaskItemProps | null => {
-	const accountRestrictedSoon = 'restricted_soon' === status;
-	const accountDetailsPastDue = 'restricted' === status && pastDue;
-	const hasMultipleErrors = 1 < errorMessages.length;
-	const hasSingleError = 1 === errorMessages.length;
+	const accountRestrictedSoon = status === 'restricted_soon';
+	const accountDetailsPastDue = status === 'restricted' && pastDue;
+	const hasMultipleErrors = errorMessages.length > 1;
+	const hasSingleError = errorMessages.length === 1;
 	const accountLinkWithSource = accountLink
 		? addQueryArgs( accountLink, {
 				from: 'WCPAY_OVERVIEW',
 				source: 'wcpay-update-business-details-task',
-		  } )
+			} )
 		: '';
 
 	let accountDetailsTaskDescription: React.ReactElement | string = '',
@@ -82,30 +84,25 @@ export const getUpdateBusinessDetailsTask = (
 	}
 
 	const renderModal = () => {
-		let container = document.querySelector(
-			'#wcpay-update-business-details-container'
-		);
-
-		if ( ! container ) {
-			container = document.createElement( 'div' );
-			container.id = 'wcpay-update-business-details-container';
+		if ( ! modalRoot ) {
+			const container = document.createElement( 'div' );
 			document.body.appendChild( container );
+			modalRoot = createRoot( container );
 		}
 
-		render(
+		modalRoot.render(
 			<UpdateBusinessDetailsModal
 				key={ Date.now() }
 				errorMessages={ errorMessages }
 				accountStatus={ status }
 				accountLink={ accountLink }
 				currentDeadline={ currentDeadline }
-			/>,
-			container
+			/>
 		);
 	};
 
 	const handleClick = () => {
-		if ( 'complete' === status || 'enabled' === status ) {
+		if ( status === 'complete' || status === 'enabled' ) {
 			return;
 		}
 
@@ -153,14 +150,14 @@ export const getUpdateBusinessDetailsTask = (
 					/* translators: %s: WooPayments */
 					__( 'Finish setting up %s', 'woocommerce-payments' ),
 					'WooPayments'
-			  )
+				)
 			: sprintf(
 					/* translators: %s: WooPayments */
 					__( 'Update %s business details', 'woocommerce-payments' ),
 					'WooPayments'
-			  ),
+				),
 		content: accountDetailsTaskDescription,
-		completed: 'complete' === status || 'enabled' === status,
+		completed: status === 'complete' || status === 'enabled',
 		onClick: handleClick,
 		action: handleClick,
 		actionLabel: actionLabel,

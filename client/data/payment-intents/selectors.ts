@@ -7,13 +7,16 @@ import { ApiError } from '../../types/errors';
 import { PaymentIntent } from '../../types/payment-intents';
 import { State } from '../types';
 
+const emptyPaymentIntent = {} as PaymentIntent;
+const emptyError = {} as ApiError;
+
 export const getPaymentIntent = (
 	{ paymentIntents }: State,
 	id: string
 ): PaymentIntent => {
 	const paymentIntent = paymentIntents?.[ id ];
 
-	return paymentIntent?.data || ( {} as PaymentIntent );
+	return paymentIntent?.data || emptyPaymentIntent;
 };
 
 export const getPaymentIntentError = (
@@ -22,5 +25,5 @@ export const getPaymentIntentError = (
 ): ApiError => {
 	const paymentIntent = paymentIntents?.[ id ];
 
-	return paymentIntent?.error || ( {} as ApiError );
+	return paymentIntent?.error || emptyError;
 };

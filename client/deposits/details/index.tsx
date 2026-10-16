@@ -25,7 +25,7 @@ import {
  * Internal dependencies.
  */
 import type { CachedDeposit } from 'types/deposits';
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data/deposits';
 import TransactionsList from 'transactions/list';
 import { CopyButton } from 'components/copy-button';
 import Page from 'components/page';
@@ -40,7 +40,6 @@ import {
 import { depositStatusLabels, payoutFailureMessages } from '../strings';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 /**
  * Checks if a deposit is an instant payout (as opposed to a manual deposit).
@@ -177,7 +176,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 							? __(
 									'Withdrawal overview',
 									'woocommerce-payments'
-							  )
+								)
 							: __( 'Payout overview', 'woocommerce-payments' )
 					}
 				>
@@ -190,11 +189,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
@@ -213,7 +212,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 								deposit.currency
 							) }
 							valueClass={
-								0 < deposit.fee && 'wcpay-deposit-fee'
+								deposit.fee > 0 && 'wcpay-deposit-fee'
 							}
 						/>,
 						<SummaryItem
@@ -223,11 +222,11 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									? __(
 											'Net withdrawal amount',
 											'woocommerce-payments'
-									  )
+										)
 									: __(
 											'Net payout amount',
 											'woocommerce-payments'
-									  )
+										)
 							}
 							value={ formatExplicitCurrency(
 								deposit.amount,
@@ -326,7 +325,6 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (
@@ -359,7 +357,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 									components: {
 										learnMoreLink: (
 											// @ts-expect-error: children is provided when interpolating the component
-											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#transactions" />
+											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout" />
 										),
 									},
 								} ) }

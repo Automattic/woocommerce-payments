@@ -9,7 +9,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import type { File, FileResponse } from './types';
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 
 export const useFiles = ( id: string ): FileResponse =>
 	useSelect(

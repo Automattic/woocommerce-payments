@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\PaymentMethods\Configs\Utils;
 
+use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
@@ -88,7 +89,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with supported currency and country.
 	 */
 	public function test_is_available_for_with_supported_currency_and_country() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		// Test with supported currency and country.
@@ -107,7 +108,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with unsupported currency.
 	 */
 	public function test_is_available_for_with_unsupported_currency() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(
@@ -120,7 +121,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with unsupported country.
 	 */
 	public function test_is_available_for_with_unsupported_country() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(
@@ -302,6 +303,45 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Data provider for test_is_express_checkout.
+	 *
+	 * @return array
+	 */
+	public function is_express_checkout_provider(): array {
+		return [
+			'with express checkout capability'    => [
+				[ PaymentMethodCapability::EXPRESS_CHECKOUT ],
+				true,
+				'Should identify express checkout capability',
+			],
+			'without express checkout capability' => [
+				[ PaymentMethodCapability::TOKENIZATION ],
+				false,
+				'Should not identify non-express-checkout capability as express checkout',
+			],
+			'with empty capabilities'             => [
+				[],
+				false,
+				'Empty capabilities should not be identified as express checkout',
+			],
+		];
+	}
+
+	/**
+	 * Test that is_express_checkout() identifies express checkout methods.
+	 *
+	 * @dataProvider is_express_checkout_provider
+	 *
+	 * @param array  $capabilities Array of capabilities.
+	 * @param bool   $expected Expected result.
+	 * @param string $message Assertion message.
+	 */
+	public function test_is_express_checkout( array $capabilities, bool $expected, string $message ) {
+		$definition_class = $this->create_mock_definition( $capabilities );
+		$this->assertEquals( $expected, PaymentMethodUtils::is_express_checkout( $definition_class ), $message );
+	}
+
+	/**
 	 * Test that is_domestic_currency_for_country() works with valid combinations.
 	 */
 	public function test_is_domestic_currency_for_country_with_valid_combinations() {
@@ -341,6 +381,26 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 			PaymentMethodUtils::is_domestic_currency_for_country( 'USD', 'XX' ),
 			'Should return false for invalid country code'
 		);
+	}
+
+	/**
+	 * Test that get_stripe_payment_method_type() returns correct values for express checkout definitions.
+	 */
+	public function test_get_stripe_payment_method_type_for_express_checkout_definitions() {
+		$this->assertSame( 'card', \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_stripe_payment_method_type() );
+		$this->assertSame( 'card', \WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::get_stripe_payment_method_type() );
+		$this->assertSame( 'amazon_pay', \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_stripe_payment_method_type() );
+	}
+
+	/**
+	 * Test that get_stripe_payment_method_type() matches get_id() for non-wallet definitions.
+	 */
+	public function test_get_stripe_payment_method_type_matches_id_for_standard_definitions() {
+		$this->assertSame( 'card', \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::get_stripe_payment_method_type() );
+		$this->assertSame( 'klarna', \WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::get_stripe_payment_method_type() );
+		$this->assertSame( 'link', \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_stripe_payment_method_type() );
+		$this->assertSame( 'sepa_debit', \WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::get_stripe_payment_method_type() );
+		$this->assertSame( 'afterpay_clearpay', \WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::get_stripe_payment_method_type() );
 	}
 
 	/**

@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import qit from '@qit/helpers';
+
+/**
  * Internal dependencies
  */
 import { test, expect } from '../../../fixtures/auth';
@@ -12,13 +17,23 @@ import {
 } from '../../../utils/merchant';
 import { placeOrderWithCurrency } from '../../../utils/shopper';
 
+const getWooCommerceVersion = async () => {
+	const result = await qit.wp( 'plugin get woocommerce --field=version', true );
+	if ( typeof result === 'string' ) {
+		return result.trim();
+	}
+	return result.stdout.trim();
+};
+
 test.describe( 'Admin order analytics', { tag: '@merchant' }, () => {
 	// Extend timeout for the entire test suite to allow order processing
 	test.setTimeout( 120000 );
+	let woocommerceVersion = '';
 
 	test.beforeAll( async ( { adminPage, customerPage } ) => {
 		// Set explicit timeout for this beforeAll hook
 		test.setTimeout( 120000 );
+		woocommerceVersion = await getWooCommerceVersion();
 
 		// Ensure multi-currency is enabled for the analytics tests
 		if ( false === ( await isMulticurrencyEnabled( adminPage ) ) ) {
@@ -86,6 +101,11 @@ test.describe( 'Admin order analytics', { tag: '@merchant' }, () => {
 	test( 'orders table should have the customer currency column', async ( {
 		adminPage,
 	} ) => {
+		test.skip(
+			woocommerceVersion === '9.9.7',
+			'WooCommerce 9.9.7 crashes before rendering the Orders report table.'
+		);
+
 		await goToOrderAnalytics( adminPage );
 		await tableDataHasLoaded( adminPage );
 		await waitAndSkipTourComponent(

@@ -9,7 +9,11 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useDevMode, useTestMode, useTestModeOnboarding } from 'wcpay/data';
+import {
+	useDevMode,
+	useTestMode,
+	useTestModeOnboarding,
+} from 'wcpay/data/settings';
 import CardBody from '../card-body';
 import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
@@ -77,11 +81,11 @@ const GeneralSettings = () => {
 										? __(
 												'Enable test mode (enabled by development mode)',
 												'woocommerce-payments'
-										  )
+											)
 										: __(
 												'Enable test mode',
 												'woocommerce-payments'
-										  )
+											)
 								}
 								help={
 									isDevModeEnabled
@@ -114,7 +118,7 @@ const GeneralSettings = () => {
 														/>
 													),
 												},
-										  } )
+											} )
 										: interpolateComponents( {
 												mixedString: __(
 													'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate ' +
@@ -141,7 +145,7 @@ const GeneralSettings = () => {
 														/>
 													),
 												},
-										  } )
+											} )
 								}
 								__nextHasNoMarginBottom
 							/>

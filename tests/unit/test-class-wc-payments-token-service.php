@@ -55,6 +55,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// The failure paths under test log through wc_get_logger(). Returning null from this
+		// filter stops the handlers, so the tests do not write into wp-content/uploads/wc-logs.
+		add_filter( 'woocommerce_logger_log_message', '__return_null', 100 );
+
 		$this->original_gateway = WC_Payments::get_gateway();
 
 		$this->user_id = get_current_user_id();
@@ -74,6 +78,11 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tear_down() {
+		global $wp;
+
+		remove_filter( 'woocommerce_logger_log_message', '__return_null', 100 );
+		unset( $wp->query_vars['set-default-payment-method'] );
+		wc_clear_notices();
 		wp_set_current_user( $this->user_id );
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
@@ -465,6 +474,189 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$token->set_user_id( 1 );
 
 		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+	}
+
+	public function test_woocommerce_payment_token_set_default_swallows_api_exception() {
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( 1 )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'set_default_payment_method_for_customer' )
+			->with( 'cus_12345', 'pm_mock' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'No such PaymentMethod: pm_mock', 'resource_missing', 400 ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
+
+		// The handler runs inside a WooCommerce action during checkout and My Account
+		// requests; a token that is stale on the server side must not escalate to a fatal.
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+	}
+
+	public function test_woocommerce_payment_token_set_default_failure_is_logged_without_debug_toggle() {
+		// Regression guard: the gated WCPay logger writes nothing while the debug toggle is off,
+		// which is the default here, so this test fails if the catch ever reverts to
+		// Logger::error(). Asserted rather than assumed, since the guard is void without it.
+		$this->assertFalse( \WCPay\Logger::can_log(), 'Precondition: the gated WCPay logger must be off' );
+
+		$captured = [];
+		$capture  = function ( $message, $level, $context ) use ( &$captured ) {
+			$captured[] = [
+				'message' => $message,
+				'level'   => $level,
+				'source'  => $context['source'] ?? '',
+			];
+			return $message;
+		};
+		add_filter( 'woocommerce_logger_log_message', $capture, 10, 3 );
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'set_default_payment_method_for_customer' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'No such PaymentMethod: pm_mock', 'resource_missing', 400 ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+
+		remove_filter( 'woocommerce_logger_log_message', $capture );
+
+		$this->assertNotEmpty( $captured, 'The failed default-method mirror should be logged even with the debug toggle off' );
+		$this->assertSame( 'error', $captured[0]['level'] );
+		$this->assertSame(
+			'woopayments',
+			$captured[0]['source'],
+			'The failure must log under the woopayments source so it lands in the log file support pulls'
+		);
+		// The IDs make the entry actionable: which payment method, on which customer and user.
+		$this->assertStringContainsString( 'default payment method', $captured[0]['message'] );
+		$this->assertStringContainsString( 'pm_mock', $captured[0]['message'] );
+		$this->assertStringContainsString( 'cus_12345', $captured[0]['message'] );
+		$this->assertStringContainsString( 'user 1', $captured[0]['message'] );
+	}
+
+	public function test_woocommerce_payment_token_set_default_clears_cache_on_failure() {
+		update_user_meta( 1, '_wcpay_payment_methods', [ 'cached' ] );
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'set_default_payment_method_for_customer' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'No such PaymentMethod: pm_mock', 'resource_missing', 400 ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+
+		// The cache has no TTL, so keeping it after a failure would go on serving a payment method
+		// the server no longer has. Clearing it lets the next read prune the stale token.
+		$this->assertEmpty(
+			get_user_meta( 1, '_wcpay_payment_methods', true ),
+			'The cached payment methods should be cleared when the server mirror fails'
+		);
+	}
+
+	public function test_woocommerce_payment_token_set_default_replaces_core_success_notice_on_failure() {
+		$this->set_default_payment_method_request();
+		wc_clear_notices();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'set_default_payment_method_for_customer' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'No such PaymentMethod: pm_mock', 'resource_missing', 400 ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+
+		// WooCommerce's My Account handler adds this unconditionally once the action returns.
+		wc_add_notice( 'This payment method was successfully set as your default.' );
+
+		$this->assertEmpty(
+			wc_get_notices( 'success' ),
+			'The customer should not be told the change stuck when the server never got it'
+		);
+		$this->assertNotEmpty( wc_get_notices( 'error' ) );
+		$this->assertStringContainsString(
+			'could not set that payment method as your default',
+			wc_get_notices( 'error' )[0]['notice']
+		);
+	}
+
+	public function test_woocommerce_payment_token_set_default_keeps_later_success_notices() {
+		$this->set_default_payment_method_request();
+		wc_clear_notices();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'set_default_payment_method_for_customer' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'No such PaymentMethod: pm_mock', 'resource_missing', 400 ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+
+		wc_add_notice( 'This payment method was successfully set as your default.' );
+		wc_add_notice( 'Some other success notice.' );
+
+		// Only the one notice that follows the action is dropped, the filter removes itself after.
+		$this->assertSame(
+			[ 'Some other success notice.' ],
+			array_column( wc_get_notices( 'success' ), 'notice' )
+		);
+	}
+
+	public function test_woocommerce_payment_token_set_default_does_not_notice_outside_my_account_form() {
+		wc_clear_notices();
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->method( 'set_default_payment_method_for_customer' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'No such PaymentMethod: pm_mock', 'resource_missing', 400 ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+
+		// The same action fires during checkout and in admin and REST flows, where a notice about
+		// the default payment method would surface out of nowhere.
+		wc_add_notice( 'Some unrelated success notice.' );
+
+		$this->assertEmpty( wc_get_notices( 'error' ) );
+		$this->assertSame(
+			[ 'Some unrelated success notice.' ],
+			array_column( wc_get_notices( 'success' ), 'notice' )
+		);
 	}
 
 	public function test_woocommerce_payment_token_set_default_other_gateway() {
@@ -1343,5 +1535,14 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		// Should return unchanged when wallet type not found.
 		$this->assertEquals( 'Visa', $result['method']['brand'] );
+	}
+
+	/**
+	 * Puts the request in the shape WooCommerce's My Account "Make default" form handler runs in.
+	 */
+	private function set_default_payment_method_request() {
+		global $wp;
+
+		$wp->query_vars['set-default-payment-method'] = '1';
 	}
 }
