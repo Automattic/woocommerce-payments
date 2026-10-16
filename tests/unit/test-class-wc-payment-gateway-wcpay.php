@@ -1826,6 +1826,44 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that a Klarna decline arriving with the payment attempt failed error code, as
+	 * delivered by the payment_intent.payment_failed webhook, also leaves the order pending
+	 * so the customer can retry with a different payment method.
+	 */
+	public function test_process_redirect_payment_with_retryable_klarna_attempt_failed_keeps_order_pending() {
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => 'payment_intent_payment_attempt_failed',
+				'message'      => 'The customer declined the payment.',
+				'decline_code' => 'klarna_payment_declined',
+				'doc_url'      => 'https://docs.example.com/klarna-decline',
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The payment provider's error details are recorded in an order note, in the same
+		// format as other payment failure notes.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The customer declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( 'Decline code: <code>klarna_payment_declined</code>', $note_text );
+		$this->assertStringContainsString( '<a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>', $note_text );
+
+		// The customer is sent to the pay-for-order page to retry with a different payment method.
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+
+		// A customer-facing error notice is shown.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $notices['error'] );
+	}
+
+	/**
 	 * Data provider for provider decline codes that leave the order pending for a retry.
 	 *
 	 * @return array[] Test cases with the decline code.

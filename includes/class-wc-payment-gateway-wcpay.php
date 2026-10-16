@@ -294,6 +294,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'payment_intent_authentication_failure' => [
 			'klarna_payment_declined',
 		],
+		'payment_intent_payment_attempt_failed' => [
+			'klarna_payment_declined',
+		],
 		'payment_method_provider_decline'       => [
 			'partner_high_risk_customer',
 			'partner_generic_decline',
