@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Docker setup: regenerate .htaccess rewrite rules and skip WooCommerce onboarding wizard to prevent blank screens

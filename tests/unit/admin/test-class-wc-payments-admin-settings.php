@@ -34,6 +34,8 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 	private $attempted_redirect_location;
 
 	public function set_up() {
+		parent::set_up();
+
 		$this->mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();

@@ -48,6 +48,13 @@ class StorefrontIntegration {
 
 		wp_add_inline_style(
 			'storefront-style',
+			/**
+			 * Filters the CSS applied to the Storefront currency switcher widget.
+			 *
+			 * @since 2.8.0
+			 *
+			 * @param string $css The inline CSS for the widget.
+			 */
 			apply_filters( MultiCurrency::FILTER_PREFIX . 'storefront_widget_css', $css )
 		);
 	}
@@ -60,9 +67,22 @@ class StorefrontIntegration {
 	 * @return array The modified defaults properties.
 	 */
 	public function modify_breadcrumb_defaults( array $defaults ): array {
-		// Set the instance and args arrays for the widget.
+		/**
+		 * Filters the instance settings passed to the Storefront currency switcher widget.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param array $instance The widget instance settings.
+		 */
 		$instance = apply_filters( MultiCurrency::FILTER_PREFIX . 'storefront_widget_instance', [] );
-		$args     = apply_filters(
+		/**
+		 * Filters the args passed to the Storefront currency switcher widget.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $args The widget display args.
+		 */
+		$args = apply_filters(
 			MultiCurrency::FILTER_PREFIX . 'storefront_widget_args',
 			[
 				'before_widget' => '<div id="woocommerce-payments-multi-currency-storefront-widget" class="woocommerce-breadcrumb">',

@@ -16,10 +16,7 @@ interface CustomerDetailsProps {
 
 const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 	if ( ! dispute ) return null;
-	const charge =
-		typeof dispute.charge === 'object' && dispute.charge !== null
-			? dispute.charge
-			: null;
+	const { charge } = dispute;
 	const name = charge?.billing_details?.name || '-';
 	const email = charge?.billing_details?.email || '-';
 

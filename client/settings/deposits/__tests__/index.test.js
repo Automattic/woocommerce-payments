@@ -9,6 +9,7 @@ import { select } from '@wordpress/data';
  */
 import Deposits from '..';
 import WCPaySettingsContext from '../../wcpay-settings-context';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import {
 	useDepositStatus,
 	useDepositRestrictions,
@@ -16,8 +17,7 @@ import {
 	useDepositScheduleInterval,
 	useDepositScheduleWeeklyAnchor,
 	useDepositScheduleMonthlyAnchor,
-	useAllDepositsOverviews,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
@@ -33,7 +33,10 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits', () => ( {
+	useAllDepositsOverviews: jest.fn(),
+} ) );
+jest.mock( 'wcpay/data/settings', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),
@@ -45,7 +48,6 @@ jest.mock( 'wcpay/data', () => ( {
 	useDepositScheduleInterval: jest.fn(),
 	useDepositScheduleWeeklyAnchor: jest.fn(),
 	useDepositScheduleMonthlyAnchor: jest.fn(),
-	useAllDepositsOverviews: jest.fn(),
 } ) );
 
 describe( 'Deposits', () => {

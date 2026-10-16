@@ -6,7 +6,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 /**
  * Show an error message to the user, from the WooPay express checkout button.
  *
- * @param {string} context The context for where the button is being displayed.
+ * @param {string} context      The context for where the button is being displayed.
  * @param {string} errorMessage The error message to display.
  */
 export const showErrorMessage = ( context, errorMessage ) => {

@@ -96,6 +96,27 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		$this->assertStringEndsWith( '/admin.php?page=wc-settings&tab=general', $result->get_error_message() );
 	}
 
+	public function test_emits_error_when_country_is_empty() {
+		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
+
+		// Remove the country setting so array_filter() strips the key.
+		update_option( 'woocommerce_default_country', '' );
+
+		$this->mock_wcpay_request( Get_Request::class, 0 );
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'create_terminal_location' );
+
+		$request = new WP_REST_Request(
+			'GET',
+			'/wc/v3/payments/terminal/locations'
+		);
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$result = $this->controller->get_store_location( $request );
+		$this->assertSame( 'store_address_is_incomplete', $result->get_error_code() );
+	}
+
 	public function test_emits_error_when_address_is_incorrect() {
 		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
 

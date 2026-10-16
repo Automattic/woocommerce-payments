@@ -41,7 +41,7 @@ export const usePaymentCompleteHandler = (
  * Displays the error message returned from checkout processor in the noticeContexts.PAYMENTS area.
  *
  * @param {Function} onCheckoutFail The onCheckoutFail event emitter.
- * @param {Object} emitResponse   Various helpers for usage with observer.
+ * @param {Object}   emitResponse   Various helpers for usage with observer.
  */
 export const usePaymentFailHandler = ( onCheckoutFail, emitResponse ) => {
 	useEffect(

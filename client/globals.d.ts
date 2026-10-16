@@ -32,10 +32,13 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isDisputeAdditionalEvidenceTypesEnabled: boolean;
+			isDisputeOutcomeViewEnabled: boolean;
+			isDisputeReadinessOverviewEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
 			amazonPay: boolean;
+			reportsArea: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -48,6 +51,8 @@ declare global {
 		isAccountValid: boolean;
 		accountStatus: Partial< {
 			email?: string;
+			businessName?: string;
+			accountId?: string;
 			created: string;
 			isLive?: boolean;
 			testDrive?: boolean;
@@ -85,21 +90,6 @@ declare global {
 			fraudProtection: {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
-			};
-			/**
-			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
-			 */
-			campaigns: {
-				/**
-				 * The flag for the WordPress.org merchant review campaign in 2025.
-				 * Eligibility is determined per-account on transact-platform-server.
-				 */
-				wporgReview2025: boolean;
-				/**
-				 * The flag for the payments settings review prompt (Phase 0).
-				 * Eligibility is determined per-account on transact-platform-server.
-				 */
-				reviewPromptPhase0: boolean;
 			};
 		} >;
 		accountLoans: {
@@ -253,9 +243,10 @@ declare global {
 		exitSurveyLastShown: string | null;
 	};
 
-	const wcpayReviewPromptSettings: {
-		isLive: boolean;
-		version: string;
+	const wcpayOneAndDoneNoticeSettings: {
+		ctaUrl: string;
+		dismissUrl: string;
+		snoozeUrl: string;
 	};
 
 	interface WcSettings {
@@ -266,7 +257,7 @@ declare global {
 	const wcSettingsModule: {
 		getSetting: <
 			K extends keyof WcSettings,
-			T extends WcSettings[ K ] | undefined
+			T extends WcSettings[ K ] | undefined,
 		>(
 			setting: K,
 			fallback?: T
@@ -331,7 +322,7 @@ declare global {
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
-		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
+		wcpayOneAndDoneNoticeSettings?: typeof wcpayOneAndDoneNoticeSettings;
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		wcpay_upe_config?: typeof wcpay_upe_config;
 	}

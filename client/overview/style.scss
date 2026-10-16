@@ -1,4 +1,3 @@
-@import '@woocommerce/experimental/build-style/style.css';
 .woocommerce-inbox-message__wrapper {
 	.woocommerce-inbox-message__content {
 		padding-bottom: 24px;
@@ -11,6 +10,10 @@
 // Adapted from woocommerce-admin:client/homescreen/style.scss
 .wcpay-task-list.woocommerce-experimental-list {
 	position: relative;
+
+	.woocommerce-task-list__item .woocommerce-task-list__item-text {
+		padding: $gap 0;
+	}
 
 	.woocommerce-experimental-list__item {
 		position: relative;

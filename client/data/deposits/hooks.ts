@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 
 /**
  * External dependencies
@@ -9,7 +10,7 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import type { Query } from '@woocommerce/navigation';
 import type {
 	CachedDeposits,
@@ -24,9 +25,8 @@ export const useDeposit = (
 ): { deposit: CachedDeposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
-			const { getDeposit, isResolving, hasFinishedResolution } = select(
-				STORE_NAME
-			);
+			const { getDeposit, isResolving, hasFinishedResolution } =
+				select( STORE_NAME );
 
 			return {
 				deposit: getDeposit( id ),

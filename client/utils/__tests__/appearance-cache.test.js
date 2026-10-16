@@ -6,6 +6,7 @@ import {
 	setCachedAppearance,
 	getCachedTheme,
 	dispatchAppearanceEvent,
+	isAppearanceValid,
 } from '../appearance-cache';
 
 describe( 'Appearance cache', () => {
@@ -172,6 +173,38 @@ describe( 'Appearance cache', () => {
 				'wcpay_elements_appearance',
 				handler
 			);
+		} );
+	} );
+
+	describe( 'isAppearanceValid', () => {
+		test( 'returns false for null appearance', () => {
+			expect( isAppearanceValid( null ) ).toBe( false );
+		} );
+
+		test( 'returns false for appearance without rules', () => {
+			expect( isAppearanceValid( { variables: {} } ) ).toBe( false );
+		} );
+
+		test( 'returns false when .Input rules are empty', () => {
+			const appearance = {
+				variables: { colorBackground: '#ffffff' },
+				rules: { '.Input': {}, '.Label': {} },
+			};
+			expect( isAppearanceValid( appearance ) ).toBe( false );
+		} );
+
+		test( 'returns true when .Input rules have properties', () => {
+			const appearance = {
+				variables: { colorBackground: '#ffffff' },
+				rules: {
+					'.Input': {
+						color: 'rgb(0, 0, 0)',
+						fontFamily: 'Arial',
+						fontSize: '16px',
+					},
+				},
+			};
+			expect( isAppearanceValid( appearance ) ).toBe( true );
 		} );
 	} );
 } );

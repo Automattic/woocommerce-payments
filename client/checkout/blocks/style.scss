@@ -62,6 +62,27 @@
 			height: 24px;
 			order: 2;
 			margin-left: auto;
+
+			// Gray chip ring on the strip badges (the strokeless artwork would
+			// otherwise let white-bg logos float). Scoped here, not in the shared
+			// PaymentMethodsLogos stylesheet — that also renders the settings
+			// strip and would double the border. box-shadow ring, not a `border`,
+			// so it hugs the baked corners without shifting layout; the inner
+			// div's `overflow: hidden` (truncation) would clip it, so restore it.
+			> div {
+				overflow: visible;
+			}
+
+			> div img {
+				// `cover` fills the box so framed badges don't letterbox (WC
+				// Blocks core forces `contain`) and the SVGs' baked white
+				// background isn't shown as a white line; `width: 38px` matches
+				// the popover. Radius tracks the baked corner (3/64, 3/40).
+				width: 38px;
+				object-fit: cover;
+				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+				border-radius: 4.6875% / 7.5%;
+			}
 		}
 
 		// Test mode badge - hidden by default, shown when payment method is selected

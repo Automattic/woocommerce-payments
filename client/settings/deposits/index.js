@@ -10,19 +10,19 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import { Card, SelectControl, ExternalLink } from '@wordpress/components';
-import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import {
+	store as settingsStore,
 	useDepositScheduleInterval,
 	useDepositScheduleWeeklyAnchor,
 	useDepositScheduleMonthlyAnchor,
 	useDepositStatus,
 	useCompletedWaitingPeriod,
 	useDepositRestrictions,
-	useAllDepositsOverviews,
-} from '../../data';
+} from 'wcpay/data/settings';
 import './style.scss';
 import { recordEvent } from 'tracks';
 import InlineNotice from 'components/inline-notice';
@@ -49,20 +49,14 @@ const monthlyAnchors = [
 } ) );
 
 const CustomizeDepositSchedule = () => {
-	const [
-		depositScheduleInterval,
-		setDepositScheduleInterval,
-	] = useDepositScheduleInterval();
-	const [
-		depositScheduleWeeklyAnchor,
-		setDepositScheduleWeeklyAnchor,
-	] = useDepositScheduleWeeklyAnchor();
-	const [
-		depositScheduleMonthlyAnchor,
-		setDepositScheduleMonthlyAnchor,
-	] = useDepositScheduleMonthlyAnchor();
+	const [ depositScheduleInterval, setDepositScheduleInterval ] =
+		useDepositScheduleInterval();
+	const [ depositScheduleWeeklyAnchor, setDepositScheduleWeeklyAnchor ] =
+		useDepositScheduleWeeklyAnchor();
+	const [ depositScheduleMonthlyAnchor, setDepositScheduleMonthlyAnchor ] =
+		useDepositScheduleMonthlyAnchor();
 
-	const settings = select( STORE_NAME ).getSettings();
+	const settings = select( settingsStore ).getSettings();
 
 	const handleIntervalChange = ( newInterval ) => {
 		switch ( newInterval ) {

@@ -122,6 +122,14 @@ class WC_Payments_Fraud_Service {
 			// Apply our internal logic before allowing others to have a say through filters.
 			$config = $this->prepare_fraud_config( $config, $service_id );
 
+			/**
+			 * Filters the fraud service configuration before it is sent to the client.
+			 *
+			 * @since 1.9.0
+			 *
+			 * @param array|null $config     The fraud service configuration, or null when the service should not be used.
+			 * @param string     $service_id The fraud service identifier (e.g. 'stripe').
+			 */
 			$services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
 		}
 
@@ -197,6 +205,10 @@ class WC_Payments_Fraud_Service {
 	 *                    This means that the method is called before the `init` hook.
 	 */
 	public function add_sift_js_tracker_in_admin() {
+		if ( ! is_admin() || ! did_action( 'current_screen' ) ) {
+			return;
+		}
+
 		// If the current page is a WooPayments dashboard page bail as there's separate logic
 		// that will include the Sift JS tracker on its own.
 		if ( isset( $_GET['path'] ) && strpos( $_GET['path'], '/payments/' ) === 0 ) { // phpcs:ignore WordPress.Security

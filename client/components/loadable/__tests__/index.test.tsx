@@ -32,6 +32,50 @@ describe( 'Loadable', () => {
 			);
 			expect( container ).toMatchSnapshot();
 		} );
+
+		test( 'is announced to assistive tech by default (no aria-hidden)', () => {
+			const { container } = render(
+				<Loadable isLoading placeholder="Loading…" />
+			);
+			const placeholder = container.querySelector(
+				'.is-loadable-placeholder'
+			);
+
+			expect( placeholder ).not.toHaveAttribute( 'aria-hidden' );
+		} );
+
+		test( 'forwards aria-hidden to the placeholder span', () => {
+			const { container } = render(
+				<Loadable
+					isLoading
+					aria-hidden
+					placeholder="shape-only filler"
+				/>
+			);
+			const placeholder = container.querySelector(
+				'.is-loadable-placeholder'
+			);
+
+			expect( placeholder ).toHaveAttribute( 'aria-hidden', 'true' );
+		} );
+
+		test( 'forwards arbitrary aria-* attributes to the placeholder span', () => {
+			const { container } = render(
+				<Loadable
+					isLoading
+					aria-label="loading payout amount"
+					placeholder="$0.00"
+				/>
+			);
+			const placeholder = container.querySelector(
+				'.is-loadable-placeholder'
+			);
+
+			expect( placeholder ).toHaveAttribute(
+				'aria-label',
+				'loading payout amount'
+			);
+		} );
 	} );
 
 	describe( 'when inactive', () => {

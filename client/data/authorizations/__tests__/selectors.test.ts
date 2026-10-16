@@ -76,6 +76,24 @@ describe( 'Authorizations selectors', () => {
 		},
 	};
 
+	test( 'Returns the same empty values on repeated calls', () => {
+		expect( getAuthorizations( emptyState, mockQuery ) ).toBe(
+			getAuthorizations( emptyState, mockQuery )
+		);
+
+		expect( getAuthorizationsError( emptyState, mockQuery ) ).toBe(
+			getAuthorizationsError( emptyState, mockQuery )
+		);
+
+		expect( getAuthorizationsSummary( emptyState, mockQuery ) ).toBe(
+			getAuthorizationsSummary( emptyState, mockQuery )
+		);
+
+		expect( getAuthorizationsSummaryError( emptyState, mockQuery ) ).toBe(
+			getAuthorizationsSummaryError( emptyState, mockQuery )
+		);
+	} );
+
 	test( 'Returns empty authorizations list when authorizations list is empty', () => {
 		expect( getAuthorizations( emptyState, mockQuery ) ).toStrictEqual(
 			[]

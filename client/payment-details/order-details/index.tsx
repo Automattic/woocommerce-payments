@@ -6,9 +6,9 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import { useChargeFromOrder } from '../../data';
+import { useChargeFromOrder } from 'wcpay/data/charges';
 import PaymentDetails from '../payment-details';
-import { getAdminUrl } from '../../utils';
+import { getAdminUrl, redirectTo } from '../../utils';
 
 interface PaymentOrderDetailsProps {
 	id: string;
@@ -17,9 +17,8 @@ interface PaymentOrderDetailsProps {
 const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 	id: orderId,
 } ) => {
-	const { data: charge, isLoading: isLoadingCharge } = useChargeFromOrder(
-		orderId
-	);
+	const { data: charge, isLoading: isLoadingCharge } =
+		useChargeFromOrder( orderId );
 
 	const shouldRedirect = !! charge.payment_intent;
 	const isLoading = isLoadingCharge || shouldRedirect;
@@ -34,7 +33,7 @@ const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 				id: charge.payment_intent,
 			} );
 
-			window.location.href = url;
+			redirectTo( url );
 		}
 	}, [ charge, shouldRedirect ] );
 

@@ -11,58 +11,67 @@ import { config } from '../../../config/default';
 import { getMerchant, getShopper } from '../../../utils/helpers';
 import { goToOrder } from '../../../utils/merchant-navigation';
 
-test.describe(
-	'Disputes > View dispute details via disputed order notice',
-	() => {
-		let orderId: string;
+test.describe( 'Disputes > View dispute details via disputed order notice', () => {
+	let orderId: string;
 
-		test.beforeEach( async ( { browser } ) => {
-			const { shopperPage } = await getShopper( browser );
-			// Place an order to dispute later
-			await shopper.addToCartFromShopPage( shopperPage );
+	test.beforeEach( async ( { browser } ) => {
+		const { shopperPage } = await getShopper( browser );
+		// Place an order to dispute later
+		await shopper.addToCartFromShopPage( shopperPage );
 
-			await shopperPage.goto( '/checkout/' );
-			await shopper.fillBillingAddress(
-				shopperPage,
-				config.addresses.customer.billing
+		await shopperPage.goto( '/checkout/' );
+		await shopper.fillBillingAddress(
+			shopperPage,
+			config.addresses.customer.billing
+		);
+		await shopper.fillCardDetails(
+			shopperPage,
+			config.cards[ 'disputed-fraudulent' ]
+		);
+		await shopper.placeOrder( shopperPage );
+
+		// Get the order ID
+		const orderIdField = shopperPage.locator(
+			'.woocommerce-order-overview__order.order > strong'
+		);
+		orderId = await orderIdField.innerText();
+	} );
+
+	test( 'should navigate to dispute details when disputed order notice button clicked', async ( {
+		browser,
+	} ) => {
+		// The dispute only shows up merchant-side once Stripe's webhook is
+		// processed, which can take a while - the retry loop below needs the
+		// extra room.
+		test.slow();
+
+		const { merchantPage } = await getMerchant( browser );
+		await goToOrder( merchantPage, orderId );
+
+		// If WC < 7.9, return early since the order dispute notice is not present.
+		const orderPaymentDetailsContainerVisible = await merchantPage
+			.locator( '#wcpay-order-payment-details-container' )
+			.isVisible();
+		if ( ! orderPaymentDetailsContainerVisible ) {
+			// eslint-disable-next-line no-console
+			console.log(
+				'Skipping test since the order dispute notice is not present in WC < 7.9'
 			);
-			await shopper.fillCardDetails(
-				shopperPage,
-				config.cards[ 'disputed-fraudulent' ]
-			);
-			await shopper.placeOrder( shopperPage );
+			return;
+		}
 
-			// Get the order ID
-			const orderIdField = shopperPage.locator(
-				'.woocommerce-order-overview__order.order > strong'
-			);
-			orderId = await orderIdField.innerText();
-		} );
-
-		test( 'should navigate to dispute details when disputed order notice button clicked', async ( {
-			browser,
-		} ) => {
-			const { merchantPage } = await getMerchant( browser );
+		// The order notice and the dispute details both depend on the webhook
+		// having landed, so retry the whole cycle with a fresh page load
+		// each time.
+		await expect( async () => {
 			await goToOrder( merchantPage, orderId );
-
-			// If WC < 7.9, return early since the order dispute notice is not present.
-			const orderPaymentDetailsContainerVisible = await merchantPage
-				.locator( '#wcpay-order-payment-details-container' )
-				.isVisible();
-			if ( ! orderPaymentDetailsContainerVisible ) {
-				// eslint-disable-next-line no-console
-				console.log(
-					'Skipping test since the order dispute notice is not present in WC < 7.9'
-				);
-				return;
-			}
 
 			// Click the order dispute notice.
 			await merchantPage
 				.getByRole( 'button', {
 					name: 'Respond now',
 				} )
-				.click();
+				.click( { timeout: 5000 } );
 
 			// Verify we see the dispute details on the transaction details merchantPage.
 			await expect(
@@ -70,13 +79,13 @@ test.describe(
 					'The cardholder claims this is an unauthorized transaction.',
 					{ exact: true }
 				)
-			).toBeVisible();
+			).toBeVisible( { timeout: 10000 } );
+		} ).toPass( { timeout: 120000, intervals: [ 3000 ] } );
 
-			// Visual regression test for the dispute notice.
-			// TODO: This visual regression test is not flaky, but we should revisit the approach.
-			// await expect(
-			// 	merchantPage.locator( '.dispute-notice' )
-			// ).toHaveScreenshot();
-		} );
-	}
-);
+		// Visual regression test for the dispute notice.
+		// TODO: This visual regression test is not flaky, but we should revisit the approach.
+		// await expect(
+		// 	merchantPage.locator( '.dispute-notice' )
+		// ).toHaveScreenshot();
+	} );
+} );

@@ -13,10 +13,10 @@ import {
 	usePaymentRequestEnabledSettings,
 	useAmazonPayEnabledSettings,
 	useGetAvailablePaymentMethodIds,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useWooPayEnabledSettings: jest.fn(),
 	usePaymentRequestEnabledSettings: jest.fn(),
 	useAmazonPayEnabledSettings: jest.fn(),

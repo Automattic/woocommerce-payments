@@ -60,6 +60,8 @@ test.describe(
 		let originalFeatureFlag: string;
 		let originalAutoSwitch: string;
 		let defaultCurrencySymbol: string;
+		let switcherPageId: string;
+		let homeUrl: string;
 
 		test.beforeAll( async ( { browser } ) => {
 			test.setTimeout( 90000 );
@@ -108,6 +110,17 @@ test.describe(
 			await qit.wp(
 				'option update wcpay_multi_currency_enable_auto_currency yes'
 			);
+
+			homeUrl = ( await qit.wp( 'option get home', true ) ).stdout.trim();
+
+			// Block is server-rendered regardless of theme; the async renderer
+			// enqueues on any frontend page in cache-optimized mode.
+			switcherPageId = (
+				await qit.wp(
+					`post create --post_type=page --post_status=publish --post_title='MCCY Switcher Test' --porcelain --post_content='<!-- wp:woocommerce-payments/multi-currency-switcher /-->'`,
+					true
+				)
+			).stdout.trim();
 		} );
 
 		test.afterAll( async () => {
@@ -133,13 +146,15 @@ test.describe(
 				await merchant.deactivateMulticurrency( merchantPage );
 			}
 
+			// Delete last so a failure here can't block the state restoration above.
+			if ( switcherPageId ) {
+				await qit.wp( `post delete ${ switcherPageId } --force` );
+			}
+
 			await merchantContext?.close();
 		} );
 
-		// TODO: Investigate QIT environment incompatibility — async renderer
-		// hooks don't fire in QIT despite correct WP option values.
-		// See: WOOPMNT-5992
-		test.skip( 'should render skeleton markup and convert prices client-side', async ( {
+		test( 'should render skeleton markup and convert prices client-side', async ( {
 			browser,
 		} ) => {
 			const { shopperPage, shopperContext } =
@@ -177,7 +192,7 @@ test.describe(
 			}
 		} );
 
-		test.skip( 'should convert screen-reader text alongside prices', async ( {
+		test( 'should convert screen-reader text alongside prices', async ( {
 			browser,
 		} ) => {
 			const { shopperPage, shopperContext } =
@@ -218,7 +233,7 @@ test.describe(
 			}
 		} );
 
-		test.skip( 'should show fallback on network failure', async ( {
+		test( 'should show fallback on network failure', async ( {
 			browser,
 		} ) => {
 			const { shopperPage, shopperContext } =
@@ -285,6 +300,43 @@ test.describe(
 				await expect( priceAmount ).toBeVisible();
 				const priceText = await priceAmount.textContent();
 				expect( priceText ).toContain( '€' );
+			} finally {
+				await shopperContext?.close();
+			}
+		} );
+
+		test( 'should sync the currency switcher to the localized currency', async ( {
+			browser,
+		} ) => {
+			const { shopperPage, shopperContext } =
+				await getAnonymousShopper( browser );
+
+			try {
+				await shopperPage.addInitScript( () => {
+					sessionStorage.removeItem( 'wcpay_mc_async_config' );
+				} );
+
+				// Force selected_currency to EUR regardless of test-server geolocation.
+				await shopperPage.route(
+					'**/wc/v3/payments/multi-currency/public/config',
+					async ( route ) => {
+						const response = await route.fetch();
+						const config = await response.json();
+						config.selected_currency = 'EUR';
+						await route.fulfill( { response, json: config } );
+					}
+				);
+
+				await shopperPage.goto(
+					`${ homeUrl }/?page_id=${ switcherPageId }`
+				);
+
+				const switcher = shopperPage
+					.locator( 'select.js-woopayments-currency-switcher' )
+					.first();
+				await expect( switcher ).toHaveValue( 'EUR', {
+					timeout: 15000,
+				} );
 			} finally {
 				await shopperContext?.close();
 			}

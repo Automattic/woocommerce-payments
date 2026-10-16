@@ -22,6 +22,7 @@ export const displayType = {
 	financing_payout: __( 'Loan disbursement', 'woocommerce-payments' ),
 	financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
 	fee_refund: __( 'Fee refund', 'woocommerce-payments' ),
+	network_costs: __( 'Network costs', 'woocommerce-payments' ),
 };
 
 // Mapping of transaction device type string.

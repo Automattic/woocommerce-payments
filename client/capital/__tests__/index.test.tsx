@@ -6,20 +6,13 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useActiveLoanSummary, useLoans } from 'wcpay/data';
+import { useActiveLoanSummary, useLoans } from 'wcpay/data/capital';
 import CapitalPage from '..';
 
 // Mock the useLoans hook
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/capital', () => ( {
 	useLoans: jest.fn(),
 	useActiveLoanSummary: jest.fn(),
-} ) );
-
-jest.mock( '@woocommerce/data', () => ( {
-	useUserPreferences: jest.fn( () => ( {
-		updateUserPreferences: jest.fn(),
-		wc_payments_wporg_review_2025_prompt_dismissed: false,
-	} ) ),
 } ) );
 
 declare const global: {

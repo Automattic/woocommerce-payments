@@ -48,6 +48,20 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	public function generate_html_note(): string {
 
+		// When the server attached a fee_breakdown_v1 envelope, render from it
+		// verbatim. This covers Amazon Pay non-card, dispute fees, partial
+		// refunds, and future fee quirks uniformly — no per-case branches.
+		// The server gates the envelope behind its own feature option; its
+		// absence is the signal to run the legacy composer below.
+		//
+		// Defense-in-depth: skip the envelope path when its shape is
+		// incomplete (malformed / partial payload) so we fall back to the
+		// legacy composer instead of emitting PHP notices mid-render.
+		if ( ! empty( $this->captured_event['fee_breakdown_v1'] )
+			&& self::is_renderable_breakdown( $this->captured_event['fee_breakdown_v1'] ) ) {
+			return $this->generate_html_note_from_breakdown( $this->captured_event['fee_breakdown_v1'] );
+		}
+
 		$lines = [];
 
 		$fx_string = $this->compose_fx_string();
@@ -76,6 +90,436 @@ class WC_Payments_Captured_Event_Note {
 		return '<div class="captured-event-details">' . PHP_EOL
 				. $html
 				. '</div>';
+	}
+
+	/**
+	 * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
+	 *
+	 * Render the HTML note from a server-driven fee_breakdown_v1 envelope.
+	 *
+	 * Derived from: generate_html_note() in the same class — the legacy
+	 * composer that builds the order note from fee_rates/transaction_details
+	 * via compose_fx_string / compose_fee_string / compose_fee_break_down /
+	 * compose_tax_string / compose_net_string. Same line order and layout,
+	 * but all arithmetic is removed: values come straight from the envelope's
+	 * totals, rows, and notes.
+	 *
+	 * Takes server-authoritative rows / totals / notes and renders one HTML
+	 * paragraph per line — mirroring the legacy layout without any of the
+	 * per-event-type branching or client-side arithmetic.
+	 *
+	 * @param array $breakdown The fee_breakdown_v1 envelope.
+	 * @return string
+	 */
+	private function generate_html_note_from_breakdown( array $breakdown ): string {
+		// This HTML is persisted as an order note, so every server-provided
+		// string reaching the `<p>` output runs through `esc_html` below —
+		// cheap defense-in-depth against a future attacker-controlled label,
+		// currency code, or note reaching WooCommerce verbatim, even though
+		// the envelope itself is built by our own Fee_Breakdown_Builder and
+		// shipped via signed transport. Currency formatters strip tags
+		// internally, so the wrapping `esc_html` is idempotent for normal
+		// amounts and only matters if a hostile currency code escapes their
+		// final `$amount . ' ' . $code` concatenation.
+		$store_currency   = $breakdown['totals']['fee']['currency'];
+		$total_fee_amount = (int) $breakdown['totals']['fee']['amount'];
+		$total_tax_amount = (int) $breakdown['totals']['tax']['amount'];
+		// Read capture-time net so the order note (a historical record of
+		// the capture) doesn't drift if regenerated after a later refund
+		// or dispute. Matches the timeline captured event's "Net payout"
+		// line on the JS side (compose.js reads totals.capture_net too).
+		// Falls back to totals.net for older envelopes that pre-date the
+		// capture_net split.
+		$total_net_amount = isset( $breakdown['totals']['capture_net']['amount'] )
+			? (int) $breakdown['totals']['capture_net']['amount']
+			: (int) $breakdown['totals']['net']['amount'];
+		$net_currency     = $breakdown['totals']['capture_net']['currency']
+			?? ( $breakdown['totals']['net']['currency'] ?? $store_currency );
+
+		$lines = [];
+
+		$fx_string = $this->compose_fx_string();
+		if ( null !== $fx_string ) {
+			$lines[] = $fx_string;
+		}
+
+		$total_rate_text = self::format_rate_text( $breakdown['totals']['fee']['rate'] ?? null, $store_currency );
+		$fee_amount_text = WC_Payments_Utils::format_explicit_currency(
+			WC_Payments_Utils::interpret_stripe_amount( $total_fee_amount, $store_currency ),
+			$store_currency,
+			false
+		);
+		// Server may flag the totals row with a typed `key` (e.g.
+		// 'processing_fee' for the Amazon Pay non-card case, where our
+		// application fee was refunded). Fall back to "Fee" otherwise.
+		$totals_key     = isset( $breakdown['totals']['fee']['key'] ) ? (string) $breakdown['totals']['fee']['key'] : '';
+		$fee_line_label = self::fee_label_from_key( $totals_key );
+		$lines[]        = '' !== $total_rate_text
+			? sprintf(
+				/* translators: 1: fee label (e.g. "Fee") 2: fee rate (e.g. 2.9% + $0.30) 3: monetary amount */
+				__( '%1$s (%2$s): %3$s', 'woocommerce-payments' ),
+				esc_html( $fee_line_label ),
+				esc_html( $total_rate_text ),
+				esc_html( $fee_amount_text )
+			)
+			: sprintf(
+				/* translators: 1: fee label (e.g. "Fee" or "Processing fee") 2: monetary amount */
+				__( '%1$s: %2$s', 'woocommerce-payments' ),
+				esc_html( $fee_line_label ),
+				esc_html( $fee_amount_text )
+			);
+
+		// Show the per-row breakdown when it adds information: skip it
+		// when there's a single fee row (the "Fee (rate): amount" line
+		// above already says everything). Sub-rows display rate only,
+		// matching the legacy "Base fee: 2.9% + $0.30" format.
+		$fee_rows = array_values(
+			array_filter(
+				$breakdown['rows'],
+				static function ( array $row ) {
+					return 'tax' !== ( $row['kind'] ?? '' );
+				}
+			)
+		);
+
+		if ( count( $fee_rows ) > 1 ) {
+			$indent     = str_repeat( self::HTML_SPACE, 4 );
+			$sub_indent = str_repeat( self::HTML_SPACE, 8 );
+			foreach ( $fee_rows as $row ) {
+				$label    = self::label_from_row( $row );
+				$row_curr = $row['rate']['fixed_currency'] ?? ( $row['currency'] ?? $store_currency );
+
+				// Adjustment row with both percentage and fixed components
+				// (e.g., "-0.15% + -£0.20" promo discount): render parent
+				// label and split the components into sub-bullets, mirroring
+				// the legacy `compose_fee_break_down` HTML_WHITE_BULLET
+				// layout and the JS `composeAdjustmentSplitFeeRow` output.
+				// Fusing them into one rate string reads as arithmetic
+				// rather than two independent discount rules.
+				$adjustment_split = self::adjustment_split_lines( $row, $row_curr, $indent, $sub_indent );
+				if ( null !== $adjustment_split ) {
+					$lines = array_merge( $lines, $adjustment_split );
+					continue;
+				}
+
+				$rate_text = self::format_rate_text( $row['rate'] ?? null, $row_curr );
+				$lines[]   = $indent . ( '' !== $rate_text ? sprintf( '%1$s: %2$s', esc_html( $label ), esc_html( $rate_text ) ) : esc_html( $label ) );
+			}
+		}
+
+		if ( 0 !== $total_tax_amount ) {
+			// Pull description + percentage off the tax row (populated by
+			// the server builder from Transaction_Fee_Detail tax record)
+			// to match the legacy "Tax IT VAT (22.00%): -$X.XX" format.
+			$tax_row = null;
+			foreach ( $breakdown['rows'] as $candidate ) {
+				if ( 'tax' === ( $candidate['kind'] ?? '' ) ) {
+					$tax_row = $candidate;
+					break;
+				}
+			}
+			$tax_description = '';
+			if ( null !== $tax_row && ! empty( $tax_row['label'] ) ) {
+				// `localize_tax_description_code` maps to a dictionary of
+				// `__()` translations or returns the "Tax" fallback — it
+				// never reflects the raw label back. `esc_html` is still
+				// applied in case a translator ever adds markup.
+				$tax_description = ' ' . self::localize_tax_description_code( (string) $tax_row['label'] );
+			}
+			$tax_percentage = '';
+			if ( null !== $tax_row && isset( $tax_row['rate']['percentage'] ) && 0.0 !== (float) $tax_row['rate']['percentage'] ) {
+				$tax_percentage = ' (' . number_format( (float) $tax_row['rate']['percentage'] * 100, 2 ) . '%)';
+			}
+			$tax_amount_text = WC_Payments_Utils::format_currency(
+				-abs( WC_Payments_Utils::interpret_stripe_amount( $total_tax_amount, $breakdown['totals']['tax']['currency'] ) ),
+				$breakdown['totals']['tax']['currency']
+			);
+			$lines[]         = sprintf(
+				/* translators: 1: tax description 2: tax percentage 3: tax amount */
+				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
+				esc_html( $tax_description ),
+				esc_html( $tax_percentage ),
+				esc_html( $tax_amount_text )
+			);
+		}
+
+		$lines[] = sprintf(
+			/* translators: %s is a monetary amount */
+			__( 'Net payout: %s', 'woocommerce-payments' ),
+			esc_html(
+				WC_Payments_Utils::format_explicit_currency(
+					WC_Payments_Utils::interpret_stripe_amount( $total_net_amount, $net_currency ),
+					$net_currency,
+					false
+				)
+			)
+		);
+
+		if ( ! empty( $breakdown['notes'] ) ) {
+			foreach ( $breakdown['notes'] as $note ) {
+				$note_text = self::text_from_note( $note );
+				if ( null !== $note_text && '' !== $note_text ) {
+					// `text_from_note` already escapes its return — we
+					// don't re-escape here so translators can't accidentally
+					// double-encode entities in the copy.
+					$lines[] = $note_text;
+				}
+			}
+		}
+
+		$html = '';
+		foreach ( $lines as $line ) {
+			$html .= '<p>' . $line . '</p>' . PHP_EOL;
+		}
+
+		return '<div class="captured-event-details">' . PHP_EOL
+				. $html
+				. '</div>';
+	}
+
+	/**
+	 * Check whether an envelope has the minimum shape required by the
+	 * renderer. Returns false for missing/malformed payloads so
+	 * generate_html_note() can fall back to the legacy composer instead
+	 * of emitting PHP notices mid-render.
+	 *
+	 * We control both sides of the wire, so a malformed envelope here
+	 * represents either a rollout glitch or a manual fixture — in either
+	 * case, reverting to the legacy composer is the safer outcome than
+	 * a partially-rendered note.
+	 *
+	 * @param array $breakdown The fee_breakdown_v1 envelope candidate.
+	 * @return bool
+	 */
+	private static function is_renderable_breakdown( array $breakdown ): bool {
+		return isset(
+			$breakdown['totals']['fee']['amount'],
+			$breakdown['totals']['fee']['currency'],
+			$breakdown['totals']['tax']['amount'],
+			$breakdown['rows']
+		) && is_array( $breakdown['rows'] )
+			&& (
+				isset( $breakdown['totals']['capture_net']['amount'] )
+				|| isset( $breakdown['totals']['net']['amount'] )
+			);
+	}
+
+	/**
+	 * Server emits a typed `key` on `totals.fee` for cases where the
+	 * default "Fee" wording is misleading — currently `processing_fee`
+	 * for the Amazon Pay non-card path where our application fee was
+	 * refunded and only Stripe's passthrough remains. Unknown or empty
+	 * keys fall back to "Fee".
+	 *
+	 * @param string $key Server-provided key, or '' when absent.
+	 * @return string
+	 */
+	private static function fee_label_from_key( string $key ): string {
+		switch ( $key ) {
+			case 'processing_fee':
+				return __( 'Processing fee', 'woocommerce-payments' );
+			default:
+				return __( 'Fee', 'woocommerce-payments' );
+		}
+	}
+
+	/**
+	 * Derived from the inline label-mapping inside compose_fee_break_down()
+	 * in the same class (the branches that turn `type` + `additional_type`
+	 * into "Base fee" / "International card fee" / "Currency conversion fee"
+	 * / "Discount"). Now keyed by the server's typed row key so the envelope
+	 * can teach clients new labels without a PHP release.
+	 *
+	 * @param array $row Row entry from the envelope.
+	 * @return string
+	 */
+	private static function label_from_row( array $row ): string {
+		if ( ! empty( $row['label'] ) ) {
+			// Server-provided label — escape on return so any downstream
+			// concat into the HTML order note can't leak attacker-
+			// controlled markup if the envelope is ever compromised
+			// upstream. The dictionary branch below returns `__()` strings
+			// that are plain text, so `esc_html` there is idempotent.
+			return esc_html( (string) $row['label'] );
+		}
+		$key = (string) ( $row['key'] ?? '' );
+
+		$map = [
+			'base'                          => __( 'Base fee', 'woocommerce-payments' ),
+			'additional.international'      => __( 'International card fee', 'woocommerce-payments' ),
+			'additional.fx'                 => __( 'Currency conversion fee', 'woocommerce-payments' ),
+			'additional.wcpay-subscription' => __( 'Subscription transaction fee', 'woocommerce-payments' ),
+			'additional.device'             => __( 'Device fee', 'woocommerce-payments' ),
+			'tax_on_fee'                    => __( 'Tax on fee', 'woocommerce-payments' ),
+			'dispute_fee'                   => __( 'Dispute fee', 'woocommerce-payments' ),
+			'dispute_fee_refund'            => __( 'Dispute fee refund', 'woocommerce-payments' ),
+			'refund_fee'                    => __( 'Refund fee', 'woocommerce-payments' ),
+			'financing_paydown'             => __( 'Loan paydown', 'woocommerce-payments' ),
+		];
+		if ( isset( $map[ $key ] ) ) {
+			return $map[ $key ];
+		}
+		if ( 0 === strpos( $key, 'discount.' ) ) {
+			return __( 'Discount', 'woocommerce-payments' );
+		}
+		return $key;
+	}
+
+	/**
+	 * For an adjustment row (e.g. discount) carrying both a percentage and a
+	 * fixed component, return the parent label line plus two sub-bullet
+	 * lines — mirrors the legacy `compose_fee_break_down` HTML_WHITE_BULLET
+	 * layout and the JS counterpart in `compose.js::composeAdjustmentSplitFeeRow`.
+	 *
+	 * Signs are preserved (e.g. "Variable fee: -0.15%", "Fixed fee: -£0.20")
+	 * so the rendering matches the legacy snapshots; the database stores
+	 * discounts as negative deltas applied to the cumulative effective rate.
+	 *
+	 * Returns null when the row doesn't qualify (non-adjustment, no rate, or
+	 * either component is zero) so the caller can fall through to the
+	 * single-line render.
+	 *
+	 * @param array  $row        Row entry from the envelope.
+	 * @param string $row_curr   Currency to format the fixed amount in.
+	 * @param string $indent     Indent string for the parent label line.
+	 * @param string $sub_indent Indent string for the sub-bullet lines.
+	 * @return array<string>|null
+	 */
+	private static function adjustment_split_lines( array $row, string $row_curr, string $indent, string $sub_indent ): ?array {
+		if ( 'adjustment' !== ( $row['kind'] ?? '' ) || empty( $row['rate'] ) ) {
+			return null;
+		}
+		$rate        = $row['rate'];
+		$percentage  = isset( $rate['percentage'] ) ? (float) $rate['percentage'] : 0.0;
+		$fixed_minor = isset( $rate['fixed'] ) ? (int) $rate['fixed'] : 0;
+		if ( 0.0 === $percentage || 0 === $fixed_minor ) {
+			return null;
+		}
+
+		$label         = self::label_from_row( $row );
+		$variable_text = self::format_fee( $percentage ) . '%';
+		$fixed_text    = WC_Payments_Utils::format_currency(
+			WC_Payments_Utils::interpret_stripe_amount( $fixed_minor, $row_curr ),
+			$row_curr
+		);
+
+		return [
+			$indent . esc_html( $label ),
+			$sub_indent . self::HTML_WHITE_BULLET . ' ' . esc_html(
+				sprintf(
+					/* translators: %s is a percentage number */
+					__( 'Variable fee: %s', 'woocommerce-payments' ),
+					$variable_text
+				)
+			),
+			$sub_indent . self::HTML_WHITE_BULLET . ' ' . esc_html(
+				sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Fixed fee: %s', 'woocommerce-payments' ),
+					$fixed_text
+				)
+			),
+		];
+	}
+
+	/**
+	 * Format a fee rate (percentage + fixed) for display, matching the
+	 * legacy "2.9% + $0.30" style. Returns an empty string when the rate
+	 * has no percentage and no fixed part.
+	 *
+	 * Derived from: the sprintf('%1$s (%2$f%% + %3$s ...)') block inside
+	 * compose_fee_string() and the "capped at" branch in the same class —
+	 * extracted so the envelope path can render rates without any of the
+	 * legacy fee_rates/history plumbing.
+	 *
+	 * @param array|null $rate           Rate array with percentage/fixed/fixed_currency keys.
+	 * @param string     $store_currency Fallback currency for the fixed part.
+	 * @return string
+	 */
+	private static function format_rate_text( ?array $rate, string $store_currency ): string {
+		if ( null === $rate ) {
+			return '';
+		}
+		// Capped fee: render "capped at $X" instead of the percent+fixed
+		// combo, matching the legacy "Base fee: capped at $5" treatment.
+		if ( ! empty( $rate['capped'] ) ) {
+			$cap_amount = isset( $rate['cap_amount'] ) ? (int) $rate['cap_amount'] : (int) ( $rate['fixed'] ?? 0 );
+			$cap_curr   = $rate['fixed_currency'] ?? $store_currency;
+			return sprintf(
+				/* translators: %s is a monetary amount */
+				__( 'capped at %s', 'woocommerce-payments' ),
+				WC_Payments_Utils::format_currency(
+					WC_Payments_Utils::interpret_stripe_amount( $cap_amount, $cap_curr ),
+					$cap_curr
+				)
+			);
+		}
+		$parts       = [];
+		$percentage  = isset( $rate['percentage'] ) ? (float) $rate['percentage'] : 0.0;
+		$fixed_minor = isset( $rate['fixed'] ) ? (int) $rate['fixed'] : 0;
+		$fixed_curr  = $rate['fixed_currency'] ?? $store_currency;
+
+		if ( 0.0 !== $percentage ) {
+			$parts[] = self::format_fee( $percentage ) . '%';
+		}
+		if ( 0 !== $fixed_minor ) {
+			$parts[] = WC_Payments_Utils::format_currency(
+				WC_Payments_Utils::interpret_stripe_amount( $fixed_minor, $fixed_curr ),
+				$fixed_curr
+			);
+		}
+		return implode( ' + ', $parts );
+	}
+
+	/**
+	 * Returns null when the note has no merchant-facing text so the caller
+	 * can suppress it — the server emits internal-only codes (e.g. refund
+	 * provenance) for telemetry and support that must never surface in the
+	 * order note as raw strings.
+	 *
+	 * @param array $note Note entry from the envelope.
+	 * @return string|null
+	 */
+	private static function text_from_note( array $note ): ?string {
+		$code = (string) ( $note['code'] ?? '' );
+		$meta = is_array( $note['meta'] ?? null ) ? $note['meta'] : [];
+
+		switch ( $code ) {
+			case 'application_fee_refunded':
+				$refunded_amount   = isset( $meta['refunded_amount'] ) ? (int) $meta['refunded_amount'] : 0;
+				$refunded_currency = (string) ( $meta['refunded_currency'] ?? '' );
+				if ( $refunded_amount <= 0 || '' === $refunded_currency ) {
+					return __(
+						'WooPayments refunded its application fee on this transaction.',
+						'woocommerce-payments'
+					);
+				}
+				// `format_explicit_currency` strips HTML internally but
+				// falls back to `$amount . ' ' . $currency` when the
+				// formatted output doesn't contain the currency code —
+				// meaning a hostile `refunded_currency` would concatenate
+				// raw. Escape the final composed string so this can't reach
+				// the `<p>`-wrapped order note verbatim.
+				$formatted = WC_Payments_Utils::format_explicit_currency(
+					WC_Payments_Utils::interpret_stripe_amount( $refunded_amount, $refunded_currency ),
+					$refunded_currency,
+					false
+				);
+				return esc_html(
+					sprintf(
+						/* translators: %s is a monetary amount */
+						__(
+							'WooPayments refunded its %s application fee on this transaction.',
+							'woocommerce-payments'
+						),
+						$formatted
+					)
+				);
+		}
+
+		// Unknown codes are internal-only — drop them silently so server-side
+		// telemetry additions never leak raw identifiers to merchants.
+		return null;
 	}
 
 	/**
@@ -400,7 +844,7 @@ class WC_Payments_Captured_Event_Note {
 	 *
 	 * @return string
 	 */
-	private function format_fee( float $percentage ): string {
+	private static function format_fee( float $percentage ): string {
 		return (string) round( $percentage * 100, 3 );
 	}
 
@@ -524,9 +968,19 @@ class WC_Payments_Captured_Event_Note {
 		if ( ! isset( $this->captured_event['fee_rates']['tax']['description'] ) ) {
 			return null;
 		}
+		return self::localize_tax_description_code(
+			$this->captured_event['fee_rates']['tax']['description']
+		);
+	}
 
-		$tax_description_id = $this->captured_event['fee_rates']['tax']['description'];
-
+	/**
+	 * Localize a raw tax description code (e.g. "IT VAT" → "IT VAT" in
+	 * the active locale, or "Tax" if the code is unknown).
+	 *
+	 * @param string $tax_description_id Raw code like "IT VAT" or "JP JCT".
+	 * @return string
+	 */
+	private static function localize_tax_description_code( string $tax_description_id ): string {
 		$tax_descriptions = [
 			// European Union VAT.
 			'AT VAT' => __( 'AT VAT', 'woocommerce-payments' ), // Austria.

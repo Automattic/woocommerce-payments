@@ -9,9 +9,9 @@ import React from 'react';
 import strings from './strings';
 import { sanitizeHTML } from 'utils/sanitize';
 
-const Incentive: React.FC< NonNullable<
-	typeof wcpaySettings.connectIncentive
-> > = ( incentive ) => {
+const Incentive: React.FC<
+	NonNullable< typeof wcpaySettings.connectIncentive >
+> = ( incentive ) => {
 	return (
 		<div className="connect-account-page__incentive">
 			<div className="connect-account-page__incentive-pill">

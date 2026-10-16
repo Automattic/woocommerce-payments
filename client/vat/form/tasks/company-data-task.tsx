@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -44,14 +44,31 @@ export const CompanyDataTask = ( {
 	);
 	const [ isLoading, setLoading ] = useState< boolean >( false );
 
-	const [ companyName, setCompanyName ] = useState< string >( '' );
-	const [ companyAddress, setCompanyAddress ] = useState< string >( '' );
+	const [ companyName, setCompanyName ] = useState< string >(
+		placeholderCompanyName
+	);
+	const [ companyAddress, setCompanyAddress ] = useState< string >(
+		placeholderCompanyAddress
+	);
 
-	// Update placeholder values when props change.
-	useEffect( () => {
+	// Reset local drafts when the VAT lookup props change (parent updates
+	// placeholders after the VAT-number step). Render-time state adjustment
+	// avoids a cascading render from a sync effect.
+	const prevPlaceholdersRef = useRef( {
+		name: placeholderCompanyName,
+		address: placeholderCompanyAddress,
+	} );
+	if (
+		prevPlaceholdersRef.current.name !== placeholderCompanyName ||
+		prevPlaceholdersRef.current.address !== placeholderCompanyAddress
+	) {
+		prevPlaceholdersRef.current = {
+			name: placeholderCompanyName,
+			address: placeholderCompanyAddress,
+		};
 		setCompanyName( placeholderCompanyName );
 		setCompanyAddress( placeholderCompanyAddress );
-	}, [ placeholderCompanyName, placeholderCompanyAddress ] );
+	}
 
 	const isConfirmButtonDisabled =
 		companyName.trim() === '' || companyAddress.trim() === '';

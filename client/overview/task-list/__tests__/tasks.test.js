@@ -10,6 +10,19 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { getTasks, taskSort } from '../tasks';
+import { getDisputeResolutionTask } from '../tasks/dispute-task';
+import { getAdminUrl } from 'wcpay/utils';
+import { recordEvent } from 'tracks';
+
+const mockHistoryPush = jest.fn();
+jest.mock( '@woocommerce/navigation', () => ( {
+	getHistory: () => ( {
+		push: mockHistoryPush,
+	} ),
+} ) );
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
 
 const mockActiveDisputes = [
 	{
@@ -122,6 +135,7 @@ describe( 'getTasks()', () => {
 				detailsSubmitted: true,
 			},
 			zeroDecimalCurrencies: [],
+			shouldUseExplicitPrice: true,
 			connect: {
 				country: 'US',
 			},
@@ -130,6 +144,22 @@ describe( 'getTasks()', () => {
 				US: {
 					code: 'USD',
 					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
 					symbolPosition: 'left',
 					thousandSeparator: ',',
 					decimalSeparator: '.',
@@ -295,10 +325,20 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
-	it( 'should not include the dispute resolution task if no active disputes', () => {
-		const activeDisputes = [];
+	it( 'should not include the dispute resolution task without a summary', () => {
+		const actual = getTasks( {} );
+
+		expect( actual ).toEqual( [] );
+	} );
+
+	it( 'does not include the dispute task while its data is loading', () => {
 		const actual = getTasks( {
-			activeDisputes,
+			activeDisputesSummary: {
+				count: 1,
+				amount_by_currency: { usd: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
+			activeDisputeTaskIsLoading: true,
 		} );
 
 		expect( actual ).toEqual( [] );
@@ -308,7 +348,11 @@ describe( 'getTasks()', () => {
 		// Set Date.now to - 7 days to reduce urgency of disputes.
 		Date.now = jest.fn( () => new Date( '2023-01-24T08:00:00.000Z' ) );
 		const actual = getTasks( {
-			activeDisputes: mockActiveDisputes,
+			activeDisputesSummary: {
+				count: 3,
+				amount_by_currency: { usd: 2000, eur: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
 		} );
 
 		expect( actual ).toEqual( [] );
@@ -316,7 +360,12 @@ describe( 'getTasks()', () => {
 
 	it( 'should include the dispute resolution task with 1 urgent dispute', () => {
 		const actual = getTasks( {
-			activeDisputes: [ mockActiveDisputes[ 0 ] ],
+			activeDispute: mockActiveDisputes[ 0 ],
+			activeDisputesSummary: {
+				count: 1,
+				amount_by_currency: { usd: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
 		} );
 
 		expect( actual ).toEqual(
@@ -337,7 +386,12 @@ describe( 'getTasks()', () => {
 		// Set Date.now to - 5 days to reduce urgency of dispute.
 		Date.now = jest.fn( () => new Date( '2023-01-27T08:00:00.000Z' ) );
 		const actual = getTasks( {
-			activeDisputes: [ mockActiveDisputes[ 0 ] ],
+			activeDispute: mockActiveDisputes[ 0 ],
+			activeDisputesSummary: {
+				count: 1,
+				amount_by_currency: { usd: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
 		} );
 
 		expect( actual ).toEqual(
@@ -356,17 +410,21 @@ describe( 'getTasks()', () => {
 
 	it( 'should include the dispute resolution task with multiple disputes from multiple currencies and 1 urgent dispute', () => {
 		const actual = getTasks( {
-			activeDisputes: mockActiveDisputes,
+			activeDisputesSummary: {
+				count: 3,
+				amount_by_currency: { usd: 2000, eur: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
 		} );
 
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
+					key: 'dispute-resolution-task-summary',
 					completed: false,
 					level: 1,
 					title: 'Respond to 3 active disputes',
-					content: 'Final day to respond to 1 of the disputes',
+					content: 'Respond today by 6:59 PM',
 					actionLabel: 'See disputes',
 				} ),
 			] )
@@ -381,17 +439,21 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			activeDisputes: mockActiveDisputes.slice( 0, 2 ),
+			activeDisputesSummary: {
+				count: 2,
+				amount_by_currency: { usd: 2000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
 		} );
 
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-task-dp_1-dp_2',
+					key: 'dispute-resolution-task-summary',
 					completed: false,
 					level: 1,
 					title: 'Respond to 2 active disputes for a total of $20.00',
-					content: 'Final day to respond to 1 of the disputes',
+					content: 'Respond today by 6:59 PM',
 					actionLabel: 'See disputes',
 				} ),
 			] )
@@ -402,20 +464,250 @@ describe( 'getTasks()', () => {
 		// Set Date.now to - 5 days to reduce urgency of disputes.
 		Date.now = jest.fn( () => new Date( '2023-01-27T08:00:00.000Z' ) );
 		const actual = getTasks( {
-			activeDisputes: mockActiveDisputes,
+			activeDisputesSummary: {
+				count: 3,
+				amount_by_currency: { usd: 2000, eur: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
 		} );
 
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
+					key: 'dispute-resolution-task-summary',
 					completed: false,
 					level: 1,
 					title: 'Respond to 3 active disputes',
-					content: 'Last week to respond to 1 of the disputes',
+					content: 'By Feb 1, 2023 – 6 days left to respond',
 					actionLabel: 'See disputes',
 				} ),
 			] )
+		);
+	} );
+} );
+
+describe( 'getDisputeResolutionTask()', () => {
+	const nextWeekDeadline = '2023-02-03 23:59:59';
+	// Get current timezone
+	const currentTimezone = moment.tz.guess();
+
+	beforeEach( () => {
+		moment.tz.setDefault( 'Etc/GMT+5' );
+		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
+		mockHistoryPush.mockClear();
+
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			shouldUseExplicitPrice: true,
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+			dateFormat: 'M j, Y',
+		};
+	} );
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date();
+		moment.tz.setDefault( currentTimezone );
+	} );
+
+	it( 'uses the complete summary count and amount', () => {
+		const task = getDisputeResolutionTask( {
+			count: 51,
+			amount_by_currency: { usd: 51000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				title: 'Respond to 51 active disputes for a total of $510.00',
+				content: 'By Feb 3, 2023 – 3 days left to respond',
+			} )
+		);
+	} );
+
+	it( 'does not show totals for multiple summary currencies', () => {
+		const task = getDisputeResolutionTask( {
+			count: 3,
+			amount_by_currency: { usd: 2000, eur: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe( 'Respond to 3 active disputes' );
+	} );
+
+	it( 'keeps the same title for three or more summary currencies', () => {
+		const task = getDisputeResolutionTask( {
+			count: 3,
+			amount_by_currency: { usd: 1000, eur: 1000, gbp: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe( 'Respond to 3 active disputes' );
+		expect( task?.title ).not.toContain( '$' );
+		expect( task?.title ).not.toContain( '€' );
+		expect( task?.title ).not.toContain( '£' );
+	} );
+
+	it( 'uses the summary deadline for the urgent state and subtitle', () => {
+		const task = getDisputeResolutionTask( {
+			count: 2,
+			amount_by_currency: { usd: 2000 },
+			earliest_due_by: '2023-02-01 20:00:00',
+		} );
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				content: 'Respond today by 3:00 PM',
+				dataAttrs: { 'data-urgent': true },
+			} )
+		);
+	} );
+
+	it( 'uses the dated subtitle for a deadline tomorrow with less than 24 hours remaining', () => {
+		Date.now = jest.fn( () => new Date( '2023-02-01T23:00:00.000Z' ) );
+		const task = getDisputeResolutionTask( {
+			count: 1,
+			amount_by_currency: { usd: 1000 },
+			earliest_due_by: '2023-02-02 13:00:00',
+		} );
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				title: 'Respond to a dispute for $10.00',
+				content: 'By Feb 2, 2023 – 14 hours left to respond',
+				dataAttrs: { 'data-urgent': true },
+			} )
+		);
+	} );
+
+	it.each( [
+		[ 'a zero count', { count: 0, earliest_due_by: nextWeekDeadline } ],
+		[ 'a null deadline', { count: 1, earliest_due_by: null } ],
+		[
+			'a deadline after seven days',
+			{ count: 1, earliest_due_by: '2023-02-09 23:59:59' },
+		],
+	] )( 'does not return a task for %s', ( unused, summary ) => {
+		expect( getDisputeResolutionTask( summary ) ).toBeNull();
+	} );
+
+	it( 'keeps an actionable task visible when its earliest deadline is past', () => {
+		const task = getDisputeResolutionTask( {
+			count: 2,
+			amount_by_currency: { usd: 2000 },
+			earliest_due_by: '2023-01-31 23:59:59',
+		} );
+
+		expect( task ).toEqual(
+			expect.objectContaining( {
+				content: 'Response overdue',
+				dataAttrs: { 'data-urgent': true },
+			} )
+		);
+	} );
+
+	it( 'treats an empty amount array as no amount', () => {
+		const task = getDisputeResolutionTask( {
+			count: 2,
+			amount_by_currency: [],
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe( 'Respond to 2 active disputes' );
+	} );
+
+	it( 'does not show an amount when the summary amount map is empty', () => {
+		const task = getDisputeResolutionTask( {
+			count: 3,
+			amount_by_currency: {},
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		expect( task?.title ).toBe( 'Respond to 3 active disputes' );
+		expect( task?.title ).not.toContain( '$20.00' );
+	} );
+
+	it( 'opens the filtered dispute list for one dispute', () => {
+		const task = getDisputeResolutionTask( {
+			count: 1,
+			amount_by_currency: { usd: 1000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		task?.action();
+
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} )
+		);
+	} );
+
+	it( 'opens the single dispute transaction when its row is loaded', () => {
+		const task = getDisputeResolutionTask(
+			{
+				count: 1,
+				amount_by_currency: { usd: 1000 },
+				earliest_due_by: nextWeekDeadline,
+			},
+			mockActiveDisputes[ 0 ]
+		);
+
+		task?.action();
+
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: 'ch_mock',
+			} )
+		);
+	} );
+
+	it( 'opens the filtered dispute list for multiple disputes', () => {
+		const task = getDisputeResolutionTask( {
+			count: 2,
+			amount_by_currency: { usd: 2000 },
+			earliest_due_by: nextWeekDeadline,
+		} );
+
+		task?.action();
+
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} )
 		);
 	} );
 } );
@@ -455,7 +747,11 @@ describe( 'taskSort()', () => {
 	} );
 	it( 'should sort the tasks', () => {
 		const unsortedTasks = getTasks( {
-			activeDisputes: mockActiveDisputes,
+			activeDisputesSummary: {
+				count: 3,
+				amount_by_currency: { usd: 2000, eur: 1000 },
+				earliest_due_by: '2023-02-01 23:59:59',
+			},
 		} );
 		unsortedTasks.unshift( {
 			key: 'test-element',
@@ -472,10 +768,184 @@ describe( 'taskSort()', () => {
 		const sortedTasks = unsortedTasks.sort( taskSort );
 		expect( sortedTasks[ 0 ] ).toEqual(
 			expect.objectContaining( {
-				key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
+				key: 'dispute-resolution-task-summary',
 				completed: false,
 				level: 1,
 			} )
+		);
+	} );
+
+	it( 'should not include the early fraud warning task without active warnings', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [],
+		} );
+
+		expect( actual ).toEqual( [] );
+	} );
+
+	it( 'should include the early fraud warning task with a single warning', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+			],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'early-fraud-warning-task-ch_efw_1',
+					completed: false,
+					level: 2,
+					title: 'Review order #12 flagged for potential fraud',
+					content: 'Refunding it now can prevent a dispute.',
+					actionLabel: 'Review payment',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include one early fraud warning task per warning', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 13,
+					order_number: 'INV-13',
+					charge_id: 'ch_efw_2',
+					created: 1719900000,
+				},
+			],
+		} );
+
+		const earlyFraudWarningTasks = actual.filter( ( task ) =>
+			task.key.startsWith( 'early-fraud-warning-task-' )
+		);
+
+		expect( earlyFraudWarningTasks ).toEqual( [
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_1',
+				title: 'Review order #12 flagged for potential fraud',
+				content: 'Refunding it now can prevent a dispute.',
+				actionLabel: 'Review payment',
+			} ),
+			expect.objectContaining( {
+				key: 'early-fraud-warning-task-ch_efw_2',
+				title: 'Review order #INV-13 flagged for potential fraud',
+				content: 'Refunding it now can prevent a dispute.',
+				actionLabel: 'Review payment',
+			} ),
+		] );
+	} );
+
+	it( 'early fraud warning task action opens the payment for a single warning and records the event', () => {
+		mockHistoryPush.mockClear();
+
+		const [ task ] = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+			],
+		} );
+		task.action();
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_overview_task_click',
+			{
+				task: 'early-fraud-warning-task',
+				active_early_fraud_warning_count: 1,
+			}
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'path=%2Fpayments%2Ftransactions%2Fdetails'
+			)
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining( 'id=ch_efw_1' )
+		);
+	} );
+
+	it( 'should make the early fraud warning task dismissable', () => {
+		const [ task ] = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+			],
+		} );
+
+		expect( task.isDismissable ).toBe( true );
+	} );
+
+	it( 'each early fraud warning task action opens that payment and records the active count', () => {
+		mockHistoryPush.mockClear();
+
+		const tasks = getTasks( {
+			activeEarlyFraudWarnings: [
+				{
+					order_id: 12,
+					order_number: '12',
+					charge_id: 'ch_efw_1',
+					created: 1719800000,
+				},
+				{
+					order_id: 13,
+					order_number: '13',
+					charge_id: 'ch_efw_2',
+					created: 1719900000,
+				},
+			],
+		} );
+
+		tasks[ 1 ].action();
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_overview_task_click',
+			{
+				task: 'early-fraud-warning-task',
+				active_early_fraud_warning_count: 2,
+			}
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'path=%2Fpayments%2Ftransactions%2Fdetails'
+			)
+		);
+		expect( mockHistoryPush ).toHaveBeenCalledWith(
+			expect.stringContaining( 'id=ch_efw_2' )
+		);
+	} );
+
+	it( 'falls back to the order id when the display number is missing', () => {
+		const actual = getTasks( {
+			activeEarlyFraudWarnings: [
+				{ order_id: 12, charge_id: 'ch_efw_1', created: 1719800000 },
+			],
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					title: 'Review order #12 flagged for potential fraud',
+				} ),
+			] )
 		);
 	} );
 } );

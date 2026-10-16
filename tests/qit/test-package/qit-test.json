@@ -21,7 +21,6 @@
             ],
             "setup": [
                 "[ -d node_modules ] || npm ci",
-                "npx playwright install chromium --with-deps",
                 "mkdir -p ./test-results"
             ],
             "run": [

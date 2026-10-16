@@ -48,6 +48,27 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	protected $rest_base = 'payments/payment_intents';
 
 	/**
+	 * WC_REST_Payments_Payment_Intents_Controller constructor.
+	 *
+	 * @param WC_Payments_API_Client   $api_client       WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay $gateway          WooCommerce Payments payment gateway.
+	 * @param OrderService             $order_service    The new order service.
+	 * @param Level3Service            $level3_service   Level3 service instance.
+	 */
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payment_Gateway_WCPay $gateway,
+		OrderService $order_service,
+		Level3Service $level3_service
+	) {
+		parent::__construct( $api_client );
+
+		$this->gateway        = $gateway;
+		$this->order_service  = $order_service;
+		$this->level3_service = $level3_service;
+	}
+
+	/**
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
@@ -74,28 +95,9 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	}
 
 	/**
-	 * WC_REST_Payments_Payment_Intents_Controller constructor.
-	 *
-	 * @param WC_Payments_API_Client   $api_client       WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay $gateway          WooCommerce Payments payment gateway.
-	 * @param OrderService             $order_service    The new order service.
-	 * @param Level3Service            $level3_service   Level3 service instance.
-	 */
-	public function __construct(
-		WC_Payments_API_Client $api_client,
-		WC_Payment_Gateway_WCPay $gateway,
-		OrderService $order_service,
-		Level3Service $level3_service
-	) {
-		parent::__construct( $api_client );
-
-		$this->gateway        = $gateway;
-		$this->order_service  = $order_service;
-		$this->level3_service = $level3_service;
-	}
-
-	/**
 	 * Retrieve charge to respond with via API.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetPaymentIntent
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */

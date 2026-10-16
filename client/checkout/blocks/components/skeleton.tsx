@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import clsx from 'clsx';
 
 /**
@@ -15,6 +15,7 @@ import clsx from 'clsx';
  * - Keyframes renamed from wc-skeleton-shimmer to wcpay-skeleton-shimmer to avoid collisions with core.
  */
 import './skeleton.scss';
+import SkeletonContext from './skeleton-context';
 
 export interface SkeletonProps {
 	tag?: keyof JSX.IntrinsicElements;
@@ -27,7 +28,7 @@ export interface SkeletonProps {
 	ariaMessage?: string;
 }
 
-export const Skeleton = ( {
+const LocalSkeleton = ( {
 	tag: Tag = 'div',
 	width = '100%',
 	height = '8px',
@@ -50,10 +51,10 @@ export const Skeleton = ( {
 				? {
 						'aria-live': 'polite' as const,
 						'aria-label': ariaMessage,
-				  }
+					}
 				: {
 						'aria-hidden': 'true' as const,
-				  } ) }
+					} ) }
 			style={ {
 				width,
 				height,
@@ -61,5 +62,16 @@ export const Skeleton = ( {
 				maxWidth,
 			} }
 		/>
+	);
+};
+
+// eslint-disable-next-line react-hooks/static-components -- CoreSkeleton is a stable reference injected via context, not a component created during render.
+export const Skeleton = ( props: SkeletonProps ): JSX.Element => {
+	const CoreSkeleton = useContext( SkeletonContext );
+	return CoreSkeleton ? (
+		// eslint-disable-next-line react-hooks/static-components
+		<CoreSkeleton { ...props } />
+	) : (
+		<LocalSkeleton { ...props } />
 	);
 };

@@ -56,10 +56,8 @@ describe( 'International IP address card', () => {
 	test( 'renders correctly when woocommerce_allowed_countries is specific', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries =
+			[ 'CA', 'US' ];
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<InternationalIPAddressRuleCard />
@@ -71,10 +69,8 @@ describe( 'International IP address card', () => {
 	test( 'renders correctly when woocommerce_allowed_countries is all_except', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'all_except';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_all_except_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_all_except_countries =
+			[ 'CA', 'US' ];
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<InternationalIPAddressRuleCard />
@@ -86,10 +82,8 @@ describe( 'International IP address card', () => {
 	test( 'renders correctly when enabled', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries =
+			[ 'CA', 'US' ];
 		settings.international_ip_address.enabled = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
@@ -102,10 +96,8 @@ describe( 'International IP address card', () => {
 	test( 'renders correctly when enabled and checked', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries =
+			[ 'CA', 'US' ];
 		settings.international_ip_address.enabled = true;
 		settings.international_ip_address.block = true;
 		const { container } = render(
@@ -119,10 +111,8 @@ describe( 'International IP address card', () => {
 	test( 'renders like disabled when checked, but not enabled', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
-		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries = [
-			'CA',
-			'US',
-		];
+		global.wcSettings.admin.preloadSettings.general.woocommerce_specific_allowed_countries =
+			[ 'CA', 'US' ];
 		settings.international_ip_address.enabled = false;
 		settings.international_ip_address.block = true;
 		const { container } = render(

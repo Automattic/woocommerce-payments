@@ -18,8 +18,10 @@ import { useCustomerData, getStripeElementOptions } from './utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { getLinkEmail } from 'wcpay/checkout/utils/upe';
 import { CardSkeleton } from './components/card-skeleton';
 import { ApmSkeleton } from './components/apm-skeleton';
+import SkeletonContext from './components/skeleton-context';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -45,12 +47,22 @@ const getFraudPreventionToken = () => {
 
 const noop = () => null;
 
+const LINK_EMAIL_DEBOUNCE_MS = 750;
+
+const STRIPE_READY_TIMEOUT_MS = 10000;
+const createDeferred = () => {
+	let resolve;
+	const promise = new Promise( ( r ) => ( resolve = r ) );
+	return { promise, resolve };
+};
+
 const PaymentProcessor = ( {
 	api,
 	activePaymentMethod,
 	testingInstructions,
 	eventRegistration: { onPaymentSetup, onCheckoutSuccess, onCheckoutFail },
 	emitResponse,
+	components: { Skeleton: CoreSkeleton } = {},
 	paymentMethodId,
 	upeMethods,
 	errorMessage,
@@ -61,6 +73,14 @@ const PaymentProcessor = ( {
 } ) => {
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
+	// Settles once the Payment Element is ready or has failed to load.
+	// `elements.submit()` never settles if it's called before that, which
+	// leaves the checkout spinning forever when a shopper clicks
+	// "Place Order" while a payment method without fields is still loading.
+	const elementSettledRef = useRef( null );
+	if ( elementSettledRef.current == null ) {
+		elementSettledRef.current = createDeferred();
+	}
 
 	const [ isStripeReady, setIsStripeReady ] = useState( false );
 	const [ showSkeleton, setShowSkeleton ] = useState( true );
@@ -112,6 +132,7 @@ const PaymentProcessor = ( {
 
 	const handleStripeReady = useCallback( () => {
 		setIsStripeReady( true );
+		elementSettledRef.current.resolve();
 	}, [] );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
@@ -120,12 +141,52 @@ const PaymentProcessor = ( {
 	const gatewayConfig = getPaymentMethods()[ gatewayId ];
 	const billingData = useCustomerData();
 
+	const checkoutLinkEmail = isCardMethod
+		? getLinkEmail( billingData.email )
+		: undefined;
+	const [ linkEmail, setLinkEmail ] = useState( checkoutLinkEmail );
+
+	// The store updates on every keystroke, and each Payment Element update
+	// re-renders the Link section, so wait until the shopper stops typing.
+	useEffect( () => {
+		if ( ! checkoutLinkEmail ) {
+			return;
+		}
+		const timeout = setTimeout(
+			() => setLinkEmail( checkoutLinkEmail ),
+			LINK_EMAIL_DEBOUNCE_MS
+		);
+		return () => clearTimeout( timeout );
+	}, [ checkoutLinkEmail ] );
+
 	useEffect(
 		() =>
 			onPaymentSetup( () => {
 				async function handlePaymentProcessing() {
 					if ( gatewayId !== activePaymentMethod ) {
 						return;
+					}
+
+					let timeoutId;
+					const isElementSettled = await Promise.race( [
+						elementSettledRef.current.promise.then( () => true ),
+						new Promise( ( resolve ) => {
+							timeoutId = setTimeout(
+								() => resolve( false ),
+								STRIPE_READY_TIMEOUT_MS
+							);
+						} ),
+					] );
+					clearTimeout( timeoutId );
+
+					if ( ! isElementSettled ) {
+						return {
+							type: 'error',
+							message: __(
+								'The payment details are still loading. Please try again in a moment.',
+								'woocommerce-payments'
+							),
+						};
 					}
 
 					if ( hasLoadErrorRef.current ) {
@@ -168,9 +229,8 @@ const PaymentProcessor = ( {
 						};
 					}
 
-					const stripeForUPE = await api.getStripeForUPE(
-						paymentMethodId
-					);
+					const stripeForUPE =
+						await api.getStripeForUPE( paymentMethodId );
 
 					const result = await stripeForUPE.createPaymentMethod( {
 						elements,
@@ -187,7 +247,8 @@ const PaymentProcessor = ( {
 							meta: {
 								paymentMethodData: {
 									payment_method: gatewayId,
-									'wcpay-payment-method': PAYMENT_METHOD_ERROR,
+									'wcpay-payment-method':
+										PAYMENT_METHOD_ERROR,
 									'wcpay-payment-method-error-code':
 										result.error.code,
 									'wcpay-payment-method-error-decline-code':
@@ -196,7 +257,8 @@ const PaymentProcessor = ( {
 										result.error.message,
 									'wcpay-payment-method-error-type':
 										result.error.type,
-									'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+									'wcpay-fraud-prevention-token':
+										getFraudPreventionToken(),
 									'wcpay-fingerprint': fingerprint,
 								},
 							},
@@ -209,7 +271,8 @@ const PaymentProcessor = ( {
 							paymentMethodData: {
 								payment_method: gatewayId,
 								'wcpay-payment-method': result.paymentMethod.id,
-								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+								'wcpay-fraud-prevention-token':
+									getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
 							},
 						},
@@ -244,11 +307,12 @@ const PaymentProcessor = ( {
 
 	const setHasLoadError = ( event ) => {
 		hasLoadErrorRef.current = true;
+		elementSettledRef.current.resolve();
 		onLoadError( event );
 	};
 
 	return (
-		<>
+		<SkeletonContext.Provider value={ CoreSkeleton }>
 			{ isTestMode && (
 				<p
 					className={ clsx( 'content', {
@@ -285,14 +349,15 @@ const PaymentProcessor = ( {
 				<PaymentElement
 					options={ getStripeElementOptions(
 						shouldSavePayment,
-						paymentMethodsConfig
+						paymentMethodsConfig,
+						linkEmail
 					) }
 					onReady={ handleStripeReady }
 					onLoadError={ setHasLoadError }
 					className="wcpay-payment-element"
 				/>
 			</div>
-		</>
+		</SkeletonContext.Provider>
 	);
 };
 

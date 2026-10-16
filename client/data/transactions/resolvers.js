@@ -7,7 +7,6 @@ import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -23,11 +22,7 @@ import {
 	updateFraudOutcomeTransactionsSummary,
 	updateErrorForFraudOutcomeTransactionsSummary,
 } from './actions';
-import { formatDateValue } from 'utils';
-
-function getUserTimeZone() {
-	return moment( new Date() ).format( 'Z' );
-}
+import { formatDateValue, getUserTimeZone } from 'utils';
 
 export const formatQueryFilters = ( query ) => ( {
 	user_email: query.userEmail,
@@ -121,7 +116,7 @@ export function* getTransactionsSummary( query ) {
  * Retrieves the blocked transactions.
  *
  * @param { string } status Fraud outcome status to be filtered.
- * @param { string } query Data on which to parameterize the selection.
+ * @param { string } query  Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactions( status, query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/transactions/fraud-outcomes`, {
@@ -160,7 +155,7 @@ export function* getFraudOutcomeTransactions( status, query ) {
  * Retrieves the on review transactions.
  *
  * @param { string } status Fraud outcome status to be filtered.
- * @param { string } query Data on which to parameterize the selection.
+ * @param { string } query  Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactionsSummary( status, query ) {
 	const path = addQueryArgs(

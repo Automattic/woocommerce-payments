@@ -54,9 +54,8 @@ function renderCustomSelectControl(
 
 describe( 'CustomSelectControl', () => {
 	test( 'renders options', async () => {
-		const {
-			container: onboardingSelectControl,
-		} = renderCustomSelectControl();
+		const { container: onboardingSelectControl } =
+			renderCustomSelectControl();
 
 		await user.click( screen.getByRole( 'button' ) );
 
@@ -66,14 +65,13 @@ describe( 'CustomSelectControl', () => {
 
 describe( 'CustomSelectControl', () => {
 	test( 'renders options with custom children', async () => {
-		const {
-			container: onboardingSelectControl,
-		} = renderCustomSelectControl( undefined, ( item ) => (
-			<>
-				<span>{ item.icon }</span>
-				<span>{ item.name }</span>
-			</>
-		) );
+		const { container: onboardingSelectControl } =
+			renderCustomSelectControl( undefined, ( item ) => (
+				<>
+					<span>{ item.icon }</span>
+					<span>{ item.name }</span>
+				</>
+			) );
 
 		await user.click( screen.getByRole( 'button' ) );
 
@@ -83,9 +81,8 @@ describe( 'CustomSelectControl', () => {
 
 describe( 'CustomSelectControl', () => {
 	test( 'renders with placeholder', () => {
-		const {
-			container: onboardingSelectControl,
-		} = renderCustomSelectControl( 'Which fruit do you like best?' );
+		const { container: onboardingSelectControl } =
+			renderCustomSelectControl( 'Which fruit do you like best?' );
 
 		expect( onboardingSelectControl ).toMatchSnapshot();
 	} );

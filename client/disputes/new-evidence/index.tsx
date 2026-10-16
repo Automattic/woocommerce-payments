@@ -31,17 +31,19 @@ import {
 	generateCoverLetter,
 	getBusinessDetails,
 } from './cover-letter-generator';
-import {
-	useGetSettings,
-	useDisputeEvidence,
-	WCPAY_STORE_NAME,
-} from 'wcpay/data';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { useGetSettings } from 'wcpay/data/settings';
+// The only dispatch made through this store handle invalidates getPaymentIntent,
+// which now lives in the payment-intents store.
+import { store as paymentIntentsStore } from 'wcpay/data/payment-intents';
 import CustomerDetails from './customer-details';
+import { getErrorMessage } from './utils';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
+import { resolveProductType } from './resolve-product-type';
 import {
 	Button,
 	HorizontalRule,
@@ -105,15 +107,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
-	const [
-		isCoverLetterManuallyEdited,
-		setIsCoverLetterManuallyEdited,
-	] = useState( false );
+	const [ isCoverLetterManuallyEdited, setIsCoverLetterManuallyEdited ] =
+		useState( false );
 	const [ shippingCarrier, setShippingCarrier ] = useState( '' );
 	const [ shippingDate, setShippingDate ] = useState( '' );
-	const [ shippingTrackingNumber, setShippingTrackingNumber ] = useState(
-		''
-	);
+	const [ shippingTrackingNumber, setShippingTrackingNumber ] =
+		useState( '' );
 	const [ shippingAddress, setShippingAddress ] = useState( '' );
 	const [ isUploading, setIsUploading ] = useState<
 		Record< string, boolean >
@@ -125,12 +124,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ uploadedFiles, setUploadedFiles ] = useState<
 		Record< string, string >
 	>( {} );
-	const {
-		createSuccessNotice,
-		createErrorNotice,
-		createInfoNotice,
-	} = useDispatch( 'core/notices' );
-	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
+	const { createSuccessNotice, createErrorNotice, createInfoNotice } =
+		useDispatch( 'core/notices' );
+	const storeDispatch = useDispatch( paymentIntentsStore ) as {
 		invalidateResolutionForStoreSelector: ( selector: string ) => void;
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
@@ -142,10 +138,14 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
 
 	// Refs for heading elements to focus on step navigation
-	const stepHeadingRefs = useRef< {
-		[ key: number ]: HTMLHeadingElement | null;
-	} >( {} );
+	const stepHeadingRef = useRef< HTMLHeadingElement >( null );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
+
+	const getDisputeTracksProperties = () => ( {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+	} );
 
 	const isFeatureFlagEnabled =
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
@@ -158,15 +158,18 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-				const isFetchedDisputeVisaCompliance = isVisaComplianceDispute(
-					d
-				);
+				const fetchedBankName = d.charge
+					? getBankName( d.charge )
+					: null;
+				const isFetchedDisputeVisaCompliance =
+					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
-				const suggestedProductType =
-					d.metadata?.__product_type ||
-					d.order?.suggested_product_type ||
-					'';
+				const suggestedProductType = resolveProductType(
+					d.metadata,
+					d.order?.suggested_product_type,
+					isFeatureFlagEnabled
+				);
 				setProductType( suggestedProductType );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
@@ -257,7 +260,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							disputeWithCurrentEvidence,
 							getBusinessDetails(),
 							settings,
-							bankName,
+							fetchedBankName,
 							refundStatus,
 							duplicateStatus,
 							suggestedProductType
@@ -279,7 +282,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						d,
 						getBusinessDetails(),
 						settings,
-						bankName,
+						fetchedBankName,
 						refundStatus,
 						duplicateStatus,
 						suggestedProductType
@@ -288,17 +291,17 @@ export default ( { query }: { query: { id: string } } ) => {
 					setIsCoverLetterManuallyEdited( false );
 				}
 			} catch ( error ) {
-				createErrorNotice( String( error ) );
+				createErrorNotice( getErrorMessage( error ) );
 			} finally {
 				setIsInitialLoading( false );
 			}
 		};
 		fetchDispute();
-		// We intentionally exclude duplicateStatus and refundStatus from dependencies to prevent
-		// re-fetching dispute data when status changes (which would reset the product type selection).
-		// Cover letter regeneration on status changes is handled by the evidence update effect.
+		// Load once per dispute: each run resets the form to the saved evidence, so re-running when
+		// settings or the status selections change would wipe what the merchant has typed. The
+		// evidence update effect regenerates the cover letter when those values change.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path, createErrorNotice, settings, bankName ] );
+	}, [ path ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -509,7 +512,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
+				: 'wcpay_dispute_save_evidence_success',
+			getDisputeTracksProperties()
 		);
 
 		createSuccessNotice( message, {
@@ -528,18 +532,14 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed',
+			getDisputeTracksProperties()
 		);
 
 		const message = submit
 			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
 			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-		createErrorNotice(
-			sprintf(
-				message,
-				err instanceof Error ? err.message : String( err )
-			)
-		);
+		createErrorNotice( sprintf( message, getErrorMessage( err ) ) );
 	};
 
 	const doSave = async ( submit: boolean, notify = true ) => {
@@ -558,7 +558,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			recordEvent(
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked',
+				getDisputeTracksProperties()
 			);
 
 			// Build base evidence object
@@ -702,7 +703,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					? formatDateTimeFromTimestamp( dispute.created, {
 							separator: ', ',
 							includeTime: false,
-					  } )
+						} )
 					: '–',
 			},
 			{
@@ -764,10 +765,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		// Use setTimeout to ensure the DOM has updated with the new step content
 		const timeoutId = setTimeout( () => {
-			const headingRef = stepHeadingRefs.current[ currentStep ];
-			if ( headingRef ) {
-				headingRef.focus();
-			}
+			stepHeadingRef.current?.focus();
 		}, 100 );
 
 		return () => clearTimeout( timeoutId );
@@ -823,7 +821,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	const updateProductType = ( newType: string ) => {
-		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
+		recordEvent( 'wcpay_dispute_product_selected', {
+			...getDisputeTracksProperties(),
+			selection: newType,
+		} );
 		setProductType( newType );
 		// Reset the manual edit flag so the cover letter regenerates with the new product type
 		// This ensures attachment labels are updated to match the selected product type
@@ -900,6 +901,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 
 		recordEvent( 'wcpay_dispute_file_upload_started', {
+			...getDisputeTracksProperties(),
 			type: key,
 		} );
 
@@ -936,18 +938,20 @@ export default ( { query }: { query: { id: string } } ) => {
 			} ) );
 
 			recordEvent( 'wcpay_dispute_file_upload_success', {
+				...getDisputeTracksProperties(),
 				type: key,
 			} );
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
-				message: err instanceof Error ? err.message : String( err ),
+				...getDisputeTracksProperties(),
+				message: getErrorMessage( err ),
 			} );
 
 			// Display error as WordPress admin notice
 			createErrorNotice(
 				sprintf(
 					__( 'Failed to upload file. (%s)', 'woocommerce-payments' ),
-					err instanceof Error ? err.message : String( err )
+					getErrorMessage( err )
 				)
 			);
 
@@ -974,10 +978,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute?.enhanced_eligibility_types
 	);
 
-	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields(
-		disputeReason,
-		productType
-	);
+	const recommendedShippingDocumentFields =
+		getRecommendedShippingDocumentFields( disputeReason, productType );
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
 		( field: RecommendedDocument ) => ( {
 			key: field.key,
@@ -1000,27 +1002,29 @@ export default ( { query }: { query: { id: string } } ) => {
 		} )
 	);
 
-	const recommendedShippingDocumentsFields = recommendedShippingDocumentFields.map(
-		( field: RecommendedDocument ) => ( {
-			key: field.key,
-			label: field.label,
-			description: field.description,
-			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
-			fileSize: fileSizes[ field.key ] || 0,
-			uploaded: !! evidence[ field.key ],
-			isLoading: isUploading[ field.key ] || false,
-			onFileChange: ( key: string, file: File ) =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doUploadFile( field.key, file ) ),
-			onFileRemove: () =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doRemoveFile( field.key ) ),
-			isBusy: isUploading[ field.key ] || false,
-			readOnly: readOnly,
-		} )
-	);
+	const recommendedShippingDocumentsFields =
+		recommendedShippingDocumentFields.map(
+			( field: RecommendedDocument ) => ( {
+				key: field.key,
+				label: field.label,
+				description: field.description,
+				fileName:
+					uploadedFiles[ field.key ] || evidence[ field.key ] || '',
+				fileSize: fileSizes[ field.key ] || 0,
+				uploaded: !! evidence[ field.key ],
+				isLoading: isUploading[ field.key ] || false,
+				onFileChange: ( key: string, file: File ) =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doUploadFile( field.key, file ) ),
+				onFileRemove: () =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doRemoveFile( field.key ) ),
+				isBusy: isUploading[ field.key ] || false,
+				readOnly: readOnly,
+			} )
+		);
 
 	const inlineNotice = ( bankNameValue: string | null ) => (
 		<InlineNotice
@@ -1037,11 +1041,11 @@ export default ( { query }: { query: { id: string } } ) => {
 								'woocommerce-payments'
 							),
 							bankNameValue
-					  )
+						)
 					: __(
 							"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 							'woocommerce-payments'
-					  ),
+						),
 				{
 					strong: <strong />,
 				}
@@ -1141,7 +1145,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 0 ] = el ) }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 0 ].heading }
@@ -1190,7 +1194,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) => ( stepHeadingRefs.current[ 1 ] = el ) }
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 1 ].heading }
@@ -1228,9 +1232,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<>
 					<h2
 						className="wcpay-dispute-evidence-new__stepper-title"
-						ref={ ( el ) =>
-							( stepHeadingRefs.current[ reviewStep ] = el )
-						}
+						ref={ stepHeadingRef }
 						tabIndex={ -1 }
 					>
 						{ steps[ 2 ].heading }
@@ -1286,7 +1288,8 @@ export default ( { query }: { query: { id: string } } ) => {
 										evidence.uncategorized_file,
 									shipping_carrier: shippingCarrier,
 									shipping_date: shippingDate,
-									shipping_tracking_number: shippingTrackingNumber,
+									shipping_tracking_number:
+										shippingTrackingNumber,
 									shipping_address: shippingAddress,
 								},
 							};

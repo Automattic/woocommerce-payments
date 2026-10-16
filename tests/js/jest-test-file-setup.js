@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { setLocaleData } from '@wordpress/i18n';
+import { TextDecoder, TextEncoder } from 'util';
 
 // Set up `wp.*` aliases.  Doing this because any tests importing wp stuff will
 // likely run into this.
@@ -32,6 +33,9 @@ global.window.wcTracks = {
 };
 
 global.IS_REACT_ACT_ENVIRONMENT = true;
+
+global.TextEncoder = global.TextEncoder || TextEncoder;
+global.TextDecoder = global.TextDecoder || TextDecoder;
 
 // Can be removed once a new version of @wordpress/jest-preset-default include it ( >= 10.1.0 )
 global.window.matchMedia = () => ( {

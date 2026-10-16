@@ -148,6 +148,32 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
 		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
+		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->onboarding_service, 'clear_cached_onboarding_fields_data' ] ) );
+	}
+
+	public function test_clear_cached_onboarding_fields_data() {
+		$this->mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ Database_Cache::ONBOARDING_FIELDS_DATA_KEY ],
+				[ Database_Cache::BUSINESS_TYPES_KEY ]
+			);
+
+		$this->onboarding_service->clear_cached_onboarding_fields_data();
+	}
+
+	public function test_cleanup_on_account_reset_deletes_store_had_woopayments_options() {
+		// Arrange.
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments', 'yes' );
+		update_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version', 2 );
+
+		// Act.
+		$this->onboarding_service->cleanup_on_account_reset();
+
+		// Assert.
+		$this->assertFalse( get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments' ) );
+		$this->assertFalse( get_option( 'woocommerce_admin_pes_incentive_woopayments_store_had_woopayments_version' ) );
 	}
 
 	public function test_create_embedded_kyc_session() {
@@ -325,6 +351,26 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'no', get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' ) );
 
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_mode_changes_preserve_retired_experiment_history() {
+		update_option( 'wcpay_test_mode_enabled_date', 12345 );
+
+		$this->onboarding_service->set_test_mode( true );
+		$this->assertSame( 'yes', get_option( 'wcpay_onboarding_test_mode' ) );
+		$this->onboarding_service->set_test_mode( false );
+		$this->assertSame( 'no', get_option( 'wcpay_onboarding_test_mode' ) );
+		$this->assertEquals( 12345, get_option( 'wcpay_test_mode_enabled_date' ) );
+	}
+
+	public function test_mode_changes_do_not_start_retired_notice_timer() {
+		$this->setExpectedDeprecated( 'WC_Payments_Onboarding_Service::maybe_handle_gateway_test_mode_toggle' );
+		delete_option( 'wcpay_test_mode_enabled_date' );
+
+		$this->onboarding_service->set_test_mode( true );
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle( [ 'test_mode' => 'no' ], [ 'test_mode' => 'yes' ] );
+
+		$this->assertFalse( get_option( 'wcpay_test_mode_enabled_date' ) );
 	}
 
 	public function test_is_embedded_kyc_in_progress() {
@@ -763,6 +809,62 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $result );
 	}
 
+	public function test_init_test_drive_account_merges_additional_account_data() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [], [ 'extra_bootstrapping' => false ] );
+
+		// Assert: The `extra_bootstrapping => false` key should survive into the API call.
+		$this->assertArrayHasKey( 'extra_bootstrapping', $captured_account_data );
+		$this->assertFalse( $captured_account_data['extra_bootstrapping'] );
+	}
+
+	public function test_init_test_drive_account_without_additional_data_leaves_account_data_unchanged() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [] );
+
+		// Assert: No extra_bootstrapping key should be present.
+		$this->assertArrayNotHasKey( 'extra_bootstrapping', $captured_account_data );
+		// The base account data should still contain the expected keys.
+		$this->assertArrayHasKey( 'setup_mode', $captured_account_data );
+		$this->assertSame( 'test_drive', $captured_account_data['setup_mode'] );
+	}
+
 	public function test_add_woocommerce_store_id_to_request_adds_store_id() {
 		$store_id = 'test-store-uuid-1234';
 		update_option( 'woocommerce_store_id', $store_id );
@@ -780,5 +882,65 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( [] );
 
 		$this->assertSame( '', $result['woocommerce_store_id'] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_explicitly_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_keeps_woopay_off_when_link_enabled_via_capabilities() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids(
+			$mock_gateway,
+			[
+				'woopay' => true,
+				'link'   => true,
+			]
+		);
+	}
+
+	public function test_update_enabled_payment_methods_ids_enables_woopay_when_link_not_enabled() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( true );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [ 'woopay' => true ] );
+	}
+
+	public function test_update_enabled_payment_methods_ids_disables_woopay_when_capability_absent() {
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'link' ] );
+
+		$mock_gateway->expects( $this->once() )->method( 'update_is_woopay_enabled' )->with( false );
+
+		$this->onboarding_service->update_enabled_payment_methods_ids( $mock_gateway, [] );
+	}
+
+	public function test_maybe_add_test_drive_settings_adds_capabilities_and_keeps_transient() {
+		set_transient(
+			WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT,
+			[
+				'capabilities'            => [ 'link_payments' => [ 'requested' => 'true' ] ],
+				'enabled_payment_methods' => [ 'card', 'link' ],
+			],
+			HOUR_IN_SECONDS
+		);
+
+		$args = $this->onboarding_service->maybe_add_test_drive_settings_to_new_account_request( [ 'account_data' => [] ] );
+
+		$this->assertSame( [ 'link_payments' => [ 'requested' => 'true' ] ], $args['account_data']['capabilities'] );
+		$this->assertNotFalse( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
 }

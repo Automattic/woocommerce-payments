@@ -12,7 +12,7 @@ import { formatCurrency } from 'multi-currency/interface/functions';
  * Internal Dependencies
  */
 import TYPES from './action-types';
-import { STORE_NAME } from '../constants';
+import { DEPOSITS_STORE_NAME as STORE_NAME } from '../store-names';
 import { getAdminUrl } from 'wcpay/utils';
 
 export function updateDeposit( data ) {

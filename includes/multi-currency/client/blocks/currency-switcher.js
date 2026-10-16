@@ -316,6 +316,10 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 				<div className="currency-switcher-holder" style={ styles.div }>
 					<select
 						name="currency"
+						aria-label={ __(
+							'Select your currency',
+							'woocommerce-payments'
+						) }
 						disabled={ isLoading }
 						style={ styles.select }
 					>

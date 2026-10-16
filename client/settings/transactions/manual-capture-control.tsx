@@ -13,17 +13,15 @@ import {
 	useManualCapture,
 	useCardPresentEligible,
 	useStripeBilling,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
 import InlineNotice from 'components/inline-notice';
 
 const ManualCaptureControl = (): JSX.Element => {
-	const [
-		isManualCaptureEnabled,
-		setIsManualCaptureEnabled,
-	] = useManualCapture();
+	const [ isManualCaptureEnabled, setIsManualCaptureEnabled ] =
+		useManualCapture();
 	const [ isStripeBillingEnabled ] = useStripeBilling();
 	const [ isCardPresentEligible ] = useCardPresentEligible();
 
@@ -88,7 +86,7 @@ const ManualCaptureControl = (): JSX.Element => {
 											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},
-							  } )
+								} )
 							: '' }
 					</span>
 				}

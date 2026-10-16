@@ -30,9 +30,8 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 			id: depositId,
 		} );
 
-		const formattedDateAvailable = formatDateTimeFromString(
-			dateAvailable
-		);
+		const formattedDateAvailable =
+			formatDateTimeFromString( dateAvailable );
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 

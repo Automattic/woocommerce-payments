@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __, _x, sprintf } from '@wordpress/i18n';
-import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
  */
+import { getSetting } from 'wcpay/utils/wc-settings';
 import {
 	displayType,
 	sourceDevice,
@@ -35,24 +35,6 @@ const transactionTypesOptions = Object.entries( displayType )
 	.filter( function ( el ) {
 		return el != null;
 	} );
-
-const loanDefinitions =
-	'undefined' !== typeof wcpaySettings
-		? wcpaySettings.accountLoans.loans
-		: [];
-
-const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
-	const loanDefinitionSplitted = loanDefinition.split( '|' );
-	const loanDisplayValue = sprintf(
-		'ID: %s | %s',
-		loanDefinitionSplitted[ 0 ],
-		'active' === loanDefinitionSplitted[ 1 ]
-			? __( 'In Progress', 'woocommerce-payments' )
-			: __( 'Paid in Full', 'woocommerce-payments' )
-	);
-
-	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
-}, [] );
 
 const transactionSourceDeviceOptions = Object.entries( sourceDevice ).map(
 	( [ type, label ] ) => {
@@ -157,18 +139,18 @@ export const getAdvancedFilters = (
 	const wooCommerceVersionString = getSetting( 'wcVersion' );
 	const wooCommerceVersion = parseFloat( wooCommerceVersionString ); // This will parse 7.7.1 to 7.7, but it's fine for this purpose
 
-	return {
+	const advancedFilters: any = {
 		/** translators: A sentence describing filters for Transactions. */
 		title:
 			wooCommerceVersion < 7.8
 				? __(
 						'Transactions match {{select /}} filters',
 						'woocommerce-payments'
-				  )
+					)
 				: __(
 						'Transactions match <select /> filters',
 						'woocommerce-payments'
-				  ),
+					),
 		filters: {
 			date: {
 				labels: {
@@ -187,11 +169,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Date</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction date',
 						'woocommerce-payments'
@@ -232,11 +214,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Customer currency{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Customer currency</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a customer currency',
 						'woocommerce-payments'
@@ -329,11 +311,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Type</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction type',
 						'woocommerce-payments'
@@ -364,30 +346,6 @@ export const getAdvancedFilters = (
 					options: transactionTypesOptions,
 				},
 			},
-			loan_id_is: {
-				labels: {
-					add: __( 'Loan', 'woocommerce-payments' ),
-					remove: __( 'Remove loan filter', 'woocommerce-payments' ),
-					rule: __( 'Select a loan', 'woocommerce-payments' ),
-					/* translators: A sentence describing a Loan ID filter. */
-					title:
-						wooCommerceVersion < 7.8
-							? __(
-									'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
-									'woocommerce-payments'
-							  )
-							: __(
-									'<title>Loan</title> <rule /> <filter />',
-									'woocommerce-payments'
-							  ),
-					filter: __( 'Select a loan', 'woocommerce-payments' ),
-				},
-				input: {
-					component: 'SelectControl',
-					type: 'loans',
-					options: loanSelectionOptions,
-				},
-			},
 			source_device: {
 				labels: {
 					add: __( 'Device Type', 'woocommerce-payments' ),
@@ -405,11 +363,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Device type{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Device type</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction device type',
 						'woocommerce-payments'
@@ -456,11 +414,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Sales channel{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Sales channel</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction sales channel',
 						'woocommerce-payments'
@@ -508,11 +466,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Customer country{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Customer country</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction customer country',
 						'woocommerce-payments'
@@ -560,11 +518,11 @@ export const getAdvancedFilters = (
 							? __(
 									'{{title}}Risk Level{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
-							  )
+								)
 							: __(
 									'<title>Risk Level</title> <rule /> <filter />',
 									'woocommerce-payments'
-							  ),
+								),
 					filter: __(
 						'Select a transaction Risk Level',
 						'woocommerce-payments'
@@ -593,5 +551,52 @@ export const getAdvancedFilters = (
 			},
 		},
 	};
+
+	const loanDefinitions = wcpaySettings?.accountLoans?.loans ?? [];
+
+	const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
+		const loanDefinitionSplitted = loanDefinition.split( '|' );
+		const loanDisplayValue = sprintf(
+			'ID: %s | %s',
+			loanDefinitionSplitted[ 0 ],
+			loanDefinitionSplitted[ 1 ] === 'active'
+				? __( 'In Progress', 'woocommerce-payments' )
+				: __( 'Paid in Full', 'woocommerce-payments' )
+		);
+
+		return {
+			label: loanDisplayValue,
+			value: loanDefinitionSplitted[ 0 ],
+		};
+	}, [] );
+
+	if ( loanSelectionOptions.length > 0 ) {
+		advancedFilters.filters.loan_id_is = {
+			labels: {
+				add: __( 'Loan', 'woocommerce-payments' ),
+				remove: __( 'Remove loan filter', 'woocommerce-payments' ),
+				rule: __( 'Select a loan', 'woocommerce-payments' ),
+				/* translators: A sentence describing a Loan ID filter. */
+				title:
+					wooCommerceVersion < 7.8
+						? __(
+								'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
+								'woocommerce-payments'
+							)
+						: __(
+								'<title>Loan</title> <rule /> <filter />',
+								'woocommerce-payments'
+							),
+				filter: __( 'Select a loan', 'woocommerce-payments' ),
+			},
+			input: {
+				component: 'SelectControl',
+				type: 'loans',
+				options: loanSelectionOptions,
+			},
+		};
+	}
+
+	return advancedFilters;
 };
 /*eslint-enable max-len*/

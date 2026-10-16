@@ -44,10 +44,10 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	/**
 	 * Get payment method type to display to user.
 	 *
-	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
+	 * @param  string $_unused_deprecated Deprecated since WooCommerce 3.0.
 	 * @return string
 	 */
-	public function get_display_name( $deprecated = '' ) {
+	public function get_display_name( $_unused_deprecated = '' ) {
 		$display = sprintf(
 			/* translators: customer email */
 			__( 'Stripe Link email ending in %s', 'woocommerce-payments' ),
@@ -97,10 +97,10 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	/**
 	 * Returns the type of this payment token (CC, eCheck, or something else).
 	 *
-	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
+	 * @param  string $_unused_deprecated Deprecated since WooCommerce 3.0.
 	 * @return string Payment Token Type (CC, eCheck)
 	 */
-	public function get_type( $deprecated = '' ) {
+	public function get_type( $_unused_deprecated = '' ) {
 		return self::TYPE;
 	}
 

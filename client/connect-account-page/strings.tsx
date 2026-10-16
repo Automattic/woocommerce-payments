@@ -31,7 +31,7 @@ export default {
 	heading: ( firstName?: string ): string =>
 		sprintf(
 			/* translators: %s: first name of the merchant, if it exists, %s: WooPayments. */
-			__( 'Hi%s, Welcome to %s!', 'woocommerce' ),
+			__( 'Hi%s, Welcome to %s!', 'woocommerce-payments' ),
 			firstName ? ` ${ firstName }` : '',
 			'WooPayments'
 		),
@@ -85,7 +85,7 @@ export default {
 				// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 				// eslint-disable-next-line jsx-a11y/anchor-has-content
 				<a
-					href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
+					href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/"
 					target="_blank"
 					rel="noreferrer"
 				/>
@@ -202,7 +202,8 @@ export default {
 				'woocommerce-payments'
 			),
 			description: __(
-				"Here's a brief list of the information you'll need to finish payment signup:"
+				"Here's a brief list of the information you'll need to finish payment signup:",
+				'woocommerce-payments'
 			),
 		},
 		businessOwnerInfo: {
@@ -225,13 +226,13 @@ export default {
 			fields: [
 				__(
 					'Country where your business is based',
-					'woocommerce-payments '
+					'woocommerce-payments'
 				),
-				__( 'Type of business', 'woocommerce-payments ' ),
-				__( 'Industry', 'woocommerce-payments ' ),
-				__( 'Company address', 'woocommerce-payments ' ),
-				__( 'Company phone number', 'woocommerce-payments ' ),
-				__( 'Company URL', 'woocommerce-payments ' ),
+				__( 'Type of business', 'woocommerce-payments' ),
+				__( 'Industry', 'woocommerce-payments' ),
+				__( 'Company address', 'woocommerce-payments' ),
+				__( 'Company phone number', 'woocommerce-payments' ),
+				__( 'Company URL', 'woocommerce-payments' ),
 			],
 		},
 	},

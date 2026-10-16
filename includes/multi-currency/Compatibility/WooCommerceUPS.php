@@ -30,14 +30,14 @@ class WooCommerceUPS extends BaseCompatibility {
 	/**
 	 * Determine whether to return the store currency or not.
 	 *
-	 * @param bool $return Whether to return the store currency or not.
+	 * @param bool $should_return Whether to return the store currency or not.
 	 *
 	 * @return bool
 	 */
-	public function should_return_store_currency( bool $return ): bool {
+	public function should_return_store_currency( bool $should_return ): bool {
 		// If it's already true, return it.
-		if ( $return ) {
-			return $return;
+		if ( $should_return ) {
+			return $should_return;
 		}
 
 		$calls = [
@@ -49,6 +49,6 @@ class WooCommerceUPS extends BaseCompatibility {
 			return true;
 		}
 
-		return $return;
+		return $should_return;
 	}
 }

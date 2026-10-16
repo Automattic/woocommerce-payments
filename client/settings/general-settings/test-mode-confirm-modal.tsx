@@ -17,10 +17,9 @@ interface TestModeConfirmationModalProps {
 	onConfirm: () => void;
 }
 
-const TestModeConfirmationModal: React.FC< TestModeConfirmationModalProps > = ( {
-	onClose,
-	onConfirm,
-} ) => {
+const TestModeConfirmationModal: React.FC<
+	TestModeConfirmationModalProps
+> = ( { onClose, onConfirm } ) => {
 	return (
 		<ConfirmationModal
 			title={ __( 'Enable test mode', 'woocommerce-payments' ) }
