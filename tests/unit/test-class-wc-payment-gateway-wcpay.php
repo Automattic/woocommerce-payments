@@ -6521,7 +6521,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'type' => 'link',
 					'link' => [ 'country' => '' ],
 				],
-				'Link',
+				'Stripe Link',
 			],
 			'card with wallet' => [
 				[
@@ -6532,7 +6532,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						'wallet' => [ 'type' => 'link' ],
 					],
 				],
-				'Link (WooPayments)',
+				'Stripe Link',
 			],
 		];
 	}
