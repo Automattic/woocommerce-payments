@@ -456,6 +456,14 @@ class WC_Payments_Webhook_Processing_Service {
 			Payment_Method::WECHAT_PAY,
 		];
 
+		// BNPL methods are not actionable here: their failures are handled when the customer
+		// returns from the payment provider's page, and the order is left pending for a retry.
+		// But if the customer abandons the payment (e.g. the provider's session expires), no
+		// other flow records the failure, so note it without changing the order status.
+		if ( in_array( $payment_method_type, Payment_Method::BNPL_PAYMENT_METHODS, true ) ) {
+			$this->maybe_add_bnpl_payment_failure_note( $event_body, $last_payment_error, $charge_id );
+		}
+
 		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {
 			return;
 		}
@@ -481,6 +489,84 @@ class WC_Payments_Webhook_Processing_Service {
 		} else {
 			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
 		}
+	}
+
+	/**
+	 * Adds an order note for a failed BNPL payment, without changing the order status.
+	 *
+	 * BNPL payment methods leave the order pending so the customer can retry with a different
+	 * payment method, and their failures are otherwise only handled when the customer returns
+	 * from the payment provider's page. If the customer abandons the payment (e.g. the
+	 * provider's session expires), this note is the only record of the failure.
+	 *
+	 * @param array  $event_body         The event that triggered the webhook.
+	 * @param array  $last_payment_error The last payment error of the intent.
+	 * @param string $charge_id          The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	private function maybe_add_bnpl_payment_failure_note( array $event_body, array $last_payment_error, string $charge_id ): void {
+		try {
+			$order = $this->get_order_from_event_body( $event_body );
+		} catch ( Invalid_Webhook_Data_Exception | Invalid_Payment_Method_Exception $e ) {
+			// The event cannot be resolved to an order, so there is nothing to note.
+			return;
+		}
+
+		$payment_method_id = $last_payment_error['payment_method']['id'] ?? null;
+
+		// Only note the failure when the intent's payment method is the order's current payment
+		// method, and the order has not been paid in the meantime. Failed orders are still
+		// noted: starting a payment does not reset the failed status, so an abandoned retry
+		// would otherwise leave no record of the failure.
+		if ( ! $order
+			|| empty( $payment_method_id )
+			|| $payment_method_id !== $order->get_meta( '_payment_method_id' )
+			|| $order->has_status( wc_get_is_paid_statuses() ) ) {
+			return;
+		}
+
+		$intent_id = $event_body['data']['object']['id'] ?? '';
+		$note      = $this->order_service->get_payment_failure_note( $order, $intent_id, $charge_id, $this->get_bnpl_failure_message( $last_payment_error ) );
+
+		if ( $this->order_service->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Gets the failure message for a BNPL payment failure, with the payment provider's error details.
+	 *
+	 * @param array $error The last payment error from the payment failed event.
+	 *
+	 * @return string The failure message.
+	 */
+	private function get_bnpl_failure_message( array $error ): string {
+		$decline_code = $error['decline_code'] ?? '';
+
+		if ( ! empty( $decline_code ) ) {
+			$message = sprintf(
+				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
+				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
+				esc_html( $error['message'] ?? '' ),
+				esc_html( $decline_code )
+			);
+		} else {
+			// translators: %s Stripe error message.
+			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $error['message'] ?? '' ) );
+		}
+
+		if ( ! empty( $error['doc_url'] ) ) {
+			$message .= ' ' . sprintf(
+				/* translators: %1$s: a URL with more information about the declined payment. */
+				__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
+				esc_url( $error['doc_url'] )
+			);
+		}
+
+		return $message;
 	}
 
 	/**
@@ -1048,6 +1134,25 @@ class WC_Payments_Webhook_Processing_Service {
 		$message      = $error['message'] ?? '';
 
 		switch ( $code ) {
+			case 'payment_intent_payment_attempt_failed':
+				if ( 'klarna_payment_declined' === $decline_code ) {
+					// Record the payment provider's decline details, formatted the same way as the checkout failure note.
+					$formatted_message = sprintf(
+						/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
+						__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
+						esc_html( $message ),
+						esc_html( $decline_code )
+					);
+					if ( ! empty( $error['doc_url'] ) ) {
+						$formatted_message .= ' ' . sprintf(
+							/* translators: %1$s: a URL with more information about the declined payment. */
+							__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
+							esc_url( $error['doc_url'] )
+						);
+					}
+					return $formatted_message;
+				}
+				break;
 			case 'account_closed':
 				return __( "The customer's bank account has been closed.", 'woocommerce-payments' );
 			case 'debit_not_authorized':

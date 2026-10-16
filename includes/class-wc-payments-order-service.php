@@ -496,7 +496,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $message );
 		if ( $this->order_note_exists( $order, $note )
 			|| $order->has_status( [ Order_Status::FAILED ] ) ) {
 			$this->complete_order_processing( $order );
@@ -506,6 +506,20 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Get content for the payment failure order note.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param string   $message   Optional message to add to the note.
+	 *
+	 * @return string Note content.
+	 */
+	public function get_payment_failure_note( $order, $intent_id, $charge_id, $message = '' ) {
+		return $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
 	}
 
 	/**
