@@ -195,6 +195,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_gateway( $this->wcpay_gateway );
+		Fraud_Prevention_Service::set_instance( null );
 	}
 
 	/**
