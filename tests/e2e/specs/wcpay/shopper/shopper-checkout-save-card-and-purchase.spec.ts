@@ -27,7 +27,7 @@ import { goToMyAccount } from '../../../utils/shopper-navigation';
 type CardType = [
 	string,
 	typeof config.cards.basic,
-	( typeof config.products.simple )[]
+	( typeof config.products.simple )[],
 ];
 
 const cards: Array< CardType > = [
@@ -51,7 +51,7 @@ test.describe( 'Saved cards', { tag: '@critical' }, () => {
 			test.beforeAll( async ( { browser }, { project } ) => {
 				shopperPage = (
 					await getShopper( browser, true, project.use.baseURL )
-				 ).shopperPage;
+				).shopperPage;
 
 				await ensureCustomerIsLoggedIn( shopperPage, project );
 			} );

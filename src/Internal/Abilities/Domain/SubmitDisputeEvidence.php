@@ -113,8 +113,10 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 						'description' => __( 'Whether to submit to the card network (irreversible). Default false stages a draft.', 'woocommerce-payments' ),
 					],
 					'metadata'   => [
-						'type'        => 'object',
-						'description' => __( 'Optional metadata to attach to the dispute.', 'woocommerce-payments' ),
+						'type'                 => 'object',
+						'description'          => __( 'Optional metadata to attach to the dispute. Maximum 10 keys; keys up to 40 characters; values up to 500 characters.', 'woocommerce-payments' ),
+						'additionalProperties' => [ 'type' => 'string' ],
+						'maxProperties'        => 10,
 					],
 				],
 				'additionalProperties' => false,
@@ -153,6 +155,19 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 		$evidence   = ( isset( $input['evidence'] ) && is_array( $input['evidence'] ) ) ? $input['evidence'] : [];
 		$submit     = true === ( $input['submit'] ?? false );
 		$metadata   = ( isset( $input['metadata'] ) && is_array( $input['metadata'] ) ) ? $input['metadata'] : [];
+
+		if ( count( $metadata ) > 10 ) {
+			return new \WP_Error( 'wcpay_too_many_metadata_keys', __( 'Metadata may not contain more than 10 keys.', 'woocommerce-payments' ) );
+		}
+
+		foreach ( $metadata as $key => $value ) {
+			if ( ! is_string( $key ) || strlen( $key ) > 40 ) {
+				return new \WP_Error( 'wcpay_invalid_metadata_key', __( 'Metadata keys must be strings of 40 characters or fewer.', 'woocommerce-payments' ) );
+			}
+			if ( ! is_string( $value ) || strlen( $value ) > 500 ) {
+				return new \WP_Error( 'wcpay_invalid_metadata_value', __( 'Metadata values must be strings of 500 characters or fewer.', 'woocommerce-payments' ) );
+			}
+		}
 
 		return self::get_dispute_service()->submit_evidence( $dispute_id, $evidence, $submit, $metadata );
 	}

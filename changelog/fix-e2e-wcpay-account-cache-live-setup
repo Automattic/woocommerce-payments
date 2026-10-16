@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: E2E environment setup only (warm WCPay account cache on the live-server path), not end client facing.
-
-

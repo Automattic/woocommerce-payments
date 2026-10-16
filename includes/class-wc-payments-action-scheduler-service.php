@@ -50,6 +50,18 @@ class WC_Payments_Action_Scheduler_Service {
 	private $deferred_jobs = [];
 
 	/**
+	 * Keys (hook+args+group hashes) already scheduled in the current request.
+	 *
+	 * Prevents repeat schedule_job() calls for the same key from re-running
+	 * schedule_action_and_prevent_duplicates(), which is the source of the
+	 * schedule-then-cancel churn during checkout (woocommerce_update_order
+	 * fires many times per request).
+	 *
+	 * @var array<string, int>
+	 */
+	private $scheduled_in_request = [];
+
+	/**
 	 * Constructor for WC_Payments_Action_Scheduler_Service.
 	 *
 	 * @param WC_Payments_API_Client    $payments_api_client - WooCommerce Payments API client.
@@ -122,6 +134,25 @@ class WC_Payments_Action_Scheduler_Service {
 		add_action( 'wcpay_track_update_order', [ $this, 'track_update_order_action' ] );
 		add_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this->order_service, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
 		add_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->compatibility_service, 'update_compatibility_data_hook' ], 10, 0 );
+
+		// The ActionScheduler queue runner processes many actions in a single PHP process. Reset the
+		// in-request dedupe set between actions so a self-rescheduling hook (e.g. wcpay_webhook_fetch_events
+		// when the server signals more events are waiting) isn't silently suppressed after its first
+		// self-schedule in the process.
+		add_action( 'action_scheduler_begin_execute', [ $this, 'reset_scheduled_in_request' ] );
+	}
+
+	/**
+	 * Clear the in-request dedupe set.
+	 *
+	 * Used by the ActionScheduler queue runner (via `action_scheduler_begin_execute`) to give each
+	 * processed action its own dedupe scope, since one PHP process may execute many AS actions in
+	 * sequence. Also called from tests that share the singleton instance across test methods.
+	 *
+	 * @return void
+	 */
+	public function reset_scheduled_in_request() {
+		$this->scheduled_in_request = [];
 	}
 
 	/**
@@ -204,9 +235,11 @@ class WC_Payments_Action_Scheduler_Service {
 	/**
 	 * Schedule an action scheduler job.
 	 *
-	 * Also, unschedules (replaces) any previous instances of the same job.
-	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
-	 * We will only replace a job which has the same $hook, $args AND $group.
+	 * Within the current request, calls after the first for the same $hook+$args+$group are no-ops:
+	 * this collapses the schedule-then-cancel churn from repeated woocommerce_update_order fires
+	 * during checkout down to a single AS write. Across requests, an existing pending action with
+	 * the same key is kept when it runs no later than $timestamp, and replaced when it runs later,
+	 * so the earliest requested time wins. Hook callbacks must read live state when they run.
 	 *
 	 * @param int    $timestamp When the job will run.
 	 * @param string $hook      The hook to trigger.
@@ -218,10 +251,16 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	public function schedule_job( int $timestamp, string $hook, array $args = [], string $group = self::GROUP_ID ) {
+		$key = md5( (string) wp_json_encode( [ $hook, $args, $group ] ) );
+
 		// The `action_scheduler_init` hook was introduced in ActionScheduler 3.5.5 (WooCommerce 7.9.0).
 		if ( version_compare( WC()->version, '7.9.0', '>=' ) ) {
 			// If the ActionScheduler is already initialized, schedule the job.
 			if ( did_action( 'action_scheduler_init' ) ) {
+				if ( isset( $this->scheduled_in_request[ $key ] ) ) {
+					return;
+				}
+				$this->scheduled_in_request[ $key ] = $timestamp;
 				$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 			} else {
 				// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
@@ -229,13 +268,12 @@ class WC_Payments_Action_Scheduler_Service {
 				// (e.g. `woocommerce_update_order` firing multiple times on order creation) don't pile up closures
 				// that each schedule their own action. Subsequent calls just update the stored timestamp; the single
 				// callback reads the latest value when ActionScheduler initializes.
-				$key = md5( (string) wp_json_encode( [ $hook, $args, $group ] ) );
-
 				if ( ! isset( $this->deferred_jobs[ $key ] ) ) {
 					add_action(
 						'action_scheduler_init',
 						function () use ( $hook, $args, $group, $key ) {
-							$timestamp = $this->deferred_jobs[ $key ];
+							$timestamp                          = $this->deferred_jobs[ $key ];
+							$this->scheduled_in_request[ $key ] = $timestamp;
 							$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 						}
 					);
@@ -244,6 +282,10 @@ class WC_Payments_Action_Scheduler_Service {
 				$this->deferred_jobs[ $key ] = $timestamp;
 			}
 		} else {
+			if ( isset( $this->scheduled_in_request[ $key ] ) ) {
+				return;
+			}
+			$this->scheduled_in_request[ $key ] = $timestamp;
 			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 		}
 	}
@@ -260,9 +302,10 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
-	 * Schedule an action while unscheduling any scheduled actions that are exactly the same.
+	 * Schedule an action unless an equivalent pending one already runs no later than $timestamp.
 	 *
-	 * We will look for scheduled actions with the same name, args and group when unscheduling.
+	 * Otherwise, any pending action with the same name, args and group is unscheduled and replaced,
+	 * which moves it earlier.
 	 *
 	 * @param int    $timestamp When the action will run.
 	 * @param string $action    The action name to schedule.
@@ -274,6 +317,27 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	private function schedule_action_and_prevent_duplicates( int $timestamp, string $action, array $args = [], string $group = self::GROUP_ID ) {
+		// A pending action with the same name, args, and group that runs no later than requested already
+		// covers this call, since the hook callbacks read live state when they run. Keeping it avoids a
+		// cancel-and-reinsert on every order save, which merchants see as canceled rows.
+		// Running actions are deliberately not matched: one may have read its data before the caller's change.
+		$pending = as_get_scheduled_actions(
+			[
+				'hook'         => $action,
+				'args'         => $args,
+				'group'        => $group,
+				'status'       => ActionScheduler_Store::STATUS_PENDING,
+				'date'         => $timestamp,
+				'date_compare' => '<=',
+				'orderby'      => 'none',
+				'per_page'     => 1,
+			],
+			'ids'
+		);
+		if ( ! empty( $pending ) ) {
+			return;
+		}
+
 		// Unschedule any previously scheduled actions with the same name, args, and group combination.
 		// It is more efficient/performant to check if the action is already scheduled before unscheduling it.
 		// @see https://github.com/Automattic/woocommerce-payments/issues/6662.

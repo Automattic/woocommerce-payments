@@ -61,15 +61,8 @@ describe( 'getDispute resolver', () => {
 	} );
 
 	describe( 'on error', () => {
-		test( 'should update state with error on error', () => {
+		test( 'should record the error without dispatching a notice', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				controls.dispatch(
-					'core/notices',
-					'createErrorNotice',
-					expect.any( String )
-				)
-			);
-			expect( generator.next().value ).toEqual(
 				updateErrorForDispute( 'dp_mock1', undefined, errorResponse )
 			);
 		} );

@@ -55,6 +55,7 @@ class Fraud_Risk_Tools {
 
 	// Rule names.
 	const RULE_ADDRESS_MISMATCH         = 'address_mismatch';
+	const RULE_AVS_VERIFICATION         = 'avs_verification';
 	const RULE_INTERNATIONAL_IP_ADDRESS = 'international_ip_address';
 	const RULE_IP_ADDRESS_MISMATCH      = 'ip_address_mismatch';
 	const RULE_ORDER_ITEMS_THRESHOLD    = 'order_items_threshold';
@@ -294,6 +295,53 @@ class Fraud_Risk_Tools {
 
 		// The ruleset contains custom configuration.
 		return 'advanced';
+	}
+
+	/**
+	 * Returns human-readable labels for the risk filters that fired in a ruleset execution.
+	 *
+	 * Entries with an `allow` outcome did not fire and are skipped. Unknown rule keys — e.g. a
+	 * rule added server-side before this plugin learns about it — fall back to a humanized
+	 * version of the key instead of being dropped, so the merchant still sees that something fired.
+	 *
+	 * The phrasing must stay in sync with `fraudOutcomeRulesetMapping` in
+	 * client/payment-details/timeline/mappings.ts, which renders the same outcomes in the
+	 * transaction timeline.
+	 *
+	 * @param array $ruleset_results The ruleset results, as a map of rule key => outcome.
+	 *
+	 * @return array The labels of the rules that fired.
+	 */
+	public static function get_ruleset_result_labels( array $ruleset_results ): array {
+		$mapping = [
+			Rule::FRAUD_OUTCOME_REVIEW => [
+				self::RULE_AVS_VERIFICATION         => __( 'Place in review if the AVS verification fails', 'woocommerce-payments' ),
+				self::RULE_ADDRESS_MISMATCH         => __( 'Place in review if the shipping address country differs from the billing address country', 'woocommerce-payments' ),
+				self::RULE_INTERNATIONAL_IP_ADDRESS => __( 'Place in review if the country resolved from customer IP is not listed in your selling countries', 'woocommerce-payments' ),
+				self::RULE_IP_ADDRESS_MISMATCH      => __( 'Place in review if the order originates from a country different from the shipping address country', 'woocommerce-payments' ),
+				self::RULE_ORDER_ITEMS_THRESHOLD    => __( 'Place in review if the items count is not in your defined range', 'woocommerce-payments' ),
+				self::RULE_PURCHASE_PRICE_THRESHOLD => __( 'Place in review if the purchase price is not in your defined range', 'woocommerce-payments' ),
+			],
+			Rule::FRAUD_OUTCOME_BLOCK  => [
+				self::RULE_AVS_VERIFICATION         => __( 'Block if the AVS verification fails', 'woocommerce-payments' ),
+				self::RULE_ADDRESS_MISMATCH         => __( 'Block if the shipping address differs from the billing address', 'woocommerce-payments' ),
+				self::RULE_INTERNATIONAL_IP_ADDRESS => __( 'Block if the country resolved from customer IP is not listed in your selling countries', 'woocommerce-payments' ),
+				self::RULE_IP_ADDRESS_MISMATCH      => __( 'Block if the order originates from a country different from the shipping address country', 'woocommerce-payments' ),
+				self::RULE_ORDER_ITEMS_THRESHOLD    => __( 'Block if the items count is not in your defined range', 'woocommerce-payments' ),
+				self::RULE_PURCHASE_PRICE_THRESHOLD => __( 'Block if the purchase price is not in your defined range', 'woocommerce-payments' ),
+			],
+		];
+
+		$labels = [];
+		foreach ( $ruleset_results as $key => $outcome ) {
+			if ( ! is_string( $key ) || ! is_string( $outcome ) || Rule::FRAUD_OUTCOME_ALLOW === $outcome ) {
+				continue;
+			}
+
+			$labels[] = $mapping[ $outcome ][ $key ] ?? ucfirst( str_replace( '_', ' ', $key ) );
+		}
+
+		return $labels;
 	}
 
 	/**

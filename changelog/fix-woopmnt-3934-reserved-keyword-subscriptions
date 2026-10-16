@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Rename reserved keyword parameter names in subscription test helpers to satisfy PHPCS

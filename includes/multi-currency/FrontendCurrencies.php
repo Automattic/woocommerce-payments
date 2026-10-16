@@ -66,6 +66,13 @@ class FrontendCurrencies {
 	private $woocommerce_currency;
 
 	/**
+	 * Whether WooPayments has an explicit shopper or compatibility currency selection.
+	 *
+	 * @var bool|null
+	 */
+	private $has_explicit_currency_selection;
+
+	/**
 	 * Price Decimal Separator cache.
 	 *
 	 * @var array
@@ -116,8 +123,8 @@ class FrontendCurrencies {
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 			add_filter( 'option_woocommerce_currency_pos', [ $this, 'get_woocommerce_currency_pos' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
-			add_action( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
-			add_action( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
+			add_filter( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
+			add_filter( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -132,10 +139,11 @@ class FrontendCurrencies {
 	 * @return void
 	 */
 	public function selected_currency_changed() {
-		$this->selected_currency_code   = null;
-		$this->price_decimal_separators = [];
-		$this->woocommerce_currency     = null;
-		$this->store_currency           = null;
+		$this->selected_currency_code          = null;
+		$this->price_decimal_separators        = [];
+		$this->woocommerce_currency            = null;
+		$this->has_explicit_currency_selection = null;
+		$this->store_currency                  = null;
 	}
 
 	/**
@@ -186,16 +194,38 @@ class FrontendCurrencies {
 	/**
 	 * Returns the currency code to be used by WooCommerce.
 	 *
+	 * Runs on the `woocommerce_currency` filter at priority 900, after WooCommerce and any other
+	 * plugin filtering the currency. Multi-Currency only asserts its own currency when the shopper
+	 * or a compatibility rule has an explicit selection. When it is idle, it leaves the value
+	 * produced by the earlier filters untouched, so a third-party currency switcher that hooks at a
+	 * lower priority keeps working alongside an idle Multi-Currency module.
+	 *
+	 * The WordPress filter supplies its current currency as an undeclared argument.
+	 * Reading it at runtime keeps the public zero-argument signature compatible with subclasses.
+	 *
 	 * @return string The code of the currency to be used.
 	 */
 	public function get_woocommerce_currency(): string {
+		$currency = func_num_args() > 0 ? func_get_arg( 0 ) : '';
+
 		if ( $this->compatibility->should_return_store_currency() ) {
 			return $this->get_store_currency()->get_code();
 		}
 
 		if ( empty( $this->woocommerce_currency ) ) {
-			$this->woocommerce_currency = $this->get_selected_currency_code();
+			$explicit_currency                     = $this->multi_currency->get_explicit_selected_currency();
+			$this->has_explicit_currency_selection = null !== $explicit_currency;
+			$this->woocommerce_currency            = ( $explicit_currency ?? $this->get_store_currency() )->get_code();
 		}
+
+		if (
+			false === $this->has_explicit_currency_selection
+			&& is_string( $currency )
+			&& '' !== $currency
+		) {
+			return $currency;
+		}
+
 		return $this->woocommerce_currency;
 	}
 
@@ -366,11 +396,11 @@ class FrontendCurrencies {
 	 * Our `wc_get_price_decimals` filter returns the decimals for the selected currency during this calculation, which leads to incorrect results.
 	 *
 	 * @param array  $args   The argument array to be filtered.
-	 * @param object $method The shipping method being calculated.
+	 * @param object $_unused_method The shipping method being calculated.
 	 *
 	 * @return array
 	 */
-	public function fix_price_decimals_for_shipping_rates( array $args, $method ): array {
+	public function fix_price_decimals_for_shipping_rates( array $args, $_unused_method ): array {
 		$args['price_decimals'] = absint( $this->localization_service->get_currency_format( $this->get_store_currency()->get_code() )['num_decimals'] );
 		return $args;
 	}
@@ -410,13 +440,13 @@ class FrontendCurrencies {
 	 * filter is run so that if another total comes up, like in the order list, we use the next order's currency.
 	 *
 	 * @param string   $formatted_total  Total to display.
-	 * @param WC_Order $order            Order data.
-	 * @param string   $tax_display      Type of tax display.
-	 * @param bool     $display_refunded If should include refunded value.
+	 * @param WC_Order $_unused_order            Order data.
+	 * @param string   $_unused_tax_display      Type of tax display.
+	 * @param bool     $_unused_display_refunded If should include refunded value.
 	 *
 	 * @return string The unmodified formatted total.
 	 */
-	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $order, $tax_display, $display_refunded ): string {
+	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $_unused_order, $_unused_tax_display, $_unused_display_refunded ): string {
 		if ( null !== $this->order_currency && $this->should_use_order_currency() ) {
 			$this->order_currency = null;
 		}

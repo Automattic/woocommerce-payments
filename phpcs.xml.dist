@@ -37,22 +37,6 @@
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8434 is closed. -->
 		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped" />
 		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
-
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
-		<exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable" />
-
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8437 is clsoed. -->
-		<exclude name="WooCommerce.Commenting.CommentHooks.MissingHookComment" />
-		<exclude name="WooCommerce.Commenting.CommentHooks.MissingSinceComment" />
-		<exclude name="WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle" />
-
-		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8438 is closed. -->
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.elseFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.classFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.returnFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound" />
-		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound" />
 	</rule>
 
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis">
@@ -72,7 +56,9 @@
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
-			<property name="text_domain" type="array" value="woocommerce-payments" />
+			<property name="text_domain" type="array">
+				<element value="woocommerce-payments" />
+			</property>
 		</properties>
 	</rule>
 
@@ -97,7 +83,10 @@
 
 	<rule ref="WordPress.Security.EscapeOutput">
 		<properties>
-			<property name="customEscapingFunctions" type="array" value="WC_Payments_Utils,esc_interpolated_html" />
+			<property name="customEscapingFunctions" type="array">
+				<element value="WC_Payments_Utils" />
+				<element value="esc_interpolated_html" />
+			</property>
 		</properties>
 	</rule>
 

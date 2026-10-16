@@ -9,7 +9,8 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData } from '.';
+import { getExpressCheckoutData, type SetupFutureUsage } from '.';
+import { resolveSetupFutureUsage } from './subscriptions';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 interface CartTotals {
@@ -73,14 +74,13 @@ function checkAvailablePaymentMethods(
 	stripe: Stripe,
 	amount: number,
 	currency: string,
-	mode: string
+	mode: string,
+	setupFutureUsage: SetupFutureUsage
 ): Promise< Partial< AvailablePaymentMethods > > {
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
 		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-	const hasSubscription =
-		getExpressCheckoutData( 'has_subscription' ) ?? false;
 
 	let container: HTMLDivElement | null = null;
 
@@ -102,8 +102,8 @@ function checkAvailablePaymentMethods(
 				...( useConfirmationToken && isManualCaptureEnabled
 					? { captureMethod: 'manual' }
 					: {} ),
-				...( useConfirmationToken && hasSubscription
-					? { setupFutureUsage: 'off_session' }
+				...( useConfirmationToken && setupFutureUsage
+					? { setupFutureUsage }
 					: {} ),
 			} );
 
@@ -145,18 +145,20 @@ let memoizedCheck:
 	| ( (
 			_amount: number,
 			_currency: string,
-			_mode: string
+			_mode: string,
+			_setupFutureUsage: SetupFutureUsage
 	  ) => Promise< Partial< AvailablePaymentMethods > > )
 	| null = null;
 
 /**
  * Checks which express payment methods are available on the current device/browser.
- * Results are memoized by amount+currency+mode combination.
+ * Results are memoized by amount+currency+mode+setupFutureUsage.
  */
 async function checkAllExpressMethodsAvailability(
 	api: WCPayAPI,
 	amount: number,
 	currency: string,
+	setupFutureUsage: SetupFutureUsage,
 	mode = 'payment'
 ): Promise< Partial< AvailablePaymentMethods > > {
 	if ( ! cachedStripePromise ) {
@@ -180,21 +182,37 @@ async function checkAllExpressMethodsAvailability(
 
 	if ( ! memoizedCheck ) {
 		memoizedCheck = memoize(
-			// eslint-disable-next-line @typescript-eslint/naming-convention
-			( _amount: number, _currency: string, _mode: string ) =>
+			(
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_amount: number,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_currency: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_mode: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_setupFutureUsage: SetupFutureUsage
+			) =>
 				checkAvailablePaymentMethods(
 					stripe,
 					_amount,
 					_currency,
-					_mode
+					_mode,
+					_setupFutureUsage
 				),
-			// eslint-disable-next-line @typescript-eslint/naming-convention
-			( _amount: number, _currency: string, _mode: string ) =>
-				`${ _amount }-${ _currency }-${ _mode }`
+			(
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_amount: number,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_currency: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_mode: string,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_setupFutureUsage: SetupFutureUsage
+			) => `${ _amount }-${ _currency }-${ _mode }-${ _setupFutureUsage }`
 		);
 	}
 
-	return memoizedCheck( amount, currency, mode );
+	return memoizedCheck( amount, currency, mode, setupFutureUsage );
 }
 
 /**
@@ -217,10 +235,17 @@ export async function checkPaymentMethodIsAvailable(
 
 	const totalPrice = getEffectiveTotalPrice( cart );
 
+	// Use the live cart extension, same as the button. Page-load params can go
+	// stale after the cart changes.
+	const setupFutureUsage = resolveSetupFutureUsage( {
+		extensions: cart.extensions,
+	} );
+
 	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
 		api,
 		Number( totalPrice ),
-		cart.cartTotals.currency_code.toLowerCase()
+		cart.cartTotals.currency_code.toLowerCase(),
+		setupFutureUsage
 	);
 
 	return Boolean( availablePaymentMethods[ paymentMethod ] );

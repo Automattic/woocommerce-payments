@@ -26,7 +26,6 @@ interface FilterElement {
 }
 
 interface GetFeesFieldsArgs {
-	dateElements: FilterElement[];
 	methodElements: FilterElement[];
 	typeElements: FilterElement[];
 }
@@ -47,7 +46,6 @@ const getOrderURL = ( orderId: ReportsFee[ 'order_id' ] ): string =>
 	} );
 
 export const getFeesFields = ( {
-	dateElements,
 	methodElements,
 	typeElements,
 }: GetFeesFieldsArgs ): Field< ReportsFee >[] =>
@@ -56,10 +54,13 @@ export const getFeesFields = ( {
 			id: 'date',
 			label: __( 'Date', 'woocommerce-payments' ),
 			header: __( 'Date & time', 'woocommerce-payments' ),
+			type: 'date',
 			enableSorting: true,
 			enableGlobalSearch: false,
-			elements: dateElements,
-			filterBy: { isPrimary: true, operators: [ 'is' ] },
+			// `between` leads so DataViews defaults a newly added date filter to
+			// it (operators[0]); its range presets avoid the confusing
+			// single-date "Past week / Past month" anchors (see WOOPMNT-6243).
+			filterBy: { operators: [ 'between', 'on', 'before', 'after' ] },
 			getValue: ( { item }: { item: ReportsFee } ) => item.date,
 			render: ( { item }: { item: ReportsFee } ) => (
 				<>
@@ -137,6 +138,7 @@ export const getFeesFields = ( {
 			label: __( 'Gross amount', 'woocommerce-payments' ),
 			type: 'integer',
 			enableSorting: true,
+			filterBy: false,
 			getValue: ( { item }: { item: ReportsFee } ) => item.amount,
 			render: ( { item }: { item: ReportsFee } ) => (
 				<>
@@ -152,6 +154,7 @@ export const getFeesFields = ( {
 			label: __( 'Fees total', 'woocommerce-payments' ),
 			type: 'integer',
 			enableSorting: true,
+			filterBy: false,
 			getValue: ( { item }: { item: ReportsFee } ) => item.fees,
 			render: ( { item }: { item: ReportsFee } ) => (
 				<>
@@ -166,6 +169,7 @@ export const getFeesFields = ( {
 			id: 'deposit_date',
 			label: __( 'Settlement date', 'woocommerce-payments' ),
 			type: 'datetime',
+			filterBy: false,
 			getValue: ( { item }: { item: ReportsFee } ) =>
 				item.deposit_date ?? '',
 			render: ( { item }: { item: ReportsFee } ) => (

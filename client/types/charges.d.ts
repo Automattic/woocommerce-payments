@@ -33,6 +33,7 @@ interface Level3Data {
 
 interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
+	status?: string | null;
 }
 
 interface ChargeRefunds {
@@ -46,11 +47,7 @@ export type PaymentMethodDetails = {
 }[ PAYMENT_METHOD_IDS ];
 
 export type OutcomeRiskLevel =
-	| 'normal'
-	| 'elevated'
-	| 'highest'
-	| 'not_assessed'
-	| 'unknown';
+	'normal' | 'elevated' | 'highest' | 'not_assessed' | 'unknown';
 
 export interface ChargeDispute extends Omit< Dispute, 'charge' > {
 	charge: string;
@@ -68,6 +65,14 @@ export interface Charge {
 	created: number;
 	currency: string;
 	dispute?: null | ChargeDispute;
+	/**
+	 * All disputes on the charge. A single charge can accrue more than one
+	 * dispute (e.g. AmEx/Klarna partial disputes for separately-shipped items).
+	 * Additive: absent on responses from before the companion server change
+	 * deploys, and may be omitted if the server can't load the list. `dispute`
+	 * (singular) stays populated for backwards compatibility.
+	 */
+	disputes?: ChargeDispute[];
 	disputed: boolean;
 	order: null | OrderDetails;
 	outcome: null | {

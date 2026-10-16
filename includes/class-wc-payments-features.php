@@ -83,6 +83,13 @@ class WC_Payments_Features {
 			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
 		}
 
+		/**
+		 * Allows filtering of whether WCPay Subscriptions is enabled.
+		 *
+		 * @since 3.9.0
+		 *
+		 * @param bool $enabled Whether WCPay Subscriptions is enabled.
+		 */
 		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
@@ -146,7 +153,7 @@ class WC_Payments_Features {
 			]
 		);
 
-		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $stripe_billing_meta_query_handler, 10, 2 );
+		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $stripe_billing_meta_query_handler, 10 );
 
 		if ( ( is_countable( $subscription_products ) ? count( $subscription_products ) : 0 ) > 0 ) {
 			return true;
@@ -200,6 +207,29 @@ class WC_Payments_Features {
 			&& ( $account['platform_checkout_eligible'] ?? false )
 			&& ! $is_account_rejected
 			&& ! $is_account_under_review;
+	}
+
+	/**
+	 * Checks whether WooPay signs this store's requests instead of attesting them.
+	 *
+	 * The platform decides, per account, which of the two credentials WooPay presents: the
+	 * blog token signature every release used to require, or the attestation envelope that
+	 * replaced it. It answers yes for a store below the release that can verify an envelope,
+	 * and for a newer store put back on the signed path by hand while the replacement is
+	 * proved out.
+	 *
+	 * Read from the cached account payload rather than from the request, so what the store
+	 * accepts cannot be chosen by whoever is calling it.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_force_signed_requests_enabled() {
+		// Read directly from cache, ignore cache expiration check: an expired answer is the
+		// one this store has been working from, and guessing instead would change which
+		// credential it accepts at the moment the platform is hardest to reach.
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ( $account['platform_woopay_force_signed_requests'] ?? false );
 	}
 
 	/**
@@ -330,7 +360,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Dispute Outcome View feature should be enabled. Disabled by default.
+	 * Checks whether the Dispute Outcome View feature should be enabled. Enabled by default.
 	 *
 	 * This gates the post-resolution dispute outcome surfaces (won / lost / warning_closed)
 	 * in the payment details page.
@@ -338,7 +368,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_dispute_outcome_view_enabled(): bool {
-		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '0' );
+		return '1' === get_option( self::DISPUTE_OUTCOME_VIEW, '1' );
 	}
 
 	/**
@@ -353,9 +383,25 @@ class WC_Payments_Features {
 	/**
 	 * Checks whether the Reports area is enabled. Disabled by default.
 	 *
+	 * Resolution order:
+	 *  1. The server's per-account flag, when it has an opinion. `false` is an explicit kill switch and
+	 *     deliberately beats the local option, so we can disable the area for a single account while we
+	 *     investigate an issue.
+	 *  2. Otherwise the local feature flag, which merchants can set themselves via the documented snippet
+	 *     or WP CLI.
+	 *
+	 * Note this is the only flag here where the server can act as an enabler rather than only as a veto.
+	 *
 	 * @return bool
 	 */
 	public static function is_reports_area_enabled(): bool {
+		$account     = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		$server_flag = is_array( $account ) ? ( $account['reports_area_enabled'] ?? null ) : null;
+
+		if ( null !== $server_flag ) {
+			return (bool) $server_flag;
+		}
+
 		return '1' === get_option( self::REPORTS_AREA_FLAG_NAME, '0' );
 	}
 
@@ -388,12 +434,12 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the multi-currency cache-optimized rendering mode is enabled.
+	 * Checks whether the multi-currency cache-optimized rendering mode is enabled. Enabled by default.
 	 *
 	 * @return bool
 	 */
 	public static function is_mc_cache_optimized_enabled(): bool {
-		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '1' );
 	}
 
 	/**

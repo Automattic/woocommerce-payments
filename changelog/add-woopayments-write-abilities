@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add WooPayments refund, dispute-evidence, and dispute-accept agent abilities (Abilities API).

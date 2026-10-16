@@ -60,7 +60,7 @@ const AccountDetailsContent: React.FC< {
 		? addQueryArgs( accountLink, {
 				from: 'WCPAY_ACCOUNT_DETAILS',
 				source: 'wcpay-account-details',
-		  } )
+			} )
 		: null;
 
 	const cardTitle = (

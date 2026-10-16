@@ -147,7 +147,7 @@ class WC_Payments_Customer_Service {
 	 */
 	public function create_customer_for_user( ?WP_User $user, array $customer_data = [] ): string {
 		// Include the session ID for the user.
-		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
+		$customer_data['session_id'] = $this->session_service->get_sift_session_id();
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
@@ -497,7 +497,6 @@ class WC_Payments_Customer_Service {
 			return null;
 		}
 
-		global $wp;
 		$user_email      = '';
 		$firstname       = '';
 		$lastname        = '';
@@ -505,10 +504,9 @@ class WC_Payments_Customer_Service {
 		$address         = null;
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$order_id = absint( $wp->query_vars['order-pay'] );
-			$order    = wc_get_order( $order_id );
+			$order = WC_Payments_Utils::get_authorized_order_from_payment_link();
 
-			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
+			if ( $order instanceof WC_Order ) {
 				$firstname       = $order->get_billing_first_name();
 				$lastname        = $order->get_billing_last_name();
 				$user_email      = $order->get_billing_email();

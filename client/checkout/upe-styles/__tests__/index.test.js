@@ -442,3 +442,88 @@ describe( 'Getting styles for automated theming', () => {
 		} );
 	} );
 } );
+
+describe( 'getAppearance floating label detection on blocks checkout', () => {
+	const makeScope = ( labelPosition ) => {
+		const labelElement = document.createElement( 'label' );
+		const inputElement = document.createElement( 'input' );
+
+		const inputStyles = {
+			color: 'rgb(29, 35, 39)',
+			'font-size': '13px',
+			'line-height': '18px',
+			'padding-top': '10px',
+			'padding-bottom': '10px',
+		};
+		const labelStyles = {
+			color: 'rgb(100, 105, 112)',
+			'font-size': '10px',
+			'line-height': '12px',
+			position: labelPosition,
+		};
+
+		const declarationFor = ( styles ) => ( {
+			getPropertyValue: ( prop ) => styles[ prop ] || '',
+		} );
+
+		return {
+			querySelector: jest.fn( ( selector ) =>
+				/label/i.test( selector ) ? labelElement : inputElement
+			),
+			createElement: jest.fn( ( htmlTag ) =>
+				document.createElement( htmlTag )
+			),
+			defaultView: {
+				getComputedStyle: jest.fn( ( el ) =>
+					el === labelElement
+						? declarationFor( labelStyles )
+						: declarationFor( inputStyles )
+				),
+			},
+		};
+	};
+
+	test( 'keeps floating labels and padding compensation when the theme label is absolutely positioned', () => {
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			makeScope( 'absolute' )
+		);
+
+		expect( appearance.labels ).toBe( 'floating' );
+		expect( appearance.rules ).toHaveProperty( [ '.Label--floating' ] );
+		expect( appearance.rules[ '.Input' ].paddingTop ).toBe(
+			'calc(10px - 12px - 4px - 1px)'
+		);
+	} );
+
+	test( 'uses above labels and skips padding compensation when the theme label is static', () => {
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			makeScope( 'static' )
+		);
+
+		expect( appearance.labels ).toBe( 'above' );
+		expect( appearance.rules ).not.toHaveProperty( [ '.Label--floating' ] );
+		expect( appearance.rules[ '.Input' ].paddingTop ).toBe( '10px' );
+		expect( appearance.rules[ '.Input' ].paddingBottom ).toBe( '10px' );
+	} );
+
+	test( 'does not clamp fontSizeBase relative to the payment method labels', () => {
+		const scope = makeScope( 'absolute' );
+		// Give the radio-control label group a concrete size so the former
+		// PMME clamp (0.875 of this value) would fire if still present.
+		scope
+			.querySelector( '.wc-block-components-radio-control__label-group' )
+			.style.setProperty( 'font-size', '12px' );
+
+		const appearance = upeStyles.getAppearance(
+			'blocks_checkout',
+			false,
+			scope
+		);
+
+		expect( appearance.variables.fontSizeBase ).toBe( '13px' );
+	} );
+} );

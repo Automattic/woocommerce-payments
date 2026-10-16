@@ -54,7 +54,15 @@ trait WC_Payments_Subscriptions_Utilities {
 		if ( ! $this->is_subscriptions_enabled() ) {
 			return false;
 		}
-		return $this->is_changing_payment_method_for_subscription() || wcs_order_contains_subscription( $order_id );
+
+		// `wcs_order_contains_subscription()` defaults to the 'parent', 'resubscribe' and 'switch' order
+		// types and deliberately excludes renewals. A customer manually paying a (failed or pending)
+		// renewal order through the checkout must still be treated as a recurring payment so the card is
+		// vaulted and saved (setup_future_usage), otherwise the subscription keeps the old payment method
+		// and the next automatic renewal fails. See WOOPMNT-2882.
+		return $this->is_changing_payment_method_for_subscription()
+			|| wcs_order_contains_subscription( $order_id )
+			|| ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order_id ) );
 	}
 
 	/**

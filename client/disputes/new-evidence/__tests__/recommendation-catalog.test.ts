@@ -31,19 +31,17 @@ const criticalIds = ( ctx: RecommendationContext ): string[] =>
 // catalog authoring error.
 describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 	describe( 'cluster 15 "no evidence" catch-all', () => {
-		it( 'fires and is the only critical when no evidence is provided', () => {
+		it( 'fires and is the only recommendation when no evidence is provided', () => {
+			// fraudulent would otherwise also surface the c14 prior-history tip;
+			// suppressOthers leaves only the catch-all on the card.
 			const ctx = context( {
 				outcome: 'could_help',
-				reason: 'product_not_received',
+				reason: 'fraudulent',
 				productType: 'physical_product',
 				evidence: {},
 			} );
 
-			expect( ids( ctx ) ).toContain( 'c15-no-evidence-submit' );
-			// suppressOtherCriticals leaves exactly one critical on the card.
-			expect( criticalIds( ctx ) ).toEqual( [
-				'c15-no-evidence-submit',
-			] );
+			expect( ids( ctx ) ).toEqual( [ 'c15-no-evidence-submit' ] );
 		} );
 
 		it( 'still fires when only the auto-populated customer IP is present', () => {

@@ -114,7 +114,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					shopperDisputeReason,
 					dueByDate,
 					bankName
-			  )
+				)
 			: sprintf(
 					__(
 						"<strong>%1$s</strong> If you believe this is incorrect, you have until <strong>%2$s to submit evidence to your customer's bank.</strong> Alternatively, you can issue a refund.",
@@ -122,7 +122,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					),
 					shopperDisputeReason,
 					dueByDate
-			  );
+				);
 	}
 	// Handle specific dispute reasons
 	else if ( dispute.reason === 'noncompliant' ) {
@@ -135,14 +135,14 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					),
 					bankName,
 					dueByDate
-			  )
+				)
 			: sprintf(
 					__(
 						'Your customer’s bank claims this payment violates Visa’s rules. <strong>You can challenge the dispute by %1$s, or accept it.</strong> If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.',
 						'woocommerce-payments'
 					),
 					dueByDate
-			  );
+				);
 	}
 	// General case for disputes
 	else {
@@ -156,7 +156,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					shopperDisputeReason,
 					dueByDate,
 					bankName
-			  )
+				)
 			: sprintf(
 					__(
 						"<strong>%1$s</strong> If you believe this is incorrect, you have until <strong>%2$s to challenge the dispute with your customer's bank.</strong> If you accept the dispute, you will forfeit the funds and pay the dispute fee.",
@@ -164,7 +164,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					),
 					shopperDisputeReason,
 					dueByDate
-			  );
+				);
 	}
 
 	return (

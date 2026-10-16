@@ -9,31 +9,27 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import { woopayPaymentMethod } from '..';
+import { initWooPay } from 'wcpay/checkout/woopay/init-woopay';
+import { redirectTo } from 'wcpay/utils/navigation';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
+// jsdom marks `window.location` unforgeable, so the navigation is asserted
+// through the `redirectTo` helper the component calls.
+jest.mock( 'wcpay/utils/navigation', () => ( {
+	redirectTo: jest.fn(),
+} ) );
+jest.mock( 'wcpay/checkout/woopay/init-woopay', () => ( {
+	initWooPay: jest.fn(),
+} ) );
 
 describe( 'woopayPaymentMethod', () => {
-	let nativeWindowLocation;
-
-	const apiMock = {
-		initWooPay: jest.fn(),
-	};
+	const apiMock = { request: jest.fn() };
 
 	beforeEach( () => {
-		nativeWindowLocation = Object.getOwnPropertyDescriptor(
-			window,
-			'location'
-		);
-		Object.defineProperty( window, 'location', {
-			writable: true,
-		} );
-		apiMock.initWooPay = jest.fn();
-	} );
-
-	afterEach( () => {
-		Object.defineProperty( window, 'location', nativeWindowLocation );
+		redirectTo.mockReset();
+		initWooPay.mockReset();
 	} );
 
 	test( 'creates expected payment method object', () => {
@@ -77,7 +73,7 @@ describe( 'woopayPaymentMethod', () => {
 		const initCheckoutPromise = new Promise( ( resolve ) => {
 			resolvePromise = resolve;
 		} );
-		apiMock.initWooPay.mockReturnValue( initCheckoutPromise );
+		initWooPay.mockReturnValue( initCheckoutPromise );
 
 		const method = woopayPaymentMethod( apiMock );
 		render( method.content );
@@ -91,7 +87,7 @@ describe( 'woopayPaymentMethod', () => {
 		// Let's click it. It should be disabled and initWooPay should be called.
 		await userEvent.click( buyNowButton );
 		expect( buyNowButton ).toBeDisabled();
-		expect( apiMock.initWooPay ).toHaveBeenCalledTimes( 1 );
+		expect( initWooPay ).toHaveBeenCalledTimes( 1 );
 
 		/*
 		 * The button should be enabled again once the promise is resolved and
@@ -104,6 +100,6 @@ describe( 'woopayPaymentMethod', () => {
 			await initCheckoutPromise;
 		} );
 		expect( buyNowButton ).not.toBeDisabled();
-		expect( window.location ).toEqual( 'https://example.org/' );
+		expect( redirectTo ).toHaveBeenCalledWith( 'https://example.org/' );
 	} );
 } );

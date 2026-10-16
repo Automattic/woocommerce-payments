@@ -39,8 +39,6 @@ module.exports = {
 			'multi-currency-async-renderer':
 				'./includes/multi-currency/client/async-renderer/index.ts',
 			order: './client/order/index.js',
-			'subscriptions-empty-state':
-				'./client/subscriptions-empty-state/index.js',
 			'subscription-product-onboarding-modal':
 				'./client/subscription-product-onboarding/modal.js',
 			'subscription-product-onboarding-toast':
@@ -52,14 +50,8 @@ module.exports = {
 			success: './client/success/index.js',
 			'wc-payments-settings-spotlight':
 				'./client/wc-payments-settings-spotlight.js',
-			'wc-payments-review-prompt':
-				'./client/wc-payments-review-prompt.tsx',
-			'wc-payments-test-to-live-notice':
-				'./client/entrypoints/notices/test-to-live-notice/index.tsx',
-			'wc-payments-post-kyc-activation-notice':
-				'./client/entrypoints/notices/post-kyc-activation-notice/index.tsx',
 			'wc-payments-one-and-done-notice':
-				'./client/entrypoints/notices/one-and-done-notice/index.tsx',
+				'./client/entrypoints/attach-rate/one-and-done-notice/index.tsx',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -169,6 +161,9 @@ module.exports = {
 		} ),
 		new MiniCssExtractPlugin( {
 			filename: '[name].css',
+			// Lazy-loaded CSS isn't enqueued through WordPress, so it needs its
+			// own cache buster to be refreshed after a plugin update.
+			chunkFilename: '[name].css?ver=[contenthash]',
 			// Shared component stylesheets (chip, clickable-cell, etc.) are
 			// imported by multiple async route chunks in different orders.
 			// The styles themselves have no cross-component ordering dependency,

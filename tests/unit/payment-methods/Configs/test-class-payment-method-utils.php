@@ -7,6 +7,7 @@
 
 namespace WCPay\Tests\PaymentMethods\Configs\Utils;
 
+use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
@@ -88,7 +89,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with supported currency and country.
 	 */
 	public function test_is_available_for_with_supported_currency_and_country() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		// Test with supported currency and country.
@@ -107,7 +108,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with unsupported currency.
 	 */
 	public function test_is_available_for_with_unsupported_currency() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(
@@ -120,7 +121,7 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	 * Test that is_available_for() works correctly with unsupported country.
 	 */
 	public function test_is_available_for_with_unsupported_country() {
-		$supported_currencies = [ 'USD', 'CAD' ];
+		$supported_currencies = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$supported_countries  = [ 'US', 'CA' ];
 
 		$this->assertFalse(

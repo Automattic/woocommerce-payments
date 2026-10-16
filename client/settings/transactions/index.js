@@ -113,6 +113,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
+						id="account-statement-descriptor-input"
 						data-testid={ 'store-name-bank-statement' }
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize

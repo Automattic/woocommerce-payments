@@ -195,6 +195,57 @@ describe( 'Settings actions tests', () => {
 				] )
 			);
 		} );
+
+		test( 'displays server_error as a second notice only when no inline details are provided', () => {
+			const saveGenerator = saveSettings();
+
+			apiFetch.mockImplementation( () => {
+				// eslint-disable-next-line no-throw-literal
+				throw {
+					server_error: 'Stripe rejected this',
+				};
+			} );
+
+			// eslint-disable-next-line no-unused-expressions
+			[ ...saveGenerator ];
+
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).toHaveBeenCalledWith( 'Error saving settings.' );
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).toHaveBeenCalledWith( 'Stripe rejected this' );
+		} );
+
+		test( 'skips the duplicate server_error notice when inline details are present', () => {
+			const saveGenerator = saveSettings();
+
+			apiFetch.mockImplementation( () => {
+				// eslint-disable-next-line no-throw-literal
+				throw {
+					server_error: 'Stripe rejected this',
+					data: {
+						details: {
+							account_business_support_phone: {
+								code: 'wcpay_failed_to_update_stripe_account',
+								message: 'Stripe rejected this',
+								data: null,
+							},
+						},
+					},
+				};
+			} );
+
+			// eslint-disable-next-line no-unused-expressions
+			[ ...saveGenerator ];
+
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).toHaveBeenCalledWith( 'Error saving settings.' );
+			expect(
+				dispatch( 'core/notices' ).createErrorNotice
+			).not.toHaveBeenCalledWith( 'Stripe rejected this' );
+		} );
 	} );
 
 	describe( 'updateIsExpressCheckoutInPaymentMethodsEnabled()', () => {

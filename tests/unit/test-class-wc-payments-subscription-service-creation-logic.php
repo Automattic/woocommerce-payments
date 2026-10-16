@@ -202,7 +202,7 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 
 		// Mock wcs_get_subscriptions_for_renewal_order function.
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order_id ) use ( $subscription ) {
+			function ( $_unused_order_id ) use ( $subscription ) {
 				return [ $subscription ];
 			}
 		);
@@ -237,7 +237,7 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 
 		// Mock wcs_get_subscriptions_for_renewal_order function.
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order_id ) use ( $subscription ) {
+			function ( $_unused_order_id ) use ( $subscription ) {
 				return [ $subscription ];
 			}
 		);
@@ -271,7 +271,7 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 
 		// Mock wcs_get_subscriptions_for_renewal_order function.
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order_id ) use ( $subscription ) {
+			function ( $_unused_order_id ) use ( $subscription ) {
 				return [ $subscription ];
 			}
 		);

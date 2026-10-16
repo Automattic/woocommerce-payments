@@ -197,7 +197,13 @@ describe( 'WooPaySettings', () => {
 	} );
 
 	it( 'disables the enable checkbox and shows warning when Stripe Link is enabled', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ], jest.fn() ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'link' ],
+			jest.fn(),
+		] );
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, jest.fn() )
+		);
 
 		render( <WooPaySettings section="enable" /> );
 
@@ -212,8 +218,59 @@ describe( 'WooPaySettings', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'hides incompatibility notice when Stripe Link is enabled', () => {
+	it( 'allows disabling WooPay when both WooPay and Stripe Link are enabled', async () => {
+		const updateIsWooPayEnabledHandler = jest.fn();
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'link' ],
+			jest.fn(),
+		] );
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( true, updateIsWooPayEnabledHandler )
+		);
+
+		render( <WooPaySettings section="enable" /> );
+
+		const enableCheckbox = screen.getByLabelText( /Enable WooPay/ );
+		expect( enableCheckbox ).not.toBeDisabled();
+		expect(
+			screen.getAllByText(
+				"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them."
+			)[ 0 ]
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'To enable WooPay, you must first disable Link by Stripe.'
+			)
+		).not.toBeInTheDocument();
+
+		await userEvent.click( enableCheckbox );
+		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
+	} );
+
+	it( 'does not block WooPay on a Stripe Link setting hidden because card is disabled', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ], jest.fn() ] );
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, jest.fn() )
+		);
+
+		render( <WooPaySettings section="enable" /> );
+
+		expect( screen.getByLabelText( /Enable WooPay/ ) ).not.toBeDisabled();
+		expect(
+			screen.queryByText(
+				'To enable WooPay, you must first disable Link by Stripe.'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'hides incompatibility notice when Stripe Link is enabled', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'link' ],
+			jest.fn(),
+		] );
+		useWooPayEnabledSettings.mockReturnValue(
+			getMockWooPayEnabledSettings( false, jest.fn() )
+		);
 		useWooPayShowIncompatibilityNotice.mockReturnValue( true );
 
 		render( <WooPaySettings section="enable" /> );

@@ -350,7 +350,7 @@ abstract class Request {
 		}
 
 		return $this->format_response(
-			$this->api_client->send_request( $this->apply_filters( $hook, ...$this->hook_args ) )
+			$this->api_client->send_request( $this->apply_filters( $hook, ...$this->hook_args ) ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- Calls the request's own apply_filters() method with a dynamic hook name.
 		);
 	}
 
@@ -499,7 +499,7 @@ abstract class Request {
 				'wcpay_core_extend_class_incorrectly'
 			);
 		}
-		$obj = new $current_class( $base_request->api_client, $base_request->http_interface, $base_request->id ?? null );
+		$obj = new $current_class( $base_request->api_client, $base_request->http_interface, $base_request->id );
 		$obj->set_params( array_merge( static::DEFAULT_PARAMS, $base_request->params ) );
 
 		// Carry over the base class and protected mode into the child request.
@@ -525,7 +525,7 @@ abstract class Request {
 	 * @throws Immutable_Parameter_Exception           In case an immutable propery is tried to change.
 	 * @throws Invalid_Request_Parameter_Exception     In case an invalid property is passed.
 	 */
-	final public function apply_filters( $hook, ...$args ) {
+	final public function apply_filters( $hook, ...$args ) { // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- Method named apply_filters; the dispatched hook name is dynamic so no fixed @since applies.
 		// Lock the class in order to prevent `set_param` for protected props.
 		$this->protected_mode = true;
 		$this->base_class     = get_class( $this );
@@ -540,7 +540,7 @@ abstract class Request {
 		 * @param mixed   ...$args Other provided parameters for the hook.
 		 * @return Request         Either the same request, or a sub-class.
 		 */
-		$replacement = apply_filters( $hook, $this, ...$args );
+		$replacement = apply_filters( $hook, $this, ...$args ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingSinceComment -- Dynamic hook name resolved at runtime; no fixed @since applies.
 
 		// Exit protected mode right after `apply_filters`.
 		$this->protected_mode = false;

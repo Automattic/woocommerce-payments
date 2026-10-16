@@ -2,191 +2,103 @@
  * Internal dependencies
  */
 import {
-	cartHasAnySubscription,
-	getSetupFutureUsageForCart,
+	resolveSetupFutureUsage,
+	getLocalizedSetupFutureUsage,
 } from '../subscriptions';
 
-const buildSubscriptionSchedule = ( { billingPeriod = 'month' } = {} ) => ( {
-	billing_period: billingPeriod,
-	billing_interval: 1,
-	trial_length: 1,
-	totals: { total_price: '1999' },
-} );
-
-const buildTrialSubscriptionItem = () => ( {
-	name: 'Subscription Product',
-	quantity: 1,
-	variation: [],
-	item_data: [],
-	extensions: {
-		subscriptions: {
-			billing_period: 'month',
-			billing_interval: 1,
-			trial_length: 1,
-		},
-	},
-	totals: {
-		line_subtotal: '0',
-		line_subtotal_tax: '0',
-		currency_minor_unit: 2,
-	},
-	prices: {
-		price: '0',
-		currency_minor_unit: 2,
-	},
-} );
-
-const regularCart = {
-	items: [
-		{
-			name: 'Regular Product',
-			quantity: 1,
-			variation: [],
-			item_data: [],
-			totals: {
-				line_subtotal: '2399',
-				line_subtotal_tax: '198',
-				currency_minor_unit: 2,
-			},
-			prices: {
-				price: '2399',
-				currency_minor_unit: 2,
-			},
-		},
-	],
-	extensions: {},
-};
-
-describe( 'cartHasAnySubscription', () => {
-	it( 'returns false when cartData is undefined', () => {
-		expect( cartHasAnySubscription( undefined ) ).toBe( false );
-	} );
-
-	it( 'returns false when extensions is missing', () => {
-		expect( cartHasAnySubscription( { items: [] } ) ).toBe( false );
-	} );
-
-	it( 'returns false when extensions.subscriptions is missing', () => {
-		expect( cartHasAnySubscription( { items: [], extensions: {} } ) ).toBe(
-			false
-		);
-	} );
-
-	it( 'returns false when extensions.subscriptions is an empty array', () => {
+describe( 'resolveSetupFutureUsage', () => {
+	it( 'returns the value the server declared on the cart', () => {
 		expect(
-			cartHasAnySubscription( {
-				items: [],
-				extensions: { subscriptions: [] },
-			} )
-		).toBe( false );
-	} );
-
-	it( 'returns true when cart contains a single trial subscription schedule', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [],
+			resolveSetupFutureUsage( {
 				extensions: {
-					subscriptions: [ buildSubscriptionSchedule() ],
+					wcpay: { setup_future_usage: 'off_session' },
 				},
 			} )
-		).toBe( true );
+		).toBe( 'off_session' );
 	} );
 
-	it( 'returns true when cart contains a non-trial recurring subscription', () => {
+	it( 'returns null the server declared even when the cart looks like a subscription', () => {
 		expect(
-			cartHasAnySubscription( {
-				items: [],
+			resolveSetupFutureUsage( {
 				extensions: {
 					subscriptions: [
 						{
 							billing_period: 'month',
 							billing_interval: 1,
-							trial_length: 0,
-							totals: { total_price: '1999' },
 						},
 					],
+					wcpay: { setup_future_usage: null },
 				},
 			} )
-		).toBe( true );
+		).toBeNull();
 	} );
 
-	it( 'returns true when cart contains multiple subscription schedules', () => {
+	it( 'returns null when the wcpay extension is missing', () => {
+		expect( resolveSetupFutureUsage( { extensions: {} } ) ).toBeNull();
+	} );
+
+	it( 'returns null when the wcpay extension omits the key', () => {
 		expect(
-			cartHasAnySubscription( {
-				items: [],
-				extensions: {
-					subscriptions: [
-						buildSubscriptionSchedule(),
-						buildSubscriptionSchedule( { billingPeriod: 'year' } ),
-					],
-				},
+			resolveSetupFutureUsage( {
+				extensions: { wcpay: {} },
 			} )
-		).toBe( true );
-	} );
-
-	it( 'returns true when only an item carries the subscriptions extension', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [ buildTrialSubscriptionItem() ],
-				extensions: {},
-			} )
-		).toBe( true );
-	} );
-
-	it( 'returns false when a regular item carries an empty subscriptions extension', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [
-					{
-						name: 'Regular Product',
-						extensions: {
-							subscriptions: {},
-						},
-					},
-				],
-				extensions: {},
-			} )
-		).toBe( false );
-	} );
-
-	it( 'returns false when a regular item carries an all-null subscriptions extension', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [
-					{
-						name: 'Regular Product',
-						extensions: {
-							subscriptions: {
-								billing_period: null,
-								billing_interval: null,
-								trial_length: null,
-							},
-						},
-					},
-				],
-				extensions: {},
-			} )
-		).toBe( false );
-	} );
-
-	it( 'returns false for a regular cart whose items have no subscriptions extension', () => {
-		expect( cartHasAnySubscription( regularCart ) ).toBe( false );
+		).toBeNull();
 	} );
 } );
 
-describe( 'getSetupFutureUsageForCart', () => {
-	it( 'returns null for a regular cart', () => {
-		expect( getSetupFutureUsageForCart( regularCart ) ).toBeNull();
+describe( 'getLocalizedSetupFutureUsage', () => {
+	afterEach( () => {
+		delete ( global as Record< string, unknown > )
+			.wcpayExpressCheckoutParams;
 	} );
 
-	it( 'returns off_session when the cart contains a subscription', () => {
-		expect(
-			getSetupFutureUsageForCart( {
-				items: [],
-				extensions: {
-					subscriptions: [ buildSubscriptionSchedule() ],
-				},
-			} )
-		).toBe( 'off_session' );
+	it( 'returns the localized value', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			setup_future_usage: 'off_session',
+		};
+
+		expect( getLocalizedSetupFutureUsage() ).toBe( 'off_session' );
+	} );
+
+	it( 'returns null when the localized value is absent', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {};
+
+		expect( getLocalizedSetupFutureUsage() ).toBeNull();
+	} );
+} );
+
+describe( 'resolveSetupFutureUsage on pay-for-order', () => {
+	afterEach( () => {
+		delete ( global as Record< string, unknown > )
+			.wcpayExpressCheckoutParams;
+	} );
+
+	it( 'uses the localized value because the order API has no cart extension', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'pay_for_order',
+			setup_future_usage: 'off_session',
+		};
+
+		expect( resolveSetupFutureUsage( { extensions: {} } ) ).toBe(
+			'off_session'
+		);
+	} );
+
+	it( 'still returns null when the order carries no subscription', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'pay_for_order',
+			setup_future_usage: null,
+		};
+
+		expect( resolveSetupFutureUsage( { extensions: {} } ) ).toBeNull();
+	} );
+
+	it( 'does not use the localized value in other contexts', () => {
+		( global as Record< string, unknown > ).wcpayExpressCheckoutParams = {
+			button_context: 'checkout',
+			setup_future_usage: 'off_session',
+		};
+
+		expect( resolveSetupFutureUsage( { extensions: {} } ) ).toBeNull();
 	} );
 } );

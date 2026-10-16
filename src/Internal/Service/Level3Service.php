@@ -7,6 +7,7 @@
 
 namespace WCPay\Internal\Service;
 
+use WC_Order;
 use WC_Order_Item;
 use WC_Order_Item_Product;
 use WC_Order_Item_Fee;
@@ -115,6 +116,11 @@ class Level3Service {
 		 */
 		$level3_data = apply_filters( 'wcpay_payment_request_level3_data', $level3_data, $order );
 
+		$level3_data = $this->reconcile_with_order_total( $level3_data, $order );
+		if ( empty( $level3_data ) ) {
+			return [];
+		}
+
 		if ( count( $level3_data['line_items'] ) > 200 ) {
 			// If more than 200 items are present, bundle the last ones in a single item.
 			$items_to_send = array_merge(
@@ -148,17 +154,26 @@ class Level3Service {
 		} else {
 			$subtotal     = $item->get_total();
 			$product_code = substr( sanitize_title( $item->get_name() ), 0, 12 );
+			// Stripe rejects empty codes, and symbol-only fee names sanitize to nothing.
+			if ( '' === $product_code ) {
+				$product_code = 'fee';
+			}
 		}
 
 		$description = substr( $item->get_name(), 0, 26 );
-		$quantity    = ceil( $item->get_quantity() );
-		$tax_amount  = $this->prepare_amount( $item->get_total_tax(), $currency );
+		// Stripe rejects empty descriptions.
+		if ( '' === trim( $description ) ) {
+			$description = __( 'Item', 'woocommerce-payments' );
+		}
+
+		$quantity   = ceil( $item->get_quantity() );
+		$tax_amount = $this->prepare_amount( $item->get_total_tax(), $currency );
 		if ( $subtotal >= 0 ) {
 			$unit_cost       = $this->prepare_amount( $subtotal / $quantity, $currency );
 			$discount_amount = $this->prepare_amount( $subtotal - $item->get_total(), $currency );
 		} else {
 			// It's possible to create products with negative price - represent it as free one with discount.
-			$discount_amount = abs( $this->prepare_amount( $subtotal / $quantity, $currency ) );
+			$discount_amount = abs( $this->prepare_amount( $item->get_total(), $currency ) );
 			$unit_cost       = 0;
 		}
 
@@ -168,7 +183,7 @@ class Level3Service {
 			$tax_amount       = 0;
 		}
 
-		$line_item  = (object) [
+		$line_item = (object) [
 			'product_code'        => (string) $product_code, // Up to 12 characters that uniquely identify the product.
 			'product_description' => $description, // Up to 26 characters long describing the product.
 			'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
@@ -176,29 +191,107 @@ class Level3Service {
 			'tax_amount'          => $tax_amount, // The amount of tax this item had added to it, in cents, as a non-negative integer.
 			'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
 		];
-		$line_items = [ $line_item ];
 
-		/**
-		 * In edge cases, rounding after division might lead to a slight inconsistency.
-		 *
-		 * For example: 10/3 with 2 decimal places = 3.33, but 3.33*3 = 9.99.
-		 */
-		if ( $subtotal > 0 ) {
-			$prepared_subtotal = $this->prepare_amount( $subtotal, $currency );
-			$difference        = $prepared_subtotal - ( $unit_cost * $quantity );
-			if ( $difference > 0 ) {
-				$line_items[] = (object) [
-					'product_code'        => 'rounding-fix',
-					'product_description' => __( 'Rounding fix', 'woocommerce-payments' ),
-					'unit_cost'           => $difference,
-					'quantity'            => 1,
-					'tax_amount'          => 0,
-					'discount_amount'     => 0,
-				];
-			}
+		return [ $line_item ];
+	}
+
+	/**
+	 * Makes the Level 3 line items add up to the order total, or drops Level 3 data when they can't.
+	 *
+	 * Stripe needs an exact match. Rounding gaps get a `rounding-fix` line; bigger gaps (deposits, store credit) and
+	 * invalid values drop the data. Descriptions are cut to 26 characters, the most card networks keep.
+	 *
+	 * @param mixed    $level3_data Level 3 data, as returned by the filter.
+	 * @param WC_Order $order       The order being paid for.
+	 *
+	 * @return array The Level 3 data, or an empty array when none should be sent.
+	 */
+	private function reconcile_with_order_total( $level3_data, WC_Order $order ): array {
+		if (
+			! is_array( $level3_data )
+			|| ! is_array( $level3_data['line_items'] ?? null )
+			|| ! $this->is_level3_amount( $level3_data['shipping_amount'] ?? 0 )
+		) {
+			return [];
 		}
 
-		return $line_items;
+		$level3_total = (int) ( $level3_data['shipping_amount'] ?? 0 );
+		// Shipping is rounded once: up to a cent.
+		$max_rounding_error = 1;
+		foreach ( $level3_data['line_items'] as $index => $line_item ) {
+			$line_item = (array) $line_item;
+			if ( is_string( $line_item['product_description'] ?? null ) && mb_strlen( $line_item['product_description'] ) > 26 ) {
+				$line_item['product_description']    = mb_substr( $line_item['product_description'], 0, 26 );
+				$level3_data['line_items'][ $index ] = (object) $line_item;
+			}
+
+			$tax_amount      = $line_item['tax_amount'] ?? 0;
+			$discount_amount = $line_item['discount_amount'] ?? 0;
+			if (
+				! $this->is_level3_string( $line_item['product_code'] ?? null, 12 )
+				|| ! $this->is_level3_string( $line_item['product_description'] ?? null, 26 )
+				|| ! $this->is_level3_amount( $line_item['unit_cost'] ?? null )
+				|| ! $this->is_level3_amount( $line_item['quantity'] ?? null )
+				|| ! $this->is_level3_amount( $tax_amount )
+				|| ! $this->is_level3_amount( $discount_amount )
+			) {
+				return [];
+			}
+
+			$quantity      = (int) $line_item['quantity'];
+			$level3_total += (int) $line_item['unit_cost'] * $quantity + (int) $tax_amount - (int) $discount_amount;
+			// Half a cent per unit from the rounded unit cost, plus a cent for tax and discount.
+			$max_rounding_error += (int) ceil( $quantity / 2 ) + 1;
+		}
+
+		$difference = $this->prepare_amount( (float) $order->get_total(), $order->get_currency() ) - $level3_total;
+		if ( 0 === $difference ) {
+			return $level3_data;
+		}
+
+		if ( abs( $difference ) > $max_rounding_error ) {
+			return [];
+		}
+
+		$level3_data['line_items'][] = (object) [
+			'product_code'        => 'rounding-fix',
+			'product_description' => mb_substr( __( 'Rounding fix', 'woocommerce-payments' ), 0, 26 ),
+			'unit_cost'           => max( 0, $difference ),
+			'quantity'            => 1,
+			'tax_amount'          => 0,
+			'discount_amount'     => max( 0, -$difference ),
+		];
+
+		return $level3_data;
+	}
+
+	/**
+	 * Whether a Level 3 value is a non-negative integer. Quantities from `ceil()` are floats like 2.0.
+	 *
+	 * @param mixed $value Value to check.
+	 *
+	 * @return bool
+	 */
+	private function is_level3_amount( $value ): bool {
+		return is_numeric( $value ) && (float) $value >= 0 && floor( (float) $value ) === (float) $value;
+	}
+
+	/**
+	 * Whether a Level 3 value is a non-empty string of at most `$max_length` characters.
+	 *
+	 * @param mixed $value      Value to check.
+	 * @param int   $max_length Maximum number of characters.
+	 *
+	 * @return bool
+	 */
+	private function is_level3_string( $value, int $max_length ): bool {
+		if ( ! is_string( $value ) && ! is_int( $value ) ) {
+			return false;
+		}
+
+		$length = mb_strlen( (string) $value );
+
+		return $length > 0 && $length <= $max_length;
 	}
 
 	/**
@@ -222,7 +315,7 @@ class Level3Service {
 		);
 
 		return (object) [
-			'product_code'        => (string) substr( uniqid(), 0, 26 ),
+			'product_code'        => (string) substr( uniqid(), 0, 12 ),
 			'product_description' => "{$items_count} more items",
 			'unit_cost'           => $total_cost,
 			'quantity'            => 1,

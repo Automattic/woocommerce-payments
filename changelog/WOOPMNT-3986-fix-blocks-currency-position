@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Multi-Currency: align the Cart and Checkout Blocks currency symbol position with the selected currency's own format instead of the store's.

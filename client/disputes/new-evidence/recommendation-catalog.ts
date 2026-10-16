@@ -14,11 +14,10 @@ import type { Recommendation } from './types';
  *   - title/body: copy rendered verbatim, `__()`-wrapped for i18n.
  *   - urgency: `positive` → "What's working well"; `critical`/`tip` →
  *     "What could help next time". The two render identically; the split
- *     only lets the matcher suppress criticals (see c15) and keeps the
- *     analytics distinction. No ordering.
+ *     keeps the analytics distinction. No ordering.
  *   - when: predicates the matcher checks; see `matchesCount()` for the
  *     `min`/`max` count semantics.
- *   - suppressOtherCriticals: c15 uses it to hide other criticals.
+ *   - suppressOthers: c15 uses it to hide all other matched entries.
  *
  * Ids are Tracks join keys, so append-only: never rename or reuse one,
  * retire with `retired: true` instead of deleting, and record new ids in
@@ -842,12 +841,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			// Fires when every non-cover-letter wizard key is missing. The
 			// cover letter is auto-generated and submitted by default
 			// (index.tsx), so counting it would stop c15 firing for a merchant
-			// who sent no real evidence. suppressOtherCriticals leaves one message.
+			// who sent no real evidence. suppressOthers leaves one message.
 			requireProvided: {
 				keys: NON_COVER_LETTER_EVIDENCE_KEYS,
 				max: 0,
 			},
 		},
-		suppressOtherCriticals: true,
+		suppressOthers: true,
 	},
 ];

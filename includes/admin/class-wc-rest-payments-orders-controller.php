@@ -456,6 +456,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
+			/**
+			 * Filters the order statuses for which a customer should not be created from an order.
+			 *
+			 * @since 2.9.0
+			 *
+			 * @param array $disallowed_order_statuses Order statuses that block customer creation.
+			 */
 			$disallowed_order_statuses = apply_filters(
 				'wcpay_create_customer_disallowed_order_statuses',
 				[

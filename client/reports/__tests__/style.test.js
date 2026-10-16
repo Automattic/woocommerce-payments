@@ -4,31 +4,26 @@ const fs = require( 'fs' );
 const path = require( 'path' );
 
 describe( 'Reports styles', () => {
-	it( 'uses Reports-specific WC layout spacing', () => {
-		const styles = fs.readFileSync(
+	const readReportsStyles = () =>
+		fs.readFileSync(
 			path.resolve( process.cwd(), 'client/reports/style.scss' ),
 			'utf8'
 		);
 
-		expect( styles ).toContain( 'margin: 10px 0 128px 24px;' );
-	} );
+	// WooCommerce core paints `.woocommerce-layout__header` #f0f0f1; the Reports
+	// stylesheet overrides it to #fff. This only matches the SCSS source — it's a
+	// tripwire against the override being silently dropped in a refactor, not a
+	// check of the rendered cascade.
+	it( 'ships a `.woocommerce-layout__header` background override in the Reports stylesheet', () => {
+		const styles = readReportsStyles();
 
-	it( 'keeps Fees DataViews actions aligned to the right', () => {
-		const styles = fs.readFileSync(
-			path.resolve( process.cwd(), 'client/reports/style.scss' ),
-			'utf8'
+		expect( styles ).toMatch(
+			/\.woocommerce-layout__header\s*{\s*background:\s*#fff;/
 		);
-
-		expect(
-			styles.match( /justify-content: flex-end !important;/g ) ?? []
-		).toHaveLength( 2 );
 	} );
 
 	it( 'ships Balance loading skeleton fallback styles with the Reports entry stylesheet', () => {
-		const styles = fs.readFileSync(
-			path.resolve( process.cwd(), 'client/reports/style.scss' ),
-			'utf8'
-		);
+		const styles = readReportsStyles();
 
 		expect( styles ).toContain( '.wcpay-reports-balance__skeleton' );
 		expect( styles ).toContain( 'filter: blur( 4px );' );

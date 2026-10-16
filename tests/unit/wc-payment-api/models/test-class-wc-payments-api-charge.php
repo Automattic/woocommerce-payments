@@ -52,6 +52,7 @@ class WC_Payments_API_Charge_Test extends WCPAY_UnitTestCase {
 			'currency'               => 'usd',
 			'dispute'                => [],
 			'disputed'               => null,
+			'disputes'               => null,
 			'order'                  => [
 				'number' => 123,
 				'url'    => 'https://example.com/order/123',
@@ -98,5 +99,69 @@ class WC_Payments_API_Charge_Test extends WCPAY_UnitTestCase {
 		$charge->set_captured( $expected['captured'] );
 
 		$this->assertEquals( $expected, $charge->jsonSerialize() );
+	}
+
+	public function test_payments_api_charge_model_carries_multiple_disputes() {
+		$created  = new DateTime();
+		$disputes = [
+			[
+				'id'     => 'dp_mock_1',
+				'amount' => 1500,
+				'status' => 'needs_response',
+			],
+			[
+				'id'     => 'dp_mock_2',
+				'amount' => 500,
+				'status' => 'under_review',
+			],
+		];
+
+		$charge = new WC_Payments_API_Charge(
+			'ch_mock',
+			1500,
+			$created,
+			[],
+			'pm_mock',
+			1500,
+			0,
+			113,
+			[],
+			[],
+			'usd',
+			[ 'id' => 'dp_mock_1' ],
+			true,
+			[],
+			[],
+			true,
+			[],
+			'pi_mock',
+			false,
+			[ 'data' => [] ],
+			'succeeded',
+			$disputes
+		);
+
+		$expected_disputes = [
+			[
+				'id'     => 'dp_mock_1',
+				'amount' => 1500,
+				'status' => 'needs_response',
+			],
+			[
+				'id'     => 'dp_mock_2',
+				'amount' => 500,
+				'status' => 'under_review',
+			],
+		];
+
+		$this->assertSame( $expected_disputes, $charge->get_disputes() );
+
+		$serialized = $charge->jsonSerialize();
+
+		$this->assertSame( $expected_disputes, $serialized['disputes'] );
+
+		$this->assertSame( [ 'id' => 'dp_mock_1' ], $serialized['dispute'] );
+
+		$this->assertTrue( $serialized['disputed'] );
 	}
 }

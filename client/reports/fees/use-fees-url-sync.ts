@@ -18,8 +18,8 @@ import {
 	PersistedFeesView,
 } from './view';
 import {
-	parseFeesDateFilterValueFromQuery,
-	serializeFeesDateFilterValueToQuery,
+	parseFeesDateFilterFromQuery,
+	serializeFeesDateFilterToQuery,
 } from './date-filter-values';
 
 const reportsPath = '/payments/reports';
@@ -59,14 +59,10 @@ const buildFiltersFromQuery = (
 	query: Record< string, unknown >
 ): Filter[] => {
 	const filters: Filter[] = [];
-	const dateValue = parseFeesDateFilterValueFromQuery( query );
+	const dateFilter = parseFeesDateFilterFromQuery( query );
 
-	if ( dateValue ) {
-		filters.push( {
-			field: 'date',
-			operator: 'is',
-			value: dateValue,
-		} );
+	if ( dateFilter ) {
+		filters.push( dateFilter );
 	}
 
 	if ( query.payment_method_type ) {
@@ -112,10 +108,7 @@ const buildFilterQueryParams = (
 
 	for ( const filter of filters ) {
 		if ( filter.field === 'date' ) {
-			Object.assign(
-				params,
-				serializeFeesDateFilterValueToQuery( filter.value )
-			);
+			Object.assign( params, serializeFeesDateFilterToQuery( filter ) );
 		} else if ( filter.field === 'payment_method' ) {
 			params.payment_method_type = filter.value;
 		} else if ( filter.field === 'type' ) {

@@ -86,19 +86,44 @@ const getDocumentDescription = ( document: Document ) => {
 	}
 };
 
+type InterruptedDownload = {
+	documentId: Document[ 'document_id' ];
+	type: Document[ 'type' ];
+	newTab: boolean;
+} | null;
+
+const getInitialInterruptedDownload = (): InterruptedDownload => {
+	const { document_id: documentId, document_type: documentType } =
+		getQuery() as {
+			document_id?: Document[ 'document_id' ];
+			document_type?: Document[ 'type' ];
+		};
+	if ( ! documentId || ! documentType ) {
+		return null;
+	}
+	return { documentId, type: documentType, newTab: false };
+};
+
+const isBlockedByVat = ( type: Document[ 'type' ] ): boolean =>
+	type === 'vat_invoice' && ! wcpaySettings.accountStatus.hasSubmittedVatData;
+
 export const DocumentsList = (): JSX.Element => {
 	const { documents, isLoading } = useDocuments( getQuery() );
 	const { documentsSummary, isLoading: isSummaryLoading } =
 		useDocumentsSummary( getQuery() );
 
-	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+	// Seed both bits of state from the initial URL query so the effect below
+	// only needs to open the download window (a legitimate external-system
+	// side effect), rather than synchronously calling setState from inside it.
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState< boolean >(
+		() => {
+			const initial = getInitialInterruptedDownload();
+			return initial !== null && isBlockedByVat( initial.type );
+		}
+	);
 
 	const [ interruptedDownloadDocument, setInterruptedDownloadDocument ] =
-		useState< {
-			documentId: Document[ 'document_id' ];
-			type: Document[ 'type' ];
-			newTab: boolean;
-		} | null >( null );
+		useState< InterruptedDownload >( getInitialInterruptedDownload );
 
 	const handleDocumentDownload = (
 		documentId: Document[ 'document_id' ],
@@ -107,11 +132,9 @@ export const DocumentsList = (): JSX.Element => {
 	): boolean => {
 		setInterruptedDownloadDocument( { documentId, type, newTab } );
 
-		if ( type === 'vat_invoice' ) {
-			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
-				setVatFormModalOpen( true );
-				return false;
-			}
+		if ( isBlockedByVat( type ) ) {
+			setVatFormModalOpen( true );
+			return false;
 		}
 
 		return true;
@@ -152,14 +175,17 @@ export const DocumentsList = (): JSX.Element => {
 	} = getQuery();
 
 	useEffect( () => {
-		if ( requestedDocumentID && requestedDocumentType ) {
-			downloadDocument(
-				requestedDocumentID,
-				requestedDocumentType as Document[ 'type' ],
-				false
-			);
+		if ( ! requestedDocumentID || ! requestedDocumentType ) {
+			return;
 		}
-	}, [ requestedDocumentID, requestedDocumentType, downloadDocument ] );
+		const type = requestedDocumentType as Document[ 'type' ];
+		if ( isBlockedByVat( type ) ) {
+			// Modal state is already seeded from the URL by the initializer
+			// above; nothing else to do until the VAT form is completed.
+			return;
+		}
+		window.open( getDocumentUrl( requestedDocumentID ), '_self' );
+	}, [ requestedDocumentID, requestedDocumentType ] );
 
 	const columns = getColumns();
 

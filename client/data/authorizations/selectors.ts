@@ -15,6 +15,10 @@ import {
 	Authorization,
 } from 'wcpay/types/authorizations';
 
+const emptyAuthorizations: Authorization[] = [];
+const emptySummary = {} as AuthorizationsSummary;
+const emptyError = {} as ApiError;
+
 /**
  * Retrieves the authorizations state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
@@ -52,7 +56,9 @@ export const getAuthorizations = (
 	state: Record< string, any >,
 	query: Query
 ): Array< Authorization > => {
-	return getAuthorizationsForQuery( state, query ).data || [];
+	return (
+		getAuthorizationsForQuery( state, query ).data || emptyAuthorizations
+	);
 };
 
 export const getAuthorization = (
@@ -67,7 +73,7 @@ export const getAuthorizationsError = (
 	state: Record< string, any >,
 	query: Query
 ): ApiError => {
-	return getAuthorizationsForQuery( state, query ).error || {};
+	return getAuthorizationsForQuery( state, query ).error || emptyError;
 };
 
 /**
@@ -90,14 +96,16 @@ export const getAuthorizationsSummary = (
 	state: Record< string, any >,
 	query: Query
 ): AuthorizationsSummary => {
-	return getAuthorizationsSummaryForQuery( state, query ).data || {};
+	return (
+		getAuthorizationsSummaryForQuery( state, query ).data || emptySummary
+	);
 };
 
 export const getAuthorizationsSummaryError = (
 	state: Record< string, any >,
 	query: Query
 ): ApiError => {
-	return getAuthorizationsSummaryForQuery( state, query ).error || {};
+	return getAuthorizationsSummaryForQuery( state, query ).error || emptyError;
 };
 
 export const getIsRequesting = ( state: Record< string, any > ): boolean =>

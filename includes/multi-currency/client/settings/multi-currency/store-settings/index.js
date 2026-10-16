@@ -23,6 +23,7 @@ import {
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
 import FormBusyState from 'wcpay/components/form-busy-state';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const StoreSettingsDescription = () => (
 	<>
@@ -63,6 +64,16 @@ const StoreSettings = () => {
 	}, [ isDirty ] );
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
+
+	const enableCacheRenderingMode = () => {
+		updateStoreSettingValues( { rendering_mode: 'cache' } );
+		saveStoreSettings();
+	};
+
+	const dismissCacheRecommendation = () => {
+		updateStoreSettingValues( { cache_recommendation_dismissed: true } );
+		saveStoreSettings();
+	};
 
 	return (
 		<FormBusyState isBusy={ isSaving }>
@@ -107,6 +118,31 @@ const StoreSettings = () => {
 								) }
 								__nextHasNoMarginBottom
 							/>
+							{ storeSettings.should_recommend_cache_mode ? (
+								<InlineNotice
+									status="info"
+									icon
+									isDismissible
+									onRemove={ dismissCacheRecommendation }
+									actions={ [
+										{
+											label: __(
+												'Use caching mode',
+												'woocommerce-payments'
+											),
+											onClick: enableCacheRenderingMode,
+											isBusy: isSaving,
+											disabled: isSaving,
+										},
+									] }
+								>
+									{ __(
+										'We detected that your store uses page caching. Switching Multi-Currency to the ' +
+											'caching-optimized rendering mode lets your host cache pages effectively.',
+										'woocommerce-payments'
+									) }
+								</InlineNotice>
+							) : null }
 							{ storeSettings.is_cache_optimized_feature_enabled ? (
 								<RadioControl
 									label={ __(

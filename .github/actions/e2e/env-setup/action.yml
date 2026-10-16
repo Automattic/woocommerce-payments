@@ -18,11 +18,19 @@ runs:
       shell: bash
       run: composer self-update
 
+    # Corepack (bundled with Node) provisions pnpm from package.json's
+    # `packageManager` field; pnpm/action-setup is blocked by the Automattic
+    # enterprise Actions allowlist.
+    - name: Install pnpm
+      shell: bash
+      run: corepack enable
+
     # Use node version from .nvmrc
     - name: Setup NodeJS
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
         node-version-file: '.nvmrc'
+        cache: 'pnpm'
 
     # Cache composer dependencies
     - name: Cache composer dependencies
@@ -32,33 +40,24 @@ runs:
         path: ./vendor
         key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
 
-    # Cache node dependencies
-    - name: Cache node dependencies
-      id: node-cache
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        path: ./node_modules
-        key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-
     # Install composer dependencies if not present on cache
     - name: Install composer dependencies
       if: ${{ steps.composer-cache.outputs.cache-hit == false }}
       shell: bash
       run: composer install --no-progress --no-dev
 
-    # Install node dependencies if not present on cache
+    # Install node dependencies
     - name: Install node dependencies
-      if: ${{ steps.node-cache.outputs.cache-hit == false }}
       shell: bash
-      run: npm ci
+      run: pnpm install --frozen-lockfile
 
     # Build WCPay client
     - name: Build WCPay Client
-      if: ${{ ! env.WCPAY_USE_BUILD_ARTIFACT }}
+      if: ${{ ! env.WCPAY_USE_BUILD_ARTIFACT && env.WCPAY_USE_CLIENT_BUILD_ARTIFACT != 'true' }}
       shell: bash
       run: |
         echo "::group::Build WCPay client"
-        npm run build:client
+        pnpm run build:client
         echo "::endgroup::"
 
     # Kill process running on port 8084
@@ -69,12 +68,29 @@ runs:
         sudo fuser -k -n tcp 8084 || true
         echo "::endgroup::"
 
+    # Cache the Basic-Auth plugin zip. The repo is archived, so the content
+    # never changes, and fetching it per environment build is an intermittent
+    # source of setup failures.
+    - name: Cache Basic-Auth plugin zip
+      id: basic-auth-cache
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: tests/e2e/.cache/basic-auth.zip
+        key: basic-auth-plugin-zip
+
+    - name: Download Basic-Auth plugin zip
+      if: ${{ steps.basic-auth-cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        mkdir -p tests/e2e/.cache
+        curl -sSfL --retry 3 --retry-delay 5 -o tests/e2e/.cache/basic-auth.zip https://github.com/WP-API/Basic-Auth/archive/master.zip
+
     # Prepare test environment
     - name: Prepare test environment
       shell: bash
       run: |
         echo "::group::Setup E2E test environment"
-        npm run test:e2e-setup
+        pnpm run test:e2e-setup
         echo "::endgroup::"
 
     # Cache Playwright browser binaries to avoid re-downloading ~150MB on every job.
@@ -93,7 +109,7 @@ runs:
     - name: Install Playwright browsers
       if: ${{ steps.playwright-cache.outputs.cache-hit != 'true' }}
       shell: bash
-      run: npx playwright install chromium
+      run: pnpm exec playwright install chromium
 
     # Disable restrictions that prevent chromium from running properly. See: https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
     - name: Disable AppArmor User Namespace Restrictions

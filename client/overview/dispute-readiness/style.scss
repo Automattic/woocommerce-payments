@@ -45,6 +45,10 @@
 	.woocommerce-task-list__item {
 		grid-template-columns: 72px minmax( 0, 1fr ) 24px;
 
+		.woocommerce-task-list__item-text {
+			padding: $gap 0;
+		}
+
 		&::before {
 			background: transparent;
 		}

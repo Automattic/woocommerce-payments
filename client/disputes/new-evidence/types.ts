@@ -8,17 +8,17 @@
 import { Dispute, DisputeReason, ProductType } from 'wcpay/types/disputes';
 import { Charge } from 'wcpay/types/charges';
 
-export interface ExtendedDispute
-	extends Omit< Dispute, 'evidence' | 'charge' > {
+export interface ExtendedDispute extends Omit<
+	Dispute,
+	'evidence' | 'charge'
+> {
 	merchant_name?: string;
 	merchant_address?: string;
 	merchant_email?: string;
 	merchant_phone?: string;
 	evidence: {
 		[ key: string ]:
-			| string
-			| Record< string, boolean >
-			| Record< string, string >;
+			string | Record< string, boolean > | Record< string, string >;
 	};
 	charge: Charge;
 }
@@ -122,9 +122,7 @@ export type EvidenceState = Partial< BaseEvidence > & {
 };
 
 export type EvidenceFieldState =
-	| 'provided'
-	| 'expected_missing'
-	| 'optional_missing';
+	'provided' | 'expected_missing' | 'optional_missing';
 
 export interface EvidenceFieldStatus {
 	key: string;
@@ -183,10 +181,11 @@ export interface Recommendation {
 	 */
 	lift?: number;
 	/**
-	 * Hide all other `critical` entries when this one fires, so a no-evidence
-	 * dispute shows one clear message instead of a stack. Used by c15.
+	 * Hide every other matched entry, of any urgency, when this one fires, so a
+	 * no-evidence dispute shows one clear message instead of a stack. Used by
+	 * c15.
 	 */
-	suppressOtherCriticals?: boolean;
+	suppressOthers?: boolean;
 	/**
 	 * Tombstone: kept so the id is never reused as a Tracks join key, but
 	 * dropped from runtime results.

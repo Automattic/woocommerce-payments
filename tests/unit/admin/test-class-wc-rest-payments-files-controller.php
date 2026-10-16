@@ -56,7 +56,40 @@ class WC_REST_Payments_Files_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'test_file_content', $response->get_data() );
 		$this->assertSame( 200, $response->status );
 
-		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID' );
+		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID_0' );
+	}
+
+	public function test_get_file_caches_purpose_between_requests() {
+		$file_response = [
+			'file_content' => base64_encode( 'test_file_content' ), // @codingStandardsIgnoreLine
+			'content_type' => 'image/png',
+		];
+
+		// The purpose lookup must round-trip to the server only on the first request; the second
+		// request has to read the purpose the first one wrote to the transient cache. The cache
+		// read and write keys must agree for this to hold.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_file' )
+			->with( 'file_mock_ID' )
+			->willReturn( [ 'purpose' => 'business_logo' ] );
+
+		$this->mock_api_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_file_contents' )
+			->with( 'file_mock_ID' )
+			->willReturn( $file_response );
+
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'file_id', 'file_mock_ID' );
+
+		$this->controller->get_file( $request );
+		$second_response = $this->controller->get_file( $request );
+
+		$this->assertSame( 'test_file_content', $second_response->get_data() );
+		$this->assertSame( 200, $second_response->status );
+
+		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID_0' );
 	}
 
 	public function test_get_file_no_file() {
@@ -81,7 +114,7 @@ class WC_REST_Payments_Files_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 404, $data['status'] );
 
-		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID' );
+		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID_0' );
 	}
 
 	public function test_get_file_content_exception() {
@@ -106,7 +139,7 @@ class WC_REST_Payments_Files_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 500, $data['status'] );
 
-		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID' );
+		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID_0' );
 	}
 
 	public function test_get_file_no_permission() {
@@ -123,7 +156,7 @@ class WC_REST_Payments_Files_Controller_Test extends WCPAY_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertSame( $data['status'], 401 );
 
-		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID' );
+		delete_transient( WC_Payments_File_Service::CACHE_KEY_PREFIX_PURPOSE . 'file_mock_ID_0' );
 	}
 
 	public function test_get_file_exception() {

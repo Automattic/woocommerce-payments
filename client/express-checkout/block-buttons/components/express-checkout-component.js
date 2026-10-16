@@ -3,6 +3,7 @@
  */
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
+import { useMemo } from 'react';
 /**
  * Internal dependencies
  */
@@ -55,13 +56,14 @@ const ExpressCheckoutComponent = ( {
 		paymentMethodTypes,
 	} );
 	const onShippingAddressChange = ( event ) =>
-		shippingAddressChangeHandler( event, elements );
+		shippingAddressChangeHandler( event, elements, setExpressPaymentError );
 
 	const onShippingRateChange = ( event ) =>
 		shippingRateChangeHandler(
 			event,
 			elements,
-			select( WC_STORE_CART )?.getCartData()
+			select( WC_STORE_CART )?.getCartData(),
+			setExpressPaymentError
 		);
 
 	const onElementsReady = ( event ) => {
@@ -83,23 +85,28 @@ const ExpressCheckoutComponent = ( {
 	};
 
 	// The Cart & Checkout blocks provide unified styles across all buttons,
-	// which should override the extension specific settings.
-	const withBlockOverride = () => {
-		const override = {};
-		if ( typeof buttonAttributes !== 'undefined' ) {
-			override.buttonHeight = Number( buttonAttributes.height );
-		}
-		return {
+	// which should override the extension specific settings. Blocks passes a
+	// new `buttonAttributes` object on every render, so key on its height.
+	const hasButtonAttributes = typeof buttonAttributes !== 'undefined';
+	const buttonHeight = buttonAttributes?.height;
+	const checkoutElementOptions = useMemo( () => {
+		const withBlockOverride = {
 			...buttonOptions,
-			...override,
+			...( hasButtonAttributes
+				? { buttonHeight: Number( buttonHeight ) }
+				: {} ),
 		};
-	};
 
-	const checkoutElementOptions = {
-		...withBlockOverride(),
-		...adjustButtonHeights( withBlockOverride(), expressPaymentMethod ),
-		...getPaymentMethodsOverride( expressPaymentMethod ),
-	};
+		return {
+			...adjustButtonHeights( withBlockOverride, expressPaymentMethod ),
+			...getPaymentMethodsOverride( expressPaymentMethod ),
+		};
+	}, [
+		buttonOptions,
+		hasButtonAttributes,
+		buttonHeight,
+		expressPaymentMethod,
+	] );
 
 	return (
 		<ExpressCheckoutElement

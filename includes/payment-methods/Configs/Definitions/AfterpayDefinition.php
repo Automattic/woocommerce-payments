@@ -76,12 +76,12 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get a dynamic title based on charge details from Stripe.
 	 *
-	 * @param string $account_country The merchant's account country.
-	 * @param array  $payment_details The payment method details from the Stripe charge.
+	 * @param string $_unused_account_country The merchant's account country.
+	 * @param array  $_unused_payment_details The payment method details from the Stripe charge.
 	 *
 	 * @return string|null The dynamic title, or null to use the default get_title().
 	 */
-	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+	public static function get_title_from_charge_details( string $_unused_account_country, array $_unused_payment_details ): ?string {
 		return null;
 	}
 
@@ -226,10 +226,10 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the testing instructions for the payment method
 	 *
-	 * @param string $account_country The merchant's account country.
+	 * @param string $_unused_account_country The merchant's account country.
 	 * @return string HTML string containing testing instructions
 	 */
-	public static function get_testing_instructions( string $account_country ): string {
+	public static function get_testing_instructions( string $_unused_account_country ): string {
 		return '';
 	}
 

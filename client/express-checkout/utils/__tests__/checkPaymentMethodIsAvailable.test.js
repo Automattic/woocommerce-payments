@@ -34,12 +34,14 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 	let mockStripe;
 	let eventHandlers;
 
-	const createCart = ( totalPrice, currencyCode ) => ( {
+	const createCart = ( totalPrice, currencyCode, extensions = {} ) => ( {
 		cartTotals: {
 			total_price: totalPrice,
 			currency_code: currencyCode,
 			currency_minor_unit: 2,
 		},
+		cartItems: [],
+		extensions,
 	} );
 
 	beforeEach( () => {
@@ -100,6 +102,32 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		);
 
 		expect( result ).toBe( false );
+	} );
+
+	it( 're-probes instead of reusing a false result when an empty cart gets its first product', async () => {
+		mockEceButton.mount.mockImplementationOnce( () => {
+			Promise.resolve().then( () =>
+				eventHandlers.ready( { availablePaymentMethods: undefined } )
+			);
+		} );
+
+		const emptyCartResult = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '0', 'EUR' ),
+			mockApi
+		);
+		const filledCartResult = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '28000', 'EUR' ),
+			mockApi
+		);
+
+		expect( emptyCartResult ).toBe( false );
+		expect( filledCartResult ).toBe( true );
+		expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+		expect( mockStripe.elements ).toHaveBeenLastCalledWith(
+			expect.objectContaining( { amount: 28000, currency: 'eur' } )
+		);
 	} );
 
 	it( 'returns false immediately when currency code is empty', async () => {
@@ -218,5 +246,89 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		expect( mockStripe.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( { amount: 1 } )
 		);
+	} );
+
+	// This probe builds its own Elements instance to ask which wallets are available. If its
+	// setupFutureUsage diverges from the one the real button mints with, availability is
+	// answered for a different payment than the shopper actually makes.
+	describe( 'setupFutureUsage', () => {
+		afterEach( () => {
+			delete global.wcpayExpressCheckoutParams;
+		} );
+
+		it( 'passes the value the server declared on the cart', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: 'off_session' },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { setupFutureUsage: 'off_session' } )
+			);
+		} );
+
+		it( 'omits it when the server declared none', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.not.objectContaining( {
+					setupFutureUsage: expect.anything(),
+				} )
+			);
+		} );
+
+		// The page-load globals go stale the moment the shopper edits the cart without a
+		// reload, so the live cart has to win.
+		it( 'reads the live cart rather than the page-load globals', async () => {
+			global.wcpayExpressCheckoutParams = {
+				setup_future_usage: 'off_session',
+			};
+
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.not.objectContaining( {
+					setupFutureUsage: expect.anything(),
+				} )
+			);
+		} );
+
+		// Holding amount and currency fixed is what makes this discriminating: it leaves
+		// setupFutureUsage as the only dimension that can force a second probe. Swapping a
+		// simple product for a same-priced subscription without a reload is the real case —
+		// without it in the memo key, the cached probe answers for the wrong payment shape.
+		it( 'different setupFutureUsage triggers separate checks', async () => {
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: null },
+				} ),
+				mockApi
+			);
+			await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', 'USD', {
+					wcpay: { setup_future_usage: 'off_session' },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+		} );
 	} );
 } );

@@ -488,11 +488,11 @@ describe( 'getRecommendations', () => {
 	} );
 
 	describe( 'suppression', () => {
-		it( 'suppresses other critical entries when an entry with suppressOtherCriticals fires', () => {
+		it( 'drops other criticals and tips when an entry with suppressOthers fires', () => {
 			const catchAll = buildEntry( {
 				id: 'catch-all',
 				urgency: 'critical',
-				suppressOtherCriticals: true,
+				suppressOthers: true,
 				when: {
 					outcome: 'could_help',
 					reasonIn: [ 'product_not_received' ],
@@ -520,20 +520,16 @@ describe( 'getRecommendations', () => {
 				[ catchAll, otherCritical, aTip ]
 			);
 
-			expect( result.map( ( r ) => r.id ).sort() ).toEqual( [
-				'a-tip',
-				'catch-all',
-			] );
+			expect( result.map( ( r ) => r.id ) ).toEqual( [ 'catch-all' ] );
 		} );
 
-		it( 'keeps a non-critical suppressor while still dropping other criticals', () => {
-			// The suppressor survives regardless of its urgency (the
-			// `=== suppressor` check short-circuits). c15 is critical, but the
-			// type allows any urgency, so pin the tip path too.
+		it( 'returns only the suppressor regardless of the suppressor urgency', () => {
+			// The suppressor survives whatever its own urgency. c15 is critical,
+			// but the type allows any urgency, so pin the tip path too.
 			const tipSuppressor = buildEntry( {
 				id: 'tip-suppressor',
 				urgency: 'tip',
-				suppressOtherCriticals: true,
+				suppressOthers: true,
 				when: {
 					outcome: 'could_help',
 					reasonIn: [ 'product_not_received' ],
@@ -563,7 +559,7 @@ describe( 'getRecommendations', () => {
 			const catchAll = buildEntry( {
 				id: 'catch-all',
 				urgency: 'critical',
-				suppressOtherCriticals: true,
+				suppressOthers: true,
 				when: { outcome: 'could_help', reasonIn: [ 'general' ] },
 			} );
 			const otherCritical = buildEntry( {
@@ -585,19 +581,21 @@ describe( 'getRecommendations', () => {
 			] );
 		} );
 
-		it( 'preserves positives and tips when suppression is active', () => {
+		it( 'drops positives too, not just criticals and tips', () => {
+			// "all others" means every urgency. A positive sharing the outcome
+			// is dropped alongside criticals and tips.
 			const catchAll = buildEntry( {
 				id: 'catch-all',
 				urgency: 'critical',
-				suppressOtherCriticals: true,
+				suppressOthers: true,
 				when: {
 					outcome: 'could_help',
 					reasonIn: [ 'product_not_received' ],
 				},
 			} );
-			const aTip = buildEntry( {
-				id: 'a-tip',
-				urgency: 'tip',
+			const aPositive = buildEntry( {
+				id: 'a-positive',
+				urgency: 'positive',
 				when: {
 					outcome: 'could_help',
 					reasonIn: [ 'product_not_received' ],
@@ -606,13 +604,10 @@ describe( 'getRecommendations', () => {
 
 			const result = getRecommendations(
 				baseContext( { outcome: 'could_help' } ),
-				[ catchAll, aTip ]
+				[ catchAll, aPositive ]
 			);
 
-			expect( result.map( ( r ) => r.id ).sort() ).toEqual( [
-				'a-tip',
-				'catch-all',
-			] );
+			expect( result.map( ( r ) => r.id ) ).toEqual( [ 'catch-all' ] );
 		} );
 	} );
 } );

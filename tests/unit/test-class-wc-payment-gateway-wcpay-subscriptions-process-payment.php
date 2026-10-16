@@ -406,6 +406,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$subscriptions = [ new WC_Subscription() ];
 		$subscriptions[0]->set_parent( $order );
 
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
 
 		$request->expects( $this->once() )
@@ -418,7 +421,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
 			->willReturn( $this->token );
 
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 
 		// Expect add token to order to be called, so it can be reused in renewals.
 		// This is an integration test, different scenarios for add_token_to_order method
@@ -529,7 +532,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		];
 
 		// The card is already saved and there's no payment needed, so no Setup Intent needs to be created.
-		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
 
 		// We're not saving a new payment method, so we don't need to add the payment method to
 		// a user account.
@@ -564,7 +567,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( false );
 
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -593,7 +596,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		// A card change only saves the card: the SetupIntent must not mark the order paid.
+		$this->assertSame( 'pending', $result_order->get_status() );
+		foreach ( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) as $note ) {
+			$this->assertStringNotContainsString( 'si_mock', $note->content );
+		}
 		$this->assertEquals( 'success', $result['result'] );
 		// Expect add token to order to be called, so it can be reused in renewals.
 		// This is an integration test, different scenarios for add_token_to_order method
@@ -614,13 +621,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->mock_wcs_order_contains_subscription( false );
 
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
 		$this->mock_wcs_get_subscriptions_for_order( [] );
 
-		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
 
 		$this->mock_token_service
 			->expects( $this->never() )
@@ -646,7 +653,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->mock_wcs_order_contains_subscription( false );
 		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) {
+			function ( $_unused_order ) {
 				return true;
 			}
 		);
@@ -706,7 +713,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 	private function mock_wcs_order_contains_subscription( $value ) {
 		WC_Subscriptions::set_wcs_order_contains_subscription(
-			function ( $order ) use ( $value ) {
+			function ( $_unused_order ) use ( $value ) {
 				return $value;
 			}
 		);
@@ -714,7 +721,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
+			function ( $_unused_order ) use ( $subscriptions ) {
 				return $subscriptions;
 			}
 		);
