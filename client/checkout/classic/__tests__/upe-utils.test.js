@@ -486,6 +486,32 @@ describe( 'Classic checkout UPE utils', () => {
 			expect( upeSettings.terms.card ).toEqual( 'always' );
 		} );
 
+		it( 'should not provide terms when cart contains subscriptions but manual renewal is required', () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {
+						card: {
+							label: 'Card',
+							isReusable: true,
+						},
+					};
+				}
+
+				if ( argument === 'cartContainsSubscription' ) {
+					return true;
+				}
+
+				if ( argument === 'subscriptionRequiresManualRenewal' ) {
+					return true;
+				}
+			} );
+
+			createCheckboxElementWhich( false );
+			const upeSettings = getUpeSettings();
+
+			expect( upeSettings.terms.card ).toEqual( 'never' );
+		} );
+
 		it( 'should define defaultValues when wcpayCustomerData is present', () => {
 			window.wcpayCustomerData = {
 				name: 'Test Person',
