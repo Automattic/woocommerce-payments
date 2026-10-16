@@ -228,7 +228,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		// Assert.
 		$this->assertStringContainsStringIgnoringCase( 'WooPayments is in test mode', $result );
 		$this->assertStringContainsString( 'test card numbers', $result );
-		$this->assertStringNotContainsString( 'development mode is on', $result );
+		$this->assertStringNotContainsString( 'Your store is in development mode', $result );
 		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 		$this->assertStringNotContainsString( 'You are using a sandbox test account.', $result );
 	}

@@ -18,7 +18,12 @@ import ErrorBoundary from 'wcpay/components/error-boundary';
 import DevModeMessage from 'wcpay/components/dev-mode-message';
 import SetupLivePaymentsModal from './modal';
 import './style.scss';
-import { hasSandboxAccount, hasTestAccount, isInDevMode } from 'wcpay/utils';
+import {
+	hasSandboxAccount,
+	hasTestAccount,
+	isInDevMode,
+	isInTestMode,
+} from 'wcpay/utils';
 
 interface Props {
 	from: string;
@@ -42,8 +47,10 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 	};
 
 	// A live account is forced into test mode while development mode is on, e.g. on a staging copy of a live store.
+	// The wcpay_test_mode filter can still turn test mode off, and then payments are real, so check it too.
 	const hasLiveAccountInDevMode =
 		isInDevMode() &&
+		isInTestMode() &&
 		!! wcpaySettings?.isAccountConnected &&
 		!! wcpaySettings?.accountStatus?.isLive;
 

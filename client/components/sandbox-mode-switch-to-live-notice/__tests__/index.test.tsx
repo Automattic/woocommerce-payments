@@ -19,6 +19,7 @@ declare const global: {
 	wcpaySettings: {
 		isAccountConnected: boolean;
 		devMode: boolean;
+		testMode: boolean;
 		devModeReason: string;
 		accountStatus: {
 			isLive: boolean;
@@ -29,18 +30,22 @@ declare const global: {
 
 const devModeReason = 'The WCPAY_DEV_MODE constant is set.';
 
+// Development mode forces test mode unless the wcpay_test_mode filter overrides it.
 const setAccount = ( {
 	isLive,
 	testDrive,
 	devMode,
+	testMode = devMode,
 }: {
 	isLive: boolean;
 	testDrive: boolean;
 	devMode: boolean;
+	testMode?: boolean;
 } ) => {
 	global.wcpaySettings = {
 		isAccountConnected: true,
 		devMode,
+		testMode,
 		devModeReason,
 		accountStatus: { isLive, testDrive },
 	};
@@ -101,6 +106,19 @@ describe( 'SandboxModeSwitchToLiveNotice in development mode', () => {
 			);
 		}
 	);
+
+	it( 'renders nothing for a live account when a filter turns test mode off in development mode', () => {
+		setAccount( {
+			isLive: true,
+			testDrive: false,
+			devMode: true,
+			testMode: false,
+		} );
+
+		const { container } = renderNotice();
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
 
 	it( 'renders nothing for a live account outside development mode', () => {
 		setAccount( { isLive: true, testDrive: false, devMode: false } );
