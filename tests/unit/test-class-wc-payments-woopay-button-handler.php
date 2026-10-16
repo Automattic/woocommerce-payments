@@ -107,6 +107,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 					'is_checkout',
 					'is_product',
 					'is_express_checkout_method_enabled_at',
+					'is_product_purchasable',
 				]
 			)
 			->getMock();
@@ -373,6 +374,10 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->with( 'product', 'woopay' )
 			->willReturn( true );
 
+		$this->mock_express_checkout_helper
+			->method( 'is_product_purchasable' )
+			->willReturn( true );
+
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
 
 		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
@@ -538,6 +543,37 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			],
 			$this->mock_pr->get_button_settings()
 		);
+	}
+
+	public function test_should_not_show_woopay_button_when_product_not_purchasable() {
+		add_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
+
+		$this->mock_pr
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+
+		$this->mock_woopay_utilities
+			->expects( $this->once() )
+			->method( 'is_country_available' )
+			->willReturn( true );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->mock_express_checkout_helper
+			->expects( $this->once() )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'product', 'woopay' )
+			->willReturn( true );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_product_purchasable' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
 	}
 
 	public function test_display_woopay_button_html_renders_div_placeholder() {

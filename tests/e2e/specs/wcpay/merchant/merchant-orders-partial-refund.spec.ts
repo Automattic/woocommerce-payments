@@ -43,13 +43,15 @@ test.describe( 'Order > Partial refund', () => {
 	 * - test title
 	 * - object containing the items to be ordered, and the quantities and amounts to be refunded
 	 */
-	const dataTable: Array< [
-		string,
-		{
-			lineItems: Array< [ string, number ] >;
-			refundInputs: { refundQty: number; refundAmount: number }[];
-		}
-	] > = [
+	const dataTable: Array<
+		[
+			string,
+			{
+				lineItems: Array< [ string, number ] >;
+				refundInputs: { refundQty: number; refundAmount: number }[];
+			},
+		]
+	> = [
 		[
 			'Partially refund one product of two product order',
 			{
@@ -209,12 +211,13 @@ test.describe( 'Order > Partial refund', () => {
 			expect( refundNote ).toContain( title );
 			expect( refundNote ).toContain( refundTotalString );
 
-			// Check that the refunded amount line item is correct.
+			// Check that the refunded amount line item is correct. Newer WooCommerce
+			// versions put the minus sign inside the `bdi`, older ones put it outside.
 			await expect(
 				merchantPage
 					.getByRole( 'row', { name: 'Refunded' } )
 					.locator( 'bdi' )
-			).toHaveText( `$${ refundTotalString } USD` );
+			).toContainText( `$${ refundTotalString } USD` );
 
 			// Check that the net payment line item is correct.
 			await expect(

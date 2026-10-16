@@ -30,7 +30,7 @@ class WC_Payments_Dependency_Service {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_filter( 'admin_notices', [ $this, 'display_admin_notices' ] );
+		add_action( 'admin_notices', [ $this, 'display_admin_notices' ] );
 	}
 
 	/**
@@ -141,7 +141,7 @@ class WC_Payments_Dependency_Service {
 	public function is_wc_admin_enabled() {
 
 		// Check if the current WooCommerce version has WooCommerce Admin bundled (WC 4.0+) but it's disabled using a filter.
-		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) || apply_filters( 'woocommerce_admin_disabled', false ) ) {
+		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) || apply_filters( 'woocommerce_admin_disabled', false ) ) { // phpcs:ignore WooCommerce.Commenting.CommentHooks.HookCommentWrongStyle -- WooCommerce core hook, not defined by WooPayments.
 			return false;
 		}
 

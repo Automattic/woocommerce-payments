@@ -10,9 +10,9 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import SaveSettingsSection from '..';
-import { useSettings } from '../../../data';
+import { useSettings } from 'wcpay/data/settings';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
 	useGetSettings: jest.fn().mockReturnValue( {} ),
 } ) );

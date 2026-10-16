@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-fix: failures in e2e PW tests for blocks

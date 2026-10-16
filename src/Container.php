@@ -16,6 +16,8 @@ use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\GenericServiceProvider;
 use WCPay\Internal\DependencyManagement\ServiceProvider\ProxiesServiceProvider;
 
+defined( 'ABSPATH' ) || exit;
+
 // @codeCoverageIgnoreStart
 
 /**

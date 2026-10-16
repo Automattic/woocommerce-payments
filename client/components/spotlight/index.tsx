@@ -67,8 +67,11 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	reverseButtons = false,
 } ) => {
 	const validBadgeType = getValidBadgeType( badgeType );
-	const [ isVisible, setIsVisible ] = useState( false );
-	const [ isAnimatingIn, setIsAnimatingIn ] = useState( false );
+	// `showImmediately` is treated as mount-only; callers pass a literal boolean.
+	// Initializing state from it avoids a synchronous setState-in-effect for the
+	// immediate branch. The delayed branch remains in an effect below.
+	const [ isVisible, setIsVisible ] = useState( showImmediately );
+	const [ isAnimatingIn, setIsAnimatingIn ] = useState( showImmediately );
 	const closeTimeoutRef = useRef< ReturnType< typeof setTimeout > | null >(
 		null
 	);
@@ -77,12 +80,12 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 
 	useEffect( () => {
 		if ( showImmediately ) {
-			setIsVisible( true );
-			setIsAnimatingIn( true );
 			return;
 		}
 
-		// Show the spotlight after a delay
+		// Show the spotlight after a delay. setState calls inside the timeout
+		// callback fire after commit, so they don't trigger the
+		// react-hooks/set-state-in-effect rule.
 		const timer = setTimeout( () => {
 			setIsVisible( true );
 			// Double RAF to ensure browser paints initial state before animating
@@ -149,7 +152,8 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		const ownerDocument = dialog.ownerDocument;
 
 		// Save the currently focused element to restore later
-		previouslyFocusedElementRef.current = ownerDocument.activeElement as HTMLElement;
+		previouslyFocusedElementRef.current =
+			ownerDocument.activeElement as HTMLElement;
 
 		// Focus the dialog
 		dialog.focus();
@@ -163,11 +167,10 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 
 			// Focus trapping
 			if ( event.key === 'Tab' ) {
-				const focusableElements = dialog.querySelectorAll<
-					HTMLElement
-				>(
-					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-				);
+				const focusableElements =
+					dialog.querySelectorAll< HTMLElement >(
+						'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+					);
 				const firstElement = focusableElements[ 0 ];
 				const lastElement =
 					focusableElements[ focusableElements.length - 1 ];
@@ -211,7 +214,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	const primaryButton = (
 		<Button
 			className="wcpay-spotlight__primary-btn"
-			variant="secondary"
+			variant="primary"
 			onClick={ handlePrimaryClick }
 			size="compact"
 		>

@@ -1,14 +1,17 @@
 /** @format */
 {
 	"root": true,
-	"parser": "babel-eslint",
+	"parser": "@babel/eslint-parser",
+	"parserOptions": {
+		"requireConfigFile": false
+	},
 	"extends": [
-		"wpcalypso/react",
 		"plugin:jsx-a11y/recommended",
 		"prettier",
-		"plugin:@woocommerce/eslint-plugin/recommended"
+		"plugin:@woocommerce/eslint-plugin/recommended",
+		"prettier/react"
 	],
-	"plugins": [ "jsx-a11y", "jest", "jsdoc-alignment" ],
+	"plugins": [ "jsx-a11y", "jest", "jsdoc-alignment", "wpcalypso" ],
 	"env": {
 		"browser": true,
 		"jest/globals": true,
@@ -40,6 +43,7 @@
 				"ignoreGlobals": true
 			}
 		],
+		"eqeqeq": [ "error", "always", { "null": "ignore" } ],
 		"import/no-extraneous-dependencies": "off",
 		"indent": "off",
 		"max-len": [
@@ -85,8 +89,19 @@
 		"@wordpress/i18n-translator-comments": "off",
 		"@wordpress/valid-sprintf": "off",
 		"@woocommerce/dependency-group": "off",
-		"react-hooks/exhaustive-deps": "error",
+		"@wordpress/i18n-text-domain": [ "error", { "allowedTextDomain": "woocommerce-payments" } ],
+		"valid-jsdoc": "off",
+		"@typescript-eslint/no-unused-vars": [ "error", { "varsIgnorePattern": "^(React|createElement)$", "ignoreRestSiblings": true, "argsIgnorePattern": "^_" } ],
+		"react-hooks/exhaustive-deps": [ "error", { "additionalHooks": "(^useSelect$|^useSuspenseSelect$)" } ],
 		"react-hooks/rules-of-hooks": "error",
+		"react-hooks/static-components": "error",
+		"react-hooks/purity": "error",
+		"react-hooks/use-memo": "error",
+		"react-hooks/immutability": "error",
+		"react-hooks/set-state-in-effect": "error",
+		/* BEGIN WOOPMNT-6292 — react-hooks v7 remaining rule, temporarily set to warn until violations are fixed */
+		"react-hooks/refs": "warn",
+		/* END WOOPMNT-6292 */
 		"jest/no-conditional-expect": "off",
 		"jest/valid-title": "off",
 		"jest/expect-expect": "off",
@@ -106,15 +121,45 @@
 		]
 	},
 	"overrides": [
+		// Jest reads its per-file configuration from the leading docblock, so
+		// test files carry `@jest-environment*` pragmas that are not JSDoc tags.
+		{
+			"files": [
+				"**/__tests__/**",
+				"**/test/**",
+				"*.test.js",
+				"*.test.ts",
+				"*.test.tsx"
+			],
+			"rules": {
+				"jsdoc/check-tag-names": [
+					"error",
+					{
+						"definedTags": [
+							"format",
+							"jest-environment",
+							"jest-environment-options"
+						]
+					}
+				],
+				"jsdoc/valid-types": "off"
+			}
+		},
+		{
+			"files": [ "*.js", "*.jsx" ],
+			"rules": {
+				"@typescript-eslint/no-use-before-define": "off"
+			}
+		},
 		{
 			"files": [ "*.ts", "*.tsx" ],
 			"parser": "@typescript-eslint/parser",
 			"plugins": [ "jsx-a11y", "jest", "@typescript-eslint" ],
 			"extends": [
-				"wpcalypso/react",
 				"plugin:jsx-a11y/recommended",
 				"plugin:@typescript-eslint/recommended",
 				"prettier",
+				"prettier/react",
 				"prettier/@typescript-eslint"
 			],
 			"rules": {
@@ -135,7 +180,7 @@
 				"@typescript-eslint/no-use-before-define": [ "error" ],
 				"@typescript-eslint/explicit-module-boundary-types": "off",
 				"wpcalypso/jsx-classname-namespace": "off",
-				"react/react-in-jsx-scope": "error",
+				"react/react-in-jsx-scope": "off",
 				"no-shadow": "off",
 				"@typescript-eslint/no-shadow": "error",
 				"jsdoc/require-param-type": 0,

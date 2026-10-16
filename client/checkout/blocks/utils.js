@@ -7,7 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
-import { getTerms, isLinkEnabled } from '../utils/upe';
+import { getLinkEmail, getTerms, isLinkEnabled } from '../utils/upe';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 
 /**
@@ -32,14 +32,16 @@ export const useCustomerData = () => {
  * information is already collected in the checkout form. Additionally, the options are updated with
  * the terms text if needed.
  *
- * @param {boolean} shouldSavePayment Whether the payment method should be saved.
- * @param {Object} paymentMethodsConfig The payment methods config object.
+ * @param {boolean} shouldSavePayment    Whether the payment method should be saved.
+ * @param {Object}  paymentMethodsConfig The payment methods config object.
+ * @param {string}  email                The checkout email, passed so Link can recognize returning customers.
  *
  * @return {Object} The options object for the Stripe elements.
  */
 export const getStripeElementOptions = (
 	shouldSavePayment,
-	paymentMethodsConfig
+	paymentMethodsConfig,
+	email
 ) => {
 	const options = {
 		fields: {
@@ -70,6 +72,13 @@ export const getStripeElementOptions = (
 			: 'never';
 
 	options.terms = getTerms( paymentMethodsConfig, showTerms );
+
+	const linkEmail = isLinkEnabled( paymentMethodsConfig )
+		? getLinkEmail( email )
+		: undefined;
+	if ( linkEmail ) {
+		options.defaultValues = { billingDetails: { email: linkEmail } };
+	}
 
 	return options;
 };

@@ -18,7 +18,7 @@ class WC_Payments_File_Service {
 		'business_icon',
 	];
 
-	const CACHE_KEY_PREFIX_PURPOSE = 'file_purpoose_';
+	const CACHE_KEY_PREFIX_PURPOSE = 'file_purpose_';
 	const CACHE_PERIOD             = 86400;  // 24 h
 
 

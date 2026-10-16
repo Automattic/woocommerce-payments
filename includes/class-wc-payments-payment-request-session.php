@@ -16,6 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Payment_Request_Session {
 	/**
+	 * Nonce action that lets product-page requests use their own isolated tokenized cart session.
+	 * It lives here because this class loads even when WC_Payments::init() bails early.
+	 */
+	const TOKENIZED_CART_SESSION_NONCE_ACTION = 'woopayments_tokenized_cart_session_nonce';
+
+	/**
 	 * Name of the parameter added to the "order received" page for orders placed with the custom session handler on product pages.
 	 *
 	 * @var string Name of the parameter.
@@ -116,7 +122,7 @@ class WC_Payments_Payment_Request_Session {
 		return JsonWebToken::create(
 			[
 				'session_id' => WC()->session->session_id,
-				'exp'        => time() + intval( apply_filters( 'wc_session_expiration', DAY_IN_SECONDS * 2 ) ),
+				'exp'        => time() + intval( apply_filters( 'wc_session_expiration', DAY_IN_SECONDS * 2 ) ), // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment -- WooCommerce core hook, not defined by WooPayments.
 				'iss'        => 'woopayments/product-page',
 			],
 			'@' . wp_salt()
@@ -169,7 +175,7 @@ class WC_Payments_Payment_Request_Session {
 	 */
 	public function add_payment_request_store_api_session_handler( $default_session_handler ) {
 		$nonce = wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] ?? null ) );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_session_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, self::TOKENIZED_CART_SESSION_NONCE_ACTION ) ) {
 			return $default_session_handler;
 		}
 

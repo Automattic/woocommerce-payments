@@ -7,7 +7,7 @@ import { TourKit } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { useSettings } from 'wcpay/data';
+import { useSettings } from 'wcpay/data/settings';
 import { steps } from './steps';
 import { recordEvent } from 'tracks';
 import { saveOption } from 'wcpay/data/settings/actions';
@@ -65,7 +65,7 @@ const FraudProtectionTour: React.FC = () => {
 
 		setShowTour( false );
 
-		if ( 'done-btn' === element ) {
+		if ( element === 'done-btn' ) {
 			recordEvent( 'wcpay_fraud_protection_tour_clicked_through' );
 		} else {
 			recordEvent( 'wcpay_fraud_protection_tour_abandoned' );

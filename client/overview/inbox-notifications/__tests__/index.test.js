@@ -7,7 +7,6 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
 import InboxPanel from '..';
 
 jest.mock( '@wordpress/data', () => ( {
@@ -39,11 +38,6 @@ jest.mock( '@woocommerce/experimental', () => {
 		InboxNotePlaceholder: () => <div>placeholder</div>,
 	};
 } );
-
-jest.mock( 'utils/update-woocommerce-user-meta', () => ( {
-	__esModule: true,
-	updateWoocommerceUserMeta: jest.fn(),
-} ) );
 
 const defaultNotes = [
 	{
@@ -81,7 +75,6 @@ describe( 'InboxPanel', () => {
 		resolving: false,
 		batchUpdating: false,
 		notes: defaultNotes,
-		overviewInboxLastRead: 123123123,
 	};
 	beforeEach( () => {
 		batchUpdateNotes = jest.fn();
@@ -99,15 +92,6 @@ describe( 'InboxPanel', () => {
 			createNotice,
 		} ) );
 		useSelect.mockImplementation( () => ( { ...defaultUseSelectData } ) );
-	} );
-
-	test( 'it should call updateWoocommerceUserMeta with new last_read on first render', () => {
-		render( <InboxPanel /> );
-		expect( updateWoocommerceUserMeta ).toHaveBeenCalled();
-		expect(
-			updateWoocommerceUserMeta.mock.calls[ 0 ][ 0 ]
-				.wc_payments_overview_inbox_last_read
-		).toBeDefined();
 	} );
 
 	test( 'it should only render the inbox note place holder when resolving is true', () => {

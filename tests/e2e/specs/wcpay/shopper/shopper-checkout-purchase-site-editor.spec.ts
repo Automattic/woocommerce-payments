@@ -47,65 +47,58 @@ test.describe( 'Successful purchase, site builder theme', () => {
 	} );
 
 	[ true, false ].forEach( ( cardTestingPreventionEnabled ) => {
-		test.describe(
-			`card prevention: ${ cardTestingPreventionEnabled }`,
-			() => {
-				test.beforeAll( async () => {
-					if ( cardTestingPreventionEnabled ) {
-						await enableCardTestingProtection( merchantPage );
-					} else {
-						await disableCardTestingProtection( merchantPage );
-					}
-				} );
+		test.describe( `card prevention: ${ cardTestingPreventionEnabled }`, () => {
+			test.beforeAll( async () => {
+				if ( cardTestingPreventionEnabled ) {
+					await enableCardTestingProtection( merchantPage );
+				} else {
+					await disableCardTestingProtection( merchantPage );
+				}
+			} );
 
-				test.beforeEach( async () => {
-					// Reset cart & checkout setup
-					await emptyCart( shopperPage );
-					await addToCartFromShopPage( shopperPage );
-					await setupCheckout(
-						shopperPage,
-						config.addresses.customer.billing
-					);
-				} );
+			test.beforeEach( async () => {
+				// Reset cart & checkout setup
+				await emptyCart( shopperPage );
+				await addToCartFromShopPage( shopperPage );
+				await setupCheckout(
+					shopperPage,
+					config.addresses.customer.billing
+				);
+			} );
 
-				const runPurchaseFlow = async (
-					page: Page,
-					card: typeof config.cards.basic,
-					is3dsCard: boolean
-				) => {
-					await expectFraudPreventionToken(
-						page,
-						cardTestingPreventionEnabled
-					);
-					await fillCardDetails( page, card );
-					await placeOrder( page );
-					if ( is3dsCard ) {
-						await confirmCardAuthentication( page );
-					}
-					await page.waitForURL( /\/order-received\//, {
-						waitUntil: 'load',
-					} );
-					expect( page.url() ).toMatch(
-						/checkout\/order-received\/\d+\//
-					);
-				};
-
-				test( `basic card`, async () => {
-					await runPurchaseFlow(
-						shopperPage,
-						config.cards.basic,
-						false
-					);
+			const runPurchaseFlow = async (
+				page: Page,
+				card: typeof config.cards.basic,
+				is3dsCard: boolean
+			) => {
+				await expectFraudPreventionToken(
+					page,
+					cardTestingPreventionEnabled
+				);
+				await fillCardDetails( page, card );
+				await placeOrder( page );
+				if ( is3dsCard ) {
+					await confirmCardAuthentication( page );
+				}
+				await page.waitForURL( /\/order-received\//, {
+					waitUntil: 'load',
 				} );
+				expect( page.url() ).toMatch(
+					/checkout\/order-received\/\d+\//
+				);
+			};
 
-				test( `3DS card`, async () => {
-					await runPurchaseFlow(
-						shopperPage,
-						config.cards[ '3ds' ],
-						true
-					);
-				} );
-			}
-		);
+			test( `basic card`, async () => {
+				await runPurchaseFlow( shopperPage, config.cards.basic, false );
+			} );
+
+			test( `3DS card`, async () => {
+				await runPurchaseFlow(
+					shopperPage,
+					config.cards[ '3ds' ],
+					true
+				);
+			} );
+		} );
 	} );
 } );

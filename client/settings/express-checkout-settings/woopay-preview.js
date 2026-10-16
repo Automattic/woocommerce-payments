@@ -319,33 +319,33 @@ const CheckoutButton = ( { height } ) => {
  * @return {string} The sanitized HTML.
  */
 function sanitizeHtmlForPreview( input ) {
-	return input.replace( /<\/?([a-zA-Z]+)[^>]*>/g, function (
-		fullMatch,
-		tagName
-	) {
-		tagName = tagName.toLowerCase();
-		const allowedTags = [ 'a', 'em', 'strong', 'b', 'i' ];
-		// Only allow allowedTags.
-		if ( ! allowedTags.includes( tagName ) ) {
-			return '';
-		}
-
-		// 'a' tags are converted to 'span' tags with a class, in the preview.
-		if ( tagName === 'a' ) {
-			if ( fullMatch.startsWith( '</' ) ) {
-				return `</span>`;
+	return input.replace(
+		/<\/?([a-zA-Z]+)[^>]*>/g,
+		function ( fullMatch, tagName ) {
+			tagName = tagName.toLowerCase();
+			const allowedTags = [ 'a', 'em', 'strong', 'b', 'i' ];
+			// Only allow allowedTags.
+			if ( ! allowedTags.includes( tagName ) ) {
+				return '';
 			}
 
-			return `<span class="preview-layout__shortcode-link">`;
-		}
+			// 'a' tags are converted to 'span' tags with a class, in the preview.
+			if ( tagName === 'a' ) {
+				if ( fullMatch.startsWith( '</' ) ) {
+					return `</span>`;
+				}
 
-		// Remaining tags are stripped of attributes, in the preview.
-		if ( fullMatch.startsWith( '</' ) ) {
-			return `</${ tagName }>`;
-		}
+				return `<span class="preview-layout__shortcode-link">`;
+			}
 
-		return `<${ tagName }>`;
-	} );
+			// Remaining tags are stripped of attributes, in the preview.
+			if ( fullMatch.startsWith( '</' ) ) {
+				return `</${ tagName }>`;
+			}
+
+			return `<${ tagName }>`;
+		}
+	);
 }
 
 const ALLOWED_FONT_DOMAINS = [
@@ -366,9 +366,10 @@ export default ( {
 } ) => {
 	const { style, ...restProps } = props;
 
-	const themed = useMemo( () => getThemedStyles( appearance ), [
-		appearance,
-	] );
+	const themed = useMemo(
+		() => getThemedStyles( appearance ),
+		[ appearance ]
+	);
 
 	// Load merchant font stylesheets from stored font rules.
 	useEffect( () => {

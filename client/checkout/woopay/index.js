@@ -9,6 +9,8 @@ import { createRoot } from 'react-dom/client';
  */
 import CheckoutPageSaveUser from 'wcpay/components/woopay/save-user/checkout-page-save-user';
 
+let blocksCheckoutRoot = null;
+
 const renderSaveUserSection = () => {
 	const saveUserSection = document.getElementsByClassName(
 		'woopay-save-new-user-container'
@@ -18,39 +20,50 @@ const renderSaveUserSection = () => {
 		return;
 	}
 
-	const blocksCheckout = document.getElementsByClassName(
-		'wc-block-checkout'
-	);
+	const blocksCheckout =
+		document.getElementsByClassName( 'wc-block-checkout' );
 
 	if ( blocksCheckout.length ) {
-		let checkoutPageSaveUserContainer = document.querySelector(
-			'#remember-me'
-		);
+		let checkoutPageSaveUserContainer =
+			document.querySelector( '#remember-me' );
 
 		if ( ! checkoutPageSaveUserContainer ) {
 			const paymentOptions = document.getElementsByClassName(
 				'wp-block-woocommerce-checkout-payment-block'
 			)?.[ 0 ];
 
-			checkoutPageSaveUserContainer = document.createElement(
-				'fieldset'
-			);
+			// Nowhere to attach it, so bail rather than root a detached node.
+			if ( ! paymentOptions ) {
+				return;
+			}
+
+			checkoutPageSaveUserContainer =
+				document.createElement( 'fieldset' );
 
 			checkoutPageSaveUserContainer.className =
 				'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block wc-block-components-checkout-step ';
 			checkoutPageSaveUserContainer.id = 'remember-me';
 
-			if ( paymentOptions ) {
-				// Render right after the payment options block, as a sibling element.
-				paymentOptions.parentNode.insertBefore(
-					checkoutPageSaveUserContainer,
-					paymentOptions.nextSibling
-				);
-			}
+			// Render right after the payment options block, as a sibling element.
+			paymentOptions.parentNode.insertBefore(
+				checkoutPageSaveUserContainer,
+				paymentOptions.nextSibling
+			);
+
+			// Fresh container: the cached root is stale, so unmount and drop it.
+			blocksCheckoutRoot?.unmount();
+			blocksCheckoutRoot = null;
 		}
 
-		const root = createRoot( checkoutPageSaveUserContainer );
-		root.render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+		// Reuse the root across AJAX re-renders; re-rooting the same node would
+		// reset the component and warn under React 18.
+		if ( ! blocksCheckoutRoot ) {
+			blocksCheckoutRoot = createRoot( checkoutPageSaveUserContainer );
+		}
+
+		blocksCheckoutRoot.render(
+			<CheckoutPageSaveUser isBlocksCheckout={ true } />
+		);
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =

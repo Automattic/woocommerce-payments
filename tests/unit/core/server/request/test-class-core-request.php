@@ -122,7 +122,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		$filtered = $request->apply_filters( $hook );
+		$filtered = $request->apply_filters( $hook ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$result   = $filtered->get_params();
 
 		// Assert: It's important that we got here without exceptions, but everything should be set.
@@ -153,7 +153,7 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		$filtered = $base->apply_filters( $hook );
+		$filtered = $base->apply_filters( $hook ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		$this->assertInstanceOf( Request_With_Id::class, $filtered );
 		$this->assertStringContainsString( $intent_id, $filtered->get_api() );
 	}

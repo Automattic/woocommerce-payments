@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 /**
  * External dependencies
  */
@@ -9,7 +10,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../constants';
+import { STORE_NAME } from './store';
 import type { DepositStatus } from 'wcpay/types/deposits';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
@@ -17,19 +18,21 @@ import PAYMENT_METHOD_IDS, {
 
 export type TransactionType =
 	| 'charge'
+	| 'payment'
 	| 'refund'
 	| 'card_reader_fee'
 	| 'financing_payout'
 	| 'financing_paydown'
-	| 'fee_refund';
+	| 'fee_refund'
+	| 'network_costs';
 
 export type TransactionSource =
 	| 'ach_credit_transfer'
 	| 'ach_debit'
 	| 'acss_debit'
 	| 'stripe_account'
-	| typeof PAYMENT_METHOD_IDS[ keyof typeof PAYMENT_METHOD_IDS ]
-	| typeof PAYMENT_METHOD_BRANDS[ keyof typeof PAYMENT_METHOD_BRANDS ];
+	| ( typeof PAYMENT_METHOD_IDS )[ keyof typeof PAYMENT_METHOD_IDS ]
+	| ( typeof PAYMENT_METHOD_BRANDS )[ keyof typeof PAYMENT_METHOD_BRANDS ];
 
 // TODO: refine this type with more detailed information.
 export interface Transaction {
@@ -64,6 +67,11 @@ export interface Transaction {
 		interval_to: string;
 	};
 	payment_intent_id?: string;
+	// Present only when the charge's order received an early fraud warning.
+	early_fraud_warning?: {
+		actionable: boolean;
+		fraud_type: string;
+	};
 }
 
 interface Transactions {
@@ -161,11 +169,8 @@ export const useTransactions = (
 ): Transactions =>
 	useSelect(
 		( select ) => {
-			const {
-				getTransactions,
-				getTransactionsError,
-				isResolving,
-			} = select( STORE_NAME );
+			const { getTransactions, getTransactionsError, isResolving } =
+				select( STORE_NAME );
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -271,9 +276,8 @@ export const useTransactionsSummary = (
 ): TransactionsSummary =>
 	useSelect(
 		( select ) => {
-			const { getTransactionsSummary, isResolving } = select(
-				STORE_NAME
-			);
+			const { getTransactionsSummary, isResolving } =
+				select( STORE_NAME );
 
 			const query = {
 				match,
@@ -394,10 +398,8 @@ export const useFraudOutcomeTransactionsSummary = (
 					status,
 					query
 				),
-				transactionsSummaryError: getFraudOutcomeTransactionsSummaryError(
-					status,
-					query
-				),
+				transactionsSummaryError:
+					getFraudOutcomeTransactionsSummaryError( status, query ),
 				isLoading: isResolving( 'getFraudOutcomeTransactionsSummary', [
 					status,
 					query,

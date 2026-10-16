@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_REST_Payments_Onboarding_Controller unit tests.
@@ -99,6 +100,107 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			),
 			$response->get_data()
 		);
+	}
+
+	public function test_init_test_drive_account_forwards_account_data_to_service() {
+		$account_data = [ 'extra_bootstrapping' => false ];
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->with( 'US', [], $account_data )
+			->willReturn( true );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'country'      => 'US',
+				'account_data' => $account_data,
+			]
+		);
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame( [ 'success' => true ], $response->get_data() );
+	}
+
+	public function test_init_test_drive_account_defaults_account_data_to_empty_array() {
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->with( 'US', [], [] )
+			->willReturn( true );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params( [ 'country' => 'US' ] );
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame( [ 'success' => true ], $response->get_data() );
+	}
+
+	public function test_init_test_drive_account_returns_error_on_service_exception() {
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->willThrowException( new Exception( 'Something went wrong' ) );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params( [ 'country' => 'US' ] );
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'bad_request', $response->get_error_code() );
+		$this->assertSame( 'Something went wrong', $response->get_error_message() );
+	}
+
+	public function test_init_test_drive_account_forwards_error_details_on_api_exception() {
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->willThrowException(
+				new API_Exception(
+					"Error: The statement descriptor matches a common term or website URL, and can't be used.",
+					'account_country_invalid',
+					409,
+					'invalid_request_error'
+				)
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params( [ 'country' => 'US' ] );
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'bad_request', $response->get_error_code() );
+
+		$error_data = $response->get_error_data();
+		$this->assertSame( 409, $error_data['status'] );
+		$this->assertSame( 'account_country_invalid', $error_data['error_code'] );
+		$this->assertSame( 'invalid_request_error', $error_data['error_type'] );
+	}
+
+	public function test_init_test_drive_account_falls_back_to_400_when_api_exception_has_no_http_code() {
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->willThrowException(
+				new API_Exception(
+					'Something went wrong',
+					'wcpay_account_creation_failed',
+					0,
+					'api_error'
+				)
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params( [ 'country' => 'US' ] );
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertInstanceOf( WP_Error::class, $response );
+
+		$error_data = $response->get_error_data();
+		$this->assertSame( 400, $error_data['status'] );
 	}
 
 	public function test_finalize_embedded_kyc() {

@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useAuthorization } from 'wcpay/data';
+import { useAuthorization } from 'wcpay/data/authorizations';
 
 interface CancelAuthorizationButtonProps {
 	orderId: number;
@@ -20,9 +20,9 @@ interface CancelAuthorizationButtonProps {
 	onClick?: () => void;
 }
 
-const CancelAuthorizationButton: React.FC< React.PropsWithChildren<
-	CancelAuthorizationButtonProps
-> > = ( {
+const CancelAuthorizationButton: React.FC<
+	React.PropsWithChildren< CancelAuthorizationButtonProps >
+> = ( {
 	orderId,
 	children,
 	paymentIntentId,

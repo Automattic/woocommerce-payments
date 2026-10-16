@@ -12,9 +12,9 @@ import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
-import { useGetPaymentMethodStatuses } from 'wcpay/data';
+import { useGetPaymentMethodStatuses } from 'wcpay/data/settings';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
 	useGetSettings: jest.fn().mockReturnValue( {} ),
 	useSettings: jest.fn().mockReturnValue( {} ),

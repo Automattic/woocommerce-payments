@@ -94,7 +94,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 				],
 			);
 
-		$response = $this->controller->get_authorizations( $request );
+		$this->controller->get_authorizations( $request );
 	}
 
 
@@ -120,7 +120,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller_Test extends WCPAY_Unit
 					}
 				)
 			);
-		$response = $this->controller->get_authorizations( $request );
+		$this->controller->get_authorizations( $request );
 	}
 
 	public function test_get_authorization_success() {

@@ -63,11 +63,10 @@ export function* getDispute( id ) {
 		const result = yield apiFetch( { path } );
 		yield updateDispute( result );
 	} catch ( e ) {
-		yield controls.dispatch(
-			'core/notices',
-			'createErrorNotice',
-			__( 'Error retrieving dispute.', 'woocommerce-payments' )
-		);
+		// Intentionally no error notice here: the only consumer is the dispute
+		// notification redirect shim, which recovers by sending the merchant to
+		// the disputes list. A global "Error retrieving dispute" snackbar on the
+		// way there would be misleading.
 		yield updateErrorForDispute( id, undefined, e );
 	}
 }

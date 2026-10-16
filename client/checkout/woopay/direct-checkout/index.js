@@ -54,7 +54,8 @@ const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
  * Add an event listener to the mini cart checkout button.
  */
 const addMiniCartEventListener = () => {
-	const checkoutButton = WooPayDirectCheckout.getMiniCartProceedToCheckoutButton();
+	const checkoutButton =
+		WooPayDirectCheckout.getMiniCartProceedToCheckoutButton();
 	handleWooPayDirectCheckout( [ checkoutButton ] );
 };
 
@@ -62,7 +63,8 @@ const addMiniCartEventListener = () => {
  * Add an event listener to the footer mini cart checkout button.
  */
 const addFooterCartEventListener = () => {
-	const checkoutButton = WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton();
+	const checkoutButton =
+		WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton();
 	handleWooPayDirectCheckout( [ checkoutButton ] );
 };
 
@@ -249,7 +251,8 @@ window.addEventListener( 'load', async () => {
 
 	WooPayDirectCheckout.init();
 
-	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+	isThirdPartyCookieEnabled =
+		await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 
 	await WooPayDirectCheckout.initPostMessageTimeout();
 
@@ -290,7 +293,8 @@ jQuery( ( $ ) => {
 
 		// When "updated_cart_totals" is triggered, the classic 'Proceed to Checkout' button is
 		// re-rendered. So, the click-event listener needs to be re-attached to the new button.
-		const checkoutButton = WooPayDirectCheckout.getClassicProceedToCheckoutButton();
+		const checkoutButton =
+			WooPayDirectCheckout.getClassicProceedToCheckoutButton();
 		handleWooPayDirectCheckout( [ checkoutButton ] );
 	} );
 } );

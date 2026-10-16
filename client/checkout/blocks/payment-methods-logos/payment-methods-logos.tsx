@@ -30,12 +30,10 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 	breakpointConfigs = breakpointConfigsDefault,
 } ) => {
 	const [ maxShownElements, setMaxShownElements ] = useState( maxElements );
-	const [
-		popoverAnchor,
-		setPopoverAnchor,
-	] = useState< HTMLDivElement | null >( null );
+	const [ popoverAnchor, setPopoverAnchor ] =
+		useState< HTMLDivElement | null >( null );
 	const [ popoverOpen, setPopoverOpen ] = useState( false );
-	const [ shouldHavePopover, setShouldHavePopover ] = useState( false );
+	const shouldHavePopover = paymentMethods.length > maxShownElements;
 
 	const togglePopover = () => setPopoverOpen( ! popoverOpen );
 
@@ -109,10 +107,6 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 			buttonRef.current = popoverAnchor;
 		}
 	}, [ popoverAnchor ] );
-
-	useEffect( () => {
-		setShouldHavePopover( paymentMethods.length > maxShownElements );
-	}, [ maxShownElements, paymentMethods.length ] );
 
 	return (
 		<>

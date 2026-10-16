@@ -12,6 +12,25 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
  * Class Note_Multi_Currency_Available_Test tests.
  */
 class Note_Multi_Currency_Available_Test extends WCPAY_UnitTestCase {
+	/**
+	 * The account the note class held before the test.
+	 *
+	 * @var MultiCurrencyAccountInterface|null
+	 */
+	private $original_account;
+
+	public function set_up() {
+		parent::set_up();
+
+		$this->original_account = $this->get_account_property()->getValue();
+	}
+
+	public function tear_down() {
+		$this->get_account_property()->setValue( null, $this->original_account );
+
+		parent::tear_down();
+	}
+
 	public function test_removes_note_on_extension_deactivation() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			// Trigger WCPay extension deactivation callback.
@@ -73,5 +92,12 @@ class Note_Multi_Currency_Available_Test extends WCPAY_UnitTestCase {
 		NoteMultiCurrencyAvailable::possibly_add_note();
 
 		$this->assertSame( true, NoteMultiCurrencyAvailable::note_exists() );
+	}
+
+	private function get_account_property(): ReflectionProperty {
+		$property = new ReflectionProperty( NoteMultiCurrencyAvailable::class, 'account' );
+		$property->setAccessible( true );
+
+		return $property;
 	}
 }

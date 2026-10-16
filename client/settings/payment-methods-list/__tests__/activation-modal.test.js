@@ -56,8 +56,9 @@ describe( 'Activation Modal', () => {
 	};
 
 	it( 'matches the snapshot', () => {
-		const container = renderActivationModal( [ 'company.tax_id' ] )
-			.baseElement;
+		const container = renderActivationModal( [
+			'company.tax_id',
+		] ).baseElement;
 		expect( container ).toMatchSnapshot();
 	} );
 
@@ -79,9 +80,9 @@ describe( 'Activation Modal', () => {
 	it( 'triggers the onClose event on close button click', async () => {
 		renderActivationModal( [] );
 		const closeButton = screen.queryByRole( 'button', { name: 'Cancel' } );
-		expect( mockOnClose ).not.toBeCalled();
+		expect( mockOnClose ).not.toHaveBeenCalled();
 		await user.click( closeButton );
-		expect( mockOnClose ).toBeCalled();
+		expect( mockOnClose ).toHaveBeenCalled();
 	} );
 
 	it( 'triggers the onConfirmClose event on confirm button click', async () => {
@@ -89,8 +90,8 @@ describe( 'Activation Modal', () => {
 		const confirmButton = screen.queryByRole( 'button', {
 			name: 'Continue',
 		} );
-		expect( mockOnConfirm ).not.toBeCalled();
+		expect( mockOnConfirm ).not.toHaveBeenCalled();
 		await user.click( confirmButton );
-		expect( mockOnConfirm ).toBeCalled();
+		expect( mockOnConfirm ).toHaveBeenCalled();
 	} );
 } );

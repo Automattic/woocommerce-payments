@@ -33,16 +33,15 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 	const googlePayType =
 		buttonSettings?.type === 'default'
 			? 'plain'
-			: buttonSettings?.type ?? 'buy';
+			: ( buttonSettings?.type ?? 'buy' );
 
 	const applePayType =
 		buttonSettings?.type === 'default'
 			? 'plain'
-			: buttonSettings?.type ?? 'plain';
+			: ( buttonSettings?.type ?? 'plain' );
 
-	const isGoogleApplePayEnabled = enabledMethods.includes(
-		'payment_request'
-	);
+	const isGoogleApplePayEnabled =
+		enabledMethods.includes( 'payment_request' );
 
 	return {
 		paymentMethods: {

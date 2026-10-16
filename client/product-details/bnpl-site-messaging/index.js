@@ -147,9 +147,8 @@ export const initializeBnplSiteMessaging = async () => {
 			if ( isCart ) {
 				paymentMessageContainer.classList.add( 'ready' );
 				// An element that won't be removed with the cart total update.
-				const cartCollaterals = document.querySelector(
-					'.cart-collaterals'
-				);
+				const cartCollaterals =
+					document.querySelector( '.cart-collaterals' );
 				const wcBnplHeight = getComputedStyle( cartCollaterals )
 					.getPropertyValue( '--wc-bnpl-height' )
 					.trim();
@@ -170,9 +169,8 @@ export const initializeBnplSiteMessaging = async () => {
 					const pmmeMarginBottom = parseFloat( bottomMargin );
 					const pmmeTotalHeight = pmmeHeight + pmmeMarginBottom;
 
-					const pmmeContainerComputedStyle = window.getComputedStyle(
-						pmmeContainer
-					);
+					const pmmeContainerComputedStyle =
+						window.getComputedStyle( pmmeContainer );
 					const pmmeContainerHeight = parseFloat(
 						pmmeContainerComputedStyle.height
 					);

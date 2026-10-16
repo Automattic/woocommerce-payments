@@ -8,9 +8,8 @@ export function useStripeAsync( api, forceAccountRequest = false ) {
 
 	useEffect( () => {
 		( async () => {
-			const initializedStripe = await api.getStripe(
-				forceAccountRequest
-			);
+			const initializedStripe =
+				await api.getStripe( forceAccountRequest );
 			setStripe( initializedStripe );
 		} )();
 	}, [ api, forceAccountRequest ] );

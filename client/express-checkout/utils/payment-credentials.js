@@ -2,8 +2,8 @@
  * Creates a payment credential (either confirmation token or payment method)
  * based on the `useConfirmationTokens` argument.
  *
- * @param {Object} stripe The Stripe instance.
- * @param {Object} elements The Stripe Elements instance.
+ * @param {Object}  stripe                The Stripe instance.
+ * @param {Object}  elements              The Stripe Elements instance.
  * @param {boolean} useConfirmationTokens Whether to use confirmation tokens.
  * @throws The Stripe error if credential creation fails.
  */
@@ -13,10 +13,8 @@ export async function createPaymentCredential(
 	useConfirmationTokens
 ) {
 	if ( useConfirmationTokens ) {
-		const {
-			confirmationToken,
-			error,
-		} = await stripe.createConfirmationToken( { elements } );
+		const { confirmationToken, error } =
+			await stripe.createConfirmationToken( { elements } );
 		if ( error ) {
 			throw error;
 		}

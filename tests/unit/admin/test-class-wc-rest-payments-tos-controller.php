@@ -60,7 +60,6 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_account                = $this->createMock( WC_Payments_Account::class );
 		$mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
-		$mock_db_cache                     = $this->createMock( Database_Cache::class );
 		$mock_session_service              = $this->createMock( WC_Payments_Session_Service::class );
 		$order_service                     = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$customer_service                  = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $mock_session_service, $order_service );

@@ -7,7 +7,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'data/constants';
+import { NAMESPACE } from 'wcpay/data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
 import { Country, FinalizeOnboardingResponse } from './types';
@@ -36,7 +36,7 @@ export const getBusinessTypes = (): Country[] => {
 					description: businessTypeDescriptionStrings[ country.key ]
 						? businessTypeDescriptionStrings[ country.key ][
 								type.key
-						  ]
+							]
 						: businessTypeDescriptionStrings.generic[ type.key ],
 				} ) ),
 			} ) )
@@ -95,18 +95,14 @@ export const getMccsFlatList = (): ListItem[] => {
 
 	return normalizedData.reduce( ( acc, group ): ListItem[] => {
 		const groupItems =
-			group.items?.map(
-				( item ): ListItem => {
-					return {
-						key: item.id,
-						name: item.title,
-						group: group.id,
-						context: item?.keywords
-							? item.keywords.join( ' ' )
-							: '',
-					};
-				}
-			) || [];
+			group.items?.map( ( item ): ListItem => {
+				return {
+					key: item.id,
+					name: item.title,
+					group: group.id,
+					context: item?.keywords ? item.keywords.join( ' ' ) : '',
+				};
+			} ) || [];
 
 		return [
 			...acc,

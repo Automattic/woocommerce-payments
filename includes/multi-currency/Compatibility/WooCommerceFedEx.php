@@ -43,40 +43,40 @@ class WooCommerceFedEx extends BaseCompatibility {
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param bool $return Whether to convert the product's price or not. Default is true.
+	 * @param bool $should_convert Whether to convert the product's price or not. Default is true.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( bool $return ): bool {
+	public function should_convert_product_price( bool $should_convert ): bool {
 		// If it's already false, return it.
-		if ( ! $return ) {
-			return $return;
+		if ( ! $should_convert ) {
+			return $should_convert;
 		}
 
 		if ( $this->utils->is_call_in_backtrace( self::WC_SHIPPING_FEDEX_CALLS ) ) {
 			return false;
 		}
 
-		return $return;
+		return $should_convert;
 	}
 
 	/**
 	 * Determine whether to return the store currency or not.
 	 *
-	 * @param bool $return Whether to return the store currency or not.
+	 * @param bool $should_return Whether to return the store currency or not.
 	 *
 	 * @return bool
 	 */
-	public function should_return_store_currency( bool $return ): bool {
+	public function should_return_store_currency( bool $should_return ): bool {
 		// If it's already true, return it.
-		if ( $return ) {
-			return $return;
+		if ( $should_return ) {
+			return $should_return;
 		}
 
 		if ( $this->utils->is_call_in_backtrace( self::WC_SHIPPING_FEDEX_CALLS ) ) {
 			return true;
 		}
 
-		return $return;
+		return $should_return;
 	}
 }

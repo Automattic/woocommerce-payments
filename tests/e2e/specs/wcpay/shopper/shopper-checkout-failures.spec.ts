@@ -51,9 +51,8 @@ test.describe(
 			await waitForBanner( 'Error: Your card was declined.' );
 
 			// Verify the failed order has a note about the decline in WC admin.
-			const { merchantPage, merchantContext } = await getMerchant(
-				browser
-			);
+			const { merchantPage, merchantContext } =
+				await getMerchant( browser );
 			try {
 				await merchantPage.goto(
 					'/wp-admin/admin.php?page=wc-orders&status=wc-failed',
@@ -99,12 +98,11 @@ test.describe(
 			);
 
 			const stripeFrame = await frameHandle.contentFrame();
-			const cvcErrorText = await stripeFrame.locator(
-				'p#Field-cvcError'
-			);
+			const cvcErrorText =
+				await stripeFrame.locator( 'p#Field-cvcError' );
 
 			await expect( cvcErrorText ).toHaveText(
-				'Your card\u2019s security code is incomplete.'
+				'Your security code is incomplete.'
 			);
 		} );
 
@@ -167,7 +165,7 @@ test.describe(
 				'p#Field-numberError'
 			);
 
-			expect( numberErrorText ).toHaveText(
+			await expect( numberErrorText ).toHaveText(
 				'Your card number is invalid.'
 			);
 		} );
@@ -184,6 +182,42 @@ test.describe(
 			await waitForBanner(
 				'We are unable to authenticate your payment method. Please choose a different payment method and try again.'
 			);
+		} );
+	}
+);
+
+test.describe(
+	'Shopper > Checkout > Retry after failure without page refresh',
+	{ tag: '@critical' },
+	() => {
+		let shopperPage: Page;
+		let browser: Browser;
+
+		test.beforeAll( async ( { browser: b } ) => {
+			browser = b;
+			shopperPage = ( await getShopper( browser ) ).shopperPage;
+			await shopper.emptyCart( shopperPage );
+			await shopper.addToCartFromShopPage( shopperPage );
+		} );
+
+		test( 'should successfully complete order after retrying with a valid card without refreshing the page', async () => {
+			await shopper.setupCheckout( shopperPage );
+			await shopper.selectPaymentMethod( shopperPage );
+
+			// First attempt: declined card.
+			await shopper.fillCardDetails( shopperPage, config.cards.declined );
+			await shopper.placeOrder( shopperPage );
+			await expect(
+				shopperPage.getByText( 'Error: Your card was declined.' )
+			).toBeVisible();
+
+			// Second attempt: valid card, same page, no refresh.
+			// Regression scenario from issue #160 / PR #133.
+			await shopper.fillCardDetails( shopperPage, config.cards.basic );
+			await shopper.placeOrder( shopperPage );
+			await expect(
+				shopperPage.getByText( 'Order received' ).first()
+			).toBeVisible();
 		} );
 	}
 );

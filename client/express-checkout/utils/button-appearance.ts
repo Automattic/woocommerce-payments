@@ -5,8 +5,7 @@ import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 import { getExpressCheckoutData } from './express-checkout-data';
 
 export type ButtonAttributesType =
-	| { height: string; borderRadius: string }
-	| undefined;
+	{ height: string; borderRadius: string } | undefined;
 
 /**
  * Returns the appearance settings for the Express Checkout buttons.

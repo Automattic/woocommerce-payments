@@ -14,7 +14,7 @@ export const ReasonsNoShipping = [
  * 1. The product type is 'physical_product'
  * 2. The dispute reason is not in the ReasonsNoShipping list
  *
- * @param reason - The dispute reason
+ * @param reason      - The dispute reason
  * @param productType - The product type (defaults to empty string)
  * @return true if shipping information is needed, false otherwise
  */

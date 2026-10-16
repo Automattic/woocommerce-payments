@@ -45,7 +45,7 @@ export const FileUploadControl = ( {
 	uploadButtonLabel,
 	type = 'file',
 }: FileUploadControlProps ): JSX.Element => {
-	const hasError = ( error && 0 < error.length ) || false;
+	const hasError = ( error && error.length > 0 ) || false;
 
 	const IconType = type === 'image' ? ImageIcon : AddOutlineIcon;
 	const Icon = isDone && ! hasError ? CheckmarkIcon : IconType;
@@ -59,10 +59,9 @@ export const FileUploadControl = ( {
 		// connection or general error or just need to select it again.
 		// This workaround is useful until we update @wordpress/components to a
 		// version the supports this: https://github.com/WordPress/gutenberg/issues/39267
-		const fileInput:
-			| HTMLInputElement
-			| null
-			| undefined = ( event.target as HTMLButtonElement )
+		const fileInput: HTMLInputElement | null | undefined = (
+			event.target as HTMLButtonElement
+		 )
 			.closest( '.components-form-file-upload' )
 			?.querySelector( 'input[type="file"]' );
 

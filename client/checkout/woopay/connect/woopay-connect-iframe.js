@@ -43,12 +43,12 @@ export const WooPayConnectIframe = () => {
 	}, [] );
 
 	useEffect( () => {
-		if ( ! iframeRef.current ) {
+		if ( ! iframeUrl || ! iframeRef.current ) {
 			return;
 		}
 
 		const iframe = iframeRef.current;
-		iframe.addEventListener( 'load', () => {
+		const onLoad = () => {
 			setConnectIframeInjectedState( INJECTED_STATE.INJECTED );
 
 			window.dispatchEvent(
@@ -65,8 +65,17 @@ export const WooPayConnectIframe = () => {
 					},
 				} )
 			);
-		} );
+		};
+		iframe.addEventListener( 'load', onLoad );
+
+		return () => {
+			iframe.removeEventListener( 'load', onLoad );
+		};
 	}, [ iframeUrl ] );
+
+	if ( ! iframeUrl ) {
+		return null;
+	}
 
 	return (
 		<iframe

@@ -81,10 +81,8 @@ export const CurrencySelect: React.FC< {
 	depositCurrencies: string[];
 } > = ( { depositCurrencies } ) => {
 	const currencyOptions = depositCurrencies.map( getCurrencyOption );
-	const {
-		selectedCurrency,
-		setSelectedCurrency,
-	} = useSelectedCurrencyWithDefault( depositCurrencies );
+	const { selectedCurrency, setSelectedCurrency } =
+		useSelectedCurrencyWithDefault( depositCurrencies );
 
 	return (
 		<InlineLabelSelect

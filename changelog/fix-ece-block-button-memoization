@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Stop rebuilding the Express Checkout block button's Stripe options on renders that don't change them.

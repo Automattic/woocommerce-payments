@@ -15,7 +15,7 @@ import {
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from 'settings/phone-input';
+import PhoneNumberInput from 'settings/phone-input/lazy';
 import { getConfig } from 'utils/checkout';
 import { buildAjaxURL } from 'utils/express-checkout';
 import AdditionalInformation from './additional-information';
@@ -30,9 +30,8 @@ import './style.scss';
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const errorId = 'invalid-woopay-phone-number';
 
-	const { setValidationErrors, clearValidationError } = useDispatch(
-		VALIDATION_STORE_KEY
-	);
+	const { setValidationErrors, clearValidationError } =
+		useDispatch( VALIDATION_STORE_KEY );
 
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
 		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
@@ -51,9 +50,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	);
 
 	const isRegisteredUser = useWooPayUser();
-	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
-		isBlocksCheckout
-	);
+	const { isWCPayChosen, isNewPaymentTokenChosen } =
+		useSelectedPaymentMethod( isBlocksCheckout );
 
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
 	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
@@ -127,7 +125,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						woopay_user_phone_field: {
 							full: phoneNumber,
 						},
-				  };
+					};
 
 			request(
 				buildAjaxURL(
@@ -155,6 +153,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			setPhoneNumber( getPhoneFieldValue() );
 		} else {
 			setPhoneNumber( '' );
+			onPhoneValidationChange( null );
+			clearValidationError( errorId );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -183,10 +183,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 	useEffect( () => {
 		if ( ! isSaveDetailsChecked ) {
-			clearValidationError( errorId );
-			if ( isPhoneValid !== null ) {
-				onPhoneValidationChange( null );
-			}
 			return;
 		}
 
@@ -380,8 +376,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 									( isPhoneNumberTouched.current = true )
 								}
 								inputProps={ {
-									name:
-										'woopay_user_phone_field[no-country-code]',
+									name: 'woopay_user_phone_field[no-country-code]',
 								} }
 								isBlocksCheckout={ isBlocksCheckout }
 							/>

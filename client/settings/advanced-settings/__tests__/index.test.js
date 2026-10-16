@@ -14,9 +14,9 @@ import {
 	useWCPaySubscriptions,
 	useDevMode,
 	useDebugLog,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data/settings', () => ( {
 	useSettings: jest.fn(),
 	useMultiCurrency: jest.fn(),
 	useWCPaySubscriptions: jest.fn(),

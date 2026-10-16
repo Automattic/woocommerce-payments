@@ -12,7 +12,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 
-import './style.scss';
 import CardNotice from 'wcpay/components/card-notice';
 import Loadable from 'wcpay/components/loadable';
 import { Charge } from 'wcpay/types/charges';
@@ -55,11 +54,11 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 						? __(
 								'It has been refunded and is not a subject for disputes.',
 								'woocommerce-payments'
-						  )
+							)
 						: __(
 								'Investigate this purchase and refund the transaction as needed.',
 								'woocommerce-payments'
-						  ) }
+							) }
 				</CardNotice>
 			</Loadable>
 		</>
