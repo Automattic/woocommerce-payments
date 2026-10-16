@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Keep Apple Pay and Google Pay working on product pages served from a full-page cache after their nonces expired, and after a new account was created but the payment failed.

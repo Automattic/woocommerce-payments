@@ -81,7 +81,8 @@ jobs:
   slack-notification:
     name: "Send notification to Slack"
     needs: [check-code-freeze, create-release-pr]
-    if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-id ) }}
+    # Ping even when only the develop sync failed: the release branch and PR still exist.
+    if: ${{ !cancelled() && needs.create-release-pr.outputs.release-pr-id && ! inputs.skipSlackPing }}
     runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}

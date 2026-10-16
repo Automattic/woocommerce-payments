@@ -22,6 +22,8 @@ jest.mock( 'wcpay/utils/wc-settings', () => ( {
 async function addAdvancedFilter( filter: string ) {
 	await user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 	await user.click( screen.getByRole( 'button', { name: filter } ) );
+	// Let AdvancedFilters' delayed focus on the new filter run before the test moves on.
+	await act( () => new Promise( ( resolve ) => setTimeout( resolve ) ) );
 }
 
 async function addCurrencyFilter( filter: string ) {
