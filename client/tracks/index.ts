@@ -66,6 +66,11 @@ export const shopperEventsFlushDelay = 2000;
 export const shopperEventsMaxWait = 5000;
 // Keep in sync with `WooPay_Tracker::MAX_BATCHED_EVENTS`.
 export const maxBatchedShopperEvents = 20;
+// Sent right away. Checkout can log a guest in when it creates their account, and a request
+// sent after that fails the nonce check, because the nonce was created for the guest.
+const immediateShopperEvents: ShopperEvent[] = [
+	'checkout_place_order_button_click',
+];
 
 interface ShopperEventsQueue {
 	events: { name: ShopperEvent; properties: Record< string, unknown > }[];
@@ -158,7 +163,10 @@ export const recordUserEvent = (
 		} );
 	}
 
-	if ( queue.events.length >= maxBatchedShopperEvents ) {
+	if (
+		queue.events.length >= maxBatchedShopperEvents ||
+		immediateShopperEvents.includes( eventName )
+	) {
 		flushShopperEvents();
 		return;
 	}

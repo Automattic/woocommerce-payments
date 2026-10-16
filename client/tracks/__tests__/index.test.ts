@@ -101,6 +101,19 @@ describe( 'recordUserEvent', () => {
 		).toHaveLength( 20 );
 	} );
 
+	it( 'sends the place order click right away, with the events queued before it', () => {
+		recordUserEvent( 'checkout_page_view' );
+		recordUserEvent( 'checkout_place_order_button_click' );
+
+		expect( fetchMock ).toHaveBeenCalledTimes( 1 );
+		expect( getSentEvents( fetchMock.mock.calls[ 0 ][ 1 ].body ) ).toEqual(
+			[
+				{ name: 'checkout_page_view', properties: {} },
+				{ name: 'checkout_place_order_button_click', properties: {} },
+			]
+		);
+	} );
+
 	it( 'sends queued events with a beacon when the page is hidden', () => {
 		const sendBeacon = jest.fn< boolean, [ string, FormData ] >(
 			() => true
@@ -109,14 +122,14 @@ describe( 'recordUserEvent', () => {
 			value: sendBeacon,
 			configurable: true,
 		} );
-		recordUserEvent( 'checkout_place_order_button_click' );
+		recordUserEvent( 'cart_page_view' );
 
 		window.dispatchEvent( new Event( 'pagehide' ) );
 
 		expect( sendBeacon ).toHaveBeenCalledTimes( 1 );
 		expect( fetchMock ).not.toHaveBeenCalled();
 		expect( getSentEvents( sendBeacon.mock.calls[ 0 ][ 1 ] ) ).toEqual( [
-			{ name: 'checkout_place_order_button_click', properties: {} },
+			{ name: 'cart_page_view', properties: {} },
 		] );
 	} );
 
