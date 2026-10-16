@@ -118,6 +118,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
 
+	const PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE = 'upe_process_redirect_retryable_decline';
+
+	/**
+	 * Payment provider error code and decline code combinations after which the customer
+	 * can retry the payment with a different payment method, so the order is left in
+	 * pending status.
+	 *
+	 * @type array<string, string[]>
+	 */
+	const RETRYABLE_DECLINE_CODES = [
+		'payment_intent_authentication_failure' => [
+			'klarna_payment_declined',
+		],
+		'payment_method_provider_decline'       => [
+			'partner_high_risk_customer',
+			'partner_generic_decline',
+		],
+	];
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -2389,9 +2408,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! empty( $error ) ) {
 				Logger::log( 'Error when processing payment: ' . $error['message'] );
+				$error_code = $this->is_retryable_decline( $error )
+					? self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE
+					: 'upe_payment_intent_error';
 				throw new Process_Payment_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-					'upe_payment_intent_error'
+					$error_code
 				);
 			} else {
 				$payment_method = $this->get_selected_payment_method( $payment_method_type );
@@ -2445,9 +2467,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
+			$is_retryable_decline =
+				$e instanceof Process_Payment_Exception
+				&& self::PROCESS_REDIRECT_RETRYABLE_DECLINE_ERROR_CODE === $e->get_error_code();
+
+			if ( $is_retryable_decline && ! empty( $error ) ) {
+				// The payment provider declined the payment, but the customer can retry with a
+				// different payment method, so the order is left pending and the provider's error
+				// details are recorded for the merchant.
+				$message = sprintf(
+					/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
+					__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
+					esc_html( $error['message'] ?? '' ),
+					esc_html( $error['decline_code'] ?? '' )
+				);
+				if ( ! empty( $error['doc_url'] ) ) {
+					$message .= ' ' . sprintf(
+						/* translators: %1$s: a URL with more information about the declined payment. */
+						__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
+						esc_url( $error['doc_url'] )
+					);
+				}
+				$note = $this->order_service->get_payment_failure_note( $order, $intent_id, $charge_id ?? '', $message );
+				// The webhook may have already recorded the same failure, so don't duplicate the note.
+				if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
+					$order->add_order_note( $note );
+				}
+			}
+
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
 			// Because the outcome of the payment intent is for another order, not for the order processed here.
-			if ( ! $is_order_id_mismatched_exception ) {
+			// Retryable declines also leave the order pending so the customer can try a different payment method.
+			if ( ! $is_order_id_mismatched_exception && ! $is_retryable_decline ) {
 				// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
 				$status    = $status ?? null;
 				$charge_id = $charge_id ?? null;
@@ -2459,13 +2510,43 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			wc_add_notice( WC_Payments_Utils::get_filtered_error_message( $e ), 'error' );
 
-			$redirect_url = wc_get_checkout_url();
-			if ( $is_order_id_mismatched_exception ) {
-				$redirect_url = add_query_arg( self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE, 'yes', $redirect_url );
+			if ( $is_retryable_decline ) {
+				// Send the customer to the pay-for-order page so they can retry with a different payment method.
+				$redirect_url = $order->get_checkout_payment_url();
+			} else {
+				$redirect_url = wc_get_checkout_url();
+				if ( $is_order_id_mismatched_exception ) {
+					$redirect_url = add_query_arg( self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE, 'yes', $redirect_url );
+				}
 			}
-			wp_safe_redirect( $redirect_url );
-			exit;
+			$this->redirect_and_exit( $redirect_url );
 		}
+	}
+
+	/**
+	 * Redirects to the given URL and exits.
+	 *
+	 * @param string $url The URL to redirect to.
+	 */
+	protected function redirect_and_exit( string $url ): void {
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
+	 * Whether a redirect payment error is a retryable decline, i.e. the payment provider
+	 * declined the payment but the customer can pay with a different payment method.
+	 *
+	 * @param array $error The last payment/setup error of the intent.
+	 *
+	 * @return bool
+	 */
+	protected function is_retryable_decline( array $error ): bool {
+		$code         = $error['code'] ?? '';
+		$decline_code = $error['decline_code'] ?? '';
+
+		return isset( self::RETRYABLE_DECLINE_CODES[ $code ] )
+			&& in_array( $decline_code, self::RETRYABLE_DECLINE_CODES[ $code ], true );
 	}
 
 	/**

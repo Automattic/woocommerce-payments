@@ -860,6 +860,26 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests the content of the payment failure note generated for an order.
+	 */
+	public function test_get_payment_failure_note() {
+		// Arrange: Create the intent, get the charge, and set an additional failed message.
+		$intent  = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
+		$charge  = $intent->get_charge();
+		$message = 'This is the test failed message.';
+
+		// Act: Generate the payment failure note.
+		$note = $this->order_service->get_payment_failure_note( $this->order, $intent->get_id(), $charge->get_id(), $message );
+
+		// Assert: The note follows the same format as other payment failure notes.
+		$this->assertStringContainsString( 'A payment of', $note );
+		$this->assertStringContainsString( '50.00', $note );
+		$this->assertStringContainsString( 'failed</strong> using WooPayments', $note );
+		$this->assertStringContainsString( $intent->get_id(), $note );
+		$this->assertStringContainsString( $message, $note );
+	}
+
+	/**
 	 * Method `mark_payment_failed` should exit if the order status is already failed.
 	 */
 	public function test_mark_payment_failed_exits_on_existing_order_status_failed() {

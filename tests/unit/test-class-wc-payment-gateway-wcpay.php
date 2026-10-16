@@ -1658,6 +1658,370 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
 	}
 
+	/**
+	 * Builds a gateway mock that captures the redirect URL instead of exiting.
+	 *
+	 * @param string|null $redirect_url Filled with the redirected URL, passed by reference.
+	 *
+	 * @return WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private function get_gateway_mock_intercepting_redirect( &$redirect_url ) {
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->payment_methods['card'],
+					[ $this->payment_methods ],
+					$this->order_service,
+					$this->mock_dpps,
+					$this->mock_localization_service,
+					$this->mock_fraud_service,
+					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
+				]
+			)
+			->onlyMethods( [ 'redirect_and_exit' ] )
+			->getMock();
+
+		$mock_gateway->expects( $this->once() )
+			->method( 'redirect_and_exit' )
+			->willReturnCallback(
+				function ( $url ) use ( &$redirect_url ) {
+					$redirect_url = $url;
+				}
+			);
+
+		return $mock_gateway;
+	}
+
+	/**
+	 * Runs process_redirect_payment() with an intent carrying the given last payment error,
+	 * capturing the redirect URL instead of exiting.
+	 *
+	 * @param array       $last_payment_error The last payment error of the intent.
+	 * @param string|null $redirect_url       Filled with the redirected URL, passed by reference.
+	 *
+	 * @return WC_Order The order after processing.
+	 */
+	private function process_redirect_payment_with_last_error( array $last_payment_error, &$redirect_url ): WC_Order {
+		$intent_id           = 'pi_mock';
+		$save_payment_method = false;
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'metadata'           => [ 'order_id' => (string) $order_id ],
+				'last_payment_error' => $last_payment_error,
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_mock' ) );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		return wc_get_order( $order_id );
+	}
+
+	/**
+	 * Gets the combined text of all notes of an order.
+	 *
+	 * @param int $order_id The order ID.
+	 *
+	 * @return string
+	 */
+	private function get_order_notes_text( int $order_id ): string {
+		return implode( "\n", wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' ) );
+	}
+
+	public function test_process_redirect_payment_with_retryable_decline_keeps_order_pending() {
+		$error_code    = 'payment_intent_authentication_failure';
+		$error_message = 'The customer declined the payment.';
+		$decline_code  = 'klarna_payment_declined';
+		$doc_url       = 'https://docs.example.com/klarna-decline';
+
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => $error_code,
+				'message'      => $error_message,
+				'decline_code' => $decline_code,
+				'doc_url'      => $doc_url,
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The payment provider's error details are recorded in an order note, in the same
+		// format as other payment failure notes.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '50.00', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'pi_mock', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The customer declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( 'Decline code: <code>klarna_payment_declined</code>', $note_text );
+		$this->assertStringContainsString( '<a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>', $note_text );
+
+		// The customer is sent to the pay-for-order page to retry with a different payment method.
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+
+		// A customer-facing error notice is shown.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $notices['error'] );
+	}
+
+	public function test_process_redirect_payment_with_retryable_decline_and_no_doc_url() {
+		$error_code    = 'payment_intent_authentication_failure';
+		$error_message = 'The customer declined the payment.';
+		$decline_code  = 'klarna_payment_declined';
+
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => $error_code,
+				'message'      => $error_message,
+				'decline_code' => $decline_code,
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The order note records the provider's message and decline code, without a doc URL.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The customer declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( 'Decline code: <code>klarna_payment_declined</code>', $note_text );
+		$this->assertStringNotContainsString( 'More information', $note_text );
+
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+	}
+
+	/**
+	 * Data provider for provider decline codes that leave the order pending for a retry.
+	 *
+	 * @return array[] Test cases with the decline code.
+	 */
+	public function retryable_provider_decline_codes_provider(): array {
+		return [
+			'partner high risk customer' => [ 'partner_high_risk_customer' ],
+			'partner generic decline'    => [ 'partner_generic_decline' ],
+		];
+	}
+
+	/**
+	 * Test that provider declines with a retryable decline code keep the order pending,
+	 * so the customer can retry with a different payment method.
+	 *
+	 * @dataProvider retryable_provider_decline_codes_provider
+	 *
+	 * @param string $decline_code The decline code returned by the payment provider.
+	 */
+	public function test_process_redirect_payment_with_provider_decline_keeps_order_pending( string $decline_code ) {
+		$error_code    = 'payment_method_provider_decline';
+		$error_message = 'The payment provider declined the payment.';
+
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error(
+			[
+				'code'         => $error_code,
+				'message'      => $error_message,
+				'decline_code' => $decline_code,
+			],
+			$redirect_url
+		);
+
+		// The order is left pending so the customer can retry with a different payment method.
+		$this->assertEquals( Order_Status::PENDING, $result_order->get_status() );
+
+		// The payment provider's error details are recorded in an order note, in the same
+		// format as other payment failure notes.
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'A payment of', $note_text );
+		$this->assertStringContainsString( '<strong>failed</strong> using WooPayments', $note_text );
+		$this->assertStringContainsString( 'With the following message: <code>The payment provider declined the payment.</code>', $note_text );
+		$this->assertStringContainsString( '<code>' . $decline_code . '</code>', $note_text );
+
+		// The customer is sent to the pay-for-order page to retry with a different payment method.
+		$this->assertEquals( $result_order->get_checkout_payment_url(), $redirect_url );
+
+		// A customer-facing error notice is shown.
+		$notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $notices['error'] );
+	}
+
+	/**
+	 * Data provider for last payment errors that are not retryable declines.
+	 *
+	 * @return array[] Test cases with the last payment error of the intent.
+	 */
+	public function non_retryable_last_payment_errors_provider(): array {
+		return [
+			'unknown provider decline code'                => [
+				[
+					'code'         => 'payment_method_provider_decline',
+					'message'      => 'The payment provider declined the payment.',
+					'decline_code' => 'some_other_decline',
+				],
+			],
+			'klarna decline code with a wrong error code'  => [
+				[
+					'code'         => 'card_error',
+					'message'      => 'The card was declined.',
+					'decline_code' => 'klarna_payment_declined',
+				],
+			],
+			'partner decline code with a wrong error code' => [
+				[
+					'code'         => 'card_error',
+					'message'      => 'The card was declined.',
+					'decline_code' => 'partner_high_risk_customer',
+				],
+			],
+			'generic decline code'                         => [
+				[
+					'message'      => 'The payment could not be processed.',
+					'decline_code' => 'generic_decline',
+				],
+			],
+		];
+	}
+
+	/**
+	 * Test that errors that are not retryable declines keep the previous behavior:
+	 * the order is failed and the customer is sent back to the checkout page.
+	 *
+	 * @dataProvider non_retryable_last_payment_errors_provider
+	 *
+	 * @param array $last_payment_error The last payment error of the intent.
+	 */
+	public function test_process_redirect_payment_with_non_retryable_error_marks_order_failed( array $last_payment_error ) {
+		$redirect_url = null;
+
+		$result_order = $this->process_redirect_payment_with_last_error( $last_payment_error, $redirect_url );
+
+		// Errors that are not retryable declines keep the previous behavior: the order is failed.
+		$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
+
+		$note_text = $this->get_order_notes_text( $result_order->get_id() );
+		$this->assertStringContainsString( 'UPE payment failed', $note_text );
+
+		// The customer is sent back to the checkout page.
+		$this->assertEquals( wc_get_checkout_url(), $redirect_url );
+	}
+
+	/**
+	 * Test that a retryable decline does not duplicate the order note when the customer
+	 * returns from the payment provider's page after the webhook already recorded the failure.
+	 */
+	public function test_process_redirect_payment_with_retryable_decline_does_not_duplicate_the_note() {
+		$intent_id           = 'pi_mock';
+		$save_payment_method = false;
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		wp_get_current_user();
+
+		$redirect_url = null;
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->payment_methods['card'],
+					[ $this->payment_methods ],
+					$this->order_service,
+					$this->mock_dpps,
+					$this->mock_localization_service,
+					$this->mock_fraud_service,
+					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
+				]
+			)
+			->onlyMethods( [ 'redirect_and_exit' ] )
+			->getMock();
+
+		$mock_gateway->expects( $this->exactly( 2 ) )
+			->method( 'redirect_and_exit' )
+			->willReturnCallback(
+				function ( $url ) use ( &$redirect_url ) {
+					$redirect_url = $url;
+				}
+			);
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'metadata'           => [ 'order_id' => (string) $order_id ],
+				'last_payment_error' => [
+					'code'         => 'payment_intent_authentication_failure',
+					'message'      => 'The customer declined the payment.',
+					'decline_code' => 'klarna_payment_declined',
+					'doc_url'      => 'https://docs.example.com/klarna-decline',
+				],
+			]
+		);
+
+		// Each call to process_redirect_payment() sends its own Get_Intention request.
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_mock' ) );
+
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+		$mock_gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		// The note is added only once, and the order is left pending for a retry.
+		$note_text = $this->get_order_notes_text( $order_id );
+		$this->assertSame( 1, substr_count( $note_text, 'A payment of' ) );
+		$this->assertSame( 1, substr_count( $note_text, 'Decline code: <code>klarna_payment_declined</code>' ) );
+		$this->assertEquals( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+	}
+
 	public function test_get_payment_methods_with_post_request_context() {
 		$order               = WC_Helper_Order::create_order();
 		$payment_information = new Payment_Information( 'pm_mock', $order );
