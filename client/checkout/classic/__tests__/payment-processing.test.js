@@ -477,15 +477,15 @@ describe( 'Payment processing', () => {
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
 
+		const nativeSubmit = jest.fn();
 		const mockJqueryForm = {
 			submit: jest.fn(),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-			} ) ),
+			removeClass: jest.fn( () => mockJqueryForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
+			get: jest.fn( () => ( { submit: nativeSubmit } ) ),
 		};
 
 		const checkoutResult = processPayment(
@@ -525,12 +525,11 @@ describe( 'Payment processing', () => {
 
 		const checkoutForm = {
 			submit: jest.fn(),
+			get: jest.fn( () => ( { submit: jest.fn() } ) ),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
@@ -568,12 +567,11 @@ describe( 'Payment processing', () => {
 
 		const checkoutForm = {
 			submit: jest.fn(),
+			get: jest.fn( () => ( { submit: jest.fn() } ) ),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
@@ -607,12 +605,11 @@ describe( 'Payment processing', () => {
 
 		const checkoutForm = {
 			submit: jest.fn(),
+			get: jest.fn( () => ( { submit: jest.fn() } ) ),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
@@ -643,12 +640,11 @@ describe( 'Payment processing', () => {
 
 		const checkoutForm = {
 			submit: jest.fn(),
+			get: jest.fn( () => ( { submit: jest.fn() } ) ),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
 		};
 
@@ -677,12 +673,11 @@ describe( 'Payment processing', () => {
 
 		const addPaymentMethodForm = {
 			submit: jest.fn(),
+			get: jest.fn( () => ( { submit: jest.fn() } ) ),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-			} ) ),
+			removeClass: jest.fn( () => addPaymentMethodForm ),
 			attr: jest.fn().mockReturnValue( 'add_payment_method' ),
 		};
 
@@ -707,16 +702,15 @@ describe( 'Payment processing', () => {
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
 
+		const nativeSubmit = jest.fn();
 		const checkoutForm = {
 			submit: jest.fn(),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-				submit: checkoutForm.submit,
-			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
+			get: jest.fn( () => ( { submit: nativeSubmit } ) ),
 		};
 
 		mockCreatePaymentMethod.mockReturnValue( {
@@ -751,7 +745,7 @@ describe( 'Payment processing', () => {
 			'fingerprint'
 		);
 
-		expect( checkoutForm.submit ).toHaveBeenCalled();
+		expect( nativeSubmit ).toHaveBeenCalled();
 	} );
 
 	test( 'Payment processing adds the error information if payment method fails to be created', async () => {
@@ -765,16 +759,15 @@ describe( 'Payment processing', () => {
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
 
+		const nativeSubmit = jest.fn();
 		const checkoutForm = {
 			submit: jest.fn(),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-				submit: checkoutForm.submit,
-			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
+			get: jest.fn( () => ( { submit: nativeSubmit } ) ),
 		};
 
 		const errorData = {
@@ -819,7 +812,7 @@ describe( 'Payment processing', () => {
 			'fingerprint'
 		);
 
-		expect( checkoutForm.submit ).toHaveBeenCalled();
+		expect( nativeSubmit ).toHaveBeenCalled();
 	} );
 
 	test( 'Add payment method shows the error without submitting when payment method fails to be created', async () => {
@@ -989,16 +982,15 @@ describe( 'Payment processing', () => {
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
 
+		const nativeSubmit = jest.fn();
 		const checkoutForm = {
 			submit: jest.fn(),
 			addClass: jest.fn( () => ( {
 				block: jest.fn(),
 			} ) ),
-			removeClass: jest.fn( () => ( {
-				unblock: jest.fn(),
-				submit: checkoutForm.submit,
-			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
 			attr: jest.fn().mockReturnValue( 'checkout' ),
+			get: jest.fn( () => ( { submit: nativeSubmit } ) ),
 		};
 
 		mockCreatePaymentMethod.mockReturnValue( {
@@ -1020,6 +1012,42 @@ describe( 'Payment processing', () => {
 			} )
 		);
 	} );
+
+	test( 'Form submission uses native DOM submit to avoid re-triggering checkout events', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const nativeSubmit = jest.fn();
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => checkoutForm ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+			get: jest.fn( () => ( { submit: nativeSubmit } ) ),
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			paymentMethod: { id: 'paymentMethodId' },
+		} );
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		// Native DOM submit should be used instead of jQuery submit
+		// to avoid re-triggering WooCommerce checkout event handlers.
+		expect( checkoutForm.get ).toHaveBeenCalledWith( 0 );
+		expect( nativeSubmit ).toHaveBeenCalled();
+		expect( checkoutForm.submit ).not.toHaveBeenCalled();
+	} );
 } );
 
 describe( 'Setup intent creation and confirmation', () => {
@@ -1030,12 +1058,13 @@ describe( 'Setup intent creation and confirmation', () => {
 		const mockJqueryForm = {
 			append: jest.fn(),
 			submit: jest.fn(),
+			get: jest.fn( () => ( { submit: jest.fn() } ) ),
 			addClass: jest.fn( () => {
 				return {
 					block: jest.fn(),
 				};
 			} ),
-			removeClass: jest.fn(),
+			removeClass: jest.fn( () => mockJqueryForm ),
 			unblock: jest.fn(),
 			attr: jest.fn().mockReturnValue( 'add_payment_method' ),
 		};
