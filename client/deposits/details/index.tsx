@@ -320,8 +320,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 } ) => {
 	const { deposit, isLoading } = useDeposit( depositId );
 
-	const isInstantDeposit =
-		! isLoading && deposit && isInstant( deposit );
+	const isInstantDeposit = ! isLoading && deposit && isInstant( deposit );
 
 	return (
 		<Page>
