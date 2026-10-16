@@ -3111,42 +3111,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * The two sets of definitions must agree on the fields, their types and their defaults.
-	 *
-	 * Compares against the translated definitions themselves rather than the merged result:
-	 * array_replace_recursive() fills gaps in a list-valued default from the untranslated copy,
-	 * so comparing against the merge would hide a default that had been shortened in one place
-	 * only. See WOOPMNT-5380.
+	 * Without translations loaded, the untranslated copy must match the translated definitions
+	 * exactly, so the fields do not change shape when `init` runs. See WOOPMNT-5380.
 	 */
 	public function test_untranslated_form_fields_match_translated_definitions() {
 		$untranslated = ( new ReflectionClassConstant( WC_Payment_Gateway_WCPay::class, 'MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS' ) )->getValue();
 		$translated   = $this->call_private_gateway_method( 'get_main_gateway_translated_form_fields' );
 
 		$this->assertSame(
-			array_keys( $translated ),
-			array_keys( $untranslated ),
-			'Both sets should declare the same fields, in the same order.'
+			$translated,
+			$untranslated,
+			'Both sets should be exactly the same in English.'
 		);
-
-		foreach ( $translated as $key => $field ) {
-			foreach ( [ 'type', 'default' ] as $shared_key ) {
-				$this->assertSame(
-					array_key_exists( $shared_key, $field ),
-					array_key_exists( $shared_key, $untranslated[ $key ] ),
-					"Field {$key} should declare {$shared_key} in both sets, or in neither."
-				);
-
-				if ( ! array_key_exists( $shared_key, $field ) ) {
-					continue;
-				}
-
-				$this->assertSame(
-					$field[ $shared_key ],
-					$untranslated[ $key ][ $shared_key ],
-					"Field {$key} should have the same {$shared_key} in both sets."
-				);
-			}
-		}
 	}
 
 	/**

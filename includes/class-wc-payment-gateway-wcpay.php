@@ -110,83 +110,165 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
 
 	/**
-	 * The main gateway's form fields without any translated text.
+	 * The main gateway's form fields in English, without calling the translation functions.
 	 *
 	 * Used by get_main_gateway_form_fields() before `init`, when translations are not available
-	 * yet. Keep the types and defaults here in step with get_main_gateway_translated_form_fields();
-	 * the parity is asserted by WC_Payment_Gateway_WCPay_Test::test_untranslated_form_fields_match_translated_definitions.
+	 * yet. Keep this an exact English copy of get_main_gateway_translated_form_fields(); the two
+	 * are compared by WC_Payment_Gateway_WCPay_Test::test_untranslated_form_fields_match_translated_definitions.
 	 *
 	 * @var array
 	 */
 	private const MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS = [
 		'account_statement_descriptor'      => [
-			'type' => 'account_statement_descriptor',
+			'type'        => 'account_statement_descriptor',
+			'title'       => 'Customer bank statement',
+			'description' => 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">here</a>).',
 		],
 		'manual_capture'                    => [
-			'type'    => 'checkbox',
-			'default' => 'no',
+			'title'       => 'Manual capture',
+			'label'       => 'Issue an authorization on checkout, and capture later.',
+			'type'        => 'checkbox',
+			'description' => 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.',
+			'default'     => 'no',
 		],
 		'saved_cards'                       => [
-			'type'     => 'checkbox',
-			'default'  => 'yes',
-			'desc_tip' => true,
+			'title'       => 'Saved cards',
+			'label'       => 'Enable payment via saved cards',
+			'type'        => 'checkbox',
+			'description' => 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.',
+			'default'     => 'yes',
+			'desc_tip'    => true,
 		],
 		'test_mode'                         => [
-			'type'     => 'checkbox',
-			'default'  => 'no',
-			'desc_tip' => true,
+			'title'       => 'Test mode',
+			'label'       => 'Enable test mode',
+			'type'        => 'checkbox',
+			'description' => 'Simulate transactions using test card numbers.',
+			'default'     => 'no',
+			'desc_tip'    => true,
 		],
 		'enable_logging'                    => [
-			'type'    => 'checkbox',
-			'default' => 'no',
+			'title'       => 'Debug log',
+			'label'       => 'When enabled debug notes will be added to the log.',
+			'type'        => 'checkbox',
+			'description' => '',
+			'default'     => 'no',
 		],
 		'payment_request_details'           => [
-			'type' => 'title',
+			'title'       => 'Payment request buttons',
+			'type'        => 'title',
+			'description' => '',
 		],
 		'payment_request_button_type'       => [
-			'type'    => 'select',
-			'default' => 'default',
+			'title'       => 'Button type',
+			'type'        => 'select',
+			'description' => 'Select the button type you would like to show.',
+			'default'     => 'default',
+			'desc_tip'    => true,
+			'options'     => [
+				'default' => 'Only icon',
+				'buy'     => 'Buy',
+				'donate'  => 'Donate',
+				'book'    => 'Book',
+			],
 		],
 		'payment_request_button_theme'      => [
-			'type'    => 'select',
-			'default' => 'dark',
+			'title'       => 'Button theme',
+			'type'        => 'select',
+			'description' => 'Select the button theme you would like to show.',
+			'default'     => 'dark',
+			'desc_tip'    => true,
+			'options'     => [
+				'dark'          => 'Dark',
+				'light'         => 'Light',
+				'light-outline' => 'Light-Outline',
+			],
 		],
 		'payment_request_button_height'     => [
-			'type'    => 'text',
-			'default' => '44',
+			'title'       => 'Button height',
+			'type'        => 'text',
+			'description' => 'Enter the height you would like the button to be in pixels. Width will always be 100%.',
+			'default'     => '44',
+			'desc_tip'    => true,
 		],
 		'payment_request_button_label'      => [
-			'type'    => 'text',
-			'default' => 'Buy now',
+			'title'       => 'Custom button label',
+			'type'        => 'text',
+			'description' => 'Enter the custom text you would like the button to have.',
+			'default'     => 'Buy now',
+			'desc_tip'    => true,
 		],
 		'payment_request_button_locations'  => [
-			'type'     => 'multiselect',
-			'default'  => [ 'product', 'cart', 'checkout' ],
-			'class'    => 'wc-enhanced-select',
-			'desc_tip' => true,
+			'title'             => 'Button locations',
+			'type'              => 'multiselect',
+			'description'       => 'Select where you would like to display the button.',
+			'default'           => [
+				'product',
+				'cart',
+				'checkout',
+			],
+			'class'             => 'wc-enhanced-select',
+			'desc_tip'          => true,
+			'options'           => [
+				'product'  => 'Product',
+				'cart'     => 'Cart',
+				'checkout' => 'Checkout',
+			],
+			'custom_attributes' => [
+				'data-placeholder' => 'Select pages',
+			],
 		],
 		'upe_enabled_payment_method_ids'    => [
+			'title'   => 'Payments accepted on checkout',
 			'type'    => 'multiselect',
 			'default' => [ 'card' ],
+			'options' => [],
 		],
 		'payment_request_button_size'       => [
-			'type'    => 'select',
-			'default' => 'medium',
+			'title'       => 'Size of the button displayed for Express Checkouts',
+			'type'        => 'select',
+			'description' => 'Select the size of the button.',
+			'default'     => 'medium',
+			'desc_tip'    => true,
+			'options'     => [
+				'small'  => 'Small',
+				'medium' => 'Medium',
+				'large'  => 'Large',
+			],
 		],
-		'platform_checkout_custom_message'  => [
-			'default' => 'By placing this order, you agree to our [terms] and understand our [privacy_policy].',
-		],
+		'platform_checkout_custom_message'  => [ 'default' => 'By placing this order, you agree to our [terms] and understand our [privacy_policy].' ],
 		'express_checkout_product_methods'  => [
+			'title'   => 'Express checkout methods on product page',
 			'type'    => 'multiselect',
 			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+			'options' => [
+				'payment_request' => 'Apple Pay / Google Pay',
+				'woopay'          => 'WooPay',
+				'amazon_pay'      => 'Amazon Pay',
+				'link'            => 'Link',
+			],
 		],
 		'express_checkout_cart_methods'     => [
+			'title'   => 'Express checkout methods on cart page',
 			'type'    => 'multiselect',
 			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+			'options' => [
+				'payment_request' => 'Apple Pay / Google Pay',
+				'woopay'          => 'WooPay',
+				'amazon_pay'      => 'Amazon Pay',
+				'link'            => 'Link',
+			],
 		],
 		'express_checkout_checkout_methods' => [
+			'title'   => 'Express checkout methods on checkout page',
 			'type'    => 'multiselect',
 			'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
+			'options' => [
+				'payment_request' => 'Apple Pay / Google Pay',
+				'woopay'          => 'WooPay',
+				'amazon_pay'      => 'Amazon Pay',
+				'link'            => 'Link',
+			],
 		],
 	];
 
@@ -481,9 +563,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * row does not exist yet (a fresh install), and get_option() does the same for any single
 	 * setting missing from an existing row. Building the labels that early triggers the
 	 * `_load_textdomain_just_in_time` notice, so until `init` has run the fields are returned
-	 * without their translated text. Nothing reads that text before then: the settings screen is
-	 * rendered by the React app, and the REST controllers which expose these fields run on
-	 * `rest_api_init`. The defaults are always present either way.
+	 * in English. Nothing reads their text before then: the settings screen is rendered by the
+	 * React app, and the REST controllers which expose these fields run on `rest_api_init`.
 	 *
 	 * @return array
 	 */
@@ -492,17 +573,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return self::MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS;
 		}
 
-		return array_replace_recursive(
-			self::MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS,
-			$this->get_main_gateway_translated_form_fields()
-		);
+		return $this->get_main_gateway_translated_form_fields();
 	}
 
 	/**
 	 * Returns the main gateway's form fields with their translated text.
 	 *
-	 * Only called once `init` has run, so the translations are available. The types and defaults
-	 * here must stay in step with MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS.
+	 * Only called once `init` has run, so the translations are available. Any change here must
+	 * be copied, in English, to MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS.
 	 *
 	 * @return array
 	 */
