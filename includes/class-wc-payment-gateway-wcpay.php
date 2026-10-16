@@ -1942,12 +1942,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1$s: redacted email address for Link payment method */
-							__( 'Payment method is changed to: <strong>Link ending in %1$s</strong>.', 'woocommerce-payments' ),
+							/* translators: %1$s: Link brand name (Stripe Link or Onelink), %2$s: redacted email address for the Link payment method */
+							__( 'Payment method is changed to: <strong>%1$s ending in %2$s</strong>.', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
 							]
 						),
+						LinkDefinition::get_title( $this->get_account_country() ),
 						$payment_token->get_redacted_email()
 					);
 				} else {
@@ -1979,7 +1980,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				$token_for_title = $payment_information->get_payment_token();
 				if ( $token_for_title instanceof \WC_Payment_Token_WCPay_Link ) {
-					$order->set_payment_method_title( __( 'Link', 'woocommerce-payments' ) );
+					$order->set_payment_method_title( LinkDefinition::get_title( $this->get_account_country() ) );
 				} elseif ( ! $zero_amount_pm_details ) {
 					// Keep the branded title set above when we sourced the card from the payment method;
 					// otherwise fall back to a generic title. WOOPMNT-2882.
@@ -2936,7 +2937,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// this will ensure that the refunds are handled by the correct split gateway class.
 		$order->set_payment_method( $payment_gateway );
 
-		if ( $express_checkout_type ) {
+		// Link is never an Express Checkout Element button; a `card.wallet.type = link` charge comes from the card
+		// form, so it keeps the regular, account-country-aware title (e.g. "Onelink" for GB). The express meta
+		// above is still stored, as the order-received page uses it to render the logo. WOOPMNT-6538.
+		if ( $express_checkout_type && Payment_Method::LINK !== $express_checkout_type ) {
 			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
 			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
 			/**
