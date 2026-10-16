@@ -192,6 +192,22 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $method_name, $result );
 	}
 
+	public function test_show_woocommerce_payments_payment_method_name_shows_link_for_one_off_link_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		WC_Payments::get_order_service()->store_payment_method_details( $order, [ 'type' => 'link' ] );
+		$order->save();
+
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		try {
+			$result = $this->payments_order_success_page->show_woocommerce_payments_payment_method_name( 'Card', $order );
+		} finally {
+			remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		}
+
+		$this->assertStringContainsString( 'alt="Link"', $result );
+	}
+
 	public function test_show_lpm_payment_method_name() {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
