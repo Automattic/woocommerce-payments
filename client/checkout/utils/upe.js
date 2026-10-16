@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { isEmail } from 'wcpay/utils/email-validation';
 
 /**
  * Generates terms for reusable payment methods
@@ -34,6 +35,18 @@ export const isLinkEnabled = ( paymentMethodsConfig ) => {
 		paymentMethodsConfig.link !== undefined &&
 		paymentMethodsConfig.card !== undefined
 	);
+};
+
+/**
+ * Returns the trimmed email when it looks valid enough to pass to Stripe Link.
+ * An empty or half-typed email would make Link look up the wrong customer.
+ *
+ * @param {string} email The email entered at checkout.
+ * @return {string|undefined} The trimmed email, or undefined when it doesn't look valid.
+ */
+export const getLinkEmail = ( email ) => {
+	const trimmedEmail = typeof email === 'string' ? email.trim() : '';
+	return isEmail( trimmedEmail ) ? trimmedEmail : undefined;
 };
 
 /**
