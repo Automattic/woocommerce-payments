@@ -45,7 +45,7 @@ export const WooPayIncompatibilityNotice = () => (
 export const LinkWooPayConflictNotice = () => (
 	<InlineNotice status="warning" isDismissible={ false }>
 		{ sprintf(
-			/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+			/* translators: %s: Payment method name, e.g. "Stripe Link" or "Onelink". */
 			__(
 				"%s and WooPay can't be enabled at the same time. Disable one of them.",
 				'woocommerce-payments'

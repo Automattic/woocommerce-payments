@@ -137,7 +137,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 			{ isStripeLinkEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
 					{ sprintf(
-						/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+						/* translators: %s: Payment method name, e.g. "Stripe Link" or "Onelink". */
 						__(
 							'To enable WooPay, you must first disable %s.',
 							'woocommerce-payments'

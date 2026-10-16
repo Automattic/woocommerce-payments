@@ -76,7 +76,7 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 							! isStripeLinkEnabled &&
 								interpolateComponents( {
 									mixedString: sprintf(
-										/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+										/* translators: %s: Payment method name, e.g. "Stripe Link" or "Onelink". */
 										__(
 											'By enabling this feature, you agree to the ' +
 												'{{stripeLinkTerms}}%s terms{{/stripeLinkTerms}}, ' +
@@ -122,7 +122,7 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 			{ isWooPayEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
 					{ sprintf(
-						/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+						/* translators: %s: Payment method name, e.g. "Stripe Link" or "Onelink". */
 						__(
 							'To enable %s, you must first disable WooPay.',
 							'woocommerce-payments'
