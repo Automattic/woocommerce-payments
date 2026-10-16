@@ -238,6 +238,11 @@ export const placeOrderWCB = async (
 
 	await placeOrderButton.focus();
 	await expect( placeOrderButton ).toBeEnabled();
+	// Payment methods without fields (e.g. Alipay) give the test nothing to
+	// wait on, so it can click before Stripe's Payment Element is ready.
+	await expect(
+		page.locator( '.wcpay-payment-element-skeleton:not(.is-hidden)' )
+	).toHaveCount( 0 );
 
 	await placeOrderButton.click();
 
@@ -799,9 +804,8 @@ export const removeCoupon = async ( page: Page ) => {
 
 	if ( await couponRemovalLink.isVisible() ) {
 		await couponRemovalLink.click();
-		await expect(
-			page.getByText( 'Coupon has been removed.' )
-		).toBeVisible();
+		// Core's removal notice copy differs across WC versions.
+		await expect( couponRemovalLink ).toHaveCount( 0 );
 	}
 };
 
