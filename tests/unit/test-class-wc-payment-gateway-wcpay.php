@@ -648,7 +648,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			],
 			'Link'                   => [
 				'payment_details'  => [ 'type' => 'link' ],
-				'expected_title'   => 'Link',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 			'Link (via card wallet)' => [
@@ -660,7 +660,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						],
 					],
 				],
-				'expected_title'   => 'Link (WooPayments)',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
@@ -720,7 +720,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'Link'       => [
 				'express_type'     => 'link',
 				'stripe_type'      => 'link',
-				'expected_title'   => 'Link (WooPayments)',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 				'payment_details'  => [
 					'type' => 'link',
@@ -917,6 +917,92 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'Google Pay (WooPayments)', $order->get_payment_method_title() );
 		$this->assertEquals( 'google_pay', $order->get_meta( '_wcpay_express_checkout_payment_method' ), 'Meta should remain unchanged' );
+	}
+
+	/**
+	 * Data provider for Link title tests across account countries.
+	 *
+	 * @return array[]
+	 */
+	public function link_title_by_account_country_provider() {
+		$link_charge        = [ 'type' => 'link' ];
+		$link_wallet_charge = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => 'link',
+				],
+			],
+		];
+
+		return [
+			'GB, Link charge'      => [ 'GB', $link_charge, 'Onelink' ],
+			'GB, Link card wallet' => [ 'GB', $link_wallet_charge, 'Onelink' ],
+			'US, Link charge'      => [ 'US', $link_charge, 'Stripe Link' ],
+			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Stripe Link' ],
+		];
+	}
+
+	/**
+	 * Test that every Link charge shape gets the same, account-country-aware title, with no
+	 * express checkout suffix. Link is never offered by the Express Checkout Element.
+	 *
+	 * @dataProvider link_title_by_account_country_provider
+	 *
+	 * @param string $account_country The merchant's account country.
+	 * @param array  $payment_details The payment method details from Stripe.
+	 * @param string $expected_title  The expected payment method title.
+	 */
+	public function test_link_title_uses_account_country( $account_country, $payment_details, $expected_title ) {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( $account_country );
+		$order = WC_Helper_Order::create_order();
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, $payment_details['type'], $payment_details );
+
+		$this->assertSame( $expected_title, $order->get_payment_method_title() );
+		$this->assertSame( 'woocommerce_payments', $order->get_payment_method() );
+	}
+
+	/**
+	 * Test that a Link card wallet charge still records the express checkout meta, which the
+	 * order-received page uses to render the Link logo, even though the title has no suffix.
+	 */
+	public function test_link_card_wallet_keeps_express_checkout_meta() {
+		$order           = WC_Helper_Order::create_order();
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => 'link',
+				],
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertSame( 'link', $order->get_meta( '_wcpay_express_checkout_payment_method' ) );
+	}
+
+	/**
+	 * Test that the express checkout title suffix filter does not apply to Link.
+	 */
+	public function test_express_checkout_title_suffix_filter_skips_link() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', 'link' );
+		$order->save();
+
+		$callback = function () {
+			return 'Custom Suffix';
+		};
+		add_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'link', [ 'type' => 'link' ] );
+
+		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+		$this->assertSame( 'Stripe Link', $order->get_payment_method_title() );
 	}
 
 	/**
@@ -6837,7 +6923,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'type' => 'link',
 					'link' => [ 'country' => '' ],
 				],
-				'Link',
+				'Stripe Link',
 			],
 			'card with wallet' => [
 				[
@@ -6848,7 +6934,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						'wallet' => [ 'type' => 'link' ],
 					],
 				],
-				'Link (WooPayments)',
+				'Stripe Link',
 			],
 		];
 	}

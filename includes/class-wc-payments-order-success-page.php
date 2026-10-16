@@ -249,14 +249,15 @@ class WC_Payments_Order_Success_Page {
 			return 'Payment Request';
 		}
 
-		$icon_url      = $payment_method->get_icon();
-		$dark_icon_url = $payment_method->get_dark_icon();
-		$dark_attr     = $dark_icon_url !== $icon_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
+		$account_country = $this->get_account_country();
+		$icon_url        = $payment_method->get_icon( $account_country );
+		$dark_icon_url   = $payment_method->get_dark_icon( $account_country );
+		$dark_attr       = $dark_icon_url !== $icon_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
 
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $icon_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<img alt="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" src="<?php echo esc_url_raw( $icon_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
@@ -279,15 +280,16 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function show_card_payment_method_name( $order, $payment_method ) {
 		$card_brand = $order->get_meta( '_card_brand' );
+		$title      = $payment_method->get_title( $this->get_account_country() );
 
 		if ( ! $card_brand ) {
-			return $payment_method->get_title();
+			return $title;
 		}
 
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( plugins_url( "assets/images/cards/{$card_brand}.svg", WCPAY_PLUGIN_FILE ) ); ?>">
+			<img alt="<?php echo esc_attr( $title ); ?>" src="<?php echo esc_url_raw( plugins_url( "assets/images/cards/{$card_brand}.svg", WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
@@ -367,7 +369,7 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" title="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<img alt="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" title="<?php echo esc_attr( $payment_method->get_title( $account_country ) ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 		</div>
 		<?php
 		return ob_get_clean();
@@ -772,5 +774,15 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
+	}
+
+	/**
+	 * Returns the merchant's account country, which drives country-specific payment method branding
+	 * (e.g. "Onelink" for GB accounts). All WooPayments gateways share the same account.
+	 *
+	 * @return string
+	 */
+	private function get_account_country(): string {
+		return WC_Payments::get_gateway()->get_account_country();
 	}
 }
