@@ -2,6 +2,8 @@
 
 The Payouts API endpoints provide access to an account's payouts data, including an overview of account balances, payout schedule and payout history.
 
+Monetary fields in payout and balance responses, including `amount`, `fee`, `net`, and summary `total`, are returned in minor units of their associated `currency`. `fee_percentage` is a percentage, not a monetary amount. See [Monetary amounts](#monetary-amounts) for examples.
+
 >[!NOTE] 
 >Payouts have historically been referred to as deposits, therefore these terms may be used interchangeably in response objects.
 

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Make zero-call request mocks in unit tests fail when the request is sent.

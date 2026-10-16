@@ -50,12 +50,15 @@ rm( '-rf', releaseFolder );
 mkdir( releaseFolder );
 mkdir( targetFolder );
 
-// combine-pot-files.php reads the top-level maps to reference the built bundles
-// in the POT; that ran during build:client above.
-rm( '-f', 'dist/**/*.map' );
-
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
+
+// these files are only needed by `combine-pot-files.php`, keeping them out of the zip.
+rm(
+	'-f',
+	targetFolder + '/dist/**/*.map',
+	targetFolder + '/dist/i18n-chunk-entries.json'
+);
 
 // The '/includes/multi-currency/client' directory is removed because '/includes/multi-currency/*' should contain only server-side files.
 // Furthermore, the './client' directory is already included in 'dist' during the build step.

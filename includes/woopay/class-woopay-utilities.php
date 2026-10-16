@@ -112,7 +112,7 @@ class WooPay_Utilities {
 	 * @return boolean
 	 */
 	public function is_woopay_express_checkout_enabled() {
-		return WC_Payments_Features::is_woopay_express_checkout_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
+		return WC_Payments_Features::is_woopay_express_checkout_enabled() && $this->is_country_available(); // Feature flag.
 	}
 
 	/**
@@ -121,7 +121,7 @@ class WooPay_Utilities {
 	 * @return bool
 	 */
 	public function is_woopay_first_party_auth_enabled() {
-		return WC_Payments_Features::is_woopay_express_checkout_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
+		return WC_Payments_Features::is_woopay_express_checkout_enabled() && $this->is_country_available(); // Feature flag.
 	}
 
 	/**

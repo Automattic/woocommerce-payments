@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix the Payments Overview page crashing when the settings request fails.

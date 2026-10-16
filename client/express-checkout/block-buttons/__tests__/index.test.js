@@ -65,6 +65,48 @@ describe( 'Express checkout blocks registration', () => {
 			} );
 		} );
 
+		describe( 'when the first product is added to an empty block cart', () => {
+			beforeEach( () => {
+				// Localized on the empty-cart render, so it's already defined.
+				global.wcpayExpressCheckoutParams = {
+					enabled_methods: [ 'payment_request' ],
+					methods_enabled_at_location: [ 'payment_request' ],
+				};
+			} );
+
+			it( 're-evaluates availability against the updated cart', async () => {
+				const emptyCart = {
+					cartTotals: { total_price: '0', currency_code: 'EUR' },
+					extensions: {
+						wcpay: {
+							express_checkout_methods: [ 'payment_request' ],
+						},
+					},
+				};
+				const filledCart = {
+					...emptyCart,
+					cartTotals: { total_price: '28000', currency_code: 'EUR' },
+				};
+				checkPaymentMethodIsAvailable
+					.mockResolvedValueOnce( false )
+					.mockResolvedValueOnce( true );
+				const applePay = expressCheckoutElementApplePay( mockApi );
+
+				const emptyCartResult = await applePay.canMakePayment( {
+					cart: emptyCart,
+				} );
+				const filledCartResult = await applePay.canMakePayment( {
+					cart: filledCart,
+				} );
+
+				expect( emptyCartResult ).toBe( false );
+				expect( filledCartResult ).toBe( true );
+				expect(
+					checkPaymentMethodIsAvailable
+				).toHaveBeenLastCalledWith( 'applePay', filledCart, mockApi );
+			} );
+		} );
+
 		describe( 'when payment_request is NOT in enabled_methods', () => {
 			beforeEach( () => {
 				global.wcpayExpressCheckoutParams = {

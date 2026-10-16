@@ -75,8 +75,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_after_single_product', [ $this, 'classic_product_page_view' ] );
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'blocks_checkout_start' ] );
 		add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ $this, 'blocks_cart_page_view' ] );
-		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
-		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 1 );
+		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 1 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'wp_footer', [ $this, 'add_frontend_tracks_scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
@@ -347,7 +347,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return $event_obj;
 		}
 
-		$pixel = $event_obj->build_pixel_url( $event_obj );
+		$pixel = $event_obj->build_pixel_url();
 
 		if ( ! $pixel ) {
 			return new WP_Error( 'invalid_pixel', 'cannot generate tracks pixel for given input', 400 );
@@ -654,22 +654,27 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Add tracking configuration to payment fields JS config.
 	 *
+	 * The flag covers store-level conditions only, so it skips the WooPay check.
+	 * Events that need WooPay are still filtered per event in tracks_record_event().
+	 *
 	 * @param array $config The payment fields JS config.
 	 * @return array The modified config.
 	 */
 	public function add_tracking_config_to_payment_fields( $config ) {
-		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, false );
+		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, true );
 		return $config;
 	}
 
 	/**
 	 * Add tracking configuration to express checkout JS params.
 	 *
+	 * @see WooPay_Tracker::add_tracking_config_to_payment_fields() for why the WooPay check is skipped.
+	 *
 	 * @param array $params The express checkout JS params.
 	 * @return array The modified params.
 	 */
 	public function add_tracking_config_to_express_checkout( $params ) {
-		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, false );
+		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, true );
 		return $params;
 	}
 

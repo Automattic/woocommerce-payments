@@ -50,6 +50,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		add_filter( 'rest_post_dispatch', [ $this, 'add_tokenized_cart_nonce_headers' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
 
@@ -197,6 +198,32 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			}
 			$request->set_param( 'billing_address', $billing_address );
 		}
+
+		return $response;
+	}
+
+	/**
+	 * Sends the express checkout nonces with every response, the way the Store API sends its own `Nonce`.
+	 * The page's nonces can stop working mid-flow: the Store API logs the shopper in when it creates their account,
+	 * and full-page caches can serve the page after its nonces expired.
+	 *
+	 * @param \WP_REST_Response $response The response.
+	 * @param \WP_REST_Server   $server Server instance.
+	 * @param \WP_REST_Request  $request Request used to generate the response.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function add_tokenized_cart_nonce_headers( $response, $server, $request ) {
+		if ( 0 !== strpos( $request->get_route(), '/wc/store/' ) ) {
+			return $response;
+		}
+
+		if ( ! $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' ) ) {
+			return $response;
+		}
+
+		$response->header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( WC_Payments_Express_Checkout_Button_Helper::TOKENIZED_CART_NONCE_ACTION ) );
+		$response->header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( WC_Payments_Payment_Request_Session::TOKENIZED_CART_SESSION_NONCE_ACTION ) );
 
 		return $response;
 	}

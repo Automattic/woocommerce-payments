@@ -334,13 +334,6 @@ class WC_Payments {
 	private static $fee_remediation;
 
 	/**
-	 * Instance of WC_Payments_Post_Kyc_Activation_Email_Service, created in init function
-	 *
-	 * @var WC_Payments_Post_Kyc_Activation_Email_Service
-	 */
-	private static $post_kyc_activation_email_service;
-
-	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -454,7 +447,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-session-service.php';
 		include_once __DIR__ . '/class-wc-payments-redirect-service.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
-		include_once __DIR__ . '/class-wc-payments-post-kyc-activation-email-service.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-logger-context.php';
@@ -559,9 +551,6 @@ class WC_Payments {
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
-		// Register the post-KYC activation reminder email.
-		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_post_kyc_activation_email' ], 10 );
-
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
@@ -648,8 +637,8 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
-		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway, self::$order_service );
-		self::$post_kyc_activation_email_service->init_hooks();
+		// Inert handler for residual jobs claimed before the retirement cleanup.
+		add_action( 'wcpay_post_kyc_activation_email_send', '__return_null' );
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
@@ -756,6 +745,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
+		require_once __DIR__ . '/migrations/class-retire-post-kyc-activation-emails.php';
 		require_once __DIR__ . '/migrations/class-multi-currency-cache-autodetect-existing-install.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
@@ -781,6 +771,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Multi_Currency_Cache_Autodetect_Existing_Install(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Retire_Post_Kyc_Activation_Emails(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
@@ -804,8 +795,6 @@ class WC_Payments {
 		// further below, gated on is_admin() && manage_woocommerce.
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
 		$admin_notices = new WC_Payments_Admin_Notices( self::get_gateway(), self::$account );
 		$admin_notices->init_global_hooks();
@@ -889,17 +878,6 @@ class WC_Payments {
 	 */
 	public static function add_ipp_emails( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
-		return $email_classes;
-	}
-
-	/**
-	 * Adds the post-KYC activation reminder email to WooCommerce emails.
-	 *
-	 * @param array $email_classes the email classes.
-	 * @return array
-	 */
-	public static function add_post_kyc_activation_email( array $email_classes ): array {
-		$email_classes['WC_Payments_Email_Post_Kyc_Activation'] = include __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
 	}
 
@@ -2325,6 +2303,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-early-fraud-warnings-controller.php';
+		$early_fraud_warnings_controller = new WC_REST_Payments_Early_Fraud_Warnings_Controller( self::$api_client, self::$order_service, self::$database_cache );
+		$early_fraud_warnings_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
 		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );

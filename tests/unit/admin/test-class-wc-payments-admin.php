@@ -86,6 +86,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $payments_admin;
 
 	public function set_up() {
+		parent::set_up();
+
 		global $menu, $submenu;
 
 		$menu    = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited

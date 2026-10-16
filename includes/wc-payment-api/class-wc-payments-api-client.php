@@ -2673,7 +2673,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		} else {
 			$url .= '/' . self::ENDPOINT_REST_BASE;
 		}
-		$url .= '/' . $api;
+		// The HTTP client runs site-specific URLs through sprintf() to insert the blog ID,
+		// so a literal % in the path (e.g. from an ID) must be escaped.
+		$url .= '/' . ( $is_site_specific ? str_replace( '%', '%%', $api ) : $api );
 
 		$headers                 = [];
 		$headers['Content-Type'] = 'application/json; charset=utf-8';

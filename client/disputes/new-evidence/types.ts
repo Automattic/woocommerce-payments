@@ -8,17 +8,17 @@
 import { Dispute, DisputeReason, ProductType } from 'wcpay/types/disputes';
 import { Charge } from 'wcpay/types/charges';
 
-export interface ExtendedDispute
-	extends Omit< Dispute, 'evidence' | 'charge' > {
+export interface ExtendedDispute extends Omit<
+	Dispute,
+	'evidence' | 'charge'
+> {
 	merchant_name?: string;
 	merchant_address?: string;
 	merchant_email?: string;
 	merchant_phone?: string;
 	evidence: {
 		[ key: string ]:
-			| string
-			| Record< string, boolean >
-			| Record< string, string >;
+			string | Record< string, boolean > | Record< string, string >;
 	};
 	charge: Charge;
 }
@@ -122,9 +122,7 @@ export type EvidenceState = Partial< BaseEvidence > & {
 };
 
 export type EvidenceFieldState =
-	| 'provided'
-	| 'expected_missing'
-	| 'optional_missing';
+	'provided' | 'expected_missing' | 'optional_missing';
 
 export interface EvidenceFieldStatus {
 	key: string;

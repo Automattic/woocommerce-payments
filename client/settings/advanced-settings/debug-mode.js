@@ -22,7 +22,7 @@ const DebugMode = () => {
 						? __(
 								'Log error messages (defaulted on for test accounts)',
 								'woocommerce-payments'
-						  )
+							)
 						: __( 'Log error messages', 'woocommerce-payments' )
 				}
 				help={ __(

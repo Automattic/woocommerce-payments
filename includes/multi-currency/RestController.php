@@ -247,7 +247,7 @@ class RestController extends \WP_REST_Controller {
 		$exchange_rate_type = $request->get_param( 'exchange_rate_type' );
 		$price_rounding     = $request->get_param( 'price_rounding' );
 		$price_charm        = $request->get_param( 'price_charm' );
-		$manual_rate        = $request->get_param( 'manual_rate' ) ?? null;
+		$manual_rate        = $request->get_param( 'manual_rate' );
 
 		try {
 			$this->multi_currency->update_single_currency_settings( $currency_code, $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );

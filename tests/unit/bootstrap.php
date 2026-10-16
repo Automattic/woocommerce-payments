@@ -86,8 +86,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-abstract-admin-notice.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-one-and-done-notice.php';
-	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-test-to-live-notice.php';
-	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-post-kyc-activation-notice.php';
 	require_once $_plugin_dir . 'includes/admin/attach-rate/class-wc-payments-admin-notices.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';

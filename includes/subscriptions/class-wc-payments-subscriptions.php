@@ -75,7 +75,6 @@ class WC_Payments_Subscriptions {
 		include_once __DIR__ . '/class-wc-payments-subscription-service.php';
 		include_once __DIR__ . '/class-wc-payments-subscription-change-payment-method-handler.php';
 		include_once __DIR__ . '/class-wc-payments-subscriptions-plugin-notice-manager.php';
-		include_once __DIR__ . '/class-wc-payments-subscriptions-empty-state-manager.php';
 		include_once __DIR__ . '/class-wc-payments-subscriptions-event-handler.php';
 		include_once __DIR__ . '/class-wc-payments-subscriptions-onboarding-handler.php';
 		include_once __DIR__ . '/class-wc-payments-subscription-minimum-amount-handler.php';
@@ -93,7 +92,6 @@ class WC_Payments_Subscriptions {
 
 		( new WC_Payments_Subscription_Change_Payment_Method_Handler() )->init_hooks();
 		( new WC_Payments_Subscriptions_Plugin_Notice_Manager() )->init_hooks();
-		( new WC_Payments_Subscriptions_Empty_State_Manager( $account ) )->init_hooks();
 		( new WC_Payments_Subscriptions_Onboarding_Handler( $account ) )->init_hooks();
 		( new WC_Payments_Subscription_Minimum_Amount_Handler( $api_client ) )->init_hooks();
 

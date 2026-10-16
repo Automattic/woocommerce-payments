@@ -717,6 +717,7 @@ section "WooPayments"
 
 if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
 	info "Installing from build artifact..."
+	unzip -q "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments.zip -d "$WCPAY_ARTIFACT_DIRECTORY" && rm "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments.zip
 	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
     cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
 	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate

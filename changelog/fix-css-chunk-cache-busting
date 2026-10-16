@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix outdated admin page styles showing after a plugin update, such as misaligned icons on the Dispute readiness card.

@@ -142,7 +142,7 @@ const SingleCurrencySettings = () => {
 			? __(
 					'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 					'woocommerce-payments'
-			  )
+				)
 			: undefined
 	);
 	useEffect( confirmNavigationCallback, [
@@ -161,7 +161,7 @@ const SingleCurrencySettings = () => {
 		? dateI18n(
 				`${ dateFormat } ${ timeFormat }`,
 				moment.unix( targetCurrency.last_updated ).toISOString()
-		  )
+			)
 		: '';
 	const CurrencyPreviewDescription = () => (
 		<>
@@ -177,7 +177,7 @@ const SingleCurrencySettings = () => {
 							),
 							storeCurrency.name,
 							targetCurrency.name
-					  )
+						)
 					: '' }
 			</p>
 		</>
@@ -266,11 +266,11 @@ const SingleCurrencySettings = () => {
 																			targetCurrency.rate,
 																			targetCurrency.code,
 																			formattedLastUpdatedDateTime
-																	  )
+																		)
 																	: __(
 																			'Error - Unable to fetch automatic rate for this currency',
 																			'woocommerce-payments'
-																	  ),
+																		),
 															label: __(
 																'Fetch rates automatically',
 																'woocommerce-payments'
