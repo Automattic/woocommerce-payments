@@ -2307,12 +2307,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'has_status' )
-			->withConsecutive(
-				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ]
-			)
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
 			->willReturn( false );
 
 		$this->mock_order
@@ -2383,12 +2380,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 15.00 );
 
 		$this->mock_order
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'has_status' )
-			->withConsecutive(
-				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
-				[ [ Order_Status::FAILED ] ]
-			)
+			->with( [ Order_Status::PROCESSING, Order_Status::COMPLETED ] )
 			->willReturn( false );
 
 		$this->mock_order
@@ -2576,6 +2570,57 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event for a BNPL payment method adds an order
+	 * note even when the order has already failed, e.g. when an abandoned payment retry does
+	 * not reset the failed status, without changing the order status.
+	 */
+	public function test_payment_intent_fails_with_bnpl_decline_on_failed_order_adds_note() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_payment_method_id', 'pm_123123123123123' );
+		$order->update_status( Order_Status::FAILED );
+		$order->save();
+
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'metadata'           => [],
+			'last_payment_error' => [
+				'code'           => 'payment_intent_payment_attempt_failed',
+				'decline_code'   => 'klarna_payment_declined',
+				'message'        => 'The customer declined the payment.',
+				'doc_url'        => 'https://docs.example.com/klarna-decline',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'klarna',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_db_wrapper
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $order );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		$contents = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ), 'content' );
+
+		$this->assertCount( 1, preg_grep( '/<strong>failed<\/strong> using WooPayments/', $contents ) );
+		$this->assertCount( 1, preg_grep( '/Decline code: <code>klarna_payment_declined<\/code>/', $contents ) );
+
+		// Only a note is added; the order stays failed.
+		$this->assertSame( Order_Status::FAILED, wc_get_order( $order->get_id() )->get_status() );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 
 	/**

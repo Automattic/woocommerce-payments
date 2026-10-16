@@ -516,12 +516,13 @@ class WC_Payments_Webhook_Processing_Service {
 		$payment_method_id = $last_payment_error['payment_method']['id'] ?? null;
 
 		// Only note the failure when the intent's payment method is the order's current payment
-		// method, and the order has not been paid or failed in the meantime.
+		// method, and the order has not been paid in the meantime. Failed orders are still
+		// noted: starting a payment does not reset the failed status, so an abandoned retry
+		// would otherwise leave no record of the failure.
 		if ( ! $order
 			|| empty( $payment_method_id )
 			|| $payment_method_id !== $order->get_meta( '_payment_method_id' )
-			|| $order->has_status( wc_get_is_paid_statuses() )
-			|| $order->has_status( [ Order_Status::FAILED ] ) ) {
+			|| $order->has_status( wc_get_is_paid_statuses() ) ) {
 			return;
 		}
 
