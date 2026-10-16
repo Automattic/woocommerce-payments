@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { useContext } from '@wordpress/element';
@@ -23,6 +23,7 @@ import {
 } from '../settings-warnings/incompatibility-notice';
 import { WooIcon } from 'wcpay/payment-methods-icons';
 import InlineNotice from 'wcpay/components/inline-notice';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
 
 const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
@@ -135,9 +136,13 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 			{ isConflicting && <LinkWooPayConflictNotice /> }
 			{ isStripeLinkEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
-					{ __(
-						'To enable WooPay, you must first disable Link by Stripe.',
-						'woocommerce-payments'
+					{ sprintf(
+						/* translators: %s: Payment method name, e.g. "Stripe Link" or "Onelink". */
+						__(
+							'To enable WooPay, you must first disable %s.',
+							'woocommerce-payments'
+						),
+						methodsConfiguration.link.label
 					) }
 				</InlineNotice>
 			) }
