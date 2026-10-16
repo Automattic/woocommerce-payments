@@ -197,6 +197,22 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->call_ajax_tracks( $tracker );
 	}
 
+	public function test_ajax_tracks_rejects_batched_events_that_are_not_an_array(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->never() )->method( 'maybe_record_event' );
+		$_REQUEST['tracksEvents'] = 'not json';
+
+		$response = $this->call_ajax_tracks( $tracker );
+
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'No valid event name or type.',
+			],
+			$response
+		);
+	}
+
 	public function test_ajax_tracks_records_a_single_event(): void {
 		$tracker = $this->get_tracker_with_mocked_recording();
 		$tracker->expects( $this->once() )
@@ -218,7 +234,10 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 			->getMock();
 	}
 
-	private function call_ajax_tracks( WooPay_Tracker $tracker ): void {
+	/**
+	 * @return array|null The decoded JSON response.
+	 */
+	private function call_ajax_tracks( WooPay_Tracker $tracker ): ?array {
 		$_REQUEST['tracksNonce'] = wp_create_nonce( 'platform_tracks_nonce' );
 
 		// Make wp_send_json_*() stop the handler like it does in a real AJAX request.
@@ -239,11 +258,13 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		} catch ( WPDieException $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 			// Expected, the handler always ends with wp_send_json_*().
 		} finally {
-			ob_end_clean();
+			$output = ob_get_clean();
 			remove_all_filters( 'wp_doing_ajax' );
 			remove_all_filters( 'wp_die_ajax_handler' );
 			unset( $_REQUEST['tracksNonce'], $_REQUEST['tracksEvents'], $_REQUEST['tracksEventName'], $_REQUEST['tracksEventProp'] );
 		}
+
+		return json_decode( $output, true );
 	}
 
 	public function test_tracks_build_event_obj_for_admin_events(): void {

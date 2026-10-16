@@ -52,6 +52,7 @@ describe( 'recordUserEvent', () => {
 		flushShopperEvents();
 		jest.useRealTimers();
 		delete ( navigator as { sendBeacon?: unknown } ).sendBeacon;
+		delete ( document as { visibilityState?: unknown } ).visibilityState;
 	} );
 
 	it( 'sends events recorded close together in a single request', () => {
@@ -131,6 +132,40 @@ describe( 'recordUserEvent', () => {
 		expect( getSentEvents( sendBeacon.mock.calls[ 0 ][ 1 ] ) ).toEqual( [
 			{ name: 'cart_page_view', properties: {} },
 		] );
+	} );
+
+	it( 'sends queued events with fetch when the beacon is not queued', () => {
+		Object.defineProperty( navigator, 'sendBeacon', {
+			value: jest.fn( () => false ),
+			configurable: true,
+		} );
+		recordUserEvent( 'cart_page_view' );
+
+		window.dispatchEvent( new Event( 'pagehide' ) );
+
+		expect( fetchMock ).toHaveBeenCalledTimes( 1 );
+		expect( fetchMock.mock.calls[ 0 ][ 1 ].keepalive ).toBe( true );
+		expect( getSentEvents( fetchMock.mock.calls[ 0 ][ 1 ].body ) ).toEqual(
+			[ { name: 'cart_page_view', properties: {} } ]
+		);
+	} );
+
+	it( 'sends queued events when the page becomes hidden', () => {
+		const sendBeacon = jest.fn( () => true );
+		Object.defineProperty( navigator, 'sendBeacon', {
+			value: sendBeacon,
+			configurable: true,
+		} );
+		Object.defineProperty( document, 'visibilityState', {
+			value: 'hidden',
+			configurable: true,
+		} );
+		recordUserEvent( 'cart_page_view' );
+
+		document.dispatchEvent( new Event( 'visibilitychange' ) );
+
+		expect( sendBeacon ).toHaveBeenCalledTimes( 1 );
+		expect( fetchMock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'does not queue events when shopper tracking is disabled', () => {
