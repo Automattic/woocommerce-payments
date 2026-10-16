@@ -21,6 +21,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useManualCapture,
 } from 'wcpay/data/settings';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 
@@ -414,6 +415,7 @@ describe( 'ExpressCheckout', () => {
 	describe( 'for UK accounts', () => {
 		const UK_COUNTRY = 'GB';
 		const originalSettings = global.wcpaySettings;
+		const originalLinkLabel = methodsConfiguration.link.label;
 		const context = { accountStatus: {}, featureFlags: { woopay: true } };
 
 		beforeEach( () => {
@@ -421,6 +423,7 @@ describe( 'ExpressCheckout', () => {
 				...originalSettings,
 				accountStatus: { country: UK_COUNTRY },
 			};
+			methodsConfiguration.link.label = 'Onelink';
 			useGetAvailablePaymentMethodIds.mockReturnValue( [
 				'link',
 				'card',
@@ -429,6 +432,7 @@ describe( 'ExpressCheckout', () => {
 
 		afterEach( () => {
 			global.wcpaySettings = originalSettings;
+			methodsConfiguration.link.label = originalLinkLabel;
 		} );
 
 		const renderExpressCheckout = () =>

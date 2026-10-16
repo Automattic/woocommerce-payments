@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -18,7 +18,6 @@ import InlineNotice from 'wcpay/components/inline-notice';
 import { LinkWooPayConflictNotice } from '../settings-warnings/incompatibility-notice';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import PaymentMethodItem from 'wcpay/components/payment-method-item';
-import { isOnelinkAccount } from 'wcpay/utils/onelink';
 
 const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
@@ -76,19 +75,16 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 							/* eslint-disable jsx-a11y/anchor-has-content */
 							! isStripeLinkEnabled &&
 								interpolateComponents( {
-									mixedString: isOnelinkAccount()
-										? __(
-												'By enabling this feature, you agree to the ' +
-													'{{stripeLinkTerms}}Onelink terms{{/stripeLinkTerms}}, ' +
-													'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-												'woocommerce-payments'
-											)
-										: __(
-												'By enabling this feature, you agree to the ' +
-													'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
-													'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-												'woocommerce-payments'
-											),
+									mixedString: sprintf(
+										/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+										__(
+											'By enabling this feature, you agree to the ' +
+												'{{stripeLinkTerms}}%s terms{{/stripeLinkTerms}}, ' +
+												'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
+											'woocommerce-payments'
+										),
+										methodsConfiguration.link.label
+									),
 									components: {
 										stripeLinkTerms: (
 											<a
@@ -125,15 +121,14 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 			{ isConflicting && <LinkWooPayConflictNotice /> }
 			{ isWooPayEnabled && ! isConflicting && (
 				<InlineNotice status="warning" isDismissible={ false }>
-					{ isOnelinkAccount()
-						? __(
-								'To enable Onelink, you must first disable WooPay.',
-								'woocommerce-payments'
-							)
-						: __(
-								'To enable Link by Stripe, you must first disable WooPay.',
-								'woocommerce-payments'
-							) }
+					{ sprintf(
+						/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+						__(
+							'To enable %s, you must first disable WooPay.',
+							'woocommerce-payments'
+						),
+						methodsConfiguration.link.label
+					) }
 				</InlineNotice>
 			) }
 		</PaymentMethodItem>

@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
 import InlineNotice from 'wcpay/components/inline-notice';
-import { isOnelinkAccount } from 'wcpay/utils/onelink';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 
 const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
 	<InlineNotice status="warning" icon={ true } isDismissible={ false }>
@@ -44,14 +44,13 @@ export const WooPayIncompatibilityNotice = () => (
 
 export const LinkWooPayConflictNotice = () => (
 	<InlineNotice status="warning" isDismissible={ false }>
-		{ isOnelinkAccount()
-			? __(
-					"Onelink and WooPay can't be enabled at the same time. Disable one of them.",
-					'woocommerce-payments'
-				)
-			: __(
-					"Link by Stripe and WooPay can't be enabled at the same time. Disable one of them.",
-					'woocommerce-payments'
-				) }
+		{ sprintf(
+			/* translators: %s: Payment method name, e.g. "Link" or "Onelink". */
+			__(
+				"%s and WooPay can't be enabled at the same time. Disable one of them.",
+				'woocommerce-payments'
+			),
+			methodsConfiguration.link.label
+		) }
 	</InlineNotice>
 );

@@ -21,6 +21,7 @@ import {
 	useWooPayLocations,
 	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data/settings';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 
 jest.mock( 'wcpay/data/settings', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
@@ -305,12 +306,18 @@ describe( 'WooPaySettings', () => {
 
 	describe( 'for UK accounts', () => {
 		const UK_COUNTRY = 'GB';
+		const originalLinkLabel = methodsConfiguration.link.label;
 
 		beforeEach( () => {
 			global.wcpaySettings = {
 				...global.wcpaySettings,
 				accountStatus: { country: UK_COUNTRY },
 			};
+			methodsConfiguration.link.label = 'Onelink';
+		} );
+
+		afterEach( () => {
+			methodsConfiguration.link.label = originalLinkLabel;
 		} );
 
 		it( 'names Onelink when it blocks enabling WooPay', () => {
