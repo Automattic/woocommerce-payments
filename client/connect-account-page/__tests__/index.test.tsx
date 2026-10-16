@@ -30,6 +30,10 @@ declare const global: {
 		};
 		isWooPayStoreCountryAvailable?: boolean;
 		isJetpackConnected: boolean;
+		isAccountConnected?: boolean;
+		testModeOnboarding?: boolean;
+		devMode?: boolean;
+		devModeReason?: string;
 	};
 };
 
@@ -70,6 +74,41 @@ describe( 'ConnectAccountPage', () => {
 	test( 'should render correctly', () => {
 		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
+	} );
+
+	test( 'explains development mode instead of offering to disable test mode', () => {
+		global.wcpaySettings.isAccountConnected = false;
+		global.wcpaySettings.testModeOnboarding = true;
+		global.wcpaySettings.devMode = true;
+		global.wcpaySettings.devModeReason =
+			'The WCPAY_DEV_MODE constant is set.';
+
+		const { container } = render( <ConnectAccountPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-banner-notice__content' )
+		).toHaveTextContent(
+			'Your store is in development mode, so payments are simulated. ' +
+				'The WCPAY_DEV_MODE constant is set. Live accounts can only be set up on your live store. Learn more'
+		);
+		expect( container ).not.toHaveTextContent( 'please disable it' );
+	} );
+
+	test( 'offers to disable test mode onboarding outside development mode', () => {
+		global.wcpaySettings.isAccountConnected = false;
+		global.wcpaySettings.testModeOnboarding = true;
+		global.wcpaySettings.devMode = false;
+
+		const { container } = render( <ConnectAccountPage /> );
+
+		expect(
+			container.querySelector( '.wcpay-banner-notice__content' )
+		).toHaveTextContent(
+			'Test mode is enabled, only test accounts will be created. If you want to process live transactions, please disable it.'
+		);
+		expect( container ).not.toHaveTextContent(
+			'Your store is in development mode'
+		);
 	} );
 
 	test( 'should render correctly when on-boarding disabled', () => {
