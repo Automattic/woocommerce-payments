@@ -2,7 +2,7 @@
 
 Structured inventory of every test suite used in the WooPayments plugin — automated, semi-automated, and manual. Covers category, status, trigger, coverage areas, and reliability notes.
 
-**Last updated:** 2026-10-09
+**Last updated:** 2026-10-15
 
 ---
 
@@ -70,7 +70,17 @@ All test suites, CI workflows, and release processes are owned and maintained by
 
 - **PHPUnit version:** 9.6.34
 - **Bootstrap:** `tests/unit/bootstrap.php` (loads WP test library, WooCommerce, WooPayments; handles PHP 8+ compat)
-- **CI matrix:** PHP 7.4 + latest Gutenberg; includes PHP 7.4 + Gutenberg 22.3.0
+- **CI matrix:** Four combinations, all using the latest WordPress:
+
+  | PHP | WooCommerce | Gutenberg |
+  |-----|-------------|-----------|
+  | 7.4 (minimum) | 7.6.0 (minimum) | latest |
+  | 7.4 (minimum) | 7.6.0 (minimum) | 22.3.0 |
+  | 8.3 | latest | latest |
+  | 8.4 | latest | latest |
+
+  The minimum-version combinations check backward compatibility. PHP 8.3 and 8.4 run against current WooCommerce to catch newer-runtime failures without pairing an old WooCommerce release with newer PHP. The plugin's minimum PHP version and PHPUnit version are unchanged.
+
 - **Max parallel jobs:** 10
 
 **Coverage areas:**
