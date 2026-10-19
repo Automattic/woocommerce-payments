@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Keep Google Pay and Apple Pay on the Cart and Checkout blocks after the cart switches to a currency Amazon Pay doesn't support.
