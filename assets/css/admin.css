@@ -146,6 +146,10 @@
 	background-image: url( '../images/payment-methods/link.svg' );
 }
 
+.payment-method__brand--link.account-country--gb {
+	background-image: url( '../images/payment-methods/onelink.svg' );
+}
+
 .payment-method__brand--afterpay_clearpay {
 	background-image: url( '../images/payment-methods/afterpay-icon.svg' );
 }

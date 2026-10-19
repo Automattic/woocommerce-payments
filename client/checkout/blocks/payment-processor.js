@@ -18,6 +18,7 @@ import { useCustomerData, getStripeElementOptions } from './utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { getLinkEmail } from 'wcpay/checkout/utils/upe';
 import { CardSkeleton } from './components/card-skeleton';
 import { ApmSkeleton } from './components/apm-skeleton';
 import SkeletonContext from './components/skeleton-context';
@@ -46,8 +47,9 @@ const getFraudPreventionToken = () => {
 
 const noop = () => null;
 
-const STRIPE_READY_TIMEOUT_MS = 10000;
+const LINK_EMAIL_DEBOUNCE_MS = 750;
 
+const STRIPE_READY_TIMEOUT_MS = 10000;
 const createDeferred = () => {
 	let resolve;
 	const promise = new Promise( ( r ) => ( resolve = r ) );
@@ -138,6 +140,24 @@ const PaymentProcessor = ( {
 	const gatewayId = upeMethods[ paymentMethodId ].gatewayId;
 	const gatewayConfig = getPaymentMethods()[ gatewayId ];
 	const billingData = useCustomerData();
+
+	const checkoutLinkEmail = isCardMethod
+		? getLinkEmail( billingData.email )
+		: undefined;
+	const [ linkEmail, setLinkEmail ] = useState( checkoutLinkEmail );
+
+	// The store updates on every keystroke, and each Payment Element update
+	// re-renders the Link section, so wait until the shopper stops typing.
+	useEffect( () => {
+		if ( ! checkoutLinkEmail ) {
+			return;
+		}
+		const timeout = setTimeout(
+			() => setLinkEmail( checkoutLinkEmail ),
+			LINK_EMAIL_DEBOUNCE_MS
+		);
+		return () => clearTimeout( timeout );
+	}, [ checkoutLinkEmail ] );
 
 	useEffect(
 		() =>
@@ -329,7 +349,8 @@ const PaymentProcessor = ( {
 				<PaymentElement
 					options={ getStripeElementOptions(
 						shouldSavePayment,
-						paymentMethodsConfig
+						paymentMethodsConfig,
+						linkEmail
 					) }
 					onReady={ handleStripeReady }
 					onLoadError={ setHasLoadError }

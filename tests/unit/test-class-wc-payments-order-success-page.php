@@ -20,6 +20,13 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 	 */
 	private $payments_order_success_page;
 
+	/**
+	 * The gateway replaced by set_account_country(), restored in tear_down().
+	 *
+	 * @var WC_Payment_Gateway_WCPay|null
+	 */
+	private $original_gateway = null;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -28,6 +35,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
+		if ( null !== $this->original_gateway ) {
+			WC_Payments::set_gateway( $this->original_gateway );
+			$this->original_gateway = null;
+		}
 		global $wp;
 		unset( $_GET['key'] );
 		unset( $wp->query_vars['order-received'] );
@@ -35,6 +46,18 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 			WC()->session->set( WC_Payments_Order_Service::PAID_INTENT_ID_SESSION_KEY, null );
 		}
 		parent::tear_down();
+	}
+
+	/**
+	 * Replaces the main gateway with one reporting the given account country.
+	 *
+	 * @param string $account_country The account country to report.
+	 */
+	private function set_account_country( $account_country ) {
+		$this->original_gateway = WC_Payments::get_gateway();
+		$gateway                = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_account_country' )->willReturn( $account_country );
+		WC_Payments::set_gateway( $gateway );
 	}
 
 	/**
@@ -169,6 +192,22 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $method_name, $result );
 	}
 
+	public function test_show_woocommerce_payments_payment_method_name_shows_link_for_one_off_link_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		WC_Payments::get_order_service()->store_payment_method_details( $order, [ 'type' => 'link' ] );
+		$order->save();
+
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		try {
+			$result = $this->payments_order_success_page->show_woocommerce_payments_payment_method_name( 'Card', $order );
+		} finally {
+			remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		}
+
+		$this->assertStringContainsString( 'alt="Stripe Link"', $result );
+	}
+
 	public function test_show_lpm_payment_method_name() {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
@@ -201,6 +240,22 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString( 'src="/ideal.svg"', $result );
 		$this->assertStringContainsString( 'data-dark-src="/ideal-dark.svg"', $result );
+	}
+
+	public function test_show_lpm_payment_method_name_uses_account_country_for_title() {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_account_country' )->willReturn( 'GB' );
+
+		$payment_method = $this->createMock( UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturnMap( [ [ 'GB', false, 'Onelink' ] ] );
+		$payment_method->method( 'get_id' )->willReturn( 'link' );
+		$payment_method->method( 'get_icon' )->willReturn( 'https://example.com/onelink.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( 'https://example.com/onelink.svg' );
+
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
+
+		$this->assertStringContainsString( 'alt="Onelink"', $result );
+		$this->assertStringContainsString( 'title="Onelink"', $result );
 	}
 
 	public function test_show_lpm_payment_method_name_icon_not_found() {
@@ -331,6 +386,41 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
 
 		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_show_express_checkout_payment_method_name_uses_account_country() {
+		$this->set_account_country( 'GB' );
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( 'last4', '4242' );
+		$order->save();
+
+		$icon_url = 'https://example.com/onelink.svg';
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturnMap( [ [ 'GB', false, 'Onelink' ] ] );
+		$payment_method->method( 'get_icon' )->willReturnMap( [ [ 'GB', $icon_url ] ] );
+		$payment_method->method( 'get_dark_icon' )->willReturnMap( [ [ 'GB', $icon_url ] ] );
+
+		$original_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $original_map, [ 'link' => $payment_method ] ) );
+
+		$result = $this->payments_order_success_page->show_express_checkout_payment_method_name( $order, 'link' );
+
+		$this->set_payment_method_map( $original_map );
+
+		$this->assertStringContainsString( 'img alt="Onelink" src="' . $icon_url . '"', $result );
+	}
+
+	public function test_show_card_payment_method_name_without_card_brand_uses_account_country() {
+		$this->set_account_country( 'GB' );
+		$order = WC_Helper_Order::create_order();
+
+		$payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturnMap( [ [ 'GB', false, 'Onelink' ] ] );
+
+		$result = $this->payments_order_success_page->show_card_payment_method_name( $order, $payment_method );
+
+		$this->assertSame( 'Onelink', $result );
 	}
 
 	public function test_show_express_checkout_payment_method_name_amazon_pay_with_last4() {

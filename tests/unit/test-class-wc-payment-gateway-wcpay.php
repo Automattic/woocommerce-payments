@@ -648,7 +648,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			],
 			'Link'                   => [
 				'payment_details'  => [ 'type' => 'link' ],
-				'expected_title'   => 'Link',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 			'Link (via card wallet)' => [
@@ -660,7 +660,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						],
 					],
 				],
-				'expected_title'   => 'Link (WooPayments)',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
@@ -720,7 +720,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'Link'       => [
 				'express_type'     => 'link',
 				'stripe_type'      => 'link',
-				'expected_title'   => 'Link (WooPayments)',
+				'expected_title'   => 'Stripe Link',
 				'expected_gateway' => 'woocommerce_payments',
 				'payment_details'  => [
 					'type' => 'link',
@@ -917,6 +917,92 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'Google Pay (WooPayments)', $order->get_payment_method_title() );
 		$this->assertEquals( 'google_pay', $order->get_meta( '_wcpay_express_checkout_payment_method' ), 'Meta should remain unchanged' );
+	}
+
+	/**
+	 * Data provider for Link title tests across account countries.
+	 *
+	 * @return array[]
+	 */
+	public function link_title_by_account_country_provider() {
+		$link_charge        = [ 'type' => 'link' ];
+		$link_wallet_charge = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => 'link',
+				],
+			],
+		];
+
+		return [
+			'GB, Link charge'      => [ 'GB', $link_charge, 'Onelink' ],
+			'GB, Link card wallet' => [ 'GB', $link_wallet_charge, 'Onelink' ],
+			'US, Link charge'      => [ 'US', $link_charge, 'Stripe Link' ],
+			'US, Link card wallet' => [ 'US', $link_wallet_charge, 'Stripe Link' ],
+		];
+	}
+
+	/**
+	 * Test that every Link charge shape gets the same, account-country-aware title, with no
+	 * express checkout suffix. Link is never offered by the Express Checkout Element.
+	 *
+	 * @dataProvider link_title_by_account_country_provider
+	 *
+	 * @param string $account_country The merchant's account country.
+	 * @param array  $payment_details The payment method details from Stripe.
+	 * @param string $expected_title  The expected payment method title.
+	 */
+	public function test_link_title_uses_account_country( $account_country, $payment_details, $expected_title ) {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( $account_country );
+		$order = WC_Helper_Order::create_order();
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, $payment_details['type'], $payment_details );
+
+		$this->assertSame( $expected_title, $order->get_payment_method_title() );
+		$this->assertSame( 'woocommerce_payments', $order->get_payment_method() );
+	}
+
+	/**
+	 * Test that a Link card wallet charge still records the express checkout meta, which the
+	 * order-received page uses to render the Link logo, even though the title has no suffix.
+	 */
+	public function test_link_card_wallet_keeps_express_checkout_meta() {
+		$order           = WC_Helper_Order::create_order();
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => 'link',
+				],
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertSame( 'link', $order->get_meta( '_wcpay_express_checkout_payment_method' ) );
+	}
+
+	/**
+	 * Test that the express checkout title suffix filter does not apply to Link.
+	 */
+	public function test_express_checkout_title_suffix_filter_skips_link() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', 'link' );
+		$order->save();
+
+		$callback = function () {
+			return 'Custom Suffix';
+		};
+		add_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'link', [ 'type' => 'link' ] );
+
+		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+		$this->assertSame( 'Stripe Link', $order->get_payment_method_title() );
 	}
 
 	/**
@@ -3071,6 +3157,207 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'req_letter'     => [ false, '123456' ],
 			'trim_too_short' => [ false, '  aaa    ' ],
 		];
+	}
+
+	/**
+	 * Runs a callback with the `init` hook made to look as though it has not fired yet.
+	 *
+	 * Mirrors with_uninitialized_action_scheduler() in the action scheduler service tests.
+	 *
+	 * @param callable $callback The callback to run.
+	 */
+	private function with_uninitialized_init( callable $callback ) {
+		global $wp_actions;
+
+		$original_action = $wp_actions['init'] ?? null;
+
+		unset( $wp_actions['init'] );
+
+		try {
+			$callback();
+		} finally {
+			if ( null !== $original_action ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
+				$wp_actions['init'] = $original_action;
+			}
+		}
+	}
+
+	/**
+	 * Reads a private method's return value off the card gateway.
+	 *
+	 * @param string $name The method name.
+	 * @return mixed
+	 */
+	private function call_private_gateway_method( string $name ) {
+		$method = new ReflectionMethod( WC_Payment_Gateway_WCPay::class, $name );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->card_gateway );
+	}
+
+	/**
+	 * Without translations loaded, the untranslated copy must match the translated definitions
+	 * exactly, so the fields do not change shape when `init` runs. See WOOPMNT-5380.
+	 */
+	public function test_untranslated_form_fields_match_translated_definitions() {
+		$untranslated = ( new ReflectionClassConstant( WC_Payment_Gateway_WCPay::class, 'MAIN_GATEWAY_UNTRANSLATED_FORM_FIELDS' ) )->getValue();
+		$translated   = $this->call_private_gateway_method( 'get_main_gateway_translated_form_fields' );
+
+		$this->assertSame(
+			$translated,
+			$untranslated,
+			'Both sets should be exactly the same in English.'
+		);
+	}
+
+	/**
+	 * After `init` the field labels are translated, since WooCommerce's payment gateways REST
+	 * endpoint returns them. See WOOPMNT-5380.
+	 */
+	public function test_form_field_labels_are_translated_after_init() {
+		$translate = function ( $translation, $text, $domain ) {
+			return 'woocommerce-payments' === $domain && 'Manual capture' === $text ? 'Captura manual' : $translation;
+		};
+		add_filter( 'gettext', $translate, 10, 3 );
+
+		$fields = $this->card_gateway->get_form_fields();
+
+		$this->assertSame( 'Captura manual', $fields['manual_capture']['title'] );
+	}
+
+	/**
+	 * Runs a callback while recording every text domain passed through the translation functions.
+	 *
+	 * @param callable $callback The callback to run.
+	 * @return string[] The text domains, one entry per translation call.
+	 */
+	private function translation_domains_used_by( callable $callback ): array {
+		$domains = [];
+		$spy     = function ( $translation, $text, $domain ) use ( &$domains ) {
+			$domains[] = $domain;
+			return $translation;
+		};
+
+		add_filter( 'gettext', $spy, 10, 3 );
+		try {
+			$callback();
+		} finally {
+			remove_filter( 'gettext', $spy, 10 );
+		}
+
+		return $domains;
+	}
+
+	/**
+	 * Translates the WooPay terms message as a Spanish site would.
+	 *
+	 * @param string $translation The current translation.
+	 * @param string $text        The source text.
+	 * @param string $domain      The text domain.
+	 * @return string
+	 */
+	public function translate_woopay_message_to_spanish( $translation, $text, $domain ) {
+		if ( 'woocommerce-payments' === $domain && 'By placing this order, you agree to our [terms] and understand our [privacy_policy].' === $text ) {
+			return 'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].';
+		}
+
+		return $translation;
+	}
+
+	/**
+	 * Before `init`, building the fields must not ask for any of this plugin's translations, or it
+	 * triggers the _load_textdomain_just_in_time notice. See WOOPMNT-5380.
+	 */
+	public function test_form_fields_ask_for_no_translations_before_init() {
+		$domains = $this->translation_domains_used_by(
+			function () {
+				$this->with_uninitialized_init(
+					function () {
+						$this->card_gateway->get_form_fields();
+					}
+				);
+			}
+		);
+
+		$this->assertNotContains( 'woocommerce-payments', $domains );
+	}
+
+	/**
+	 * Shoppers see the WooPay terms message, so once translations are available its default is
+	 * in the site's language.
+	 */
+	public function test_woopay_custom_message_default_is_translated_after_init() {
+		add_filter( 'gettext', [ $this, 'translate_woopay_message_to_spanish' ], 10, 3 );
+
+		$fields = $this->card_gateway->get_form_fields();
+
+		$this->assertSame(
+			'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].',
+			$fields['platform_checkout_custom_message']['default']
+		);
+	}
+
+	/**
+	 * On a fresh install the defaults are first read on `plugins_loaded`, in English. They are
+	 * read again as `init` starts, before install_actions() runs the migrations that can make the
+	 * first save, so the WooPay terms message is stored in the site's language, as it was before
+	 * this fix. See WOOPMNT-5380.
+	 */
+	public function test_fresh_install_defaults_are_read_again_once_translations_load() {
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+		add_filter( 'gettext', [ $this, 'translate_woopay_message_to_spanish' ], 10, 3 );
+
+		$this->with_uninitialized_init(
+			function () {
+				$this->card_gateway->init_settings();
+			}
+		);
+		$this->assertSame(
+			'By placing this order, you agree to our [terms] and understand our [privacy_policy].',
+			$this->card_gateway->settings['platform_checkout_custom_message']
+		);
+
+		$this->card_gateway->init_hooks();
+		$this->assertSame( 0, has_action( 'init', [ $this->card_gateway, 'init_settings' ] ) );
+		$this->assertSame( 10, has_action( 'init', [ WC_Payments::class, 'install_actions' ] ) );
+
+		$this->card_gateway->init_settings();
+		$this->card_gateway->update_option( 'test_mode', 'yes' );
+
+		$stored = get_option( 'woocommerce_woocommerce_payments_settings' );
+		$this->assertSame(
+			'Al realizar este pedido, aceptas nuestros [términos] y entiendes nuestra [política_privacidad].',
+			$stored['platform_checkout_custom_message']
+		);
+	}
+
+	/**
+	 * With no settings row, the stored settings must come out the same whether they were
+	 * populated before or after `init`. This is what keeps saved cards working on a fresh
+	 * install, where the defaults are read during `plugins_loaded`. See WOOPMNT-5380.
+	 */
+	public function test_defaults_resolve_the_same_before_and_after_init() {
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+
+		$this->card_gateway->init_settings();
+		$after_init = $this->card_gateway->settings;
+
+		$before_init = null;
+		$this->with_uninitialized_init(
+			function () use ( &$before_init ) {
+				$this->card_gateway->init_settings();
+				$before_init = $this->card_gateway->settings;
+			}
+		);
+
+		$this->assertSame( $after_init, $before_init, 'The settings populated from defaults should not depend on when they were read.' );
+		$this->assertSame( 'yes', $before_init['saved_cards'] );
+		$this->assertSame( 'no', $before_init['manual_capture'] );
+		$this->assertSame( [ 'card' ], $before_init['upe_enabled_payment_method_ids'] );
+
+		$this->card_gateway->init_settings();
+		$this->assertTrue( $this->card_gateway->is_saved_cards_enabled() );
 	}
 
 	public function test_payment_request_form_field_defaults() {
@@ -5844,7 +6131,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// The order's payment method title must reflect the actual card from the charge, not a generic
 		// "Card" label. This also propagates to the subscription. Regression guard for WOOPMNT-2882.
 		// Scope: this and the two 3DS tests below cover only the save (token-present) sub-path; the no-save
-		// boundary is pinned by test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method.
+		// path is covered by test_update_order_status_brands_title_and_card_meta_when_not_saving_payment_method.
 		$order = WC_Helper_Order::create_order();
 
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
@@ -6045,13 +6332,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'Visa', $title_at_transition, 'Title must be branded at the status transition that fires the email.' );
 	}
 
-	public function test_update_order_status_does_not_brand_title_or_card_meta_when_not_saving_payment_method() {
-		// Companion to the three tests above, which all hard-code should_save_payment_method = 'true' and so
-		// exercise only the token-present sub-path. Branding (title + last4/_card_brand meta) lives entirely
-		// inside update_order_status()'s `! empty( $token )` branch, so the no-save path must leave the card
-		// details untouched. This pins that boundary: if branding ever leaks out of the save branch, this
-		// fails. We assert the meta is absent rather than a specific generic title to stay wording-agnostic.
-		// WOOPMNT-2882.
+	public function test_update_order_status_brands_title_and_card_meta_when_not_saving_payment_method() {
+		// A one-off payment confirmed in the browser (e.g. 3DS) saves no token, so the charge is the only
+		// source for the title. process_payment() ran before confirmation and could only set a generic title.
 		$order = WC_Helper_Order::create_order();
 
 		// No token is created on this path; assert it is never requested rather than relying on a stub.
@@ -6110,9 +6393,148 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		$saved = wc_get_order( $order->get_id() );
-		$this->assertNotSame( 'Visa credit card', $saved->get_payment_method_title(), 'Title must not be branded when the payment method is not saved.' );
-		$this->assertEmpty( $saved->get_meta( 'last4' ), 'Card last4 meta must not be stored when the payment method is not saved.' );
-		$this->assertEmpty( $saved->get_meta( '_card_brand' ), 'Card brand meta must not be stored when the payment method is not saved.' );
+		$this->assertSame( 'Visa credit card', $saved->get_payment_method_title() );
+		$this->assertSame( '4242', $saved->get_meta( 'last4' ) );
+		$this->assertSame( 'visa', $saved->get_meta( '_card_brand' ) );
+	}
+
+	public function test_update_order_status_does_not_brand_title_or_card_meta_when_charge_is_declined() {
+		// After 3DS passes, the issuer can still decline: the intent goes back to requires_payment_method
+		// but keeps the failed charge, and the browser still calls update_order_status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method_title( 'Card' );
+		$order->save();
+
+		$intent_id = 'pi_mock_3ds_declined';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'false',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'metadata' => [ 'order_id' => $order->get_id() ],
+						'status'   => Intent_Status::REQUIRES_PAYMENT_METHOD,
+						'charge'   => [
+							'status'                 => 'failed',
+							'payment_method_details' => [
+								'type' => 'card',
+								'card' => [
+									'network' => 'visa',
+									'brand'   => 'visa',
+									'last4'   => '0002',
+									'funding' => 'credit',
+								],
+							],
+						],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( 'Card', $saved->get_payment_method_title() );
+		$this->assertEmpty( $saved->get_meta( 'last4' ) );
+		$this->assertEmpty( $saved->get_meta( '_card_brand' ) );
+	}
+
+	/**
+	 * @dataProvider provider_link_charge_payment_method_details
+	 */
+	public function test_update_order_status_sets_link_title_when_not_saving_payment_method( $payment_method_details, $expected_title ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method_title( 'Card' );
+		$order->save();
+
+		$intent_id = 'pi_mock_link_no_save';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce_' . $order->get_id() );
+		$_POST                = [
+			'action'                     => 'update_order_status',
+			'order_id'                   => $order->get_id(),
+			'intent_id'                  => $intent_id,
+			'should_save_payment_method' => 'false',
+			'_wpnonce'                   => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'id'       => $intent_id,
+						'metadata' => [ 'order_id' => $order->get_id() ],
+						'status'   => Intent_Status::SUCCEEDED,
+						'charge'   => [ 'payment_method_details' => $payment_method_details ],
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$saved = wc_get_order( $order->get_id() );
+		$this->assertSame( $expected_title, $saved->get_payment_method_title() );
+		$this->assertSame( 'woocommerce_payments', $saved->get_payment_method() );
+		$this->assertEmpty( $saved->get_meta( 'last4' ) );
+	}
+
+	public function provider_link_charge_payment_method_details() {
+		return [
+			'link type'        => [
+				[
+					'type' => 'link',
+					'link' => [ 'country' => '' ],
+				],
+				'Stripe Link',
+			],
+			'card with wallet' => [
+				[
+					'type' => 'card',
+					'card' => [
+						'brand'  => 'visa',
+						'last4'  => '4242',
+						'wallet' => [ 'type' => 'link' ],
+					],
+				],
+				'Stripe Link',
+			],
+		];
 	}
 
 	public function test_update_order_status_keeps_branded_title_on_zero_amount_setup_intent_when_saving() {

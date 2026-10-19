@@ -33,9 +33,10 @@ import InlineNotice from 'components/inline-notice';
 import { WooPaymentsMethodsLogos } from 'components/payment-method-logos';
 import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
-import { isInTestModeOnboarding, redirectTo } from 'wcpay/utils';
+import { isInDevMode, isInTestModeOnboarding, redirectTo } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
+import DevModeMessage from 'wcpay/components/dev-mode-message';
 import { decodeEntities } from '@wordpress/html-entities';
 import { createRoot } from 'react-dom/client';
 
@@ -43,9 +44,14 @@ interface AccountData {
 	status: string;
 }
 
+// Development mode forces test mode onboarding and can't be switched off here, so it gets its own message.
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
-		{ strings.sandboxModeNotice }
+		{ isInDevMode() ? (
+			<DevModeMessage isOnboarding />
+		) : (
+			strings.sandboxModeNotice
+		) }
 	</BannerNotice>
 );
 
@@ -527,6 +533,7 @@ const ConnectAccountPage: React.FC = () => {
 								<SandboxModeSwitchToLiveNotice
 									from="WCPAY_CONNECT"
 									source="wcpay-connect-page"
+									isOnboarding
 								/>
 							)
 						)
