@@ -31,6 +31,11 @@ declare const global: {
 		isWooPayStoreCountryAvailable?: boolean;
 		isJetpackConnected: boolean;
 		isAccountConnected?: boolean;
+		isAccountValid?: boolean;
+		accountStatus?: {
+			isLive: boolean;
+			testDrive: boolean;
+		};
 		testModeOnboarding?: boolean;
 		devMode?: boolean;
 		devModeReason?: string;
@@ -92,6 +97,28 @@ describe( 'ConnectAccountPage', () => {
 				'The WCPAY_DEV_MODE constant is set. Live accounts can only be set up on your live store. Learn more'
 		);
 		expect( container ).not.toHaveTextContent( 'please disable it' );
+	} );
+
+	test( 'explains development mode for a partially onboarded account', () => {
+		global.wcpaySettings.isAccountConnected = true;
+		global.wcpaySettings.isAccountValid = false;
+		global.wcpaySettings.accountStatus = {
+			isLive: false,
+			testDrive: false,
+		};
+		global.wcpaySettings.testModeOnboarding = true;
+		global.wcpaySettings.devMode = true;
+		global.wcpaySettings.devModeReason =
+			'The WCPAY_DEV_MODE constant is set.';
+
+		const { container } = render( <ConnectAccountPage /> );
+
+		expect(
+			container.querySelector( '.sandbox-mode-notice' )
+		).toHaveTextContent(
+			'Your store is in development mode, so payments are simulated. ' +
+				'The WCPAY_DEV_MODE constant is set. Live accounts can only be set up on your live store. Learn more'
+		);
 	} );
 
 	test( 'offers to disable test mode onboarding outside development mode', () => {

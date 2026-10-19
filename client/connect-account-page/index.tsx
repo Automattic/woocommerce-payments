@@ -533,6 +533,7 @@ const ConnectAccountPage: React.FC = () => {
 								<SandboxModeSwitchToLiveNotice
 									from="WCPAY_CONNECT"
 									source="wcpay-connect-page"
+									isOnboarding
 								/>
 							)
 						)

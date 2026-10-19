@@ -28,11 +28,14 @@ import {
 interface Props {
 	from: string;
 	source: string;
+	/** Whether the merchant is setting up an account rather than taking payments. */
+	isOnboarding?: boolean;
 }
 
 const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 	from,
 	source,
+	isOnboarding = false,
 } ) => {
 	const [ livePaymentsModalVisible, setLivePaymentsModalVisible ] =
 		useState( false );
@@ -229,6 +232,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 				{ isInDevMode() && (
 					<div>
 						<DevModeMessage
+							isOnboarding={ isOnboarding }
 							onLearnMoreClick={ () =>
 								recordEvent(
 									'wcpay_overview_sandbox_mode_learn_more_clicked',
