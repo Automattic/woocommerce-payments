@@ -17,6 +17,7 @@ jest.mock( '..', () => ( {
 		}
 		return null;
 	} ),
+	filterCartMethodsByLocation: jest.fn( ( methods ) => methods ),
 } ) );
 
 jest.mock( '../../transformers/wc-to-stripe', () => ( {
@@ -324,6 +325,63 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 				'applePay',
 				createCart( '1000', 'USD', {
 					wcpay: { setup_future_usage: 'off_session' },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+		} );
+	} );
+
+	describe( 'paymentMethodTypes', () => {
+		// Amazon Pay only supports USD, and Stripe fails the whole check when one
+		// type doesn't support the currency. After a mid-page switch to EUR, the
+		// page-load list still has Amazon Pay; the cart's list doesn't.
+		it( 'reads the live cart rather than the page-load globals', async () => {
+			await checkPaymentMethodIsAvailable(
+				'googlePay',
+				createCart( '1000', 'EUR', {
+					wcpay: { express_checkout_methods: [ 'payment_request' ] },
+				} ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( { paymentMethodTypes: [ 'card' ] } )
+			);
+		} );
+
+		it( 'falls back to the page-load globals when the cart has no list', async () => {
+			await checkPaymentMethodIsAvailable(
+				'googlePay',
+				createCart( '1000', 'USD' ),
+				mockApi
+			);
+
+			expect( mockStripe.elements ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					paymentMethodTypes: [ 'card', 'amazon_pay' ],
+				} )
+			);
+		} );
+
+		it( 'different enabled methods trigger separate checks', async () => {
+			await checkPaymentMethodIsAvailable(
+				'googlePay',
+				createCart( '1000', 'USD', {
+					wcpay: { express_checkout_methods: [ 'payment_request' ] },
+				} ),
+				mockApi
+			);
+			await checkPaymentMethodIsAvailable(
+				'googlePay',
+				createCart( '1000', 'USD', {
+					wcpay: {
+						express_checkout_methods: [
+							'payment_request',
+							'amazon_pay',
+						],
+					},
 				} ),
 				mockApi
 			);

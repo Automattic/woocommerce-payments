@@ -9,7 +9,11 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData, type SetupFutureUsage } from '.';
+import {
+	getExpressCheckoutData,
+	filterCartMethodsByLocation,
+	type SetupFutureUsage,
+} from '.';
 import { resolveSetupFutureUsage } from './subscriptions';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
@@ -50,12 +54,20 @@ const getEffectiveTotalPrice = ( cart: Cart ): string => {
 };
 
 /**
- * Builds the paymentMethodTypes array from enabled_methods, matching the
- * product page's express-checkout-container.js. Stripe requires each type
- * to be listed explicitly to report its availability.
+ * Builds the paymentMethodTypes array from the cart's enabled methods, matching
+ * the block button's Elements config. Stripe requires each type to be listed
+ * explicitly to report its availability, and fails the whole check when one
+ * type doesn't support the cart's currency, so page-load data can't be used.
  */
-function getPaymentMethodTypes(): string[] {
-	const enabledMethods = getExpressCheckoutData( 'enabled_methods' ) ?? [];
+function getPaymentMethodTypes( cart: Cart ): string[] {
+	const fromCart = (
+		cart.extensions as {
+			wcpay?: { express_checkout_methods?: unknown };
+		}
+	 )?.wcpay?.express_checkout_methods;
+	const enabledMethods: string[] = Array.isArray( fromCart )
+		? filterCartMethodsByLocation( fromCart )
+		: ( getExpressCheckoutData( 'enabled_methods' ) ?? [] );
 
 	return [
 		enabledMethods.includes( 'payment_request' ) && 'card',
@@ -75,7 +87,8 @@ function checkAvailablePaymentMethods(
 	amount: number,
 	currency: string,
 	mode: string,
-	setupFutureUsage: SetupFutureUsage
+	setupFutureUsage: SetupFutureUsage,
+	paymentMethodTypes: string[]
 ): Promise< Partial< AvailablePaymentMethods > > {
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
@@ -97,7 +110,7 @@ function checkAvailablePaymentMethods(
 				amount: Math.max( amount, 1 ),
 				currency,
 				...( useConfirmationToken
-					? { paymentMethodTypes: getPaymentMethodTypes() }
+					? { paymentMethodTypes }
 					: { paymentMethodCreation: 'manual' } ),
 				...( useConfirmationToken && isManualCaptureEnabled
 					? { captureMethod: 'manual' }
@@ -146,19 +159,21 @@ let memoizedCheck:
 			_amount: number,
 			_currency: string,
 			_mode: string,
-			_setupFutureUsage: SetupFutureUsage
+			_setupFutureUsage: SetupFutureUsage,
+			_paymentMethodTypes: string[]
 	  ) => Promise< Partial< AvailablePaymentMethods > > )
 	| null = null;
 
 /**
  * Checks which express payment methods are available on the current device/browser.
- * Results are memoized by amount+currency+mode+setupFutureUsage.
+ * Results are memoized by amount+currency+mode+setupFutureUsage+paymentMethodTypes.
  */
 async function checkAllExpressMethodsAvailability(
 	api: WCPayAPI,
 	amount: number,
 	currency: string,
 	setupFutureUsage: SetupFutureUsage,
+	paymentMethodTypes: string[],
 	mode = 'payment'
 ): Promise< Partial< AvailablePaymentMethods > > {
 	if ( ! cachedStripePromise ) {
@@ -190,14 +205,17 @@ async function checkAllExpressMethodsAvailability(
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				_mode: string,
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				_setupFutureUsage: SetupFutureUsage
+				_setupFutureUsage: SetupFutureUsage,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_paymentMethodTypes: string[]
 			) =>
 				checkAvailablePaymentMethods(
 					stripe,
 					_amount,
 					_currency,
 					_mode,
-					_setupFutureUsage
+					_setupFutureUsage,
+					_paymentMethodTypes
 				),
 			(
 				// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -207,12 +225,23 @@ async function checkAllExpressMethodsAvailability(
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				_mode: string,
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				_setupFutureUsage: SetupFutureUsage
-			) => `${ _amount }-${ _currency }-${ _mode }-${ _setupFutureUsage }`
+				_setupFutureUsage: SetupFutureUsage,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				_paymentMethodTypes: string[]
+			) =>
+				`${ _amount }-${ _currency }-${ _mode }-${ _setupFutureUsage }-${ _paymentMethodTypes.join(
+					','
+				) }`
 		);
 	}
 
-	return memoizedCheck( amount, currency, mode, setupFutureUsage );
+	return memoizedCheck(
+		amount,
+		currency,
+		mode,
+		setupFutureUsage,
+		paymentMethodTypes
+	);
 }
 
 /**
@@ -245,7 +274,8 @@ export async function checkPaymentMethodIsAvailable(
 		api,
 		Number( totalPrice ),
 		cart.cartTotals.currency_code.toLowerCase(),
-		setupFutureUsage
+		setupFutureUsage,
+		getPaymentMethodTypes( cart )
 	);
 
 	return Boolean( availablePaymentMethods[ paymentMethod ] );
