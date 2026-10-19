@@ -9,11 +9,7 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import {
-	getExpressCheckoutData,
-	filterCartMethodsByLocation,
-	type SetupFutureUsage,
-} from '.';
+import { getExpressCheckoutData, type SetupFutureUsage } from '.';
 import { resolveSetupFutureUsage } from './subscriptions';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
@@ -54,21 +50,10 @@ const getEffectiveTotalPrice = ( cart: Cart ): string => {
 };
 
 /**
- * Builds the paymentMethodTypes array from the cart's enabled methods, matching
- * the block button's Elements config. Stripe requires each type to be listed
- * explicitly to report its availability, and fails the whole check when one
- * type doesn't support the cart's currency, so page-load data can't be used.
+ * Stripe requires each type to be listed explicitly to report its availability,
+ * and fails the whole check when one type doesn't support the cart's currency.
  */
-function getPaymentMethodTypes( cart: Cart ): string[] {
-	const fromCart = (
-		cart.extensions as {
-			wcpay?: { express_checkout_methods?: unknown };
-		}
-	 )?.wcpay?.express_checkout_methods;
-	const enabledMethods: string[] = Array.isArray( fromCart )
-		? filterCartMethodsByLocation( fromCart )
-		: ( getExpressCheckoutData( 'enabled_methods' ) ?? [] );
-
+function getPaymentMethodTypes( enabledMethods: string[] ): string[] {
 	return [
 		enabledMethods.includes( 'payment_request' ) && 'card',
 		enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
@@ -78,9 +63,6 @@ function getPaymentMethodTypes( cart: Cart ): string[] {
 /**
  * Mounts a hidden Stripe Express Checkout Element to detect which express
  * payment methods are available on the current device/browser.
- *
- * The paymentMethodTypes passed to stripe.elements() are derived from the
- * server-side enabled_methods — this matches the product page's Elements config.
  */
 function checkAvailablePaymentMethods(
 	stripe: Stripe,
@@ -166,7 +148,6 @@ let memoizedCheck:
 
 /**
  * Checks which express payment methods are available on the current device/browser.
- * Results are memoized by amount+currency+mode+setupFutureUsage+paymentMethodTypes.
  */
 async function checkAllExpressMethodsAvailability(
 	api: WCPayAPI,
@@ -247,11 +228,16 @@ async function checkAllExpressMethodsAvailability(
 /**
  * Checks if a specific express payment method is available.
  * Delegates to checkAllExpressMethodsAvailability for the actual Stripe probe.
+ *
+ * `enabledMethods` must come from the live cart, same as the button: the
+ * page-load list can still hold a method the cart's current currency doesn't
+ * support, which fails the whole check.
  */
 export async function checkPaymentMethodIsAvailable(
 	paymentMethod: PaymentMethod,
 	cart: Cart,
-	api: WCPayAPI
+	api: WCPayAPI,
+	enabledMethods: string[]
 ): Promise< boolean > {
 	// Guard against empty currency code during WooCommerce Blocks store
 	// hydration. The cart store initialises with currency_code: '' before
@@ -275,7 +261,7 @@ export async function checkPaymentMethodIsAvailable(
 		Number( totalPrice ),
 		cart.cartTotals.currency_code.toLowerCase(),
 		setupFutureUsage,
-		getPaymentMethodTypes( cart )
+		getPaymentMethodTypes( enabledMethods )
 	);
 
 	return Boolean( availablePaymentMethods[ paymentMethod ] );
