@@ -200,8 +200,16 @@ install_woocommerce() {
 	INSTALLED_WC_VERSION=$(wp plugin get woocommerce --field=version)
 
 	if [[ $WC_VERSION == 'beta' ]] || [[ $WC_VERSION == 'rc' ]]; then
-		# Get the latest non-trunk version number from the .org repo. This will usually be the latest release, beta, or rc.
-		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("'$WC_VERSION'";"i"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last' --sort-keys)
+		WC_INFO=$(curl -s https://api.wordpress.org/plugins/info/1.0/woocommerce.json)
+		LATEST_WC_VERSION=$(echo "$WC_INFO" | jq -r '.version')
+		PRERELEASE_VERSION=$(echo "$WC_INFO" | jq -r '.versions | with_entries(select(.key|match("'$WC_VERSION'";"i"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last' --sort-keys)
+		# Once its stable release ships, a beta or rc is older than stable and tests nothing new.
+		if [[ $(printf '%s\n%s\n' "${PRERELEASE_VERSION%%-*}" "$LATEST_WC_VERSION" | sort -V | tail -n1) == "$LATEST_WC_VERSION" ]]; then
+			echo "No WooCommerce $WC_VERSION newer than $LATEST_WC_VERSION, installing $LATEST_WC_VERSION instead of $PRERELEASE_VERSION."
+			WC_VERSION=$LATEST_WC_VERSION
+		else
+			WC_VERSION=$PRERELEASE_VERSION
+		fi
 	fi
 
 	if [[ -n $INSTALLED_WC_VERSION ]] && [[ $WC_VERSION == 'latest' ]]; then

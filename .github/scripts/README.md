@@ -64,7 +64,7 @@ Single JSON object containing versions array and metadata:
 - Fetches latest WC version from WordPress.org API
 - Dynamically calculates L-1 version (latest stable in previous major branch)
 - Includes only L-1 and current major versions (skipping intermediate versions)
-- Dynamically resolves beta and RC versions from current major branch
+- Dynamically resolves the newest beta and RC versions, including the next major's
 - Outputs structured JSON for easy parsing
 - Skips beta and RC versions when not available, or once their stable release ships
 - Provides debug output to stderr for troubleshooting
@@ -93,7 +93,7 @@ The workflow uses an optimized PHP version strategy to reduce job count while ma
 
 1. Fetches the latest WooCommerce version from `https://api.wordpress.org/plugins/info/1.0/woocommerce.json`
 2. Dynamically calculates the L-1 version by finding the latest stable version in the previous major branch
-3. Fetches beta and RC versions from the current major branch only
+3. Fetches the newest beta and RC versions, skipping any whose stable release has shipped
 4. Outputs JSON object to stdout for matrix generation
 
 ### Workflow Integration
