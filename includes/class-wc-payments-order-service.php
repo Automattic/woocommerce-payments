@@ -523,6 +523,39 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Gets the payment provider's decline details for a failure note.
+	 *
+	 * @param array $error The payment provider's error.
+	 *
+	 * @return string The formatted decline message.
+	 */
+	public function get_provider_decline_message( array $error ): string {
+		$decline_code = $error['decline_code'] ?? '';
+
+		if ( ! empty( $decline_code ) ) {
+			$message = sprintf(
+				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
+				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
+				esc_html( $error['message'] ?? '' ),
+				esc_html( $decline_code )
+			);
+		} else {
+			// translators: %s Stripe error message.
+			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $error['message'] ?? '' ) );
+		}
+
+		if ( ! empty( $error['doc_url'] ) ) {
+			$message .= ' ' . sprintf(
+				/* translators: %1$s: a URL with more information about the declined payment. */
+				__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
+				esc_url( $error['doc_url'] )
+			);
+		}
+
+		return $message;
+	}
+
+	/**
 	 * Leaves order in current status (should be on-hold), adds a note with a link to the transaction.
 	 *
 	 * @param WC_Order    $order         Order object.

@@ -880,6 +880,48 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Provider decline details include escaped error data and an optional documentation link.
+	 */
+	public function test_get_provider_decline_message_with_doc_url() {
+		$error = [
+			'message'      => 'Customer <cancelled> checkout',
+			'decline_code' => 'klarna_payment_declined',
+			'doc_url'      => 'https://docs.example.com/klarna-decline',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Customer &lt;cancelled&gt; checkout</code>. Decline code: <code>klarna_payment_declined</code>. <a href="https://docs.example.com/klarna-decline" target="_blank" rel="noopener noreferrer">More information</a>', $message );
+	}
+
+	/**
+	 * Decline messages without a documentation URL do not add a link.
+	 */
+	public function test_get_provider_decline_message_without_doc_url() {
+		$error = [
+			'message'      => 'Customer cancelled checkout',
+			'decline_code' => 'klarna_payment_declined',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Customer cancelled checkout</code>. Decline code: <code>klarna_payment_declined</code>.', $message );
+	}
+
+	/**
+	 * A provider error without a decline code retains the webhook's generic message format.
+	 */
+	public function test_get_provider_decline_message_without_decline_code() {
+		$error = [
+			'message' => 'Provider <error>',
+		];
+
+		$message = $this->order_service->get_provider_decline_message( $error );
+
+		$this->assertSame( 'With the following message: <code>Provider &lt;error&gt;</code>', $message );
+	}
+
+	/**
 	 * Method `mark_payment_failed` should exit if the order status is already failed.
 	 */
 	public function test_mark_payment_failed_exits_on_existing_order_status_failed() {

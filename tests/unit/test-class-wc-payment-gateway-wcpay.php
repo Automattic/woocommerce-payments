@@ -2146,6 +2146,97 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
 	}
 
+	/**
+	 * A redirect return must not duplicate the failure note already written by the BNPL webhook.
+	 */
+	public function test_process_redirect_payment_does_not_duplicate_bnpl_webhook_note() {
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
+		$save_payment_method = false;
+		$error               = [
+			'code'           => 'payment_intent_payment_attempt_failed',
+			'message'        => 'The customer declined the payment.',
+			'decline_code'   => 'klarna_payment_declined',
+			'doc_url'        => 'https://docs.example.com/klarna-decline',
+			'payment_method' => [
+				'id'   => $payment_method_id,
+				'type' => Payment_Method::KLARNA,
+			],
+		];
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		$intent    = WC_Helper_Intention::create_intention(
+			[
+				'status'             => Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'metadata'           => [ 'order_id' => (string) $order_id ],
+				'last_payment_error' => $error,
+			]
+		);
+		$charge_id = $intent->get_charge()->get_id();
+
+		$db = $this->createMock( WC_Payments_DB::class );
+		$db->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_mock' )
+			->willReturn( $order );
+
+		$webhook = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$db,
+			$this->mock_wcpay_account,
+			$this->createMock( WC_Payments_Remote_Note_Service::class ),
+			$this->order_service,
+			$this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class ),
+			$this->card_gateway,
+			$this->mock_cache,
+			$this->createMock( WC_Payments_Onboarding_Service::class ),
+			$this->mock_token_service
+		);
+
+		$webhook->process(
+			[
+				'id'       => 'evt_mock',
+				'type'     => 'payment_intent.payment_failed',
+				'livemode' => WC_Payments::mode()->is_live(),
+				'data'     => [
+					'object' => [
+						'id'                 => $intent_id,
+						'metadata'           => [ 'order_id' => (string) $order_id ],
+						'charges'            => [ 'data' => [ [ 'id' => $charge_id ] ] ],
+						'last_payment_error' => $error,
+					],
+				],
+			]
+		);
+
+		$notes_before_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
+		$this->assertSame( 1, substr_count( implode( "\n", $notes_before_return ), 'Decline code: <code>klarna_payment_declined</code>' ) );
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+
+		wp_get_current_user();
+		$redirect_url = null;
+		$gateway      = $this->get_gateway_mock_intercepting_redirect( $redirect_url );
+		$this->mock_wcpay_request( Get_Intention::class, 1, $intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$gateway->process_redirect_payment( $order, $intent_id, $save_payment_method );
+
+		$notes_after_return = wp_list_pluck( wc_get_order_notes( [ 'order_id' => $order_id ] ), 'content' );
+		$this->assertSame( $notes_before_return, $notes_after_return );
+		$this->assertSame( Order_Status::PENDING, wc_get_order( $order_id )->get_status() );
+		$this->assertSame( $order->get_checkout_payment_url(), $redirect_url );
+	}
+
 	public function test_get_payment_methods_with_post_request_context() {
 		$order               = WC_Helper_Order::create_order();
 		$payment_information = new Payment_Information( 'pm_mock', $order );

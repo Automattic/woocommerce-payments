@@ -2680,20 +2680,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// The payment provider declined the payment, but the customer can retry with a
 				// different payment method, so the order is left pending and the provider's error
 				// details are recorded for the merchant.
-				$message = sprintf(
-					/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
-					__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
-					esc_html( $error['message'] ?? '' ),
-					esc_html( $error['decline_code'] ?? '' )
-				);
-				if ( ! empty( $error['doc_url'] ) ) {
-					$message .= ' ' . sprintf(
-						/* translators: %1$s: a URL with more information about the declined payment. */
-						__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
-						esc_url( $error['doc_url'] )
-					);
-				}
-				$note = $this->order_service->get_payment_failure_note( $order, $intent_id, $charge_id ?? '', $message );
+				$message = $this->order_service->get_provider_decline_message( $error );
+				$note    = $this->order_service->get_payment_failure_note( $order, $intent_id, $charge_id ?? '', $message );
 				// The webhook may have already recorded the same failure, so don't duplicate the note.
 				if ( ! $this->order_service->order_note_exists( $order, $note ) ) {
 					$order->add_order_note( $note );

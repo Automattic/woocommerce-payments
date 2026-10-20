@@ -527,46 +527,13 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$intent_id = $event_body['data']['object']['id'] ?? '';
-		$note      = $this->order_service->get_payment_failure_note( $order, $intent_id, $charge_id, $this->get_bnpl_failure_message( $last_payment_error ) );
+		$note      = $this->order_service->get_payment_failure_note( $order, $intent_id, $charge_id, $this->order_service->get_provider_decline_message( $last_payment_error ) );
 
 		if ( $this->order_service->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
 		$order->add_order_note( $note );
-	}
-
-	/**
-	 * Gets the failure message for a BNPL payment failure, with the payment provider's error details.
-	 *
-	 * @param array $error The last payment error from the payment failed event.
-	 *
-	 * @return string The failure message.
-	 */
-	private function get_bnpl_failure_message( array $error ): string {
-		$decline_code = $error['decline_code'] ?? '';
-
-		if ( ! empty( $decline_code ) ) {
-			$message = sprintf(
-				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
-				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
-				esc_html( $error['message'] ?? '' ),
-				esc_html( $decline_code )
-			);
-		} else {
-			// translators: %s Stripe error message.
-			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $error['message'] ?? '' ) );
-		}
-
-		if ( ! empty( $error['doc_url'] ) ) {
-			$message .= ' ' . sprintf(
-				/* translators: %1$s: a URL with more information about the declined payment. */
-				__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
-				esc_url( $error['doc_url'] )
-			);
-		}
-
-		return $message;
 	}
 
 	/**
@@ -1134,25 +1101,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$message      = $error['message'] ?? '';
 
 		switch ( $code ) {
-			case 'payment_intent_payment_attempt_failed':
-				if ( 'klarna_payment_declined' === $decline_code ) {
-					// Record the payment provider's decline details, formatted the same way as the checkout failure note.
-					$formatted_message = sprintf(
-						/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
-						__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
-						esc_html( $message ),
-						esc_html( $decline_code )
-					);
-					if ( ! empty( $error['doc_url'] ) ) {
-						$formatted_message .= ' ' . sprintf(
-							/* translators: %1$s: a URL with more information about the declined payment. */
-							__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
-							esc_url( $error['doc_url'] )
-						);
-					}
-					return $formatted_message;
-				}
-				break;
 			case 'account_closed':
 				return __( "The customer's bank account has been closed.", 'woocommerce-payments' );
 			case 'debit_not_authorized':
