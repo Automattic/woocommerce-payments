@@ -170,6 +170,12 @@ if ! wp theme is-installed storefront > /dev/null 2>&1; then
 fi
 wp theme activate storefront
 
+# WooCommerce only applies Storefront's 3x4 product grid on `after_switch_theme`, which never fires
+# when Storefront is already active, leaving the 4x4 default. Product page numbers in the config
+# assume 12 products per page.
+wp option update woocommerce_catalog_columns 3
+wp option update woocommerce_catalog_rows 4
+
 # Enable WooPayments settings.
 echo "Enabling WooPayments settings..."
 wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'

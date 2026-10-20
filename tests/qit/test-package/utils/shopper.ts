@@ -475,16 +475,6 @@ export const addToCartFromShopPage = async (
 	);
 
 	const addToCartButton = page.getByLabel( addToCartRegex );
-
-	// `pageNumber` assumes every sample product imported. When one fails to import,
-	// the products after it move up, and the last one on a page lands on the page before.
-	if ( product.pageNumber > 1 && ! ( await addToCartButton.isVisible() ) ) {
-		await navigation.goToShop( page, {
-			pageNumber: product.pageNumber - 1,
-			currency,
-		} );
-	}
-
 	await addToCartButton.click();
 
 	try {
