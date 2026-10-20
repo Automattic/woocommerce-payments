@@ -132,3 +132,4 @@ jobs:
         with:
           slack-token: ${{ secrets.E2E_SLACK_TOKEN }}
           channel-id: ${{ secrets.E2E_SLACK_CHANNEL_ID }}
+          skip-repeats: 'true'
