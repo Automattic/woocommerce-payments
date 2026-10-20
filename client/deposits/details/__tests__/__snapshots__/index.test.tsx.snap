@@ -111,7 +111,7 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
     class="wcpay-deposit-overview"
   >
     <div
-      class="components-surface components-card wcpay-deposit-automatic emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card wcpay-deposit-automatic emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -169,7 +169,7 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
       />
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -177,7 +177,7 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-12 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-12 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
@@ -190,7 +190,7 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
           </span>
         </div>
         <div
-          class="components-card__body components-card-body emotion-16 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-16 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -356,7 +356,7 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
     class="wcpay-deposit-overview"
   >
     <div
-      class="components-surface components-card wcpay-deposit-automatic emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card wcpay-deposit-automatic emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -414,7 +414,7 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
       />
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -422,7 +422,7 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-12 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-12 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
@@ -435,7 +435,7 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
           </span>
         </div>
         <div
-          class="components-card__body components-card-body emotion-16 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-16 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -713,7 +713,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
       </ul>
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -721,7 +721,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
@@ -734,7 +734,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
           </span>
         </div>
         <div
-          class="components-card__body components-card-body emotion-8 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body emotion-8 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >

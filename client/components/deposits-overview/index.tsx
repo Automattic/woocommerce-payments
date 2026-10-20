@@ -4,11 +4,12 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
-import { Button, CardBody, CardFooter } from '@wordpress/components';
+import { Button, CardFooter } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { CardBody } from 'wcpay/components/card';
 import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';

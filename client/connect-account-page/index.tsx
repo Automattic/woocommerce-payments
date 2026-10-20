@@ -8,17 +8,12 @@ import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardBody,
-	Panel,
-	PanelBody,
-} from '@wordpress/components';
+import { Button, Panel, PanelBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card, CardBody } from 'wcpay/components/card';
 import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
