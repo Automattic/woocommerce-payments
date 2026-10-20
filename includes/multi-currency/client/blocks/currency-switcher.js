@@ -117,6 +117,12 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 			? Object.keys( enabledCurrencies )
 			: [];
 
+		// Mirrors CurrencySwitcherBlock::get_widget_styles(): use system colours for the open
+		// option list when the select has no background of its own.
+		const isTransparentBackground =
+			! backgroundColor ||
+			backgroundColor.trim().toLowerCase() === 'transparent';
+
 		const styles = {
 			div: {
 				lineHeight: fontLineHeight,
@@ -128,7 +134,11 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 				borderWidth: border ? '1px' : '0px',
 				borderColor: borderColor,
 				borderRadius: borderRadius,
+				...( isTransparentBackground && { colorScheme: 'light dark' } ),
 			},
+			option: isTransparentBackground
+				? { backgroundColor: 'Canvas', color: 'CanvasText' }
+				: undefined,
 		};
 
 		// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -324,7 +334,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 						style={ styles.select }
 					>
 						{ isLoading && (
-							<option>
+							<option style={ styles.option }>
 								{ __( 'Loading…', 'woocommerce-payments' ) }
 							</option>
 						) }
@@ -334,6 +344,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 								<option
 									key={ enabledCurrencies[ code ].id }
 									value={ enabledCurrencies[ code ].code }
+									style={ styles.option }
 								>
 									{ supportsFlagEmoji && flag
 										? enabledCurrencies[ code ].flag + ' '
