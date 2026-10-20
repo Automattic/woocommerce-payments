@@ -90,6 +90,8 @@ jobs:
           done
 
           MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
+          # DEMO ONLY: two subscriptions legs, to exercise the Slack summary.
+          MATRIX_JSON=$(jq -nc --arg l1 "$L1_VERSION" --arg latest "$LATEST_WC_VERSION" '{include: [ {woocommerce: $l1, wordpress: "latest", php: "8.3", project: "subscriptions"}, {woocommerce: $latest, wordpress: "latest", php: "8.3", project: "subscriptions"} ]}')
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   qit-e2e:
