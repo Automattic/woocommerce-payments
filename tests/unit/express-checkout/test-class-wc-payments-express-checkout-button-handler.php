@@ -175,7 +175,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( false );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( false );
 
 		$config = $this->system_under_test->payment_fields_js_config( [] );
@@ -198,7 +198,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( true );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( false );
 
 		$config = $this->system_under_test->payment_fields_js_config( [] );
@@ -216,7 +216,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( true );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( true );
 
 		$config = $this->system_under_test->payment_fields_js_config( [] );
@@ -235,7 +235,7 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 			->willReturn( false );
 
 		$this->mock_ece_button_helper
-			->method( 'can_use_amazon_pay' )
+			->method( 'is_amazon_pay_enabled_by_merchant' )
 			->willReturn( true );
 
 		$this->mock_ece_button_helper
@@ -246,6 +246,50 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		$config = $this->system_under_test->payment_fields_js_config( [] );
 
 		$this->assertFalse( $config['isAmazonPayEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_enables_amazon_pay_when_the_current_currency_rules_it_out() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'checkout' );
+
+		$this->mock_ece_button_helper
+			->method( 'is_amazon_pay_enabled_by_merchant' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( false );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->willReturn( true );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertTrue( $config['isAmazonPayEnabled'] );
+	}
+
+	public function test_init_registers_hooks_when_only_amazon_pay_is_on_and_the_current_currency_rules_it_out() {
+		$this->mock_wcpay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_wcpay_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
+		$this->mock_ece_button_helper->method( 'is_amazon_pay_enabled_by_merchant' )->willReturn( true );
+		$this->mock_ece_button_helper->method( 'can_use_amazon_pay' )->willReturn( false );
+
+		$this->system_under_test->init();
+
+		$this->assertSame( 10, has_filter( 'wcpay_payment_fields_js_config', [ $this->system_under_test, 'payment_fields_js_config' ] ) );
+		$this->assertSame( 10, has_action( 'wp_enqueue_scripts', [ $this->system_under_test, 'scripts' ] ) );
+	}
+
+	public function test_init_skips_hooks_when_no_express_checkout_method_is_on() {
+		$this->mock_wcpay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_wcpay_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
+		$this->mock_ece_button_helper->method( 'is_amazon_pay_enabled_by_merchant' )->willReturn( false );
+
+		$this->system_under_test->init();
+
+		$this->assertFalse( has_filter( 'wcpay_payment_fields_js_config', [ $this->system_under_test, 'payment_fields_js_config' ] ) );
 	}
 
 	public function test_account_creation_is_possible_when_username_and_password_generation_are_disabled() {
