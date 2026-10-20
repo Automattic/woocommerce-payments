@@ -66,7 +66,7 @@ Single JSON object containing versions array and metadata:
 - Includes only L-1 and current major versions (skipping intermediate versions)
 - Dynamically resolves beta and RC versions from current major branch
 - Outputs structured JSON for easy parsing
-- Skips beta versions when not available
+- Skips beta and RC versions when not available, or once their stable release ships
 - Provides debug output to stderr for troubleshooting
 
 ## Matrix Generation Strategy

@@ -96,8 +96,16 @@ done
 # constructing invalid wporg download URLs (woocommerce.latest.zip → 404).
 VERSIONS+=("$LATEST_WC_VERSION")
 if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
-    VERSIONS+=("$LATEST_BETA_VERSION")
-    echo "Including beta version: $LATEST_BETA_VERSION" >&2
+    # Once a beta's release ships, the beta is older than stable and adds nothing.
+    BETA_BASE="${LATEST_BETA_VERSION%%-*}"
+    HIGHEST=$(printf '%s\n%s\n' "$BETA_BASE" "$LATEST_WC_VERSION" | sort -V | tail -n1)
+    if [[ "$HIGHEST" == "$BETA_BASE" && "$BETA_BASE" != "$LATEST_WC_VERSION" ]]; then
+        VERSIONS+=("$LATEST_BETA_VERSION")
+        echo "Including beta version: $LATEST_BETA_VERSION" >&2
+    else
+        echo "Skipping beta version $LATEST_BETA_VERSION because stable $LATEST_WC_VERSION is already released for this line." >&2
+        LATEST_BETA_VERSION=""
+    fi
 else
     echo "No beta version available, skipping beta tests" >&2
 fi
