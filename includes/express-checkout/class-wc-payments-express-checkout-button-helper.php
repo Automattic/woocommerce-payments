@@ -38,7 +38,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 	/**
 	 * Whether this class's `should_show_express_checkout_button()` last rejected only for a reason
-	 * the live cart can still change: the cart is empty, or its currency rules out Amazon Pay.
+	 * the live cart can still change: the cart is empty, or Amazon Pay is switched on but not
+	 * available yet (for example in the cart's current currency).
 	 *
 	 * Lets `should_load_express_checkout_scripts()` relax that rejection alone, so a `false` from an
 	 * override (see `WC_Payments::set_express_checkout_helper()`) still prevents loading.
@@ -467,10 +468,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Checks if the merchant switched Amazon Pay on as an express checkout button.
 	 *
-	 * Unlike `can_use_amazon_pay()`, this skips the gateway's runtime availability, which
-	 * depends on the current currency. Block pages need the button registered even when the
-	 * page loads in a currency Amazon Pay doesn't support, because the shopper can switch to
-	 * one it does without a reload.
+	 * Unlike `can_use_amazon_pay()`, this skips the gateway's runtime availability checks:
+	 * currency, Stripe capability status and account state. Block pages need the button
+	 * registered even when the page loads in a currency Amazon Pay doesn't support, because
+	 * the shopper can switch to one it does without a reload.
 	 *
 	 * @return boolean
 	 */
@@ -705,8 +706,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * Block cart and checkout pages add the first product through the Store API without a reload,
 	 * and the block payment methods re-run `canMakePayment()` against the live cart. So on those
-	 * pages, a rejection caused only by the cart being empty, or by its currency ruling out Amazon
-	 * Pay, still loads them; the buttons stay hidden until the cart has something they can pay for.
+	 * pages, a rejection caused only by the cart being empty, or by Amazon Pay being switched on but
+	 * not available yet, still loads them; the buttons stay hidden until the cart has something
+	 * they can pay for.
 	 *
 	 * @return bool
 	 */

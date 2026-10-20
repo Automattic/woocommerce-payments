@@ -1182,11 +1182,11 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * Data provider for can_use_amazon_pay() tests.
+	 * Data provider for is_amazon_pay_enabled_by_merchant() and can_use_amazon_pay() tests.
 	 *
 	 * @return array
 	 */
-	public function can_use_amazon_pay_provider() {
+	public function amazon_pay_availability_provider() {
 		return [
 			'feature flag disabled'                => [
 				'feature_flag_enabled'         => false,
@@ -1199,7 +1199,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			'gateway disabled'                     => [
 				'feature_flag_enabled'         => true,
 				'gateway_enabled'              => false,
-				'gateway_available'            => false,
+				'gateway_available'            => true,
 				'tax_on_billing'               => false,
 				'expected_enabled_by_merchant' => false,
 				'expected_can_use'             => false,
@@ -1232,9 +1232,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * @dataProvider can_use_amazon_pay_provider
+	 * @dataProvider amazon_pay_availability_provider
 	 */
-	public function test_can_use_amazon_pay( $feature_flag_enabled, $gateway_enabled, $gateway_available, $tax_on_billing, $expected_enabled_by_merchant, $expected_can_use ) {
+	public function test_amazon_pay_availability( $feature_flag_enabled, $gateway_enabled, $gateway_available, $tax_on_billing, $expected_enabled_by_merchant, $expected_can_use ) {
 		$original_gateway_map     = WC_Payments::get_payment_gateway_map();
 		$original_account_service = WC_Payments::get_account_service();
 		$original_cache           = WC_Payments::get_database_cache();
