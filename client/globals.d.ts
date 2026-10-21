@@ -110,9 +110,6 @@ declare global {
 		restUrl: string;
 		siteLogoUrl: string;
 		shouldUseExplicitPrice: boolean;
-		fraudProtection: {
-			isWelcomeTourDismissed?: boolean;
-		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		onboardingFieldsData?: {

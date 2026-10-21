@@ -1037,9 +1037,6 @@ class WC_Payments_Admin {
 			'currencyData'                       => $currency_data,
 			'restUrl'                            => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'siteLogoUrl'                        => $site_logo_url,
-			'fraudProtection'                    => [
-				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
-			],
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
 			'isWooPayStoreCountryAvailable'      => WooPay_Utilities::is_store_country_available(),

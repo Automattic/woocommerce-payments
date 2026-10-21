@@ -10,25 +10,20 @@ import { Card } from '@wordpress/components';
  */
 import CardBody from '../card-body';
 import ProtectionLevels from './protection-levels';
-import FraudProtectionTour from './tour';
 
 const FraudProtection: React.FC = () => {
 	return (
-		<>
-			<Card className="fraud-protection">
-				<CardBody className="wcpay-card-body">
-					<h4>
-						{ __(
-							'Set your payment risk level',
-							'woocommerce-payments'
-						) }
-					</h4>
-					<ProtectionLevels />
-				</CardBody>
-			</Card>
-
-			<FraudProtectionTour />
-		</>
+		<Card className="fraud-protection">
+			<CardBody className="wcpay-card-body">
+				<h4>
+					{ __(
+						'Set your payment risk level',
+						'woocommerce-payments'
+					) }
+				</h4>
+				<ProtectionLevels />
+			</CardBody>
+		</Card>
 	);
 };
 

@@ -192,7 +192,6 @@ wp eval-file ./bootstrap/qit-jetpack-status.php
 wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true
 wp option set wcpaydev_proxy 0 --quiet 2>/dev/null || true
 wp option set wcpay_should_redirect_to_onboarding 0 --quiet 2>/dev/null || true
-wp option set wcpay_fraud_protection_welcome_tour_dismissed 1 --quiet 2>/dev/null || true
 
 # Disable rate limiters for E2E testing (matches legacy E2E setup).
 echo "Disabling rate limiters for E2E testing..."
