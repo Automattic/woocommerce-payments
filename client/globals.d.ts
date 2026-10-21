@@ -297,6 +297,7 @@ declare global {
 		isCheckout: boolean;
 		paymentMethodsConfig: typeof wooPaymentsPaymentMethodsConfig;
 		cartContainsSubscription: boolean;
+		subscriptionRequiresManualRenewal: boolean;
 		currency: string;
 		cartTotal: number;
 		enabledBillingFields: Record<

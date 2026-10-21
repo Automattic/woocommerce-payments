@@ -166,6 +166,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Payments::set_gateway( $this->default_gateway );
+		WC_Subscriptions::set_wcs_is_manual_renewal_required( null );
 		unset( $_GET['key'] );
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		wp_dequeue_script( 'wcpay-upe-checkout' );
@@ -337,6 +338,40 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$order->save();
 
 		return $order;
+	}
+
+	public function test_get_payment_fields_js_config_flags_a_subscription_requiring_manual_renewal() {
+		$this->stub_enabled_payment_methods();
+		$this->mock_wcpay_gateway
+			->method( 'is_subscription_item_in_cart' )
+			->willReturn( true );
+		$this->mock_wcs_is_manual_renewal_required( true );
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertTrue( $payment_fields['cartContainsSubscription'] );
+		$this->assertTrue( $payment_fields['subscriptionRequiresManualRenewal'] );
+	}
+
+	public function test_get_payment_fields_js_config_does_not_flag_manual_renewal_for_an_automatic_subscription() {
+		$this->stub_enabled_payment_methods();
+		$this->mock_wcpay_gateway
+			->method( 'is_subscription_item_in_cart' )
+			->willReturn( true );
+		$this->mock_wcs_is_manual_renewal_required( false );
+
+		$payment_fields = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertTrue( $payment_fields['cartContainsSubscription'] );
+		$this->assertFalse( $payment_fields['subscriptionRequiresManualRenewal'] );
+	}
+
+	private function mock_wcs_is_manual_renewal_required( $value ) {
+		WC_Subscriptions::set_wcs_is_manual_renewal_required(
+			function () use ( $value ) {
+				return $value;
+			}
+		);
 	}
 
 	public function test_get_payment_fields_js_config_exposes_order_for_guest_order_with_matching_key() {
