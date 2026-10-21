@@ -496,7 +496,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+		$note = $this->get_payment_failure_note( $order, $intent_id, $charge_id, $message );
 		if ( $this->order_note_exists( $order, $note )
 			|| $order->has_status( [ Order_Status::FAILED ] ) ) {
 			$this->complete_order_processing( $order );
@@ -506,6 +506,53 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Get content for the payment failure order note.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 * @param string   $message   Optional message to add to the note.
+	 *
+	 * @return string Note content.
+	 */
+	public function get_payment_failure_note( $order, $intent_id, $charge_id, $message = '' ) {
+		return $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+	}
+
+	/**
+	 * Gets the payment provider's decline details for a failure note.
+	 *
+	 * @param array $error The payment provider's error.
+	 *
+	 * @return string The formatted decline message.
+	 */
+	public function get_provider_decline_message( array $error ): string {
+		$decline_code = $error['decline_code'] ?? '';
+
+		if ( ! empty( $decline_code ) ) {
+			$message = sprintf(
+				/* translators: %1$s: the payment provider's error message, %2$s: the decline code returned by the payment provider. */
+				__( 'With the following message: <code>%1$s</code>. Decline code: <code>%2$s</code>.', 'woocommerce-payments' ),
+				esc_html( $error['message'] ?? '' ),
+				esc_html( $decline_code )
+			);
+		} else {
+			// translators: %s Stripe error message.
+			$message = sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), esc_html( $error['message'] ?? '' ) );
+		}
+
+		if ( ! empty( $error['doc_url'] ) ) {
+			$message .= ' ' . sprintf(
+				/* translators: %1$s: a URL with more information about the declined payment. */
+				__( '<a href="%1$s" target="_blank" rel="noopener noreferrer">More information</a>', 'woocommerce-payments' ),
+				esc_url( $error['doc_url'] )
+			);
+		}
+
+		return $message;
 	}
 
 	/**
