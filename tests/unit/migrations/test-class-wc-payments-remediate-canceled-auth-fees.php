@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use WCPay\Constants\Intent_Status;
 
 /**
@@ -620,14 +621,27 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $order->get_id(), $orders[0]->get_id() );
 	}
 
-	public function test_is_hpos_enabled_returns_boolean() {
+	public function test_is_hpos_enabled_follows_the_hpos_option() {
+		$hpos_option          = CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION;
+		$original_hpos_option = get_option( $hpos_option );
+
 		// Use reflection to test protected method.
 		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'is_hpos_enabled' );
 		$reflection->setAccessible( true );
 
-		$result = $reflection->invoke( $this->remediation );
+		try {
+			update_option( $hpos_option, 'yes' );
+			$this->assertTrue( $reflection->invoke( $this->remediation ) );
 
-		$this->assertSame( WC_Payments_Utils::is_hpos_tables_usage_enabled(), $result );
+			update_option( $hpos_option, 'no' );
+			$this->assertFalse( $reflection->invoke( $this->remediation ) );
+		} finally {
+			if ( false === $original_hpos_option ) {
+				delete_option( $hpos_option );
+			} else {
+				update_option( $hpos_option, $original_hpos_option );
+			}
+		}
 	}
 
 	public function test_sync_order_stats_writes_the_order_stats_row() {
