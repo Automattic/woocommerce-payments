@@ -11,8 +11,8 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import {
-	Card,
 	CheckboxControl,
 	TextareaControl,
 	ExternalLink,

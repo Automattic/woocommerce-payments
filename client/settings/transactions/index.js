@@ -6,12 +6,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import {
-	Card,
-	CheckboxControl,
-	Notice,
-	TextControl,
-} from '@wordpress/components';
+import { Card } from 'wcpay/components/card';
+import { CheckboxControl, Notice, TextControl } from '@wordpress/components';
 import CardBody from '../card-body';
 import {
 	store as settingsStore,

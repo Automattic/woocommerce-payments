@@ -3,8 +3,8 @@
 .dispute-recommendations-card {
 	// Each section is its own Accordion card (Lucy review 2026-05-29). The
 	// Accordion shell (.wcpay-accordion) supplies the card border, radius
-	// and padding. It is not a .components-card, so it misses the 24px
-	// inter-card gap that `.woocommerce-payments-page .components-card`
+	// and padding. It is not a `wcpay-card`, so it misses the 24px
+	// inter-card gap that `.woocommerce-payments-page .wcpay-card`
 	// applies; add it back so successive cards sit clear of each other and
 	// of the Timeline below.
 	margin-bottom: $grid-unit-30;

@@ -306,7 +306,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
       </div>
     </div>
     <div
-      class="components-surface components-card emotion-0 emotion-1"
+      class="components-surface components-card wcpay-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -314,7 +314,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header wcpay-loan-summary-header emotion-4 emotion-1"
+          class="components-flex components-card__header components-card-header wcpay-card__header wcpay-loan-summary-header emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
@@ -332,7 +332,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
           />
         </div>
         <div
-          class="components-card__body components-card-body wcpay-loan-summary-body emotion-10 emotion-1"
+          class="components-card__body components-card-body wcpay-card__body wcpay-loan-summary-body emotion-10 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
