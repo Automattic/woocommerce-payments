@@ -75,9 +75,9 @@
 		display: grid;
 		grid-template-columns: auto 24px;
 		align-items: center;
-		padding: $gap-small;
+		padding: $gap-smallest $gap-small;
 		margin: 0;
-		min-height: 24px + $gap-small * 2;
+		min-height: 24px;
 
 		&.is-highlighted {
 			background: $gray-0;
@@ -90,6 +90,12 @@
 		&.is-group {
 			color: $gray-900;
 			font-weight: 600;
+			padding-top: $gap-smaller;
+		}
+
+		&.is-group:not( :first-child ) {
+			border-top: 1px solid $gray-200;
+			margin-top: $gap-smaller;
 		}
 	}
 
