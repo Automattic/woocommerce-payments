@@ -6,6 +6,7 @@ import {
 	mountStripePaymentElement,
 	processPayment,
 	renderTerms,
+	updateLinkEmail,
 	__resetGatewayUPEComponentsElement,
 	__resetHasCheckoutCompleted,
 	isMissingRequiredAddressFieldsForBNPL,
@@ -22,17 +23,23 @@ import {
 	appendPaymentMethodErrorDataToForm,
 	appendPaymentMethodIdToForm,
 	getSelectedUPEGatewayPaymentMethod,
+	getUpeSettings,
 } from '../upe-utils';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( '../../upe-styles' );
 jest.mock( 'wcpay/utils/appearance-cache' );
 
-jest.mock( '../upe-utils' );
+jest.mock( '../upe-utils', () => ( {
+	...jest.createMockFromModule( '../upe-utils' ),
+	getUpeSettings: jest.fn( () => ( {} ) ),
+} ) );
 
 jest.mock( 'wcpay/checkout/utils/upe' );
 
-const { isLinkEnabled } = jest.requireMock( 'wcpay/checkout/utils/upe' );
+const { getLinkEmail, isLinkEnabled } = jest.requireMock(
+	'wcpay/checkout/utils/upe'
+);
 
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getUPEConfig: jest.fn( ( argument ) => {
@@ -325,6 +332,97 @@ describe( 'Stripe Payment Element mounting', () => {
 				wallets: expect.objectContaining( { link: 'auto' } ),
 			} )
 		);
+	} );
+
+	describe( 'updateLinkEmail', () => {
+		beforeEach( async () => {
+			isLinkEnabled.mockReturnValue( true );
+			getLinkEmail.mockImplementation( ( email ) =>
+				email.includes( '@' ) ? email : undefined
+			);
+			getUpeSettings.mockImplementation( () => ( {
+				defaultValues: {
+					billingDetails: {
+						email: document.getElementById( 'billing_email' )
+							?.value,
+					},
+				},
+			} ) );
+			getFingerprint.mockImplementation( () => 'fingerprint' );
+			__resetGatewayUPEComponentsElement( 'card' );
+			mockDomElement.dataset.paymentMethodType = 'card';
+			await mountStripePaymentElement(
+				apiMock,
+				mockDomElement,
+				'shortcode_checkout'
+			);
+			jest.clearAllMocks();
+		} );
+
+		afterEach( () => {
+			isLinkEnabled.mockReset();
+			getLinkEmail.mockReset();
+			getUpeSettings.mockImplementation( () => ( {} ) );
+			document.getElementById( 'billing_email' )?.remove();
+		} );
+
+		const setCheckoutEmail = ( email ) => {
+			let input = document.getElementById( 'billing_email' );
+			if ( ! input ) {
+				input = document.createElement( 'input' );
+				input.id = 'billing_email';
+				document.body.appendChild( input );
+			}
+			input.value = email;
+			return email;
+		};
+
+		test( 'passes the checkout email to the card element', async () => {
+			await updateLinkEmail( setCheckoutEmail( 'first@example.com' ) );
+
+			expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+			expect( mockUpdateFunction ).toHaveBeenCalledWith( {
+				defaultValues: {
+					billingDetails: { email: 'first@example.com' },
+				},
+			} );
+		} );
+
+		test( 'does not update the element twice for the same email', async () => {
+			await updateLinkEmail( setCheckoutEmail( 'second@example.com' ) );
+			await updateLinkEmail( setCheckoutEmail( 'second@example.com' ) );
+
+			expect( mockUpdateFunction ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'does not update the element for the email it was created with', async () => {
+			__resetGatewayUPEComponentsElement( 'card' );
+			setCheckoutEmail( 'prefilled@example.com' );
+			await mountStripePaymentElement(
+				apiMock,
+				mockDomElement,
+				'shortcode_checkout'
+			);
+			mockUpdateFunction.mockClear();
+
+			await updateLinkEmail( 'prefilled@example.com' );
+
+			expect( mockUpdateFunction ).not.toHaveBeenCalled();
+		} );
+
+		test( 'does not update the element when Link is disabled', async () => {
+			isLinkEnabled.mockReturnValue( false );
+
+			await updateLinkEmail( setCheckoutEmail( 'third@example.com' ) );
+
+			expect( mockUpdateFunction ).not.toHaveBeenCalled();
+		} );
+
+		test( 'does not update the element for an invalid email', async () => {
+			await updateLinkEmail( setCheckoutEmail( 'shopper' ) );
+
+			expect( mockUpdateFunction ).not.toHaveBeenCalled();
+		} );
 	} );
 } );
 

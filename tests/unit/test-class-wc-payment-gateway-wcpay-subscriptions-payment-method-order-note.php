@@ -631,4 +631,64 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->assertStringContainsString( '4242', $old_payment_method_title_modified );
 		$this->assertStringNotContainsString( 'Link', $old_payment_method_title_modified );
 	}
+
+	public function test_link_old_payment_method_uses_onelink_for_gb_account() {
+		$this->rebind_subscription_note_filters_to_test_gateway( \WCPay\Constants\Country_Code::UNITED_KINGDOM );
+
+		$old_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'customer@example.com' );
+
+		$newer_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$newer_token->set_last4( '9999' );
+		$newer_token->save();
+
+		$this->renewal_order->add_payment_token( $old_token );
+		$this->renewal_order->add_payment_token( $newer_token );
+
+		$old_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+			'woocommerce_subscription_note_old_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***omer@example.com', $old_payment_method_title_modified );
+		$this->assertStringContainsString( 'Onelink', $old_payment_method_title_modified );
+	}
+
+	public function test_link_new_saved_payment_method_uses_onelink_for_gb_account() {
+		$this->rebind_subscription_note_filters_to_test_gateway( \WCPay\Constants\Country_Code::UNITED_KINGDOM );
+
+		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'buyer@link.com' );
+
+		$this->renewal_order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->renewal_order->set_payment_method_title( 'Stripe Link' );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
+
+		$new_payment_method_title_modified = (string) apply_filters( // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+			'woocommerce_subscription_note_new_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***uyer@link.com', $new_payment_method_title_modified );
+		$this->assertStringContainsString( 'Onelink', $new_payment_method_title_modified );
+	}
+
+	/**
+	 * The subscription-note filters are registered once per PHP process via a static guard, so a
+	 * plugin-bootstrap gateway (constructed before set_up) owns them. Point them at this test's
+	 * gateway so our mocked account country drives the branch under test.
+	 */
+	private function rebind_subscription_note_filters_to_test_gateway( string $account_country ): void {
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( $account_country );
+
+		remove_all_filters( 'woocommerce_subscription_note_old_payment_method_title' );
+		remove_all_filters( 'woocommerce_subscription_note_new_payment_method_title' );
+		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this->wcpay_gateway, 'get_specific_old_payment_method_title' ], 10, 3 );
+		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this->wcpay_gateway, 'get_specific_new_payment_method_title' ], 10, 3 );
+	}
 }

@@ -73,8 +73,6 @@ export type MerchantEvent =
 	| 'wcpay_fraud_protection_advanced_settings_saved'
 	| 'wcpay_fraud_protection_risk_level_preset_enabled'
 	| 'wcpay_fraud_protection_basic_modal_viewed'
-	| 'wcpay_fraud_protection_tour_clicked_through'
-	| 'wcpay_fraud_protection_tour_abandoned'
 	| 'wcpay_fraud_outcome_transactions_download'
 	| 'wcpay_gateway_toggle'
 	| 'wcpay_inbox_action_dismissed'

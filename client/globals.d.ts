@@ -45,6 +45,7 @@ declare global {
 		testMode: boolean;
 		testModeOnboarding: boolean;
 		devMode: boolean;
+		devModeReason?: string;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
@@ -109,9 +110,6 @@ declare global {
 		restUrl: string;
 		siteLogoUrl: string;
 		shouldUseExplicitPrice: boolean;
-		fraudProtection: {
-			isWelcomeTourDismissed?: boolean;
-		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		onboardingFieldsData?: {

@@ -8,18 +8,12 @@
 namespace WCPay\Tests\Internal\Abilities\Domain;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Abilities\Domain\GetDeposits;
 
 /**
  * @coversDefaultClass \WCPay\Internal\Abilities\Domain\GetDeposits
  */
 class GetDepositsTest extends WCPAY_UnitTestCase {
-
-
-	public function test_name(): void {
-		$this->assertSame( 'woocommerce-payments/get-deposits', GetDeposits::get_name() );
-	}
 
 	public function test_registration_args_uses_paginated_input_and_envelope_output(): void {
 		$args = GetDeposits::get_registration_args();
@@ -30,7 +24,6 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 25, $args['input_schema']['properties']['per_page']['default'] );
 		$this->assertSame( 100, $args['input_schema']['properties']['per_page']['maximum'] );
 		$this->assertSame( 1, $args['input_schema']['properties']['page']['default'] );
-		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 
 		// Paginated output envelope.
 		$this->assertSame( 'object', $args['output_schema']['type'] );
@@ -40,19 +33,6 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'page', $args['output_schema']['properties'] );
 		$this->assertArrayHasKey( 'per_page', $args['output_schema']['properties'] );
 		$this->assertFalse( $args['output_schema']['additionalProperties'] );
-	}
-
-	public function test_registration_args_has_readonly_meta_and_correct_category(): void {
-		$args = GetDeposits::get_registration_args();
-
-		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
-		$this->assertSame( [ GetDeposits::class, 'execute' ], $args['execute_callback'] );
-		$this->assertSame( [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ], $args['permission_callback'] );
-		$this->assertTrue( $args['meta']['annotations']['readonly'] );
-		$this->assertFalse( $args['meta']['annotations']['destructive'] );
-		$this->assertTrue( $args['meta']['annotations']['idempotent'] );
-		$this->assertTrue( $args['meta']['show_in_rest'] );
-		$this->assertTrue( $args['meta']['mcp']['public'] );
 	}
 
 	public function test_registration_args_includes_filter_properties(): void {

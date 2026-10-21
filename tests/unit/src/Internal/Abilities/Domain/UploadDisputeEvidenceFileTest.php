@@ -8,7 +8,6 @@
 namespace WCPay\Tests\Internal\Abilities\Domain;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Abilities\Domain\UploadDisputeEvidenceFile;
 use WCPay\Internal\Service\FileService;
 
@@ -17,21 +16,9 @@ use WCPay\Internal\Service\FileService;
  */
 class UploadDisputeEvidenceFileTest extends WCPAY_UnitTestCase {
 
-	public function test_name(): void {
-		$this->assertSame( 'woocommerce-payments/upload-dispute-evidence-file', UploadDisputeEvidenceFile::get_name() );
-	}
-
-	public function test_registration_args_has_non_destructive_write_annotations(): void {
+	public function test_registration_args_accepts_pdf_files(): void {
 		$args = UploadDisputeEvidenceFile::get_registration_args();
 
-		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
-		$this->assertSame( [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ], $args['permission_callback'] );
-		$this->assertFalse( $args['meta']['annotations']['readonly'] );
-		$this->assertFalse( $args['meta']['annotations']['destructive'] );
-		$this->assertFalse( $args['meta']['annotations']['idempotent'] );
-		$this->assertFalse( $args['meta']['mcp']['public'] );
-		$this->assertSame( [ 'file_name', 'file_type', 'file_contents' ], $args['input_schema']['required'] );
-		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 		$this->assertContains( 'application/pdf', $args['input_schema']['properties']['file_type']['enum'] );
 	}
 

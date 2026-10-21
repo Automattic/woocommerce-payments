@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getTerms } from '../utils/upe';
+import { getLinkEmail, getTerms, isLinkEnabled } from '../utils/upe';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 
 /**
@@ -140,6 +140,22 @@ export const getUpeSettings = ( paymentMethodType ) => {
 				address: {
 					country: window.wcpayCustomerData.billing_country,
 				},
+			},
+		};
+	}
+
+	const linkEmail =
+		paymentMethodType === 'card' &&
+		isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+			? getLinkEmail( document.querySelector( '#billing_email' )?.value )
+			: undefined;
+
+	if ( linkEmail ) {
+		upeSettings.defaultValues = {
+			...upeSettings.defaultValues,
+			billingDetails: {
+				...upeSettings.defaultValues?.billingDetails,
+				email: linkEmail,
 			},
 		};
 	}
