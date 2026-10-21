@@ -104,10 +104,6 @@
 		&.is-group:not( :first-child ) {
 			border-top: 1px solid $gray-200;
 		}
-
-		&.is-item:has( + .is-group ) {
-			padding-bottom: $gap-smaller;
-		}
 	}
 
 	&__list {
