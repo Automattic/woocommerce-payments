@@ -625,23 +625,21 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		$mock_subscription->method( 'get_id' )->willReturn( 123 );
 
-		// Track if wcs_create_renewal_order was called successfully.
-		$renewal_order_created = false;
-
 		// Mock the wcs_create_renewal_order function.
 		WC_Subscriptions::wcs_create_renewal_order(
-			function ( $_unused_subscription ) use ( &$renewal_order_created ) {
-				$renewal_order_created = true;
+			function ( $_unused_subscription ) {
 				return WC_Helper_Order::create_order();
 			}
 		);
 
-		// Simulate renewal order creation (what happens in webhook handler).
+		// Simulate renewal order creation (what happens in webhook handler), including the
+		// filters subscriptions core passes each new renewal order through before returning it.
 		$renewal_order = wcs_create_renewal_order( $mock_subscription );
+		$renewal_order = apply_filters( 'wcs_new_order_created', $renewal_order, $mock_subscription, 'renewal_order' ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		$renewal_order = apply_filters( 'wcs_renewal_order_created', $renewal_order, $mock_subscription ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 
 		// Verify renewal order was created successfully.
-		$this->assertTrue( $renewal_order_created, 'Renewal order should be created even with disabler active' );
-		$this->assertInstanceOf( 'WC_Order', $renewal_order, 'Should return a valid WC_Order object' );
+		$this->assertInstanceOf( 'WC_Order', $renewal_order, 'Renewal order should be created even with disabler active' );
 	}
 
 	/**
