@@ -48,13 +48,14 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	 * @return string
 	 */
 	public function get_display_name( $_unused_deprecated = '' ) {
-		$display = sprintf(
-			/* translators: customer email */
-			__( 'Stripe Link email ending in %s', 'woocommerce-payments' ),
+		$account_country = WC_Payments::get_gateway()->get_account_country();
+
+		return sprintf(
+			/* translators: 1: Link brand name (Stripe Link or Onelink), 2: customer email. */
+			__( '%1$s email ending in %2$s', 'woocommerce-payments' ),
+			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::get_title( $account_country ),
 			$this->get_redacted_email()
 		);
-
-		return $display;
 	}
 
 	/**

@@ -1544,6 +1544,60 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'visa', $meta['_card_brand'] ?? null );
 	}
 
+	/**
+	 * @dataProvider zero_amount_saved_link_title_provider
+	 */
+	public function test_process_payment_for_order_titles_zero_amount_saved_link_by_account_country( $account_country, $expected_title ) {
+		// $0 order (e.g. a free trial) paid with a saved Link token takes the no-intent path, which titles
+		// the order itself instead of going through set_payment_method_title_for_order(). WOOPMNT-6538.
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( $account_country );
+
+		$user_id = self::factory()->user->create();
+		wp_set_current_user( $user_id );
+		$token = WC_Helper_Token::create_link_token( 'pm_mock', $user_id );
+
+		$_POST['payment_method'] = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] = (string) $token->get_id();
+
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order->method( 'get_id' )->willReturn( 128 );
+		$mock_order->method( 'get_total' )->willReturn( 0 );
+		$mock_order->method( 'get_currency' )->willReturn( 'USD' );
+		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+		$mock_order->method( 'get_user_id' )->willReturn( $user_id );
+		$mock_order->method( 'get_payment_tokens' )->willReturn( [] );
+		$mock_order->method( 'get_meta' )->willReturn( '' );
+
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_mock' );
+		$this->mock_customer_service->method( 'create_customer_for_user' )->willReturn( 'cus_mock' );
+
+		$this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 0 );
+
+		$title = null;
+		$mock_order->method( 'set_payment_method_title' )->willReturnCallback(
+			function ( $value ) use ( &$title ) {
+				$title = $value;
+			}
+		);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$this->assertInstanceOf( \WC_Payment_Token_WCPay_Link::class, $payment_information->get_payment_token(), 'Test setup: the payment must use the saved Link token.' );
+
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $this->createMock( 'WC_Cart' ), $payment_information );
+
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertSame( $expected_title, $title );
+	}
+
+	public function zero_amount_saved_link_title_provider() {
+		return [
+			'GB account' => [ 'GB', 'Onelink' ],
+			'US account' => [ 'US', 'Stripe Link' ],
+		];
+	}
+
 	public function test_saved_card_at_checkout() {
 		$order = WC_Helper_Order::create_order();
 

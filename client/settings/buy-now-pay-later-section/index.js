@@ -3,12 +3,13 @@
  * External dependencies
  */
 import React from 'react';
-import { Card, ExternalLink } from '@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import PaymentMethodsList from '../payment-methods-list';
 import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';

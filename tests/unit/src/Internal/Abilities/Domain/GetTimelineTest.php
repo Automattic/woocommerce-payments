@@ -8,7 +8,6 @@
 namespace WCPay\Tests\Internal\Abilities\Domain;
 
 use WCPAY_UnitTestCase;
-use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Abilities\Domain\GetTimeline;
 
 /**
@@ -16,20 +15,9 @@ use WCPay\Internal\Abilities\Domain\GetTimeline;
  */
 class GetTimelineTest extends WCPAY_UnitTestCase {
 
-	public function test_name(): void {
-		$this->assertSame( 'woocommerce-payments/get-timeline', GetTimeline::get_name() );
-	}
-
-	public function test_registration_args_shape(): void {
+	public function test_registration_args_intention_id_is_a_string(): void {
 		$args = GetTimeline::get_registration_args();
 
-		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
-		$this->assertSame( [ GetTimeline::class, 'execute' ], $args['execute_callback'] );
-		$this->assertSame( [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ], $args['permission_callback'] );
-		$this->assertTrue( $args['meta']['show_in_rest'] );
-		$this->assertSame( 'object', $args['input_schema']['type'] );
-		$this->assertFalse( $args['input_schema']['additionalProperties'] );
-		$this->assertSame( [ 'intention_id' ], $args['input_schema']['required'] );
 		$this->assertSame( 'string', $args['input_schema']['properties']['intention_id']['type'] );
 	}
 

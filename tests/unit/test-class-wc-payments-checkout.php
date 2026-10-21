@@ -784,7 +784,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'isReusable'             => true,
 					'isBnpl'                 => false,
 					'isExpressCheckout'      => false,
-					'title'                  => 'Link',
+					'title'                  => 'Stripe Link',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,

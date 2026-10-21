@@ -4,11 +4,12 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { CardBody, Flex, ExternalLink } from '@wordpress/components';
+import { Flex, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { CardBody } from 'wcpay/components/card';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';

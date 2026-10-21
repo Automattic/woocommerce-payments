@@ -968,9 +968,11 @@ class WC_Payments_Admin {
 			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if we should onboard accounts in test mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
-		$dev_mode = false;
+		$dev_mode        = false;
+		$dev_mode_reason = '';
 		try {
-			$dev_mode = WC_Payments::mode()->is_dev();
+			$dev_mode        = WC_Payments::mode()->is_dev();
+			$dev_mode_reason = WC_Payments_Utils::get_dev_mode_reason( WC_Payments::mode()->get_dev_mode_triggers() );
 		} catch ( Exception $e ) {
 			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if the gateway should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
@@ -997,6 +999,7 @@ class WC_Payments_Admin {
 			],
 			'connectIncentive'                   => $connect_incentive,
 			'devMode'                            => $dev_mode,
+			'devModeReason'                      => $dev_mode_reason,
 			'testModeOnboarding'                 => $test_mode_onboarding,
 			'testMode'                           => $test_mode,
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
@@ -1034,9 +1037,6 @@ class WC_Payments_Admin {
 			'currencyData'                       => $currency_data,
 			'restUrl'                            => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'siteLogoUrl'                        => $site_logo_url,
-			'fraudProtection'                    => [
-				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
-			],
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
 			'isWooPayStoreCountryAvailable'      => WooPay_Utilities::is_store_country_available(),

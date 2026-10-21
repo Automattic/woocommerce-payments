@@ -2,11 +2,11 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import './rule-card.scss';
 import CardBody from '../../card-body';
 
