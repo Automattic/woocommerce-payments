@@ -1,7 +1,7 @@
 /**
  * External Dependencies
  */
-import React, { useRef, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { check, chevronDown, chevronUp, Icon } from '@wordpress/icons';
 import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
@@ -43,6 +43,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 	searchable,
 }: GroupedSelectControlProps< ItemType > ): JSX.Element => {
 	const searchRef = useRef< HTMLInputElement >( null );
+	const instanceId = useId();
 	const previousStateRef = useRef< {
 		visibleItems: Set< string >;
 	} >();
@@ -64,6 +65,15 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		visibleItems.has( item.key )
 	);
 
+	// Groups only toggle their items, which search has already expanded, so
+	// search results show them as headings that can't be highlighted or picked.
+	const isSearching = searchText !== '';
+	const selectableItems = isSearching
+		? itemsToRender.filter( ( item ) => ! item.items )
+		: itemsToRender;
+	const getGroupHeadingId = ( groupKey: string ) =>
+		`${ instanceId }-group-${ groupKey }`;
+
 	const {
 		isOpen,
 		selectedItem,
@@ -73,7 +83,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		highlightedIndex,
 		getItemProps,
 	} = useSelect( {
-		items: itemsToRender,
+		items: selectableItems,
 		itemToString: ( item ) => item?.name || '',
 		selectedItem: value || ( {} as ItemType ),
 		onSelectedItemChange,
@@ -86,7 +96,6 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 			}
 
 			if ( changes.selectedItem && changes.selectedItem.items ) {
-				if ( searchText ) return state;
 				const key = changes.selectedItem.key;
 				if ( openedGroups.has( key ) ) {
 					openedGroups.delete( key );
@@ -208,8 +217,26 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 							/>
 						) }
 						<div className="wcpay-component-grouped-select-control__list-container">
-							{ itemsToRender.map( ( item, index ) => {
+							{ itemsToRender.map( ( item ) => {
 								const isGroup = !! item.items;
+
+								if ( isSearching && isGroup ) {
+									return (
+										<li
+											key={ item.key }
+											id={ getGroupHeadingId( item.key ) }
+											role="presentation"
+											className="wcpay-component-grouped-select-control__item is-group"
+										>
+											<div className="wcpay-component-grouped-select-control__item-content">
+												{ item.name }
+											</div>
+											<Icon icon={ chevronUp } />
+										</li>
+									);
+								}
+
+								const index = selectableItems.indexOf( item );
 
 								return (
 									// eslint-disable-next-line react/jsx-key
@@ -218,6 +245,12 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 											item,
 											index,
 											key: item.key,
+											'aria-describedby':
+												isSearching && item.group
+													? getGroupHeadingId(
+															item.group
+														)
+													: undefined,
 											className: clsx(
 												'wcpay-component-grouped-select-control__item',
 												item.className,
@@ -228,6 +261,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 												},
 												{
 													'is-group': isGroup,
+													'is-item': ! isGroup,
 												}
 											),
 										} ) }
@@ -238,7 +272,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 										{ item.key === selectedItem?.key && (
 											<Icon icon={ check } />
 										) }
-										{ ! searchText && isGroup && (
+										{ isGroup && (
 											<Icon
 												icon={
 													openedGroups.has( item.key )
