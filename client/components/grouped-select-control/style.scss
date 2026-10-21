@@ -87,14 +87,19 @@
 			padding-left: $gap;
 		}
 
+		// Spacing uses padding, not margin, so the highlight fills each row.
 		&.is-group {
 			color: $gray-700;
 			padding-top: $gap-smaller;
+			padding-bottom: $gap-smaller;
 		}
 
 		&.is-group:not( :first-child ) {
 			border-top: 1px solid $gray-200;
-			margin-top: $gap-smaller;
+		}
+
+		&.is-item:has( + .is-group ) {
+			padding-bottom: $gap-smaller;
 		}
 	}
 
