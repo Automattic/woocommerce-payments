@@ -50,7 +50,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		if ( null !== $this->original_gateway_map ) {
-			$this->get_gateway_map_property()->setValue( null, $this->original_gateway_map );
+			$this->set_payment_gateway_map( $this->original_gateway_map );
 		}
 		unset( $_POST['express_payment_type'] );
 
@@ -152,15 +152,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( $should_use_platform );
 
-		$property                   = $this->get_gateway_map_property();
-		$this->original_gateway_map = $property->getValue();
-		$property->setValue( null, array_merge( $this->original_gateway_map, [ 'card' => $gateway ] ) );
-	}
-
-	private function get_gateway_map_property(): ReflectionProperty {
-		$property = new ReflectionProperty( WC_Payments::class, 'payment_gateway_map' );
-		$property->setAccessible( true );
-
-		return $property;
+		$this->original_gateway_map = $this->get_payment_gateway_map();
+		$this->set_payment_gateway_map( array_merge( $this->original_gateway_map, [ 'card' => $gateway ] ) );
 	}
 }
