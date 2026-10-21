@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
+      has_beta: ${{ steps.generate_matrix.outputs.has_beta }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: "Load version constants"
@@ -32,7 +33,15 @@ jobs:
         env:
           GUTENBERG_FOR_WP_MIN: ${{ steps.vc.outputs.gutenberg_for_wp_min }}
         run: |
-          WC_VERSIONS=$( echo "[\"$WC_MIN_SUPPORTED_VERSION\", \"latest\", \"beta\"]" )
+          # Once its stable release ships, the beta would only repeat the `latest` runs.
+          BETA_VERSION=$( .github/scripts/generate-wc-matrix.sh | jq -r '.metadata.beta_version' )
+          if [[ "$BETA_VERSION" == "null" ]]; then
+            echo "has_beta=false" >> $GITHUB_OUTPUT
+            WC_VERSIONS=$( echo "[\"$WC_MIN_SUPPORTED_VERSION\", \"latest\"]" )
+          else
+            echo "has_beta=true" >> $GITHUB_OUTPUT
+            WC_VERSIONS=$( echo "[\"$WC_MIN_SUPPORTED_VERSION\", \"latest\", \"beta\"]" )
+          fi
           MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_MIN_SUPPORTED_VERSION\",\"wordpress\":\"$WP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"$GUTENBERG_FOR_WP_MIN\",\"php\":\"$PHP_MIN_SUPPORTED_VERSION\"}]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
 
@@ -112,7 +121,8 @@ jobs:
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name: Environment - WC beta
-    needs: generate-wc-compat-beta-matrix
+    needs: [ generate-wc-compat-matrix, generate-wc-compat-beta-matrix ]
+    if: needs.generate-wc-compat-matrix.outputs.has_beta == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

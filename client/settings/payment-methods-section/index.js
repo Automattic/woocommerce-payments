@@ -4,11 +4,11 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/card';
 import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';

@@ -76,7 +76,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		// Checks if at least one express checkout method is enabled.
-		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->can_use_amazon_pay() ) {
+		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->is_amazon_pay_enabled_by_merchant() ) {
 			return;
 		}
 
@@ -116,7 +116,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				empty( $context )
 				|| $this->express_checkout_helper->is_express_checkout_method_enabled_at( $context, 'payment_request' )
 			);
-		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->can_use_amazon_pay()
+		// Registers the block button even when the page loads in a currency Amazon Pay doesn't
+		// support; its `canMakePayment()` follows the live cart's currency from there.
+		$config['isAmazonPayEnabled'] = $this->express_checkout_helper->is_amazon_pay_enabled_by_merchant()
 			&& (
 				empty( $context )
 				|| $this->express_checkout_helper->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )

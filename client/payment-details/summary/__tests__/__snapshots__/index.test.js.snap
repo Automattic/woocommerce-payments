@@ -133,7 +133,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -141,7 +141,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -238,7 +238,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -611,7 +611,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -619,7 +619,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -732,7 +732,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1058,7 +1058,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -1066,7 +1066,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1189,7 +1189,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1469,7 +1469,7 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -1477,7 +1477,7 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1586,7 +1586,7 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1866,7 +1866,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -1874,7 +1874,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1997,7 +1997,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2318,7 +2318,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -2326,7 +2326,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2449,7 +2449,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2752,7 +2752,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -2760,7 +2760,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2883,7 +2883,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3190,7 +3190,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -3198,7 +3198,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3299,7 +3299,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3579,7 +3579,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -3587,7 +3587,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3652,7 +3652,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3908,7 +3908,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -3916,7 +3916,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -4043,7 +4043,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -4323,7 +4323,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -4331,7 +4331,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -4454,7 +4454,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -4734,7 +4734,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -4742,7 +4742,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -4865,7 +4865,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -5217,7 +5217,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
 
 <div>
   <div
-    class="components-surface components-card emotion-0 emotion-1"
+    class="components-surface components-card wcpay-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
@@ -5225,7 +5225,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -5348,7 +5348,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
         role="separator"
       />
       <div
-        class="components-card__body components-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card__body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
