@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Lint: fix react-hooks/refs in support email and fraud protection settings (WOOPMNT-6292)
