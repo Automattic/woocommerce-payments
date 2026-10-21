@@ -1,4 +1,3 @@
 Significance: patch
 Type: dev
-
-Move the project notice in license.txt below the GPL text so GitHub detects the GPL-3.0 license.
+Comment: Move the project notice in license.txt below the GPL text so GitHub detects the GPL-3.0 license.
