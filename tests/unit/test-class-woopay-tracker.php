@@ -130,6 +130,143 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $params['is_shopper_tracking_enabled'] );
 	}
 
+	public function test_ajax_tracks_records_each_batched_event(): void {
+		$recorded = [];
+		$tracker  = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->exactly( 2 ) )
+			->method( 'maybe_record_event' )
+			->willReturnCallback(
+				function ( $event, $data ) use ( &$recorded ) {
+					$recorded[] = [ $event, $data ];
+					return true;
+				}
+			);
+		$_REQUEST['tracksEvents'] = wp_slash(
+			wp_json_encode(
+				[
+					[
+						'name'       => 'product_page_view',
+						'properties' => [ 'record_event_data' => [ 'track_on_all_stores' => true ] ],
+					],
+					[
+						'name'       => 'gpay_button_load',
+						'properties' => [ 'source' => 'product' ],
+					],
+				]
+			)
+		);
+
+		$this->call_ajax_tracks( $tracker );
+
+		$this->assertSame(
+			[
+				[ 'product_page_view', [ 'record_event_data' => [ 'track_on_all_stores' => true ] ] ],
+				[ 'gpay_button_load', [ 'source' => 'product' ] ],
+			],
+			$recorded
+		);
+	}
+
+	public function test_ajax_tracks_skips_invalid_batched_events(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->once() )
+			->method( 'maybe_record_event' )
+			->with( 'cart_page_view', [] );
+		$_REQUEST['tracksEvents'] = wp_slash(
+			wp_json_encode(
+				[
+					'not an event',
+					[ 'properties' => [ 'source' => 'cart' ] ],
+					[ 'name' => [ 'not', 'a', 'string' ] ],
+					[
+						'name'       => 'cart_page_view',
+						'properties' => 'not an array',
+					],
+				]
+			)
+		);
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
+	public function test_ajax_tracks_limits_the_number_of_batched_events(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->exactly( 20 ) )->method( 'maybe_record_event' );
+		$_REQUEST['tracksEvents'] = wp_slash( wp_json_encode( array_fill( 0, WooPay_Tracker::MAX_BATCHED_EVENTS + 5, [ 'name' => 'cart_page_view' ] ) ) );
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
+	public function test_ajax_tracks_rejects_batched_events_that_are_not_an_array(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->never() )->method( 'maybe_record_event' );
+		$_REQUEST['tracksEvents'] = 'not json';
+
+		$response = $this->call_ajax_tracks( $tracker );
+
+		$this->assertSame(
+			[
+				'success' => false,
+				'data'    => 'No valid event name or type.',
+			],
+			$response
+		);
+	}
+
+	public function test_ajax_tracks_records_a_single_event(): void {
+		$tracker = $this->get_tracker_with_mocked_recording();
+		$tracker->expects( $this->once() )
+			->method( 'maybe_record_event' )
+			->with( 'cart_page_view', [ 'source' => 'cart' ] );
+		$_REQUEST['tracksEventName'] = 'cart_page_view';
+		$_REQUEST['tracksEventProp'] = wp_slash( wp_json_encode( [ 'source' => 'cart' ] ) );
+
+		$this->call_ajax_tracks( $tracker );
+	}
+
+	/**
+	 * @return WooPay_Tracker&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function get_tracker_with_mocked_recording() {
+		return $this->getMockBuilder( WooPay_Tracker::class )
+			->setConstructorArgs( [ $this->http_client_stub ] )
+			->onlyMethods( [ 'maybe_record_event' ] )
+			->getMock();
+	}
+
+	/**
+	 * @return array|null The decoded JSON response.
+	 */
+	private function call_ajax_tracks( WooPay_Tracker $tracker ): ?array {
+		$_REQUEST['tracksNonce'] = wp_create_nonce( 'platform_tracks_nonce' );
+
+		// Make wp_send_json_*() stop the handler like it does in a real AJAX request.
+		add_filter( 'wp_doing_ajax', '__return_true', 999 );
+		add_filter(
+			'wp_die_ajax_handler',
+			function () {
+				return function () {
+					throw new WPDieException();
+				};
+			},
+			999
+		);
+
+		ob_start();
+		try {
+			$tracker->ajax_tracks();
+		} catch ( WPDieException $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+			// Expected, the handler always ends with wp_send_json_*().
+		} finally {
+			$output = ob_get_clean();
+			remove_all_filters( 'wp_doing_ajax' );
+			remove_all_filters( 'wp_die_ajax_handler' );
+			unset( $_REQUEST['tracksNonce'], $_REQUEST['tracksEvents'], $_REQUEST['tracksEventName'], $_REQUEST['tracksEventProp'] );
+		}
+
+		return json_decode( $output, true );
+	}
+
 	public function test_tracks_build_event_obj_for_admin_events(): void {
 		$this->set_account_connected( true );
 		$event_name = 'wcadmin_test_event';
