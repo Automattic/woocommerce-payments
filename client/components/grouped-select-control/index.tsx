@@ -231,7 +231,10 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 											<div className="wcpay-component-grouped-select-control__item-content">
 												{ item.name }
 											</div>
-											<Icon icon={ chevronUp } />
+											<Icon
+												icon={ chevronUp }
+												size={ 18 }
+											/>
 										</li>
 									);
 								}
@@ -279,6 +282,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 														? chevronUp
 														: chevronDown
 												}
+												size={ 18 }
 											/>
 										) }
 									</li>
