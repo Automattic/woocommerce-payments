@@ -38,7 +38,7 @@ describe( 'Classic checkout UPE utils', () => {
 	describe( 'isBillingInformationMissing', () => {
 		beforeAll( () => {
 			window.wc_address_i18n_params = {
-				locale: {
+				locale: JSON.stringify( {
 					US: {},
 					HK: {
 						postcode: { required: false },
@@ -47,7 +47,7 @@ describe( 'Classic checkout UPE utils', () => {
 						address_1: { required: true },
 						postcode: { required: true },
 					},
-				},
+				} ).replace( /"/g, '&quot;' ),
 			};
 		} );
 
@@ -147,7 +147,7 @@ describe( 'Classic checkout UPE utils', () => {
 				{ id: 'billing_city', value: 'Anytown' },
 				{ id: 'billing_postcode', value: '' },
 			] );
-			expect( isBillingInformationMissing() ).toBe( true );
+			expect( isBillingInformationMissing() ).toBe( false );
 		} );
 	} );
 

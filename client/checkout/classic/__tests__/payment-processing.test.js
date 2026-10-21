@@ -243,6 +243,9 @@ describe( 'Stripe Payment Element mounting', () => {
 				checked: true,
 			},
 		};
+		getFingerprint.mockImplementation( () => 'fingerprint' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+		await mountStripePaymentElement( apiMock, mockDomElement );
 		getUPEConfig.mockImplementation( ( argument ) => {
 			if ( argument === 'currency' ) {
 				return 'eur';
