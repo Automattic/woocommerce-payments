@@ -622,26 +622,22 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_hpos_enabled_follows_the_hpos_option() {
-		$hpos_option          = CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION;
-		$original_hpos_option = get_option( $hpos_option );
+		$hpos_option_value = 'yes';
+		add_filter(
+			'pre_option_' . CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION,
+			function () use ( &$hpos_option_value ) {
+				return $hpos_option_value;
+			}
+		);
 
 		// Use reflection to test protected method.
 		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'is_hpos_enabled' );
 		$reflection->setAccessible( true );
 
-		try {
-			update_option( $hpos_option, 'yes' );
-			$this->assertTrue( $reflection->invoke( $this->remediation ) );
+		$this->assertTrue( $reflection->invoke( $this->remediation ) );
 
-			update_option( $hpos_option, 'no' );
-			$this->assertFalse( $reflection->invoke( $this->remediation ) );
-		} finally {
-			if ( false === $original_hpos_option ) {
-				delete_option( $hpos_option );
-			} else {
-				update_option( $hpos_option, $original_hpos_option );
-			}
-		}
+		$hpos_option_value = 'no';
+		$this->assertFalse( $reflection->invoke( $this->remediation ) );
 	}
 
 	public function test_sync_order_stats_writes_the_order_stats_row() {
