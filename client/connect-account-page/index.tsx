@@ -94,9 +94,13 @@ const ConnectAccountPage: React.FC = () => {
 	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] =
 		useState( 5 );
 
-	// Create a reference object.
+	// Keep an always-fresh ref for the polling closure in startTestDriveSetup.
+	// The write is in a post-commit effect so the ref read in that closure is
+	// never ahead of the committed state.
 	const loaderProgressRef = useRef( testDriveLoaderProgress );
-	loaderProgressRef.current = testDriveLoaderProgress;
+	useEffect( () => {
+		loaderProgressRef.current = testDriveLoaderProgress;
+	} );
 
 	// Use a timer to track the elapsed time for the test drive mode setup.
 	const testDriveSetupStartTimeRef = useRef< number >( 0 );
