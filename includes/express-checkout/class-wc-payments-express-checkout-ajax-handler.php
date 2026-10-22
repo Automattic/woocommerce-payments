@@ -400,8 +400,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$sanitized_state_string = $this->express_checkout_button_helper->sanitize_string( $state );
 			// Checks if input state matches with Express Checkout state code (0), name (1) or localName (2).
 			if (
-				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
-				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
+				( $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
+				( $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
 				( ! empty( $pr_state[2] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[2] ) )
 			) {
 				return $wc_state_abbr;
