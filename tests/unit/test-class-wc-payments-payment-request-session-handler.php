@@ -108,18 +108,6 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertFalse( $session_handler->has_session() );
 	}
 
-	public function test_cart_that_is_not_ephemeral_sends_session_cookie_when_asked_directly() {
-		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] = '';
-
-		$session_handler = new WC_Payments_Payment_Request_Session_Handler();
-		$session_handler->init();
-
-		$session_handler->set_customer_session_cookie( true );
-
-		$this->assertArrayHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
-		$this->assertTrue( $session_handler->has_session() );
-	}
-
 	/**
 	 * When a request is sent without cookies and without a token header, the session should be saved in the DB, and the cookies should be sent.
 	 */

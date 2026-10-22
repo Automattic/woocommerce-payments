@@ -76,8 +76,8 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * Sets the session cookie, unless the cart is ephemeral.
 	 *
 	 * Skipping the hook in `init()` isn't enough: other code, like Multi-Currency's currency switch, calls this
-	 * directly. An ephemeral cart lives for one request, and a cookie would give the shopper a session they never
-	 * started, which takes their later page views off the page cache.
+	 * directly. A cookie would give the shopper a session they never started, which takes their later page views
+	 * off the page cache.
 	 *
 	 * @param bool $set Whether the cookie should be set.
 	 */
