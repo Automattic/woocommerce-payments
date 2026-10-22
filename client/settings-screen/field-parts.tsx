@@ -19,6 +19,8 @@ import {
 	WooPayCheckoutPreview,
 } from './express-checkout-controls';
 import TestAccountNotice from './test-account-notice';
+import { getCurrentEntityName } from './settings-registry';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { FraudRules, getRulesError } from './fraud-rules';
 
 export type Settings = Record< string, unknown >;
@@ -103,6 +105,28 @@ const getPayoutIntervalNote = ( interval: unknown ) =>
 		} ) as Record< string, string >
 	 )[ String( interval ) ];
 
+/** Explains why the payout schedule can't be changed, as the classic settings page does. */
+const PayoutScheduleNotice = ( { item }: { item: Settings } ) => (
+	<InlineNotice status="warning" isDismissible={ false } icon>
+		{ item.deposit_status !== 'enabled' ||
+		item.deposit_restrictions === 'schedule_restricted'
+			? __(
+					'Payout scheduling is currently unavailable for your store.',
+					'woocommerce-payments'
+				)
+			: __(
+					'Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete.',
+					'woocommerce-payments'
+				) }{ ' ' }
+		<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
+			{ __(
+				'Learn more about payout schedules',
+				'woocommerce-payments'
+			) }
+		</ExternalLink>
+	</InlineNotice>
+);
+
 /** A card's description, shown by a read-only field since DataForm card descriptions can only be text. */
 const CardDescription = ( {
 	text,
@@ -132,10 +156,7 @@ const getCardDescriptions = (): Record< string, FieldParts > => ( {
 				) }
 				link={ {
 					href: 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/',
-					label: __(
-						'Learn more about test mode',
-						'woocommerce-payments'
-					),
+					label: __( 'Learn more', 'woocommerce-payments' ),
 				} }
 			/>
 		),
@@ -294,9 +315,17 @@ const getExpressCheckoutParts = (): Record< string, FieldParts > => {
 		button_style_description: {
 			render: () => (
 				<CardDescription
-					text={ __(
-						'Configure the display of express checkout buttons on your store.',
-						'woocommerce-payments'
+					text={ sprintf(
+						/* translators: %s: express checkout name, such as WooPay. */
+						__(
+							'Configure the display of %s buttons on your store.',
+							'woocommerce-payments'
+						),
+						methodNames[
+							getCurrentEntityName() === 'woopayments-woopay'
+								? 'woopay'
+								: 'payment_request'
+						]
 					) }
 				/>
 			),
@@ -410,6 +439,22 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 		render: TestAccountNotice,
 		isVisible: isTestAccount,
 	},
+	fraud_protection_error: {
+		render: () => (
+			<InlineNotice status="error" isDismissible={ false } icon>
+				{ __(
+					'There was an error retrieving your fraud protection settings. Please refresh the page to try again.',
+					'woocommerce-payments'
+				) }
+			</InlineNotice>
+		),
+		isVisible: ( item ) =>
+			item.advanced_fraud_protection_settings === 'error',
+	},
+	payout_schedule_notice: {
+		render: PayoutScheduleNotice,
+		isVisible: ( item ) => isPayoutScheduleLocked( { item } ),
+	},
 	current_protection_level: {
 		elements: [
 			{
@@ -473,10 +518,6 @@ export const getFieldParts = (): Record< string, FieldParts > => ( {
 		isVisible: isJapaneseAccount,
 	},
 	deposit_schedule_interval: {
-		description: __(
-			'Payout scheduling is available once payouts are enabled and the 7-day waiting period for new accounts is complete.',
-			'woocommerce-payments'
-		),
 		// An account without a schedule has no interval, which would fail validation and block saving.
 		isVisible: ( item ) => Boolean( item.deposit_schedule_interval ),
 		isDisabled: isPayoutScheduleLocked,

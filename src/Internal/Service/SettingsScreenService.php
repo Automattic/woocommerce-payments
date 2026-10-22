@@ -270,7 +270,7 @@ class SettingsScreenService {
 				'label'    => __( 'Description', 'woocommerce-payments' ),
 				'readOnly' => true,
 			],
-			[ ...array_values( self::CARD_DESCRIPTIONS ), 'payout_bank_account', 'test_account_notice', 'fraud_rules_link' ]
+			[ ...array_values( self::CARD_DESCRIPTIONS ), 'payout_bank_account', 'payout_schedule_notice', 'test_account_notice', 'fraud_protection_error', 'fraud_rules_link' ]
 		);
 
 		return array_merge(
@@ -301,12 +301,12 @@ class SettingsScreenService {
 					'id'    => 'is_payment_request_enabled',
 					'label' => __( 'Express checkouts', 'woocommerce-payments' ),
 				],
-				$checkbox(
+				$toggle(
 					'is_saved_cards_enabled',
 					__( 'Enable payments via saved cards', 'woocommerce-payments' ),
 					__( 'When enabled, users will be able to pay with a saved card during checkout. Card details are stored in our platform, not on your store.', 'woocommerce-payments' )
 				),
-				$checkbox( 'is_manual_capture_enabled', __( 'Enable manual capture', 'woocommerce-payments' ) ),
+				$toggle( 'is_manual_capture_enabled', __( 'Enable manual capture', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor', __( 'Customer bank statement', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor_kanji', __( 'Full bank statement (Kanji)', 'woocommerce-payments' ) ),
 				$text( 'account_statement_descriptor_kana', __( 'Full bank statement (Kana)', 'woocommerce-payments' ) ),
@@ -316,7 +316,10 @@ class SettingsScreenService {
 				),
 				array_merge(
 					$text( 'account_business_support_phone', __( 'Support phone number', 'woocommerce-payments' ) ),
-					[ 'description' => __( "This number may appear on customer bank statements and in-person purchase receipts, but not in order emails. Use a number you're comfortable sharing publicly.", 'woocommerce-payments' ) ]
+					[
+						'description' => __( "This number may appear on customer bank statements and in-person purchase receipts, but not in order emails. Use a number you're comfortable sharing publicly.", 'woocommerce-payments' ),
+						'isValid'     => [ 'required' => true ],
+					]
 				),
 				$select( 'deposit_schedule_interval', __( 'Frequency', 'woocommerce-payments' ), $intervals ),
 				$select(
@@ -336,8 +339,8 @@ class SettingsScreenService {
 					'label' => __( 'Date', 'woocommerce-payments' ),
 					'Edit'  => 'select',
 				],
-				$checkbox( 'is_multi_currency_enabled', __( 'Enable Multi-Currency', 'woocommerce-payments' ) ),
-				$checkbox( 'is_stripe_billing_enabled', __( 'Enable Stripe Billing for future subscriptions', 'woocommerce-payments' ) ),
+				$toggle( 'is_multi_currency_enabled', __( 'Enable Multi-Currency', 'woocommerce-payments' ) ),
+				$toggle( 'is_stripe_billing_enabled', __( 'Enable Stripe Billing for future subscriptions', 'woocommerce-payments' ) ),
 				$checkbox(
 					'is_debug_log_enabled',
 					__( 'Log error messages', 'woocommerce-payments' ),
@@ -373,32 +376,20 @@ class SettingsScreenService {
 			'layout'   => [ 'type' => 'row' ],
 			'children' => [ 'deposit_schedule_interval', 'deposit_schedule_weekly_anchor', 'deposit_schedule_monthly_anchor' ],
 		];
-		$test_account_notice = [
-			'id'     => 'test_account_notice',
+		$unlabelled          = static fn( string $id ): array => [
+			'id'     => $id,
 			'layout' => [
 				'type'          => 'regular',
 				'labelPosition' => 'none',
 			],
 		];
-		$payout_bank_account = [
-			'id'     => 'payout_bank_account',
-			'layout' => [
-				'type'          => 'regular',
-				'labelPosition' => 'none',
-			],
-		];
-		$fraud_rules_link    = [
-			'id'     => 'fraud_rules_link',
-			'layout' => [
-				'type'          => 'regular',
-				'labelPosition' => 'none',
-			],
-		];
+		$payout_bank_account = $unlabelled( 'payout_bank_account' );
+		$fraud_rules_link    = $unlabelled( 'fraud_rules_link' );
 
 		$cards = [
-			'test-mode'               => [ __( 'Test mode', 'woocommerce-payments' ), [ 'is_test_mode_enabled', $test_account_notice ] ],
-			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ 'current_protection_level', $fraud_rules_link ] ],
-			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ $payout_schedule, $payout_bank_account ] ],
+			'test-mode'               => [ __( 'Test mode', 'woocommerce-payments' ), [ 'is_test_mode_enabled' ] ],
+			'fraud-protection'        => [ __( 'Fraud protection', 'woocommerce-payments' ), [ $unlabelled( 'fraud_protection_error' ), 'current_protection_level', $fraud_rules_link ] ],
+			'payouts'                 => [ __( 'Payout schedule', 'woocommerce-payments' ), [ $unlabelled( 'payout_schedule_notice' ), $payout_schedule, $payout_bank_account ] ],
 			'payment-methods'         => [ __( 'Payment methods', 'woocommerce-payments' ), [ $payment_methods ] ],
 			'transactions'            => [ __( 'Transaction preferences', 'woocommerce-payments' ), [ 'is_saved_cards_enabled', 'is_manual_capture_enabled', 'is_multi_currency_enabled', 'is_stripe_billing_enabled' ] ],
 			'account-notifications'   => [ __( 'Account notifications', 'woocommerce-payments' ), [ 'account_communications_email' ] ],
@@ -406,19 +397,11 @@ class SettingsScreenService {
 			'debug'                   => [ __( 'Debug mode', 'woocommerce-payments' ), [ 'is_debug_log_enabled' ] ],
 		];
 
-		$fields = [];
+		// Notices about the whole account sit above the cards; a notice about one setting sits in its card, after the description.
+		$fields = [ $unlabelled( 'test_account_notice' ) ];
 		foreach ( $cards as $id => [ $label, $children ] ) {
 			if ( isset( self::CARD_DESCRIPTIONS[ $id ] ) ) {
-				array_unshift(
-					$children,
-					[
-						'id'     => self::CARD_DESCRIPTIONS[ $id ],
-						'layout' => [
-							'type'          => 'regular',
-							'labelPosition' => 'none',
-						],
-					]
-				);
+				array_unshift( $children, $unlabelled( self::CARD_DESCRIPTIONS[ $id ] ) );
 			}
 			$fields[] = [
 				'id'       => $id,
